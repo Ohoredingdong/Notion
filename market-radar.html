@@ -1,120 +1,30 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Market Radar</title>
-  <style>
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:transparent;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#242424}
-    .wrap{width:100%;padding:8px 0}
-    .panel{background:#fbfbfa;border:1px solid #ecebe7;border-radius:16px;overflow:hidden}
-    .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px 10px}
-    .title{font-size:13px;font-weight:750;letter-spacing:.02em}
-    .note{font-size:10px;color:#8b8b86;white-space:nowrap}
-    .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:0 12px 12px}
-    .card{background:#fff;border:1px solid #efeee9;border-radius:12px;padding:10px 10px 9px;min-height:76px;display:flex;flex-direction:column;justify-content:space-between}
-    .label{font-size:11px;font-weight:700;color:#47433f;letter-spacing:.01em}
-    .value{font-size:18px;font-weight:800;line-height:1.1;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .meta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-    .change{font-size:11px;font-weight:700}
-    .pos{color:#0f9d58}.neg{color:#d93025}.neu{color:#7a756e}
-    .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 16px 12px;border-top:1px solid #f0efec;font-size:10px;color:#77736d}
-    .legend b{font-weight:650;color:#46433f}
-    .subnote{padding:0 16px 12px;font-size:9px;color:#9a9690}
-    @media(max-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    @media(max-width:640px){.head{padding:10px 12px 8px}.note{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 10px 10px}.card{min-height:70px;padding:9px}.value{font-size:16px}.legend{padding:7px 12px 10px;gap:5px 10px}.subnote{padding:0 12px 10px}.panel{border-radius:12px}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Market Radar</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:transparent;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#242424}.wrap{padding:8px 0}.panel{background:#fbfbfa;border:1px solid #ecebe7;border-radius:16px;overflow:hidden}.head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 10px}.title{font-size:13px;font-weight:750}.note{font-size:10px;color:#8b8b86}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:0 12px 12px}.card{background:#fff;border:1px solid #efeee9;border-radius:12px;padding:10px;min-height:76px;display:flex;flex-direction:column;justify-content:space-between}.label{font-size:11px;font-weight:700;color:#47433f}.value{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.change{font-size:11px;font-weight:700}.pos{color:#0f9d58}.neg{color:#d93025}.neu{color:#7a756e}.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 16px 12px;border-top:1px solid #f0efec;font-size:10px;color:#77736d}.legend b{color:#46433f}.sub{padding:0 16px 12px;font-size:9px;color:#9a9690}@media(max-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:640px){.note{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 10px 10px}.value{font-size:16px}.panel{border-radius:12px}}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="panel">
-      <div class="head">
-        <div class="title">📡 LIVE MARKET</div>
-        <div class="note">10개 항목 전체 표시 · 약 5분마다 갱신</div>
-      </div>
-      <div class="grid" id="grid"></div>
-      <div class="legend">
-        <span><b>INDEX</b> KOSPI · KOSDAQ · S&amp;P500 · Nasdaq</span>
-        <span><b>MACRO</b> US10Y · USD/KRW · DXY</span>
-        <span><b>ASSET</b> Gold · Bitcoin · WTI</span>
-      </div>
-      <div class="subnote">외부 무료 시세 소스를 사용합니다. 일부 항목은 지연 시세일 수 있습니다.</div>
-    </div>
-  </div>
-
-  <script>
-    const ITEMS=[
-      {key:'KOSPI',symbol:'^KS11',decimals:2},
-      {key:'KOSDAQ',symbol:'^KQ11',decimals:2},
-      {key:'S&P500',symbol:'^GSPC',decimals:2},
-      {key:'Nasdaq',symbol:'^IXIC',decimals:2},
-      {key:'US10Y',symbol:'^TNX',decimals:2,transform:v=>v/10,suffix:'%'},
-      {key:'USD/KRW',symbol:'KRW=X',decimals:2},
-      {key:'DXY',symbol:'DX-Y.NYB',decimals:2},
-      {key:'Gold',symbol:'GC=F',decimals:2},
-      {key:'Bitcoin',symbol:'BTC-USD',decimals:2},
-      {key:'WTI',symbol:'CL=F',decimals:2}
-    ];
-
-    const grid=document.getElementById('grid');
-    const idFor=k=>'card-'+k.replace(/[^a-zA-Z0-9]/g,'');
-    grid.innerHTML=ITEMS.map(item=>`<div class="card" id="${idFor(item.key)}"><div class="label">${item.key}</div><div class="value">—</div><div class="meta"><span class="change neu">불러오는 중…</span></div></div>`).join('');
-
-    function fmt(v,d=2){return new Intl.NumberFormat('en-US',{maximumFractionDigits:d,minimumFractionDigits:d}).format(v)}
-
-    async function getJSON(urls){
-      let lastErr;
-      for(const url of urls){
-        try{
-          const res=await fetch(url,{cache:'no-store'});
-          if(!res.ok)throw new Error('HTTP '+res.status);
-          return await res.json();
-        }catch(e){lastErr=e}
-      }
-      throw lastErr||new Error('fetch failed');
-    }
-
-    async function fetchQuote(item){
-      const raw=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.symbol)}?interval=1d&range=5d&includePrePost=false`;
-      const urls=[raw,`https://api.allorigins.win/raw?url=${encodeURIComponent(raw)}`,`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(raw)}`];
-      const json=await getJSON(urls);
-      const result=json?.chart?.result?.[0];
-      if(!result)throw new Error('no result');
-      const meta=result.meta||{};
-      const closes=result?.indicators?.quote?.[0]?.close||[];
-      const valid=closes.filter(v=>typeof v==='number'&&isFinite(v));
-      let price=typeof meta.regularMarketPrice==='number'?meta.regularMarketPrice:valid[valid.length-1];
-      let prev=typeof meta.chartPreviousClose==='number'?meta.chartPreviousClose:valid[valid.length-2];
-      if(typeof price!=='number'||!isFinite(price))throw new Error('no price');
-      if(typeof prev!=='number'||!isFinite(prev))prev=price;
-      if(item.transform){price=item.transform(price);prev=item.transform(prev)}
-      const diff=price-prev;
-      return {price,diff,pct:prev?(diff/prev*100):0};
-    }
-
-    function render(item,data,ok=true){
-      const el=document.getElementById(idFor(item.key));
-      if(!el)return;
-      if(!ok){
-        el.querySelector('.value').textContent='—';
-        el.querySelector('.meta').innerHTML='<span class="change neu">시세 연결 실패</span>';
-        return;
-      }
-      const cls=data.diff>0?'pos':data.diff<0?'neg':'neu';
-      const sign=data.diff>0?'+':'';
-      el.querySelector('.value').textContent=fmt(data.price,item.decimals)+(item.suffix||'');
-      el.querySelector('.meta').innerHTML=`<span class="change ${cls}">${sign}${fmt(data.diff,item.decimals)}${item.suffix||''} (${sign}${fmt(data.pct,2)}%)</span>`;
-    }
-
-    async function loadAll(){
-      await Promise.all(ITEMS.map(async item=>{
-        try{render(item,await fetchQuote(item),true)}catch(e){render(item,null,false)}
-      }));
-    }
-
-    loadAll();
-    setInterval(loadAll,300000);
-  </script>
-</body>
-</html>
+<div class="wrap"><div class="panel">
+<div class="head"><div class="title">📡 LIVE MARKET</div><div class="note">10개 항목 전체 표시 · 약 5분마다 갱신</div></div>
+<div class="grid" id="grid"></div>
+<div class="legend"><span><b>INDEX</b> KOSPI · KOSDAQ · S&amp;P500 · Nasdaq</span><span><b>MACRO</b> US10Y · USD/KRW · DXY</span><span><b>ASSET</b> Gold · Bitcoin · WTI</span></div>
+<div class="sub">무료 외부 시세를 서버에서 중계해 표시합니다. 일부 항목은 지연 시세일 수 있습니다.</div>
+</div></div>
+<script>
+const ENDPOINT='https://dfklyngtjqvlirgrtdfb.supabase.co/functions/v1/market-radar-quotes';
+const KEY='sb_publishable_UOucR8YcmGFQRxL2GjvgnA_2so7ZpSC';
+const ORDER=['KOSPI','KOSDAQ','S&P500','Nasdaq','US10Y','USD/KRW','DXY','Gold','Bitcoin','WTI'];
+const grid=document.getElementById('grid');
+const id=s=>s.replace(/[^a-zA-Z0-9]/g,'');
+grid.innerHTML=ORDER.map(k=>`<div class="card" id="c-${id(k)}"><div class="label">${k}</div><div class="value">—</div><div class="change neu">불러오는 중…</div></div>`).join('');
+const fmt=(v,d=2)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+function draw(q){const el=document.getElementById('c-'+id(q.key));if(!el)return;if(!q.ok){el.querySelector('.value').textContent='—';el.querySelector('.change').textContent='일시적 오류';return;}const cls=q.diff>0?'pos':q.diff<0?'neg':'neu';const sign=q.diff>0?'+':'';el.querySelector('.value').textContent=fmt(q.price,q.decimals)+(q.suffix||'');const ch=el.querySelector('.change');ch.className='change '+cls;ch.textContent=`${sign}${fmt(q.diff,q.decimals)}${q.suffix||''} (${sign}${fmt(q.pct,2)}%)`;}
+async function load(){try{const r=await fetch(ENDPOINT,{cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();(data.quotes||[]).forEach(draw);}catch(e){document.querySelectorAll('.change').forEach(x=>{x.className='change neu';x.textContent='연결 재시도 중…';});}}
+load();setInterval(load,300000);
+</script>
+</body></html>
