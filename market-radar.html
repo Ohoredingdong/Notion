@@ -10,52 +10,43 @@
     .wrap{width:100%;padding:8px 0}
     .panel{background:#fbfbfa;border:1px solid #ecebe7;border-radius:16px;overflow:hidden}
     .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px 8px}
-    .title{font-size:13px;font-weight:700;letter-spacing:.02em}
+    .title{font-size:13px;font-weight:750;letter-spacing:.02em}
     .note{font-size:10px;color:#8b8b86;white-space:nowrap}
-    .ticker{min-height:82px}
-    .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:6px 16px 12px;border-top:1px solid #f0efec;font-size:10px;color:#77736d}
+    .ticker{padding:0 4px 4px;min-height:96px;overflow:hidden}
+    .fallback{padding:18px 14px;color:#8a8782;font-size:12px}
+    .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:7px 16px 11px;border-top:1px solid #f0efec;font-size:10px;color:#77736d}
     .legend b{font-weight:650;color:#46433f}
+    .subnote{padding:0 16px 10px;font-size:9px;color:#9a9690}
     @media(max-width:700px){
-      .head{padding:10px 12px 6px}.note{display:none}.legend{padding:6px 12px 10px;gap:5px 10px}.panel{border-radius:12px}
+      .head{padding:10px 12px 6px}.note{display:none}.legend{padding:6px 12px 9px;gap:5px 10px}.subnote{padding:0 12px 9px}.panel{border-radius:12px}
     }
   </style>
+  <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-tickers.js"></script>
 </head>
 <body>
   <div class="wrap">
     <div class="panel">
       <div class="head">
-        <div class="title">📡 LIVE MARKET STRIP</div>
-        <div class="note">시장별 실시간/지연 데이터가 다를 수 있음</div>
+        <div class="title">📡 LIVE MARKET</div>
+        <div class="note">가격 · 등락률 자동 표시</div>
       </div>
-      <div class="ticker tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-          "symbols": [
-            {"proName":"KRX:KOSPI","title":"KOSPI"},
-            {"proName":"KRX:KOSDAQ","title":"KOSDAQ"},
-            {"proName":"TVC:SPX","title":"S&P 500"},
-            {"proName":"NASDAQ:IXIC","title":"NASDAQ"},
-            {"proName":"TVC:US10Y","title":"US 10Y"},
-            {"proName":"FX_IDC:USDKRW","title":"USD/KRW"},
-            {"proName":"TVC:DXY","title":"DXY"},
-            {"proName":"OANDA:XAUUSD","title":"GOLD"},
-            {"proName":"BITSTAMP:BTCUSD","title":"BITCOIN"},
-            {"proName":"NYMEX:CL1!","title":"WTI"}
-          ],
-          "showSymbolLogo": false,
-          "isTransparent": true,
-          "displayMode": "adaptive",
-          "colorTheme": "light",
-          "locale": "kr"
-        }
-        </script>
+      <div class="ticker">
+        <tv-tickers
+          symbols="INDEX:KSIC,FOREXCOM:SPXUSD,FOREXCOM:NSXUSD,TVC:US10Y,FX_IDC:USDKRW,TVC:DXY,CMCMARKETS:GOLD,BITSTAMP:BTCUSD,TVC:USOIL"
+          direction="horizontal"
+          hide-chart
+          theme="light"
+          locale="kr"
+          transparent>
+          <div class="fallback">시장 데이터를 불러오는 중…</div>
+        </tv-tickers>
       </div>
       <div class="legend">
-        <span><b>INDEX</b> KOSPI · KOSDAQ · S&P500 · Nasdaq</span>
+        <span><b>INDEX</b> KOSPI · S&amp;P500 · Nasdaq</span>
         <span><b>MACRO</b> US10Y · USD/KRW · DXY</span>
         <span><b>ASSET</b> Gold · Bitcoin · WTI</span>
       </div>
+      <div class="subnote">KOSDAQ은 TradingView 외부 위젯에서 직접 시세 표시가 제한될 수 있어 오류 아이콘 대신 제외했습니다.</div>
     </div>
   </div>
 </body>
