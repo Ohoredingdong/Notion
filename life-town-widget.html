@@ -18,7 +18,7 @@ button,input{font:inherit}.app{width:100vw;height:100vh;min-height:350px;padding
 .status{min-width:0;flex:1;padding-left:4px;font-size:clamp(12px,1.25vw,16px);font-weight:730;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(55,105,107,.18)}.timer{display:none;flex:0 0 auto;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:12px;font-weight:800}.timer.show{display:block}.vol{display:flex;align-items:center;gap:8px;flex:0 0 min(22vw,245px)}.speaker{font-size:15px;opacity:.95}
 input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:6px;border-radius:999px;outline:0;background:linear-gradient(90deg,#fff 0 72%,rgba(255,255,255,.34) 72% 100%)}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:4px;background:var(--aqua);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:4px;background:var(--aqua);border:3px solid #fff}
 .foot{border-radius:999px;background:var(--cream);display:grid;place-items:center;overflow:hidden}.foot:after{content:"";display:block;width:min(46%,560px);height:7px;border-radius:999px;background:#ded8c9}
-#youtubePlayer{position:fixed;left:-10000px;top:-10000px;width:200px;height:200px;opacity:.001;pointer-events:none}
+#bgm{display:none}
 @media(max-width:680px){.app{padding:10px;grid-template-rows:minmax(0,1fr) 56px 14px;gap:7px}.scene{border-radius:20px}.controls{border-radius:18px;padding:8px 10px;gap:7px}.round{width:31px;height:31px;border-width:2px;font-size:14px}.vol{flex-basis:105px}.clock{left:15px;bottom:14px}.badge{right:12px;bottom:12px}}
 </style>
 </head>
@@ -31,7 +31,7 @@ input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:6px;
 </section>
 <section class="controls" aria-label="위젯 컨트롤">
 <button class="round" id="timerBtn" title="25분 타이머" aria-label="25분 타이머">◷</button>
-<button class="round" id="playBtn" title="YouTube BGM 준비 중" aria-label="YouTube BGM 준비 중" disabled>…</button>
+<button class="round" id="playBtn" title="ASMR 준비 중" aria-label="ASMR 준비 중" disabled>…</button>
 <button class="round" id="refreshBtn" title="서울 날씨 새로고침" aria-label="날씨 새로고침">↻</button>
 <button class="round" id="weatherBtn" title="현재 위치 날씨" aria-label="현재 위치 날씨">☁</button>
 <div class="status" id="statusText">사무실에서 조용히 일하는 시간이에요.</div>
@@ -40,25 +40,23 @@ input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:6px;
 </section>
 <div class="foot" aria-hidden="true"></div>
 </main>
-<div id="youtubePlayer" aria-hidden="true"></div>
+<audio id="bgm" loop preload="auto" playsinline></audio>
 <script>
-const $=id=>document.getElementById(id),scene=$('scene'),statusText=$('statusText'),tempBadge=$('tempBadge'),volume=$('volume'),playBtn=$('playBtn');
-const VIDEO_ID='HaCcrZ4zn3o';
-let weatherMessage='오늘의 날씨를 불러오는 중…',timerSeconds=1500,timerInterval=null;
-let ytPlayer=null,ytReady=false,isPlaying=false;
+const $=id=>document.getElementById(id),scene=$('scene'),statusText=$('statusText'),tempBadge=$('tempBadge'),volume=$('volume'),playBtn=$('playBtn'),bgm=$('bgm');
+let weatherMessage='오늘의 날씨를 불러오는 중…',timerSeconds=1500,timerInterval=null,isPlaying=false,audioUrl='';
 function updateClock(){const n=new Date(),h=n.getHours();$('dateText').textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(n);$('timeText').textContent=`${h<12?'오전':'오후'} ${h%12||12}:${String(n.getMinutes()).padStart(2,'0')}`}
 function weatherLabel(code,precip){if(precip>0||(code>=51&&code<=67)||(code>=80&&code<=82))return['🌧','비가 내리는 조용한 날이에요.','rain'];if(code>=71&&code<=77)return['❄️','눈이 소복소복 내리고 있어요.','snow'];if(code>=95)return['⛈','천둥이 치는 날이에요.','storm'];if(code===45||code===48)return['🌫','옅은 안개가 낀 날이에요.','fog'];if(code===0)return['☀️','햇살이 맑게 들어오는 날이에요.','clear'];return['☁️','구름이 천천히 흘러가는 날이에요.','cloud']}
 async function fetchWeather(useGeo=false){statusText.textContent='날씨를 확인하는 중…';let lat=37.5665,lon=126.9780;if(useGeo&&navigator.geolocation){try{const p=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{timeout:7000,maximumAge:900000}));lat=p.coords.latitude;lon=p.coords.longitude}catch(e){}}try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,weather_code&timezone=auto`);if(!r.ok)throw new Error('weather');const d=await r.json(),c=d.current||{},[icon,msg,kind]=weatherLabel(Number(c.weather_code||0),Number(c.precipitation||0));weatherMessage=msg;tempBadge.textContent=`${icon} ${Math.round(Number(c.temperature_2m||0))}°C`;scene.classList.toggle('is-rain',kind==='rain'||kind==='storm');if(!isPlaying&&!timerInterval)statusText.textContent=weatherMessage}catch(e){weatherMessage='사무실에서 조용히 일하는 시간이에요.';tempBadge.textContent='Life Town';if(!isPlaying&&!timerInterval)statusText.textContent=weatherMessage}}
-function toggleTimer(){const btn=$('timerBtn'),chip=$('timerChip');if(timerInterval){clearInterval(timerInterval);timerInterval=null;timerSeconds=1500;btn.classList.remove('active');chip.classList.remove('show');chip.textContent='25:00';statusText.textContent=isPlaying?'YouTube BGM을 재생 중이에요.':weatherMessage;return}btn.classList.add('active');chip.classList.add('show');statusText.textContent='25분 집중 모드가 시작됐어요.';timerInterval=setInterval(()=>{timerSeconds--;chip.textContent=`${String(Math.floor(timerSeconds/60)).padStart(2,'0')}:${String(timerSeconds%60).padStart(2,'0')}`;if(timerSeconds<=0){clearInterval(timerInterval);timerInterval=null;timerSeconds=1500;btn.classList.remove('active');chip.textContent='00:00';statusText.textContent='집중 시간이 끝났어요. 잠깐 쉬어도 좋아요.';setTimeout(()=>chip.classList.remove('show'),5000)}},1000)}
-function setPlayReady(){ytReady=true;playBtn.disabled=false;playBtn.textContent='▶';playBtn.title='YouTube BGM 재생/일시정지';playBtn.setAttribute('aria-label','YouTube BGM 재생');}
-window.onYouTubeIframeAPIReady=function(){ytPlayer=new YT.Player('youtubePlayer',{width:'200',height:'200',videoId:VIDEO_ID,playerVars:{autoplay:0,controls:0,disablekb:1,fs:0,playsinline:1,rel:0,loop:1,playlist:VIDEO_ID,enablejsapi:1,origin:location.origin},events:{onReady:e=>{e.target.setVolume(Number(volume.value));setPlayReady()},onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){isPlaying=true;playBtn.textContent='Ⅱ';playBtn.classList.add('active');if(!timerInterval)statusText.textContent='YouTube BGM을 재생 중이에요.'}else if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');if(!timerInterval)statusText.textContent=weatherMessage}},onAutoplayBlocked:()=>{isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');statusText.textContent='노션/브라우저가 YouTube의 스크립트 재생을 막았어요.'},onError:()=>{isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');statusText.textContent='이 YouTube 영상은 임베드 재생이 제한되어 있을 수 있어요.'}}})};
-function startMusic(){if(!ytReady||!ytPlayer)return;try{ytPlayer.setVolume(Number(volume.value));ytPlayer.playVideo()}catch(e){statusText.textContent='재생에 실패했어요. ▶ 버튼을 다시 눌러주세요.'}}
-function stopMusic(){if(ytPlayer&&ytReady)try{ytPlayer.pauseVideo()}catch(e){}isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');if(!timerInterval)statusText.textContent=weatherMessage}
-function toggleMusic(){if(!ytReady)return;if(isPlaying)stopMusic();else startMusic()}
-function updateVolume(){const v=Number(volume.value);volume.style.background=`linear-gradient(90deg,#fff 0 ${v}%,rgba(255,255,255,.34) ${v}% 100%)`;if(ytPlayer&&ytReady)try{ytPlayer.setVolume(v)}catch(e){}}
+function toggleTimer(){const btn=$('timerBtn'),chip=$('timerChip');if(timerInterval){clearInterval(timerInterval);timerInterval=null;timerSeconds=1500;btn.classList.remove('active');chip.classList.remove('show');chip.textContent='25:00';statusText.textContent=isPlaying?'고양이 사무실 ASMR을 재생 중이에요.':weatherMessage;return}btn.classList.add('active');chip.classList.add('show');statusText.textContent='25분 집중 모드가 시작됐어요.';timerInterval=setInterval(()=>{timerSeconds--;chip.textContent=`${String(Math.floor(timerSeconds/60)).padStart(2,'0')}:${String(timerSeconds%60).padStart(2,'0')}`;if(timerSeconds<=0){clearInterval(timerInterval);timerInterval=null;timerSeconds=1500;btn.classList.remove('active');chip.textContent='00:00';statusText.textContent='집중 시간이 끝났어요. 잠깐 쉬어도 좋아요.';setTimeout(()=>chip.classList.remove('show'),5000)}},1000)}
+async function prepareAudio(){try{const paths=['./assets/asmr30/00.txt','./assets/asmr30/01.txt'];const parts=await Promise.all(paths.map(async p=>{const r=await fetch(p,{cache:'force-cache'});if(!r.ok)throw new Error('chunk');return(await r.text()).trim()}));const b64=parts.join(''),bin=atob(b64),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const blob=new Blob([bytes],{type:'audio/webm; codecs=opus'});audioUrl=URL.createObjectURL(blob);bgm.src=audioUrl;bgm.volume=Number(volume.value)/100;bgm.load();playBtn.disabled=false;playBtn.textContent='▶';playBtn.title='고양이 사무실 ASMR 재생/일시정지';playBtn.setAttribute('aria-label','ASMR 재생')}catch(e){playBtn.textContent='!';statusText.textContent='오디오를 준비하지 못했어요. 새로고침해 주세요.'}}
+async function startMusic(){try{bgm.volume=Number(volume.value)/100;await bgm.play();isPlaying=true;playBtn.textContent='Ⅱ';playBtn.classList.add('active');if(!timerInterval)statusText.textContent='고양이 사무실 ASMR을 재생 중이에요.'}catch(e){isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');statusText.textContent='재생이 잠시 막혔어요. ▶ 버튼을 한 번 더 눌러주세요.'}}
+function stopMusic(){bgm.pause();isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');if(!timerInterval)statusText.textContent=weatherMessage}
+function toggleMusic(){isPlaying?stopMusic():startMusic()}
+function updateVolume(){const v=Number(volume.value);volume.style.background=`linear-gradient(90deg,#fff 0 ${v}%,rgba(255,255,255,.34) ${v}% 100%)`;bgm.volume=v/100}
+bgm.addEventListener('play',()=>{isPlaying=true});bgm.addEventListener('pause',()=>{if(!bgm.ended)isPlaying=false});bgm.addEventListener('error',()=>{isPlaying=false;playBtn.textContent='▶';playBtn.classList.remove('active');statusText.textContent='오디오 재생 오류가 났어요. 새로고침해 주세요.'});
 $('timerBtn').addEventListener('click',toggleTimer);playBtn.addEventListener('click',toggleMusic);$('refreshBtn').addEventListener('click',()=>fetchWeather(false));$('weatherBtn').addEventListener('click',()=>fetchWeather(true));volume.addEventListener('input',updateVolume);
-const yt=document.createElement('script');yt.src='https://www.youtube.com/iframe_api';document.head.appendChild(yt);
-updateClock();setInterval(updateClock,1000);updateVolume();fetchWeather(false);
+updateClock();setInterval(updateClock,1000);updateVolume();fetchWeather(false);prepareAudio();
+window.addEventListener('beforeunload',()=>{if(audioUrl)URL.revokeObjectURL(audioUrl)});
 </script>
 </body>
 </html>
