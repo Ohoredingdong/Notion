@@ -5,26 +5,69 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Market Radar</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;background:transparent;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#242424}.wrap{padding:8px 0}.panel{background:#fbfbfa;border:1px solid #ecebe7;border-radius:16px;overflow:hidden}.head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 10px}.title{font-size:13px;font-weight:750}.note{font-size:10px;color:#8b8b86}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:0 12px 12px}.card{background:#fff;border:1px solid #efeee9;border-radius:12px;padding:10px;min-height:76px;display:flex;flex-direction:column;justify-content:space-between}.label{font-size:11px;font-weight:700;color:#47433f}.value{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.change{font-size:11px;font-weight:700}.pos{color:#0f9d58}.neg{color:#d93025}.neu{color:#7a756e}.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 16px 12px;border-top:1px solid #f0efec;font-size:10px;color:#77736d}.legend b{color:#46433f}.sub{padding:0 16px 12px;font-size:9px;color:#9a9690}@media(max-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:640px){.note{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 10px 10px}.value{font-size:16px}.panel{border-radius:12px}}
+:root{--ink:#262522;--muted:#8a8780;--line:#ebe8e2;--paper:#fffefa;--shadow:0 10px 30px rgba(52,47,38,.055)}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--ink)}
+body{padding:8px 0}
+.panel{position:relative;overflow:hidden;background:linear-gradient(180deg,#fffefb 0%,#fbfaf7 100%);border:1px solid #e9e6df;border-radius:18px;box-shadow:var(--shadow)}
+.panel:before{content:"";position:absolute;inset:0 0 auto 0;height:54px;background:linear-gradient(90deg,rgba(221,235,255,.28),rgba(245,233,255,.24),rgba(255,241,218,.22));pointer-events:none}
+.head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px 11px}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.mark{width:27px;height:27px;border:1px solid #e1ded7;border-radius:9px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:13px;box-shadow:0 2px 8px rgba(40,35,28,.045)}
+.brandText{min-width:0}.title{font-size:12px;font-weight:800;letter-spacing:.055em;white-space:nowrap}.desc{margin-top:2px;font-size:9px;color:#98948c;white-space:nowrap}
+.live{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid #e8e5df;border-radius:999px;background:rgba(255,255,255,.72);font-size:9px;color:#77736c;white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:#4fa56c;box-shadow:0 0 0 4px rgba(79,165,108,.10);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(79,165,108,.09)}50%{box-shadow:0 0 0 6px rgba(79,165,108,.03)}}
+.grid{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:0 10px 10px}
+.card{position:relative;overflow:hidden;min-width:0;min-height:83px;padding:10px 10px 9px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.91);display:flex;flex-direction:column;justify-content:space-between;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.card:hover{transform:translateY(-1px);border-color:#dedad2;box-shadow:0 7px 18px rgba(44,40,33,.06)}
+.card:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--accent,#ddd)}
+.card.index{--accent:#9bbce8;background:linear-gradient(180deg,#fbfdff 0%,#fff 74%)}
+.card.macro{--accent:#a8cfba;background:linear-gradient(180deg,#fbfffc 0%,#fff 74%)}
+.card.asset{--accent:#e7c990;background:linear-gradient(180deg,#fffdf8 0%,#fff 74%)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
+.label{font-size:10.5px;font-weight:760;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kind{flex:0 0 auto;padding:2px 5px;border-radius:999px;font-size:7.5px;font-weight:750;letter-spacing:.04em;color:#8b877f;background:#f6f4f0}
+.value{margin-top:5px;font-size:clamp(14px,2.1vw,19px);line-height:1.05;font-weight:790;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.changeRow{display:flex;align-items:center;gap:5px;margin-top:7px;min-width:0}
+.change{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;font-size:9px;font-weight:760;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pos{color:#168252;background:#eef8f2}.neg{color:#cf4b45;background:#fff1f0}.neu{color:#7a766f;background:#f4f2ee}
+.arrow{font-size:8px;line-height:1}.raw{font-size:8px;color:#aaa59c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px 10px;border-top:1px solid rgba(232,229,223,.86);font-size:8px;color:#aaa59d}
+.groups{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.g{display:flex;align-items:center;gap:4px}.swatch{width:6px;height:6px;border-radius:50%}.s1{background:#9bbce8}.s2{background:#a8cfba}.s3{background:#e7c990}
+#updated{white-space:nowrap}
+@media(max-width:900px){.grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.card{padding:9px 8px 8px;min-height:78px}.kind{display:none}.value{font-size:15px}.raw{display:none}}
+@media(max-width:650px){body{padding:4px 0}.panel{border-radius:14px}.head{padding:10px 11px 9px}.mark{width:24px;height:24px}.desc{display:none}.live{padding:4px 7px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 8px 8px}.card{min-height:76px}.value{font-size:17px}.kind{display:inline-block}.foot{padding:7px 10px 9px}.groups{gap:7px}}
 </style>
 </head>
 <body>
-<div class="wrap"><div class="panel">
-<div class="head"><div class="title">📡 LIVE MARKET</div><div class="note">10개 항목 전체 표시 · 약 5분마다 갱신</div></div>
-<div class="grid" id="grid"></div>
-<div class="legend"><span><b>INDEX</b> KOSPI · KOSDAQ · S&amp;P500 · Nasdaq</span><span><b>MACRO</b> US10Y · USD/KRW · DXY</span><span><b>ASSET</b> Gold · Bitcoin · WTI</span></div>
-<div class="sub">무료 외부 시세를 서버에서 중계해 표시합니다. 일부 항목은 지연 시세일 수 있습니다.</div>
-</div></div>
+<div class="panel">
+  <div class="head">
+    <div class="brand"><div class="mark">⌁</div><div class="brandText"><div class="title">LIVE MARKET</div><div class="desc">오늘 시장의 온도를 한눈에</div></div></div>
+    <div class="live"><span class="dot"></span><span>LIVE</span><span id="updated">불러오는 중</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">
+    <div class="groups"><span class="g"><i class="swatch s1"></i>INDEX</span><span class="g"><i class="swatch s2"></i>MACRO</span><span class="g"><i class="swatch s3"></i>ASSET</span></div>
+    <span>일부 시세는 지연될 수 있음</span>
+  </div>
+</div>
 <script>
 const ENDPOINT='https://dfklyngtjqvlirgrtdfb.supabase.co/functions/v1/market-radar-quotes';
 const KEY='sb_publishable_UOucR8YcmGFQRxL2GjvgnA_2so7ZpSC';
-const ORDER=['KOSPI','KOSDAQ','S&P500','Nasdaq','US10Y','USD/KRW','DXY','Gold','Bitcoin','WTI'];
+const ITEMS=[
+  {key:'KOSPI',kind:'INDEX',cls:'index'},{key:'KOSDAQ',kind:'INDEX',cls:'index'},{key:'S&P500',kind:'INDEX',cls:'index'},{key:'Nasdaq',kind:'INDEX',cls:'index'},
+  {key:'US10Y',kind:'MACRO',cls:'macro'},{key:'USD/KRW',kind:'MACRO',cls:'macro'},{key:'DXY',kind:'MACRO',cls:'macro'},
+  {key:'Gold',kind:'ASSET',cls:'asset'},{key:'Bitcoin',kind:'ASSET',cls:'asset'},{key:'WTI',kind:'ASSET',cls:'asset'}
+];
 const grid=document.getElementById('grid');
 const id=s=>s.replace(/[^a-zA-Z0-9]/g,'');
-grid.innerHTML=ORDER.map(k=>`<div class="card" id="c-${id(k)}"><div class="label">${k}</div><div class="value">—</div><div class="change neu">불러오는 중…</div></div>`).join('');
+grid.innerHTML=ITEMS.map(x=>`<div class="card ${x.cls}" id="c-${id(x.key)}"><div class="top"><div class="label">${x.key}</div><div class="kind">${x.kind}</div></div><div class="value">—</div><div class="changeRow"><span class="change neu"><span class="arrow">·</span> 불러오는 중</span><span class="raw"></span></div></div>`).join('');
 const fmt=(v,d=2)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
-function draw(q){const el=document.getElementById('c-'+id(q.key));if(!el)return;if(!q.ok){el.querySelector('.value').textContent='—';el.querySelector('.change').textContent='일시적 오류';return;}const cls=q.diff>0?'pos':q.diff<0?'neg':'neu';const sign=q.diff>0?'+':'';el.querySelector('.value').textContent=fmt(q.price,q.decimals)+(q.suffix||'');const ch=el.querySelector('.change');ch.className='change '+cls;ch.textContent=`${sign}${fmt(q.diff,q.decimals)}${q.suffix||''} (${sign}${fmt(q.pct,2)}%)`;}
-async function load(){try{const r=await fetch(ENDPOINT,{cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();(data.quotes||[]).forEach(draw);}catch(e){document.querySelectorAll('.change').forEach(x=>{x.className='change neu';x.textContent='연결 재시도 중…';});}}
+function draw(q){const el=document.getElementById('c-'+id(q.key));if(!el)return;const value=el.querySelector('.value'),change=el.querySelector('.change'),raw=el.querySelector('.raw');if(!q.ok){value.textContent='—';change.className='change neu';change.innerHTML='<span class="arrow">·</span> 일시적 오류';raw.textContent='';return;}const cls=q.diff>0?'pos':q.diff<0?'neg':'neu';const arrow=q.diff>0?'▲':q.diff<0?'▼':'—';const sign=q.diff>0?'+':'';value.textContent=fmt(q.price,q.decimals)+(q.suffix||'');change.className='change '+cls;change.innerHTML=`<span class="arrow">${arrow}</span> ${sign}${fmt(q.pct,2)}%`;raw.textContent=`${sign}${fmt(q.diff,q.decimals)}${q.suffix||''}`;}
+function stamp(){const d=new Date();document.getElementById('updated').textContent=d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})+' 갱신';}
+async function load(){try{const r=await fetch(ENDPOINT,{cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();(data.quotes||[]).forEach(draw);stamp();}catch(e){document.getElementById('updated').textContent='재연결 중';document.querySelectorAll('.change').forEach(x=>{x.className='change neu';x.innerHTML='<span class="arrow">·</span> 연결 재시도';});}}
 load();setInterval(load,300000);
 </script>
-</body></html>
+</body>
+</html>
