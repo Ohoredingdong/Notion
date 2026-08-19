@@ -7,86 +7,51 @@
 <title>Habit Tracker</title>
 <style>
 :root{--ink:#2e2e2e;--muted:#b9b9b9;--soft:#ededed;--card:#fff;--line:#f2f2f2}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:transparent}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent}
 body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
-.wrap{width:100%;padding:0}
-.card{width:100%;background:var(--card);border-radius:22px;padding:15px 15px 16px;box-shadow:0 0 0 1px rgba(0,0,0,.02)}
-.top{display:grid;grid-template-columns:minmax(0,1fr) 84px 55px;align-items:start;column-gap:8px}
-.title{font-size:13px;font-weight:800;letter-spacing:-.045em;margin-bottom:7px}
-.label{font-size:8px;color:#b8b8b8;font-weight:600;line-height:1.1}
-.count{margin-top:2px;display:flex;align-items:flex-end;gap:3px;line-height:1}
-.count .done{font-size:20px;font-weight:800;letter-spacing:-.06em}
-.count .slash{font-size:13px;color:#d1d1d1;font-weight:700;margin-bottom:2px}
-.count .total{font-size:13px;color:#c4c4c4;font-weight:700;margin-bottom:1px}
-.spark{display:flex;justify-content:center;align-items:center;padding-top:14px}
-.spark svg{width:78px;height:34px;overflow:visible}
-.percent{text-align:right;padding-top:1px}
-.percent .label{text-align:right}
-.percent-row{display:flex;align-items:flex-end;justify-content:flex-end;gap:1px;line-height:1;margin-top:1px}
-.percent-row strong{font-size:20px;font-weight:800;letter-spacing:-.06em}
-.percent-row span{font-size:10px;font-weight:700;margin-bottom:1px;color:#747474}
-.divider{height:1px;background:var(--line);margin:11px 0 10px}
-.tracker{display:grid;grid-template-columns:44px repeat(7,1fr);column-gap:3px;row-gap:9px;align-items:center}
-.day{font-size:8px;color:#bcbcbc;text-align:center;font-weight:500}
-.name-btn{appearance:none;border:0;background:transparent;padding:0;margin:0;text-align:left;font:inherit;cursor:text;color:var(--ink);min-width:0}
-.row-label{font-size:9px;font-weight:750;letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;border-radius:5px}
-.name-btn:hover .row-label{background:#f7f7f7}
-.name-input{width:100%;height:20px;border:0;outline:0;background:#f6f6f6;border-radius:6px;padding:0 5px;font-size:9px;font-weight:700;color:var(--ink)}
-.dot{width:10px;height:10px;border:0;border-radius:50%;padding:0;margin:auto;background:var(--soft);cursor:pointer;transition:transform .12s ease,background .12s ease}
-.dot:hover{transform:scale(1.13)}
-.dot.active{background:#343434}
-.tip{margin-top:11px;padding-top:9px;border-top:1px solid #f5f5f5;font-size:8px;color:#c0c0c0;text-align:left;letter-spacing:-.02em}
-@media(max-width:320px){.top{grid-template-columns:minmax(0,1fr) 72px 50px}.spark svg{width:68px}.tracker{grid-template-columns:39px repeat(7,1fr)}.card{padding:13px 12px 14px}}
+.card{width:100%;background:var(--card);border-radius:22px;padding:15px 15px 14px;box-shadow:0 0 0 1px rgba(0,0,0,.02)}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 84px 55px;align-items:start;column-gap:8px}.title{font-size:13px;font-weight:800;letter-spacing:-.045em;margin-bottom:7px}.label{font-size:8px;color:#b8b8b8;font-weight:600;line-height:1.1}.count{margin-top:2px;display:flex;align-items:flex-end;gap:3px;line-height:1}.count .done{font-size:20px;font-weight:800;letter-spacing:-.06em}.count .slash{font-size:13px;color:#d1d1d1;font-weight:700;margin-bottom:2px}.count .total{font-size:13px;color:#c4c4c4;font-weight:700;margin-bottom:1px}
+.spark{display:flex;justify-content:center;align-items:center;padding-top:14px}.spark svg{width:78px;height:34px;overflow:visible}.percent{text-align:right;padding-top:1px}.percent .label{text-align:right}.percent-row{display:flex;align-items:flex-end;justify-content:flex-end;gap:1px;line-height:1;margin-top:1px}.percent-row strong{font-size:20px;font-weight:800;letter-spacing:-.06em}.percent-row span{font-size:10px;font-weight:700;margin-bottom:1px;color:#747474}
+.divider{height:1px;background:var(--line);margin:11px 0 10px}.tracker{display:grid;grid-template-columns:52px repeat(7,1fr);column-gap:3px;row-gap:9px;align-items:center}.day{font-size:8px;color:#bcbcbc;text-align:center;font-weight:500}
+.name-btn{width:100%;appearance:none;border:0;background:transparent;padding:0;margin:0;text-align:left;font:inherit;cursor:text;color:var(--ink);min-width:0}.row-label{font-size:9px;font-weight:750;letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;border-radius:5px;padding:2px 2px}.name-btn:hover .row-label{background:#f7f7f7}.name-input{width:100%;height:20px;border:0;outline:0;background:#f6f6f6;border-radius:6px;padding:0 5px;font-size:9px;font-weight:700;color:var(--ink)}
+.dot{width:10px;height:10px;border:0;border-radius:50%;padding:0;margin:auto;background:var(--soft);cursor:pointer;transition:transform .12s ease,background .12s ease}.dot:hover{transform:scale(1.13)}.dot.active{background:#343434}
+.add-wrap{margin-top:11px;padding-top:9px;border-top:1px solid #f5f5f5}.add-toggle{width:100%;height:27px;border:0;border-radius:8px;background:transparent;color:#a8a8a8;font-size:9px;font-weight:700;text-align:left;padding:0 3px;cursor:pointer}.add-toggle:hover{background:#f8f8f8;color:#777}.add-form{display:none;gap:6px;align-items:center}.add-form.show{display:flex}.add-input{flex:1;min-width:0;height:29px;border:0;outline:0;border-radius:8px;background:#f6f6f6;padding:0 9px;font-size:10px;color:var(--ink)}.add-input::placeholder{color:#b8b8b8}.add-btn{height:29px;border:0;border-radius:8px;background:#333;color:#fff;font-size:9px;font-weight:800;padding:0 10px;cursor:pointer}.cancel-btn{height:29px;border:0;border-radius:8px;background:#f1f1f1;color:#888;font-size:9px;font-weight:700;padding:0 9px;cursor:pointer}
+.tip{margin-top:6px;font-size:8px;color:#c2c2c2;letter-spacing:-.02em}@media(max-width:320px){.top{grid-template-columns:minmax(0,1fr) 72px 50px}.spark svg{width:68px}.tracker{grid-template-columns:46px repeat(7,1fr)}.card{padding:13px 12px 14px}}
 </style>
 </head>
 <body>
-<div class="wrap">
 <section class="card" aria-label="Habit Tracker">
   <div class="top">
-    <div>
-      <div class="title">루틴 트래커</div>
-      <div class="label">이번 주</div>
-      <div class="count"><span class="done" id="doneCount">13</span><span class="slash">/</span><span class="total" id="totalCount">21</span></div>
-    </div>
-    <div class="spark" aria-hidden="true">
-      <svg viewBox="0 0 78 34">
-        <polyline id="sparkLine" points="3,25 15,18 28,14 40,18 51,16 63,21 73,19" fill="none" stroke="#9d9d9d" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle id="sparkDot" cx="73" cy="19" r="2.15" fill="#313131"/>
-      </svg>
-    </div>
-    <div class="percent">
-      <div class="label">달성률</div>
-      <div class="percent-row"><strong id="percent">62</strong><span>%</span></div>
-    </div>
+    <div><div class="title">루틴 트래커</div><div class="label">이번 주</div><div class="count"><span class="done" id="doneCount">0</span><span class="slash">/</span><span class="total" id="totalCount">0</span></div></div>
+    <div class="spark" aria-hidden="true"><svg viewBox="0 0 78 34"><polyline id="sparkLine" fill="none" stroke="#9d9d9d" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle id="sparkDot" r="2.15" fill="#313131"/></svg></div>
+    <div class="percent"><div class="label">달성률</div><div class="percent-row"><strong id="percent">0</strong><span>%</span></div></div>
   </div>
-
   <div class="divider"></div>
-
-  <div class="tracker" id="tracker">
-    <div></div>
-    <div class="day">월</div><div class="day">화</div><div class="day">수</div><div class="day">목</div><div class="day">금</div><div class="day">토</div><div class="day">일</div>
+  <div class="tracker" id="tracker"><div></div><div class="day">월</div><div class="day">화</div><div class="day">수</div><div class="day">목</div><div class="day">금</div><div class="day">토</div><div class="day">일</div></div>
+  <div class="add-wrap">
+    <button class="add-toggle" id="addToggle" type="button">＋ 항목 추가</button>
+    <div class="add-form" id="addForm"><input class="add-input" id="newHabit" maxlength="12" placeholder="새 습관 이름"/><button class="add-btn" id="addBtn" type="button">추가</button><button class="cancel-btn" id="cancelBtn" type="button">취소</button></div>
+    <div class="tip">습관 이름을 누르면 바로 수정할 수 있어요.</div>
   </div>
-  <div class="tip">습관 이름을 누르면 바로 수정할 수 있어요.</div>
 </section>
-</div>
 <script>
 const DAYS=['월','화','수','목','금','토','일'];
-const KEY='lifeTownHabitTracker.v1';
-const DEFAULT=[
-  {name:'운동',checks:[0,1,1,1,1,1,1]},
-  {name:'독서',checks:[1,0,1,1,1,1,0]},
-  {name:'명상',checks:[1,1,0,0,0,0,0]}
-];
-function copyDefault(){return JSON.parse(JSON.stringify(DEFAULT))}
-function normalize(v){if(!Array.isArray(v)||v.length!==3)return null;const out=v.map((x,i)=>({name:(x&&typeof x.name==='string'?x.name:DEFAULT[i].name).trim().slice(0,12)||DEFAULT[i].name,checks:DAYS.map((_,d)=>x&&Array.isArray(x.checks)&&x.checks[d]?1:0)}));return out}
-function load(){try{const v=normalize(JSON.parse(localStorage.getItem(KEY)||'null'));if(v)return v}catch(e){}return copyDefault()}
+const KEY='lifeTownHabitTracker.v2';
+const OLD_KEY='lifeTownHabitTracker.v1';
+const DEFAULT=[{name:'운동',checks:[0,1,1,1,1,1,1]},{name:'독서',checks:[1,0,1,1,1,1,0]},{name:'명상',checks:[1,1,0,0,0,0,0]}];
+const copy=v=>JSON.parse(JSON.stringify(v));
+function normalize(v){if(!Array.isArray(v)||!v.length)return null;const out=v.filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.checks)).map(x=>({name:x.name.trim().slice(0,12)||'새 습관',checks:DAYS.map((_,d)=>x.checks[d]?1:0)}));return out.length?out:null}
+function load(){for(const k of [KEY,OLD_KEY]){try{const v=normalize(JSON.parse(localStorage.getItem(k)||'null'));if(v)return v}catch(e){}}return copy(DEFAULT)}
 let state=load();
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function updateSummary(){const done=state.reduce((s,r)=>s+r.checks.reduce((a,b)=>a+b,0),0),total=state.length*7,pct=total?Math.round(done/total*100):0;document.getElementById('doneCount').textContent=done;document.getElementById('totalCount').textContent=total;document.getElementById('percent').textContent=pct;updateSpark()}
-function updateSpark(){const counts=DAYS.map((_,d)=>state.reduce((s,r)=>s+r.checks[d],0));const max=Math.max(1,state.length),xs=[3,15,28,40,51,63,73];const pts=counts.map((c,i)=>`${xs[i]},${(27-(c/max)*15).toFixed(1)}`);document.getElementById('sparkLine').setAttribute('points',pts.join(' '));const last=pts[pts.length-1].split(',');document.getElementById('sparkDot').setAttribute('cx',last[0]);document.getElementById('sparkDot').setAttribute('cy',last[1])}
-function editName(index,button){const old=state[index].name,input=document.createElement('input');input.className='name-input';input.value=old;button.replaceWith(input);input.focus();input.select();let done=false;const finish=(commit)=>{if(done)return;done=true;if(commit){const v=input.value.trim().slice(0,12);if(v)state[index].name=v;save()}render()};input.addEventListener('blur',()=>finish(true));input.addEventListener('keydown',e=>{if(e.key==='Enter')finish(true);if(e.key==='Escape')finish(false)})}
-function render(){const tracker=document.getElementById('tracker');tracker.querySelectorAll('.dynamic').forEach(el=>el.remove());state.forEach((item,r)=>{const btn=document.createElement('button');btn.className='name-btn dynamic';btn.type='button';btn.title='이름 수정';const span=document.createElement('span');span.className='row-label';span.textContent=item.name;btn.appendChild(span);btn.onclick=()=>editName(r,btn);tracker.appendChild(btn);DAYS.forEach((day,d)=>{const dot=document.createElement('button');dot.className='dot dynamic'+(item.checks[d]?' active':'');dot.type='button';dot.setAttribute('aria-label',`${item.name} ${day} 체크`);dot.onclick=()=>{state[r].checks[d]=state[r].checks[d]?0:1;save();render()};tracker.appendChild(dot)})});updateSummary()}
+function updateSummary(){const done=state.reduce((s,r)=>s+r.checks.reduce((a,b)=>a+b,0),0),total=state.length*7,pct=total?Math.round(done/total*100):0;doneCount.textContent=done;totalCount.textContent=total;percent.textContent=pct;updateSpark()}
+function updateSpark(){const counts=DAYS.map((_,d)=>state.reduce((s,r)=>s+r.checks[d],0));const max=Math.max(1,state.length),xs=[3,15,28,40,51,63,73],pts=counts.map((c,i)=>`${xs[i]},${(27-(c/max)*15).toFixed(1)}`);sparkLine.setAttribute('points',pts.join(' '));const [x,y]=pts[6].split(',');sparkDot.setAttribute('cx',x);sparkDot.setAttribute('cy',y)}
+function editName(index,button){const input=document.createElement('input');input.className='name-input';input.value=state[index].name;button.replaceWith(input);input.focus();input.select();let finished=false;const finish=commit=>{if(finished)return;finished=true;if(commit){const v=input.value.trim().slice(0,12);if(v){state[index].name=v;save()}}render()};input.addEventListener('blur',()=>finish(true));input.addEventListener('keydown',e=>{if(e.key==='Enter')finish(true);if(e.key==='Escape')finish(false)})}
+function render(){tracker.querySelectorAll('.dynamic').forEach(el=>el.remove());state.forEach((item,r)=>{const btn=document.createElement('button');btn.className='name-btn dynamic';btn.type='button';btn.title='이름 수정';const span=document.createElement('span');span.className='row-label';span.textContent=item.name;btn.appendChild(span);btn.onclick=()=>editName(r,btn);tracker.appendChild(btn);DAYS.forEach((day,d)=>{const dot=document.createElement('button');dot.className='dot dynamic'+(item.checks[d]?' active':'');dot.type='button';dot.setAttribute('aria-label',`${item.name} ${day} 체크`);dot.onclick=()=>{state[r].checks[d]=state[r].checks[d]?0:1;save();render()};tracker.appendChild(dot)})});updateSummary()}
+function openAdd(){addToggle.style.display='none';addForm.classList.add('show');newHabit.value='';newHabit.focus()}
+function closeAdd(){addForm.classList.remove('show');addToggle.style.display='block';newHabit.value=''}
+function addHabit(){const name=newHabit.value.trim().slice(0,12);if(!name)return;state.push({name,checks:[0,0,0,0,0,0,0]});save();render();closeAdd()}
+addToggle.onclick=openAdd;cancelBtn.onclick=closeAdd;addBtn.onclick=addHabit;newHabit.addEventListener('keydown',e=>{if(e.key==='Enter')addHabit();if(e.key==='Escape')closeAdd()});
 render();
 </script>
 </body>
