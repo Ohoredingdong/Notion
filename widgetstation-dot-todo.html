@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Dot Web To-Do</title>
+  <style>
+    :root{
+      --ink:#252525;
+      --muted:#77736d;
+      --paper:#fffefa;
+      --line:#2f2f2f;
+      --grid:#d9d6cf;
+      --accent:#f0a7b7;
+      --accent-soft:#fde8ee;
+      --shadow:rgba(30,30,30,.10);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:transparent;color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    body{padding:8px}
+    button,input{font:inherit;color:inherit}
+    button{cursor:pointer}
+    .widget{
+      width:min(100%,760px);
+      margin:0 auto;
+      min-height:360px;
+      border:1.5px solid var(--line);
+      border-radius:var(--r);
+      overflow:hidden;
+      position:relative;
+      background-color:var(--paper);
+      background-image:radial-gradient(circle,var(--grid) 1px,transparent 1.15px);
+      background-size:14px 14px;
+      box-shadow:0 5px 0 rgba(47,47,47,.06),0 12px 24px var(--shadow);
+    }
+    .paper{min-height:360px;padding:18px 20px 16px;background:rgba(255,254,250,.82);backdrop-filter:blur(.3px)}
+    .datebar{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:10px;margin-bottom:14px}
+    .navbtn{
+      width:36px;height:34px;border:1.4px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:2px 2px 0 rgba(47,47,47,.08);font-size:20px;line-height:1;transition:.12s transform,.12s box-shadow
+    }
+    .navbtn:hover{transform:translateY(-1px);box-shadow:3px 3px 0 rgba(47,47,47,.12)}
+    .date{text-align:center;font-weight:700;font-size:14px;letter-spacing:.01em}
+    .heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:3px 2px 9px;border-bottom:1.5px dashed var(--line)}
+    .heading h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:29px;line-height:1;letter-spacing:-.035em}
+    .leftcount{font-size:12px;color:var(--muted);white-space:nowrap;padding-bottom:2px}
+    .list{display:flex;flex-direction:column;gap:1px;padding:8px 0 6px;min-height:168px}
+    .empty{padding:56px 8px;text-align:center;color:#99948d;font-size:13px}
+    .task{display:grid;grid-template-columns:27px minmax(0,1fr) 31px 31px;align-items:center;min-height:46px;border-bottom:1px solid rgba(47,47,47,.18);gap:4px}
+    .check{
+      width:19px;height:19px;border:1.6px solid var(--line);border-radius:50%;background:var(--paper);display:grid;place-items:center;padding:0;margin-left:2px
+    }
+    .check span{opacity:0;font-size:12px;transform:translateY(-.5px)}
+    .task.done .check{background:var(--accent-soft)}
+    .task.done .check span{opacity:1}
+    .tasktext{min-width:0;font-size:14px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 4px}
+    .task.done .tasktext{text-decoration:line-through;color:#97928b}
+    .iconbtn{border:0;background:transparent;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#4b4946;font-size:17px;padding:0}
+    .iconbtn:hover{background:rgba(47,47,47,.06)}
+    .star.active{color:#c47b17}
+    .delete{font-size:18px;color:#77716c}
+    .addrow{display:grid;grid-template-columns:1fr 38px;gap:8px;margin-top:8px}
+    .addrow input{height:39px;border:1.4px solid var(--line);border-radius:10px;background:rgba(255,255,255,.84);padding:0 12px;outline:none;font-size:13px;box-shadow:2px 2px 0 rgba(47,47,47,.06)}
+    .addrow input:focus{box-shadow:0 0 0 3px var(--accent-soft),2px 2px 0 rgba(47,47,47,.06)}
+    .addbtn{height:39px;border:1.4px solid var(--line);border-radius:10px;background:var(--accent-soft);font-size:23px;line-height:1;padding:0;box-shadow:2px 2px 0 rgba(47,47,47,.10)}
+    .footer{display:flex;align-items:center;justify-content:space-between;padding-top:13px}
+    .today{border:1.3px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 11px;font-size:11px;font-weight:700;letter-spacing:.02em}
+    .heart{border:0;background:transparent;font-size:19px;padding:3px 6px;line-height:1;color:#56524d}
+    .heart[data-color="1"]{color:#be687e}
+    .tiny{font-size:10px;color:#aaa39b;margin-left:7px}
+    @media (max-width:520px){
+      body{padding:4px}.paper{padding:15px 14px 13px}.widget{border-radius:15px}.heading h1{font-size:26px}.task{grid-template-columns:25px minmax(0,1fr) 29px 29px}.tasktext{font-size:13px}.datebar{grid-template-columns:34px 1fr 34px}.navbtn{width:32px;height:31px}
+    }
+  </style>
+</head>
+<body>
+  <main class="widget" aria-label="Dot Web To-Do widget">
+    <section class="paper">
+      <div class="datebar">
+        <button class="navbtn" id="prev" aria-label="이전 날짜">‹</button>
+        <div class="date" id="dateLabel"></div>
+        <button class="navbtn" id="next" aria-label="다음 날짜">›</button>
+      </div>
+
+      <div class="heading">
+        <h1>to-do</h1>
+        <div class="leftcount" id="leftCount">0 tasks left</div>
+      </div>
+
+      <div class="list" id="taskList"></div>
+
+      <form class="addrow" id="addForm">
+        <input id="taskInput" maxlength="120" autocomplete="off" placeholder="Add a task..." aria-label="새 할 일" />
+        <button class="addbtn" type="submit" aria-label="할 일 추가">＋</button>
+      </form>
+
+      <div class="footer">
+        <div><button class="today" id="todayBtn">today</button><span class="tiny" id="status"></span></div>
+        <button class="heart" id="accentBtn" title="포인트 색상 변경" aria-label="포인트 색상 변경">♡</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'life-town-dot-web-todo-v1';
+      const ACCENTS = [
+        ['#f0a7b7','#fde8ee'],
+        ['#e9a17d','#fae7dd'],
+        ['#a691cf','#eee8fa'],
+        ['#8fb697','#e5f1e7'],
+        ['#e3c66e','#fbf2d7'],
+        ['#8eb7c7','#e4f1f5']
+      ];
+      const $ = (s) => document.querySelector(s);
+      const listEl = $('#taskList');
+      const dateEl = $('#dateLabel');
+      const leftEl = $('#leftCount');
+      const inputEl = $('#taskInput');
+      const statusEl = $('#status');
+      let selected = startOfDay(new Date());
+      let state = load();
+
+      function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+      function key(d){
+        const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${day}`;
+      }
+      function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+      function load(){
+        try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {days:{},accent:0,seeded:false}; }
+        catch(e){ return {days:{},accent:0,seeded:false}; }
+      }
+      function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      function seed(){
+        if(state.seeded) return;
+        state.days[key(new Date())] = [
+          {id:uid(),text:'위젯 커스터마이징 해보기',done:false,star:false},
+          {id:uid(),text:'노션 페이지에 임베드하기',done:false,star:false},
+          {id:uid(),text:'오늘의 할 일 정리하기',done:true,star:false}
+        ];
+        state.seeded = true; save();
+      }
+      function esc(s){ return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+      function formatDate(d){
+        const w=['일','월','화','수','목','금','토'][d.getDay()];
+        return `${d.getMonth()+1}월 ${d.getDate()}일 (${w})`;
+      }
+      function tasks(){ return state.days[key(selected)] || []; }
+      function setAccent(){
+        const i = Math.abs(state.accent || 0) % ACCENTS.length;
+        document.documentElement.style.setProperty('--accent', ACCENTS[i][0]);
+        document.documentElement.style.setProperty('--accent-soft', ACCENTS[i][1]);
+        $('#accentBtn').dataset.color = i===0 ? '1' : '0';
+      }
+      function render(){
+        dateEl.textContent = formatDate(selected);
+        const arr = tasks();
+        const left = arr.filter(t=>!t.done).length;
+        leftEl.textContent = `${left} task${left===1?'':'s'} left`;
+        const today = key(selected)===key(new Date());
+        statusEl.textContent = today ? '오늘' : '';
+
+        if(!arr.length){
+          listEl.innerHTML = '<div class="empty">이 날짜에는 아직 할 일이 없어요.</div>';
+          return;
+        }
+        listEl.innerHTML = arr.map(t=>`
+          <div class="task ${t.done?'done':''}" data-id="${t.id}">
+            <button class="check" data-action="toggle" aria-label="완료 전환"><span>✓</span></button>
+            <div class="tasktext" title="${esc(t.text)}">${esc(t.text)}</div>
+            <button class="iconbtn star ${t.star?'active':''}" data-action="star" aria-label="중요 표시">${t.star?'★':'☆'}</button>
+            <button class="iconbtn delete" data-action="delete" aria-label="삭제">×</button>
+          </div>`).join('');
+      }
+      function mutate(id, fn){
+        const k=key(selected), arr=state.days[k]||[];
+        const i=arr.findIndex(t=>t.id===id); if(i<0) return;
+        fn(arr,i); state.days[k]=arr; save(); render();
+      }
+      listEl.addEventListener('click', e=>{
+        const btn=e.target.closest('[data-action]'); if(!btn) return;
+        const row=btn.closest('.task'), id=row?.dataset.id; if(!id) return;
+        const a=btn.dataset.action;
+        if(a==='toggle') mutate(id,(arr,i)=>arr[i].done=!arr[i].done);
+        if(a==='star') mutate(id,(arr,i)=>arr[i].star=!arr[i].star);
+        if(a==='delete') mutate(id,(arr,i)=>arr.splice(i,1));
+      });
+      $('#addForm').addEventListener('submit', e=>{
+        e.preventDefault(); const text=inputEl.value.trim(); if(!text) return;
+        const k=key(selected); state.days[k]=state.days[k]||[];
+        state.days[k].push({id:uid(),text,done:false,star:false});
+        inputEl.value=''; save(); render(); inputEl.focus();
+      });
+      $('#prev').addEventListener('click',()=>{ selected.setDate(selected.getDate()-1); selected=startOfDay(selected); render(); });
+      $('#next').addEventListener('click',()=>{ selected.setDate(selected.getDate()+1); selected=startOfDay(selected); render(); });
+      $('#todayBtn').addEventListener('click',()=>{ selected=startOfDay(new Date()); render(); });
+      $('#accentBtn').addEventListener('click',()=>{ state.accent=((state.accent||0)+1)%ACCENTS.length; save(); setAccent(); });
+
+      seed(); setAccent(); render();
+    })();
+  </script>
+</body>
+</html>
