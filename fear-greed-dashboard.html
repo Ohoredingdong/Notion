@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Fear & Greed Index</title>
+<style>
+:root{
+  --bg:#ffffff;--text:#1f1f1d;--sub:#5f615e;--muted:#8f918d;
+  --line:#e9e9e6;--soft:#f7f7f5;--soft2:#fafaf9;
+  --red:#d95b59;--orange:#ef8b50;--yellow:#e7c64a;--lime:#91c952;--green:#55b36b;
+  --shadow:0 1px 2px rgba(20,20,20,.015);
+}
+html[data-theme="dark"]{
+  --bg:#191919;--text:#f0f0ed;--sub:#b9bab6;--muted:#92938f;
+  --line:#30302e;--soft:#222220;--soft2:#1e1e1d;--shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:transparent}
+body{padding:8px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+button{font:inherit;color:inherit}
+.widget{width:min(100%,1120px);margin:0 auto;border:1px solid var(--line);border-radius:15px;background:var(--bg);box-shadow:var(--shadow);padding:22px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.title{font-size:24px;line-height:1.15;font-weight:720;letter-spacing:-.035em}.subtitle{margin-top:6px;font-size:11px;color:var(--muted)}
+.update{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px;white-space:nowrap;margin-top:4px}.refresh{width:27px;height:27px;border:0;background:transparent;border-radius:7px;color:var(--muted);display:grid;place-items:center;cursor:pointer}.refresh:hover{background:var(--soft);color:var(--text)}.refresh svg{width:14px;height:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.panel{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.hero{padding:18px 18px 14px;display:flex;flex-direction:column;justify-content:space-between;min-height:405px}.gauge-wrap{position:relative;width:min(100%,470px);margin:8px auto 0;aspect-ratio:2/1.07}.gauge{position:absolute;inset:0 0 auto 0;width:100%;height:auto;overflow:visible}.arc{fill:none;stroke-linecap:round;stroke-width:14}.tick{stroke:var(--line);stroke-width:1}.tick-label{font-size:10px;fill:var(--sub)}.zone-label{font-size:9px;fill:var(--sub);text-anchor:middle}.needle{stroke:var(--text);stroke-width:6;stroke-linecap:round;transform-origin:150px 142px;transition:transform .65s cubic-bezier(.2,.75,.25,1)}.hub{fill:var(--text)}
+.score-block{position:absolute;left:50%;bottom:0;transform:translateX(-50%);text-align:center}.score{font-size:50px;line-height:.95;font-weight:680;letter-spacing:-.05em}.rating{margin-top:6px;font-size:20px;font-weight:680;letter-spacing:-.02em}.hero-note{margin-top:10px;padding:12px 15px;background:var(--soft2);border:1px solid var(--line);border-radius:10px;text-align:center;color:var(--sub);font-size:10px;line-height:1.55}
+.right{display:grid;grid-template-rows:auto 1fr;gap:12px}.compare{display:grid;grid-template-columns:1fr 1fr}.compare-item{padding:15px 17px;min-height:92px}.compare-item:nth-child(odd){border-right:1px solid var(--line)}.compare-item:nth-child(-n+2){border-bottom:1px solid var(--line)}.compare-label{font-size:10px;color:var(--sub)}.compare-value{margin-top:7px;font-size:16px;font-weight:680;letter-spacing:-.02em}.compare-sub{margin-top:4px;color:var(--muted);font-size:10px}.up{color:#399449}.down{color:#cf5654}.flat{color:var(--text)}
+.trend{padding:16px 16px 12px;min-height:216px}.section-title{font-size:12px;font-weight:680;letter-spacing:-.01em}.chart-box{height:160px;margin-top:8px;position:relative}.chart{width:100%;height:100%;overflow:visible}.gridline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}.axis-label{font-size:9px;fill:var(--muted)}.trend-line{fill:none;stroke:var(--text);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.trend-area{fill:url(#areaFill)}.dot{fill:var(--bg);stroke:var(--text);stroke-width:2}.last-dot{fill:var(--text);stroke:var(--text)}
+.indicators{margin-top:12px;padding:17px 16px 14px}.indicator-row{display:grid;grid-template-columns:repeat(5,1fr);margin-top:12px}.indicator{min-width:0;padding:0 14px;border-right:1px solid var(--line);display:flex;align-items:center;gap:10px}.indicator:first-child{padding-left:0}.indicator:last-child{border-right:0;padding-right:0}.i-icon{width:34px;height:34px;flex:0 0 auto;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:15px}.i-copy{min-width:0}.i-name{font-size:9px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.i-value{margin-top:3px;font-size:15px;font-weight:680}.i-meta{margin-top:2px;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer{margin-top:10px;color:var(--muted);font-size:8.5px;display:flex;justify-content:space-between;gap:12px}.skeleton{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.45}50%{opacity:.85}}
+@media(max-width:820px){.widget{padding:16px}.grid{grid-template-columns:1fr}.hero{min-height:365px}.indicator-row{grid-template-columns:repeat(2,1fr);gap:0}.indicator{padding:12px;border-right:0;border-bottom:1px solid var(--line)}.indicator:nth-child(odd){border-right:1px solid var(--line)}.indicator:last-child{border-bottom:0}.title{font-size:21px}}
+@media(max-width:520px){body{padding:4px}.widget{padding:13px;border-radius:12px}.top{margin-bottom:12px}.title{font-size:18px}.subtitle{font-size:9px}.update span.label{display:none}.hero{padding:12px;min-height:310px}.score{font-size:40px}.rating{font-size:17px}.compare-item{padding:12px;min-height:82px}.trend{padding:13px}.indicator-row{grid-template-columns:1fr}.indicator,.indicator:nth-child(odd){border-right:0}.footer{flex-direction:column}.gauge-wrap{aspect-ratio:2/1.15}}
+</style>
+</head>
+<body>
+<main class="widget">
+  <header class="top">
+    <div><div class="title">Fear &amp; Greed Index</div><div class="subtitle">시장의 심리 상태를 한눈에 확인하세요.</div></div>
+    <div class="update"><button id="refresh" class="refresh" aria-label="새로고침" title="새로고침"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><span class="label">마지막 업데이트</span><span id="updated">—</span></div>
+  </header>
+
+  <section class="grid">
+    <article class="panel hero">
+      <div class="gauge-wrap">
+        <svg class="gauge" viewBox="0 0 300 170" aria-label="공포 탐욕 지수 게이지">
+          <path class="arc" pathLength="100" stroke="var(--red)" stroke-dasharray="24 76" d="M30 142 A120 120 0 0 1 270 142"/>
+          <path class="arc" pathLength="100" stroke="var(--orange)" stroke-dasharray="20 80" stroke-dashoffset="-24" d="M30 142 A120 120 0 0 1 270 142"/>
+          <path class="arc" pathLength="100" stroke="var(--yellow)" stroke-dasharray="12 88" stroke-dashoffset="-44" d="M30 142 A120 120 0 0 1 270 142"/>
+          <path class="arc" pathLength="100" stroke="var(--lime)" stroke-dasharray="20 80" stroke-dashoffset="-56" d="M30 142 A120 120 0 0 1 270 142"/>
+          <path class="arc" pathLength="100" stroke="var(--green)" stroke-dasharray="24 76" stroke-dashoffset="-76" d="M30 142 A120 120 0 0 1 270 142"/>
+          <g><line class="tick" x1="29" y1="143" x2="20" y2="143"/><text class="tick-label" x="10" y="147">0</text><line class="tick" x1="65" y1="58" x2="58" y2="51"/><text class="tick-label" x="48" y="45">25</text><line class="tick" x1="150" y1="22" x2="150" y2="12"/><text class="tick-label" x="144" y="9">50</text><line class="tick" x1="235" y1="58" x2="242" y2="51"/><text class="tick-label" x="244" y="45">75</text><line class="tick" x1="271" y1="143" x2="280" y2="143"/><text class="tick-label" x="283" y="147">100</text></g>
+          <text class="zone-label" x="45" y="104">Extreme Fear</text><text class="zone-label" x="88" y="102">Fear</text><text class="zone-label" x="150" y="64">Neutral</text><text class="zone-label" x="212" y="102">Greed</text><text class="zone-label" x="257" y="104">Extreme Greed</text>
+          <line id="needle" class="needle" x1="150" y1="142" x2="150" y2="76"/>
+          <circle class="hub" cx="150" cy="142" r="4"/>
+        </svg>
+        <div class="score-block"><div id="score" class="score skeleton">—</div><div id="rating" class="rating">Loading</div></div>
+      </div>
+      <div id="note" class="hero-note">시장 심리 데이터를 불러오는 중입니다.</div>
+    </article>
+
+    <div class="right">
+      <article class="panel compare" id="compare"></article>
+      <article class="panel trend"><div class="section-title">최근 7거래일 추이</div><div class="chart-box"><svg id="chart" class="chart" viewBox="0 0 520 160" preserveAspectRatio="none"></svg></div></article>
+    </div>
+  </section>
+
+  <section class="panel indicators"><div class="section-title">세부 지표</div><div id="indicators" class="indicator-row"></div></section>
+  <footer class="footer"><span>* CNN Fear &amp; Greed 데이터 기반 · 투자 판단의 단독 근거로 사용하지 마세요.</span><span id="sourceState">데이터 대기 중</span></footer>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const theme=new URLSearchParams(location.search).get('theme');
+document.documentElement.dataset.theme=theme==='dark'||theme==='light'?theme:(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+const ratingEn={"extreme fear":"Extreme Fear","fear":"Fear","neutral":"Neutral","greed":"Greed","extreme greed":"Extreme Greed"};
+const indicatorIcons={vix:'⌁',momentum:'↗',strength:'▥',put_call:'⚖',junk:'◎'};
+const indicatorNames={vix:'변동성 (VIX)',momentum:'시장 모멘텀',strength:'주가 강도',put_call:'풋/콜 비율',junk:'정크본드 수요'};
+function ratingColor(r){r=(r||'').toLowerCase();return r.includes('extreme fear')?'var(--red)':r==='fear'?'var(--orange)':r==='neutral'?'var(--yellow)':r==='greed'?'var(--lime)':'var(--green)'}
+function fmt(n,d=0){return Number.isFinite(+n)?new Intl.NumberFormat('ko-KR',{maximumFractionDigits:d}).format(+n):'—'}
+function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
+function sentimentNote(r){r=(r||'').toLowerCase();const map={"extreme fear":"극도의 공포 구간입니다. 위험 회피 심리가 매우 강한 상태일 수 있습니다.","fear":"공포 구간입니다. 투자자들이 위험을 줄이려는 경향이 강해질 수 있습니다.","neutral":"중립 구간입니다. 공포와 탐욕 어느 한쪽으로 크게 치우치지 않은 상태입니다.","greed":"탐욕 구간입니다. 투자자들의 위험 선호가 높아지고 있을 수 있습니다.","extreme greed":"극도의 탐욕 구간입니다. 시장의 과도한 낙관과 쏠림을 함께 점검할 필요가 있습니다."};return map[r]||'현재 시장 심리 상태를 확인하세요.'}
+async function load(){
+ document.querySelector('#sourceState').textContent='업데이트 확인 중';
+ try{
+   const r=await fetch(`fear-greed-data.json?v=${Date.now()}`,{cache:'no-store'});
+   if(!r.ok)throw new Error('data not ready');
+   const d=await r.json();render(d);document.querySelector('#sourceState').textContent='자동 업데이트 데이터';
+ }catch(e){
+   document.querySelector('#sourceState').textContent='데이터 업데이트 대기 중';
+   document.querySelector('#note').textContent='첫 데이터 동기화가 진행 중입니다. 잠시 후 새로고침해 주세요.';
+ }
+}
+function render(d){
+ const h=d.headline||{},score=+h.score||0,r=(h.rating||'neutral').toLowerCase();
+ document.querySelector('#score').classList.remove('skeleton');document.querySelector('#score').textContent=fmt(score,0);document.querySelector('#score').style.color=ratingColor(r);document.querySelector('#rating').textContent=ratingEn[r]||h.rating||'—';document.querySelector('#rating').style.color=ratingColor(r);document.querySelector('#note').textContent=sentimentNote(r);
+ document.querySelector('#needle').style.transform=`rotate(${score*1.8-90}deg)`;
+ const date=new Date(d.updated_at||h.timestamp||Date.now());document.querySelector('#updated').textContent=new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Seoul'}).format(date);
+ renderCompare(h,d.one_year_average);renderChart(d.history||[]);renderIndicators(d.components||{});
+}
+function compareCard(label,old,now,avg=false){
+ const a=+old,b=+now,diff=b-a,cls=Math.abs(diff)<.05?'flat':diff>0?'up':'down',arrow=Math.abs(diff)<.05?'→':diff>0?'↑':'↓';
+ return `<div class="compare-item"><div class="compare-label">${esc(label)}</div><div class="compare-value ${cls}">${avg?fmt(a,0):`${arrow} ${diff>0?'+':''}${fmt(diff,0)}`}</div><div class="compare-sub">${avg?`${ratingEn[bucket(a)]||''} · 최근 약 1년 평균`:`${fmt(a,0)} (${ratingEn[bucket(a)]}) → ${fmt(b,0)} (${ratingEn[bucket(b)]})`}</div></div>`
+}
+function bucket(v){v=+v;return v<25?'extreme fear':v<45?'fear':v<55?'neutral':v<75?'greed':'extreme greed'}
+function renderCompare(h,avg){const now=+h.score||0;document.querySelector('#compare').innerHTML=compareCard('전일 대비',h.previous_close,now)+compareCard('1주일 전 대비',h.previous_1_week,now)+compareCard('1개월 전 대비',h.previous_1_month,now)+compareCard('1년 평균',avg,avg,true)}
+function renderChart(history){
+ const data=history.slice(-7);const svg=document.querySelector('#chart');if(data.length<2){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" class="axis-label">추이 데이터 대기 중</text>';return}
+ const W=520,H=160,L=32,R=14,T=12,B=26,x=i=>L+i*(W-L-R)/(data.length-1),y=v=>T+(100-v)*(H-T-B)/100;
+ let grid='';[0,25,50,75,100].forEach(v=>{grid+=`<line class="gridline" x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}"/><text class="axis-label" x="2" y="${y(v)+3}">${v}</text>`});
+ const pts=data.map((p,i)=>[x(i),y(+p.value)]),line=pts.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' '),area=`${line} L ${pts.at(-1)[0]} ${H-B} L ${pts[0][0]} ${H-B} Z`;
+ const defs=`<defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".12"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>`;
+ let labels='',dots='';data.forEach((p,i)=>{const dt=new Date(p.timestamp);labels+=`<text class="axis-label" text-anchor="middle" x="${x(i)}" y="${H-7}">${dt.getUTCMonth()+1}/${dt.getUTCDate()}</text>`;dots+=`<circle class="dot ${i===data.length-1?'last-dot':''}" cx="${x(i)}" cy="${y(+p.value)}" r="3"/>`});
+ svg.innerHTML=defs+grid+`<path class="trend-area" d="${area}"/><path class="trend-line" d="${line}"/>`+dots+labels;
+}
+function renderIndicators(c){
+ const order=['vix','momentum','strength','put_call','junk'];
+ document.querySelector('#indicators').innerHTML=order.map(k=>{const v=c[k]||{},r=(v.rating||'neutral').toLowerCase();const primary=v.raw_value!=null&&['vix','put_call'].includes(k)?fmt(v.raw_value,k==='put_call'?2:1):fmt(v.score,0);const meta=v.raw_value!=null&&!['vix','put_call'].includes(k)?`Score ${fmt(v.score,0)} · ${ratingEn[r]||r}`:(ratingEn[r]||r);return `<div class="indicator"><div class="i-icon" style="color:${ratingColor(r)}">${indicatorIcons[k]}</div><div class="i-copy"><div class="i-name">${indicatorNames[k]}</div><div class="i-value">${primary}</div><div class="i-meta" style="color:${ratingColor(r)}">${esc(meta)}</div></div></div>`}).join('');
+}
+document.querySelector('#refresh').addEventListener('click',load);load();
+</script>
+</body>
+</html>
