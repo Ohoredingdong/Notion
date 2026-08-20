@@ -45,7 +45,7 @@ def us():
     for k,src in COMP.items():
         b=raw.get(src) or {}; comp[k]={'score':num(b.get('score')),'rating':b.get('rating'),'raw_value':latest_raw(b)}
     vals=[x['value'] for x in hist]
-    return {'market':'us','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'CNN Fear & Greed','headline':{'score':num(fg.get('score')),'rating':fg.get('rating') or cls(fg.get('score')),'timestamp':fg.get('timestamp'),'previous_close':num(fg.get('previous_close')),'previous_1_week':num(fg.get('previous_1_week')),'previous_1_month':num(fg.get('previous_1_month')),'previous_1_year':num(fg.get('previous_1_year'))},'one_year_average':sum(vals)/len(vals) if vals else None,'history':hist[-30:],'components':comp,'note':'미국 증시 투자심리를 CNN Fear & Greed 기준으로 표시합니다.'}
+    return {'market':'us','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'CNN Fear & Greed · Hourly','headline':{'score':num(fg.get('score')),'rating':fg.get('rating') or cls(fg.get('score')),'timestamp':fg.get('timestamp'),'previous_close':num(fg.get('previous_close')),'previous_1_week':num(fg.get('previous_1_week')),'previous_1_month':num(fg.get('previous_1_month')),'previous_1_year':num(fg.get('previous_1_year'))},'one_year_average':sum(vals)/len(vals) if vals else None,'history':hist[-30:],'components':comp,'note':'미국 증시 투자심리를 CNN Fear & Greed 기준으로 표시합니다.'}
 
 def crypto():
     rows=list(reversed((get('https://api.alternative.me/fng/?limit=120&format=json').get('data') or [])))
@@ -58,7 +58,7 @@ def crypto():
     def avg(n):
         a=[x['value'] for x in hist[-n:]]; return sum(a)/len(a) if a else None
     def item(label,icon,value,meta):return {'label':label,'icon':icon,'value':('—' if value is None else f'{value:.1f}'.rstrip('0').rstrip('.')),'meta':meta,'rating':cls(value)}
-    return {'market':'crypto','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'Alternative.me','headline':{'score':cur,'rating':cls(cur),'timestamp':datetime.fromtimestamp(hist[-1]['timestamp']/1000,tz=timezone.utc).isoformat(),'previous_close':p1,'previous_1_week':p7,'previous_1_month':p30,'previous_1_year':avg(90)},'one_year_average':avg(120),'history':hist[-30:],'indicators':[item('7일 평균','7D',avg(7),'단기 심리'),item('30일 평균','30',avg(30),'중기 심리'),item('90일 평균','90',avg(90),'장기 심리'),item('24시간 변화','Δ',cur-p1 if p1 is not None else None,'어제 대비'),item('1주 변화','W',cur-p7 if p7 is not None else None,'1주 전 대비')],'note':'암호화폐 시장의 전반적인 위험선호를 Alternative.me 지수로 표시합니다.'}
+    return {'market':'crypto','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'Alternative.me · Hourly','headline':{'score':cur,'rating':cls(cur),'timestamp':datetime.fromtimestamp(hist[-1]['timestamp']/1000,tz=timezone.utc).isoformat(),'previous_close':p1,'previous_1_week':p7,'previous_1_month':p30,'previous_1_year':avg(90)},'one_year_average':avg(120),'history':hist[-30:],'indicators':[item('7일 평균','7D',avg(7),'단기 심리'),item('30일 평균','30',avg(30),'중기 심리'),item('90일 평균','90',avg(90),'장기 심리'),item('24시간 변화','Δ',cur-p1 if p1 is not None else None,'어제 대비'),item('1주 변화','W',cur-p7 if p7 is not None else None,'1주 전 대비')],'note':'암호화폐 시장의 전반적인 위험선호를 Alternative.me 지수로 표시합니다.'}
 
 def chart(symbol):
     s=urllib.parse.quote(symbol,safe='')
@@ -90,7 +90,7 @@ def korea():
         hist.append({'timestamp':k[i][0],'value':round(v,2),'rating':cls(v)})
     p1=hist[-2]['value'] if len(hist)>1 else None; p7=hist[-8]['value'] if len(hist)>7 else None; p30=hist[0]['value'] if hist else None
     def item(label,icon,value,meta):return {'label':label,'icon':icon,'value':f'{value:.1f}'.rstrip('0').rstrip('.'),'meta':meta,'rating':cls(value)}
-    return {'market':'korea','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'Custom Korea Model','headline':{'score':round(score,2),'rating':cls(score),'timestamp':datetime.fromtimestamp(k[-1][0]/1000,tz=timezone.utc).isoformat(),'previous_close':p1,'previous_1_week':p7,'previous_1_month':p30,'previous_1_year':50.0},'one_year_average':50.0,'history':hist[-30:],'indicators':[item('KOSPI 위치','Ⓚ',kp,'20일 범위 기준'),item('KOSDAQ 위치','Ⓠ',qp,'20일 범위 기준'),item('USD/KRW','₩',fp,'원화 강세 = 위험선호'),item('20일 모멘텀','↗',mp,'KOSPI 기준'),item('종합 위험선호','◎',score,'커스텀 종합 점수')],'note':'한국에는 CNN과 동일한 공식 Fear & Greed가 없어 KOSPI·KOSDAQ·환율·모멘텀을 조합한 커스텀 지수로 표시합니다.'}
+    return {'market':'korea','updated_at':datetime.now(timezone.utc).isoformat(),'source_name':'Custom Korea Model · Hourly','headline':{'score':round(score,2),'rating':cls(score),'timestamp':datetime.fromtimestamp(k[-1][0]/1000,tz=timezone.utc).isoformat(),'previous_close':p1,'previous_1_week':p7,'previous_1_month':p30,'previous_1_year':50.0},'one_year_average':50.0,'history':hist[-30:],'indicators':[item('KOSPI 위치','Ⓚ',kp,'20일 범위 기준'),item('KOSDAQ 위치','Ⓠ',qp,'20일 범위 기준'),item('USD/KRW','₩',fp,'원화 강세 = 위험선호'),item('20일 모멘텀','↗',mp,'KOSPI 기준'),item('종합 위험선호','◎',score,'커스텀 종합 점수')],'note':'한국에는 CNN과 동일한 공식 Fear & Greed가 없어 KOSPI·KOSDAQ·환율·모멘텀을 조합한 커스텀 지수로 표시합니다.'}
 
 if __name__=='__main__':
     write('fear-greed-data.json',us())
