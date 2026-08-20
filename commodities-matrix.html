@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Commodities Matrix</title>
+<style>
+:root{--panel:#fff;--text:#23231f;--sub:#74756f;--muted:#a1a29d;--line:#e9e8e4;--soft:#f6f6f3;--up:#2c8b57;--down:#df5e58;--gold:#e6a600;--silver:#8f969f;--energy:#4c83d6;--industrial:#c47a4e}
+html[data-theme="dark"]{--panel:#20201f;--text:#f1f1ed;--sub:#b9bab5;--muted:#8f908b;--line:#32322f;--soft:#262624;--up:#79c596;--down:#ef8c82;--gold:#efbd47;--silver:#b8bec6;--energy:#77a7ea;--industrial:#df9b73}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;-webkit-font-smoothing:antialiased}.widget{width:min(100%,980px);margin:0 auto;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.title{font-size:22px;font-weight:760;letter-spacing:-.035em}.subtitle{margin-top:5px;font-size:10px;color:var(--muted)}.update{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);white-space:nowrap}.refresh{width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer}.refresh:hover{background:var(--soft);color:var(--text)}.columns{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.column-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px 9px;margin-bottom:9px;border-bottom:1px solid var(--line)}.column-title{font-size:13px;font-weight:760;letter-spacing:-.02em}.column-meta{font-size:9px;color:var(--muted)}.cards{display:grid;gap:9px}.card{position:relative;overflow:hidden;min-height:148px;padding:13px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}.card:before{content:"";position:absolute;left:0;top:0;width:3px;height:100%;background:var(--accent);opacity:.65}.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.name-wrap{display:flex;align-items:center;gap:8px;min-width:0}.emoji{font-size:17px;line-height:1}.name{font-size:12px;font-weight:730}.code{margin-top:2px;font-size:8.5px;color:var(--muted)}.change{padding:3px 7px;border-radius:999px;font-size:9px;font-weight:720;background:var(--soft);color:var(--sub)}.change.up{background:rgba(44,139,87,.09);color:var(--up)}.change.down{background:rgba(223,94,88,.09);color:var(--down)}.price{margin-top:12px;font-size:23px;font-weight:780;letter-spacing:-.045em}.unitline{margin-top:4px;font-size:9px;color:var(--sub)}.spark{width:100%;height:42px;margin-top:10px;display:block;overflow:visible}.gridline{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}.spark-path{fill:none;stroke:var(--accent);stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.spark-dot{fill:var(--accent)}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:11px;border-top:1px solid var(--line);font-size:9px;color:var(--muted)}.loading{opacity:.55}@media(max-width:760px){.columns{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.widget{padding:13px}.title{font-size:19px}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="widget">
+<header class="top"><div><div class="title">원자재 · 원료 시세</div><div class="subtitle">귀금속 · 에너지 · 산업금속 핵심 시세를 한눈에 확인하세요.</div></div><div class="update"><button class="refresh" id="refreshBtn" aria-label="새로고침">↻</button><span id="updated">불러오는 중</span></div></header>
+<section class="columns">
+<div class="column"><div class="column-head"><div class="column-title">귀금속</div><div class="column-meta">Gold · Silver</div></div><div class="cards" id="precious"></div></div>
+<div class="column"><div class="column-head"><div class="column-title">에너지</div><div class="column-meta">Oil · Gas</div></div><div class="cards" id="energy"></div></div>
+<div class="column"><div class="column-head"><div class="column-title">산업금속</div><div class="column-meta">Copper · Aluminum</div></div><div class="cards" id="industrial"></div></div>
+</section>
+<footer class="footer"><span id="fx">USD/KRW —</span><span>선물 기준 · 지연 시세일 수 있음</span></footer>
+</main>
+<script>
+const p=new URLSearchParams(location.search);document.documentElement.dataset.theme=p.get('theme')==='dark'?'dark':p.get('theme')==='light'?'light':(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+const FALLBACK={updated_at:'2026-08-20T23:00:00+09:00',fx:1394,items:[
+{id:'gold',group:'precious',name:'금',code:'GOLD',emoji:'🪙',price:4471.70,change_pct:.78,unit:'USD / oz',krw_label:'1g',krw_value:200430,color:'gold',history:[4392,4401,4412,4406,4420,4433,4427,4445,4451,4446,4463,4472]},
+{id:'silver',group:'precious',name:'은',code:'SILVER',emoji:'◽',price:66.80,change_pct:1.10,unit:'USD / oz',krw_label:'1g',krw_value:2994,color:'silver',history:[63.4,64,64.2,63.8,64.7,65.1,64.9,65.6,66,65.8,66.4,66.8]},
+{id:'wti',group:'energy',name:'WTI 원유',code:'WTI',emoji:'🛢️',price:85.40,change_pct:1.20,unit:'USD / bbl',krw_label:'1배럴',krw_value:119048,color:'energy',history:[81.1,81.8,81.4,82.2,81.9,83,83.5,82.9,83.7,84.2,84.7,85.4]},
+{id:'brent',group:'energy',name:'브렌트유',code:'BRENT',emoji:'🛢️',price:89.10,change_pct:.86,unit:'USD / bbl',krw_label:'1배럴',krw_value:124205,color:'energy',history:[85.8,86.2,86,86.9,86.5,87.4,87.7,87.1,88,88.5,88.2,89.1]},
+{id:'gas',group:'energy',name:'천연가스',code:'NAT GAS',emoji:'🔥',price:2.55,change_pct:-.93,unit:'USD / MMBtu',krw_label:'1MMBtu',krw_value:3555,color:'energy',history:[2.68,2.64,2.66,2.59,2.62,2.55,2.58,2.53,2.57,2.54,2.56,2.55]},
+{id:'copper',group:'industrial',name:'구리',code:'COPPER',emoji:'🟫',price:6.61,change_pct:.08,unit:'USD / lb',krw_label:'1lb',krw_value:9214,color:'industrial',history:[6.42,6.47,6.44,6.5,6.48,6.54,6.51,6.57,6.55,6.6,6.58,6.61]},
+{id:'aluminum',group:'industrial',name:'알루미늄',code:'ALUMINUM',emoji:'◻️',price:3443.50,change_pct:-.74,unit:'USD / mt',krw_label:'1톤',krw_value:4802239,color:'industrial',history:[3380,3402,3410,3398,3425,3431,3448,3437,3450,3460,3452,3444]}
+]};
+const groups={precious:document.querySelector('#precious'),energy:document.querySelector('#energy'),industrial:document.querySelector('#industrial')};
+function fmtPrice(v){return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}function fmtKrw(v){return '₩'+Math.round(v).toLocaleString('ko-KR')}function fmtPct(v){const n=Number(v)||0;return `${n>0?'▲ ':n<0?'▼ ':''}${Math.abs(n).toFixed(2)}%`}
+function spark(h){const a=(h||[]).map(Number).filter(Number.isFinite);if(a.length<2)return'';const W=240,H=42,P=3,min=Math.min(...a),max=Math.max(...a),r=max-min||1;const pts=a.map((v,i)=>[P+(W-P*2)*(i/(a.length-1)),H-P-((v-min)/r)*(H-P*2)]);const d=pts.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');const z=pts[pts.length-1];return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line class="gridline" x1="0" x2="${W}" y1="${H-5}" y2="${H-5}"/><path class="spark-path" d="${d}"/><circle class="spark-dot" cx="${z[0]}" cy="${z[1]}" r="2.6"/></svg>`}
+function card(i){const c=Number(i.change_pct)>=0?'up':'down';return `<article class="card" style="--accent:var(--${i.color})"><div class="card-head"><div class="name-wrap"><span class="emoji">${i.emoji}</span><div><div class="name">${i.name}</div><div class="code">${i.code}</div></div></div><div class="change ${c}">${fmtPct(i.change_pct)}</div></div><div class="price">${fmtPrice(i.price)}</div><div class="unitline">${i.unit} · ${i.krw_label} ${fmtKrw(i.krw_value)}</div>${spark(i.history)}</article>`}
+function render(d){Object.values(groups).forEach(e=>e.innerHTML='');(d.items||[]).forEach(i=>{if(groups[i.group])groups[i.group].insertAdjacentHTML('beforeend',card(i))});document.querySelector('#fx').textContent=`USD/KRW ${Number(d.fx||0).toLocaleString('ko-KR',{maximumFractionDigits:2})}`;const x=new Date(d.updated_at||Date.now());document.querySelector('#updated').textContent=isNaN(x)?'업데이트됨':`${String(x.getMonth()+1).padStart(2,'0')}.${String(x.getDate()).padStart(2,'0')} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`}
+async function load(){document.querySelector('.widget').classList.add('loading');try{const r=await fetch(`./commodities-data.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw 0;render(await r.json())}catch(e){render(FALLBACK)}document.querySelector('.widget').classList.remove('loading')}
+document.querySelector('#refreshBtn').addEventListener('click',load);render(FALLBACK);load();setInterval(load,120000);
+</script>
+</body>
+</html>
