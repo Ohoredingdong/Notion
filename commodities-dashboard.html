@@ -6,199 +6,32 @@
 <meta name="color-scheme" content="light dark">
 <title>원자재 · 원료 시세</title>
 <style>
-:root{
-  --bg:#ffffff; --panel:#ffffff; --line:#eceae6; --soft:#f7f6f3;
-  --text:#23231f; --sub:#73756f; --muted:#a2a29b;
-  --green:#2f8f59; --greenbg:#eef8f1; --red:#dd605a; --redbg:#fceeed;
-  --gold:#e3ae2b; --silver:#98a0a9; --oil:#5e8ee6; --gas:#4da1ff; --copper:#d07a46; --corn:#79b14e;
-  --shadow:0 8px 24px rgba(20,20,18,.03);
-}
-html[data-theme="dark"]{
-  --bg:#20201e; --panel:#20201e; --line:#34342f; --soft:#272724;
-  --text:#f2f2ed; --sub:#c0c2bb; --muted:#90918b;
-  --green:#7bc697; --greenbg:#28382f; --red:#ef8a80; --redbg:#3c2b2a;
-  --gold:#efc25a; --silver:#c2c7ce; --oil:#7ba8f0; --gas:#73bbff; --copper:#e09f75; --corn:#94c46e;
-  --shadow:none;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:transparent}
-body{
-  padding:8px; color:var(--text);
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;
-  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-}
-.widget{
-  width:min(100%,760px); margin:0 auto; background:var(--bg);
-  border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:var(--shadow);
-}
-.top{
-  display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;
-}
-.title{font-size:18px; font-weight:780; letter-spacing:-.03em}
-.subtitle{margin-top:4px; font-size:10px; color:var(--muted)}
-.meta{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:9px; white-space:nowrap}
-.refresh{display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; color:var(--muted)}
-.grid{display:grid; grid-template-columns:1fr 1.45fr; gap:12px}
-.panel{border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:12px}
-.panel-title{font-size:12px; font-weight:760; letter-spacing:-.01em; margin-bottom:10px}
-.panel-title .small{font-size:9px; color:var(--muted); font-weight:500}
-.summary-list{display:grid}
-.summary-item{
-  display:grid; grid-template-columns:16px 1fr auto auto; gap:8px; align-items:center;
-  padding:8px 0; border-bottom:1px solid var(--line);
-}
-.summary-item:last-child{border-bottom:0}
-.icon{font-size:12px; text-align:center; line-height:1}
-.name{font-size:10px; color:var(--sub); white-space:nowrap}
-.price{font-size:11px; font-weight:760; white-space:nowrap}
-.change{font-size:9px; font-weight:740; padding:2px 6px; border-radius:999px; white-space:nowrap}
-.up{color:var(--green); background:var(--greenbg)}
-.down{color:var(--red); background:var(--redbg)}
-.cta{
-  width:100%; height:29px; margin-top:10px; border:1px solid var(--line); background:var(--soft);
-  color:var(--sub); border-radius:9px; font-size:9px; font-weight:700;
-}
-.trend-list{display:grid; gap:8px}
-.trend-item{display:grid; grid-template-columns:16px 56px 1fr auto; gap:8px; align-items:center; min-height:28px}
-.trend-name{font-size:9px; color:var(--sub); white-space:nowrap}
-.trend-price{font-size:10px; font-weight:760; white-space:nowrap}
-.spark{width:100%; height:24px; display:block; overflow:visible}
-.spark-path{fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
-.footer{
-  display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:10px;
-  padding-top:10px; border-top:1px solid var(--line); font-size:9px; color:var(--muted)
-}
-.loading{opacity:.68}
-@media(max-width:620px){
-  .grid{grid-template-columns:1fr}
-  .trend-item{grid-template-columns:16px 62px 1fr auto}
-  .title{font-size:17px}
-}
+:root{--bg:#fff;--panel:#fff;--line:#eceae6;--soft:#f7f6f3;--text:#23231f;--sub:#73756f;--muted:#a2a29b;--green:#2f8f59;--greenbg:#eef8f1;--red:#dd605a;--redbg:#fceeed;--gold:#e3ae2b;--silver:#98a0a9;--oil:#5e8ee6;--gas:#4da1ff;--copper:#d07a46;--corn:#79b14e;--shadow:0 8px 24px rgba(20,20,18,.03)}
+html[data-theme="dark"]{--bg:#20201e;--panel:#20201e;--line:#34342f;--soft:#272724;--text:#f2f2ed;--sub:#c0c2bb;--muted:#90918b;--green:#7bc697;--greenbg:#28382f;--red:#ef8a80;--redbg:#3c2b2a;--gold:#efc25a;--silver:#c2c7ce;--oil:#7ba8f0;--gas:#73bbff;--copper:#e09f75;--corn:#94c46e;--shadow:none}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;-webkit-font-smoothing:antialiased}.widget{width:min(100%,760px);margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.title{font-size:18px;font-weight:780;letter-spacing:-.03em}.subtitle{margin-top:4px;font-size:10px;color:var(--muted)}.meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:9px;white-space:nowrap}.grid{display:grid;grid-template-columns:1fr 1.45fr;gap:12px}.panel{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px}.panel-title{font-size:12px;font-weight:760;margin-bottom:10px}.small{font-size:9px;color:var(--muted);font-weight:500}.summary-list{display:grid}.summary-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.summary-item:last-child{border-bottom:0}.name{font-size:10px;color:var(--sub);white-space:nowrap}.price{font-size:11px;font-weight:760;white-space:nowrap}.change{font-size:9px;font-weight:740;padding:2px 6px;border-radius:999px;white-space:nowrap}.up{color:var(--green);background:var(--greenbg)}.down{color:var(--red);background:var(--redbg)}.cta{width:100%;height:29px;margin-top:10px;border:1px solid var(--line);background:var(--soft);color:var(--sub);border-radius:9px;font-size:9px;font-weight:700}.trend-list{display:grid;gap:8px}.trend-item{display:grid;grid-template-columns:58px 1fr auto;gap:8px;align-items:center;min-height:28px}.trend-name{font-size:9px;color:var(--sub);white-space:nowrap}.trend-price{font-size:10px;font-weight:760;white-space:nowrap}.spark{width:100%;height:24px;display:block}.footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:9px;color:var(--muted)}.loading{opacity:.68}@media(max-width:620px){.grid{grid-template-columns:1fr}.trend-item{grid-template-columns:64px 1fr auto}.title{font-size:17px}}
 </style>
 </head>
 <body>
 <div class="widget" id="widget">
   <div class="top">
-    <div>
-      <div class="title">원자재 · 원료 시세</div>
-      <div class="subtitle">핵심 요약과 최근 추이를 한 번에 확인하세요.</div>
-    </div>
-    <div class="meta">
-      <span class="refresh">↻</span>
-      <span id="updated">업데이트 확인 중</span>
-    </div>
+    <div><div class="title">원자재 · 원료 시세</div><div class="subtitle">핵심 요약과 최근 추이를 한 번에 확인하세요.</div></div>
+    <div class="meta"><span>↻</span><span id="updated">업데이트 확인 중</span></div>
   </div>
-
   <div class="grid">
-    <section class="panel">
-      <div class="panel-title">핵심 요약</div>
-      <div id="summary" class="summary-list"></div>
-      <button class="cta" type="button">전체 보기 〉</button>
-    </section>
-
-    <section class="panel">
-      <div class="panel-title">주요 가격 추이 <span class="small">(7일)</span></div>
-      <div id="trends" class="trend-list"></div>
-    </section>
+    <section class="panel"><div class="panel-title">핵심 요약</div><div id="summary" class="summary-list"></div><button class="cta" type="button">전체 보기 〉</button></section>
+    <section class="panel"><div class="panel-title">주요 가격 추이 <span class="small">(7일)</span></div><div id="trends" class="trend-list"></div></section>
   </div>
-
-  <div class="footer">
-    <span id="fxInfo">통화: USD &nbsp;&nbsp; 환율: ₩—</span>
-    <span id="timeInfo">KST · 지연 시세</span>
-  </div>
+  <div class="footer"><span id="fxInfo">통화: USD &nbsp;&nbsp; 환율: ₩—</span><span id="timeInfo">KST · 지연 시세</span></div>
 </div>
-
 <script>
-const theme = new URLSearchParams(location.search).get('theme');
-document.documentElement.dataset.theme = theme==='dark' ? 'dark' : theme==='light' ? 'light' : (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-
-const FALLBACK = {
-  updated_at:'2026-08-20T23:30:00+09:00',
-  fx:1360.5,
-  items:[
-    {name:'금', emoji:'🟡', price:2345.60, change_pct:0.42, color:'var(--gold)', history:[2284,2291,2300,2313,2308,2321,2311,2326,2335,2332,2340,2345.6]},
-    {name:'은', emoji:'⚪', price:29.82, change_pct:1.32, color:'var(--silver)', history:[28.8,28.9,29.0,29.1,29.0,29.3,29.2,29.5,29.4,29.6,29.7,29.82]},
-    {name:'WTI 원유', emoji:'🛢️', price:78.64, change_pct:1.87, color:'var(--oil)', history:[76.9,77.3,77.2,77.6,77.4,77.8,78.0,77.5,78.1,77.7,78.2,78.64]},
-    {name:'천연가스', emoji:'💧', price:2.55, change_pct:-0.93, color:'var(--gas)', history:[2.61,2.59,2.63,2.58,2.56,2.59,2.57,2.54,2.57,2.54,2.56,2.55]},
-    {name:'구리', emoji:'🪙', price:4.72, change_pct:0.68, color:'var(--copper)', history:[4.60,4.61,4.59,4.63,4.64,4.70,4.67,4.71,4.69,4.73,4.70,4.72]},
-    {name:'옥수수', emoji:'🌽', price:4.56, change_pct:0.33, color:'var(--corn)', history:[4.42,4.41,4.45,4.44,4.49,4.46,4.52,4.50,4.54,4.52,4.55,4.56]}
-  ]
-};
-
-const summaryNames = ['금','은','WTI 원유','천연가스','구리'];
-const trendNames = ['금','WTI 원유','천연가스','구리','옥수수'];
-
-function fmtPrice(v){ return '$' + Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtChange(v){ const n=Number(v)||0; return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`; }
-function changeClass(v){ return Number(v)>=0 ? 'up' : 'down'; }
-function sparkline(values, color){
-  const nums = (values||[]).map(Number).filter(v=>Number.isFinite(v));
-  const W=168,H=24,P=2;
-  if(nums.length<2) return '';
-  const min=Math.min(...nums), max=Math.max(...nums), range=max-min || 1;
-  const pts=nums.map((v,i)=>{
-    const x=P + (W-P*2)*(i/(nums.length-1));
-    const y=H-P - ((v-min)/range)*(H-P*2);
-    return [x,y];
-  });
-  const d=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="spark-path" d="${d}" stroke="${color}"></path></svg>`;
-}
-function normalizeData(raw){
-  const map={
-    '금':{emoji:'🟡', color:'var(--gold)'},
-    '은':{emoji:'⚪', color:'var(--silver)'},
-    'WTI 원유':{emoji:'🛢️', color:'var(--oil)'},
-    '천연가스':{emoji:'💧', color:'var(--gas)'},
-    '구리':{emoji:'🪙', color:'var(--copper)'},
-    '옥수수':{emoji:'🌽', color:'var(--corn)'}
-  };
-  const base = raw.items.map(item => ({...item, ...(map[item.name]||{})}));
-  if(!base.some(i=>i.name==='옥수수')){
-    base.push(FALLBACK.items.find(i=>i.name==='옥수수'));
-  }
-  return {updated_at:raw.updated_at||FALLBACK.updated_at, fx:raw.fx||FALLBACK.fx, items:base};
-}
-function render(data){
-  const summary = data.items.filter(item => summaryNames.includes(item.name));
-  const trends = trendNames.map(name => data.items.find(item => item.name===name)).filter(Boolean);
-  document.getElementById('summary').innerHTML = summary.map(item => `
-    <div class="summary-item">
-      <div class="icon">${item.emoji||''}</div>
-      <div class="name">${item.name}</div>
-      <div class="price">${fmtPrice(item.price)}</div>
-      <div class="change ${changeClass(item.change_pct)}">${fmtChange(item.change_pct)}</div>
-    </div>`).join('');
-  document.getElementById('trends').innerHTML = trends.map(item => `
-    <div class="trend-item">
-      <div class="icon">${item.emoji||''}</div>
-      <div class="trend-name">${item.name}</div>
-      ${sparkline(item.history, item.color||'var(--gold)')}
-      <div class="trend-price">${fmtPrice(item.price)}</div>
-    </div>`).join('');
-  document.getElementById('fxInfo').textContent = `통화: USD   환율: ₩${Number(data.fx||0).toLocaleString('ko-KR',{maximumFractionDigits:1})}`;
-  const d = new Date(data.updated_at || Date.now());
-  if(!isNaN(d)){
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mm = String(d.getMinutes()).padStart(2,'0');
-    document.getElementById('updated').textContent = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;
-    document.getElementById('timeInfo').textContent = `${hh}:${mm} KST · 2분 지연`;
-  }
-}
-async function load(){
-  document.getElementById('widget').classList.add('loading');
-  try{
-    const res = await fetch('./commodities-data.json?t=' + Date.now(), {cache:'no-store'});
-    if(!res.ok) throw new Error('fetch failed');
-    const raw = await res.json();
-    render(normalizeData(raw));
-  }catch(err){
-    render(FALLBACK);
-  }
-  document.getElementById('widget').classList.remove('loading');
-}
-render(FALLBACK);
-load();
+const theme=new URLSearchParams(location.search).get('theme');document.documentElement.dataset.theme=theme==='dark'?'dark':theme==='light'?'light':(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+const FALLBACK={updated_at:'2026-08-20T23:30:00+09:00',fx:1360.5,items:[{id:'gold',name:'금',price:2345.6,change_pct:.42,history:[2284,2291,2300,2313,2308,2321,2311,2326,2335,2332,2340,2345.6]},{id:'silver',name:'은',price:29.82,change_pct:1.32,history:[28.8,28.9,29,29.1,29,29.3,29.2,29.5,29.4,29.6,29.7,29.82]},{id:'wti',name:'WTI 원유',price:78.64,change_pct:1.87,history:[76.9,77.3,77.2,77.6,77.4,77.8,78,77.5,78.1,77.7,78.2,78.64]},{id:'gas',name:'천연가스',price:2.55,change_pct:-.93,history:[2.61,2.59,2.63,2.58,2.56,2.59,2.57,2.54,2.57,2.54,2.56,2.55]},{id:'copper',name:'구리',price:4.72,change_pct:.68,history:[4.6,4.61,4.59,4.63,4.64,4.7,4.67,4.71,4.69,4.73,4.7,4.72]},{id:'corn',name:'옥수수',price:4.56,change_pct:.33,history:[4.42,4.41,4.45,4.44,4.49,4.46,4.52,4.5,4.54,4.52,4.55,4.56]}]};
+const colors={gold:'var(--gold)',silver:'var(--silver)',wti:'var(--oil)',gas:'var(--gas)',copper:'var(--copper)',corn:'var(--corn)'};const summaryNames=['금','은','WTI 원유','천연가스','구리'];const trendNames=['금','WTI 원유','천연가스','구리','옥수수'];
+function fmtPrice(v){return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}function fmtChange(v){const n=Number(v)||0;return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`}function cls(v){return Number(v)>=0?'up':'down'}
+function sparkline(values,color){const a=(values||[]).slice(-8).map(Number).filter(Number.isFinite);if(a.length<2)return '';const W=168,H=24,P=2,min=Math.min(...a),max=Math.max(...a),r=max-min||1;const pts=a.map((v,i)=>[P+(W-P*2)*(i/(a.length-1)),H-P-((v-min)/r)*(H-P*2)]);const d=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
+function normalize(raw){const ids={gold:'gold',silver:'silver',wti:'wti',gas:'gas',copper:'copper',aluminum:'aluminum'};const items=(raw.items||[]).map(x=>({...x,id:ids[x.id]||x.id}));if(!items.some(i=>i.name==='옥수수'))items.push(FALLBACK.items.find(i=>i.name==='옥수수'));return{updated_at:raw.updated_at||FALLBACK.updated_at,fx:raw.fx||FALLBACK.fx,items}}
+function render(data){const summary=data.items.filter(i=>summaryNames.includes(i.name));const trends=trendNames.map(n=>data.items.find(i=>i.name===n)).filter(Boolean);document.getElementById('summary').innerHTML=summary.map(i=>`<div class="summary-item"><div class="name">${i.name}</div><div class="price">${fmtPrice(i.price)}</div><div class="change ${cls(i.change_pct)}">${fmtChange(i.change_pct)}</div></div>`).join('');document.getElementById('trends').innerHTML=trends.map(i=>`<div class="trend-item"><div class="trend-name">${i.name}</div>${sparkline(i.history,colors[i.id]||'var(--gold)')}<div class="trend-price">${fmtPrice(i.price)}</div></div>`).join('');document.getElementById('fxInfo').textContent=`통화: USD   환율: ₩${Number(data.fx||0).toLocaleString('ko-KR',{maximumFractionDigits:1})}`;const d=new Date(data.updated_at||Date.now());if(!isNaN(d)){const hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');document.getElementById('updated').textContent=`${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;document.getElementById('timeInfo').textContent=`${hh}:${mm} KST · 2분 지연`}}
+async function load(){document.getElementById('widget').classList.add('loading');try{const r=await fetch('./commodities-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error();render(normalize(await r.json()))}catch(e){render(FALLBACK)}document.getElementById('widget').classList.remove('loading')}render(FALLBACK);load();
 </script>
 </body>
 </html>
