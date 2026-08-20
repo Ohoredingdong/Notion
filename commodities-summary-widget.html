@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Commodities Summary</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#ffffff; --line:#ebe9e4; --soft:#f7f6f3;
+  --text:#22231f; --sub:#73756f; --muted:#a0a29c;
+  --green:#2d8c58; --red:#df625d;
+  --gold:#e0ab2f; --silver:#9aa0a8; --blue:#5e8ee6; --orange:#cf7d4a; --black:#555;
+  --shadow:0 8px 24px rgba(20,20,20,.03);
+}
+html[data-theme="dark"]{
+  --bg:#181817; --panel:#20201f; --line:#31312e; --soft:#262623;
+  --text:#efefeb; --sub:#b8bab4; --muted:#8e8f8a;
+  --green:#79c596; --red:#ef8a82;
+  --gold:#efc35a; --silver:#c2c6cc; --blue:#80abf0; --orange:#e29d73; --black:#b8b8b6;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{
+  padding:8px;color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;
+}
+.widget{
+  width:min(100%,760px); margin:0 auto; background:var(--panel);
+  border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:var(--shadow);
+}
+.title{
+  font-size:18px; font-weight:780; letter-spacing:-.03em; margin-bottom:12px;
+}
+.grid{
+  display:grid; grid-template-columns: 1fr 1.5fr; gap:12px;
+}
+.panel{
+  border:1px solid var(--line); border-radius:14px; background:var(--panel);
+  padding:12px;
+}
+.panel-title{
+  font-size:12px; font-weight:760; letter-spacing:-.01em; margin-bottom:10px;
+}
+.small{
+  font-size:9px; color:var(--muted);
+}
+.summary-list{display:grid; gap:8px;}
+.summary-item{
+  display:grid; grid-template-columns:auto 1fr auto auto; align-items:center;
+  gap:8px; padding:8px 0; border-bottom:1px solid var(--line);
+}
+.summary-item:last-child{border-bottom:0}
+.icon{font-size:13px; width:16px; text-align:center}
+.name{font-size:11px; font-weight:700; white-space:nowrap}
+.price{font-size:12px; font-weight:760}
+.change{
+  font-size:10px; font-weight:760; padding:2px 6px; border-radius:999px; white-space:nowrap;
+}
+.up{color:var(--green); background:color-mix(in srgb,var(--green) 10%,transparent);}
+.down{color:var(--red); background:color-mix(in srgb,var(--red) 10%,transparent);}
+.cta{
+  margin-top:10px; width:100%; height:30px; border:1px solid var(--line); background:var(--soft);
+  color:var(--sub); border-radius:10px; font-size:10px; font-weight:700;
+}
+.trend-list{display:grid; gap:9px;}
+.trend-item{
+  display:grid; grid-template-columns:auto auto 1fr auto; align-items:center;
+  gap:8px; min-height:28px;
+}
+.spark{width:100%; height:24px; display:block}
+.trend-name{font-size:10px; color:var(--sub); white-space:nowrap}
+.trend-price{font-size:12px; font-weight:760; white-space:nowrap}
+.footer{
+  display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;
+  margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  font-size:9px; color:var(--muted);
+}
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="title">Compost Summary</div>
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-title">핵심 요약</div>
+      <div id="summary" class="summary-list"></div>
+      <button class="cta">전체 보기 〉</button>
+    </section>
+    <section class="panel">
+      <div class="panel-title">주요 가격 추이 <span class="small">(7일)</span></div>
+      <div id="trends" class="trend-list"></div>
+    </section>
+  </div>
+  <div class="footer">
+    <span id="fx">통화: USD &nbsp;&nbsp; 환율: ₩1,360.5</span>
+    <span id="time">10:30 KST · 2분 지연</span>
+  </div>
+</div>
+
+<script>
+const theme = new URLSearchParams(location.search).get('theme');
+document.documentElement.dataset.theme =
+  theme==='dark' ? 'dark' :
+  theme==='light' ? 'light' :
+  (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+
+const data = [
+  {name:'금', icon:'🟡', price:2345.60, change:0.42, color:'var(--gold)', hist:[2284,2290,2301,2316,2308,2320,2312,2327,2338,2345.6]},
+  {name:'은', icon:'⚪', price:29.82, change:1.32, color:'var(--silver)', hist:[28.7,28.9,29.0,29.1,29.0,29.3,29.2,29.5,29.6,29.82]},
+  {name:'WTI 원유', icon:'🛢️', price:78.64, change:1.87, color:'var(--blue)', hist:[76.9,77.2,77.5,77.3,77.8,78.0,77.6,78.2,78.4,78.64]},
+  {name:'천연가스', icon:'🔥', price:2.55, change:-0.93, color:'var(--blue)', hist:[2.61,2.59,2.63,2.58,2.56,2.59,2.57,2.54,2.57,2.55]},
+  {name:'구리', icon:'🟫', price:4.72, change:0.68, color:'var(--orange)', hist:[4.60,4.61,4.59,4.63,4.64,4.70,4.67,4.71,4.69,4.72]},
+  {name:'옥수수', icon:'🌽', price:4.56, change:0.33, color:'#78b24d', hist:[4.42,4.41,4.45,4.44,4.49,4.46,4.52,4.50,4.54,4.56]}
+];
+
+const summaryNames = ['금','은','WTI 원유','천연가스','구리'];
+const trendNames = ['금','WTI 원유','천연가스','구리','옥수수'];
+
+function fmtPrice(v){
+  return '$' + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtChange(v){
+  const n = Number(v);
+  return `${n >= 0 ? '▲' : '▼'} ${Math.abs(n).toFixed(2)}%`;
+}
+function sparkline(values, color){
+  const nums = values.map(Number);
+  const W=160,H=24,P=2;
+  const min = Math.min(...nums), max = Math.max(...nums), range = max-min || 1;
+  const pts = nums.map((v,i)=>{
+    const x = P + (W-P*2) * (i/(nums.length-1));
+    const y = H-P - ((v-min)/range) * (H-P*2);
+    return [x,y];
+  });
+  const d = pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>`;
+}
+
+document.getElementById('summary').innerHTML = data
+  .filter(item => summaryNames.includes(item.name))
+  .map(item => `
+    <div class="summary-item">
+      <div class="icon">${item.icon}</div>
+      <div class="name">${item.name}</div>
+      <div class="price">${fmtPrice(item.price)}</div>
+      <div class="change ${item.change >= 0 ? 'up':'down'}">${fmtChange(item.change)}</div>
+    </div>
+  `).join('');
+
+document.getElementById('trends').innerHTML = trendNames.map(name=>{
+  const item = data.find(d=>d.name===name);
+  return `
+    <div class="trend-item">
+      <div class="icon">${item.icon}</div>
+      <div class="trend-name">${item.name}</div>
+      ${sparkline(item.hist,item.color)}
+      <div class="trend-price">${fmtPrice(item.price)}</div>
+    </div>
+  `;
+}).join('');
+</script>
+</body>
+</html>
