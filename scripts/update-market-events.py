@@ -22,14 +22,36 @@ KEYWORDS = [
     ("rate", ["interest rate decision","fomc","fed interest rate","boe interest rate","ecb interest rate","boj interest rate","bank of korea","base rate"]),
     ("inflation", ["cpi","consumer price","ppi","producer price","inflation","pce price","core pce"]),
     ("jobs", ["non farm payroll","nonfarm payroll","unemployment","jobless","employment","jolts","average hourly earnings","claimant count"]),
-    ("growth", ["gdp","pmi","retail sales","industrial production","consumer confidence","consumer sentiment","business confidence","ism"]),
+    ("growth", ["gdp","pmi","retail sales","industrial production","consumer confidence","consumer sentiment","business confidence","business climate","ifo","ism"]),
 ]
 
+EXACT_TRANSLATIONS = {
+    "Ifo Business Climate": "Ifo 기업환경지수",
+    "S&P Global Manufacturing PMI Flash": "S&P 글로벌 제조업 PMI 잠정치",
+    "S&P Global Services PMI Flash": "S&P 글로벌 서비스업 PMI 잠정치",
+    "GDP Growth Rate QoQ 2nd Est": "GDP 성장률 전분기 대비 2차 추정치",
+    "Durable Goods Orders MoM": "내구재 주문 전월 대비",
+    "Core PCE Price Index MoM": "근원 PCE 물가지수 전월 대비",
+    "Personal Spending MoM": "개인소비지출 전월 대비",
+    "Personal Income MoM": "개인소득 전월 대비",
+    "GfK Consumer Confidence": "GfK 소비자신뢰지수",
+    "Consumer Confidence": "소비자신뢰지수",
+    "Inflation Rate YoY Prel": "물가상승률 전년 대비 잠정치",
+    "Non Farm Payrolls Annual Revision Prel": "비농업 고용 연간 수정 잠정치",
+    "NBS Manufacturing PMI": "중국 NBS 제조업 PMI",
+    "RatingDog Manufacturing PMI": "중국 RatingDog 제조업 PMI",
+    "ISM Manufacturing PMI": "미국 ISM 제조업 PMI",
+    "JOLTS Job Openings": "JOLTs 구인건수",
+    "Retail Sales MoM": "소매판매 전월 대비",
+    "Crude Oil Stocks Change": "원유 재고 증감",
+}
+
 TRANSLATIONS = [
-    (r"Interest Rate Decision", "금리 결정"),
     (r"Fed Interest Rate Decision", "연준 금리 결정"),
+    (r"Interest Rate Decision", "금리 결정"),
     (r"Consumer Price Index", "소비자물가지수"),
     (r"Producer Price Index", "생산자물가지수"),
+    (r"Core PCE Price Index", "근원 PCE 물가지수"),
     (r"Non Farm Payrolls|Nonfarm Payrolls", "비농업 고용"),
     (r"Unemployment Rate", "실업률"),
     (r"Initial Jobless Claims", "신규 실업수당 청구건수"),
@@ -40,9 +62,22 @@ TRANSLATIONS = [
     (r"Consumer Confidence", "소비자신뢰지수"),
     (r"Consumer Sentiment", "소비자심리지수"),
     (r"Industrial Production", "산업생산"),
+    (r"Durable Goods Orders", "내구재 주문"),
+    (r"Personal Spending", "개인소비지출"),
+    (r"Personal Income", "개인소득"),
+    (r"Business Climate", "기업환경지수"),
+    (r"Manufacturing PMI", "제조업 PMI"),
+    (r"Services PMI", "서비스업 PMI"),
     (r"Fed Chair .* Speech", "연준 의장 연설"),
     (r"Fed .* Speech", "연준 인사 연설"),
-    (r"Crude Oil Stocks Change", "원유 재고"),
+    (r"Crude Oil Stocks Change", "원유 재고 증감"),
+    (r"\bFlash\b", "잠정치"),
+    (r"\bPrel\b", "잠정치"),
+    (r"\b2nd Est\b", "2차 추정치"),
+    (r"\bAnnual Revision\b", "연간 수정"),
+    (r"\bYoY\b", "전년 대비"),
+    (r"\bMoM\b", "전월 대비"),
+    (r"\bQoQ\b", "전분기 대비"),
 ]
 
 def category(title: str) -> str:
@@ -53,10 +88,34 @@ def category(title: str) -> str:
     return "other"
 
 def title_ko(title: str) -> str:
+    if title in EXACT_TRANSLATIONS:
+        return EXACT_TRANSLATIONS[title]
     out = title
     for pat, rep in TRANSLATIONS:
         out = re.sub(pat, rep, out, flags=re.I)
+    out = re.sub(r"\s+", " ", out).strip()
     return out
+
+def comment_ko(title: str, cat: str, country: str) -> str:
+    exact = {
+        "Ifo Business Climate": "독일 기업들의 현재 경기 판단과 향후 6개월 전망을 보여주는 대표적인 기업심리지표입니다.",
+        "FOMC Interest Rate Decision": "미국 연방공개시장위원회(FOMC)의 기준금리 결정과 향후 통화정책 방향을 확인하는 핵심 이벤트입니다.",
+        "Fed Interest Rate Decision": "미국 연방준비제도의 금리 결정과 향후 통화정책 방향을 확인하는 핵심 이벤트입니다.",
+        "Core PCE Price Index MoM": "미 연준이 중요하게 보는 근원 PCE 물가의 월간 변화를 확인하는 인플레이션 지표입니다.",
+        "Non Farm Payrolls Annual Revision Prel": "미국 비농업 고용 통계의 연간 수정 규모를 확인하는 고용시장 이벤트입니다.",
+        "ISM Manufacturing PMI": "미국 제조업 경기의 확장·위축 흐름을 보여주는 대표적인 선행 경기지표입니다.",
+    }
+    if title in exact:
+        return exact[title]
+    if cat == "rate":
+        return "중앙은행의 기준금리 결정과 향후 통화정책 방향을 확인하는 이벤트입니다."
+    if cat == "inflation":
+        return "물가 상승 압력과 향후 통화정책 방향에 영향을 줄 수 있는 인플레이션 지표입니다."
+    if cat == "jobs":
+        return "고용시장 강도와 경기 흐름을 확인하는 주요 고용지표입니다."
+    if cat == "growth":
+        return "경기 확장·위축과 기업·소비자 심리를 확인하는 주요 경기지표입니다."
+    return "금융시장에 영향을 줄 수 있는 주요 경제 일정입니다."
 
 def parse_dt(value: str) -> datetime:
     if not value:
@@ -83,14 +142,16 @@ def normalize(row: dict, now: datetime) -> dict | None:
     title = str(row.get("title") or "").strip()
     if imp <= 0 or not title:
         return None
+    cat = category(title)
+    country = row.get("country") or ""
     return {
         "id": str(row.get("id") or ""),
         "title": title,
         "title_ko": title_ko(title),
-        "country": row.get("country") or "",
+        "country": country,
         "currency": row.get("currency") or "",
         "importance": imp,
-        "category": category(title),
+        "category": cat,
         "datetime_kst": dt.isoformat(),
         "date_kst": f"{dt.month}월 {dt.day}일 ({'월화수목금토일'[dt.weekday()]})",
         "time_kst": dt.strftime("%H:%M"),
@@ -99,7 +160,7 @@ def normalize(row: dict, now: datetime) -> dict | None:
         "forecast": row.get("forecast"),
         "previous": row.get("previous"),
         "comment": (row.get("comment") or "")[:220],
-        "comment_ko": "",
+        "comment_ko": comment_ko(title, cat, country),
     }
 
 def fetch_rows() -> list[dict]:
