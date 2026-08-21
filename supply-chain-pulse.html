@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Supply Chain Pulse</title>
+<style>
+:root{
+  --panel:#fff; --line:#ece9e3; --line-soft:#f3f1ec; --soft:#faf9f6;
+  --text:#31363a; --sub:#7a7f84; --muted:#a6aaae;
+  --green:#6d9d6d; --green-soft:#eef5ee; --green-deep:#518154;
+  --amber:#e1b85f; --amber-soft:#fdf5e4; --red:#d98a86; --red-soft:#fbeeee;
+  --bar:#dfe9df; --shadow:0 8px 22px rgba(23,23,20,.03); --ctrl-bg:rgba(255,255,255,.95);
+}
+html[data-theme="dark"]{
+  --panel:#202120; --line:#383733; --line-soft:#2c2c29; --soft:#282926;
+  --text:#efefeb; --sub:#c2c4bf; --muted:#8d908d;
+  --green:#8abc89; --green-soft:#273426; --green-deep:#9ccc98;
+  --amber:#e0c470; --amber-soft:#3a3020; --red:#e6948f; --red-soft:#392726;
+  --bar:#344734; --shadow:none; --ctrl-bg:rgba(35,35,33,.95);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{padding:8px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.root{position:relative;width:min(100%,560px);margin:0 auto;transition:width .18s ease}
+.root[data-size="compact"]{width:min(100%,520px)}
+.root[data-size="normal"]{width:min(100%,560px)}
+.root[data-size="large"]{width:min(100%,620px)}
+.widget{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 12px;box-shadow:var(--shadow)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.title{font-size:19px;font-weight:770;letter-spacing:-.03em;line-height:1.05}
+.subtitle{margin-top:4px;font-size:11.5px;color:var(--sub);font-weight:560}
+.update{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:2px}
+.grid-top{display:grid;grid-template-columns:1fr 1.06fr;gap:10px;margin-top:14px}
+.card,.mini{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.card{padding:14px 14px 12px}
+.card-title{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:730;margin-bottom:12px}
+.info{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line);font-size:9px;color:var(--muted);line-height:1}
+.score-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.score{display:flex;align-items:flex-end;gap:4px}
+.score .num{font-size:22px;font-weight:785;line-height:1;letter-spacing:-.03em}
+.score .den{font-size:12px;color:var(--sub);padding-bottom:3px}
+.badge{display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 12px;border-radius:999px;font-size:10.5px;font-weight:740;border:1px solid transparent;white-space:nowrap}
+.badge.normal{background:var(--amber-soft);color:#bf922e;border-color:color-mix(in srgb,var(--amber) 28%, var(--line))}
+.badge.good{background:var(--green-soft);color:var(--green-deep);border-color:color-mix(in srgb,var(--green) 28%, var(--line))}
+.badge.warn{background:var(--red-soft);color:var(--red);border-color:color-mix(in srgb,var(--red) 28%, var(--line))}
+.gauge{margin-top:18px}
+.gauge-track{position:relative;height:3px;background:var(--line);border-radius:999px}
+.gauge-fill{position:absolute;left:0;top:0;height:100%;border-radius:999px;background:var(--amber)}
+.gauge-dot{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%)}
+.gauge-dot.current{background:var(--amber)}
+.gauge-dot.high{background:#d7a1a0}
+.gauge-labels{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:9.5px;color:var(--muted)}
+.chart-wrap{height:128px;margin-top:2px}
+.chart-svg{width:100%;height:100%;display:block}
+.chart-grid line{stroke:var(--line-soft);stroke-width:1}
+.chart-grid text{fill:var(--muted);font-size:9px}
+.chart-labels{display:flex;justify-content:space-between;gap:6px;margin-top:7px;font-size:9px;color:var(--muted)}
+.grid-bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.mini{padding:11px 12px 10px}
+.mini-title{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:720;color:var(--text)}
+.mini-title svg{width:13px;height:13px;color:var(--muted);flex:0 0 auto}
+.mini-score-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:11px}
+.mini-score{display:flex;align-items:flex-end;gap:4px}
+.mini-score .num{font-size:18px;font-weight:775;line-height:1;letter-spacing:-.03em}
+.mini-score .den{font-size:11px;color:var(--sub);padding-bottom:2px}
+.mini-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:8px}
+.mini-sub{font-size:9px;color:var(--muted);line-height:1.2}
+.delta{font-size:10px;font-weight:730;white-space:nowrap}
+.delta.up{color:var(--green-deep)}
+.delta.down{color:var(--red)}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:9.2px;color:var(--muted)}
+.footer-left,.footer-right{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.controls{position:absolute;top:10px;right:-36px;display:flex;flex-direction:column;gap:7px;opacity:0;transform:translateX(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.controls:before{content:"";position:absolute;left:-10px;top:0;width:10px;height:100%}
+.root:hover .controls,.root:focus-within .controls{opacity:1;transform:none;pointer-events:auto}
+.ctrl{position:relative;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--ctrl-bg);cursor:pointer;box-shadow:0 2px 8px rgba(20,20,20,.05)}
+.ctrl:hover{background:var(--soft)} .ctrl[disabled]{opacity:.42;cursor:not-allowed} .ctrl svg{width:14px;height:14px}
+.ctrl:after{content:attr(data-tip);position:absolute;right:35px;top:50%;transform:translateY(-50%);padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:9px;color:var(--sub);white-space:nowrap;opacity:0;pointer-events:none}
+.ctrl:hover:after,.ctrl:focus-visible:after{opacity:1}
+.loading,.error{padding:32px 10px;text-align:center;font-size:11px;color:var(--muted)}
+@media (max-width:560px){.grid-top{grid-template-columns:1fr}.grid-bottom{grid-template-columns:1fr}.root{width:100%!important}}
+@media (max-width:430px){.controls{right:7px;top:7px;opacity:1;transform:none;pointer-events:auto;flex-direction:row}.ctrl:after{display:none}.top{padding-right:126px}.footer{flex-direction:column;align-items:flex-start;gap:4px}}
+@media (hover:none),(pointer:coarse){.controls{opacity:1;transform:none;pointer-events:auto}}
+</style>
+</head>
+<body>
+<div class="root" id="root" data-size="normal">
+  <div class="widget">
+    <header class="top">
+      <div>
+        <div class="title">Supply Chain Pulse</div>
+        <div class="subtitle">글로벌 공급망 압력 지수와 세부 지표를 확인하세요.</div>
+      </div>
+      <div class="update" id="updateText">Data 준비 중</div>
+    </header>
+    <div id="contentArea" class="loading">데이터를 불러오는 중...</div>
+  </div>
+  <div class="controls" aria-label="Widget controls">
+    <button class="ctrl" id="sizeBtn" data-tip="Size" aria-label="Size"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12M6 12h9M6 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <button class="ctrl" id="themeBtn" data-tip="Dark Mode" aria-label="Dark Mode"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.7a8.3 8.3 0 1 0 8.3 8.3A6.5 6.5 0 1 1 12 3.7Z" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="ctrl" id="lockBtn" data-tip="Lock" aria-label="Lock"><svg id="lockSvg" viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="ctrl" id="resetBtn" data-tip="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+<script>
+const FALLBACK = {
+  generated_at: '2026-08-21T21:04:00+09:00',
+  updated_label: '2026-08-21',
+  headline_date: '08.21 21:04',
+  sci: { value: 54, status: '보통', band: 'normal' },
+  trend: [42, 44, 46, 48, 44, 37, 34, 40, 47, 43, 41, 36],
+  months: ['23.09','24.01','24.05','24.09','25.01','25.05','25.08'],
+  supply: { value: 58, status: '보통', band: 'normal', note: '전월 대비', delta: 3 },
+  transport: { value: 62, status: '보통', band: 'normal', note: '전월 대비', delta: -4 },
+  cost: { value: 49, status: '정상 범위', band: 'good', note: '전월 대비', delta: 2 },
+  source: '자체 모델 (구매 · 물류 · 재고 · 원가 데이터 종합)'
+};
+const SETTINGS_KEY='widget.supplyChainPulse.controls.v2';
+const root=document.getElementById('root');
+const q=new URLSearchParams(location.search); const osTheme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+let settings={theme:q.get('theme')||osTheme,size:'normal',locked:false};
+try{settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}}catch{}
+function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}
+function applyTheme(v){document.documentElement.dataset.theme=v;settings.theme=v;save()}
+function applySize(v){root.dataset.size=v;settings.size=v;save();document.getElementById('sizeBtn').disabled=settings.locked}
+function applyLock(v){settings.locked=v;save();document.getElementById('sizeBtn').disabled=v;document.getElementById('lockBtn').dataset.tip=v?'Unlock':'Lock';document.getElementById('lockSvg').innerHTML=v?'<rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8.7a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>':'<path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/>'}
+applyTheme(settings.theme);applySize(settings.size);applyLock(settings.locked);
+document.getElementById('themeBtn').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+document.getElementById('sizeBtn').onclick=()=>{if(settings.locked)return;const arr=['compact','normal','large'];applySize(arr[(arr.indexOf(settings.size)+1)%arr.length])};
+document.getElementById('lockBtn').onclick=()=>applyLock(!settings.locked);
+document.getElementById('resetBtn').onclick=()=>{settings={theme:q.get('theme')||osTheme,size:'normal',locked:false};applyTheme(settings.theme);applySize(settings.size);applyLock(false)};
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function statusBadge(label, band){return `<span class="badge ${band||'normal'}">${esc(label)}</span>`}
+function deltaHtml(v){const cls=v>=0?'up':'down';const arrow=v>=0?'▼':'▲'; return `<span class="delta ${cls}">${arrow} ${Math.abs(v)}</span>`}
+function icon(name){const icons={box:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8.5 12 4l8 4.5M4 8.5V16l8 4 8-4V8.5M12 12.5v7.5M4 8.5 12 13l8-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',truck:'<svg viewBox="0 0 24 24" fill="none"><path d="M3 7h10v8H3zM13 10h4l3 3v2h-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="18" r="1.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="18" r="1.5" stroke="currentColor" stroke-width="1.8"/></svg>',cost:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12v14H6zM9 9h6M9 13h6M9 17h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'}; return icons[name]||icons.box}
+function chartSvg(values){const w=230,h=118,left=22,bottom=18,top=8,usableH=h-bottom-top,max=100,barW=12,gap=6;let bars='';values.forEach((v,i)=>{const x=left+i*(barW+gap);const bh=Math.max(3,(v/max)*usableH);const y=h-bottom-bh;const fill=(i===7||i===8)?'rgba(225,184,95,.82)':'rgba(109,157,109,.24)';bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="${fill}" />`;});const grid=[0,50,100].map(v=>{const y=top+usableH-(v/max)*usableH;return `<line x1="${left}" y1="${y}" x2="${w-4}" y2="${y}" />`}).join('');const labels=[0,50,100].map(v=>{const y=top+usableH-(v/max)*usableH+4;return `<text x="0" y="${y}">${v}</text>`}).join('');return `<svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><g class="chart-grid">${grid}${labels}</g>${bars}</svg>`}
+function render(data){document.getElementById('updateText').textContent=`Data ${data.headline_date||data.updated_label||''}`;const sci=data.sci||FALLBACK.sci;const current=Math.max(0,Math.min(100,Number(sci.value)||0));const html=`<div class="grid-top"><section class="card"><div class="card-title">공급망 압력 지수 (SCI) <span class="info">i</span></div><div class="score-row"><div class="score"><span class="num">${esc(sci.value)}</span><span class="den">/ 100</span></div>${statusBadge(sci.status,sci.band)}</div><div class="gauge"><div class="gauge-track"><div class="gauge-fill" style="width:${current}%"></div><span class="gauge-dot current" style="left:${current}%"></span><span class="gauge-dot high" style="left:100%"></span></div><div class="gauge-labels"><span>정상 범위 (0 – 40)</span><span>높음 (60 – 100)</span></div></div></section><section class="card"><div class="card-title">최근 12개월 추이</div><div class="chart-wrap">${chartSvg(data.trend||FALLBACK.trend)}</div><div class="chart-labels">${(data.months||FALLBACK.months).map(m=>`<span>${esc(m)}</span>`).join('')}</div></section></div><div class="grid-bottom"><section class="mini"><div class="mini-title">${icon('box')} 공급 압력</div><div class="mini-score-row"><div class="mini-score"><span class="num">${esc(data.supply.value)}</span><span class="den">/ 100</span></div>${statusBadge(data.supply.status,data.supply.band)}</div><div class="mini-foot"><div class="mini-sub">${esc(data.supply.note)}</div>${deltaHtml(data.supply.delta)}</div></section><section class="mini"><div class="mini-title">${icon('truck')} 운송</div><div class="mini-score-row"><div class="mini-score"><span class="num">${esc(data.transport.value)}</span><span class="den">/ 100</span></div>${statusBadge(data.transport.status,data.transport.band)}</div><div class="mini-foot"><div class="mini-sub">${esc(data.transport.note)}</div>${deltaHtml(data.transport.delta)}</div></section><section class="mini"><div class="mini-title">${icon('cost')} 원가 부담</div><div class="mini-score-row"><div class="mini-score"><span class="num">${esc(data.cost.value)}</span><span class="den">/ 100</span></div>${statusBadge(data.cost.status,data.cost.band)}</div><div class="mini-foot"><div class="mini-sub">${esc(data.cost.note)}</div>${deltaHtml(data.cost.delta)}</div></section></div><div class="footer"><div class="footer-left">출처: ${esc(data.source||FALLBACK.source)}</div><div class="footer-right">업데이트: ${esc(data.updated_label||FALLBACK.updated_label)}</div></div>`;document.getElementById('contentArea').outerHTML=`<div id="contentArea">${html}</div>`}
+async function load(){const area=document.getElementById('contentArea');try{const res=await fetch('./supply-chain-data.json?t='+Date.now(),{cache:'no-store'});if(!res.ok) throw new Error(res.status);const data=await res.json();render({...FALLBACK,...data});}catch(e){if(area) area.className='error';render(FALLBACK);}}
+load();
+</script>
+</body>
+</html>
