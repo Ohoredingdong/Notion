@@ -11,13 +11,17 @@ on:
     paths:
       - 'scripts/update_real_estate_pulse.py'
       - '.github/workflows/update-real-estate-pulse.yml'
+  pull_request:
+    paths:
+      - 'scripts/update_real_estate_pulse.py'
+      - '.github/workflows/update-real-estate-pulse.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: real-estate-pulse-update
-  cancel-in-progress: false
+  group: real-estate-pulse-update-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update:
@@ -39,6 +43,7 @@ jobs:
         run: python scripts/update_real_estate_pulse.py
 
       - name: Commit new official data when changed
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           if git diff --quiet -- real-estate-pulse-data.json; then
