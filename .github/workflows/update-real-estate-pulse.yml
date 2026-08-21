@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-      - feature/real-estate-pulse-auto-update
     paths:
       - 'scripts/update_real_estate_pulse.py'
       - '.github/workflows/update-real-estate-pulse.yml'
@@ -34,7 +33,7 @@ jobs:
           cache: 'pip'
 
       - name: Install updater dependencies
-        run: pip install requests beautifulsoup4 pypdf
+        run: pip install requests beautifulsoup4 openpyxl pypdf
 
       - name: Check Korea Real Estate Board and refresh data
         run: python scripts/update_real_estate_pulse.py
