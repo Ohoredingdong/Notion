@@ -5,21 +5,111 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Market Events</title>
-<link rel="stylesheet" href="./assets/market-events.css?v=9b9c252b">
+<style>
+:root{
+  --bg:#ffffff; --panel:#ffffff; --line:#ebe8e2; --line-soft:#f1efe9; --soft:#f8f7f4; --soft-2:#fbfaf7;
+  --text:#2f3437; --sub:#73777c; --muted:#a7abae;
+  --green:#6d9f69; --green-deep:#578659; --green-soft:#eef5ed;
+  --red:#dd857d; --red-soft:#fbefed; --amber:#cfac59; --amber-soft:#faf2e2; --blue:#7e9aca; --blue-soft:#edf2fa;
+  --shadow:0 8px 24px rgba(24,24,22,.035); --ctrl-bg:rgba(255,255,255,.94);
+}
+html[data-theme="dark"]{
+  --bg:#1d1d1c; --panel:#202120; --line:#383834; --line-soft:#2c2c29; --soft:#282927; --soft-2:#232422;
+  --text:#efefec; --sub:#c3c5c0; --muted:#8d908c;
+  --green:#88bb86; --green-deep:#9dce9b; --green-soft:#263427;
+  --red:#eb978f; --red-soft:#382725; --amber:#e0c575; --amber-soft:#382f20; --blue:#93afd9; --blue-soft:#222d3a;
+  --shadow:none; --ctrl-bg:rgba(34,34,32,.94);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{padding:8px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit}
+.root{position:relative;width:min(100%,560px);margin:0 auto;transition:width .18s ease}
+.root[data-size="compact"]{width:min(100%,520px)}
+.root[data-size="normal"]{width:min(100%,560px)}
+.root[data-size="large"]{width:min(100%,620px)}
+.widget{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 14px 12px;box-shadow:var(--shadow)}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.head-copy{min-width:0}
+.title{font-size:19px;font-weight:770;line-height:1.06;letter-spacing:-.03em}
+.subtitle{margin-top:4px;font-size:12px;color:var(--sub);font-weight:560}
+.update{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--soft-2);font-size:10px;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+.update svg{width:12px;height:12px}
+.hero{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--soft-2),var(--panel));padding:14px}
+.hero-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:720;color:var(--green-deep);margin-bottom:12px}
+.hero-label svg{width:12px;height:12px}
+.hero-main{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:14px;align-items:center}
+.hero-icon{width:72px;height:72px;border-radius:999px;background:var(--green-soft);display:grid;place-items:center;color:var(--green-deep)}
+.hero-icon svg{width:38px;height:38px}
+.hero-copy{min-width:0}
+.hero-title{font-size:17px;font-weight:780;letter-spacing:-.03em;line-height:1.2;word-break:keep-all}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);font-size:10px;color:var(--sub);white-space:nowrap}
+.chip svg{width:12px;height:12px}
+.desc{margin-top:10px;font-size:10.5px;color:var(--sub);line-height:1.45;word-break:keep-all}
+.impact{display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.impact-tag{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:9px;border:1px solid color-mix(in srgb,var(--green) 22%, var(--line));background:var(--green-soft);font-size:10.5px;color:var(--green-deep);font-weight:730;white-space:nowrap}
+.dots{display:flex;gap:5px}.dot{width:7px;height:7px;border-radius:999px;background:#d9ddd7}.dot.on{background:var(--green)}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.sum{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:11px 10px 10px;min-width:0}
+.sum-top{display:flex;gap:8px;align-items:flex-start;min-width:0}
+.sum-icon{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--green-soft);display:grid;place-items:center;color:var(--green-deep)}
+.sum-icon svg{width:15px;height:15px}
+.sum-copy{min-width:0}
+.sum-title{font-size:11px;font-weight:730;line-height:1.22;word-break:keep-all}
+.sum-sub{margin-top:2px;font-size:9.5px;color:var(--sub);font-weight:550;word-break:keep-all}
+.sum .dots{margin-top:10px}
+.board{margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.col{padding:10px 11px 10px;min-width:0}
+.col+.col{border-left:1px solid var(--line-soft)}
+.col-head{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:10px}
+.col-title-wrap{display:flex;align-items:center;gap:6px;min-width:0}
+.col-title-wrap svg{width:12px;height:12px;color:var(--green-deep)}
+.col-title{font-size:12px;font-weight:740;color:var(--green-deep);white-space:nowrap}
+.col-en{font-size:9.5px;color:var(--muted);white-space:nowrap}
+.list{display:grid;gap:10px}
+.event{display:grid;grid-template-columns:36px minmax(0,1fr);gap:7px;align-items:flex-start;min-width:0}
+.time{font-size:10px;line-height:1.26;color:var(--sub);font-weight:620;white-space:pre-line;padding-top:1px}
+.event-main{min-width:0}
+.event-title{font-size:10.5px;line-height:1.35;font-weight:680;word-break:keep-all}
+.country{margin-right:4px}
+.event-desc{margin-top:2px;font-size:9px;color:var(--muted);line-height:1.2;word-break:keep-all}
+.tag-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.badge{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:999px;font-size:8.6px;font-weight:670;white-space:nowrap}
+.badge.green{background:var(--green-soft);color:var(--green)} .badge.red{background:var(--red-soft);color:var(--red)} .badge.amber{background:var(--amber-soft);color:var(--amber)} .badge.blue{background:var(--blue-soft);color:var(--blue)}
+.more{width:100%;margin-top:12px;padding-top:8px;border:0;border-top:1px dashed var(--line);background:transparent;color:var(--sub);font-size:10px;font-weight:630;cursor:pointer;text-align:center}
+.more[hidden]{display:none}
+.empty{font-size:10px;color:var(--muted);padding:10px 0}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:9.5px;color:var(--muted)}
+.footer-left{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer-left svg{width:12px;height:12px;flex:0 0 auto}
+.retry{display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--line);border-radius:999px;background:var(--soft);font-size:9px;cursor:pointer}
+.controls{position:absolute;top:10px;right:-36px;display:flex;flex-direction:column;gap:7px;opacity:0;transform:translateX(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.controls:before{content:"";position:absolute;left:-10px;top:0;width:10px;height:100%}
+.root:hover .controls,.root:focus-within .controls{opacity:1;transform:none;pointer-events:auto}
+.ctrl{position:relative;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--ctrl-bg);cursor:pointer;box-shadow:0 2px 8px rgba(20,20,20,.05)}
+.ctrl:hover{background:var(--soft)} .ctrl[disabled]{opacity:.42;cursor:not-allowed} .ctrl svg{width:14px;height:14px}
+.ctrl:after{content:attr(data-tip);position:absolute;right:35px;top:50%;transform:translateY(-50%);padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:9px;color:var(--sub);white-space:nowrap;opacity:0;pointer-events:none}
+.ctrl:hover:after,.ctrl:focus-visible:after{opacity:1}
+@media (max-width:580px){.summary{gap:8px}.sum{padding:10px 8px}.hero-main{grid-template-columns:72px minmax(0,1fr) auto}.hero-icon{width:66px;height:66px}.hero-icon svg{width:34px;height:34px}}
+@media (max-width:560px){.root{width:100%!important}.board{display:flex;overflow-x:auto;scroll-snap-type:x proximity}.board::-webkit-scrollbar{height:5px}.board::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}.col{flex:0 0 182px;scroll-snap-align:start}.col+.col{border-left:1px solid var(--line-soft)}}
+@media (max-width:460px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-main{grid-template-columns:62px minmax(0,1fr)}.impact{grid-column:1/-1;align-items:flex-start;padding-left:76px}.controls{right:7px;top:7px;opacity:1;transform:none;pointer-events:auto;flex-direction:row}.ctrl:after{display:none}.top{padding-right:126px}.update{display:none}}
+@media (hover:none),(pointer:coarse){.controls{opacity:1;transform:none;pointer-events:auto}}
+</style>
 </head>
 <body>
 <div class="root" id="root" data-size="normal">
-  <div class="widget" id="widget">
+  <div class="widget">
     <header class="top">
-      <div class="brand-copy">
+      <div class="head-copy">
         <div class="title">Market Events</div>
         <div class="subtitle">시장 주요 이벤트 레이더</div>
       </div>
-      <div class="update" id="updated"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>데이터 불러오는 중</span></div>
+      <div class="update" id="updated"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>업데이트 준비 중</span></div>
     </header>
 
     <section class="hero">
-      <div class="hero-label">핵심 이벤트</div>
+      <div class="hero-label"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.7 5.6 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.2 8.5l6.1-.9L12 2Z"/></svg><span>핵심 이벤트</span></div>
       <div class="hero-main">
         <div class="hero-icon" id="heroIcon"></div>
         <div class="hero-copy">
@@ -35,7 +125,7 @@
     <section class="board" id="board"></section>
 
     <footer class="footer">
-      <div class="footer-left" id="source">출처: TradingView Economic Calendar · KST</div>
+      <div class="footer-left" id="source"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8h.01M11 11h1v5h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>모든 시간은 한국 시간 (KST) 기준입니다.</span></div>
       <button class="retry" id="retry" hidden>Retry</button>
     </footer>
   </div>
@@ -47,6 +137,51 @@
     <button class="ctrl" id="resetBtn" data-tip="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
-<script src="./assets/market-events.js?v=8f462023"></script>
+<script>
+const SETTINGS_KEY='widget.marketEvents.controls.v4';
+const root=document.getElementById('root');
+const q=new URLSearchParams(location.search); const osTheme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+let settings={theme:q.get('theme')||osTheme,size:'normal',locked:false};
+try{ settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')} }catch{}
+function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+function applyTheme(v){ document.documentElement.dataset.theme=v; settings.theme=v; saveSettings(); }
+function applySize(v){ root.dataset.size=v; settings.size=v; saveSettings(); document.getElementById('sizeBtn').disabled=settings.locked; }
+function applyLock(v){ settings.locked=v; saveSettings(); document.getElementById('sizeBtn').disabled=v; document.getElementById('lockBtn').dataset.tip=v?'Unlock':'Lock'; document.getElementById('lockSvg').innerHTML=v?'<rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8.7a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>':'<path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/>'; }
+applyTheme(settings.theme); applySize(settings.size); applyLock(settings.locked);
+document.getElementById('themeBtn').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+document.getElementById('sizeBtn').onclick=()=>{ if(settings.locked) return; const arr=['compact','normal','large']; applySize(arr[(arr.indexOf(settings.size)+1)%arr.length]); };
+document.getElementById('lockBtn').onclick=()=>applyLock(!settings.locked);
+document.getElementById('resetBtn').onclick=()=>{ settings={theme:q.get('theme')||osTheme,size:'normal',locked:false}; applyTheme(settings.theme); applySize(settings.size); applyLock(false); };
+
+const icons={
+  rate:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16M6 10v8m4-8v8m4-8v8m4-8v8M3 20h18M4 8l8-4 8 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  inflation:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M7 14l3-4 4 3 3-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  jobs:'<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="10" r="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M4 18c0-2.4 2.2-4 5-4s5 1.6 5 4M15 17c.5-1.5 2-2.6 4-2.6 1.1 0 2 .3 2.8.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  growth:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 20V6l7-3v17M5 20h14M15 20V10l4 2v8M8 8h2M8 12h2M8 16h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  other:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M4 9h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+const summaryMeta={ rate:{title:'금리 결정',sub:'금리 결정'}, inflation:{title:'인플레이션',sub:'물가지표'}, jobs:{title:'고용지표',sub:'고용 / 실업률'}, growth:{title:'실적 발표',sub:'기업 실적'} };
+const categoryLabel={ rate:'금리 결정', inflation:'인플레이션', jobs:'고용지표', growth:'경기지표', other:'경제지표' };
+const tone={ rate:'red', inflation:'amber', jobs:'green', growth:'blue', other:'green' };
+const flags={US:'🇺🇸',KR:'🇰🇷',JP:'🇯🇵',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',CN:'🇨🇳',EU:'🇪🇺'};
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function dots(n,total=5){ return Array.from({length:total}, (_,i)=>`<span class="dot ${i<n?'on':''}"></span>`).join(''); }
+function subtitleForEvent(e){ if(e.actual!==null&&e.actual!==undefined&&e.actual!=='') return escapeHtml(e.actual); if(e.forecast!==null&&e.forecast!==undefined&&e.forecast!=='') return `예상 ${escapeHtml(e.forecast)}`; if(e.previous!==null&&e.previous!==undefined&&e.previous!=='') return `이전 ${escapeHtml(e.previous)}`; return escapeHtml(categoryLabel[e.category]||'경제지표'); }
+function relativeTime(iso){ if(!iso) return null; try{ const diff=Date.now()-new Date(iso).getTime(); const mins=Math.max(0,Math.round(diff/60000)); if(mins<1) return '방금 전'; if(mins<60) return `${mins}분 전`; const hrs=Math.floor(mins/60); if(hrs<24) return `${hrs}시간 전`; const days=Math.floor(hrs/24); return `${days}일 전`; }catch{return null;} }
+function eventHtml(e,hidden=false){ return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${escapeHtml(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||e.country||''}</span>${escapeHtml(e.title_ko||e.title||'')}</div><div class="event-desc">${subtitleForEvent(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${escapeHtml(categoryLabel[e.category]||'경제지표')}</span>${(e.importance||0)>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`; }
+function renderColumn(title,en,events){ const first=events.slice(0,3),rest=events.slice(3); return `<div class="col"><div class="col-head"><div class="col-title-wrap">${icons.cal}<span class="col-title">${title}</span></div><div class="col-en">${en}</div></div><div class="list">${first.map(e=>eventHtml(e)).join('')}${rest.map(e=>eventHtml(e,true)).join('')||(first.length?'':'<div class="empty">예정 이벤트 없음</div>')}</div><button class="more" ${rest.length?'':'hidden'}>더 보기 〉</button></div>`; }
+function render(data){
+  const events=data.events||[]; const highlight=data.highlight||events[0];
+  const rel=relativeTime(data.generated_at)||data.updated_label||'최근'; document.querySelector('#updated span').textContent=data.stale?'업데이트 지연':`업데이트: ${rel}`; document.getElementById('retry').hidden=!data.stale;
+  if(highlight){ document.getElementById('heroIcon').innerHTML=icons[highlight.category]||icons.other; document.getElementById('heroTitle').textContent=highlight.title_ko||highlight.title||'주요 이벤트'; document.getElementById('heroDate').innerHTML=`${icons.cal}<span>${escapeHtml(highlight.date_kst||'—')}</span>`; document.getElementById('heroTime').innerHTML=`${icons.clock}<span>${escapeHtml(highlight.time_kst||'—')}</span>`; document.getElementById('heroDesc').textContent=highlight.comment_ko||highlight.comment||'주요 경제 이벤트'; document.getElementById('heroImpact').textContent=(highlight.importance||0)>=3?'높은 영향도':(highlight.importance||0)===2?'중간 영향도':'낮은 영향도'; document.getElementById('heroDots').innerHTML=dots(Math.min(5,Math.max(2,(highlight.importance||1)+2)),5); }
+  const cats=['rate','inflation','jobs','growth']; document.getElementById('summary').innerHTML=cats.map(c=>{ const arr=events.filter(e=>e.category===c); const max=Math.max(0,...arr.map(e=>e.importance||0)); const meta=summaryMeta[c]; return `<div class="sum"><div class="sum-top"><div class="sum-icon">${icons[c]}</div><div class="sum-copy"><div class="sum-title">${meta.title}</div><div class="sum-sub">${meta.sub}</div></div></div><div class="dots">${dots(Math.min(5,Math.max(2,max+1)),5)}</div></div>`; }).join('');
+  const today=events.filter(e=>e.bucket==='today'),week=events.filter(e=>e.bucket==='week'),later=events.filter(e=>e.bucket==='later'); document.getElementById('board').innerHTML=renderColumn('오늘','Today',today)+renderColumn('이번 주','This Week',week)+renderColumn('Later','Later',later);
+  document.querySelectorAll('.more').forEach(btn=>btn.onclick=()=>{ const col=btn.closest('.col'); const hidden=[...col.querySelectorAll('.extra-event')].filter(el=>el.hidden); if(hidden.length){ hidden.forEach(el=>el.hidden=false); btn.textContent='접기 ⌃'; } else { [...col.querySelectorAll('.extra-event')].slice(3).forEach(el=>el.hidden=true); btn.textContent='더 보기 〉'; } });
+}
+async function load(){ try{ const r=await fetch(`./market-events-data.json?t=${Date.now()}`,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); render(await r.json()); } catch(e){ document.querySelector('#updated span').textContent='업데이트 지연'; document.getElementById('retry').hidden=false; } }
+document.getElementById('retry').onclick=load; load();
+</script>
 </body>
 </html>
