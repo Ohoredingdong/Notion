@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Market Events</title>
+<link rel="stylesheet" href="./assets/market-events.css">
+</head>
+<body>
+<div class="root" id="root" data-size="normal">
+  <div class="widget" id="widget">
+    <header class="top">
+      <div class="brand">
+        <div class="logo"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7.5" stroke="currentColor" stroke-width="1.8"/><circle cx="11" cy="11" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 11 19 3M17.2 3H21v3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><div class="title">Market Events</div><div class="subtitle">시장 주요 이벤트 레이더</div></div>
+      </div>
+      <div class="update" id="updated">데이터 불러오는 중</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-label">핵심 이벤트</div>
+      <div class="hero-main">
+        <div class="hero-icon" id="heroIcon"></div>
+        <div class="hero-copy">
+          <div class="hero-title" id="heroTitle">데이터 불러오는 중</div>
+          <div class="meta"><span class="chip" id="heroDate">—</span><span class="chip" id="heroTime">—</span></div>
+          <div class="desc" id="heroDesc">가장 영향도가 높은 예정 이벤트를 자동으로 표시합니다.</div>
+        </div>
+        <div class="impact"><div class="impact-tag" id="heroImpact">—</div><div class="dots" id="heroDots"></div></div>
+      </div>
+    </section>
+
+    <section class="summary" id="summary"></section>
+    <section class="board" id="board"></section>
+
+    <footer class="footer">
+      <div class="footer-left" id="source">Source · TradingView Economic Calendar · KST</div>
+      <button class="retry" id="retry" hidden>Retry</button>
+    </footer>
+  </div>
+
+  <div class="controls" aria-label="Widget controls">
+    <button class="ctrl" id="sizeBtn" data-tip="Size" aria-label="Size"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12M6 12h9M6 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <button class="ctrl" id="themeBtn" data-tip="Dark Mode" aria-label="Dark Mode"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.7a8.3 8.3 0 1 0 8.3 8.3A6.5 6.5 0 1 1 12 3.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+    <button class="ctrl" id="lockBtn" data-tip="Lock" aria-label="Lock"><svg id="lockSvg" viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="ctrl" id="resetBtn" data-tip="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+<script src="./assets/market-events.js"></script>
+</body>
+</html>
