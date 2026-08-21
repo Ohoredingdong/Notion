@@ -10,10 +10,12 @@ on:
       - main
     paths:
       - 'scripts/update_real_estate_pulse.py'
+      - 'scripts/run_real_estate_pulse.py'
       - '.github/workflows/update-real-estate-pulse.yml'
   pull_request:
     paths:
       - 'scripts/update_real_estate_pulse.py'
+      - 'scripts/run_real_estate_pulse.py'
       - '.github/workflows/update-real-estate-pulse.yml'
 
 permissions:
@@ -39,7 +41,7 @@ jobs:
         run: pip install requests beautifulsoup4 openpyxl pypdf
 
       - name: Check Korea Real Estate Board and refresh data
-        run: python scripts/update_real_estate_pulse.py
+        run: python scripts/run_real_estate_pulse.py
 
       - name: Commit new official data when changed
         if: github.event_name != 'pull_request'
