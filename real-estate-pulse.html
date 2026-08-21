@@ -6,88 +6,45 @@
 <meta name="color-scheme" content="light dark" />
 <title>Real Estate Pulse</title>
 <style>
-:root{
-  --bg:#ffffff;
-  --text:#1f1f1d;
-  --sub:#6f706c;
-  --muted:#9a9a95;
-  --line:#e9e9e5;
-  --soft:#f7f7f4;
-  --up:#557b64;
-  --down:#9a6a64;
-  --flat:#7d7d78;
-}
-html[data-theme="dark"]{
-  --bg:#191919;
-  --text:#f1f1ee;
-  --sub:#b3b3ad;
-  --muted:#85857f;
-  --line:#30302d;
-  --soft:#232321;
-  --up:#8fb09a;
-  --down:#c59690;
-  --flat:#9b9b95;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:transparent}
-body{padding:4px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;color:var(--text)}
-.widget{width:min(100%,360px);margin:0 auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
-.header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px;padding:13px 13px 11px;border-bottom:1px solid var(--line)}
-.kicker{font-size:7px;letter-spacing:.14em;color:var(--muted);font-weight:700;text-transform:uppercase;white-space:nowrap}.title{margin-top:4px;font-size:13px;line-height:1.15;font-weight:740;letter-spacing:-.025em}.subtitle{margin-top:4px;font-size:8px;color:var(--muted);white-space:nowrap}
-.header-right{text-align:right;min-width:78px}.rate-label{font-size:7px;color:var(--muted);white-space:nowrap}.rate{margin-top:3px;font-size:19px;line-height:1;font-weight:650;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.rate-change{margin-top:4px;font-size:7px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
-.table{padding:2px 13px 1px}.row{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(0,1fr);align-items:center;min-height:49px;border-bottom:1px solid var(--line);column-gap:7px}.row:last-child{border-bottom:0}.head{min-height:27px;color:var(--muted);font-size:7px}.region{font-size:10px;font-weight:680}.cell{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}.value{font-size:14px;line-height:1;font-weight:610;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}.delta{font-size:7px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.delta.up{color:var(--up)}.delta.down{color:var(--down)}.delta.flat{color:var(--flat)}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--soft);border-top:1px solid var(--line);font-size:7px;color:var(--muted)}.source{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.asof{font-variant-numeric:tabular-nums;white-space:nowrap}
-.dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--up);margin-right:5px;vertical-align:1px}.skeleton{opacity:.36}
-@media(max-width:330px){.widget{width:100%}.header{gap:7px;padding:12px 11px 10px}.table{padding:2px 11px 1px}.row{grid-template-columns:50px 1fr 1fr;column-gap:5px}.subtitle{white-space:normal}.value{font-size:13px}.delta{font-size:6.5px}.footer{padding:8px 11px}}
+:root{--bg:#fff;--text:#20201e;--sub:#70706b;--muted:#9a9a94;--line:#e9e9e5;--soft:#f7f7f4;--up:#567a63;--down:#9b6863;--flat:#82827d}
+html[data-theme="dark"]{--bg:#191919;--text:#f1f1ee;--sub:#b4b4ae;--muted:#85857f;--line:#30302d;--soft:#232321;--up:#8caf96;--down:#c3928c;--flat:#9a9a95}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:transparent}body{padding:3px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.widget{width:min(100%,286px);margin:0 auto;border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden}
+.top{padding:11px 11px 9px;border-bottom:1px solid var(--line)}.topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.kicker{font-size:6.5px;letter-spacing:.13em;color:var(--muted);font-weight:700;text-transform:uppercase}.title{margin-top:3px;font-size:12px;font-weight:740;letter-spacing:-.025em}.ratebox{text-align:right}.rate-label{font-size:6.5px;color:var(--muted)}.rate{margin-top:2px;font-size:16px;font-weight:650;line-height:1;font-variant-numeric:tabular-nums}.rate-note{margin-top:3px;font-size:6.3px;color:var(--muted);white-space:nowrap}
+.switch{display:grid;grid-template-columns:1fr 1fr;margin-top:9px;padding:2px;background:var(--soft);border-radius:6px}.switch button{height:25px;border:0;border-radius:5px;background:transparent;color:var(--muted);font:inherit;font-size:8px;cursor:pointer}.switch button.active{background:var(--bg);color:var(--text);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.summary{display:flex;align-items:center;justify-content:space-between;padding:8px 11px 6px;font-size:6.8px;color:var(--muted)}.summary strong{color:var(--sub);font-weight:650}
+.grid{display:grid;grid-template-columns:1fr 1fr;padding:0 11px 8px;column-gap:10px}.item{min-width:0;height:31px;display:flex;align-items:center;justify-content:space-between;gap:5px;border-bottom:1px solid var(--line)}.item:nth-last-child(-n+2){border-bottom:0}.name{font-size:8.5px;font-weight:640;white-space:nowrap}.value{font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}.value.up{color:var(--up)}.value.down{color:var(--down)}.value.flat{color:var(--flat)}.value.na{color:var(--muted);font-weight:500}.arrow{font-size:6px;margin-right:2px;vertical-align:1px}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 11px;background:var(--soft);border-top:1px solid var(--line);font-size:6.5px;color:var(--muted)}.source{white-space:nowrap}.asof{white-space:nowrap;font-variant-numeric:tabular-nums}.dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--up);margin-right:4px;vertical-align:1px}
+@media(max-width:290px){body{padding:2px}.widget{width:100%}.top,.summary,.footer{padding-left:9px;padding-right:9px}.grid{padding-left:9px;padding-right:9px;column-gap:8px}.name{font-size:8px}.value{font-size:9.5px}}
 </style>
 </head>
 <body>
-<main class="widget" id="widget">
-  <header class="header">
-    <div>
-      <div class="kicker">Weekly Apartment Index</div>
-      <div class="title">Real Estate Pulse</div>
-      <div class="subtitle">수도권 주간 매매 · 전세 흐름</div>
+<main class="widget">
+  <section class="top">
+    <div class="topline">
+      <div><div class="kicker">Korea Weekly Apartment</div><div class="title">Real Estate Pulse</div></div>
+      <div class="ratebox"><div class="rate-label">기준금리</div><div class="rate" id="baseRate">—</div><div class="rate-note" id="rateNote">BOK</div></div>
     </div>
-    <div class="header-right">
-      <div class="rate-label">한국은행 기준금리</div>
-      <div class="rate" id="baseRate">—</div>
-      <div class="rate-change" id="rateChange">—</div>
-    </div>
-  </header>
-
-  <section class="table" aria-label="지역별 주간 아파트 가격 변동률">
-    <div class="row head"><div>지역</div><div>매매</div><div>전세</div></div>
-    <div id="rows" class="skeleton">
-      <div class="row"><div class="region">서울</div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div></div>
-      <div class="row"><div class="region">경기</div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div></div>
-      <div class="row"><div class="region">인천</div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div><div class="cell"><div class="value">+0.00%</div><div class="delta">—</div></div></div>
+    <div class="switch" role="tablist" aria-label="가격 유형">
+      <button class="active" id="saleBtn" data-mode="sale" type="button">매매</button>
+      <button id="leaseBtn" data-mode="lease" type="button">전세</button>
     </div>
   </section>
-
+  <div class="summary"><span id="metricLabel">주간 매매 변동률</span><strong>전국 17개 시·도</strong></div>
+  <section class="grid" id="grid" aria-label="전국 시도별 주간 아파트 가격 변동률"></section>
   <footer class="footer"><div class="source"><span class="dot"></span>REB · BOK</div><div class="asof" id="asOf">기준일 —</div></footer>
 </main>
 <script>
-const qs=new URLSearchParams(location.search);
-const forced=qs.get('theme');
-const dark=matchMedia('(prefers-color-scheme:dark)').matches;
-document.documentElement.dataset.theme=(forced==='light'||forced==='dark')?forced:(dark?'dark':'light');
-const fmt=v=>`${v>0?'+':''}${Number(v).toFixed(2)}%`;
-const pp=(now,prev)=>Number((now-prev).toFixed(2));
-const deltaText=(now,prev)=>{const d=pp(now,prev);if(d===0)return{text:'전주와 동일',cls:'flat'};return{text:`전주 ${d>0?'+':''}${d.toFixed(2)}%p`,cls:d>0?'up':'down'}};
-const dateKo=s=>{const d=new Date(`${s}T00:00:00+09:00`);return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`};
-async function load(){
-  try{
-    const res=await fetch(`real-estate-pulse-data.json?v=${Date.now()}`,{cache:'no-store'});if(!res.ok)throw new Error('data');
-    const data=await res.json();
-    document.querySelector('#baseRate').textContent=`${data.baseRate.value.toFixed(2)}%`;
-    const rateDiff=Number((data.baseRate.value-data.baseRate.previous).toFixed(2));
-    document.querySelector('#rateChange').textContent=`${rateDiff>0?'↑':rateDiff<0?'↓':'→'} ${Math.abs(rateDiff).toFixed(2)}%p · ${dateKo(data.baseRate.changedAt)}`;
-    document.querySelector('#rows').innerHTML=data.regions.map(r=>{const s=deltaText(r.sale,r.salePrev),l=deltaText(r.lease,r.leasePrev);return `<div class="row"><div class="region">${r.name}</div><div class="cell"><div class="value">${fmt(r.sale)}</div><div class="delta ${s.cls}">${s.text}</div></div><div class="cell"><div class="value">${fmt(r.lease)}</div><div class="delta ${l.cls}">${l.text}</div></div></div>`}).join('');
-    document.querySelector('#rows').classList.remove('skeleton');
-    document.querySelector('#asOf').textContent=`기준일 ${dateKo(data.asOf)}`;
-  }catch(e){document.querySelector('#rows').classList.remove('skeleton');document.querySelector('#rows').innerHTML='<div class="row"><div class="region">데이터</div><div class="cell" style="grid-column:2 / 4"><div class="delta">불러오지 못했습니다.</div></div></div>'}
-}
+const q=new URLSearchParams(location.search),forced=q.get('theme'),dark=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=(forced==='light'||forced==='dark')?forced:(dark?'dark':'light');
+let mode='sale',data=null;
+const $=s=>document.querySelector(s);
+const dateKo=s=>s?String(s).replaceAll('-','.'):'—';
+const fmt=v=>v==null?'—':`${v>0?'+':''}${Number(v).toFixed(2)}%`;
+const cls=v=>v==null?'na':v>0?'up':v<0?'down':'flat';
+const arrow=v=>v==null?'':v>0?'▲':v<0?'▼':'•';
+function render(){if(!data)return;$('#grid').innerHTML=data.regions.map(r=>{const v=r[mode];return `<div class="item"><span class="name">${r.name}</span><span class="value ${cls(v)}"><span class="arrow">${arrow(v)}</span>${fmt(v)}</span></div>`}).join('');$('#metricLabel').textContent=mode==='sale'?'주간 매매 변동률':'주간 전세 변동률';document.querySelectorAll('.switch button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode))}
+document.querySelectorAll('.switch button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;render()}));
+async function load(){try{const r=await fetch(`real-estate-pulse-data.json?v=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw 0;data=await r.json();$('#baseRate').textContent=`${Number(data.baseRate.value).toFixed(2)}%`;$('#rateNote').textContent=dateKo(data.baseRate.changedAt);$('#asOf').textContent=`${dateKo(data.asOf)} 기준`;render()}catch(e){$('#grid').innerHTML='<div class="item" style="grid-column:1/-1"><span class="name">데이터를 불러오지 못했습니다.</span></div>'}}
 load();
 </script>
 </body>
