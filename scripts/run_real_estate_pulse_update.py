@@ -12,9 +12,13 @@ import update_real_estate_pulse as updater
 
 OUT = Path("real-estate-pulse-data.json")
 EXPECTED_REGIONS = [
-    "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
-    "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주",
+    "서울", "부산", "대구", "인천", "대전", "울산", "전남광주", "세종",
+    "경기", "강원", "충북", "충남", "전북", "경북", "경남", "제주",
 ]
+
+# The legacy parser was written before the 2026-07-01 Gwangju/Jeonnam integration.
+# Reuse its official R-ONE/PDF parsing logic with the current 16-region geography.
+updater.REGIONS = EXPECTED_REGIONS
 
 
 def parse_iso_date(value, key):
@@ -65,7 +69,7 @@ def validate_dataset(data, require_verification=True):
         raise RuntimeError("regions must be an array")
     names = [r.get("name") for r in regions]
     if names != EXPECTED_REGIONS:
-        raise RuntimeError(f"expected 17 canonical regions, got: {names}")
+        raise RuntimeError(f"expected 16 current regions, got: {names}")
 
     metric_count = 0
     for region in regions:
@@ -81,8 +85,8 @@ def validate_dataset(data, require_verification=True):
             if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
                 raise RuntimeError(f"{region.get('name')} {metric} is invalid")
 
-    if metric_count != 34:
-        raise RuntimeError("dataset must contain exactly 34 current regional metrics")
+    if metric_count != 32:
+        raise RuntimeError("dataset must contain exactly 32 current regional metrics")
 
     release_url = data.get("releaseUrl") or data.get("sourceUrl")
     source_url = data.get("sourceUrl") or release_url
@@ -108,8 +112,8 @@ def validate_dataset(data, require_verification=True):
         verification = data.get("verification") or {}
         if verification.get("status") != "verified":
             raise RuntimeError("verification.status must be verified")
-        if verification.get("regionCount") != 17 or verification.get("metricCount") != 34:
-            raise RuntimeError("verification counts must be 17 regions / 34 metrics")
+        if verification.get("regionCount") != 16 or verification.get("metricCount") != 32:
+            raise RuntimeError("verification counts must be 16 regions / 32 metrics")
         if verification.get("method") != "official":
             raise RuntimeError("verification.method must be official")
         if not is_official_https(verification.get("primarySource"), "reb.or.kr"):
@@ -128,8 +132,8 @@ def add_verification(data):
     data["verification"] = {
         "status": "verified",
         "checkedAt": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(timespec="seconds"),
-        "regionCount": 17,
-        "metricCount": 34,
+        "regionCount": 16,
+        "metricCount": 32,
         "method": "official",
         "primarySource": primary,
         "dataSha256": payload_hash(data),
@@ -178,7 +182,7 @@ def refresh():
     add_verification(data)
     validate_dataset(data, require_verification=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Prepared verified 17-region dataset for {data['asOf']}.")
+    print(f"Prepared verified 16-region dataset for {data['asOf']}.")
     return True
 
 
@@ -190,7 +194,7 @@ def main():
     if args.validate_only:
         data = json.loads(OUT.read_text(encoding="utf-8"))
         validate_dataset(data, require_verification=True)
-        print("Verified: 17 regions / 34 current values / official provenance / integrity hash.")
+        print("Verified: 16 regions / 32 current values / official provenance / integrity hash.")
         return
 
     refresh()
