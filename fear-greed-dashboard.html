@@ -67,10 +67,10 @@ button{font:inherit;color:inherit}
 .bar{width:100%;border-radius:9px;background:color-mix(in srgb,var(--state) 28%, var(--soft));}
 .bar.current{background:var(--state)}
 .bar-date{font-size:11px;color:var(--muted);font-weight:560}
-.footer{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;height:44px;min-height:44px;max-height:44px;overflow:hidden}
-.source{font-size:10px;color:var(--muted);line-height:1.45;max-width:72%;height:29px;min-height:29px;max-height:29px;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-.state-msg{font-size:10px;color:var(--muted);text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
-.state-msg button{height:24px;padding:0 8px;border:1px solid var(--line);background:var(--soft);border-radius:8px;font-size:10px;cursor:pointer}
+.footer{margin-top:auto;padding-top:7px;display:flex;justify-content:space-between;gap:8px;align-items:center;height:28px;min-height:28px;max-height:28px;overflow:hidden}
+.source{min-width:0;flex:1;font-size:9.5px;color:var(--muted);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.state-msg{flex:0 0 auto;font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.state-msg button{height:22px;padding:0 8px;border:1px solid var(--line);background:var(--soft);border-radius:999px;font-size:9px;cursor:pointer}
 .loading .score,.loading .bar-value,.loading .bar-date,.loading .source{opacity:.45}
 .error-badge{display:none}
 .error .error-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:10px;color:var(--muted);font-weight:620}
@@ -84,32 +84,74 @@ button{font:inherit;color:inherit}
 .ctrl svg{width:14px;height:14px}
 @media (hover:none),(pointer:coarse){.controls{opacity:1;transform:none;pointer-events:auto;right:-34px}}
 @media (max-width:420px){.controls{right:6px;top:auto;bottom:-38px;flex-direction:row}.ctrl::after{display:none}}
-@media (max-width:380px){.widget{width:100%}.title{font-size:20px}.score{font-size:38px}.chart{gap:8px}.bar-shell{max-width:23px;height:78px}.widget.size-large{width:100%}}
+@media (max-width:380px){.widget{width:min(100%,100%)}.title{font-size:20px}.score{font-size:38px}.chart{gap:8px}.bar-shell{max-width:23px;height:78px}.widget.size-large{width:min(100%,100%)}}
 </style>
 </head>
 <body>
 <div class="widget-root" id="root" data-size="normal">
   <div class="widget size-normal" id="widget">
     <div class="top">
-      <div class="brand"><div class="brand-copy"><div class="title">Market Mood</div><div class="subtitle">시장 온도</div></div></div>
+      <div class="brand">
+        <div class="brand-copy">
+          <div class="title">Market Mood</div>
+          <div class="subtitle">시장 온도</div>
+        </div>
+      </div>
       <div class="updated" id="updated">오늘 기준</div>
     </div>
+
     <div class="tabs" role="tablist" aria-label="market tabs">
       <button class="tab active" data-market="korea" role="tab" aria-selected="true">Korea</button>
       <button class="tab" data-market="us" role="tab" aria-selected="false">US</button>
       <button class="tab" data-market="crypto" role="tab" aria-selected="false">Crypto</button>
     </div>
-    <div class="section-label"><div class="section-title" id="sectionTitle">오늘 지수</div><div class="section-meta"><span class="error-badge" id="errorBadge">업데이트 지연</span></div></div>
-    <div class="score-row"><div class="score-wrap"><div class="score" id="score">—</div><div class="score-unit">/ 100</div></div><div class="delta-box"><div class="delta-title" id="deltaTitle">어제: —</div><div class="delta-sub" id="deltaSub">변화 없음</div></div></div>
-    <div class="gauge"><div class="gauge-track"><div class="gauge-thumb" id="thumb" aria-hidden="true"></div></div><div class="gauge-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><div class="gauge-zones"><span>극심한 공포</span><span>공포</span><span>중립</span><span>탐욕</span><span>극심한 탐욕</span></div></div>
-    <div class="chart-wrap"><div class="chart-title">최근 7일 지수 흐름</div><div class="chart" id="chart"></div></div>
-    <div class="footer"><div class="source" id="source">출처 로딩 중</div><div class="state-msg"><div id="widgetState">loading...</div><button id="retryBtn" type="button" hidden>Retry</button></div></div>
+
+    <div class="section-label">
+      <div class="section-title" id="sectionTitle">오늘 지수</div>
+      <div class="section-meta"><span class="error-badge" id="errorBadge">업데이트 지연</span></div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-wrap"><div class="score" id="score">—</div><div class="score-unit">/ 100</div></div>
+      <div class="delta-box">
+        <div class="delta-title" id="deltaTitle">어제: —</div>
+        <div class="delta-sub" id="deltaSub">변화 없음</div>
+      </div>
+    </div>
+
+    <div class="gauge">
+      <div class="gauge-track"><div class="gauge-thumb" id="thumb" aria-hidden="true"></div></div>
+      <div class="gauge-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+      <div class="gauge-zones"><span>극심한 공포</span><span>공포</span><span>중립</span><span>탐욕</span><span>극심한 탐욕</span></div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-title">최근 7일 지수 흐름</div>
+      <div class="chart" id="chart"></div>
+    </div>
+
+    <div class="footer">
+      <div class="source" id="source">출처 로딩 중</div>
+      <div class="state-msg">
+        <div id="widgetState">loading...</div>
+        <button id="retryBtn" type="button" hidden>Retry</button>
+      </div>
+    </div>
   </div>
+
   <div class="controls" aria-label="widget controls">
-    <button class="ctrl" id="sizeBtn" data-tip="Size" type="button" aria-label="Size"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14M5 12h10M5 16h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
-    <button class="ctrl" id="themeBtn" data-tip="Dark Mode" type="button" aria-label="Dark Mode"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8a8.2 8.2 0 1 0 8.2 8.2A6.4 6.4 0 1 1 12 3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
-    <button class="ctrl" id="lockBtn" data-tip="Lock" type="button" aria-label="Lock"><svg id="lockIcon" viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>
-    <button class="ctrl" id="resetBtn" data-tip="Reset" type="button" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <button class="ctrl" id="sizeBtn" data-tip="Size" type="button" aria-label="Size">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14M5 12h10M5 16h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="ctrl" id="themeBtn" data-tip="Dark Mode" type="button" aria-label="Dark Mode">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8a8.2 8.2 0 1 0 8.2 8.2A6.4 6.4 0 1 1 12 3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="ctrl" id="lockBtn" data-tip="Lock" type="button" aria-label="Lock">
+      <svg id="lockIcon" viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+    <button class="ctrl" id="resetBtn" data-tip="Reset" type="button" aria-label="Reset">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
   </div>
 </div>
 <script>
@@ -141,7 +183,7 @@ function normalizeData(market,data){data.market=market; data.headline=data.headl
 async function loadOne(market,path){try{ const res=await fetch(path,{cache:'no-store'}); if(!res.ok) throw new Error(res.status); const data=normalizeData(market, await res.json()); app.data[market]=data; app.loaded[market]=true; return true;} catch(err){ console.warn('fallback',market,err); app.data[market]=fallbackData[market]; app.loaded[market]=false; return false; }}
 async function refreshAll(){app.status='loading'; render(); const results=await Promise.all([loadOne('korea','./korea-market-sentiment.json'),loadOne('us','./fear-greed-data.json'),loadOne('crypto','./crypto-fear-greed-data.json')]); app.status=results.every(Boolean)?'ready':'error'; render()}
 function renderTabs(){document.querySelectorAll('.tab').forEach(btn=>{const active=btn.dataset.market===app.market; btn.classList.toggle('active',active); btn.setAttribute('aria-selected', String(active));})}
-function renderMain(){const d=app.data[app.market]||fallbackData[app.market]; const h=d.headline||{}; const score=Number(h.score)||0; const rating=parseRating(h.rating||classify(score)); document.documentElement.style.setProperty('--state',colorForRating(rating)); $('#sectionTitle').textContent=tabMeta[app.market].section; $('#score').textContent=fmtNum(Math.round(score),0); $('#score').style.color=colorForRating(rating); $('#thumb').style.left=`${Math.max(0,Math.min(100,score))}%`; $('#updated').textContent=dateChip(d.updated_at||d.source_timestamp); const prev=Number(h.previous_close); $('#deltaTitle').textContent=`어제: ${Number.isFinite(prev)?fmtNum(prev,0):'—'} (${ratingKo[classify(prev)]||'—'})`; const delta=Number.isFinite(prev)?score-prev:null; const direction=delta==null?'변화 없음':delta>0?`${fmtNum(Math.abs(delta),0)} 상승`:delta<0?`${fmtNum(Math.abs(delta),0)} 하락`:'변화 없음'; $('#deltaSub').textContent=direction; const rows=(d.history||[]).slice(-7); const max=100; $('#chart').innerHTML=rows.map((row,i)=>{ const hh=Math.max(14,(row.value/max)*86); const cls=i===rows.length-1?'bar current':'bar'; return `<div class="bar-col"><div class="bar-value">${fmtNum(row.value,0)}</div><div class="bar-shell"><div class="${cls}" style="height:${hh}px"></div></div><div class="bar-date">${shortDate(row.timestamp)}</div></div>`}).join(''); const timeInfo=fmtTime(d.source_timestamp||d.updated_at); $('#source').textContent=`출처: ${d.source_name||tabMeta[app.market].label}${d.market==='korea'?' (Custom)':''} · Data ${timeInfo}`; const currentLoaded=!!app.loaded[app.market]; $('#root').classList.toggle('error', !currentLoaded); $('#root').classList.toggle('loading', app.status==='loading'); $('#widgetState').textContent=app.status==='loading'?'loading...':currentLoaded?'정상 업데이트':'업데이트 지연'; $('#retryBtn').hidden = currentLoaded && app.status!=='loading'; }
+function renderMain(){const d=app.data[app.market]||fallbackData[app.market]; const h=d.headline||{}; const score=Number(h.score)||0; const rating=parseRating(h.rating||classify(score)); document.documentElement.style.setProperty('--state',colorForRating(rating)); $('#sectionTitle').textContent=tabMeta[app.market].section; $('#score').textContent=fmtNum(Math.round(score),0); $('#score').style.color=colorForRating(rating); $('#thumb').style.left=`${Math.max(0,Math.min(100,score))}%`; $('#updated').textContent=dateChip(d.updated_at||d.source_timestamp); const prev=Number(h.previous_close); $('#deltaTitle').textContent=`어제: ${Number.isFinite(prev)?fmtNum(prev,0):'—'} (${ratingKo[classify(prev)]||'—'})`; const delta=Number.isFinite(prev)?score-prev:null; const direction=delta==null?'변화 없음':delta>0?`${fmtNum(Math.abs(delta),0)} 상승`:delta<0?`${fmtNum(Math.abs(delta),0)} 하락`:'변화 없음'; $('#deltaSub').textContent=direction; const rows=(d.history||[]).slice(-7); const max=100; $('#chart').innerHTML=rows.map((row,i)=>{ const h=Math.max(14,(row.value/max)*86); const cls=i===rows.length-1?'bar current':'bar'; return `<div class="bar-col"><div class="bar-value">${fmtNum(row.value,0)}</div><div class="bar-shell"><div class="${cls}" style="height:${h}px"></div></div><div class="bar-date">${shortDate(row.timestamp)}</div></div>`}).join(''); const currentLoaded=!!app.loaded[app.market]; $('#source').textContent=`출처 · ${d.source_name||tabMeta[app.market].label}${d.market==='korea'?' · Custom':''}`; $('#root').classList.toggle('error', !currentLoaded); $('#root').classList.toggle('loading', app.status==='loading'); $('#widgetState').textContent=app.status==='loading'?'불러오는 중':currentLoaded?'':'업데이트 지연'; $('#retryBtn').hidden = currentLoaded || app.status==='loading'; }
 function render(){renderTabs(); renderMain()}
 function wire(){document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{app.market=btn.dataset.market; render()})); $('#retryBtn').addEventListener('click', refreshAll)}
 setupControls(); wire(); render(); refreshAll();
