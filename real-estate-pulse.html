@@ -13,7 +13,7 @@ html[data-theme="dark"]{--bg:#191919;--text:#f1f1ee;--sub:#b4b4ae;--muted:#85857
 .top{padding:11px 11px 9px;border-bottom:1px solid var(--line)}.topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.kicker{font-size:6.5px;letter-spacing:.13em;color:var(--muted);font-weight:700;text-transform:uppercase}.title{margin-top:3px;font-size:12px;font-weight:740;letter-spacing:-.025em}.ratebox{text-align:right}.rate-label{font-size:6.5px;color:var(--muted)}.rate{margin-top:2px;font-size:16px;font-weight:650;line-height:1;font-variant-numeric:tabular-nums}.rate-note{margin-top:3px;font-size:6.3px;color:var(--muted);white-space:nowrap}
 .switch{display:grid;grid-template-columns:1fr 1fr;margin-top:9px;padding:2px;background:var(--soft);border-radius:6px}.switch button{height:25px;border:0;border-radius:5px;background:transparent;color:var(--muted);font:inherit;font-size:8px;cursor:pointer}.switch button.active{background:var(--bg);color:var(--text);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .summary{display:flex;align-items:center;justify-content:space-between;padding:8px 11px 6px;font-size:6.8px;color:var(--muted)}.summary strong{color:var(--sub);font-weight:650}
-.grid{display:grid;grid-template-columns:1fr 1fr;padding:0 11px 8px;column-gap:10px}.item{min-width:0;height:31px;display:flex;align-items:center;justify-content:space-between;gap:5px;border-bottom:1px solid var(--line)}.item:nth-last-child(-n+2){border-bottom:0}.name{font-size:8.5px;font-weight:640;white-space:nowrap}.value{font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}.value.up{color:var(--up)}.value.down{color:var(--down)}.value.flat{color:var(--flat)}.value.na{color:var(--muted);font-weight:500}.arrow{font-size:6px;margin-right:2px;vertical-align:1px}
+.grid{display:grid;grid-template-columns:1fr 1fr;padding:0 11px 8px;column-gap:10px}.item{min-width:0;height:31px;display:flex;align-items:center;justify-content:space-between;gap:5px;border-bottom:1px solid var(--line)}.item:nth-last-child(-n+2){border-bottom:0}.name{font-size:8.5px;font-weight:640;white-space:nowrap}.value{font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}.value.up{color:var(--up)}.value.down{color:var(--down)}.value.flat{color:var(--flat)}.arrow{font-size:6px;margin-right:2px;vertical-align:1px}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 11px;background:var(--soft);border-top:1px solid var(--line);font-size:6.5px;color:var(--muted)}.source{white-space:nowrap}.asof{white-space:nowrap;font-variant-numeric:tabular-nums}.dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--up);margin-right:4px;vertical-align:1px}
 @media(max-width:290px){body{padding:2px}.widget{width:100%}.top,.summary,.footer{padding-left:9px;padding-right:9px}.grid{padding-left:9px;padding-right:9px;column-gap:8px}.name{font-size:8px}.value{font-size:9.5px}}
 </style>
@@ -30,8 +30,8 @@ html[data-theme="dark"]{--bg:#191919;--text:#f1f1ee;--sub:#b4b4ae;--muted:#85857
       <button id="leaseBtn" data-mode="lease" type="button">전세</button>
     </div>
   </section>
-  <div class="summary"><span id="metricLabel">주간 매매 변동률</span><strong>전국 17개 시·도</strong></div>
-  <section class="grid" id="grid" aria-label="전국 시도별 주간 아파트 가격 변동률"></section>
+  <div class="summary"><span id="metricLabel">주간 매매 변동률</span><strong>전국 16개 지역</strong></div>
+  <section class="grid" id="grid" aria-label="전국 지역별 주간 아파트 가격 변동률"></section>
   <footer class="footer"><div class="source"><span class="dot"></span>REB · BOK</div><div class="asof" id="asOf">기준일 —</div></footer>
 </main>
 <script>
@@ -39,9 +39,9 @@ const q=new URLSearchParams(location.search),forced=q.get('theme'),dark=matchMed
 let mode='sale',data=null;
 const $=s=>document.querySelector(s);
 const dateKo=s=>s?String(s).replaceAll('-','.'):'—';
-const fmt=v=>v==null?'—':`${v>0?'+':''}${Number(v).toFixed(2)}%`;
-const cls=v=>v==null?'na':v>0?'up':v<0?'down':'flat';
-const arrow=v=>v==null?'':v>0?'▲':v<0?'▼':'•';
+const fmt=v=>`${v>0?'+':''}${Number(v).toFixed(2)}%`;
+const cls=v=>v>0?'up':v<0?'down':'flat';
+const arrow=v=>v>0?'▲':v<0?'▼':'•';
 function render(){if(!data)return;$('#grid').innerHTML=data.regions.map(r=>{const v=r[mode];return `<div class="item"><span class="name">${r.name}</span><span class="value ${cls(v)}"><span class="arrow">${arrow(v)}</span>${fmt(v)}</span></div>`}).join('');$('#metricLabel').textContent=mode==='sale'?'주간 매매 변동률':'주간 전세 변동률';document.querySelectorAll('.switch button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode))}
 document.querySelectorAll('.switch button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;render()}));
 async function load(){try{const r=await fetch(`real-estate-pulse-data.json?v=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw 0;data=await r.json();$('#baseRate').textContent=`${Number(data.baseRate.value).toFixed(2)}%`;$('#rateNote').textContent=dateKo(data.baseRate.changedAt);$('#asOf').textContent=`${dateKo(data.asOf)} 기준`;render()}catch(e){$('#grid').innerHTML='<div class="item" style="grid-column:1/-1"><span class="name">데이터를 불러오지 못했습니다.</span></div>'}}
