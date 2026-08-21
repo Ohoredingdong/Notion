@@ -28,7 +28,7 @@ const summaryMeta={rate:['금리 결정','금리 결정'],inflation:['인플레�
 const tone={rate:'red',inflation:'amber',jobs:'green',growth:'blue',other:'green'};
 const flags={US:'🇺🇸',KR:'🇰🇷',JP:'🇯🇵',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',CN:'🇨🇳',EU:'🇪🇺'};
 function dots(n,total=5){return Array.from({length:total},(_,i)=>`<span class="dot ${i<n?'on':''}"></span>`).join('')}
-function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]))}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function relativeTime(s){if(!s)return '업데이트: 최근';const ms=Date.now()-new Date(s).getTime();if(!Number.isFinite(ms))return '업데이트: 최근';const min=Math.max(0,Math.round(ms/60000));if(min<2)return '업데이트: 방금 전';if(min<60)return `업데이트: ${min}분 전`;const hr=Math.floor(min/60);if(hr<24)return `업데이트: ${hr}시간 전`;return `업데이트: ${Math.floor(hr/24)}일 전`}
 function detail(e){if(e.actual!==null&&e.actual!==undefined)return `실제 ${esc(e.actual)}`;if(e.forecast!==null&&e.forecast!==undefined)return `예상 ${esc(e.forecast)}`;if(e.previous!==null&&e.previous!==undefined)return `이전 ${esc(e.previous)}`;return categoryLabel[e.category]||'경제지표'}
 function eventHtml(e,hidden=false){return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${esc(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||esc(e.country||'')}</span>${esc(e.title_ko||e.title||'')}</div><div class="event-desc">${detail(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${esc(categoryLabel[e.category]||'경제지표')}</span>${e.importance>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`}
