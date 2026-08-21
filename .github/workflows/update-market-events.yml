@@ -1,0 +1,36 @@
+name: Update Market Events
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/update-market-events.py"
+      - ".github/workflows/update-market-events.yml"
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python scripts/update-market-events.py
+      - name: Commit data if changed
+        run: |
+          if git diff --quiet -- market-events-data.json; then
+            echo "No data change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market-events-data.json
+          git commit -m "data: update market events"
+          git push
