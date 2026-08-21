@@ -28,13 +28,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate complete official-region dataset
+      - name: Validate verified official-region dataset
         shell: bash
         run: |
           python - <<'PY'
+          import hashlib
           import json
           import re
+          from datetime import date, datetime
           from pathlib import Path
+          from urllib.parse import urlparse
 
           expected = [
               '서울','부산','대구','인천','대전','울산','전남광주','세종',
@@ -42,25 +45,100 @@ jobs:
           ]
           data = json.loads(Path('real-estate-pulse-data.json').read_text(encoding='utf-8'))
 
-          for key in ('asOf', 'published'):
-              if not re.fullmatch(r'20\d{2}-\d{2}-\d{2}', str(data.get(key, ''))):
+          def iso_date(value, key):
+              if not re.fullmatch(r'20\d{2}-\d{2}-\d{2}', str(value or '')):
                   raise SystemExit(f'invalid {key}')
+              try:
+                  return date.fromisoformat(value)
+              except ValueError:
+                  raise SystemExit(f'invalid calendar date: {key}')
+
+          as_of = iso_date(data.get('asOf'), 'asOf')
+          published = iso_date(data.get('published'), 'published')
+          if published < as_of:
+              raise SystemExit('published cannot be earlier than asOf')
+          if as_of > date.today() or published > date.today():
+              raise SystemExit('dataset dates cannot be in the future')
 
           regions = data.get('regions')
           if not isinstance(regions, list) or [r.get('name') for r in regions] != expected:
               raise SystemExit('region list must contain the current 16 regions in canonical order')
 
+          metric_count = 0
           for region in regions:
+              if set(region) != {'name','sale','lease'}:
+                  raise SystemExit(f"unexpected fields in region {region.get('name')}")
               for metric in ('sale', 'lease'):
                   value = region.get(metric)
                   if isinstance(value, bool) or not isinstance(value, (int, float)):
                       raise SystemExit(f"{region.get('name')} {metric} is missing or non-numeric")
                   if not -5 <= float(value) <= 5:
                       raise SystemExit(f"{region.get('name')} {metric} is outside the safety range")
+                  metric_count += 1
+          if metric_count != 32:
+              raise SystemExit('dataset must contain exactly 32 regional metrics')
 
-          rate = data.get('baseRate', {}).get('value')
-          if isinstance(rate, bool) or not isinstance(rate, (int, float)):
-              raise SystemExit('baseRate.value must be numeric')
+          verification = data.get('verification') or {}
+          if verification.get('status') != 'verified':
+              raise SystemExit('verification.status must be verified')
+          if verification.get('regionCount') != 16 or verification.get('metricCount') != 32:
+              raise SystemExit('verification counts do not match 16 regions / 32 metrics')
+          if verification.get('method') not in {'official', 'official+crosscheck'}:
+              raise SystemExit('invalid verification.method')
 
-          print('Real Estate Pulse dataset is complete: 16 regions / 32 values.')
+          checked_at = str(verification.get('checkedAt') or '')
+          try:
+              checked = datetime.fromisoformat(checked_at)
+          except ValueError:
+              raise SystemExit('verification.checkedAt must be ISO-8601')
+          if checked.tzinfo is None:
+              raise SystemExit('verification.checkedAt must include timezone')
+          if checked.date() < published:
+              raise SystemExit('verification cannot predate publication')
+
+          primary = str(verification.get('primarySource') or '')
+          parsed = urlparse(primary)
+          if parsed.scheme != 'https' or not (parsed.hostname or '').endswith('reb.or.kr'):
+              raise SystemExit('primarySource must be an official reb.or.kr HTTPS URL')
+
+          supporting = verification.get('supportingSources')
+          if not isinstance(supporting, list):
+              raise SystemExit('supportingSources must be an array')
+          urls = []
+          hosts = set()
+          for url in supporting:
+              p = urlparse(str(url))
+              if p.scheme != 'https' or not p.hostname:
+                  raise SystemExit('all supportingSources must be HTTPS URLs')
+              urls.append(str(url))
+              hosts.add(p.hostname.lower())
+          if len(urls) != len(set(urls)):
+              raise SystemExit('supportingSources contains duplicate URLs')
+          if verification.get('method') == 'official+crosscheck' and (len(urls) < 2 or len(hosts) < 2):
+              raise SystemExit('official+crosscheck requires at least two independent supporting hosts')
+
+          canonical_payload = {
+              'asOf': data['asOf'],
+              'published': data['published'],
+              'regions': regions,
+          }
+          canonical = json.dumps(canonical_payload, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+          actual_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+          expected_hash = str(verification.get('dataSha256') or '')
+          if not re.fullmatch(r'[0-9a-f]{64}', expected_hash) or actual_hash != expected_hash:
+              raise SystemExit('verification.dataSha256 does not match canonical data')
+
+          rate = data.get('baseRate') or {}
+          value = rate.get('value')
+          previous = rate.get('previous')
+          if any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in (value, previous)):
+              raise SystemExit('baseRate value/previous must be numeric')
+          if not (0 <= float(value) <= 20 and 0 <= float(previous) <= 20):
+              raise SystemExit('baseRate is outside the safety range')
+          iso_date(rate.get('changedAt'), 'baseRate.changedAt')
+          bok = urlparse(str(rate.get('source') or ''))
+          if bok.scheme != 'https' or not (bok.hostname or '').endswith('bok.or.kr'):
+              raise SystemExit('baseRate.source must be an official bok.or.kr HTTPS URL')
+
+          print('Verified Real Estate Pulse dataset: provenance + integrity + 16 regions / 32 values.')
           PY
