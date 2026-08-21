@@ -1,52 +1,66 @@
-name: Update Real Estate Pulse
+name: Validate Real Estate Pulse
 
 on:
   workflow_dispatch:
-  schedule:
-    # 15:30 KST every day — catches the weekly REB release on publication day.
-    - cron: '30 6 * * *'
+  pull_request:
+    paths:
+      - 'real-estate-pulse-data.json'
+      - 'real-estate-pulse.html'
+      - '.github/workflows/update-real-estate-pulse.yml'
   push:
     branches:
       - main
     paths:
-      - 'scripts/update_real_estate_pulse.py'
+      - 'real-estate-pulse-data.json'
+      - 'real-estate-pulse.html'
       - '.github/workflows/update-real-estate-pulse.yml'
 
 permissions:
-  contents: write
-
-concurrency:
-  group: real-estate-pulse-update
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  update:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
 
-      - name: Install updater dependencies
-        run: pip install requests beautifulsoup4 openpyxl pypdf
-
-      - name: Check Korea Real Estate Board and refresh data
-        run: python scripts/update_real_estate_pulse.py
-
-      - name: Commit new official data when changed
+      - name: Validate complete official-region dataset
         shell: bash
         run: |
-          if git diff --quiet -- real-estate-pulse-data.json; then
-            echo 'No new REB weekly release.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- real-estate-pulse-data.json
-          git commit -m 'Update Real Estate Pulse data'
-          git push
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          expected = [
+              '서울','부산','대구','인천','대전','울산','전남광주','세종',
+              '경기','강원','충북','충남','전북','경북','경남','제주'
+          ]
+          data = json.loads(Path('real-estate-pulse-data.json').read_text(encoding='utf-8'))
+
+          for key in ('asOf', 'published'):
+              if not re.fullmatch(r'20\d{2}-\d{2}-\d{2}', str(data.get(key, ''))):
+                  raise SystemExit(f'invalid {key}')
+
+          regions = data.get('regions')
+          if not isinstance(regions, list) or [r.get('name') for r in regions] != expected:
+              raise SystemExit('region list must contain the current 16 regions in canonical order')
+
+          for region in regions:
+              for metric in ('sale', 'lease'):
+                  value = region.get(metric)
+                  if isinstance(value, bool) or not isinstance(value, (int, float)):
+                      raise SystemExit(f"{region.get('name')} {metric} is missing or non-numeric")
+                  if not -5 <= float(value) <= 5:
+                      raise SystemExit(f"{region.get('name')} {metric} is outside the safety range")
+
+          rate = data.get('baseRate', {}).get('value')
+          if isinstance(rate, bool) or not isinstance(rate, (int, float)):
+              raise SystemExit('baseRate.value must be numeric')
+
+          print('Real Estate Pulse dataset is complete: 16 regions / 32 values.')
+          PY
