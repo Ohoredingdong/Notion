@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Zero Spend</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --text:#1f1f1d;
+    --muted:#8d8d88;
+    --line:#eeeeeb;
+    --green:#2f8a25;
+    --green-strong:#2f8a25;
+    --green-soft:#eef7ea;
+    --green-soft-2:#e4f2df;
+    --shadow:0 9px 28px rgba(31,31,29,.05);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:transparent;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--text)}
+  body{padding:0}
+  button{font:inherit;color:inherit}
+  .wrap{width:100%;max-width:360px;margin:0 auto;padding:8px}
+  .card{
+    background:var(--bg);border:1px solid #ecece9;border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 16px 15px;position:relative;overflow:hidden;
+  }
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .title{font-size:16px;line-height:1.2;font-weight:750;letter-spacing:-.02em}
+  .subtitle{font-size:11px;color:var(--muted);margin-top:5px;letter-spacing:-.01em}
+  .more{border:0;background:transparent;padding:2px 2px 8px;cursor:pointer;font-size:18px;line-height:1;color:#777}
+  .monthnav{margin-top:22px;display:grid;grid-template-columns:38px 1fr 38px;align-items:center}
+  .navbtn{width:34px;height:34px;border:0;background:transparent;border-radius:9px;cursor:pointer;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;color:#111}
+  .navbtn:hover{background:#f7f7f5}
+  .monthlabel{text-align:center;font-weight:700;font-size:14px;letter-spacing:-.02em}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);margin-top:14px;padding:0 1px}
+  .wk{height:28px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:650;color:#565652}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:42px;align-items:center;padding:0 1px}
+  .day{position:relative;height:42px;display:flex;align-items:center;justify-content:center}
+  .datebtn{
+    width:34px;height:34px;border:0;border-radius:50%;background:transparent;cursor:pointer;
+    font-size:12px;display:flex;align-items:center;justify-content:center;transition:.14s ease;
+  }
+  .datebtn:hover{background:#f5f7f3}
+  .other .datebtn{color:#c6c6c1;cursor:default}
+  .other .datebtn:hover{background:transparent}
+  .marked .datebtn{background:var(--green-soft-2);color:#397d30}
+  .today .datebtn{box-shadow:inset 0 0 0 1.5px #8fc483}
+  .marked.today .datebtn{background:var(--green-strong);color:white;box-shadow:none;font-weight:750}
+  .divider{height:1px;background:var(--line);margin:8px 0 13px}
+  .stats{display:grid;grid-template-columns:1fr 1px 1fr;gap:14px;align-items:stretch}
+  .statline{background:var(--line)}
+  .stat{min-height:74px}
+  .statlabel{font-size:11px;color:#4c4c48;margin-bottom:6px}
+  .rateRow{display:flex;align-items:flex-end;gap:3px}
+  .rate{font-size:31px;font-weight:700;line-height:1;color:var(--green-strong);letter-spacing:-.04em}
+  .unit{font-size:16px;font-weight:700;color:var(--green-strong);padding-bottom:2px}
+  .countRow{display:flex;align-items:flex-end;gap:4px;white-space:nowrap}
+  .count{font-size:31px;font-weight:700;line-height:1;letter-spacing:-.04em}
+  .countSuffix{font-size:12px;color:#4f4f4c;padding-bottom:3px}
+  .progress{height:3px;border-radius:999px;background:#ecece9;margin-top:11px;overflow:hidden}
+  .progress>i{display:block;height:100%;background:var(--green);border-radius:inherit;width:0;transition:width .2s ease}
+  .hint{margin-top:12px;font-size:9.5px;color:#a1a19c;text-align:center}
+
+  .menu{
+    position:absolute;top:48px;right:14px;width:170px;background:#fff;border:1px solid #e8e8e4;
+    border-radius:12px;padding:8px;box-shadow:0 14px 30px rgba(0,0,0,.10);display:none;z-index:10;
+  }
+  .menu.open{display:block}
+  .menuTitle{font-size:10px;color:#9b9b95;padding:4px 8px 6px}
+  .goalset{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 4px 7px}
+  .goalbtn{border:1px solid #ecece8;background:#fafaf8;border-radius:8px;height:30px;cursor:pointer;font-size:10px}
+  .goalbtn.active{border-color:#9ac891;background:#eff7ec;color:#2d7b24;font-weight:700}
+  .menuAction{width:100%;height:34px;border:0;background:transparent;border-radius:8px;text-align:left;padding:0 9px;cursor:pointer;font-size:11px}
+  .menuAction:hover{background:#f6f6f3}
+  .menuAction.danger{color:#b24b4b}
+
+  @media (max-width:320px){
+    .wrap{padding:5px}.card{padding:16px 12px 13px}.grid{grid-auto-rows:38px}.day{height:38px}.datebtn{width:31px;height:31px}.monthnav{margin-top:17px}.stats{gap:10px}.rate,.count{font-size:28px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="card" id="card">
+    <div class="top">
+      <div><div class="title">Zero Spend</div><div class="subtitle">지출 없는 날</div></div>
+      <button class="more" id="moreBtn" aria-label="설정">•••</button>
+    </div>
+
+    <div class="menu" id="menu">
+      <div class="menuTitle">이번 달 목표 일수</div>
+      <div class="goalset" id="goalset"></div>
+      <button class="menuAction" id="todayBtn">오늘로 이동</button>
+      <button class="menuAction danger" id="resetBtn">이 달 기록 초기화</button>
+    </div>
+
+    <div class="monthnav">
+      <button class="navbtn" id="prevBtn" aria-label="이전 달">‹</button>
+      <div class="monthlabel" id="monthLabel"></div>
+      <button class="navbtn" id="nextBtn" aria-label="다음 달">›</button>
+    </div>
+
+    <div class="week" aria-hidden="true">
+      <div class="wk">일</div><div class="wk">월</div><div class="wk">화</div><div class="wk">수</div><div class="wk">목</div><div class="wk">금</div><div class="wk">토</div>
+    </div>
+    <div class="grid" id="calendar"></div>
+
+    <div class="divider"></div>
+    <div class="stats">
+      <div class="stat">
+        <div class="statlabel">무지출 성공률</div>
+        <div class="rateRow"><span class="rate" id="rate">0</span><span class="unit">%</span></div>
+        <div class="progress"><i id="progress"></i></div>
+      </div>
+      <div class="statline"></div>
+      <div class="stat">
+        <div class="statlabel">무지출 일수</div>
+        <div class="countRow"><span class="count" id="count">0</span><span class="countSuffix">일 / <span id="goalText">25</span>일</span></div>
+      </div>
+    </div>
+    <div class="hint">날짜를 눌러 무지출 기록을 켜고 끌 수 있어요.</div>
+  </section>
+</div>
+<script>
+(() => {
+  const STORE='zeroSpendWidget:v1';
+  const GOALS=[10,15,20,25,30,'all'];
+  const pad=n=>String(n).padStart(2,'0');
+  const keyYM=(y,m)=>`${y}-${pad(m+1)}`;
+  const keyDate=(y,m,d)=>`${keyYM(y,m)}-${pad(d)}`;
+  const today=new Date();
+  let view=new Date(today.getFullYear(),today.getMonth(),1);
+
+  const $=id=>document.getElementById(id);
+  const els={cal:$('calendar'),month:$('monthLabel'),rate:$('rate'),count:$('count'),goal:$('goalText'),progress:$('progress'),menu:$('menu'),goalset:$('goalset')};
+
+  function load(){
+    try{return JSON.parse(localStorage.getItem(STORE)) || {marked:{},goals:{}}}catch{return {marked:{},goals:{}}}
+  }
+  function save(s){localStorage.setItem(STORE,JSON.stringify(s))}
+  let state=load();
+  state.marked ||= {}; state.goals ||= {};
+
+  function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
+  function goalFor(y,m){
+    const ym=keyYM(y,m); const max=daysInMonth(y,m); const saved=state.goals[ym] ?? 25;
+    return saved==='all'?max:Math.min(Number(saved)||25,max);
+  }
+  function setGoal(v){state.goals[keyYM(view.getFullYear(),view.getMonth())]=v;save(state);render()}
+
+  function renderGoals(){
+    const y=view.getFullYear(),m=view.getMonth(),stored=state.goals[keyYM(y,m)] ?? 25;
+    els.goalset.innerHTML='';
+    GOALS.forEach(g=>{
+      const b=document.createElement('button');b.className='goalbtn'+(String(g)===String(stored)?' active':'');
+      b.textContent=g==='all'?'전체':`${g}일`;b.onclick=()=>setGoal(g);els.goalset.appendChild(b);
+    });
+  }
+
+  function render(){
+    const y=view.getFullYear(),m=view.getMonth();
+    els.month.textContent=`${y}년 ${m+1}월`;
+    els.cal.innerHTML='';
+    const first=new Date(y,m,1).getDay();
+    const dim=daysInMonth(y,m);
+    const prevDim=daysInMonth(y,m-1);
+    const cells=42;
+    for(let i=0;i<cells;i++){
+      const div=document.createElement('div'); div.className='day';
+      const b=document.createElement('button'); b.className='datebtn';
+      let d,cy=y,cm=m,other=false;
+      if(i<first){ d=prevDim-first+i+1; cm=m-1; if(cm<0){cm=11;cy--} other=true; }
+      else if(i>=first+dim){ d=i-(first+dim)+1; cm=m+1; if(cm>11){cm=0;cy++} other=true; }
+      else d=i-first+1;
+      b.textContent=d;
+      if(other){div.classList.add('other'); b.disabled=true;}
+      else{
+        const k=keyDate(y,m,d);
+        if(state.marked[k]) div.classList.add('marked');
+        if(y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate()) div.classList.add('today');
+        b.setAttribute('aria-label',`${m+1}월 ${d}일 무지출 기록`);
+        b.onclick=()=>{state.marked[k]=!state.marked[k];if(!state.marked[k])delete state.marked[k];save(state);render();};
+      }
+      div.appendChild(b);els.cal.appendChild(div);
+    }
+
+    const prefix=keyYM(y,m)+'-';
+    const count=Object.keys(state.marked).filter(k=>k.startsWith(prefix)&&state.marked[k]).length;
+    const goal=goalFor(y,m);
+    const rate=goal?Math.min(100,Math.round(count/goal*100)):0;
+    els.count.textContent=count;els.goal.textContent=goal;els.rate.textContent=rate;els.progress.style.width=rate+'%';
+    renderGoals();
+  }
+
+  $('prevBtn').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
+  $('nextBtn').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
+  $('todayBtn').onclick=()=>{view=new Date(today.getFullYear(),today.getMonth(),1);els.menu.classList.remove('open');render()};
+  $('moreBtn').onclick=e=>{e.stopPropagation();els.menu.classList.toggle('open')};
+  $('resetBtn').onclick=()=>{
+    const ym=keyYM(view.getFullYear(),view.getMonth())+'-';
+    Object.keys(state.marked).forEach(k=>{if(k.startsWith(ym))delete state.marked[k]});
+    save(state);els.menu.classList.remove('open');render();
+  };
+  document.addEventListener('click',e=>{if(!els.menu.contains(e.target)&&e.target!==$('moreBtn'))els.menu.classList.remove('open')});
+
+  render();
+})();
+</script>
+</body>
+</html>
