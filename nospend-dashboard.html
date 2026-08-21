@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>무지출 챌린지</title>
+<style>
+:root{
+  --bg:#ffffff;
+  --card:#ffffff;
+  --text:#22211f;
+  --sub:#7f807b;
+  --muted:#b7b7b2;
+  --line:#e8e7e3;
+  --soft:#f5f5f3;
+  --soft-2:#fafaf8;
+  --done:#f1f1ef;
+  --today:#9da09a;
+  --accent:#22211f;
+  --corner:#d8d8d4;
+  --shadow:0 2px 10px rgba(30,30,25,.035);
+}
+html[data-theme="dark"]{
+  --bg:#191918;
+  --card:#20201f;
+  --text:#f2f2ef;
+  --sub:#b6b6b1;
+  --muted:#777772;
+  --line:#33332f;
+  --soft:#292927;
+  --soft-2:#242423;
+  --done:#2b2b29;
+  --today:#d3d3cf;
+  --accent:#f2f2ef;
+  --corner:#4b4b47;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:transparent}
+body{
+  padding:8px;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+.widget{
+  position:relative;
+  width:min(100%,340px);
+  margin:0 auto;
+  padding:18px 18px 15px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.corner{
+  position:absolute;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--corner);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.035);
+  pointer-events:none;
+}
+.corner.tl{top:4px;left:4px}.corner.tr{top:4px;right:4px}.corner.bl{bottom:4px;left:4px}.corner.br{bottom:4px;right:4px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.title{font-size:13px;font-weight:760;letter-spacing:-.025em}
+.month{font-size:11px;color:var(--muted);font-weight:520;white-space:nowrap}
+.streak-row{display:flex;align-items:flex-end;gap:9px;margin-top:11px}
+.streak{font-size:34px;line-height:.9;font-weight:790;letter-spacing:-.065em}
+.streak-label{font-size:10px;color:var(--sub);margin-bottom:2px}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-top:18px;margin-bottom:5px}
+.weekdays span{text-align:center;font-size:8.5px;color:var(--muted);font-weight:560}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 4px}
+.day-wrap{aspect-ratio:1;display:grid;place-items:center}
+.day{
+  width:100%;height:100%;max-width:38px;max-height:38px;
+  display:grid;place-items:center;
+  border:1px solid transparent;
+  border-radius:50%;
+  background:transparent;
+  color:var(--sub);
+  font-size:9.5px;
+  cursor:pointer;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease,color .12s ease;
+}
+.day:hover:not(:disabled){background:var(--soft-2);transform:translateY(-1px)}
+.day.done{background:var(--done);color:var(--text)}
+.day.today{border-color:var(--today);color:var(--text);font-weight:700}
+.day.done.today{border-color:var(--today)}
+.day.future{color:var(--muted);opacity:.42;cursor:default}
+.day:disabled{cursor:default}
+.day.empty{visibility:hidden}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(0,0,0,0)}
+.stat{font-size:9.5px;color:var(--muted);white-space:nowrap}
+.stat strong{font-weight:650;color:var(--sub)}
+.hint{margin-top:5px;text-align:center;font-size:8px;color:var(--muted);opacity:.75}
+@media(max-width:360px){body{padding:4px}.widget{padding:16px 14px 13px}.calendar{gap:3px}.day{max-width:36px;max-height:36px}.streak{font-size:32px}}
+</style>
+</head>
+<body>
+<main class="widget">
+  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+  <div class="header">
+    <div class="title">무지출 챌린지</div>
+    <div class="month" id="monthLabel">—</div>
+  </div>
+  <div class="streak-row">
+    <div class="streak" id="currentStreak">0일</div>
+    <div class="streak-label">연속 무지출</div>
+  </div>
+  <div class="weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+  <div class="calendar" id="calendar"></div>
+  <div class="footer">
+    <div class="stat">이번 달 <strong id="monthCount">0일</strong> 무지출</div>
+    <div class="stat">최고 <strong id="bestStreak">0일</strong></div>
+  </div>
+  <div class="hint">날짜를 눌러 무지출 성공을 기록하세요.</div>
+</main>
+<script>
+const params=new URLSearchParams(location.search);
+const theme=params.get('theme');
+document.documentElement.dataset.theme=(theme==='light'||theme==='dark')?theme:(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+
+const today=new Date();
+const year=today.getFullYear(), month=today.getMonth();
+const STORAGE=`notion_nospend_${year}_${month+1}`;
+const monthLabel=document.getElementById('monthLabel');
+const calendar=document.getElementById('calendar');
+const currentStreakEl=document.getElementById('currentStreak');
+const monthCountEl=document.getElementById('monthCount');
+const bestStreakEl=document.getElementById('bestStreak');
+
+monthLabel.textContent=`${year}년 ${month+1}월`;
+let doneDays=load();
+
+function load(){
+  try{
+    const v=JSON.parse(localStorage.getItem(STORAGE)||'[]');
+    return new Set(Array.isArray(v)?v.map(Number).filter(Number.isFinite):[]);
+  }catch(_){return new Set()}
+}
+function save(){localStorage.setItem(STORAGE,JSON.stringify([...doneDays].sort((a,b)=>a-b)))}
+function daysInMonth(){return new Date(year,month+1,0).getDate()}
+function firstWeekday(){return new Date(year,month,1).getDay()}
+function isFuture(day){
+  const d=new Date(year,month,day,23,59,59);
+  const now=new Date();
+  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&day>now.getDate();
+}
+function renderCalendar(){
+  calendar.innerHTML='';
+  const blanks=firstWeekday();
+  for(let i=0;i<blanks;i++)calendar.insertAdjacentHTML('beforeend','<div class="day-wrap"><button class="day empty" disabled></button></div>');
+  for(let day=1;day<=daysInMonth();day++){
+    const btn=document.createElement('button');
+    btn.className='day';
+    btn.type='button';
+    btn.textContent=day;
+    btn.setAttribute('aria-label',`${month+1}월 ${day}일 무지출 기록`);
+    const future=isFuture(day);
+    if(doneDays.has(day))btn.classList.add('done');
+    if(day===today.getDate()&&year===today.getFullYear()&&month===today.getMonth())btn.classList.add('today');
+    if(future){btn.classList.add('future');btn.disabled=true}
+    else btn.addEventListener('click',()=>toggle(day));
+    const wrap=document.createElement('div');wrap.className='day-wrap';wrap.appendChild(btn);calendar.appendChild(wrap);
+  }
+}
+function toggle(day){
+  if(doneDays.has(day))doneDays.delete(day);else doneDays.add(day);
+  save();renderCalendar();renderStats();
+}
+function getStreaks(){
+  const last=Math.min(today.getDate(),daysInMonth());
+  let current=0;
+  for(let d=last;d>=1;d--){if(doneDays.has(d))current++;else break}
+  let best=0,run=0;
+  for(let d=1;d<=last;d++){
+    if(doneDays.has(d)){run++;best=Math.max(best,run)}else run=0;
+  }
+  return{current,best};
+}
+function renderStats(){
+  const {current,best}=getStreaks();
+  currentStreakEl.textContent=`${current}일`;
+  monthCountEl.textContent=`${doneDays.size}일`;
+  bestStreakEl.textContent=`${best}일`;
+}
+renderCalendar();renderStats();
+</script>
+</body>
+</html>
