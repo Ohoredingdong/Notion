@@ -60,15 +60,15 @@ button{font:inherit;color:inherit}
 .sum-sub{margin-top:2px;font-size:9.5px;color:var(--sub);font-weight:550;word-break:keep-all}
 .sum .dots{margin-top:10px}
 .board{margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-.col{padding:10px 11px 10px;min-width:0}
+.col{padding:10px 11px 10px;min-width:0;display:flex;flex-direction:column}.list{display:grid;gap:10px;align-content:start;flex:1}
 .col+.col{border-left:1px solid var(--line-soft)}
 .col-head{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:10px}
 .col-title-wrap{display:flex;align-items:center;gap:6px;min-width:0}
 .col-title-wrap svg{width:12px;height:12px;color:var(--green-deep)}
 .col-title{font-size:12px;font-weight:740;color:var(--green-deep);white-space:nowrap}
 .col-en{font-size:9.5px;color:var(--muted);white-space:nowrap}
-.list{display:grid;gap:10px}
 .event{display:grid;grid-template-columns:36px minmax(0,1fr);gap:7px;align-items:flex-start;min-width:0}
+.event[hidden]{display:none!important}
 .time{font-size:10px;line-height:1.26;color:var(--sub);font-weight:620;white-space:pre-line;padding-top:1px}
 .event-main{min-width:0}
 .event-title{font-size:10.5px;line-height:1.35;font-weight:680;word-break:keep-all}
@@ -113,11 +113,11 @@ button{font:inherit;color:inherit}
       <div class="hero-main">
         <div class="hero-icon" id="heroIcon"></div>
         <div class="hero-copy">
-          <div class="hero-title" id="heroTitle">데이터 불러오는 중</div>
+          <div class="hero-title" id="heroTitle">FOMC 금리 결정</div>
           <div class="meta"><span class="chip" id="heroDate"></span><span class="chip" id="heroTime"></span></div>
           <div class="desc" id="heroDesc">가장 영향도가 높은 예정 이벤트를 자동으로 표시합니다.</div>
         </div>
-        <div class="impact"><div class="impact-tag" id="heroImpact">—</div><div class="dots" id="heroDots"></div></div>
+        <div class="impact"><div class="impact-tag" id="heroImpact">높은 영향도</div><div class="dots" id="heroDots"></div></div>
       </div>
     </section>
 
@@ -138,6 +138,26 @@ button{font:inherit;color:inherit}
   </div>
 </div>
 <script>
+const sampleData = {
+  source:'TradingView Economic Calendar',
+  source_url:'https://www.tradingview.com/economic-calendar/',
+  generated_at:new Date().toISOString(),
+  updated_label:'방금 전',
+  stale:false,
+  highlight:{category:'rate',title:'FOMC Interest Rate Decision',title_ko:'FOMC 금리 결정',date_kst:'5월 1일 (수)',time_kst:'03:00 AM (KST)',importance:3,comment:'연방공개시장위원회 금리 결정 및 성명서 발표'},
+  events:[
+    {bucket:'today',country:'US',time_kst:'21:30',title_ko:'JOLTs 구인건수',importance:2,category:'jobs',actual:'3월'},
+    {bucket:'today',country:'US',time_kst:'23:00',title_ko:'CB 소비자신뢰지수',importance:2,category:'growth',actual:'4월'},
+    {bucket:'today',country:'US',time_kst:'23:30',title_ko:'원유 재고 (EIA)',importance:1,category:'other',actual:'주간'},
+    {bucket:'week',country:'US',time_kst:'수\n5/1',title_ko:'FOMC 금리 결정',importance:3,category:'rate'},
+    {bucket:'week',country:'EU',time_kst:'목\n5/2',title_ko:'EU CPI (예비치)',importance:2,category:'inflation'},
+    {bucket:'week',country:'US',time_kst:'금\n5/3',title_ko:'비농업 고용지수',importance:3,category:'jobs'},
+    {bucket:'later',country:'US',time_kst:'5/7',title_ko:'연준 인사 발언',importance:1,category:'other',actual:'연설'},
+    {bucket:'later',country:'US',time_kst:'5/10',title_ko:'CPI (4월)',importance:2,category:'inflation'},
+    {bucket:'later',country:'US',time_kst:'5/14',title_ko:'PPI (4월)',importance:2,category:'inflation'}
+  ]
+};
+
 const SETTINGS_KEY='widget.marketEvents.controls.v4';
 const root=document.getElementById('root');
 const q=new URLSearchParams(location.search); const osTheme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
@@ -166,21 +186,34 @@ const summaryMeta={ rate:{title:'금리 결정',sub:'금리 결정'}, inflation:
 const categoryLabel={ rate:'금리 결정', inflation:'인플레이션', jobs:'고용지표', growth:'경기지표', other:'경제지표' };
 const tone={ rate:'red', inflation:'amber', jobs:'green', growth:'blue', other:'green' };
 const flags={US:'🇺🇸',KR:'🇰🇷',JP:'🇯🇵',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',CN:'🇨🇳',EU:'🇪🇺'};
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m])); }
 function dots(n,total=5){ return Array.from({length:total}, (_,i)=>`<span class="dot ${i<n?'on':''}"></span>`).join(''); }
-function subtitleForEvent(e){ if(e.actual!==null&&e.actual!==undefined&&e.actual!=='') return escapeHtml(e.actual); if(e.forecast!==null&&e.forecast!==undefined&&e.forecast!=='') return `예상 ${escapeHtml(e.forecast)}`; if(e.previous!==null&&e.previous!==undefined&&e.previous!=='') return `이전 ${escapeHtml(e.previous)}`; return escapeHtml(categoryLabel[e.category]||'경제지표'); }
-function relativeTime(iso){ if(!iso) return null; try{ const diff=Date.now()-new Date(iso).getTime(); const mins=Math.max(0,Math.round(diff/60000)); if(mins<1) return '방금 전'; if(mins<60) return `${mins}분 전`; const hrs=Math.floor(mins/60); if(hrs<24) return `${hrs}시간 전`; const days=Math.floor(hrs/24); return `${days}일 전`; }catch{return null;} }
-function eventHtml(e,hidden=false){ return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${escapeHtml(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||e.country||''}</span>${escapeHtml(e.title_ko||e.title||'')}</div><div class="event-desc">${subtitleForEvent(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${escapeHtml(categoryLabel[e.category]||'경제지표')}</span>${(e.importance||0)>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`; }
-function renderColumn(title,en,events){ const first=events.slice(0,3),rest=events.slice(3); return `<div class="col"><div class="col-head"><div class="col-title-wrap">${icons.cal}<span class="col-title">${title}</span></div><div class="col-en">${en}</div></div><div class="list">${first.map(e=>eventHtml(e)).join('')}${rest.map(e=>eventHtml(e,true)).join('')||(first.length?'':'<div class="empty">예정 이벤트 없음</div>')}</div><button class="more" ${rest.length?'':'hidden'}>더 보기 〉</button></div>`; }
+function subtitleForEvent(e){ if(e.actual) return escapeHtml(e.actual); if(e.forecast) return `예상 ${escapeHtml(e.forecast)}`; if(e.previous) return `이전 ${escapeHtml(e.previous)}`; return escapeHtml(categoryLabel[e.category]||'경제지표'); }
+function relativeTime(iso){ if(!iso) return null; try{ const diff = Date.now()-new Date(iso).getTime(); const mins=Math.max(0,Math.round(diff/60000)); if(mins<1) return '방금 전'; if(mins<60) return `${mins}분 전`; const hrs=Math.floor(mins/60); if(hrs<24) return `${hrs}시간 전`; const days=Math.floor(hrs/24); return `${days}일 전`; }catch{return null;} }
+function eventHtml(e, hidden=false){ return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${escapeHtml(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||e.country||''}</span>${escapeHtml(e.title_ko||e.title||'')}</div><div class="event-desc">${subtitleForEvent(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${escapeHtml(categoryLabel[e.category]||'경제지표')}</span>${(e.importance||0)>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`; }
+function renderColumn(key,title,en,events){ const first=events.slice(0,3); const rest=events.slice(3); return `<div class="col"><div class="col-head"><div class="col-title-wrap">${icons.cal}<span class="col-title">${title}</span></div><div class="col-en">${en}</div></div><div class="list">${first.map(e=>eventHtml(e)).join('')}${rest.map(e=>eventHtml(e,true)).join('') || (first.length?'':'<div class="empty">예정 이벤트 없음</div>')}</div><button class="more" ${rest.length?'':'hidden'}>${'더 보기 〉'}</button></div>`; }
 function render(data){
-  const events=data.events||[]; const highlight=data.highlight||events[0];
-  const rel=relativeTime(data.generated_at)||data.updated_label||'최근'; document.querySelector('#updated span').textContent=data.stale?'업데이트 지연':`업데이트: ${rel}`; document.getElementById('retry').hidden=!data.stale;
-  if(highlight){ document.getElementById('heroIcon').innerHTML=icons[highlight.category]||icons.other; document.getElementById('heroTitle').textContent=highlight.title_ko||highlight.title||'주요 이벤트'; document.getElementById('heroDate').innerHTML=`${icons.cal}<span>${escapeHtml(highlight.date_kst||'—')}</span>`; document.getElementById('heroTime').innerHTML=`${icons.clock}<span>${escapeHtml(highlight.time_kst||'—')}</span>`; document.getElementById('heroDesc').textContent=highlight.comment_ko||highlight.comment||'주요 경제 이벤트'; document.getElementById('heroImpact').textContent=(highlight.importance||0)>=3?'높은 영향도':(highlight.importance||0)===2?'중간 영향도':'낮은 영향도'; document.getElementById('heroDots').innerHTML=dots(Math.min(5,Math.max(2,(highlight.importance||1)+2)),5); }
-  const cats=['rate','inflation','jobs','growth']; document.getElementById('summary').innerHTML=cats.map(c=>{ const arr=events.filter(e=>e.category===c); const max=Math.max(0,...arr.map(e=>e.importance||0)); const meta=summaryMeta[c]; return `<div class="sum"><div class="sum-top"><div class="sum-icon">${icons[c]}</div><div class="sum-copy"><div class="sum-title">${meta.title}</div><div class="sum-sub">${meta.sub}</div></div></div><div class="dots">${dots(Math.min(5,Math.max(2,max+1)),5)}</div></div>`; }).join('');
-  const today=events.filter(e=>e.bucket==='today'),week=events.filter(e=>e.bucket==='week'),later=events.filter(e=>e.bucket==='later'); document.getElementById('board').innerHTML=renderColumn('오늘','Today',today)+renderColumn('이번 주','This Week',week)+renderColumn('Later','Later',later);
+  const events=data.events||[]; const highlight=data.highlight || events[0] || sampleData.highlight;
+  const rel = relativeTime(data.generated_at) || data.updated_label || '최근';
+  document.querySelector('#updated span').textContent = data.stale ? '업데이트 지연' : `업데이트: ${rel}`;
+  document.getElementById('retry').hidden = !data.stale;
+  document.getElementById('heroIcon').innerHTML = icons[highlight.category] || icons.other;
+  document.getElementById('heroTitle').textContent = highlight.title_ko || highlight.title || '주요 이벤트';
+  document.getElementById('heroDate').innerHTML = `${icons.cal}<span>${escapeHtml(highlight.date_kst || '—')}</span>`;
+  document.getElementById('heroTime').innerHTML = `${icons.clock}<span>${escapeHtml(highlight.time_kst || '—')}</span>`;
+  document.getElementById('heroDesc').textContent = highlight.comment_ko || highlight.comment || '주요 경제 이벤트';
+  document.getElementById('heroImpact').textContent = (highlight.importance||0)>=3 ? '높은 영향도' : (highlight.importance||0)===2 ? '중간 영향도' : '낮은 영향도';
+  document.getElementById('heroDots').innerHTML = dots(Math.min(5, Math.max(2,(highlight.importance||1)+2)),5);
+  const cats=['rate','inflation','jobs','growth'];
+  document.getElementById('summary').innerHTML = cats.map(c=>{ const arr=events.filter(e=>e.category===c); const max=Math.max(0,...arr.map(e=>e.importance||0)); const meta=summaryMeta[c]; return `<div class="sum"><div class="sum-top"><div class="sum-icon">${icons[c]}</div><div class="sum-copy"><div class="sum-title">${meta.title}</div><div class="sum-sub">${meta.sub}</div></div></div><div class="dots">${dots(Math.min(5, Math.max(2,max+1)),5)}</div></div>`; }).join('');
+  const today=events.filter(e=>e.bucket==='today'); const week=events.filter(e=>e.bucket==='week'); const later=events.filter(e=>e.bucket==='later');
+  document.getElementById('board').innerHTML = renderColumn('today','오늘','Today',today)+renderColumn('week','이번 주','This Week',week)+renderColumn('later','Later','Later',later);
   document.querySelectorAll('.more').forEach(btn=>btn.onclick=()=>{ const col=btn.closest('.col'); const hidden=[...col.querySelectorAll('.extra-event')].filter(el=>el.hidden); if(hidden.length){ hidden.forEach(el=>el.hidden=false); btn.textContent='접기 ⌃'; } else { [...col.querySelectorAll('.extra-event')].slice(3).forEach(el=>el.hidden=true); btn.textContent='더 보기 〉'; } });
 }
-async function load(){ try{ const r=await fetch(`./market-events-data.json?t=${Date.now()}`,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); render(await r.json()); } catch(e){ document.querySelector('#updated span').textContent='업데이트 지연'; document.getElementById('retry').hidden=false; } }
+async function load(){
+  try{ const r = await fetch(`./market-events-data.json?t=${Date.now()}`, {cache:'no-store'}); if(!r.ok) throw new Error(r.status); const data = await r.json(); render({...sampleData, ...data, events:(data.events&&data.events.length)?data.events:sampleData.events, highlight:data.highlight||sampleData.highlight}); }
+  catch(e){ render(sampleData); document.getElementById('retry').hidden=false; }
+}
 document.getElementById('retry').onclick=load; load();
 </script>
 </body>
