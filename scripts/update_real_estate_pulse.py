@@ -15,7 +15,7 @@ BASE = "https://www.reb.or.kr"
 LIST_URL = BASE + "/reb/na/ntt/selectNttList.do?mi=9565&bbsId=1154"
 OUT = Path("real-estate-pulse-data.json")
 REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","경기","강원","충북","충남","전북","전남","경북","경남","제주"]
-UA = {"User-Agent": "Mozilla/5.0 (compatible; NotionRealEstatePulse/1.0; +https://github.com/Ohoredingdong/Notion)"}
+UA = {"User-Agent": "Mozilla/5.0 (compatible; NotionRealEstatePulse/1.1; +https://github.com/Ohoredingdong/Notion)"}
 
 
 def get(url, **kwargs):
@@ -46,8 +46,7 @@ def latest_release():
             candidates.append((m.group(1), urljoin(BASE, href)))
     if not candidates:
         raise RuntimeError("REB 주간아파트가격동향 최신 게시물을 찾지 못했습니다.")
-    asof, url = max(candidates, key=lambda x: x[0])
-    return asof, url
+    return max(candidates, key=lambda x: x[0])
 
 
 def find_pdf_url(detail_url):
@@ -80,9 +79,12 @@ def find_pdf_url(detail_url):
         if href and isinstance(href, str) and href != "#" and not href.lower().startswith("javascript:"):
             candidates.append(urljoin(BASE, href))
 
-    # Prefer links clearly associated with a PDF attachment.
     candidates = list(dict.fromkeys(candidates))
-    scored = sorted(candidates, key=lambda u: (("pdf" in u.lower()), ("down" in u.lower() or "file" in u.lower())), reverse=True)
+    scored = sorted(
+        candidates,
+        key=lambda u: (("pdf" in u.lower()), ("down" in u.lower() or "file" in u.lower())),
+        reverse=True,
+    )
     for u in scored:
         try:
             r = get(u, allow_redirects=True)
@@ -91,12 +93,10 @@ def find_pdf_url(detail_url):
         if r.content[:4] == b"%PDF" or "application/pdf" in r.headers.get("content-type", "").lower():
             return r.url, r.content
 
-    # Some REB pages expose the attachment URL only inside inline scripts.
-    patterns = [
+    for pat in (
         r"['\"]([^'\"]*(?:FileDown|fileDown|download)[^'\"]*)['\"]",
         r"['\"]([^'\"]+\.pdf(?:\?[^'\"]*)?)['\"]",
-    ]
-    for pat in patterns:
+    ):
         for raw in re.findall(pat, html, flags=re.I):
             u = urljoin(detail_url, raw.replace("&amp;", "&"))
             try:
@@ -116,57 +116,72 @@ def pdf_text(pdf_bytes):
     return text
 
 
-def section(text, mode):
-    # REB releases consistently use these headings, but allow spacing variations.
-    if mode == "sale":
-        starts = ["주간 아파트 매매가격 동향", "매매가격 동향", "매매가격지수 변동률"]
-        ends = ["주간 아파트 전세가격 동향", "전세가격 동향"]
+def appendix_one(text):
+    # The press release mentions '붙임 1' once in the contents and again at the
+    # actual appendix. Choose the LAST occurrence so we land on the real table.
+    pat = re.compile(r"붙임\s*1\s*[:：]?\s*주간\s*아파트\s*시도별\s*변동률\s*통계표", re.I)
+    matches = list(pat.finditer(text))
+    if not matches:
+        raise RuntimeError("공식 PDF에서 '붙임 1 주간 아파트 시도별 변동률 통계표'를 찾지 못했습니다.")
+    start = matches[-1].start()
+    tail = text[start:]
+    next_appendix = re.search(r"\n\s*붙임\s*2\b", tail, re.I)
+    return tail[: next_appendix.start()] if next_appendix else tail
+
+
+def split_sale_lease(appendix):
+    sale_head = re.search(r"□?\s*매매가격\s*변동률", appendix)
+    lease_head = re.search(r"□?\s*전세가격\s*변동률", appendix)
+    if not sale_head or not lease_head:
+        raise RuntimeError("붙임 1에서 매매/전세 변동률 구간을 찾지 못했습니다.")
+    if sale_head.start() < lease_head.start():
+        sale = appendix[sale_head.end():lease_head.start()]
+        lease = appendix[lease_head.end():]
     else:
-        starts = ["주간 아파트 전세가격 동향", "전세가격 동향", "전세가격지수 변동률"]
-        ends = ["주간 아파트 월세", "주간아파트가격동향 요약", "붙임"]
-    pos = -1
-    for s in starts:
-        p = text.find(s)
-        if p >= 0 and (pos < 0 or p < pos):
-            pos = p
-    if pos < 0:
-        return text
-    end = len(text)
-    for e in ends:
-        p = text.find(e, pos + 20)
-        if p >= 0:
-            end = min(end, p)
-    return text[pos:end]
+        lease = appendix[lease_head.end():sale_head.start()]
+        sale = appendix[sale_head.end():]
+    return sale, lease
 
 
-def parse_region_values(text, mode):
-    sec = section(text, mode)
-    lines = [re.sub(r"\s+", " ", ln).strip() for ln in sec.splitlines() if ln.strip()]
-    result = {}
+def region_pattern(region):
+    # pypdf often extracts '서울' as '서 울', '경기' as '경 기', etc.
+    return re.compile(r"^\s*" + r"\s*".join(map(re.escape, region)) + r"(?:\s|$)")
+
+
+def starts_region(line):
+    return any(region_pattern(r).search(line) for r in REGIONS)
+
+
+def parse_appendix_table(section_text):
+    lines = [re.sub(r"[\u00a0\t]+", " ", ln).strip() for ln in section_text.splitlines() if ln.strip()]
+    values = {}
     previous = {}
 
-    # First pass: region and weekly values occurring on the same extracted line.
     for region in REGIONS:
-        candidates = []
+        rp = region_pattern(region)
+        row_numbers = None
         for i, line in enumerate(lines):
-            if not re.search(rf"(^|\s){re.escape(region)}($|\s)", line):
+            if not rp.search(line):
                 continue
             window = line
-            # PDF extraction sometimes wraps the numeric cells to the following line.
-            if i + 1 < len(lines) and len(re.findall(r"[-+]?\d+\.\d+", window)) < 2:
+            nums = re.findall(r"(?<!\d)([-+]?\d+(?:\.\d+)?)(?!\d)", window)
+            # If PDF extraction wrapped one row, append the next line only when
+            # that next line clearly is not another region row.
+            if len(nums) < 3 and i + 1 < len(lines) and not starts_region(lines[i + 1]):
                 window += " " + lines[i + 1]
-            nums = [float(x) for x in re.findall(r"(?<!\d)([-+]?\d+\.\d+)(?!\d)", window)]
-            nums = [x for x in nums if -5 <= x <= 5]
-            if nums:
-                candidates.append(nums)
-        # Prefer a row containing at least two weekly values; the last one is current.
-        good = [x for x in candidates if len(x) >= 2]
-        chosen = good[0] if good else (candidates[0] if candidates else [])
-        if chosen:
-            result[region] = chosen[-1]
-            previous[region] = chosen[-2] if len(chosen) >= 2 else None
+                nums = re.findall(r"(?<!\d)([-+]?\d+(?:\.\d+)?)(?!\d)", window)
+            parsed = [float(x) for x in nums if -100 <= float(x) <= 100]
+            if len(parsed) >= 2:
+                row_numbers = parsed
+                break
+        if row_numbers:
+            # Appendix rows are cumulative columns followed by weekly columns.
+            # The rightmost value is the current week; the one before it is the
+            # immediately previous published week.
+            values[region] = row_numbers[-1]
+            previous[region] = row_numbers[-2]
 
-    return result, previous
+    return values, previous
 
 
 def published_date(detail_html):
@@ -183,8 +198,11 @@ def main():
     detail_html = get(detail_url).text
     pdf_url, pdf_bytes = find_pdf_url(detail_url)
     text = pdf_text(pdf_bytes)
-    sale, sale_prev = parse_region_values(text, "sale")
-    lease, lease_prev = parse_region_values(text, "lease")
+
+    appendix = appendix_one(text)
+    sale_text, lease_text = split_sale_lease(appendix)
+    sale, sale_prev = parse_appendix_table(sale_text)
+    lease, lease_prev = parse_appendix_table(lease_text)
 
     missing_sale = [r for r in REGIONS if r not in sale]
     missing_lease = [r for r in REGIONS if r not in lease]
@@ -195,7 +213,7 @@ def main():
     if missing_sale or missing_lease:
         print("missing sale:", missing_sale, file=sys.stderr)
         print("missing lease:", missing_lease, file=sys.stderr)
-        raise RuntimeError("17개 시도 전체를 공식 PDF에서 파싱하지 못해 기존 JSON을 유지합니다.")
+        raise RuntimeError("붙임 1 통계표에서 17개 시도 전체를 파싱하지 못해 기존 JSON을 유지합니다.")
 
     prev_base = current.get("baseRate", {"value": 2.75, "previous": 2.50, "changedAt": "2026-07-16"})
     data = {
@@ -208,9 +226,9 @@ def main():
             {
                 "name": r,
                 "sale": round(sale[r], 2),
-                "salePrev": round(sale_prev[r], 2) if sale_prev[r] is not None else None,
+                "salePrev": round(sale_prev[r], 2),
                 "lease": round(lease[r], 2),
-                "leasePrev": round(lease_prev[r], 2) if lease_prev[r] is not None else None,
+                "leasePrev": round(lease_prev[r], 2),
             }
             for r in REGIONS
         ],
