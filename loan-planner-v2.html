@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Loan Planner v2</title>
+<style>
+:root{--bg:#fff;--text:#24251f;--sub:#66695f;--muted:#8d9186;--line:#e6e8df;--accent:#667b3f;--accent2:#7e9252;--result:#f2f5e9;--shadow:0 1px 5px rgba(36,37,31,.04)}
+html[data-theme="dark"]{--bg:#191a18;--text:#f1f2ec;--sub:#b9bcaf;--muted:#8a8e82;--line:#30332d;--accent:#a7bb78;--accent2:#8fa364;--result:#25291f;--shadow:none}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:transparent}body{padding:4px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.widget{width:min(100%,510px);margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:17px 15px 13px;box-shadow:var(--shadow)}
+.header{margin-bottom:15px}.title{font-size:18px;font-weight:800;letter-spacing:-.03em;line-height:1.1}.sub{font-size:12px;color:var(--sub);margin-top:4px}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.card{min-width:0;border:1px solid var(--line);border-radius:10px;padding:14px 12px 11px;background:var(--bg)}.label{font-size:12px;font-weight:750;color:var(--sub);margin-bottom:7px}.value{font-size:20px;line-height:1.12;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}.unit{font-size:12px;margin-left:2px;color:var(--sub);font-weight:550}
+.range{margin-top:15px}.track{position:relative;height:20px}.track input{position:absolute;inset:0;width:100%;height:20px;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}.track input::-webkit-slider-runnable-track{height:4px;border-radius:999px;background:linear-gradient(90deg,var(--accent) 0 var(--fill),var(--line) var(--fill) 100%)}.track input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);margin-top:-7px;box-shadow:0 1px 2px rgba(0,0,0,.08)}.track input::-moz-range-track{height:4px;border-radius:999px;background:var(--line)}.track input::-moz-range-progress{height:4px;border-radius:999px;background:var(--accent)}.track input::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
+.ends{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.result{margin-top:14px;border:1px solid #e0e5d5;border-radius:10px;background:linear-gradient(100deg,var(--result),var(--bg));padding:14px 16px 12px}.result-main{display:flex;align-items:center;justify-content:space-between;gap:12px}.result-label{font-size:13px;font-weight:800}.result-note{font-size:11px;color:var(--sub);margin-top:3px}.monthly{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.03em;white-space:nowrap;font-variant-numeric:tabular-nums}.breakdown{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--sub)}.breakdown strong{color:var(--text);font-weight:750}.breakdown span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.footer{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:12px;font-size:10px;color:var(--muted)}.footer span{line-height:1.45}.footer span:last-child{white-space:nowrap;text-align:right}
+@media(max-width:440px){.widget{padding:15px 11px 11px}.controls{gap:7px}.card{padding:12px 9px 10px}.title{font-size:17px}.sub{font-size:11px}.label{font-size:11px}.value{font-size:17px}.monthly{font-size:21px}.breakdown{font-size:9.5px}.footer{font-size:9px}}
+@media(max-width:350px){.controls{grid-template-columns:1fr}.result-main{align-items:flex-end}.breakdown{flex-direction:column;align-items:flex-start;gap:4px}.breakdown span:last-child{text-align:left}.footer{flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+<main class="widget" aria-label="대출 플래너">
+  <header class="header">
+    <div class="title">Loan Planner</div>
+    <div class="sub">대출 플래너</div>
+  </header>
+
+  <section class="controls">
+    <div class="card">
+      <div class="label">대출 금액</div>
+      <div class="value" id="amountValue">₩380,000,000</div>
+      <div class="range"><div class="track"><input id="amount" type="range" min="100000000" max="1000000000" step="10000000" value="380000000" aria-label="대출 금액"></div><div class="ends"><span>1억</span><span>10억</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="label">금리</div>
+      <div class="value"><span id="rateValue">4.20</span><span class="unit">%</span></div>
+      <div class="range"><div class="track"><input id="rate" type="range" min="2" max="7" step="0.05" value="4.20" aria-label="금리"></div><div class="ends"><span>2%</span><span>7%</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="label">대출 기간</div>
+      <div class="value"><span id="yearsValue">30</span><span class="unit">년</span></div>
+      <div class="range"><div class="track"><input id="years" type="range" min="10" max="50" step="1" value="30" aria-label="대출 기간"></div><div class="ends"><span>10년</span><span>50년*</span></div></div>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <div class="result-main">
+      <div>
+        <div class="result-label">예상 월 상환액</div>
+        <div class="result-note">원금 + 이자 · 원리금균등상환</div>
+      </div>
+      <div class="monthly" id="monthly">₩1,858,265</div>
+    </div>
+    <div class="breakdown">
+      <span><strong>월 상환액</strong> = 원금 + 이자</span>
+      <span id="firstBreakdown">첫 달 원금 — · 이자 —</span>
+    </div>
+  </section>
+
+  <footer class="footer"><span>* 최장 50년 선택 가능. 실제 만기는 상품·연령·심사 조건에 따라 달라질 수 있어요.</span><span id="asOf">기준일: —</span></footer>
+</main>
+<script>
+const q=new URLSearchParams(location.search),forced=q.get('theme'),dark=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=(forced==='light'||forced==='dark')?forced:(dark?'dark':'light');
+const amount=document.getElementById('amount'),rate=document.getElementById('rate'),years=document.getElementById('years');
+const won=n=>'₩'+Math.round(n).toLocaleString('ko-KR');
+function fill(el){const min=+el.min,max=+el.max,val=+el.value;el.style.setProperty('--fill',((val-min)/(max-min)*100)+'%')}
+function calc(){
+  const p=+amount.value,a=+rate.value/100,n=+years.value*12,r=a/12;
+  const payment=r===0?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  const firstInterest=p*r;
+  const firstPrincipal=payment-firstInterest;
+  document.getElementById('amountValue').textContent=won(p);
+  document.getElementById('rateValue').textContent=(+rate.value).toFixed(2);
+  document.getElementById('yearsValue').textContent=years.value;
+  document.getElementById('monthly').textContent=won(payment);
+  document.getElementById('firstBreakdown').textContent=`첫 달 원금 ${won(firstPrincipal)} · 이자 ${won(firstInterest)}`;
+  [amount,rate,years].forEach(fill);
+}
+[amount,rate,years].forEach(el=>el.addEventListener('input',calc));
+const parts=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+const get=t=>parts.find(x=>x.type===t)?.value||'';document.getElementById('asOf').textContent=`기준일: ${get('year')}.${get('month')}.${get('day')}`;
+calc();
+</script>
+</body>
+</html>
