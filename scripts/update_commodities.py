@@ -15,11 +15,12 @@ def chart(symbol):
     m=res.get('meta',{}); ts=res.get('timestamp') or []
     closes=((res.get('indicators',{}).get('quote') or [{}])[0].get('close') or [])
     vals=[float(v) for v in closes if v is not None and math.isfinite(float(v))]
-    price=float(m.get('regularMarketPrice') or (vals[-1] if vals else 0))
-    prev=float(m.get('chartPreviousClose') or (vals[-2] if len(vals)>1 else price))
+    if not vals: raise RuntimeError(f'no closes: {symbol}')
+    price=float(m.get('regularMarketPrice') or vals[-1])
+    prev=float(vals[-2] if len(vals)>1 else price)
     ch=((price-prev)/prev*100) if prev else 0
     source_ts=int(m.get('regularMarketTime') or (ts[-1] if ts else datetime.now(timezone.utc).timestamp()))
-    return price,ch,vals[-14:],source_ts
+    return price,ch,vals[-7:],source_ts
 def krw(symbol,price,fx):
     if symbol in ('GC=F','SI=F'): return price*fx/31.1034768
     return price*fx
@@ -35,12 +36,14 @@ def main():
     except Exception: pass
     items=[]
     for symbol,m in META.items():
-        ident,group,name,code,unit,krw_label,color=m
+        ident,group,name,code,unit,krw_label,color=m; stale=False
         try:
             price,ch,hist,source_ts=chart(symbol); source_times.append(source_ts)
         except Exception:
-            o=old.get(symbol,{}); price=float(o.get('price',0)); ch=float(o.get('change_pct',0)); hist=o.get('history',[])
-        items.append({'id':ident,'group':group,'name':name,'code':code,'symbol':symbol,'price':round(price,4),'change_pct':round(ch,4),'unit':unit,'krw_label':krw_label,'krw_value':round(krw(symbol,price,fx),2),'color':color,'history':[round(v,4) for v in hist]})
+            stale=True; o=old.get(symbol,{})
+            price=float(o.get('price',0)); ch=float(o.get('change_pct',0)); hist=o.get('history',[])[-7:]
+            source_ts=int(o.get('source_timestamp') or 0)
+        items.append({'id':ident,'group':group,'name':name,'code':code,'symbol':symbol,'price':round(price,4),'change_pct':round(ch,4),'unit':unit,'krw_label':krw_label,'krw_value':round(krw(symbol,price,fx),2),'color':color,'history':[round(v,4) for v in hist[-7:]],'source_timestamp':source_ts,'stale':stale})
     source_updated_at=datetime.fromtimestamp(max(source_times),tz=timezone.utc).isoformat() if source_times else prev.get('source_updated_at') or prev.get('updated_at')
     DATA.write_text(json.dumps({'updated_at':datetime.now(timezone.utc).isoformat(),'source_updated_at':source_updated_at,'fx':round(fx,4),'items':items},ensure_ascii=False,separators=(',',':')),encoding='utf-8')
 if __name__=='__main__': main()
