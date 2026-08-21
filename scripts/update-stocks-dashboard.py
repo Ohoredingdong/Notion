@@ -8,12 +8,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import requests
+from curl_cffi import requests
 
 OUT = Path('stocks-dashboard-data.json')
 KST = ZoneInfo('Asia/Seoul')
-BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/'
-UA = {'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 Chrome/124 Safari/537.36'}
+BASES = ['https://query2.finance.yahoo.com/v8/finance/chart/', 'https://query1.finance.yahoo.com/v8/finance/chart/']
 
 MARKETS = {
     'US': {
@@ -55,10 +54,32 @@ def fetch_chart(symbol: str, rng: str, interval: str) -> dict:
     key = (symbol, rng, interval)
     if key in _cache:
         return _cache[key]
-    url = BASE + urllib.parse.quote(symbol, safe='')
-    r = requests.get(url, params={'range': rng, 'interval': interval, 'includePrePost': 'false'}, headers=UA, timeout=25)
-    r.raise_for_status()
-    payload = r.json()
+    last_exc = None
+    for base in BASES:
+        url = base + urllib.parse.quote(symbol, safe='')
+        for attempt in range(3):
+            try:
+                r = requests.get(
+                    url,
+                    params={'range': rng, 'interval': interval, 'includePrePost': 'false'},
+                    timeout=25,
+                    impersonate='chrome',
+                    headers={'Accept-Language': 'en-US,en;q=0.9'},
+                )
+                if r.status_code == 429:
+                    time.sleep(1.2 * (attempt + 1))
+                    continue
+                r.raise_for_status()
+                payload = r.json()
+                break
+            except Exception as exc:
+                last_exc = exc
+                time.sleep(0.8 * (attempt + 1))
+        else:
+            continue
+        break
+    else:
+        raise RuntimeError(f'{symbol}: Yahoo request failed: {last_exc}')
     err = payload.get('chart', {}).get('error')
     if err:
         raise RuntimeError(f'{symbol}: {err}')
