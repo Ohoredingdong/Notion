@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tone Quiz — Corrected</title>
+<style>
+:root{
+  --bg:#fff;--text:#191919;--sub:#7d7d7d;--muted:#aaa;--line:#e7e4df;
+  --soft:#f7f6f4;--green:#718c6b;--green-soft:#eef4ec;--red:#b95f5f;--red-soft:#fbefef;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{padding:6px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;color:var(--text)}
+button{font:inherit}
+.card{width:min(100%,360px);margin:0 auto;border:1px solid var(--line);border-radius:18px;background:var(--bg);padding:14px 12px 12px}
+.head{display:flex;align-items:flex-start;gap:0}
+.title{font-size:16px;font-weight:800;line-height:1.1}
+.sub{font-size:10px;color:var(--sub);margin-top:3px}
+.prompt{text-align:center;font-size:12px;font-weight:700;color:#444;margin:17px 0 10px}
+.target{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.base{font-family:Georgia,"Times New Roman",serif;font-size:50px;font-weight:700;line-height:1;letter-spacing:-.04em}
+.speaker{width:31px;height:31px;border:0;background:transparent;border-radius:8px;display:grid;place-items:center;color:#666;cursor:pointer}
+.speaker:hover{background:var(--soft)}
+.speaker svg{width:20px;height:20px}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.choice{min-width:0;min-height:76px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:9px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+.choice-num{font-size:25px;font-weight:800;line-height:1}
+.choice-pinyin{margin-top:7px;font-family:Georgia,"Times New Roman",serif;font-size:15px;white-space:nowrap}
+.choice.correct{border-color:var(--green);background:var(--green-soft);box-shadow:inset 0 0 0 1px var(--green)}
+.choice.wrong{border-color:var(--red);background:var(--red-soft);box-shadow:inset 0 0 0 1px var(--red)}
+.result{margin-top:11px;min-height:37px;border:1px solid var(--line);border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-size:11px;font-weight:700;color:#666}
+.result.ok{background:var(--green-soft);color:#526d4d}
+.result.no{background:var(--red-soft);color:#945050}
+.meta{display:flex;justify-content:space-between;margin-top:8px;font-size:8px;color:var(--sub)}
+.char-note{text-align:center;margin-top:5px;font-size:8px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="card">
+  <header class="head">
+    <div><div class="title">Tone Quiz</div><div class="sub">성조 퀴즈</div></div>
+  </header>
+
+  <div class="prompt">발음을 듣고 맞는 성조를 선택하세요.</div>
+  <section class="target">
+    <div class="base" id="base">ma</div>
+    <button class="speaker" id="play" aria-label="발음 듣기">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M5 9.5v5h3l4 3.5V6L8 9.5H5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M15 9c1.2 1.1 1.2 4.9 0 6M17.8 6.8c2.4 2.5 2.4 7.9 0 10.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </section>
+
+  <section class="choices" id="choices"></section>
+  <div class="result" id="result">스피커를 눌러 듣고 골라보세요.</div>
+  <div class="char-note" id="note"></div>
+  <div class="meta"><span id="progress">1 / 20</span><span id="streak">연속 정답 0</span></div>
+</main>
+
+<script>
+const BANK = [
+  {hanzi:"妈", base:"ma", pinyin:"mā", tone:1, ko:"엄마"},
+  {hanzi:"花", base:"hua", pinyin:"huā", tone:1, ko:"꽃"},
+  {hanzi:"书", base:"shu", pinyin:"shū", tone:1, ko:"책"},
+  {hanzi:"天", base:"tian", pinyin:"tiān", tone:1, ko:"하늘/날"},
+  {hanzi:"吃", base:"chi", pinyin:"chī", tone:1, ko:"먹다"},
+  {hanzi:"喝", base:"he", pinyin:"hē", tone:1, ko:"마시다"},
+  {hanzi:"家", base:"jia", pinyin:"jiā", tone:1, ko:"집"},
+  {hanzi:"三", base:"san", pinyin:"sān", tone:1, ko:"3"},
+  {hanzi:"猫", base:"mao", pinyin:"māo", tone:1, ko:"고양이"},
+  {hanzi:"高", base:"gao", pinyin:"gāo", tone:1, ko:"높다"},
+  {hanzi:"麻", base:"ma", pinyin:"má", tone:2, ko:"삼/저리다"},
+  {hanzi:"茶", base:"cha", pinyin:"chá", tone:2, ko:"차"},
+  {hanzi:"人", base:"ren", pinyin:"rén", tone:2, ko:"사람"},
+  {hanzi:"学", base:"xue", pinyin:"xué", tone:2, ko:"배우다"},
+  {hanzi:"钱", base:"qian", pinyin:"qián", tone:2, ko:"돈"},
+  {hanzi:"来", base:"lai", pinyin:"lái", tone:2, ko:"오다"},
+  {hanzi:"没", base:"mei", pinyin:"méi", tone:2, ko:"없다/않다"},
+  {hanzi:"白", base:"bai", pinyin:"bái", tone:2, ko:"희다"},
+  {hanzi:"十", base:"shi", pinyin:"shí", tone:2, ko:"10"},
+  {hanzi:"忙", base:"mang", pinyin:"máng", tone:2, ko:"바쁘다"},
+  {hanzi:"马", base:"ma", pinyin:"mǎ", tone:3, ko:"말"},
+  {hanzi:"水", base:"shui", pinyin:"shuǐ", tone:3, ko:"물"},
+  {hanzi:"小", base:"xiao", pinyin:"xiǎo", tone:3, ko:"작다"},
+  {hanzi:"买", base:"mai", pinyin:"mǎi", tone:3, ko:"사다"},
+  {hanzi:"走", base:"zou", pinyin:"zǒu", tone:3, ko:"걷다/가다"},
+  {hanzi:"请", base:"qing", pinyin:"qǐng", tone:3, ko:"부탁하다"},
+  {hanzi:"早", base:"zao", pinyin:"zǎo", tone:3, ko:"이르다/아침"},
+  {hanzi:"狗", base:"gou", pinyin:"gǒu", tone:3, ko:"개"},
+  {hanzi:"很", base:"hen", pinyin:"hěn", tone:3, ko:"매우"},
+  {hanzi:"九", base:"jiu", pinyin:"jiǔ", tone:3, ko:"9"},
+  {hanzi:"骂", base:"ma", pinyin:"mà", tone:4, ko:"욕하다"},
+  {hanzi:"大", base:"da", pinyin:"dà", tone:4, ko:"크다"},
+  {hanzi:"去", base:"qu", pinyin:"qù", tone:4, ko:"가다"},
+  {hanzi:"坐", base:"zuo", pinyin:"zuò", tone:4, ko:"앉다"},
+  {hanzi:"见", base:"jian", pinyin:"jiàn", tone:4, ko:"보다/만나다"},
+  {hanzi:"饭", base:"fan", pinyin:"fàn", tone:4, ko:"밥"},
+  {hanzi:"话", base:"hua", pinyin:"huà", tone:4, ko:"말"},
+  {hanzi:"贵", base:"gui", pinyin:"guì", tone:4, ko:"비싸다"},
+  {hanzi:"累", base:"lei", pinyin:"lèi", tone:4, ko:"피곤하다"},
+  {hanzi:"六", base:"liu", pinyin:"liù", tone:4, ko:"6"}
+];
+
+const VOWEL_MAP = {
+  a:["ā","á","ǎ","à"], e:["ē","é","ě","è"], i:["ī","í","ǐ","ì"],
+  o:["ō","ó","ǒ","ò"], u:["ū","ú","ǔ","ù"], ü:["ǖ","ǘ","ǚ","ǜ"]
+};
+function markTone(base, tone){
+  let s=base.toLowerCase().replace("v","ü");
+  const order = s.includes("a") ? "a" : s.includes("e") ? "e" : s.includes("ou") ? "o" : null;
+  let idx=-1, vowel=null;
+  if(order){ idx=s.indexOf(order); vowel=order; }
+  else{
+    for(let i=s.length-1;i>=0;i--){
+      if("aeiouü".includes(s[i])){ idx=i; vowel=s[i]; break; }
+    }
+  }
+  if(idx<0) return s;
+  const marked=VOWEL_MAP[vowel][tone-1];
+  return s.slice(0,idx)+marked+s.slice(idx+1);
+}
+
+let q=1, streak=0, locked=false, current=null, previous=-1;
+const $=s=>document.querySelector(s);
+
+function nextItem(){
+  let i;
+  do{i=Math.floor(Math.random()*BANK.length)}while(i===previous && BANK.length>1);
+  previous=i;
+  current=BANK[i];
+  locked=false;
+  $("#base").textContent=current.base;
+  $("#progress").textContent=`${q} / 20`;
+  $("#streak").textContent=`연속 정답 ${streak}`;
+  $("#result").className="result";
+  $("#result").textContent="스피커를 눌러 듣고 골라보세요.";
+  $("#note").textContent="";
+  $("#choices").innerHTML=[1,2,3,4].map(t=>`
+    <button class="choice" data-tone="${t}">
+      <div class="choice-num">${t}</div>
+      <div class="choice-pinyin">${markTone(current.base,t)}</div>
+    </button>`).join("");
+  document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>answer(Number(b.dataset.tone),b));
+}
+function speak(){
+  if(!current || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(current.hanzi);
+  u.lang="zh-CN";
+  u.rate=.78;
+  const vs=speechSynthesis.getVoices();
+  const zh=vs.find(v=>/zh-CN|cmn-Hans/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang));
+  if(zh) u.voice=zh;
+  speechSynthesis.speak(u);
+}
+function answer(tone,btn){
+  if(locked)return;
+  locked=true;
+  const all=[...document.querySelectorAll(".choice")];
+  all.forEach(b=>b.disabled=true);
+  const correct=all[current.tone-1];
+  if(tone===current.tone){
+    streak++;
+    btn.classList.add("correct");
+    $("#result").className="result ok";
+    $("#result").textContent=`정답! ${current.hanzi} · ${current.pinyin}`;
+  }else{
+    streak=0;
+    btn.classList.add("wrong");
+    correct.classList.add("correct");
+    $("#result").className="result no";
+    $("#result").textContent=`정답은 ${current.tone}성 · ${current.hanzi} ${current.pinyin}`;
+  }
+  $("#note").textContent=`${current.hanzi} = ${current.ko}`;
+  $("#streak").textContent=`연속 정답 ${streak}`;
+  setTimeout(()=>{q=q>=20?1:q+1;nextItem();},1500);
+}
+$("#play").onclick=speak;
+nextItem();
+</script>
+</body>
+</html>
