@@ -207,7 +207,7 @@ def build_market(key: str, cfg: dict) -> tuple[dict, int]:
     main = {
         'symbol': main_symbol,
         'name': main_name,
-        'display': price_format(snap['price'], snap['currency']),
+        'display': f'{snap["price"]:,.2f}',
         'raw_price': round(snap['price'], 6),
         'change_pct': round(snap['pct'], 4),
         'change_abs': f'{abs(snap["change"]):,.2f}',
