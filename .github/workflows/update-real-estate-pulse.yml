@@ -6,7 +6,9 @@ on:
     # 15:30 KST every day — catches the weekly REB release on publication day.
     - cron: '30 6 * * *'
   push:
-    branches: [main]
+    branches:
+      - main
+      - feature/real-estate-pulse-auto-update
     paths:
       - 'scripts/update_real_estate_pulse.py'
       - '.github/workflows/update-real-estate-pulse.yml'
