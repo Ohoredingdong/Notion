@@ -55,7 +55,7 @@ jobs:
             echo 'A newer complete official dataset is ready.'
           fi
 
-      - name: Validate 17 regions and official provenance
+      - name: Validate current 16 regions and official provenance
         if: steps.diff.outputs.changed == 'true'
         run: python scripts/run_real_estate_pulse_update.py --validate-only
 
