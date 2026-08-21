@@ -1,0 +1,53 @@
+name: Update Real Estate Pulse
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 15:30 KST every day — catches the weekly REB release on publication day.
+    - cron: '30 6 * * *'
+  push:
+    branches:
+      - main
+      - feature/real-estate-pulse-auto-update
+    paths:
+      - 'scripts/update_real_estate_pulse.py'
+      - '.github/workflows/update-real-estate-pulse.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: real-estate-pulse-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install updater dependencies
+        run: pip install requests beautifulsoup4 pypdf
+
+      - name: Check Korea Real Estate Board and refresh data
+        run: python scripts/update_real_estate_pulse.py
+
+      - name: Commit new official data when changed
+        shell: bash
+        run: |
+          if git diff --quiet -- real-estate-pulse-data.json; then
+            echo 'No new REB weekly release.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- real-estate-pulse-data.json
+          git commit -m 'Update Real Estate Pulse data'
+          git push
