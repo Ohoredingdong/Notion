@@ -7,248 +7,160 @@
 <title>Use Me First</title>
 <style>
 :root{
-  --ink:#20231f;
-  --sub:#71766f;
-  --line:#e7e9e4;
-  --paper:#ffffff;
-  --soft:#f7f8f5;
-  --sage:#5f8a62;
-  --teal:#5db3a3;
-  --olive:#9dbb3f;
-  --yellow:#f5bc43;
-  --orange:#f28b2d;
-  --coral:#ee655b;
+  --ink:#20231f;--sub:#777c75;--muted:#a0a49e;--line:#e8eae5;--paper:#fff;
+  --sage:#5f8c67;--sage-soft:#eef5ee;--cream:#fffaf3;--cream-line:#f0dec5;
+  --coral:#ed6a61;--orange:#ef8d32;--yellow:#eeba43;--olive:#a3b844;--teal:#5cae9e;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:transparent}
-body{
-  padding:6px;
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;
-  color:var(--ink);
-  -webkit-font-smoothing:antialiased;
-}
-.widget{
-  width:min(100%,430px);
-  margin:0 auto;
-  background:var(--paper);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:18px 14px 14px;
-  box-shadow:0 5px 18px rgba(33,42,35,.045);
-}
-.header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:0 4px 14px}
-.title-wrap{min-width:0}
-.title-line{display:flex;align-items:center;gap:8px}
-.title{font-size:27px;line-height:1;font-weight:760;letter-spacing:-.045em}
-.leaf-mark{width:19px;height:19px;color:var(--sage);transform:translateY(1px)}
-.subtitle{margin-top:7px;font-size:12px;color:var(--sub);font-weight:520;letter-spacing:-.02em}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 8px}
-.section-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:720;letter-spacing:-.025em}
-.section-title svg{width:15px;height:15px;stroke:var(--sage);stroke-width:1.8;fill:none}
-.section-title .muted{font-weight:520;color:var(--sub)}
-.right-label{font-size:10px;color:#8a8e88;white-space:nowrap}
-.card{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
-.ingredient-row{
-  --accent:var(--sage);
-  --pill:#eef5ee;
-  display:grid;
-  grid-template-columns:34px 74px minmax(74px,1fr) 34px 46px;
-  align-items:center;
-  gap:7px;
-  min-height:46px;
-  padding:7px 9px;
-  border-bottom:1px solid #eff0ed;
-}
-.ingredient-row:last-child{border-bottom:0}
-.ingredient-icon{
-  width:30px;height:30px;border-radius:9px;
-  display:grid;place-items:center;
-  background:#fafaf8;
-  border:1px solid #f0f1ed;
-  font-size:20px;line-height:1;
-}
-.ingredient-name{font-size:12px;font-weight:680;letter-spacing:-.025em;white-space:nowrap}
-.progress{height:7px;background:#eff0ed;border-radius:999px;overflow:hidden}
-.progress > span{display:block;height:100%;border-radius:inherit;background:var(--accent)}
-.percent{font-size:10px;color:#70756e;text-align:right;font-variant-numeric:tabular-nums}
-.day{
-  justify-self:end;
-  min-width:44px;
-  padding:5px 6px;
-  border-radius:9px;
-  text-align:center;
-  font-size:10px;
-  font-weight:760;
-  color:var(--accent);
-  background:var(--pill);
-  border:1px solid color-mix(in srgb,var(--accent) 19%, white);
-  font-variant-numeric:tabular-nums;
-}
-.r1{--accent:#ed655c;--pill:#fff0ef}
-.r2{--accent:#9dbb3f;--pill:#f4f8e7}
-.r3{--accent:#efb83f;--pill:#fff7e7}
-.r4{--accent:#ef8a2e;--pill:#fff2e7}
-.r5{--accent:#59ad9e;--pill:#eaf7f4}
-.r6{--accent:#5d8f64;--pill:#edf5ee}
-.recipe-section{margin-top:18px}
-.recipe-card{
-  display:grid;
-  grid-template-columns:142px 1fr;
-  min-height:138px;
-  border:1px solid #f0dfc9;
-  border-radius:15px;
-  overflow:hidden;
-  background:#fffdf8;
-}
-.recipe-visual{
-  position:relative;
-  display:grid;
-  place-items:center;
-  min-height:138px;
-  background:#f5eee5;
-  overflow:hidden;
-}
-.recipe-visual:before,.recipe-visual:after{content:"";position:absolute;border-radius:999px;opacity:.48}
-.recipe-visual:before{width:92px;height:92px;background:#f6d0a6;left:-24px;top:-28px}
-.recipe-visual:after{width:68px;height:68px;background:#dbe8cf;right:-18px;bottom:-24px}
-.bowl{position:relative;width:116px;height:86px;z-index:1}
-.bowl .plate{position:absolute;left:7px;right:7px;bottom:8px;height:42px;border-radius:8px 8px 54px 54px;background:#f7f2ea;border:2px solid #d7d0c6;box-shadow:0 7px 12px rgba(92,67,42,.12)}
-.food{position:absolute;left:17px;right:17px;top:5px;height:54px;border-radius:50%;background:#d8642f;border:3px solid #edd7be;overflow:hidden;box-shadow:inset 0 2px 8px rgba(112,52,26,.16)}
-.tofu,.chicken,.green,.kimchi{position:absolute;display:block}
-.tofu{width:19px;height:17px;border-radius:3px;background:#f0d8a4;border:1px solid #d9bd80}
-.t1{left:13px;top:10px;transform:rotate(8deg)}.t2{left:42px;top:25px;transform:rotate(-9deg)}.t3{right:12px;top:8px;transform:rotate(12deg)}
-.chicken{width:25px;height:12px;border-radius:60% 45%;background:#b9552e;border:2px solid #ec9b6f}
-.c1{left:6px;bottom:7px;transform:rotate(15deg)}.c2{right:5px;bottom:8px;transform:rotate(-13deg)}
-.green{width:31px;height:5px;border-radius:99px;background:#4e8d51}.g1{left:22px;top:4px;transform:rotate(-21deg)}.g2{right:15px;bottom:16px;transform:rotate(20deg)}
-.kimchi{width:22px;height:7px;border-radius:99px;background:#ed8b42}.k1{left:35px;bottom:4px;transform:rotate(13deg)}
-.recipe-copy{padding:12px 12px 11px;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.rec-badge{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;border:1px solid #efc36d;background:#fffaf1;color:#d99114;font-size:9px;font-weight:760}
-.recipe-name{margin-top:7px;font-size:16px;line-height:1.24;font-weight:760;letter-spacing:-.04em;word-break:keep-all}
-.recipe-desc{margin-top:5px;font-size:9.5px;line-height:1.45;color:var(--sub);letter-spacing:-.02em}
-.recipe-meta{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
-.meta{display:inline-flex;align-items:center;gap:4px;padding:5px 7px;border-radius:8px;background:#fff;border:1px solid #eee8df;font-size:9px;color:#5e635e;white-space:nowrap}
-.meta svg{width:12px;height:12px;stroke:#626861;stroke-width:1.8;fill:none}
-.used{margin-top:14px}
-.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.chip{
-  --accent:#6b916b;--tint:#f3f7f1;
-  display:flex;align-items:center;gap:7px;min-width:0;
-  padding:7px 8px;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 19%, white);background:var(--tint)
-}
-.chip .mini{font-size:16px;line-height:1}.chip .name{font-size:10px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.check{margin-left:auto;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white;font-size:10px;font-weight:800;flex:0 0 auto}
-.chip.tofu-chip{--accent:#ee6f68;--tint:#fff5f3}.chip.kimchi-chip{--accent:#ed8a2e;--tint:#fff7ef}.chip.chicken-chip{--accent:#e9ad32;--tint:#fff9ea}
-.tip{margin-top:10px;display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:11px;background:#f4f7f1;border:1px solid #e1e9dc;color:#677064;font-size:9px;line-height:1.45}
-.tip svg{width:15px;height:15px;stroke:#60875f;stroke-width:1.7;fill:none;flex:0 0 auto}
-@media(max-width:390px){
-  body{padding:3px}.widget{border-radius:14px;padding:15px 11px 12px}.title{font-size:24px}.subtitle{font-size:11px}
-  .ingredient-row{grid-template-columns:31px 66px minmax(60px,1fr) 31px 43px;gap:5px;padding:6px 7px;min-height:43px}.ingredient-icon{width:28px;height:28px;font-size:18px}.ingredient-name{font-size:11px}
-  .recipe-card{grid-template-columns:124px 1fr}.bowl{transform:scale(.92)}.recipe-copy{padding:10px 9px}.recipe-name{font-size:14px}.recipe-desc{font-size:8.8px}.meta{padding:4px 6px;font-size:8.5px}.chips{gap:5px}.chip{padding:6px 6px;gap:5px}.chip .name{font-size:9.4px}
-}
-@media(max-width:330px){
-  .recipe-card{grid-template-columns:1fr}.recipe-visual{min-height:110px}.recipe-copy{padding:11px}.ingredient-row{grid-template-columns:28px 60px minmax(48px,1fr) 28px 39px}.day{min-width:39px;padding:4px}.chips{grid-template-columns:1fr}.chip .name{font-size:10px}
-}
+body{padding:5px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button{cursor:pointer}
+.widget{width:min(100%,430px);margin:auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px 14px 13px;box-shadow:0 6px 22px rgba(43,49,43,.045)}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px 16px}
+.title{font-size:26px;line-height:1;font-weight:770;letter-spacing:-.045em}
+.subtitle{margin-top:7px;font-size:11px;color:var(--sub);letter-spacing:-.02em}
+.add-btn{border:1px solid #d9e5d8;background:#f2f7f1;color:#52795a;border-radius:10px;padding:8px 10px;font-size:10px;font-weight:720;white-space:nowrap;transition:.15s ease}
+.add-btn:hover{background:#eaf3e9;transform:translateY(-1px)}
+.section{margin-top:2px}.section+.section{margin-top:17px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 2px 8px}
+.head-left{min-width:0}
+.section-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:730;letter-spacing:-.025em}
+.section-title svg{width:15px;height:15px;stroke:var(--sage);stroke-width:1.8;fill:none;flex:0 0 auto}
+.section-sub{font-size:8.8px;color:var(--muted);margin:3px 0 0 22px}
+.sort-chip{font-size:8.5px;color:#687169;background:#f6f7f4;border:1px solid #e7e9e3;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.list-card{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.ingredient-row{--accent:#5f8c67;--tint:#eef5ee;display:grid;grid-template-columns:34px 92px minmax(52px,1fr) 48px 18px;align-items:center;gap:7px;min-height:48px;padding:7px 9px;border-bottom:1px solid #eff0ed;transition:.12s ease}
+.ingredient-row:hover{background:#fcfcfa}.ingredient-row:last-child{border-bottom:0}
+.ingredient-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#fafaf8;border:1px solid #f0f1ed;font-size:19px;line-height:1}
+.item-copy{min-width:0}.ingredient-name{font-size:11.5px;font-weight:690;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.expiry{margin-top:2px;font-size:8.4px;color:#9a9e98;font-variant-numeric:tabular-nums}
+.urgency{height:6px;background:#eff0ed;border-radius:999px;overflow:hidden}.urgency span{display:block;height:100%;border-radius:inherit;background:var(--accent)}
+.day{justify-self:end;min-width:44px;padding:5px 6px;border-radius:9px;text-align:center;font-size:9.5px;font-weight:760;color:var(--accent);background:var(--tint);border:1px solid rgba(0,0,0,.035);font-variant-numeric:tabular-nums}
+.remove{width:18px;height:18px;border:0;background:transparent;color:#c0c3be;padding:0;font-size:15px;line-height:1;opacity:0;transition:.15s}.ingredient-row:hover .remove{opacity:1}.remove:hover{color:#e06d65}
+.list-foot{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-top:1px solid #eff0ed;background:#fcfcfa;font-size:8.8px;color:#8b9089}
+.link-btn{border:0;background:transparent;color:#667c68;font-size:8.8px;font-weight:650;padding:0}
+.recipe-card{border:1px solid var(--cream-line);border-radius:15px;background:var(--cream);overflow:hidden}
+.recipe-top{display:grid;grid-template-columns:126px 1fr;min-height:128px}
+.recipe-visual{position:relative;display:grid;place-items:center;background:#f7efe4;overflow:hidden}
+.recipe-visual:before{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:#f5d2a9;left:-45px;top:-38px;opacity:.6}.recipe-visual:after{content:"";position:absolute;width:74px;height:74px;border-radius:50%;background:#dfe9d6;right:-30px;bottom:-30px;opacity:.7}
+.dish{position:relative;width:105px;height:78px;z-index:1}.plate{position:absolute;left:7px;right:7px;bottom:7px;height:38px;border-radius:8px 8px 50px 50px;background:#f8f4ed;border:2px solid #d8d0c5;box-shadow:0 7px 10px rgba(88,62,39,.12)}.food{position:absolute;left:15px;right:15px;top:6px;height:48px;border-radius:50%;background:#cf6232;border:3px solid #ead4bc;box-shadow:inset 0 2px 7px rgba(99,45,24,.15);overflow:hidden}.cube{position:absolute;width:17px;height:15px;border-radius:3px;background:#f0d8a4;border:1px solid #d7bb7d}.cube.a{left:11px;top:8px;transform:rotate(7deg)}.cube.b{left:36px;top:23px;transform:rotate(-8deg)}.cube.c{right:9px;top:8px;transform:rotate(10deg)}.piece{position:absolute;width:22px;height:10px;border-radius:60% 45%;background:#ad4f2d;border:2px solid #e89669}.piece.a{left:5px;bottom:7px;transform:rotate(14deg)}.piece.b{right:5px;bottom:8px;transform:rotate(-12deg)}.green{position:absolute;width:28px;height:5px;border-radius:99px;background:#4e8a50}.green.a{left:18px;top:3px;transform:rotate(-20deg)}.green.b{right:12px;bottom:14px;transform:rotate(19deg)}
+.recipe-copy{padding:11px 11px 9px;min-width:0;display:flex;flex-direction:column;justify-content:center}.recipe-label{display:flex;align-items:center;gap:5px}.recommend{font-size:8.5px;font-weight:750;color:#d88e16;background:#fff7e7;border:1px solid #f1d59e;border-radius:999px;padding:3px 6px}.use-count{font-size:8px;color:#858a82}.recipe-name{margin-top:6px;font-size:15px;line-height:1.24;font-weight:760;letter-spacing:-.04em;word-break:keep-all}.recipe-desc{margin-top:4px;font-size:8.8px;line-height:1.42;color:var(--sub)}
+.meta-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}.meta{display:inline-flex;align-items:center;gap:3px;padding:4px 6px;border-radius:7px;background:#fff;border:1px solid #eee7de;font-size:8.4px;color:#626761;white-space:nowrap}.meta svg{width:11px;height:11px;stroke:#606660;stroke-width:1.8;fill:none}
+.recipe-bottom{padding:9px 10px 10px;border-top:1px solid #f0e3d2;background:rgba(255,255,255,.42)}.used-label{font-size:8px;color:#8b8d87;margin-bottom:6px}.used-chips{display:flex;gap:5px;flex-wrap:wrap}.used-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;background:#fff;border:1px solid #ece9e2;font-size:8.5px;color:#5d625c}.used-chip b{font-size:9px}.action-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.action{border-radius:9px;padding:7px 8px;font-size:9px;font-weight:680;border:1px solid #e7e5df;background:#fff;color:#5e645e}.action.primary{background:#657f64;border-color:#657f64;color:#fff}.action:hover{filter:brightness(.98)}
+.recipe-detail{display:none;border-top:1px solid #eee4d7;padding:10px;background:#fffdf9}.recipe-detail.open{display:block}.detail-title{font-size:9px;font-weight:730;margin-bottom:5px}.detail-list{margin:0;padding-left:15px;font-size:8.7px;line-height:1.55;color:#6c716b}.detail-note{margin-top:7px;padding-top:7px;border-top:1px dashed #eee7df;font-size:8.3px;color:#949890}
+.tip{margin-top:10px;display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:11px;background:#f4f7f1;border:1px solid #e2e9dd;color:#697166;font-size:8.7px;line-height:1.4}.tip svg{width:14px;height:14px;stroke:#628861;stroke-width:1.7;fill:none;flex:0 0 auto}
+.modal-backdrop{position:fixed;inset:0;background:rgba(24,30,26,.18);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal-backdrop.open{display:flex}.modal{width:min(100%,360px);background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 18px 50px rgba(30,36,31,.16)}.modal-head{display:flex;align-items:center;justify-content:space-between}.modal-title{font-size:14px;font-weight:750}.modal-close{border:0;background:transparent;font-size:20px;color:#939790;padding:0 2px}.field{margin-top:11px}.field label{display:block;font-size:8.8px;color:#7b8079;margin-bottom:5px}.field input{width:100%;border:1px solid #e2e5df;border-radius:10px;padding:9px 10px;font-size:11px;outline:none}.field input:focus{border-color:#9bb89e;box-shadow:0 0 0 3px #eff5ef}.modal-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:7px;margin-top:13px}.modal-actions button{padding:8px;border-radius:9px;border:1px solid #e3e6e0;background:#fff;font-size:9.5px;font-weight:680}.modal-actions .save{background:#628564;border-color:#628564;color:#fff}
+.empty{padding:20px;text-align:center;color:#969a94;font-size:9px}
+@media(max-width:390px){body{padding:3px}.widget{padding:14px 10px 11px;border-radius:14px}.title{font-size:24px}.subtitle{font-size:10.5px}.ingredient-row{grid-template-columns:31px 82px minmax(42px,1fr) 44px 16px;gap:5px;padding:6px 7px;min-height:45px}.ingredient-icon{width:28px;height:28px;font-size:18px}.ingredient-name{font-size:11px}.recipe-top{grid-template-columns:116px 1fr}.recipe-copy{padding:9px 9px 8px}.recipe-name{font-size:14px}.remove{opacity:.45}}
+@media(max-width:330px){.recipe-top{grid-template-columns:1fr}.recipe-visual{min-height:105px}.ingredient-row{grid-template-columns:29px 72px minmax(34px,1fr) 42px 15px}.action-row{grid-template-columns:1fr}.section-sub{display:none}}
 </style>
 </head>
 <body>
-<main class="widget" aria-label="Use Me First widget">
+<main class="widget">
   <header class="header">
-    <div class="title-wrap">
-      <div class="title-line">
-        <div class="title">Use Me First</div>
-        <svg class="leaf-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4c-7.7.1-12.4 3.1-13.8 8.7-.5 2.1.2 4.2 1.6 5.5 1.2-3.8 3.6-6.6 7.3-8.7-3.1 2.5-5 5.4-5.8 9 4.5.7 8.2-1.7 9.7-5.5C20.2 10 20.2 6.9 20 4Z" fill="currentColor"/><path d="M4 20h15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </div>
-      <div class="subtitle">먼저 써야 할 재료</div>
-    </div>
+    <div><div class="title">Use Me First</div><div class="subtitle">먼저 써야 할 재료부터, 가볍게 정리해요.</div></div>
+    <button class="add-btn" id="openAdd">＋ 재료 추가</button>
   </header>
 
-  <section>
+  <section class="section">
     <div class="section-head">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 10h14M9 6v1M9 13v3"/></svg>
-        <span>냉장고 속 재료 <span class="muted">(소비 기한 임박 순)</span></span>
+      <div class="head-left">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 10h14M9 6v1M9 13v3"/></svg>
+          <span>냉장고 속 재료</span>
+        </div>
+        <div class="section-sub">소비 기한이 가까운 순서로 보여줘요</div>
       </div>
-      <div class="right-label">남은 기간</div>
+      <div class="sort-chip">임박순</div>
     </div>
-
-    <div class="card" id="ingredientList">
-      <div class="ingredient-row r1">
-        <div class="ingredient-icon">◻️</div><div class="ingredient-name">두부</div>
-        <div class="progress"><span style="width:20%"></span></div><div class="percent">20%</div><div class="day">D-1</div>
-      </div>
-      <div class="ingredient-row r2">
-        <div class="ingredient-icon">🥬</div><div class="ingredient-name">시금치</div>
-        <div class="progress"><span style="width:40%"></span></div><div class="percent">40%</div><div class="day">D-2</div>
-      </div>
-      <div class="ingredient-row r3">
-        <div class="ingredient-icon">🍗</div><div class="ingredient-name">닭가슴살</div>
-        <div class="progress"><span style="width:50%"></span></div><div class="percent">50%</div><div class="day">D-3</div>
-      </div>
-      <div class="ingredient-row r4">
-        <div class="ingredient-icon">🌶️</div><div class="ingredient-name">김치</div>
-        <div class="progress"><span style="width:60%"></span></div><div class="percent">60%</div><div class="day">D-4</div>
-      </div>
-      <div class="ingredient-row r5">
-        <div class="ingredient-icon">🥛</div><div class="ingredient-name">우유</div>
-        <div class="progress"><span style="width:80%"></span></div><div class="percent">80%</div><div class="day">D-6</div>
-      </div>
-      <div class="ingredient-row r6">
-        <div class="ingredient-icon">🧅</div><div class="ingredient-name">양파</div>
-        <div class="progress"><span style="width:90%"></span></div><div class="percent">90%</div><div class="day">D-7</div>
-      </div>
+    <div class="list-card">
+      <div id="ingredientList"></div>
+      <div class="list-foot"><span id="summaryText">재료 0개</span><button class="link-btn" id="toggleAll">전체 재료 보기 ›</button></div>
     </div>
   </section>
 
-  <section class="recipe-section">
+  <section class="section">
     <div class="section-head">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24"><path d="M7 10a5 5 0 0 1 10 0 4 4 0 0 1 3 4H4a4 4 0 0 1 3-4Z"/><path d="M7 14v6h10v-6"/></svg>
-        <span>오늘의 추천 메뉴 <span class="muted">(임박 재료 활용)</span></span>
+      <div class="head-left">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24"><path d="M7 10a5 5 0 0 1 10 0 4 4 0 0 1 3 4H4a4 4 0 0 1 3-4Z"/><path d="M7 14v6h10v-6"/></svg>
+          <span>오늘의 추천 메뉴</span>
+        </div>
+        <div class="section-sub">임박한 재료를 많이 쓸 수 있는 메뉴부터 추천해요</div>
       </div>
     </div>
 
     <div class="recipe-card">
-      <div class="recipe-visual" aria-hidden="true">
-        <div class="bowl">
-          <div class="plate"></div>
-          <div class="food">
-            <span class="tofu t1"></span><span class="tofu t2"></span><span class="tofu t3"></span>
-            <span class="chicken c1"></span><span class="chicken c2"></span>
-            <span class="green g1"></span><span class="green g2"></span><span class="kimchi k1"></span>
+      <div class="recipe-top">
+        <div class="recipe-visual" aria-hidden="true">
+          <div class="dish"><div class="plate"></div><div class="food"><i class="cube a"></i><i class="cube b"></i><i class="cube c"></i><i class="piece a"></i><i class="piece b"></i><i class="green a"></i><i class="green b"></i></div></div>
+        </div>
+        <div class="recipe-copy">
+          <div class="recipe-label"><span class="recommend">★ 추천</span><span class="use-count" id="useCount"></span></div>
+          <div class="recipe-name" id="recipeName">—</div>
+          <div class="recipe-desc" id="recipeDesc">—</div>
+          <div class="meta-row">
+            <span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 3h6"/></svg><span id="recipeTime">—</span></span>
+            <span class="meta"><svg viewBox="0 0 24 24"><path d="M8 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20v-2a5 5 0 0 1 10 0v2M11 20v-2a5 5 0 0 1 10 0v2"/></svg><span id="recipeServing">—</span></span>
+            <span class="meta"><span>◔</span><span id="recipeLevel">—</span></span>
           </div>
         </div>
       </div>
-      <div class="recipe-copy">
-        <div class="rec-badge">★ 추천</div>
-        <div class="recipe-name">두부 김치 닭가슴살 볶음</div>
-        <div class="recipe-desc">매콤하고 단백질 풍부한 한 그릇 요리</div>
-        <div class="recipe-meta">
-          <span class="meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 3h6"/></svg>15분</span>
-          <span class="meta"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2-7 6-7s6 3 6 7M14 14c3 0 5 2 5 6"/></svg>2인분</span>
-          <span class="meta"><svg viewBox="0 0 24 24"><path d="M4 19V14M10 19V10M16 19V6M22 19V3"/></svg>보통</span>
-        </div>
+      <div class="recipe-bottom">
+        <div class="used-label">사용되는 임박 재료</div>
+        <div class="used-chips" id="usedChips"></div>
+        <div class="action-row"><button class="action primary" id="detailBtn">레시피 보기</button><button class="action" id="nextRecipe">다른 메뉴 ↻</button></div>
       </div>
+      <div class="recipe-detail" id="recipeDetail"></div>
     </div>
   </section>
 
-  <section class="used">
-    <div class="section-head">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24"><path d="M20 4c-7.6 0-12.2 2.8-13.7 8.2-.6 2.3.1 4.6 1.8 6 1-3.7 3.5-6.6 7-8.8-3 2.5-5 5.5-5.7 9.1 4.4.6 8-1.8 9.6-5.7 1.1-2.8 1.2-5.8 1-8.8Z"/></svg>
-        <span>사용된 임박 재료</span>
-      </div>
-    </div>
-    <div class="chips">
-      <div class="chip tofu-chip"><span class="mini">◻️</span><span class="name">두부</span><span class="check">✓</span></div>
-      <div class="chip kimchi-chip"><span class="mini">🌶️</span><span class="name">김치</span><span class="check">✓</span></div>
-      <div class="chip chicken-chip"><span class="mini">🍗</span><span class="name">닭가슴살</span><span class="check">✓</span></div>
-    </div>
-  </section>
-
-  <div class="tip">
-    <svg viewBox="0 0 24 24"><path d="M20 4c-7.6 0-12.2 2.8-13.7 8.2-.6 2.3.1 4.6 1.8 6 1-3.7 3.5-6.6 7-8.8-3 2.5-5 5.5-5.7 9.1 4.4.6 8-1.8 9.6-5.7 1.1-2.8 1.2-5.8 1-8.8Z"/></svg>
-    <span>기한이 임박한 재료부터 사용하면 음식 낭비를 줄일 수 있어요!</span>
-  </div>
+  <div class="tip"><svg viewBox="0 0 24 24"><path d="M20 4C12 4 7 7 6 13c-.4 2.4.4 4.2 1.7 5.3C9 14 12 10 17 8c-4 2.8-6.8 6.2-8 10 5 .8 9-1.5 10.5-5.5C20.5 9.7 20.4 6.5 20 4Z"/><path d="M4 20h15"/></svg><span>기한이 임박한 재료부터 사용하면 음식 낭비를 줄일 수 있어요!</span></div>
 </main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head"><div class="modal-title" id="modalTitle">재료 추가</div><button class="modal-close" id="closeAdd" aria-label="닫기">×</button></div>
+    <div class="field"><label for="itemName">재료명</label><input id="itemName" type="text" placeholder="예: 계란" autocomplete="off"></div>
+    <div class="field"><label for="itemExpiry">소비 기한</label><input id="itemExpiry" type="date"></div>
+    <div class="modal-actions"><button id="cancelAdd">취소</button><button class="save" id="saveItem">추가하기</button></div>
+  </div>
+</div>
+
+<script>
+const KEY='use-me-first-v2';
+const icons={'두부':'◻️','시금치':'🥬','닭가슴살':'🍗','김치':'🌶️','우유':'🥛','양파':'🧅','계란':'🥚','달걀':'🥚','감자':'🥔','당근':'🥕','대파':'🌿','파':'🌿','돼지고기':'🥩','소고기':'🥩','버섯':'🍄','치즈':'🧀','토마토':'🍅'};
+const recipes=[
+ {name:'두부 김치 닭가슴살 볶음',need:['두부','김치','닭가슴살','양파'],time:'15분',serving:'2인분',level:'보통',desc:'매콤하고 단백질 풍부한 한 그릇 요리',steps:['양파와 닭가슴살을 먹기 좋은 크기로 썰어요.','팬에 닭가슴살과 양파를 먼저 볶아요.','김치와 두부를 넣고 가볍게 섞어 볶아요.','간을 맞춘 뒤 바로 담아내요.']},
+ {name:'시금치 두부 덮밥',need:['시금치','두부','양파'],time:'12분',serving:'1인분',level:'쉬움',desc:'부드럽고 담백하게 비우는 빠른 한 끼',steps:['두부는 물기를 빼고 한입 크기로 썰어요.','양파를 볶다가 두부를 넣어요.','시금치를 마지막에 넣어 숨만 죽여요.','밥 위에 올려 간단히 완성해요.']},
+ {name:'닭가슴살 김치볶음밥',need:['닭가슴살','김치','양파'],time:'15분',serving:'2인분',level:'쉬움',desc:'남은 재료를 한 번에 정리하기 좋은 메뉴',steps:['김치와 양파를 잘게 썰어요.','닭가슴살을 먼저 볶아요.','김치와 양파를 넣고 볶다가 밥을 넣어요.','센 불에 빠르게 볶아 마무리해요.']},
+ {name:'두부 김치찌개',need:['두부','김치','양파'],time:'20분',serving:'2인분',level:'보통',desc:'임박한 두부와 김치를 따뜻하게 활용해요',steps:['김치와 양파를 냄비에 먼저 볶아요.','물을 붓고 끓여 맛을 우려요.','두부를 넣고 5분 정도 더 끓여요.','간을 보고 마무리해요.']},
+ {name:'시금치 닭가슴살 볶음',need:['시금치','닭가슴살','양파'],time:'15분',serving:'2인분',level:'쉬움',desc:'가볍고 단백질이 든든한 빠른 볶음',steps:['닭가슴살과 양파를 먼저 볶아요.','소금과 후추로 가볍게 간해요.','시금치를 넣고 짧게 볶아요.','숨이 죽으면 바로 불을 꺼요.']}
+];
+const $=s=>document.querySelector(s);let showAll=false,recipeIndex=0,scored=[];
+function localToday(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function addDaysISO(n){const d=localToday();d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function parseISO(v){const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)}
+function daysLeft(v){return Math.ceil((parseISO(v)-localToday())/86400000)}
+function sampleItems(){return [{name:'두부',expiry:addDaysISO(1)},{name:'시금치',expiry:addDaysISO(2)},{name:'닭가슴살',expiry:addDaysISO(3)},{name:'김치',expiry:addDaysISO(4)},{name:'우유',expiry:addDaysISO(6)},{name:'양파',expiry:addDaysISO(7)}]}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));return Array.isArray(v)&&v.length?v:sampleItems()}catch(e){return sampleItems()}}
+let items=load();
+function save(){localStorage.setItem(KEY,JSON.stringify(items))}
+function tone(d){if(d<=1)return{a:'#ed6a61',t:'#fff0ef'};if(d<=2)return{a:'#ef8d32',t:'#fff3e8'};if(d<=4)return{a:'#eeba43',t:'#fff8e7'};if(d<=6)return{a:'#5cae9e',t:'#eaf7f4'};return{a:'#5f8c67',t:'#eef5ee'}}
+function iconFor(name){const hit=Object.keys(icons).find(k=>name.includes(k));return hit?icons[hit]:'🧺'}
+function fmt(v){const d=parseISO(v);return `${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}까지`}
+function dText(d){if(d<0)return `D+${Math.abs(d)}`;if(d===0)return 'D-DAY';return `D-${d}`}
+function renderItems(){items.sort((a,b)=>daysLeft(a.expiry)-daysLeft(b.expiry));const view=showAll?items:items.slice(0,6);const box=$('#ingredientList');box.innerHTML='';if(!view.length){box.innerHTML='<div class="empty">재료를 추가하면 여기에 임박순으로 정리돼요.</div>'}
+ view.forEach((it)=>{const d=daysLeft(it.expiry),c=tone(d),urg=Math.max(14,Math.min(96,96-Math.max(0,d)*10));const realIndex=items.indexOf(it);const row=document.createElement('div');row.className='ingredient-row';row.style.setProperty('--accent',c.a);row.style.setProperty('--tint',c.t);row.innerHTML=`<div class="ingredient-icon">${iconFor(it.name)}</div><div class="item-copy"><div class="ingredient-name">${escapeHtml(it.name)}</div><div class="expiry">${fmt(it.expiry)}</div></div><div class="urgency"><span style="width:${urg}%"></span></div><div class="day">${dText(d)}</div><button class="remove" aria-label="삭제" data-i="${realIndex}">×</button>`;box.appendChild(row)});
+ $('#summaryText').textContent=`재료 ${items.length}개 · 가장 임박 ${items.length?dText(daysLeft(items[0].expiry)):'—'}`;$('#toggleAll').textContent=showAll?'접어두기 ↑':`전체 재료 ${items.length}개 보기 ›`;document.querySelectorAll('.remove').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save();renderAll()})}
+function scoreRecipes(){const map=new Map(items.map(i=>[i.name,daysLeft(i.expiry)]));return recipes.map(r=>{const matched=r.need.filter(n=>map.has(n));const score=matched.reduce((s,n)=>s+Math.max(1,9-Math.max(0,map.get(n))),0)+matched.length*4;return{...r,matched,score}}).filter(r=>r.matched.length>=2).sort((a,b)=>b.score-a.score)}
+function renderRecipe(){scored=scoreRecipes();if(!scored.length){$('#recipeName').textContent='재료를 조금 더 등록해 주세요';$('#recipeDesc').textContent='두 가지 이상 맞는 재료가 생기면 메뉴를 추천해요.';$('#useCount').textContent='';$('#recipeTime').textContent='—';$('#recipeServing').textContent='—';$('#recipeLevel').textContent='—';$('#usedChips').innerHTML='';$('#recipeDetail').innerHTML='';return}recipeIndex%=scored.length;const r=scored[recipeIndex];$('#recipeName').textContent=r.name;$('#recipeDesc').textContent=r.desc;$('#useCount').textContent=`임박 재료 ${r.matched.length}개 사용`;$('#recipeTime').textContent=r.time;$('#recipeServing').textContent=r.serving;$('#recipeLevel').textContent=r.level;$('#usedChips').innerHTML=r.matched.map(n=>`<span class="used-chip"><b>${iconFor(n)}</b>${n}</span>`).join('');$('#recipeDetail').innerHTML=`<div class="detail-title">간단 조리 순서</div><ol class="detail-list">${r.steps.map(s=>`<li>${s}</li>`).join('')}</ol><div class="detail-note">기본 추천 레시피예요. 세부 양념과 분량은 취향에 맞게 조절해 주세요.</div>`}
+function renderAll(){renderItems();renderRecipe()}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+$('#toggleAll').onclick=()=>{showAll=!showAll;renderItems()};$('#nextRecipe').onclick=()=>{if(scored.length){recipeIndex=(recipeIndex+1)%scored.length;$('#recipeDetail').classList.remove('open');$('#detailBtn').textContent='레시피 보기';renderRecipe()}};$('#detailBtn').onclick=()=>{const d=$('#recipeDetail');d.classList.toggle('open');$('#detailBtn').textContent=d.classList.contains('open')?'레시피 접기':'레시피 보기'};
+const modal=$('#modalBackdrop');function openModal(){modal.classList.add('open');$('#itemName').value='';$('#itemExpiry').value=addDaysISO(3);setTimeout(()=>$('#itemName').focus(),50)}function closeModal(){modal.classList.remove('open')}
+$('#openAdd').onclick=openModal;$('#closeAdd').onclick=closeModal;$('#cancelAdd').onclick=closeModal;modal.onclick=e=>{if(e.target===modal)closeModal()};$('#saveItem').onclick=()=>{const name=$('#itemName').value.trim(),expiry=$('#itemExpiry').value;if(!name||!expiry){if(!name)$('#itemName').focus();else $('#itemExpiry').focus();return}items.push({name,expiry});save();showAll=false;recipeIndex=0;closeModal();renderAll()};$('#itemName').addEventListener('keydown',e=>{if(e.key==='Enter')$('#saveItem').click()});
+renderAll();
+</script>
 </body>
 </html>
