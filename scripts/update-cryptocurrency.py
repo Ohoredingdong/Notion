@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+# Live Upbit KRW spot updater for the Notion cryptocurrency widget.
 OUT = Path("cryptocurrency-data.json")
 KST = ZoneInfo("Asia/Seoul")
 BASE = "https://api.upbit.com/v1"
