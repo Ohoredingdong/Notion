@@ -6,61 +6,86 @@
 <meta name="color-scheme" content="light dark">
 <title>Bond Yields</title>
 <style>
-:root{--bg:#fff;--text:#222421;--sub:#777b75;--muted:#a4a7a1;--line:#e9e9e5;--soft:#f7f7f4;--up:#5b9470;--down:#d56d68;--ctrl:rgba(255,255,255,.96);--shadow:0 8px 24px rgba(20,20,18,.035)}
-html[data-theme="dark"]{--bg:#1d1e1c;--text:#f0f1ed;--sub:#b9bcb6;--muted:#888b86;--line:#333530;--soft:#262823;--up:#7eb18d;--down:#e18b85;--ctrl:rgba(32,33,30,.96);--shadow:none}
-*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;-webkit-font-smoothing:antialiased}button{font:inherit;color:inherit}
-.root{position:relative;width:min(100%,420px);margin:0 auto;transition:width .18s ease}.root[data-size="compact"]{width:min(100%,385px)}.root[data-size="normal"]{width:min(100%,420px)}.root[data-size="large"]{width:min(100%,468px)}
-.widget{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:12px 13px 10px;box-shadow:var(--shadow)}
-.header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.title-wrap{min-width:0}.title{font-size:17px;font-weight:700;letter-spacing:-.035em;line-height:1.2}.subline{margin-top:5px;font-size:10px;color:var(--muted)}
-.header-right{display:flex;align-items:center;gap:6px}.refresh{height:28px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:10px;font-weight:560;color:var(--sub);display:flex;align-items:center;gap:5px;cursor:pointer}.refresh:hover{background:var(--soft)}.refresh svg{width:12px;height:12px}.refresh.loading svg{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-.tabs{display:flex;gap:4px;margin-top:11px;padding:3px;border:1px solid var(--line);border-radius:9px;background:var(--soft)}.tab{flex:1;height:27px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer}.tab.active{background:var(--bg);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.035)}
-.hero{padding:13px 0 9px}.eyebrow{font-size:10px;color:var(--sub);font-weight:560}.yield-line{display:flex;align-items:flex-end;gap:8px;margin-top:3px}.yield{font-size:40px;line-height:1;font-weight:500;letter-spacing:-.05em;font-variant-numeric:tabular-nums}.main-label{padding-bottom:4px;font-size:11px;color:var(--sub)}.change{margin-top:8px;font-size:10px;font-weight:600}.change.up{color:var(--up)}.change.down{color:var(--down)}.change.flat{color:var(--muted)}
-.spark-wrap{height:31px;margin-top:7px;overflow:hidden}.spark{width:100%;height:31px;display:block}.spark path{fill:none;stroke:var(--sub);stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;opacity:.82}
-.table{border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:1fr 72px 80px;align-items:center;gap:8px;min-height:37px;border-bottom:1px solid var(--line)}.term{font-size:11px;font-weight:610}.rate{text-align:right;font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}.bp{text-align:right;font-size:10px;font-weight:600;font-variant-numeric:tabular-nums}.bp.up{color:var(--up)}.bp.down{color:var(--down)}.bp.flat{color:var(--muted)}
-.spread{margin-top:9px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--soft);display:flex;align-items:center;justify-content:space-between;gap:8px}.spread-label{font-size:10px;color:var(--sub);font-weight:560}.spread-value{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}.spread-value.negative{color:var(--down)}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:8px;font-size:9px;color:var(--muted)}.status{display:flex;align-items:center;gap:5px;min-width:0}.dot{width:5px;height:5px;border-radius:50%;background:var(--up);flex:0 0 auto}.dot.stale{background:var(--down)}.source{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
-.loading,.error{padding:80px 10px;text-align:center;color:var(--muted);font-size:11px}
-.controls{position:absolute;top:10px;right:-36px;display:flex;flex-direction:column;gap:7px;opacity:0;transform:translateX(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}.controls:before{content:"";position:absolute;left:-10px;top:0;width:10px;height:100%}.root:hover .controls,.root:focus-within .controls{opacity:1;transform:none;pointer-events:auto}.ctrl{position:relative;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--ctrl);cursor:pointer;box-shadow:0 2px 8px rgba(20,20,20,.05)}.ctrl:hover{background:var(--soft)}.ctrl[disabled]{opacity:.42;cursor:not-allowed}.ctrl svg{width:14px;height:14px}.ctrl:after{content:attr(data-tip);position:absolute;right:35px;top:50%;transform:translateY(-50%);padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);font-size:9px;color:var(--sub);white-space:nowrap;opacity:0;pointer-events:none}.ctrl:hover:after{opacity:1}
-@media(max-width:430px){.root{width:100%!important}.yield{font-size:37px}.controls{right:7px;top:7px;opacity:1;transform:none;pointer-events:auto;flex-direction:row}.ctrl:after{display:none}.header{padding-right:128px}.row{grid-template-columns:1fr 66px 73px}}
+:root{
+  --bg:#fff;--text:#202226;--sub:#777c82;--muted:#a7abb0;
+  --line:#ebe8e2;--line-soft:#f2f0eb;--soft:#f8f7f4;
+  --green:#5d9865;--red:#d97770;--ctrl:rgba(255,255,255,.96);
+  --shadow:0 7px 20px rgba(28,25,20,.035)
+}
+html[data-theme="dark"]{
+  --bg:#202120;--text:#f0f0ec;--sub:#c0c3be;--muted:#8f938f;
+  --line:#393834;--line-soft:#2d2d2a;--soft:#292a27;
+  --green:#84b48a;--red:#e28b84;--ctrl:rgba(35,35,33,.96);--shadow:none
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{padding:8px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.root{position:relative;width:min(100%,420px);margin:0 auto;transition:width .18s ease}
+.root[data-size="compact"]{width:min(100%,388px)}
+.root[data-size="normal"]{width:min(100%,420px)}
+.root[data-size="large"]{width:min(100%,466px)}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:13px 13px 10px;box-shadow:var(--shadow)}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.head-left{min-width:0}.title{font-size:17px;font-weight:720;letter-spacing:-.035em;line-height:1.15}.sub{margin-top:5px;font-size:10px;color:var(--muted)}
+.refresh{height:28px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);display:flex;align-items:center;gap:5px;font-size:10px;font-weight:560;color:var(--sub);cursor:pointer;white-space:nowrap}.refresh:hover{background:var(--soft)}.refresh svg{width:12px;height:12px}.refresh.loading svg{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.switch{display:flex;align-items:center;gap:14px;margin-top:12px;border-bottom:1px solid var(--line)}
+.tab{position:relative;height:30px;padding:0 2px;border:0;background:transparent;color:var(--muted);font-size:10.5px;font-weight:650;cursor:pointer}.tab.active{color:var(--text)}.tab.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1.5px;border-radius:999px;background:var(--text)}
+.hero{padding:13px 0 8px}.kicker{font-size:10px;color:var(--sub)}.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:4px}.value-wrap{display:flex;align-items:baseline;gap:7px}.main-value{font-size:34px;line-height:1;font-weight:620;letter-spacing:-.05em;font-variant-numeric:tabular-nums}.main-name{font-size:11px;color:var(--sub)}.main-change{font-size:10.5px;font-weight:650;padding-bottom:3px;white-space:nowrap}.up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--muted)}
+.spark-wrap{height:26px;margin-top:7px}.spark{display:block;width:100%;height:100%}.spark path{fill:none;stroke:var(--sub);stroke-width:1.1;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;opacity:.78}
+.table{margin-top:3px;border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:1fr 72px 72px;align-items:center;gap:8px;min-height:34px;border-bottom:1px solid var(--line-soft)}.term{font-size:10.5px;font-weight:620}.rate{text-align:right;font-size:10.5px;font-weight:620;font-variant-numeric:tabular-nums}.bp{text-align:right;font-size:9.8px;font-weight:620;font-variant-numeric:tabular-nums}
+.spread{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--soft);display:flex;justify-content:space-between;align-items:center;gap:8px}.spread-copy{min-width:0}.spread-title{font-size:9.8px;color:var(--sub)}.spread-state{margin-top:2px;font-size:8.5px;color:var(--muted)}.spread-value{font-size:10.5px;font-weight:700;white-space:nowrap}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:8.8px;color:var(--muted)}.status{display:flex;align-items:center;gap:5px;min-width:0}.dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex:0 0 auto}.dot.stale{background:var(--red)}.source{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.loading,.error{padding:84px 10px;text-align:center;font-size:11px;color:var(--muted)}
+.controls{position:absolute;top:10px;right:-36px;display:flex;flex-direction:column;gap:7px;opacity:0;transform:translateX(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}.controls:before{content:"";position:absolute;left:-10px;top:0;width:10px;height:100%}.root:hover .controls,.root:focus-within .controls{opacity:1;transform:none;pointer-events:auto}
+.ctrl{position:relative;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--ctrl);cursor:pointer;box-shadow:0 2px 8px rgba(20,20,20,.05)}.ctrl:hover{background:var(--soft)}.ctrl[disabled]{opacity:.42;cursor:not-allowed}.ctrl svg{width:14px;height:14px}.ctrl:after{content:attr(data-tip);position:absolute;right:35px;top:50%;transform:translateY(-50%);padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);font-size:9px;color:var(--sub);white-space:nowrap;opacity:0;pointer-events:none}.ctrl:hover:after{opacity:1}
+@media(max-width:430px){.root{width:100%!important}.header{padding-right:126px}.main-value{font-size:31px}.row{grid-template-columns:1fr 67px 68px}.controls{right:7px;top:7px;opacity:1;transform:none;pointer-events:auto;flex-direction:row}.ctrl:after{display:none}}
 @media(hover:none),(pointer:coarse){.controls{opacity:1;transform:none;pointer-events:auto}}
 </style>
 </head>
 <body>
 <div class="root" id="root" data-size="normal">
-  <main class="widget"><div id="content" class="loading">국채 금리를 불러오는 중...</div></main>
+  <main class="card"><div id="content" class="loading">국채 금리를 불러오는 중...</div></main>
   <div class="controls" aria-label="Widget controls">
     <button class="ctrl" id="sizeBtn" data-tip="Size" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12M6 12h9M6 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button class="ctrl" id="themeBtn" data-tip="Dark Mode" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.7a8.3 8.3 0 1 0 8.3 8.3A6.5 6.5 0 1 1 12 3.7Z" stroke="currentColor" stroke-width="1.8"/></svg></button>
-    <button class="ctrl" id="lockBtn" data-tip="Lock" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>
+    <button class="ctrl" id="lockBtn" data-tip="Lock" type="button"><svg id="lockSvg" viewBox="0 0 24 24" fill="none"><path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>
     <button class="ctrl" id="resetBtn" data-tip="Reset" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M19 7v4h-4M5 17v-4h4M17.5 9A6.5 6.5 0 0 0 6.6 7L5 11M6.5 15A6.5 6.5 0 0 0 17.4 17L19 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   </div>
 </div>
 <script>
-const KEY='widget.bondYields.controls.v1', TABKEY='widget.bondYields.country.v1';
-const root=document.getElementById('root'), q=new URLSearchParams(location.search), forced=q.get('theme');
-const osTheme=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+const KEY='widget.bondYields.controls.v2',TABKEY='widget.bondYields.country.v2';
+const root=document.getElementById('root'),q=new URLSearchParams(location.search),forced=q.get('theme'),osTheme=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
 let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{}
 let settings={theme:osTheme,size:'normal',locked:false,...saved};if(forced==='light'||forced==='dark')settings.theme=forced;
-let active=localStorage.getItem(TABKEY)||'KR', latest=null;
+let active=localStorage.getItem(TABKEY)||'KR',latest=null;
 function save(){localStorage.setItem(KEY,JSON.stringify(settings))}
 function applyTheme(v){document.documentElement.dataset.theme=v;settings.theme=v;save()}
 function applySize(v){root.dataset.size=v;settings.size=v;save();document.getElementById('sizeBtn').disabled=settings.locked}
-function applyLock(v){settings.locked=v;save();document.getElementById('sizeBtn').disabled=v;document.getElementById('lockBtn').dataset.tip=v?'Unlock':'Lock'}
+function applyLock(v){settings.locked=v;save();document.getElementById('sizeBtn').disabled=v;document.getElementById('lockBtn').dataset.tip=v?'Unlock':'Lock';document.getElementById('lockSvg').innerHTML=v?'<rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8.7a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>':'<path d="M7 11V8.5a5 5 0 0 1 10 0V11" stroke="currentColor" stroke-width="1.8"/><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/>'}
 applyTheme(settings.theme);applySize(settings.size);applyLock(settings.locked);
 document.getElementById('themeBtn').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
 document.getElementById('sizeBtn').onclick=()=>{if(settings.locked)return;const a=['compact','normal','large'];applySize(a[(a.indexOf(settings.size)+1)%a.length])};
 document.getElementById('lockBtn').onclick=()=>applyLock(!settings.locked);
 document.getElementById('resetBtn').onclick=()=>{settings={theme:forced||osTheme,size:'normal',locked:false};active='KR';localStorage.removeItem(TABKEY);applyTheme(settings.theme);applySize('normal');applyLock(false);if(latest)render(latest)};
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const fmt=v=>Number(v).toFixed(3)+'%';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
+const fmt=v=>Number(v).toFixed(2)+'%';
 function bpClass(v){return v>0?'up':v<0?'down':'flat'}
 function bpText(v){const n=Number(v)||0;return `${n>0?'▲ ':n<0?'▼ ':''}${Math.abs(n).toFixed(1)}bp`}
-function ago(iso){try{const m=Math.max(0,Math.floor((Date.now()-new Date(iso).getTime())/60000));if(m<1)return '방금';if(m<60)return `${m}분 전`;const h=Math.floor(m/60);return `${h}시간 전`}catch{return '—'}}
-function spark(history){let vals=(history||[]).map(x=>Number(x[1])).filter(Number.isFinite);if(!vals.length)return '<svg class="spark" viewBox="0 0 100 30"></svg>';if(vals.length===1)vals=[vals[0],vals[0],vals[0]];const min=Math.min(...vals),max=Math.max(...vals),span=max-min||.001;const pts=vals.map((v,i)=>{const x=i/(vals.length-1)*100,y=26-((v-min)/span)*20;return [x,y]});let d='M'+pts.map(p=>p.map(n=>n.toFixed(2)).join(',')).join(' L');return `<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="${d}"/></svg>`}
-function curveStatus(spread){if(spread<0)return '역전 구간';if(spread<25)return '평탄 구간';return '정상 기울기'}
-function render(data){latest=data;const c=data.countries?.[active];if(!c){document.getElementById('content').innerHTML='<div class="error">데이터 없음</div>';return}const main=c.yields?.[c.main]||{};const entries=Object.entries(c.yields||{});const rows=entries.map(([term,v])=>`<div class="row"><div class="term">${esc(term==='3M'?'3개월물':term.replace('Y','년물'))}</div><div class="rate">${fmt(v.yield)}</div><div class="bp ${bpClass(v.change_bp)}">${bpText(v.change_bp)}</div></div>`).join('');const spread=Number(c.spread?.value_bp)||0;document.getElementById('content').innerHTML=`<div class="header"><div class="title-wrap"><div class="title">국채 금리</div><div class="subline">${esc(c.label)} 국채 · ${ago(data.generated_at)}</div></div><div class="header-right"><button id="refreshTop" class="refresh" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5M4 17v-5h5M17.5 9A6.5 6.5 0 0 0 6.6 7L4 12M6.5 15A6.5 6.5 0 0 0 17.4 17L20 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>업데이트</span></button></div></div><div class="tabs"><button class="tab ${active==='KR'?'active':''}" data-country="KR" type="button">한국</button><button class="tab ${active==='US'?'active':''}" data-country="US" type="button">미국</button></div><section class="hero"><div class="eyebrow">10년물 수익률</div><div class="yield-line"><div class="yield">${fmt(main.yield)}</div><div class="main-label">10Y</div></div><div class="change ${bpClass(main.change_bp)}">${bpText(main.change_bp)} <span style="color:var(--muted);font-weight:500">(전일 대비)</span></div><div class="spark-wrap">${spark(c.history)}</div></section><div class="table">${rows}</div><div class="spread"><div class="spread-label">${esc(c.spread?.label||'장단기 금리차')}</div><div class="spread-value ${spread<0?'negative':''}">${spread>=0?'+':''}${spread.toFixed(1)}bp</div></div><div class="footer"><div class="status"><span class="dot ${data.stale?'stale':''}"></span><span>${curveStatus(spread)}${data.stale?' · 일부 캐시':''}</span></div><div class="source">TradingView TVC · ${ago(data.generated_at)}</div></div>`;document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{active=b.dataset.country;localStorage.setItem(TABKEY,active);render(data)});document.getElementById('refreshTop').onclick=()=>load(true)}
-async function load(manual=false){const btn=document.getElementById('refreshTop');if(manual&&btn)btn.classList.add('loading');try{const r=await fetch('./bond-yields-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);render(await r.json())}catch(e){document.getElementById('content').innerHTML='<div class="error">금리 데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</div>'}finally{const b=document.getElementById('refreshTop');if(b)b.classList.remove('loading')}}
-load();setInterval(()=>load(false),300000);
+function ago(iso){try{const m=Math.max(0,Math.floor((Date.now()-new Date(iso).getTime())/60000));if(m<1)return '방금';if(m<60)return `${m}분 전`;const h=Math.floor(m/60);if(h<24)return `${h}시간 전`;return `${Math.floor(h/24)}일 전`}catch{return '—'}}
+function labelTerm(t){return t==='3M'?'3개월물':t.replace('Y','년물')}
+function spark(history){let vals=(history||[]).map(x=>Number(x[1])).filter(Number.isFinite);if(!vals.length)return '<svg class="spark" viewBox="0 0 100 24"></svg>';if(vals.length===1)vals=[vals[0],vals[0],vals[0]];const min=Math.min(...vals),max=Math.max(...vals),span=max-min||.001;const pts=vals.map((v,i)=>{const x=i/(vals.length-1)*100,y=20-((v-min)/span)*14;return [x,y]});const d='M'+pts.map(p=>p.map(n=>n.toFixed(2)).join(',')).join(' L');return `<svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none"><path d="${d}"/></svg>`}
+function spreadState(v){return v<0?'역전 상태 (단기>장기)':v<25?'평탄한 수익률 곡선':'정상 범위 (단기<장기)'}
+function render(data){latest=data;const c=data.countries?.[active];if(!c){document.getElementById('content').innerHTML='<div class="error">데이터 없음</div>';return}const main=c.yields?.[c.main]||{};const rows=Object.entries(c.yields||{}).map(([term,v])=>`<div class="row"><div class="term">${labelTerm(term)}</div><div class="rate">${fmt(v.yield)}</div><div class="bp ${bpClass(v.change_bp)}">${bpText(v.change_bp)}</div></div>`).join('');const spread=Number(c.spread?.value_bp)||0;document.getElementById('content').innerHTML=`
+<div class="header"><div class="head-left"><div class="title">${esc(c.label)} 국채 금리</div><div class="sub">수익률 곡선 · ${ago(data.generated_at)}</div></div><button id="refreshTop" class="refresh" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5M4 17v-5h5M17.5 9A6.5 6.5 0 0 0 6.6 7L4 12M6.5 15A6.5 6.5 0 0 0 17.4 17L20 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>업데이트</span></button></div>
+<div class="switch"><button class="tab ${active==='KR'?'active':''}" data-country="KR" type="button">한국</button><button class="tab ${active==='US'?'active':''}" data-country="US" type="button">미국</button></div>
+<section class="hero"><div class="kicker">10년물 수익률</div><div class="hero-row"><div class="value-wrap"><div class="main-value">${fmt(main.yield)}</div><div class="main-name">10Y</div></div><div class="main-change ${bpClass(main.change_bp)}">${bpText(main.change_bp)} <span style="color:var(--muted);font-weight:500">전일 대비</span></div></div><div class="spark-wrap">${spark(c.history)}</div></section>
+<div class="table">${rows}</div>
+<div class="spread"><div class="spread-copy"><div class="spread-title">${esc(c.spread?.label||'장단기 금리차')}</div><div class="spread-state">${spreadState(spread)}</div></div><div class="spread-value ${spread<0?'down':''}">${spread>=0?'+':''}${(spread/100).toFixed(2)}%p</div></div>
+<div class="footer"><div class="status"><span class="dot ${data.stale?'stale':''}"></span><span>${data.stale?'일부 캐시 데이터':'정상 갱신'}</span></div><div class="source">TradingView TVC · ${ago(data.generated_at)}</div></div>`;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{active=b.dataset.country;localStorage.setItem(TABKEY,active);render(data)});document.getElementById('refreshTop').onclick=()=>load(true)}
+async function load(manual=false){const btn=document.getElementById('refreshTop');if(manual&&btn)btn.classList.add('loading');try{const r=await fetch('./bond-yields-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);render(await r.json())}catch(e){document.getElementById('content').innerHTML='<div class="error">데이터를 불러오지 못했습니다.</div>'}finally{const b=document.getElementById('refreshTop');if(b)b.classList.remove('loading')}}
+load();
 </script>
 </body>
 </html>
