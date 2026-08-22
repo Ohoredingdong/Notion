@@ -1,0 +1,86 @@
+name: Validate Real Estate Pulse
+
+on:
+  pull_request:
+    paths:
+      - 'real-estate-pulse-data.json'
+      - '.github/workflows/validate-real-estate-pulse.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate dataset, provenance and integrity
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from datetime import date, datetime
+          from urllib.parse import urlparse
+
+          EXPECTED = [
+              '서울','부산','대구','인천','대전','울산','전남광주','세종',
+              '경기','강원','충북','충남','전북','경북','경남','제주'
+          ]
+
+          with open('real-estate-pulse-data.json', encoding='utf-8') as f:
+              data = json.load(f)
+
+          as_of = date.fromisoformat(data['asOf'])
+          published = date.fromisoformat(data['published'])
+          assert published >= as_of, 'published must not precede asOf'
+
+          regions = data['regions']
+          assert [r['name'] for r in regions] == EXPECTED, 'region list/order mismatch'
+          assert len(regions) == 16, 'must contain 16 regions'
+          count = 0
+          for r in regions:
+              for key in ('sale','lease'):
+                  v = r[key]
+                  assert isinstance(v, (int,float)) and not isinstance(v, bool), f"{r['name']} {key} nonnumeric"
+                  assert -5 <= float(v) <= 5, f"{r['name']} {key} outside safety range"
+                  count += 1
+          assert count == 32
+
+          def official_https(url, suffix):
+              p = urlparse(str(url))
+              host = (p.hostname or '').lower()
+              return p.scheme == 'https' and (host == suffix or host.endswith('.' + suffix))
+
+          ver = data['verification']
+          assert ver['status'] == 'verified'
+          assert ver['regionCount'] == 16 and ver['metricCount'] == 32
+          assert ver['method'] in ('official','official+crosscheck')
+          assert official_https(ver['primarySource'], 'reb.or.kr')
+          checked = datetime.fromisoformat(ver['checkedAt'])
+          assert checked.tzinfo is not None
+          if ver['method'] == 'official+crosscheck':
+              sources = ver.get('supportingSources', [])
+              assert len(sources) >= 2, 'crosscheck requires at least two supporting sources'
+              hosts = set()
+              for u in sources:
+                  p = urlparse(u)
+                  assert p.scheme == 'https' and p.hostname, 'supporting source must be HTTPS'
+                  hosts.add(p.hostname.lower())
+              assert len(hosts) >= 2, 'crosscheck sources must use independent hosts'
+
+          payload = {'asOf': data['asOf'], 'published': data['published'], 'regions': regions}
+          raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+          digest = hashlib.sha256(raw.encode('utf-8')).hexdigest()
+          assert digest == ver['dataSha256'], 'dataSha256 mismatch'
+
+          rate = data['baseRate']
+          assert isinstance(rate['value'], (int,float)) and not isinstance(rate['value'], bool)
+          assert isinstance(rate['previous'], (int,float)) and not isinstance(rate['previous'], bool)
+          date.fromisoformat(rate['changedAt'])
+          assert official_https(rate['source'], 'bok.or.kr'), 'base rate source must be official BOK'
+
+          print('Verified: 16 regions / 32 metrics / provenance / SHA-256 / BOK source')
+          PY
