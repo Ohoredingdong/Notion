@@ -6,12 +6,12 @@ const IMG={
  '두부 김치덮밥':'assets/use-me-first/dubu-kimchi-rice.webp',
  '닭가슴살 양파 간장볶음':'assets/use-me-first/chicken-onion-soy-stirfry.webp'
 };
-const SPRITE='assets/use-me-first/ai-bottom-sprite.webp?v=1';
+const SPRITE='assets/use-me-first/ai-bottom-sprite.webp?v=3';
 const SPRITE_POS={
- '계란찜':'0% 0%',
- '시금치나물':'100% 0%',
- '두부부침':'0% 100%',
- '김치두부찌개':'100% 100%'
+ '계란찜':'40.9% 64.3%',
+ '시금치나물':'59.5% 64.3%',
+ '두부부침':'78% 64.3%',
+ '김치두부찌개':'96.4% 64.3%'
 };
 const C=[
  {name:'두부김치',f:['두부','김치'],s:[],p:[],time:'7분',level:'아주 쉬움',desc:'두부와 김치를 바로 곁들이는 가장 빠른 한 접시',steps:['두부를 먹기 좋게 썰어 따뜻하게 데워요.','김치를 먹기 좋게 썰어요.','두부와 김치를 함께 담아요.']},
@@ -40,7 +40,7 @@ function render(){
  document.getElementById('umfAvailableCount').textContent=`가능 메뉴 ${av.length}개`;
  grid.replaceChildren(...list.map((r,i)=>{const el=document.createElement('article');el.className='umf-menu-card'+(r.missing.length?' missing':'');el.dataset.name=r.name;
  const src=IMG[r.name];
- const photo=src?`<img src="${src}?v=2" alt="${esc(r.name)}" loading="lazy" decoding="async">`:`<div class="umf-ai-sprite" style="background-image:url('${SPRITE}');background-position:${SPRITE_POS[r.name]};"></div>`;
+ const photo=src?`<img src="${src}?v=3" alt="${esc(r.name)}" loading="lazy" decoding="async">`:`<div class="umf-ai-sprite" style="background-image:url('${SPRITE}');background-position:${SPRITE_POS[r.name]};"></div>`;
  el.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span>${photo}${r.missing.length?`<div class="umf-menu-missing">필요: ${esc(r.missing.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
  if(!r.missing.length)el.onclick=()=>renderSelection(r,st);return el;}));
  if(av.length)renderSelection(av[0],st);else{document.getElementById('umfSelectionChips').innerHTML='<span class="umf-selection-chip">기본 양념/상비 재료를 체크하면 메뉴가 열려요</span>';document.getElementById('umfRecipeDetail').innerHTML='';}
