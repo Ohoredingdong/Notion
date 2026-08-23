@@ -1,6 +1,15 @@
 (()=>{
-  // Final layout repair: keep all inventory controls in one left stack so the
-  // tall recipe panel can never stretch the header/tabs apart.
+  // Force the corrected wide stylesheet. The page was still loading v3,
+  // so the .umf-wide-layout/.umf-left rules never actually took effect.
+  document.querySelectorAll('link[href*="use-me-first-horizontal-v3.css"]').forEach(link=>{link.disabled=true});
+  if(!document.querySelector('link[href*="use-me-first-horizontal-v4.css"]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='use-me-first-horizontal-v4.css?v=7';
+    document.head.appendChild(link);
+  }
+
+  // Keep the inventory controls in one independent left stack.
   const w=document.querySelector('.w');
   if(w&&!w.querySelector(':scope > .umf-left')){
     const head=w.querySelector(':scope > .head');
@@ -13,23 +22,40 @@
       left.className='umf-left';
       left.append(head,tabs,fridge,season);
       w.insertBefore(left,recipe);
-      w.classList.add('umf-wide-layout');
     }
-  }else if(w){
-    w.classList.add('umf-wide-layout');
   }
+  if(w) w.classList.add('umf-wide-layout');
 
-  // The inline AI image helper used to load before the menu cards existed.
-  // Load it once more after the recipe grid has rendered so cards 5–8 are
-  // patched with their generated food photos instead of showing a broken state.
-  setTimeout(()=>{
-    if(document.getElementById('umfRecipeGrid')){
-      const s=document.createElement('script');
-      s.src='use-me-first-ai-inline-v2.js?v=3';
-      s.async=true;
-      document.head.appendChild(s);
-    }
-  },350);
+  // The old inline image helper can overwrite valid files with broken data URIs.
+  // Always finish by restoring known-good assets after each menu render.
+  const PHOTO={
+    '계란찜':'assets/use-me-first/gyeran-jjim-ai.webp?v=7',
+    '시금치나물':'assets/use-me-first/sigeumchi-namul-ai.webp?v=7',
+    '두부부침':'assets/use-me-first/dubu-buchim-ai.webp?v=7',
+    '김치두부찌개':'assets/use-me-first/kimchi-tofu-stew.svg?v=7'
+  };
+  function repairMenuImages(){
+    document.querySelectorAll('#umfRecipeGrid .umf-menu-card').forEach(card=>{
+      const src=PHOTO[card.dataset.name];
+      if(!src) return;
+      const img=card.querySelector('.umf-menu-photo img');
+      const fb=card.querySelector('.umf-menu-fallback');
+      if(!img) return;
+      if(!img.src.includes(src.split('?')[0])) img.src=src;
+      img.style.display='block';
+      if(fb) fb.style.display='none';
+      img.onerror=()=>{
+        img.style.display='none';
+        if(fb) fb.style.display='grid';
+      };
+    });
+  }
+  const grid=document.getElementById('umfRecipeGrid');
+  if(grid){
+    new MutationObserver(()=>setTimeout(repairMenuImages,0)).observe(grid,{childList:true,subtree:true});
+    setTimeout(repairMenuImages,120);
+    setTimeout(repairMenuImages,500);
+  }
 
   const btn=document.getElementById('syncBtn');
   if(!btn) return;
