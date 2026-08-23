@@ -32,7 +32,8 @@
     light:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
     lock:'<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
     unlock:'<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 7.5-2"/></svg>',
-    reset:'<svg viewBox="0 0 24 24"><path d="M4 8V4h4"/><path d="M5.5 5.5A8 8 0 1 1 4.2 14"/></svg>'
+    reset:'<svg viewBox="0 0 24 24"><path d="M4 8V4h4"/><path d="M5.5 5.5A8 8 0 1 1 4.2 14"/></svg>',
+    sync:'<svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="m12 4 3 3-3 3"/><path d="M20 17H9"/><path d="m12 14-3 3 3 3"/></svg>'
   };
 
   function btn(id,tip,svg){
@@ -45,9 +46,12 @@
   const resetBtn=btn('widgetResetControl','UI 초기화',icons.reset);
 
   if(syncBtn){
-    syncBtn.classList.remove('hoverTool');
-    syncBtn.classList.add('widget-control-btn','widget-sync-control');
+    const dot=syncBtn.querySelector('.syncDot');
+    syncBtn.className='widget-control-btn widget-sync-control';
     syncBtn.dataset.tip='동기화 설정';
+    syncBtn.setAttribute('aria-label','동기화 설정');
+    syncBtn.innerHTML=icons.sync;
+    if(dot) syncBtn.appendChild(dot);
     rail.appendChild(syncBtn);
   }
 
@@ -63,16 +67,16 @@
   html[data-widget-size="large"] .widget-control-shell{--widget-max:520px}
   .widget-control-rail{position:absolute;top:8px;right:-38px;z-index:30;display:flex;flex-direction:column;gap:5px;opacity:0;transform:translateX(-3px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
   .widget-control-shell:hover>.widget-control-rail,.widget-control-shell:focus-within>.widget-control-rail{opacity:1;transform:translateX(0);pointer-events:auto}
-  .widget-control-btn{width:28px;height:28px;border:1px solid var(--wc-border)!important;background:var(--wc-bg)!important;color:var(--wc-fg)!important;border-radius:9px!important;display:grid!important;place-items:center!important;padding:0!important;box-shadow:var(--wc-shadow)!important;position:relative!important;cursor:pointer!important;transition:background .15s ease,color .15s ease,transform .15s ease,opacity .15s ease!important}
+  .widget-control-btn{width:28px!important;height:28px!important;min-width:28px!important;max-width:28px!important;min-height:28px!important;max-height:28px!important;overflow:visible!important;border:1px solid var(--wc-border)!important;background:var(--wc-bg)!important;color:var(--wc-fg)!important;border-radius:9px!important;display:grid!important;place-items:center!important;padding:0!important;font-size:0!important;line-height:0!important;box-shadow:var(--wc-shadow)!important;position:relative!important;cursor:pointer!important;transition:background .15s ease,color .15s ease,transform .15s ease,opacity .15s ease!important}
   .widget-control-btn:hover{transform:translateY(-1px);filter:brightness(.98)}
-  .widget-control-btn svg{width:14px!important;height:14px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-  .widget-control-btn:after{content:attr(data-tip);position:absolute;right:35px;top:50%;transform:translateY(-50%) translateX(3px);background:#30352f;color:#fff;font-size:7.5px;line-height:1;padding:5px 6px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s}
-  .widget-control-btn:hover:after{opacity:1;transform:translateY(-50%) translateX(0)}
+  .widget-control-btn svg{width:14px!important;height:14px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+  .widget-control-btn:after{content:attr(data-tip);position:absolute!important;right:35px!important;left:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-50%) translateX(3px)!important;width:max-content!important;max-width:none!important;height:auto!important;background:#30352f!important;color:#fff!important;font-size:8px!important;line-height:1!important;font-weight:500!important;padding:5px 7px!important;border-radius:6px!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;opacity:0;pointer-events:none;transition:.12s;box-sizing:border-box!important}
+  .widget-control-btn:hover:after{opacity:1;transform:translateY(-50%) translateX(0)!important}
   .widget-control-btn.is-active{background:#eef4ee!important;color:#4f7355!important;border-color:#cbdccb!important}
   html[data-widget-theme="dark"] .widget-control-btn.is-active{background:#344238!important;color:#cfe4d3!important;border-color:#526458!important}
   .widget-control-btn:disabled{opacity:.38!important;cursor:not-allowed!important;transform:none!important}
-  .widget-control-btn .syncDot{position:absolute;right:3px;bottom:3px;width:6px;height:6px;border-radius:50%;background:#c7cbc5;border:1px solid var(--wc-bg)}
-  .widget-control-btn .syncDot.on{background:#6f9b73}.widget-control-btn .syncDot.bad{background:#d47b70}
+  .widget-control-btn .syncDot{position:absolute!important;right:3px!important;bottom:3px!important;width:6px!important;height:6px!important;border-radius:50%!important;background:#c7cbc5!important;border:1px solid var(--wc-bg)!important;margin:0!important;padding:0!important}
+  .widget-control-btn .syncDot.on{background:#6f9b73!important}.widget-control-btn .syncDot.bad{background:#d47b70!important}
   .head{padding-right:0!important}
 
   html[data-widget-theme="dark"] body{background:transparent!important;color:#e7ebe7!important}
@@ -93,14 +97,12 @@
   html[data-widget-theme="dark"] input{background:#242925!important;border-color:#404740!important;color:#e7ece8!important}
   html[data-widget-theme="dark"] .modalbg{background:rgba(0,0,0,.5)!important}
 
-  @media(hover:none){.widget-control-rail{opacity:1;transform:none;pointer-events:auto}.widget-control-btn:after{display:none}}
-  @media(max-width:390px){body{padding-right:38px!important}.widget-control-rail{right:-33px;top:7px}.widget-control-btn{width:26px;height:26px}.widget-control-btn svg{width:13px!important;height:13px!important}}
+  @media(hover:none){.widget-control-rail{opacity:1;transform:none;pointer-events:auto}.widget-control-btn:after{display:none!important}}
+  @media(max-width:390px){body{padding-right:38px!important}.widget-control-rail{right:-33px;top:7px}.widget-control-btn{width:26px!important;height:26px!important;min-width:26px!important;max-width:26px!important;min-height:26px!important;max-height:26px!important}.widget-control-btn svg{width:13px!important;height:13px!important}}
   `;
   document.head.appendChild(css);
 
-  function persist(){
-    localStorage.setItem(KEY,JSON.stringify(state));
-  }
+  function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
   function apply(){
     root.dataset.widgetSize=state.size;
     root.dataset.widgetTheme=state.theme;
