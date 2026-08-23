@@ -11,12 +11,18 @@
     return !!localStorage.getItem(SYNC_KEY);
   }
 
+  function hasRealError(){
+    const text=(status?.textContent||'').trim();
+    return /실패|오류|error/i.test(text);
+  }
+
   function repairSyncButton(){
     if(repairing) return;
     repairing=true;
 
-    const bad=!!(status&&status.classList.contains('bad'));
-    const tip=connected()?'동기화 관리':'동기화 설정';
+    const isConnected=connected();
+    const bad=hasRealError();
+    const tip=isConnected?'동기화 관리':'동기화 설정';
     btn.dataset.tip=tip;
     btn.setAttribute('aria-label',tip);
 
@@ -35,8 +41,10 @@
       dot.id='syncDot';
       btn.appendChild(dot);
     }
+
+    if(status) status.classList.toggle('bad',bad);
     dot.classList.toggle('bad',bad);
-    dot.classList.toggle('on',connected()&&!bad);
+    dot.classList.toggle('on',isConnected&&!bad);
 
     repairing=false;
   }
