@@ -1,0 +1,93 @@
+/* Use Me First — clean wide layout. No runtime reparenting. */
+body[data-widget-layout="wide"]{padding:6px 48px 6px 6px!important;min-width:0;background:transparent}
+body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 58px),1080px)!important;max-width:1080px!important;overflow:visible!important}
+html[data-widget-size="compact"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 58px),900px)!important;max-width:900px!important}
+html[data-widget-size="normal"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 58px),1080px)!important;max-width:1080px!important}
+html[data-widget-size="large"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 58px),1220px)!important;max-width:1220px!important}
+
+body[data-widget-layout="wide"] .w{
+  position:relative;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+
+.umf-wide-layout{display:grid;grid-template-columns:minmax(320px,.92fr) minmax(0,1.72fr);gap:12px;align-items:start}
+.umf-left,.recipeSec{min-width:0;border:1px solid #e5e9e2;border-radius:17px;box-shadow:0 5px 18px rgba(55,66,55,.045)}
+.umf-left{background:#fff;padding:14px}
+.recipeSec{margin:0!important;background:#fffaf5;border-color:#efe2d3;padding:14px}
+
+.umf-left .head{padding-right:0!important}
+.umf-left .title{font-size:24px!important;line-height:1.05;letter-spacing:-.8px}
+.umf-left .sub{font-size:9.5px!important;margin-top:6px;white-space:normal!important;line-height:1.45}
+.umf-left .add{padding:8px 10px!important;font-size:9.5px!important;border-radius:10px}
+.umf-left .tabs{margin:12px 0 14px!important}
+.umf-left .st,.recipeSec .st{font-size:12px!important}
+.umf-left .ss,.recipeSec .ss{font-size:8.5px!important}
+.umf-left .card{border-radius:13px!important}
+.umf-left .row{grid-template-columns:30px 82px minmax(46px,1fr) 46px 14px!important;gap:6px!important;padding:6px 8px!important;min-height:44px!important}
+.umf-left .nm{font-size:11px!important}
+.umf-left .ex{font-size:7.8px!important}
+.umf-left .foot{padding:8px 9px!important}
+
+.recipeSec>.sh{margin:0 1px 9px!important;align-items:start}
+#umfRecipeGridShell{min-width:0}
+.umf-recipe-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 9px}
+.umf-badge{display:inline-flex;align-items:center;gap:4px;border:1px solid #dce7dc;background:#f3f7f1;color:#5e775f;border-radius:999px;padding:5px 8px;font-size:8px;font-weight:700;white-space:nowrap}
+.umf-recipe-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.umf-menu-card{position:relative;overflow:hidden;display:flex;flex-direction:column;border:1px solid #eadfd3;background:#fff;border-radius:12px;min-width:0;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.umf-menu-card:hover{transform:translateY(-1px);border-color:#ccd9ca;box-shadow:0 5px 14px rgba(65,78,65,.07)}
+.umf-menu-card.selected{border:2px solid #65896a}
+.umf-menu-card.missing{opacity:1;filter:none;cursor:default}
+.umf-menu-photo{position:relative;aspect-ratio:1.15/1;background:#f2e8dc;overflow:hidden}
+.umf-menu-photo img{width:100%;height:100%;display:block;object-fit:cover}
+.umf-menu-num{position:absolute;left:6px;top:6px;z-index:2;min-width:24px;height:20px;padding:0 6px;display:grid;place-items:center;background:rgba(255,255,255,.94);border:1px solid #6b9470;border-radius:8px;color:#4f7456;font-size:8px;font-weight:800}
+.umf-menu-missing{position:absolute;left:6px;right:6px;bottom:6px;background:rgba(52,56,52,.76);backdrop-filter:blur(2px);color:#fff;border-radius:7px;padding:4px 6px;font-size:7px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.umf-menu-body{display:flex;flex:1;flex-direction:column;padding:8px}
+.umf-menu-name{font-size:10.5px;font-weight:800;line-height:1.28;min-height:27px;word-break:keep-all}
+.umf-menu-desc{margin-top:4px;color:#7c817a;font-size:7.6px;line-height:1.4;min-height:31px;max-height:31px;overflow:hidden}
+.umf-menu-meta{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto;padding-top:7px}
+.umf-menu-meta span{border:1px solid #ece7df;background:#fff;border-radius:7px;padding:3px 5px;font-size:7.2px;color:#686d67}
+.umf-menu-fallback{width:100%;height:100%;display:grid;place-items:center;text-align:center;padding:12px;color:#7e847d;font-size:8px;background:linear-gradient(145deg,#f7efe5,#eee1d3)}
+
+.umf-selection{margin-top:10px;border-top:1px solid #eee1d4;padding-top:9px}
+.umf-selection-label{font-size:8px;color:#858a83;margin-bottom:6px}
+.umf-selection-chips{display:flex;gap:5px;flex-wrap:wrap;min-height:24px}
+.umf-selection-chip{display:inline-flex;align-items:center;gap:4px;border:1px solid #ece9e2;background:#fff;border-radius:999px;padding:4px 7px;font-size:8px;color:#60665f}
+.umf-selection-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.umf-selection-actions button{border:1px solid #e3e4df;background:#fff;color:#5f655f;border-radius:9px;padding:8px;font-size:8.5px;font-weight:700;cursor:pointer}
+.umf-selection-actions .primary{background:#657f64;border-color:#657f64;color:#fff}
+.umf-recipe-detail{display:none;margin-top:8px;border:1px solid #eee4d7;background:#fffdf9;border-radius:9px;padding:9px;font-size:8px;line-height:1.55;color:#666d66}
+.umf-recipe-detail.on{display:block}
+.recipeSec>.tip{margin-top:10px!important}
+
+/* The sync button itself stays icon-only. The common Widget Control System owns the outer rail. */
+.hoverTools{position:absolute;top:8px;right:-38px!important;z-index:32!important;display:block!important;opacity:0!important;pointer-events:none!important}
+.w:hover .hoverTools,.w:focus-within .hoverTools{opacity:1!important;pointer-events:auto!important}
+.hoverTool{width:28px!important;height:28px!important;padding:0!important;border:1px solid #e1e5df!important;background:#fff!important;border-radius:9px!important;display:grid!important;place-items:center!important;box-shadow:0 2px 7px rgba(50,55,50,.05)}
+.hoverTool svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.syncDot{position:absolute;right:3px;bottom:3px;width:6px;height:6px;border-radius:50%;background:#c7cbc5}
+.syncDot.on{background:#6f9b73}.syncDot.bad{background:#d47b70}
+
+html[data-widget-theme="dark"] .umf-left{background:#222622!important;border-color:#3c433c!important}
+html[data-widget-theme="dark"] .recipeSec{background:#2b2925!important;border-color:#4b443a!important}
+html[data-widget-theme="dark"] .umf-menu-card,html[data-widget-theme="dark"] .umf-selection-chip,html[data-widget-theme="dark"] .umf-selection-actions button,html[data-widget-theme="dark"] .umf-recipe-detail{background:#292e2a!important;border-color:#414841!important;color:#e4e9e4!important}
+html[data-widget-theme="dark"] .umf-menu-desc,html[data-widget-theme="dark"] .umf-selection-label{color:#a6aea7!important}
+
+@media(max-width:760px){
+  body[data-widget-layout="wide"]{padding:6px 40px 6px 6px!important}
+  body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 48px),560px)!important;max-width:560px!important}
+  .umf-wide-layout{display:block}
+  .umf-left,.recipeSec{border-radius:16px}
+  .recipeSec{margin-top:12px!important}
+  .umf-recipe-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .umf-menu-photo{aspect-ratio:1.18/1}
+  .umf-menu-name{font-size:11px}
+  .umf-menu-desc{font-size:8px;min-height:33px;max-height:33px}
+  .hoverTools{right:-34px!important;opacity:1!important;pointer-events:auto!important}
+}
