@@ -4,7 +4,11 @@
     '두부김치':'assets/use-me-first/dubu-kimchi.webp',
     '김치볶음밥':'assets/use-me-first/kimchi-fried-rice.webp',
     '두부 김치덮밥':'assets/use-me-first/dubu-kimchi-rice.webp',
-    '닭가슴살 양파 간장볶음':'assets/use-me-first/chicken-onion-soy-stirfry.webp'
+    '닭가슴살 양파 간장볶음':'assets/use-me-first/chicken-onion-soy-stirfry.webp',
+    '시금치나물':'assets/use-me-first/spinach-namul.svg',
+    '두부부침':'assets/use-me-first/tofu-pan-fry.svg',
+    '김치두부찌개':'assets/use-me-first/kimchi-tofu-stew.svg',
+    '닭가슴살 두부 간장조림':'assets/use-me-first/chicken-tofu-soy-braise.svg'
   };
   const CATALOG=[
     {name:'두부김치',f:['두부','김치'],s:[],p:[],time:'7분',level:'아주 쉬움',desc:'두부와 김치를 바로 곁들이는 가장 빠른 한 접시',steps:['두부를 먹기 좋게 썰어 따뜻하게 데워요.','김치를 먹기 좋게 썰어요.','두부와 김치를 함께 담아요.']},
@@ -57,7 +61,7 @@
       card.className='umf-menu-card'+(r.miss.length?' missing':'');
       card.dataset.name=r.name;
       const src=IMG[r.name];
-      card.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span>${src?`<img src="${src}" alt="${esc(r.name)}">`:`<div class="umf-menu-fallback">${esc(r.name)}</div>`}${r.miss.length?`<div class="umf-menu-missing">필요: ${esc(r.miss.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
+      card.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span>${src?`<img src="${src}?v=2" alt="${esc(r.name)}" loading="eager" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">`:`<div class="umf-menu-fallback">${esc(r.name)}</div>`}<div class="umf-menu-fallback" style="${src?'display:none;':''}">${esc(r.name)}</div>${r.miss.length?`<div class="umf-menu-missing">필요: ${esc(r.miss.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
       if(!r.miss.length)card.addEventListener('click',()=>renderSelection(r,s));
       return card;
     }));
