@@ -1,14 +1,14 @@
 (()=>{
 const KEY='use-me-first-v4',SK='use-me-first-seasonings-v1',PK='use-me-first-pantry-v1';
 const IMG={
- '두부김치':'assets/use-me-first/dubu-kimchi.webp?v=9',
- '김치볶음밥':'assets/use-me-first/kimchi-fried-rice.webp?v=9',
- '두부 김치덮밥':'assets/use-me-first/dubu-kimchi-rice.webp?v=9',
- '닭가슴살 양파 간장볶음':'assets/use-me-first/chicken-onion-soy-stirfry.webp?v=9',
- '계란찜':'assets/use-me-first/gyeran-jjim-ai.webp?v=9',
- '시금치나물':'assets/use-me-first/sigeumchi-namul-ai.webp?v=9',
- '두부부침':'assets/use-me-first/dubu-buchim-ai.webp?v=9',
- '김치두부찌개':'assets/use-me-first/dubu-kimchi-rice.webp?v=9'
+ '두부김치':'assets/use-me-first/dubu-kimchi.webp?v=10',
+ '김치볶음밥':'assets/use-me-first/kimchi-fried-rice.webp?v=10',
+ '두부 김치덮밥':'assets/use-me-first/dubu-kimchi-rice.webp?v=10',
+ '닭가슴살 양파 간장볶음':'assets/use-me-first/chicken-onion-soy-stirfry.webp?v=10',
+ '계란찜':'assets/use-me-first/egg-steam.webp?v=10',
+ '시금치나물':'assets/use-me-first/sigeumchi-namul-ai.webp?v=10',
+ '두부부침':'assets/use-me-first/dubu-buchim-ai.webp?v=10',
+ '김치두부찌개':'assets/use-me-first/dubu-kimchi-rice.webp?v=10'
 };
 const C=[
  {name:'두부김치',f:['두부','김치'],s:[],p:[],time:'7분',level:'아주 쉬움',desc:'두부와 김치를 바로 곁들이는 가장 빠른 한 접시',steps:['두부를 먹기 좋게 썰어 따뜻하게 데워요.','김치를 먹기 좋게 썰어요.','두부와 김치를 함께 담아요.']},
@@ -34,7 +34,7 @@ function renderSelection(r,st){
 function render(){
  const grid=document.getElementById('umfRecipeGrid');if(!grid)return;
  const st=state();const list=C.map(r=>({...r,missing:missing(r,st)}));const av=list.filter(r=>!r.missing.length);
- document.getElementById('umfAvailableCount').textContent=`가능 메뉴 ${av.length}개`;
+ document.getElementById('umfAvailableCount').textContent=`지금 가능 ${av.length} / 전체 ${list.length}`;
  grid.replaceChildren(...list.map((r,i)=>{const el=document.createElement('article');el.className='umf-menu-card'+(r.missing.length?' missing':'');el.dataset.name=r.name;
  const src=IMG[r.name];
  el.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span><img src="${src}" alt="${esc(r.name)}" loading="eager" decoding="async"><div class="umf-menu-fallback" style="display:none">이미지를 준비 중이에요<br>${esc(r.name)}</div>${r.missing.length?`<div class="umf-menu-missing">필요 · ${esc(r.missing.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
