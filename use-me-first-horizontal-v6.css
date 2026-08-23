@@ -1,0 +1,101 @@
+/* Use Me First — integrated horizontal layout */
+body[data-widget-layout="wide"]{margin:0!important;padding:6px 46px 6px 6px!important;background:transparent!important;min-width:0}
+body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 54px),1060px)!important;max-width:1060px!important;overflow:visible!important;margin:0 auto!important}
+html[data-widget-size="compact"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 54px),900px)!important;max-width:900px!important}
+html[data-widget-size="normal"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 54px),1060px)!important;max-width:1060px!important}
+html[data-widget-size="large"] body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 54px),1180px)!important;max-width:1180px!important}
+
+body[data-widget-layout="wide"] .w{
+  position:relative!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:14px!important;
+  display:grid!important;
+  grid-template-columns:minmax(320px,36%) minmax(0,64%)!important;
+  gap:14px!important;
+  align-items:start!important;
+  background:#fff!important;
+  border:1px solid #e6eae4!important;
+  border-radius:18px!important;
+  box-shadow:0 6px 22px rgba(43,49,43,.045)!important;
+  overflow:visible!important;
+}
+
+.umf-left{min-width:0!important;padding:0 14px 0 0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;border-right:1px solid #edf0eb!important}
+.recipeSec{min-width:0!important;margin:0!important;padding:11px 12px 12px!important;background:#fffaf6!important;border:1px solid #f0e4d7!important;border-radius:14px!important;box-shadow:none!important}
+
+.umf-left .head{padding:0!important;align-items:flex-start!important}
+.umf-left .title{font-size:24px!important;line-height:1.06!important;letter-spacing:-.7px!important}
+.umf-left .sub{margin-top:6px!important;font-size:9.5px!important;line-height:1.42!important;color:#949a94!important;white-space:normal!important}
+.umf-left .add{padding:8px 10px!important;font-size:9.5px!important;border-radius:10px!important}
+.umf-left .tabs{margin:12px 0 13px!important;border-radius:11px!important}
+.umf-left .tab{padding:8px!important;font-size:9.5px!important}
+.umf-left .sh{margin:0 2px 7px!important;align-items:flex-end!important}
+.umf-left .st,.recipeSec .st{font-size:12px!important;line-height:1.25!important}
+.umf-left .ss,.recipeSec .ss{font-size:8.5px!important;line-height:1.35!important}
+.umf-left .card{border-radius:13px!important}
+.umf-left .row{grid-template-columns:30px 82px minmax(48px,1fr) 46px 14px!important;gap:6px!important;padding:6px 8px!important;min-height:44px!important}
+.umf-left .ic{width:29px!important;height:29px!important;border-radius:9px!important}
+.umf-left .nm{font-size:11px!important}
+.umf-left .ex{font-size:7.8px!important}
+.umf-left .bar{height:5px!important}
+.umf-left .day{font-size:9px!important;padding:4px 3px!important}
+.umf-left .foot{padding:8px 9px!important;font-size:8.4px!important}
+.umf-left .link{font-size:8.4px!important}
+
+.recipeSec>.sh{margin:0 1px 8px!important;align-items:flex-start!important}
+.umf-recipe-toolbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin:0 0 8px!important}
+.umf-badge{display:inline-flex!important;align-items:center!important;gap:4px!important;border:1px solid #dce7dc!important;background:#f3f7f1!important;color:#5e775f!important;border-radius:999px!important;padding:4px 7px!important;font-size:8px!important;font-weight:700!important;white-space:nowrap!important}
+.umf-recipe-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.umf-menu-card{position:relative!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;min-width:0!important;background:#fff!important;border:1px solid #eadfd3!important;border-radius:11px!important;box-shadow:none!important;cursor:pointer!important;transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease!important}
+.umf-menu-card:hover{transform:translateY(-1px)!important;border-color:#cfdacc!important;box-shadow:0 4px 12px rgba(65,78,65,.06)!important}
+.umf-menu-card.selected{border:2px solid #648b69!important}
+.umf-menu-card.missing{opacity:1!important;filter:none!important;cursor:default!important}
+.umf-menu-photo{position:relative!important;aspect-ratio:1.08/1!important;background:#f3e9dd!important;overflow:hidden!important}
+.umf-menu-photo img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+.umf-menu-num{position:absolute!important;left:6px!important;top:6px!important;z-index:2!important;min-width:24px!important;height:20px!important;padding:0 6px!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.94)!important;border:1px solid #6b9470!important;border-radius:8px!important;color:#4f7456!important;font-size:8px!important;font-weight:800!important}
+.umf-menu-missing{position:absolute!important;left:6px!important;right:auto!important;bottom:6px!important;max-width:calc(100% - 12px)!important;background:rgba(255,249,242,.95)!important;color:#8a7055!important;border:1px solid #ead9c9!important;border-radius:999px!important;padding:4px 7px!important;font-size:7px!important;font-weight:700!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;backdrop-filter:none!important}
+.umf-menu-body{display:flex!important;flex:1!important;flex-direction:column!important;padding:8px!important}
+.umf-menu-name{font-size:10.8px!important;font-weight:800!important;line-height:1.28!important;min-height:27px!important;word-break:keep-all!important}
+.umf-menu-desc{margin-top:4px!important;color:#7b817a!important;font-size:7.8px!important;line-height:1.42!important;min-height:31px!important;max-height:31px!important;overflow:hidden!important}
+.umf-menu-meta{display:flex!important;gap:4px!important;flex-wrap:wrap!important;margin-top:auto!important;padding-top:7px!important}
+.umf-menu-meta span{border:1px solid #ece7df!important;background:#fff!important;border-radius:7px!important;padding:3px 5px!important;font-size:7.2px!important;color:#686d67!important}
+.umf-menu-fallback{width:100%!important;height:100%!important;display:grid;place-items:center;text-align:center;padding:12px;color:#7f847f;font-size:8px;background:linear-gradient(145deg,#f7efe6,#efe4d8)!important}
+
+.umf-selection{margin-top:9px!important;border-top:1px solid #eee1d4!important;padding-top:8px!important}
+.umf-selection-label{font-size:8px!important;color:#858a83!important;margin-bottom:6px!important}
+.umf-selection-chips{display:flex!important;gap:5px!important;flex-wrap:wrap!important;min-height:24px!important}
+.umf-selection-chip{display:inline-flex!important;align-items:center!important;gap:4px!important;border:1px solid #ece9e2!important;background:#fff!important;border-radius:999px!important;padding:4px 7px!important;font-size:8px!important;color:#60665f!important}
+.umf-selection-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:8px!important}
+.umf-selection-actions button{border:1px solid #e3e4df!important;background:#fff!important;color:#5f655f!important;border-radius:9px!important;padding:8px!important;font-size:8.5px!important;font-weight:700!important;cursor:pointer!important}
+.umf-selection-actions .primary{background:#657f64!important;border-color:#657f64!important;color:#fff!important}
+.umf-recipe-detail{display:none;margin-top:8px!important;border:1px solid #eee4d7!important;background:#fffdf9!important;border-radius:9px!important;padding:9px!important;font-size:8px!important;line-height:1.55!important;color:#666d66!important}
+.umf-recipe-detail.on{display:block!important}
+.recipeSec>.tip{margin-top:9px!important;padding:8px 9px!important;font-size:8.2px!important}
+
+/* custom sync button sits on the same outside rail */
+.hoverTools{position:absolute!important;top:118px!important;right:-38px!important;z-index:33!important;display:block!important;opacity:0!important;pointer-events:none!important}
+.w:hover .hoverTools,.w:focus-within .hoverTools{opacity:1!important;pointer-events:auto!important}
+.hoverTool{width:28px!important;height:28px!important;padding:0!important;border:1px solid #e1e5df!important;background:#fff!important;border-radius:9px!important;display:grid!important;place-items:center!important;box-shadow:0 2px 7px rgba(50,55,50,.05)!important}
+.hoverTool svg{width:14px!important;height:14px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.syncDot{position:absolute!important;right:3px!important;bottom:3px!important;width:6px!important;height:6px!important;border-radius:50%!important;background:#c7cbc5!important}.syncDot.on{background:#6f9b73!important}.syncDot.bad{background:#d47b70!important}
+
+html[data-widget-theme="dark"] body[data-widget-layout="wide"] .w{background:#202420!important;border-color:#3b423b!important}
+html[data-widget-theme="dark"] .umf-left{border-right-color:#3a403a!important}
+html[data-widget-theme="dark"] .recipeSec{background:#2b2925!important;border-color:#4b443a!important}
+html[data-widget-theme="dark"] .umf-menu-card,html[data-widget-theme="dark"] .umf-selection-chip,html[data-widget-theme="dark"] .umf-selection-actions button,html[data-widget-theme="dark"] .umf-recipe-detail{background:#292e2a!important;border-color:#414841!important;color:#e4e9e4!important}
+html[data-widget-theme="dark"] .umf-menu-desc,html[data-widget-theme="dark"] .umf-selection-label{color:#a6aea7!important}
+
+@media(max-width:760px){
+  body[data-widget-layout="wide"]{padding:6px 40px 6px 6px!important}
+  body[data-widget-layout="wide"] .widget-control-shell{width:min(calc(100vw - 48px),560px)!important;max-width:560px!important}
+  body[data-widget-layout="wide"] .w{display:block!important;padding:12px!important}
+  .umf-left{padding:0!important;border-right:0!important}
+  .recipeSec{margin-top:12px!important;padding:11px!important}
+  .umf-recipe-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .umf-menu-photo{aspect-ratio:1.18/1!important}
+  .umf-menu-name{font-size:11px!important}
+  .umf-menu-desc{font-size:8px!important;min-height:33px!important;max-height:33px!important}
+  .hoverTools{right:-34px!important;top:118px!important;opacity:1!important;pointer-events:auto!important}
+}
