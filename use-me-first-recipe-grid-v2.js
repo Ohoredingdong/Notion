@@ -21,67 +21,54 @@
     {name:'양파찜',f:['양파'],s:[],p:[],time:'8분',level:'아주 쉬움',desc:'양파의 단맛을 살려 부드럽게 익혀 먹어요',steps:['양파를 굵게 썰어요.','전자레인지 또는 찜기로 부드럽게 익혀요.']}
   ];
   const read=k=>{try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:[]}catch{return[]}};
-  const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const hasName=(items,key)=>items.some(x=>String(x.name||'').includes(key));
-  const state=()=>({items:read(KEY),season:new Set(read(SK)),pantry:new Set(read(PK))});
-  function check(r,st){const missing=[];r.f.forEach(x=>{if(!hasName(st.items,x))missing.push(x)});r.s.forEach(x=>{if(!st.season.has(x))missing.push(x)});r.p.forEach(x=>{if(!st.pantry.has(x))missing.push(x)});return missing}
-  function actualUse(r,st){return r.f.map(k=>st.items.find(x=>String(x.name||'').includes(k))?.name).filter(Boolean)}
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const has=(items,key)=>items.some(x=>String(x.name||'').includes(key));
+  const getState=()=>({items:read(KEY),season:new Set(read(SK)),pantry:new Set(read(PK))});
+  const missing=(r,s)=>[...r.f.filter(x=>!has(s.items,x)),...r.s.filter(x=>!s.season.has(x)),...r.p.filter(x=>!s.pantry.has(x))];
+  const actualUse=(r,s)=>r.f.map(k=>s.items.find(x=>String(x.name||'').includes(k))?.name).filter(Boolean);
+  const shell=document.getElementById('umfRecipeGridShell');
+  const grid=document.getElementById('umfRecipeGrid');
+  const count=document.getElementById('umfAvailableCount');
+  const chips=document.getElementById('umfSelectionChips');
+  const detail=document.getElementById('umfRecipeDetail');
+  const recipeBtn=document.getElementById('umfRecipeBtn');
+  const shuffleBtn=document.getElementById('umfShuffleBtn');
+  if(!shell||!grid||!count||!chips||!detail)return;
+  let selectedName='';
 
-  function cleanupRecipeSection(){
-    const sec=document.querySelector('.recipeSec');
-    if(!sec)return;
-    sec.querySelectorAll('.recipe').forEach(x=>x.remove());
-    const shells=[...sec.querySelectorAll('#umfRecipeGridShell')];
-    shells.slice(1).forEach(x=>x.remove());
-    const tip=sec.querySelector('.tip');
-    if(tip){
-      let node=tip.nextSibling;
-      while(node){const next=node.nextSibling;if(node.nodeType===1)node.remove();node=next;}
-    }
-  }
-
-  function ensureShell(){
-    const sec=document.querySelector('.recipeSec');if(!sec)return null;
-    cleanupRecipeSection();
-    let shell=sec.querySelector('#umfRecipeGridShell');
-    if(shell)return shell;
-    shell=document.createElement('div');shell.id='umfRecipeGridShell';
-    const tip=sec.querySelector('.tip');
-    if(tip)sec.insertBefore(shell,tip);else sec.appendChild(shell);
-    shell.innerHTML='<div class="umf-recipe-toolbar"><span class="umf-badge">🍳 배달 방지</span><span class="umf-badge" id="umfAvailableCount">가능 메뉴 0개</span></div><div class="umf-recipe-grid" id="umfRecipeGrid"></div><div class="umf-selection"><div class="umf-selection-label">선택한 메뉴에 실제로 쓰는 내 재료</div><div class="umf-selection-chips" id="umfSelectionChips"></div><div class="umf-selection-actions"><button class="primary" id="umfRecipeBtn">레시피 보기</button><button id="umfShuffleBtn">↻ 다른 메뉴 보기</button></div><div class="umf-recipe-detail" id="umfRecipeDetail"></div></div>';
-    shell.querySelector('#umfRecipeBtn').onclick=()=>document.getElementById('umfRecipeDetail')?.classList.toggle('on');
-    shell.querySelector('#umfShuffleBtn').onclick=()=>{const cards=[...document.querySelectorAll('#umfRecipeGridShell .umf-menu-card:not(.missing)')];if(!cards.length)return;const current=Math.max(0,cards.findIndex(x=>x.classList.contains('selected')));cards[(current+1)%cards.length].click()};
-    return shell;
-  }
-
-  function renderSelection(r,st){
-    document.querySelectorAll('#umfRecipeGridShell .umf-menu-card').forEach(x=>x.classList.toggle('selected',x.dataset.name===r.name));
-    const use=actualUse(r,st);
-    document.getElementById('umfSelectionChips').innerHTML=use.length?use.map(x=>`<span class="umf-selection-chip">${escape(x)}</span>`).join(''):'<span class="umf-selection-chip">냉장고 재료 확인</span>';
-    document.getElementById('umfRecipeDetail').innerHTML=`<b>${escape(r.name)}</b><ol>${r.steps.map(x=>`<li>${escape(x)}</li>`).join('')}</ol>`;
-    document.getElementById('umfRecipeDetail').classList.remove('on');
+  function renderSelection(r,s){
+    selectedName=r.name;
+    [...grid.children].forEach(el=>el.classList.toggle('selected',el.dataset.name===r.name));
+    const use=actualUse(r,s);
+    chips.innerHTML=use.length?use.map(x=>`<span class="umf-selection-chip">${esc(x)}</span>`).join(''):'<span class="umf-selection-chip">냉장고 재료 확인</span>';
+    detail.innerHTML=`<b>${esc(r.name)}</b><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
+    detail.classList.remove('on');
   }
 
   function render(){
-    const shell=ensureShell();if(!shell)return;
-    const st=state();
-    const enriched=CATALOG.map(r=>({...r,missing:check(r,st)}));
-    const available=enriched.filter(r=>!r.missing.length);
-    const unavailable=enriched.filter(r=>r.missing.length).sort((a,b)=>a.missing.length-b.missing.length);
+    const s=getState();
+    const rows=CATALOG.map(r=>({...r,miss:missing(r,s)}));
+    const available=rows.filter(r=>!r.miss.length);
+    const unavailable=rows.filter(r=>r.miss.length).sort((a,b)=>a.miss.length-b.miss.length);
     const list=[...available,...unavailable].slice(0,8);
-    document.getElementById('umfAvailableCount').textContent=`가능 메뉴 ${available.length}개`;
-    const grid=document.getElementById('umfRecipeGrid');
-    grid.innerHTML=list.map((r,i)=>{const src=IMG[r.name];return `<article class="umf-menu-card${r.missing.length?' missing':''}" data-name="${escape(r.name)}"><div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span>${src?`<img src="${src}" alt="${escape(r.name)}">`:`<div class="umf-menu-fallback">${escape(r.name)}</div>`}${r.missing.length?`<div class="umf-menu-missing">필요: ${escape(r.missing.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${escape(r.name)}</div><div class="umf-menu-desc">${escape(r.desc)}</div><div class="umf-menu-meta"><span>${escape(r.time)}</span><span>${escape(r.level)}</span></div></div></article>`}).join('');
-    [...grid.children].forEach((el,i)=>{const r=list[i];if(!r.missing.length)el.onclick=()=>renderSelection(r,st)});
-    const first=available.find(a=>list.some(x=>x.name===a.name));
-    if(first)renderSelection(first,st);else{document.getElementById('umfSelectionChips').innerHTML='<span class="umf-selection-chip">기본 양념/상비 재료를 체크하면 메뉴가 열려요</span>';document.getElementById('umfRecipeDetail').innerHTML=''}
-    cleanupRecipeSection();
+    count.textContent=`가능 메뉴 ${available.length}개`;
+    grid.replaceChildren(...list.map((r,i)=>{
+      const card=document.createElement('article');
+      card.className='umf-menu-card'+(r.miss.length?' missing':'');
+      card.dataset.name=r.name;
+      const src=IMG[r.name];
+      card.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span>${src?`<img src="${src}" alt="${esc(r.name)}">`:`<div class="umf-menu-fallback">${esc(r.name)}</div>`}${r.miss.length?`<div class="umf-menu-missing">필요: ${esc(r.miss.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
+      if(!r.miss.length)card.addEventListener('click',()=>renderSelection(r,s));
+      return card;
+    }));
+    const chosen=available.find(r=>r.name===selectedName)||available[0];
+    if(chosen)renderSelection(chosen,s);else{selectedName='';chips.innerHTML='<span class="umf-selection-chip">기본 양념/상비 재료를 체크하면 메뉴가 열려요</span>';detail.innerHTML='';}
   }
 
-  const sec=document.querySelector('.recipeSec');
-  if(sec)new MutationObserver(()=>{clearTimeout(window.__umfRecipeCleanup);window.__umfRecipeCleanup=setTimeout(()=>{cleanupRecipeSection()},20)}).observe(sec,{childList:true,subtree:false});
-  const obsTarget=document.getElementById('list');if(obsTarget)new MutationObserver(()=>setTimeout(render,0)).observe(obsTarget,{childList:true,subtree:true});
-  document.addEventListener('click',e=>{if(e.target.closest('.tog,.tinyAdd,.add,.rm,.tab'))setTimeout(render,60)});
-  window.addEventListener('storage',()=>render());
-  setTimeout(()=>{cleanupRecipeSection();render()},120);
+  recipeBtn?.addEventListener('click',()=>detail.classList.toggle('on'));
+  shuffleBtn?.addEventListener('click',()=>{const cards=[...grid.querySelectorAll('.umf-menu-card:not(.missing)')];if(!cards.length)return;const i=Math.max(0,cards.findIndex(x=>x.classList.contains('selected')));cards[(i+1)%cards.length].click();});
+  document.addEventListener('click',e=>{if(e.target.closest('.tog,.tinyAdd,.add,.rm,.tab'))setTimeout(render,80)});
+  window.addEventListener('storage',render);
+  const listNode=document.getElementById('list');if(listNode)new MutationObserver(()=>setTimeout(render,0)).observe(listNode,{childList:true,subtree:true});
+  render();
 })();
