@@ -1,6 +1,7 @@
 from __future__ import annotations
+import html as html_lib
 import json, re, sys, time
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -10,6 +11,14 @@ OUT = Path('market-events-data.json')
 KST = ZoneInfo('Asia/Seoul')
 URL = 'https://economic-calendar.tradingview.com/events'
 COUNTRIES = ['US','KR','JP','GB','DE','FR','CN']
+BOK_POLICY_URL = 'https://www.bok.or.kr/portal/singl/crncyPolicyDrcMtg/listYear.do'
+BOK_POLICY_SOURCE_URL = 'https://www.bok.or.kr/portal/singl/crncyPolicyDrcMtg/listYear.do?menuNo=200755&mtgSe=A'
+
+# Verified against the Bank of Korea 2026 monetary-policy decision schedule.
+# Used only if the official page cannot be parsed during an update run.
+BOK_POLICY_FALLBACK = {
+    2026: [(1, 15), (2, 26), (4, 10), (5, 28), (7, 16), (8, 27), (10, 22), (11, 26)],
+}
 
 HEADERS = {
     'Origin': 'https://www.tradingview.com',
@@ -19,13 +28,14 @@ HEADERS = {
 }
 
 KEYWORDS = [
-    ('rate', ['interest rate decision','fomc','fed interest rate','boe interest rate','ecb interest rate','boj interest rate','bank of korea','base rate']),
+    ('rate', ['interest rate decision','fomc','fed interest rate','boe interest rate','ecb interest rate','boj interest rate','bank of korea','base rate','monetary policy decision']),
     ('inflation', ['cpi','consumer price','ppi','producer price','inflation','pce price','core pce']),
     ('jobs', ['non farm payroll','nonfarm payroll','unemployment','jobless','employment','jolts','average hourly earnings','claimant count']),
     ('growth', ['gdp','pmi','retail sales','industrial production','consumer confidence','consumer sentiment','business confidence','ifo business climate','ism']),
 ]
 
 TRANSLATIONS = [
+    (r'Bank of Korea Monetary Policy Decision', '한국은행 기준금리 결정'),
     (r'Fed Interest Rate Decision', '연준 금리 결정'),
     (r'Interest Rate Decision', '금리 결정'),
     (r'Ifo Business Climate', 'Ifo 기업환경지수'),
@@ -71,10 +81,11 @@ OFFICIAL_TIME_RULES = [
     {'country':'FR','pattern':r'inflation rate.*prel','hour':8,'minute':45,'tz':'Europe/Paris','source':'INSEE','url':'https://www.insee.fr/en/information/2107817'},
 ]
 
-HIGH_PATTERNS = [r'interest rate decision', r'\bfomc\b', r'core pce price index', r'non.?farm payroll', r'\bunemployment rate\b', r'\bcpi\b', r'consumer price index']
+HIGH_PATTERNS = [r'interest rate decision', r'monetary policy decision', r'bank of korea', r'\bfomc\b', r'core pce price index', r'non.?farm payroll', r'\bunemployment rate\b', r'\bcpi\b', r'consumer price index']
 MEDIUM_PATTERNS = [r'gdp', r'ppi', r'producer price', r'pmi', r'retail sales', r'jolts', r'durable goods', r'consumer confidence', r'consumer sentiment', r'ifo business climate', r'industrial production', r'ism ', r'jobless claims', r'personal spending', r'personal income', r'fed .*speech', r'inflation rate']
 
 DESCRIPTION_RULES = [
+    (r'bank of korea|monetary policy decision', '한국은행 금융통화위원회가 기준금리 수준과 통화정책 방향을 결정하는 핵심 일정입니다.'),
     (r'ifo business climate', '독일 기업들의 현재 경기 판단과 향후 6개월 전망을 보여주는 대표적인 기업심리지표입니다.'),
     (r'core pce price index', '미 연준이 중시하는 근원 PCE 물가의 변화를 보여주는 핵심 인플레이션 지표입니다.'),
     (r'personal spending', '미국 가계의 소비지출 변화를 보여주는 지표로 소비 경기와 GDP 흐름을 판단하는 데 활용됩니다.'),
@@ -168,10 +179,114 @@ def fetch_rows() -> list[dict]:
             last = e; time.sleep(2 ** attempt)
     raise RuntimeError(f'TradingView calendar fetch failed: {last}')
 
+def fetch_bok_policy_dates(year: int) -> list[date]:
+    """Read the official annual BOK monetary-policy decision calendar."""
+    params = {'menuNo':'200755','mtgSe':'A','pYear':str(year)}
+    headers = {'User-Agent': HEADERS['User-Agent'], 'Accept':'text/html,application/xhtml+xml'}
+    try:
+        r = requests.get(BOK_POLICY_URL, params=params, headers=headers, timeout=25)
+        r.raise_for_status()
+        text = html_lib.unescape(re.sub(r'<[^>]+>', ' ', r.text))
+        text = re.sub(r'\s+', ' ', text)
+        marker = '통화정책방향 회의'
+        if marker in text:
+            text = text.split(marker, 1)[1]
+        if '담당부서' in text:
+            text = text.split('담당부서', 1)[0]
+        found = []
+        for month, day in re.findall(r'(\d{1,2})월\s*(\d{1,2})일', text):
+            try:
+                found.append(date(year, int(month), int(day)))
+            except ValueError:
+                pass
+        found = sorted(set(found))
+        if found:
+            return found
+    except Exception as exc:
+        print(f'BOK schedule fetch warning: {exc}', file=sys.stderr)
+    return [date(year, month, day) for month, day in BOK_POLICY_FALLBACK.get(year, [])]
+
+def bok_policy_events(now: datetime) -> list[dict]:
+    horizon_start = now.date() - timedelta(days=1)
+    horizon_end = (now + timedelta(days=14)).date()
+    dates = []
+    for year in sorted({horizon_start.year, horizon_end.year}):
+        dates.extend(fetch_bok_policy_dates(year))
+    out = []
+    for meeting_date in sorted(set(dates)):
+        if not (horizon_start <= meeting_date <= horizon_end):
+            continue
+        # The BOK official annual schedule confirms the meeting date, but does not publish
+        # a decision time on that schedule page. Noon is used only for internal ordering.
+        dt = datetime(meeting_date.year, meeting_date.month, meeting_date.day, 12, 0, tzinfo=KST)
+        out.append({
+            'id': f'official-bok-{meeting_date.isoformat()}',
+            'title': 'Bank of Korea Monetary Policy Decision',
+            'title_ko': '한국은행 기준금리 결정',
+            'country': 'KR',
+            'currency': 'KRW',
+            'source_importance': 3,
+            'importance': 3,
+            'impact_level': 3,
+            'impact_reason': 'official:bank-of-korea',
+            'category': 'rate',
+            'datetime_kst': dt.isoformat(),
+            'date_kst': f"{dt.month}월 {dt.day}일 ({'월화수목금토일'[dt.weekday()]})",
+            'time_kst': '시간 미정',
+            'time_is_tba': True,
+            'bucket': bucket_for(dt, now),
+            'actual': None,
+            'forecast': None,
+            'previous': None,
+            'comment': '',
+            'comment_ko': '한국은행 금융통화위원회가 기준금리 수준과 통화정책 방향을 결정하는 핵심 일정입니다.',
+            'time_verification': {
+                'verified': True,
+                'date_verified': True,
+                'time_verified': False,
+                'agency': 'Bank of Korea',
+                'url': BOK_POLICY_SOURCE_URL,
+                'note': 'Official meeting date verified; decision time not stated on annual schedule page.'
+            },
+            'source_type': 'official_schedule',
+        })
+    return out
+
+def merge_official_events(events: list[dict], official_events: list[dict]) -> list[dict]:
+    merged = list(events)
+    for official in official_events:
+        official_date = datetime.fromisoformat(official['datetime_kst']).date()
+        duplicate_indexes = []
+        for i, event in enumerate(merged):
+            if event.get('country') != official.get('country'):
+                continue
+            try:
+                event_date = datetime.fromisoformat(event['datetime_kst']).date()
+            except Exception:
+                continue
+            title = (event.get('title') or '').lower()
+            is_rate = event.get('category') == 'rate' or any(k in title for k in ('bank of korea','interest rate decision','base rate'))
+            if event_date == official_date and is_rate:
+                duplicate_indexes.append(i)
+        # If TradingView already supplies a same-day BOK rate event, retain its clock time
+        # while keeping the official BOK date/source as the authority.
+        if duplicate_indexes:
+            tv_event = merged[duplicate_indexes[0]]
+            if tv_event.get('time_kst') and tv_event.get('time_kst') != '시간 미정':
+                official['datetime_kst'] = tv_event['datetime_kst']
+                official['time_kst'] = tv_event['time_kst']
+                official['time_is_tba'] = False
+                official['time_verification']['time_verified'] = False
+                official['time_verification']['note'] = 'Date verified by Bank of Korea; clock time retained from TradingView and is not official-verified.'
+            merged = [e for i, e in enumerate(merged) if i not in set(duplicate_indexes)]
+        merged.append(official)
+    return merged
+
 def main():
     now = datetime.now(KST)
     try:
         events = [e for e in (normalize(r,now) for r in fetch_rows()) if e]
+        events = merge_official_events(events, bok_policy_events(now))
         events.sort(key=lambda e:(e['datetime_kst'],-e['impact_level']))
         higher = [e for e in events if e['impact_level'] >= 2]
         if len(higher) >= 9:
@@ -181,7 +296,22 @@ def main():
         upcoming = [e for e in events if datetime.fromisoformat(e['datetime_kst']) >= now - timedelta(minutes=30)]
         highlight = sorted(upcoming or events, key=lambda e:(-e['impact_level'],e['datetime_kst']))[0] if events else None
         verified_count = sum(1 for e in events if e.get('time_verification'))
-        out = {'source':'TradingView Economic Calendar + official schedule overrides','source_url':'https://www.tradingview.com/economic-calendar/','generated_at':now.isoformat(),'updated_label':now.strftime('%m.%d %H:%M'),'stale':False,'countries':COUNTRIES,'accuracy':{'impact_method':'rule-based normalized impact_level (1-3); source_importance preserved separately','official_time_overrides':verified_count,'official_agencies':['ifo Institute','U.S. Bureau of Economic Analysis','Office for National Statistics','INSEE']},'highlight':highlight,'events':events}
+        out = {
+            'source':'TradingView Economic Calendar + official schedule overrides',
+            'source_url':'https://www.tradingview.com/economic-calendar/',
+            'generated_at':now.isoformat(),
+            'updated_label':now.strftime('%m.%d %H:%M'),
+            'stale':False,
+            'countries':COUNTRIES,
+            'accuracy':{
+                'impact_method':'rule-based normalized impact_level (1-3); source_importance preserved separately',
+                'official_time_overrides':verified_count,
+                'official_agencies':['Bank of Korea','ifo Institute','U.S. Bureau of Economic Analysis','Office for National Statistics','INSEE'],
+                'official_schedule_sources':{'KR_policy_decisions':BOK_POLICY_SOURCE_URL},
+            },
+            'highlight':highlight,
+            'events':events
+        }
         OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
     except Exception as exc:
         if OUT.exists():
