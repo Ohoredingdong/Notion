@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/update-market-events.py"
+      - "scripts/ensure-bok-market-events.py"
       - ".github/workflows/update-market-events.yml"
   schedule:
     - cron: "17,47 * * * *"
@@ -23,6 +24,7 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
       - run: python scripts/update-market-events.py
+      - run: python scripts/ensure-bok-market-events.py
       - name: Commit data if changed
         run: |
           if git diff --quiet -- market-events-data.json; then
