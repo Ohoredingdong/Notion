@@ -37,6 +37,7 @@ button{font:inherit;color:inherit}
 .content{display:grid;grid-template-columns:188px 452px;gap:10px;min-width:0;justify-content:center}
 .panel{min-width:0;height:246px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
 
+/* left list */
 .market{padding:9px 8px 8px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;padding:0 1px}
 .section-title{font-size:10.5px;font-weight:730;letter-spacing:-.02em}
@@ -56,7 +57,7 @@ button{font:inherit;color:inherit}
 .up{color:var(--green);background:var(--greenbg)}
 .down{color:var(--red);background:var(--redbg)}
 
-/* compact chart width stays narrow; quote remains above; all 4 metrics stay under the same narrow chart */
+/* right detail: compact chart block stays narrow; quote moves above it without changing chart width */
 .detail{padding:9px 10px 7px}
 .detail-grid{
   display:grid;
@@ -72,12 +73,14 @@ button{font:inherit;color:inherit}
 .detail-unit{margin-top:5px;font-size:8.5px;color:var(--muted)}
 
 .quote{
-  grid-column:2;grid-row:1;
-  text-align:right;align-self:start;min-width:0;padding-top:1px
+  grid-column:1;grid-row:1;
+  justify-self:end;align-self:start;
+  width:122px;max-width:44%;
+  text-align:right;min-width:0;padding-top:1px
 }
-.quote-price{font-size:25px;line-height:.96;font-weight:790;letter-spacing:-.06em;white-space:nowrap}
-.quote .change{margin-top:5px}
-.quote-krw{margin-top:5px;font-size:7.8px;color:var(--sub);white-space:nowrap}
+.quote-price{font-size:21px;line-height:.98;font-weight:790;letter-spacing:-.055em;white-space:nowrap}
+.quote .change{margin-top:4px}
+.quote-krw{margin-top:4px;font-size:7.2px;color:var(--sub);white-space:nowrap}
 
 .chart-head{
   grid-column:1;grid-row:2;
@@ -122,13 +125,13 @@ button{font:inherit;color:inherit}
   .content{grid-template-columns:180px minmax(0,1fr);gap:9px;justify-content:stretch}
   .panel{height:240px}.asset{height:27px}
   .detail-grid{grid-template-columns:minmax(0,1fr) 128px;grid-template-rows:62px 18px 78px 38px 17px;column-gap:10px}
-  .quote-price{font-size:23px}.chart-wrap{height:78px}
+  .quote-price{font-size:20px}.chart-wrap{height:78px}
 }
 @container(max-width:560px){
   .content{grid-template-columns:165px minmax(0,1fr);gap:8px}
   .asset-name{font-size:9.8px}.asset-side{min-width:61px}.asset-price{font-size:8.6px}
   .detail-grid{grid-template-columns:minmax(0,1fr) 118px;column-gap:9px}
-  .quote-price{font-size:21px}
+  .quote-price{font-size:19px}
 }
 @container(max-width:470px){
   .content{grid-template-columns:1fr;gap:9px}.panel{height:auto}
@@ -141,6 +144,7 @@ button{font:inherit;color:inherit}
   .chart-wrap{height:84px}
 }
 
+/* neutralize the previous shared commodities override; this file owns its layout */
 body:has(.commodity-shell) .detail{display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;column-gap:0!important;padding:9px 10px 7px!important;min-width:0!important}
 body:has(.commodity-shell) .chart-head{grid-column:1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
 body:has(.commodity-shell) .chart-wrap{grid-column:1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
