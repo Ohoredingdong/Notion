@@ -1,0 +1,50 @@
+name: Apply Life Town v2 controls
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-lifetown-controls-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-v2-widgets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject shared hover controls
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('routine-tracker-widget-v2.html'),
+              Path('zero-spend-v2.html'),
+              Path('english-word-widget-v2.html'),
+          ]
+          tag = '<script src="./assets/life-town-controls-v2.js"></script>'
+          for p in files:
+              if not p.exists():
+                  continue
+              text = p.read_text(encoding='utf-8')
+              if tag in text:
+                  continue
+              if '</body>' not in text:
+                  raise SystemExit(f'{p}: missing </body>')
+              text = text.replace('</body>', tag + '\n</body>', 1)
+              p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit patched widgets
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add routine-tracker-widget-v2.html zero-spend-v2.html english-word-widget-v2.html
+          git commit -m 'Apply shared Life Town v2 hover controls'
+          git push
