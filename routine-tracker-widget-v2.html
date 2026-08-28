@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<title>루틴 트래커 · Life Town v2</title>
+<link rel="stylesheet" href="./assets/life-town-v2.css" />
+<style>
+html,body{margin:0;width:100%;min-height:100%;background:transparent}body{padding:6px}.shell{container-type:inline-size;width:100%;max-width:680px;margin:auto}.card{position:relative;overflow:hidden;background:#fff;border:1px solid var(--lt-line);border-radius:24px;box-shadow:var(--lt-shadow);padding:18px}.card:before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,#bfc0c4 28%,#f8f8fa 50%,#bfc0c4 72%,transparent);opacity:.75}.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}.eyebrow{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--lt-sub);font-weight:650}.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--lt-green);box-shadow:0 0 0 4px rgba(52,199,89,.09)}.title{margin-top:5px;font-size:19px;font-weight:760;letter-spacing:-.045em}.summary{display:flex;align-items:center;gap:17px}.metric{text-align:right}.metric-label{font-size:10px;color:var(--lt-muted);font-weight:650}.metric-value{margin-top:3px;font-size:25px;line-height:1;font-weight:760;letter-spacing:-.06em}.metric-value small{font-size:11px;color:var(--lt-sub);letter-spacing:0;margin-left:2px}.ring{--p:0;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--lt-green) calc(var(--p)*1%),#ececef 0);position:relative}.ring:after{content:"";width:40px;height:40px;border-radius:50%;background:#fff;position:absolute}.ring span{position:relative;z-index:1;font-size:10px;font-weight:760}.divider{height:1px;background:var(--lt-line);margin:16px 0 14px}.tracker-wrap{min-width:0}.tracker{display:grid;grid-template-columns:minmax(72px,1.3fr) repeat(7,minmax(24px,1fr));column-gap:5px;row-gap:9px;align-items:center}.day{font-size:9px;color:var(--lt-muted);text-align:center;font-weight:650}.row-wrap{display:flex;align-items:center;gap:6px;min-width:0}.row-label{font-size:11px;font-weight:680;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.remove{width:16px;height:16px;border:0;border-radius:50%;padding:0;display:grid;place-items:center;background:#f2f2f4;color:#9b9ba0;font-size:11px;cursor:pointer;flex:0 0 auto}.remove:hover{background:#e9e9ec;color:#616166}.dot{width:18px;height:18px;border:1px solid #d7d7db;border-radius:50%;padding:0;margin:auto;background:#fff;cursor:pointer;transition:.15s ease;position:relative}.dot:hover{transform:scale(1.06);border-color:#b8b8bd}.dot.active{background:var(--lt-green);border-color:var(--lt-green);box-shadow:0 0 0 4px rgba(52,199,89,.08)}.dot.active:after{content:"✓";color:#fff;font-size:10px;font-weight:800;position:absolute;inset:0;display:grid;place-items:center}.add-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--lt-line);display:flex;gap:8px}.add-input{flex:1;min-width:0;height:36px;border:1px solid var(--lt-line);outline:0;border-radius:12px;background:#f7f7f8;color:var(--lt-text);font-size:12px;padding:0 11px}.add-input:focus{background:#fff;border-color:#c7c7cc;box-shadow:0 0 0 3px rgba(0,122,255,.07)}.add-input::placeholder{color:var(--lt-muted)}.add-btn{height:36px;border:0;border-radius:12px;background:#111113;color:#fff;font-size:11px;font-weight:720;padding:0 14px;cursor:pointer}.add-btn:hover{opacity:.88}.mini-progress{margin-top:10px;height:4px;border-radius:999px;background:#ededf0;overflow:hidden}.mini-progress i{display:block;height:100%;width:0;background:var(--lt-green);border-radius:inherit;transition:width .2s ease}.wide-stats{display:none}
+@container (max-width:390px){.card{padding:15px 13px;border-radius:20px}.title{font-size:17px}.summary{gap:10px}.ring{width:44px;height:44px}.ring:after{width:34px;height:34px}.metric-value{font-size:21px}.tracker{grid-template-columns:58px repeat(7,1fr);column-gap:2px;row-gap:8px}.row-label{font-size:10px}.dot{width:15px;height:15px}.dot.active:after{font-size:8px}.add-area{margin-top:13px;padding-top:11px}.add-input,.add-btn{height:34px}}
+@container (min-width:520px){.body-grid{display:grid;grid-template-columns:160px 1fr;gap:20px;align-items:stretch}.head{grid-column:1/-1}.divider{grid-column:1/-1}.summary{display:none}.wide-stats{display:flex;flex-direction:column;justify-content:space-between;background:#f7f7f8;border:1px solid rgba(17,17,19,.045);border-radius:16px;padding:14px}.wide-big{font-size:36px;font-weight:760;letter-spacing:-.07em;line-height:.95}.wide-big small{font-size:13px;color:var(--lt-sub);letter-spacing:0}.wide-caption{margin-top:7px;font-size:10px;color:var(--lt-muted);line-height:1.45}.tracker{grid-template-columns:minmax(80px,1.35fr) repeat(7,minmax(28px,1fr))}.add-area{grid-column:2}.wide-stats .mini-progress{margin-top:12px}}
+</style>
+</head>
+<body>
+<div class="shell lt-shell">
+<section class="card" aria-label="루틴 트래커">
+  <div class="body-grid">
+    <div class="head">
+      <div><div class="eyebrow"><i></i><span>이번 주</span></div><div class="title">루틴 트래커</div></div>
+      <div class="summary">
+        <div class="ring" id="ring"><span id="ringText">0%</span></div>
+        <div class="metric"><div class="metric-label">완료</div><div class="metric-value"><span id="doneCount">0</span><small>/ <span id="totalCount">0</span></small></div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <aside class="wide-stats"><div><div class="metric-label">이번 주 달성률</div><div class="wide-big"><span id="widePercent">0</span><small>%</small></div><div class="mini-progress"><i id="wideProgress"></i></div></div><div class="wide-caption">완료한 루틴이 쌓일수록 진행률이 자동으로 업데이트됩니다.</div></aside>
+    <div class="tracker-wrap">
+      <div class="tracker" id="tracker"><div></div><div class="day">월</div><div class="day">화</div><div class="day">수</div><div class="day">목</div><div class="day">금</div><div class="day">토</div><div class="day">일</div></div>
+    </div>
+    <div class="add-area"><input id="routineInput" class="add-input" type="text" maxlength="12" placeholder="새 루틴 추가" aria-label="새 루틴 이름" /><button id="addBtn" class="add-btn" type="button">추가</button></div>
+  </div>
+</section>
+</div>
+<script>
+const DAYS=['월','화','수','목','금','토','일'];
+const KEY='routineTracker.v3';
+const OLD_KEY='routineTracker.v2';
+const DEFAULT=[
+  {name:'운동',checks:[0,0,0,0,0,0,0],custom:false},
+  {name:'독서',checks:[0,0,0,0,0,0,0],custom:false},
+  {name:'명상',checks:[0,0,0,0,0,0,0],custom:false}
+];
+function copyDefault(){return JSON.parse(JSON.stringify(DEFAULT))}
+function normalize(v){if(!Array.isArray(v)||!v.length)return null;const out=v.filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.checks)).map(x=>({name:x.name.trim().slice(0,12),checks:DAYS.map((_,i)=>x.checks[i]?1:0),custom:!!x.custom})).filter(x=>x.name);return out.length?out:null}
+function load(){try{const v=normalize(JSON.parse(localStorage.getItem(KEY)||'null'));if(v)return v}catch(e){}try{const old=JSON.parse(localStorage.getItem(OLD_KEY)||'null');if(Array.isArray(old)&&old.length===3&&old.every(r=>Array.isArray(r)&&r.length===7)){const d=copyDefault();d.forEach((x,i)=>x.checks=old[i].map(v=>v?1:0));return d}}catch(e){}return copyDefault()}
+let state=load();
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function updateSummary(){const done=state.reduce((sum,row)=>sum+row.checks.reduce((a,b)=>a+b,0),0);const total=state.length*7;const pct=total?Math.round(done/total*100):0;document.getElementById('doneCount').textContent=done;document.getElementById('totalCount').textContent=total;document.getElementById('ringText').textContent=pct+'%';document.getElementById('ring').style.setProperty('--p',pct);document.getElementById('widePercent').textContent=pct;document.getElementById('wideProgress').style.width=pct+'%'}
+function render(){const tracker=document.getElementById('tracker');tracker.querySelectorAll('.dynamic').forEach(el=>el.remove());state.forEach((item,r)=>{const wrap=document.createElement('div');wrap.className='row-wrap dynamic';const label=document.createElement('div');label.className='row-label';label.textContent=item.name;wrap.appendChild(label);if(item.custom){const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='항목 삭제';del.onclick=()=>{state.splice(r,1);save();render()};wrap.appendChild(del)}tracker.appendChild(wrap);DAYS.forEach((day,d)=>{const b=document.createElement('button');b.className='dot dynamic'+(item.checks[d]?' active':'');b.type='button';b.setAttribute('aria-label',`${item.name} ${day} 체크`);b.onclick=()=>{state[r].checks[d]=state[r].checks[d]?0:1;save();render()};tracker.appendChild(b)})});updateSummary()}
+function addRoutine(){const input=document.getElementById('routineInput'),name=input.value.trim();if(!name)return;state.push({name:name.slice(0,12),checks:[0,0,0,0,0,0,0],custom:true});input.value='';save();render()}
+document.getElementById('addBtn').onclick=addRoutine;document.getElementById('routineInput').addEventListener('keydown',e=>{if(e.key==='Enter')addRoutine()});render();
+</script>
+</body>
+</html>
