@@ -8,54 +8,64 @@
 <link rel="stylesheet" href="./assets/life-town-v2.css" />
 <style>
 :root{
-  --panel:#fff;--soft:#f7f7f8;--line:#e7e7ea;--line-strong:#d8d8dc;--text:#111113;--sub:#6e6e73;--muted:#9a9aa0;--blue:#007aff;
+  --panel:#fff;--soft:#f7f7f8;--line:#e7e7ea;--text:#111113;--sub:#6e6e73;--muted:#9a9aa0;--blue:#007aff;
   --green:#248a3d;--greenbg:rgba(52,199,89,.10);--red:#d92d27;--redbg:rgba(255,59,48,.09);
-  --shadow:0 8px 24px rgba(0,0,0,.045),0 1px 2px rgba(0,0,0,.025)
+  --shadow:0 8px 22px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.025)
 }
 html[data-theme="dark"],html[data-lt-theme="dark"]{
-  --panel:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--line-strong:#48484a;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e8e93;--blue:#0a84ff;
+  --panel:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e8e93;--blue:#0a84ff;
   --green:#30d158;--greenbg:rgba(48,209,88,.12);--red:#ff453a;--redbg:rgba(255,69,58,.12);--shadow:none
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:transparent}
 body{padding:8px 48px 8px 8px!important;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
-.commodity-shell{width:100%;max-width:680px;margin:0 auto;container-type:inline-size}
-.widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:18px 20px 13px;box-shadow:var(--shadow);overflow:hidden}
-.widget:before{content:"";position:absolute;left:24px;right:24px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.72}
-.header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:13px;border-bottom:1px solid var(--line)}
-.title{font-size:18px;line-height:1.15;font-weight:760;letter-spacing:-.045em}.subtitle{margin-top:5px;font-size:10.5px;line-height:1.4;color:var(--muted)}
+.commodity-shell{width:100%;max-width:660px;margin:0 auto;container-type:inline-size}
+.widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:18px 19px 13px;box-shadow:var(--shadow);overflow:hidden}
+.widget:before{content:"";position:absolute;left:24px;right:24px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.7}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.title{font-size:18px;line-height:1.15;font-weight:760;letter-spacing:-.045em}
+.subtitle{margin-top:4px;font-size:10.5px;line-height:1.4;color:var(--muted)}
 .meta{text-align:right;font-size:8.5px;line-height:1.45;color:var(--muted);white-space:nowrap}.meta .delay{color:var(--red);font-weight:730}
-.main{display:grid;grid-template-columns:215px minmax(0,1fr);gap:18px;padding-top:14px;min-width:0}
-.market{min-width:0;padding-right:18px;border-right:1px solid var(--line)}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.section-title{font-size:11px;font-weight:730;letter-spacing:-.02em}.section-count{font-size:8.5px;color:var(--muted)}
+.main{display:grid;grid-template-columns:205px minmax(0,1fr);gap:16px;padding-top:13px;min-width:0}
+.market{min-width:0;padding-right:15px;border-right:1px solid var(--line)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.section-title{font-size:11px;font-weight:730;letter-spacing:-.02em}.section-count{font-size:8.5px;color:var(--muted)}
 .asset-list{display:grid;gap:2px}
-.asset{width:100%;min-height:35px;border:1px solid transparent;background:transparent;border-radius:11px;padding:5px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;text-align:left;cursor:pointer;position:relative}
-.asset:hover{background:var(--soft)}.asset.active{background:rgba(0,122,255,.06);border-color:rgba(0,122,255,.15)}.asset.active:before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;border-radius:999px;background:var(--blue)}
-.asset-name{font-size:11px;font-weight:700;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.asset-side{text-align:right;min-width:72px}.asset-price{font-size:10px;font-weight:740;white-space:nowrap}
-.change{display:inline-flex;align-items:center;justify-content:center;margin-top:2px;padding:2px 5px;border-radius:999px;font-size:7.8px;font-weight:720;white-space:nowrap}.up{color:var(--green);background:var(--greenbg)}.down{color:var(--red);background:var(--redbg)}
+.asset{width:100%;min-height:34px;border:1px solid transparent;background:transparent;border-radius:10px;padding:5px 7px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;text-align:left;cursor:pointer;position:relative}
+.asset:hover{background:var(--soft)}
+.asset.active{background:rgba(0,122,255,.055);border-color:rgba(0,122,255,.14)}
+.asset.active:before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;border-radius:999px;background:var(--blue)}
+.asset-name{font-size:10.8px;font-weight:700;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-side{text-align:right;min-width:70px}.asset-price{font-size:9.8px;font-weight:740;white-space:nowrap}
+.change{display:inline-flex;align-items:center;justify-content:center;margin-top:2px;padding:2px 5px;border-radius:999px;font-size:7.7px;font-weight:720;white-space:nowrap}
+.up{color:var(--green);background:var(--greenbg)}.down{color:var(--red);background:var(--redbg)}
 .detail{min-width:0;display:flex;flex-direction:column}
-.quote-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;min-height:64px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.kicker{font-size:8px;color:var(--blue);font-weight:740}.detail-name{margin-top:3px;font-size:18px;line-height:1.1;font-weight:760;letter-spacing:-.045em}.detail-unit{margin-top:5px;font-size:9px;color:var(--muted)}
-.quote{text-align:right}.quote-price{font-size:27px;line-height:.95;font-weight:790;letter-spacing:-.065em;white-space:nowrap}.quote .change{margin-top:6px}.quote-krw{margin-top:5px;font-size:8.5px;color:var(--sub);white-space:nowrap}
-.detail-lower{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:14px;align-items:stretch;margin-top:12px}
-.chart-block{min-width:0}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}.chart-label{font-size:10px;font-weight:680;color:var(--sub)}.chart-range{font-size:8px;color:var(--muted)}
-.chart-wrap{height:116px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 0 2px;overflow:hidden}.chart{display:block;width:100%;height:100%;color:var(--blue)}
+.quote-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;min-height:60px}
+.kicker{font-size:8px;color:var(--blue);font-weight:740}
+.detail-name{margin-top:3px;font-size:18px;line-height:1.1;font-weight:760;letter-spacing:-.045em}
+.detail-unit{margin-top:4px;font-size:9px;color:var(--muted)}
+.quote{text-align:right}.quote-price{font-size:26px;line-height:.96;font-weight:790;letter-spacing:-.06em;white-space:nowrap}.quote .change{margin-top:5px}.quote-krw{margin-top:4px;font-size:8.3px;color:var(--sub);white-space:nowrap}
+.analysis{width:min(100%,360px);margin:12px auto 0}
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}
+.chart-label{font-size:9.8px;font-weight:680;color:var(--sub)}.chart-range{font-size:7.8px;color:var(--muted)}
+.chart-wrap{height:100px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 0 2px;overflow:hidden}
+.chart{display:block;width:100%;height:100%;color:var(--blue)}
 .gridline{stroke:var(--line);stroke-width:1}.line{fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.area{fill:url(#areaFade)}.dot{fill:var(--blue);stroke:var(--panel);stroke-width:2}.axis{font-size:6.9px;fill:var(--muted)}
-.metrics{display:grid;grid-template-rows:repeat(4,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0;margin-top:22px}
-.metric{min-width:0;padding:6px 9px;display:flex;align-items:center;justify-content:space-between;gap:7px;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}
-.metric-label{font-size:7.8px;color:var(--muted);white-space:nowrap}.metric-value{font-size:9.5px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
-.detail-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;font-size:7.5px;color:var(--muted)}
-.global-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:9px;border-top:1px solid var(--line);font-size:8px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:7px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.metric{min-width:0;padding:7px 7px 6px;border-right:1px solid var(--line)}.metric:first-child{padding-left:0}.metric:last-child{border-right:0;padding-right:0}
+.metric-label{font-size:7.6px;color:var(--muted);white-space:nowrap}.metric-value{margin-top:2px;font-size:9.5px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;font-size:7.4px;color:var(--muted)}
+.global-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;padding-top:8px;border-top:1px solid var(--line);font-size:8px;color:var(--muted)}
 .stale{color:var(--red);font-weight:700}.loading{opacity:.6}
-@container(max-width:640px){.widget{padding:16px 17px 12px}.main{grid-template-columns:200px minmax(0,1fr);gap:16px}.market{padding-right:15px}.detail-lower{grid-template-columns:minmax(0,1fr) 122px;gap:12px}.quote-price{font-size:25px}}
-@container(max-width:560px){.main{grid-template-columns:185px minmax(0,1fr);gap:14px}.market{padding-right:13px}.asset{min-height:34px}.asset-name{font-size:10.4px}.asset-side{min-width:66px}.asset-price{font-size:9.4px}.quote-price{font-size:23px}.detail-lower{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,1fr);margin-top:0;border-radius:10px}.metric{min-height:42px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.metric:nth-child(2),.metric:nth-child(4){border-right:0}.metric:nth-child(3),.metric:nth-child(4){border-bottom:0}.metric:last-child{border-bottom:0}.chart-wrap{height:104px}}
-@container(max-width:500px){.main{grid-template-columns:1fr;gap:13px}.market{padding-right:0;padding-bottom:13px;border-right:0;border-bottom:1px solid var(--line)}.asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.detail{padding-top:1px}.quote-row{min-height:58px}}
+@container(max-width:620px){.widget{padding:16px 17px 12px}.main{grid-template-columns:195px minmax(0,1fr);gap:14px}.market{padding-right:13px}.analysis{width:min(100%,340px)}.quote-price{font-size:24px}}
+@container(max-width:540px){.main{grid-template-columns:180px minmax(0,1fr);gap:13px}.market{padding-right:12px}.asset-name{font-size:10.2px}.asset-side{min-width:64px}.asset-price{font-size:9.2px}.quote-price{font-size:22px}.analysis{width:100%}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{min-height:40px}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@container(max-width:470px){.main{grid-template-columns:1fr;gap:12px}.market{padding-right:0;padding-bottom:12px;border-right:0;border-bottom:1px solid var(--line)}.asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.detail{padding-top:1px}.quote-row{min-height:56px}}
 </style>
 </head>
 <body>
 <div class="commodity-shell">
-<main class="widget" id="widget" data-widget-control-root data-control-sizes="620,650,680">
+<main class="widget" id="widget" data-widget-control-root data-control-sizes="620,640,660">
   <header class="header">
     <div><div class="title">원자재 · 원료 시세</div><div class="subtitle">주요 원자재 가격과 최근 7거래일 흐름</div></div>
     <div class="meta" id="updated">데이터 불러오는 중</div>
@@ -73,19 +83,17 @@ button{font:inherit;color:inherit}
         <div class="quote"><div class="quote-price" id="detailPrice">—</div><div class="change" id="detailChange">—</div><div class="quote-krw" id="detailKrw">—</div></div>
       </div>
 
-      <div class="detail-lower">
-        <div class="chart-block">
-          <div class="chart-head"><div class="chart-label">최근 7거래일 가격 흐름</div><div class="chart-range">7일 전 → 최근</div></div>
-          <div class="chart-wrap"><svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg></div>
-        </div>
+      <div class="analysis">
+        <div class="chart-head"><div class="chart-label">최근 7거래일 가격 흐름</div><div class="chart-range">7일 전 → 최근</div></div>
+        <div class="chart-wrap"><svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg></div>
         <div class="metrics">
-          <div class="metric"><span class="metric-label">전일 종가</span><span class="metric-value" id="prevClose">—</span></div>
-          <div class="metric"><span class="metric-label">7일 고가</span><span class="metric-value" id="weekHigh">—</span></div>
-          <div class="metric"><span class="metric-label">7일 저가</span><span class="metric-value" id="weekLow">—</span></div>
-          <div class="metric"><span class="metric-label">거래 단위</span><span class="metric-value" id="unit">—</span></div>
+          <div class="metric"><div class="metric-label">전일 종가</div><div class="metric-value" id="prevClose">—</div></div>
+          <div class="metric"><div class="metric-label">7일 고가</div><div class="metric-value" id="weekHigh">—</div></div>
+          <div class="metric"><div class="metric-label">7일 저가</div><div class="metric-value" id="weekLow">—</div></div>
+          <div class="metric"><div class="metric-label">거래 단위</div><div class="metric-value" id="unit">—</div></div>
         </div>
+        <div class="detail-footer"><span id="symbolInfo">심볼 · —</span><span id="sourceInfo">출처 · Yahoo Finance</span></div>
       </div>
-      <div class="detail-footer"><span id="symbolInfo">심볼 · —</span><span id="sourceInfo">출처 · Yahoo Finance</span></div>
     </article>
   </section>
 
