@@ -27,13 +27,16 @@ button{font:inherit;color:inherit}
 .commodity-shell{width:100%;max-width:700px;margin:0 auto;container-type:inline-size}
 .widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:12px 13px 10px;box-shadow:var(--shadow);overflow:hidden}
 .widget:before{content:"";position:absolute;left:22px;right:22px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.62}
+
 .header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 1px 10px}
 .title{font-size:17px;line-height:1.15;font-weight:760;letter-spacing:-.045em}
 .subtitle{margin-top:4px;font-size:9.5px;line-height:1.35;color:var(--muted)}
 .meta{text-align:right;font-size:8px;line-height:1.4;color:var(--muted);white-space:nowrap}
 .meta .delay{color:var(--red);font-weight:730}
+
 .content{display:grid;grid-template-columns:188px 452px;gap:10px;min-width:0;justify-content:center}
 .panel{min-width:0;height:246px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+
 .market{padding:9px 8px 8px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;padding:0 1px}
 .section-title{font-size:10.5px;font-weight:730;letter-spacing:-.02em}
@@ -52,6 +55,8 @@ button{font:inherit;color:inherit}
 .change{display:inline-flex;align-items:center;justify-content:center;padding:2px 4px;border-radius:999px;font-size:7px;font-weight:720;white-space:nowrap;line-height:1}
 .up{color:var(--green);background:var(--greenbg)}
 .down{color:var(--red);background:var(--redbg)}
+
+/* right detail: identity + quote above, full-width chart and 4 metrics below */
 .detail{padding:9px 10px 7px}
 .detail-grid{
   display:grid;
@@ -65,29 +70,54 @@ button{font:inherit;color:inherit}
 .kicker{font-size:7.7px;color:var(--blue);font-weight:740}
 .detail-name{margin-top:3px;font-size:18px;line-height:1.05;font-weight:760;letter-spacing:-.045em}
 .detail-unit{margin-top:5px;font-size:8.5px;color:var(--muted)}
-.quote{grid-column:2;grid-row:1;text-align:right;align-self:start;min-width:0;padding-top:1px}
+
+.quote{
+  grid-column:2;grid-row:1;
+  text-align:right;align-self:start;min-width:0;padding-top:1px
+}
 .quote-price{font-size:25px;line-height:.96;font-weight:790;letter-spacing:-.06em;white-space:nowrap}
 .quote .change{margin-top:5px}
 .quote-krw{margin-top:5px;font-size:7.8px;color:var(--sub);white-space:nowrap}
-.chart-head{grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+
+.chart-head{
+  grid-column:1 / -1;grid-row:2;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-width:0
+}
 .chart-label{font-size:9.3px;font-weight:680;color:var(--sub);white-space:nowrap}
 .chart-range{font-size:7.4px;color:var(--muted);white-space:nowrap}
-.chart-wrap{grid-column:1;grid-row:3;height:82px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0 1px;overflow:hidden;min-width:0}
+
+.chart-wrap{
+  grid-column:1 / -1;grid-row:3;
+  height:82px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0 1px;overflow:hidden;min-width:0
+}
 .chart{display:block;width:100%;height:100%;color:var(--blue)}
 .gridline{stroke:var(--line);stroke-width:1}
 .line{fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .area{fill:url(#areaFade)}
 .dot{fill:var(--blue);stroke:var(--panel);stroke-width:2}
 .axis{font-size:6.9px;fill:var(--muted)}
-.metrics-main{grid-column:1;grid-row:4;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0}
+
+.metrics-main{
+  grid-column:1 / -1;grid-row:4;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0
+}
 .metric{min-width:0;padding:5px 6px 4px;border-right:1px solid var(--line)}
 .metrics-main .metric:last-child{border-right:0}
 .metric-label{font-size:7.2px;color:var(--muted);white-space:nowrap}
 .metric-value{margin-top:2px;font-size:8.9px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.detail-footer{grid-column:1 / -1;grid-row:5;display:flex;align-items:end;justify-content:space-between;gap:8px;font-size:7px;color:var(--muted);min-width:0}
+
+.detail-footer{
+  grid-column:1 / -1;grid-row:5;
+  display:flex;align-items:end;justify-content:space-between;gap:8px;
+  font-size:7px;color:var(--muted);min-width:0
+}
+
 .global-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 2px 0;padding-top:7px;border-top:1px solid var(--line);font-size:7.5px;color:var(--muted)}
 .stale{color:var(--red);font-weight:700}
 .loading{opacity:.6}
+
 @container(max-width:650px){
   .content{grid-template-columns:180px minmax(0,1fr);gap:9px;justify-content:stretch}
   .panel{height:240px}.asset{height:27px}
@@ -104,12 +134,16 @@ button{font:inherit;color:inherit}
   .content{grid-template-columns:1fr;gap:9px}.panel{height:auto}
   .asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.asset{height:29px}
   .detail{min-height:250px}
-  .detail-grid{grid-template-columns:minmax(0,1fr) 118px;grid-template-rows:62px 18px 84px 38px 18px}
+  .detail-grid{
+    grid-template-columns:minmax(0,1fr) 118px;
+    grid-template-rows:62px 18px 84px 38px 18px
+  }
   .chart-wrap{height:84px}
 }
+
 body:has(.commodity-shell) .detail{display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;column-gap:0!important;padding:9px 10px 7px!important;min-width:0!important}
-body:has(.commodity-shell) .chart-head{grid-column:1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
-body:has(.commodity-shell) .chart-wrap{grid-column:1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
+body:has(.commodity-shell) .chart-head{grid-column:1/-1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
+body:has(.commodity-shell) .chart-wrap{grid-column:1/-1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
 body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!important;width:auto!important;margin:0!important;align-self:end!important}
 </style>
 </head>
@@ -123,6 +157,7 @@ body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!
     </div>
     <div class="meta" id="updated">데이터 불러오는 중</div>
   </header>
+
   <section class="content">
     <aside class="panel market">
       <div class="section-head">
@@ -131,6 +166,7 @@ body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!
       </div>
       <div class="asset-list" id="assetList"></div>
     </aside>
+
     <article class="panel detail">
       <div class="detail-grid">
         <div class="identity">
@@ -138,22 +174,29 @@ body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!
           <div class="detail-name" id="detailName">—</div>
           <div class="detail-unit" id="detailUnit">—</div>
         </div>
+
         <div class="quote">
           <div class="quote-price" id="detailPrice">—</div>
           <div class="change" id="detailChange">—</div>
           <div class="quote-krw" id="detailKrw">—</div>
         </div>
+
         <div class="chart-head">
           <div class="chart-label">최근 7거래일 가격 흐름</div>
           <div class="chart-range">7일 전 → 최근</div>
         </div>
-        <div class="chart-wrap"><svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg></div>
+
+        <div class="chart-wrap">
+          <svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg>
+        </div>
+
         <div class="metrics-main">
           <div class="metric"><div class="metric-label">전일 종가</div><div class="metric-value" id="prevClose">—</div></div>
           <div class="metric"><div class="metric-label">7일 고가</div><div class="metric-value" id="weekHigh">—</div></div>
           <div class="metric"><div class="metric-label">7일 저가</div><div class="metric-value" id="weekLow">—</div></div>
           <div class="metric"><div class="metric-label">거래 단위</div><div class="metric-value" id="unit">—</div></div>
         </div>
+
         <div class="detail-footer">
           <span id="symbolInfo">심볼 · —</span>
           <span id="sourceInfo">출처 · Yahoo Finance</span>
@@ -161,20 +204,33 @@ body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!
       </div>
     </article>
   </section>
+
   <footer class="global-footer">
     <span id="fxInfo">기준 통화 USD · 환율 —</span>
     <span id="timeInfo">출처 · Yahoo Finance</span>
   </footer>
 </main>
 </div>
+
 <script>
 const order=['금','은','구리','알루미늄','브렌트유','WTI 원유','천연가스'];
 const groups={'금':'귀금속','은':'귀금속','구리':'산업금속','알루미늄':'산업금속','브렌트유':'에너지','WTI 원유':'에너지','천연가스':'에너지'};
 let state={items:[],selected:'금',fx:0,sourceUpdated:null};
 const $=s=>document.querySelector(s);
-function fmtPrice(v){const n=Number(v);return Number.isFinite(n)?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
-function fmtChange(v){const n=Number(v)||0;return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`}
-function fmtDateTime(v){const d=new Date(v);if(isNaN(d))return '—';return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+
+function fmtPrice(v){
+  const n=Number(v);
+  return Number.isFinite(n)?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'
+}
+function fmtChange(v){
+  const n=Number(v)||0;
+  return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`
+}
+function fmtDateTime(v){
+  const d=new Date(v);
+  if(isNaN(d))return '—';
+  return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+}
 function chartSvg(values){
   const a=(values||[]).slice(-7).map(Number).filter(Number.isFinite);
   if(a.length<2)return '<text class="axis" x="280" y="68" text-anchor="middle">차트 데이터 없음</text>';
