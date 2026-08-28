@@ -20,10 +20,10 @@
     return [360,520,680];
   };
   const sizes=parseSizes();
-  let state={sizeIndex:Math.min(1,sizes.length-1),theme:'light',locked:false};
+  let state={sizeIndex:sizes.length-1,theme:'light',locked:false};
   try{state={...state,...JSON.parse(localStorage.getItem(key)||'{}')}}catch{}
   if(!['light','dark'].includes(state.theme)) state.theme='light';
-  if(!Number.isInteger(state.sizeIndex)||state.sizeIndex<0||state.sizeIndex>=sizes.length) state.sizeIndex=Math.min(1,sizes.length-1);
+  if(!Number.isInteger(state.sizeIndex)||state.sizeIndex<0||state.sizeIndex>=sizes.length) state.sizeIndex=sizes.length-1;
 
   const icons={
     size:'<svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/><path d="M3 8l5-5M21 8l-5-5M3 16l5 5M21 16l-5 5"/></svg>',
@@ -57,6 +57,7 @@
   css.textContent=`
   body{padding-right:48px!important}
   .lt-control-host{position:relative!important;overflow:visible!important;transition:width .18s ease,max-width .18s ease}
+  .lt-control-host>.tools,.lt-control-host>.hoverTools{display:none!important}
   .lt-control-rail{position:absolute;top:8px;left:calc(100% + 7px);z-index:999;display:flex;flex-direction:column;gap:7px;padding:0 4px 4px 11px;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-4px);transition:opacity .16s ease,transform .16s ease,visibility .16s ease}
   .lt-control-host:hover>.lt-control-rail,.lt-control-host:focus-within>.lt-control-rail,.lt-control-rail:hover{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0)}
   .lt-control-line{position:absolute;left:1px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(142,142,147,.08),rgba(142,142,147,.28) 15%,rgba(142,142,147,.16) 84%,rgba(142,142,147,.03));border-radius:999px}
@@ -101,6 +102,6 @@
   sizeBtn.onclick=()=>{if(state.locked)return;state.sizeIndex=(state.sizeIndex+1)%sizes.length;persist();apply()};
   themeBtn.onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';persist();apply()};
   lockBtn.onclick=()=>{state.locked=!state.locked;persist();apply()};
-  resetBtn.onclick=()=>{state={sizeIndex:Math.min(1,sizes.length-1),theme:'light',locked:false};localStorage.removeItem(key);apply()};
+  resetBtn.onclick=()=>{state={sizeIndex:sizes.length-1,theme:'light',locked:false};localStorage.removeItem(key);apply()};
   apply();
 })();
