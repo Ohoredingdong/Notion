@@ -3,6 +3,10 @@ on:
   push:
     paths:
       - '.github/workflows/build-market-v2.yml'
+      - 'scripts/build_market_v2.py'
+      - 'market-events.html'
+      - 'commodities-dashboard.html'
+      - 'fear-greed-dashboard.html'
 permissions:
   contents: write
 jobs:
@@ -17,5 +21,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add market-events-v2.html commodities-dashboard-v2.html market-mood-v2.html
-          git diff --cached --quiet || git commit -m "Add Life Town v2 market widgets"
+          git diff --cached --quiet || git commit -m "Update Life Town v2 market widgets"
           git push
