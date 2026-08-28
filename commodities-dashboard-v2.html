@@ -56,7 +56,7 @@ button{font:inherit;color:inherit}
 .up{color:var(--green);background:var(--greenbg)}
 .down{color:var(--red);background:var(--redbg)}
 
-/* right detail: identity + quote above, full-width chart and 4 metrics below */
+/* compact chart width stays narrow; quote remains above; all 4 metrics stay under the same narrow chart */
 .detail{padding:9px 10px 7px}
 .detail-grid{
   display:grid;
@@ -80,7 +80,7 @@ button{font:inherit;color:inherit}
 .quote-krw{margin-top:5px;font-size:7.8px;color:var(--sub);white-space:nowrap}
 
 .chart-head{
-  grid-column:1 / -1;grid-row:2;
+  grid-column:1;grid-row:2;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   min-width:0
 }
@@ -88,7 +88,7 @@ button{font:inherit;color:inherit}
 .chart-range{font-size:7.4px;color:var(--muted);white-space:nowrap}
 
 .chart-wrap{
-  grid-column:1 / -1;grid-row:3;
+  grid-column:1;grid-row:3;
   height:82px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0 1px;overflow:hidden;min-width:0
 }
 .chart{display:block;width:100%;height:100%;color:var(--blue)}
@@ -99,7 +99,7 @@ button{font:inherit;color:inherit}
 .axis{font-size:6.9px;fill:var(--muted)}
 
 .metrics-main{
-  grid-column:1 / -1;grid-row:4;
+  grid-column:1;grid-row:4;
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0
 }
@@ -142,8 +142,9 @@ button{font:inherit;color:inherit}
 }
 
 body:has(.commodity-shell) .detail{display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;column-gap:0!important;padding:9px 10px 7px!important;min-width:0!important}
-body:has(.commodity-shell) .chart-head{grid-column:1/-1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
-body:has(.commodity-shell) .chart-wrap{grid-column:1/-1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
+body:has(.commodity-shell) .chart-head{grid-column:1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
+body:has(.commodity-shell) .chart-wrap{grid-column:1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
+body:has(.commodity-shell) .metrics-main{grid-column:1!important;grid-row:4!important;width:auto!important;margin:0!important}
 body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!important;width:auto!important;margin:0!important;align-self:end!important}
 </style>
 </head>
