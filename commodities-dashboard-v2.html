@@ -27,7 +27,7 @@ body{
   -webkit-font-smoothing:antialiased
 }
 button{font:inherit;color:inherit}
-.commodity-shell{width:100%;max-width:540px;margin:0 auto;container-type:inline-size}
+.commodity-shell{width:100%;max-width:460px;margin:0 auto;container-type:inline-size}
 .widget{position:relative;width:100%;margin:0;background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:11px;box-shadow:var(--shadow);overflow:hidden}
 .widget:before{content:"";position:absolute;top:0;left:14px;right:14px;height:1px;background:linear-gradient(90deg,transparent,#b8b8bd 25%,#f6f6f8 50%,#b8b8bd 75%,transparent);opacity:.65}
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
@@ -68,12 +68,12 @@ button{font:inherit;color:inherit}
 .detail-footer,.global-footer{display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:wrap;color:var(--muted)}
 .detail-footer{margin-top:4px;font-size:6.5px}.global-footer{margin-top:5px;padding-top:5px;border-top:1px solid var(--line);font-size:6.8px}
 .stale{color:var(--red);font-weight:700}.loading{opacity:.6}
-@container (min-width:430px){
-  .layout{grid-template-columns:168px minmax(0,1fr)}
+@container (min-width:400px){
+  .layout{grid-template-columns:150px minmax(0,270px);justify-content:center}
   .asset-list{grid-template-columns:1fr;gap:1px}
   .asset{min-height:27px;padding:3px 4px}
 }
-@container (max-width:429px){
+@container (max-width:399px){
   .widget{padding:9px;border-radius:17px}.top{gap:6px;margin-bottom:6px}.title{font-size:14px}.subtitle{font-size:8px}.meta{font-size:6.8px}
   .asset-list{grid-template-columns:1fr}.asset{min-height:28px;padding:3px 5px}
   .detail{padding:7px}.detail-top{grid-template-columns:1fr}.quote{text-align:left;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:5px}.quote-price{font-size:18px}.quote .change{margin:0;justify-self:start}.quote-krw{grid-column:1/-1;margin-top:2px}
@@ -84,7 +84,7 @@ button{font:inherit;color:inherit}
 </head>
 <body>
 <div class="commodity-shell">
-<main class="widget" id="widget" data-widget-control-root>
+<main class="widget" id="widget" data-widget-control-root data-control-sizes="360,420,460">
   <header class="top">
     <div><div class="title">원자재 · 원료 시세</div><div class="subtitle">주요 원자재의 현재 가격과 최근 7거래일 흐름</div></div>
     <div class="meta" id="updated">데이터 불러오는 중</div>
