@@ -58,5 +58,65 @@ body{font-family:var(--lt-font);color:var(--lt-text);-webkit-font-smoothing:anti
   transform:translateX(0)!important;
 }
 
+/* Commodities detail layout — chart occupies only the left portion of the detail panel.
+   Quote stays top-right; first three metrics sit below the chart; trading unit stays bottom-right. */
+body:has(.commodity-shell) .detail{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 136px!important;
+  grid-template-rows:64px 18px 82px 38px 1fr!important;
+  column-gap:12px!important;
+  padding:9px 10px 7px!important;
+  min-width:0!important;
+}
+body:has(.commodity-shell) .quote-row{display:contents!important}
+body:has(.commodity-shell) .quote-row>div:first-child{grid-column:1!important;grid-row:1!important;align-self:start!important;min-width:0!important}
+body:has(.commodity-shell) .quote-row>.quote{grid-column:2!important;grid-row:1!important;align-self:start!important;min-width:0!important}
+body:has(.commodity-shell) .chart-head{
+  grid-column:1!important;grid-row:2!important;
+  width:100%!important;margin:0!important;
+  align-self:center!important;min-width:0!important
+}
+body:has(.commodity-shell) .chart-wrap{
+  grid-column:1!important;grid-row:3!important;
+  width:100%!important;height:82px!important;margin:0!important;min-width:0!important
+}
+body:has(.commodity-shell) .metrics{
+  grid-column:1 / -1!important;grid-row:4!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) 148px!important;
+  gap:0!important;
+  width:100%!important;margin:0!important;
+  border:0!important;border-radius:0!important;overflow:visible!important;
+  min-width:0!important
+}
+body:has(.commodity-shell) .metrics>.metric{
+  border-top:1px solid var(--line)!important;
+  border-bottom:1px solid var(--line)!important;
+  border-right:1px solid var(--line)!important;
+  border-left:0!important;
+  border-radius:0!important;
+  min-width:0!important
+}
+body:has(.commodity-shell) .metrics>.metric:first-child{
+  border-left:1px solid var(--line)!important;
+  border-radius:8px 0 0 8px!important
+}
+body:has(.commodity-shell) .metrics>.metric:nth-child(3){border-radius:0 8px 8px 0!important}
+body:has(.commodity-shell) .metrics>.metric:nth-child(4){
+  margin-left:12px!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important
+}
+body:has(.commodity-shell) .detail-footer{
+  grid-column:1 / -1!important;grid-row:5!important;
+  width:100%!important;margin:0!important;
+  align-self:end!important;min-width:0!important
+}
+@container (max-width:560px){
+  body:has(.commodity-shell) .detail{grid-template-columns:minmax(0,1fr) 118px!important;column-gap:9px!important}
+  body:has(.commodity-shell) .metrics{grid-template-columns:repeat(3,minmax(0,1fr)) 127px!important}
+  body:has(.commodity-shell) .metrics>.metric:nth-child(4){margin-left:9px!important}
+}
+
 @container (max-width:340px){.lt-card{border-radius:18px}.lt-title{font-size:15px}}
 @media (prefers-color-scheme:dark){html[data-theme="auto"]{--lt-bg:#000;--lt-surface:#1c1c1e;--lt-surface-2:#2c2c2e;--lt-text:#f5f5f7;--lt-sub:#aeaeb2;--lt-muted:#8e8e93;--lt-line:#38383a;--lt-line-strong:#48484a;--lt-shadow:none}}
