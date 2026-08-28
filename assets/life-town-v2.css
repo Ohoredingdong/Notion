@@ -39,8 +39,8 @@ body{font-family:var(--lt-font);color:var(--lt-text);-webkit-font-smoothing:anti
 .lt-dot{width:8px;height:8px;border-radius:50%;background:var(--lt-line-strong)}.lt-dot.blue{background:var(--lt-blue)}.lt-dot.green{background:var(--lt-green)}.lt-dot.yellow{background:var(--lt-yellow)}.lt-dot.red{background:var(--lt-red)}
 .lt-chrome-line{height:1px;background:linear-gradient(90deg,transparent,#b8b8bd 20%,#f3f3f5 50%,#b8b8bd 80%,transparent);opacity:.85}
 
-/* Right-side controls: the widget itself must remain fully clickable.
-   The rail is invisible but hoverable; only hovering/focusing the rail reveals it. */
+/* Right-side controls: invisible until the pointer is actually over the rail.
+   Clicking a control must not keep the rail visible after the pointer leaves. */
 .lt-control-rail{
   visibility:visible!important;
   pointer-events:auto!important;
@@ -51,8 +51,7 @@ body{font-family:var(--lt-font);color:var(--lt-text);-webkit-font-smoothing:anti
   opacity:0!important;
   transform:translateX(-4px)!important;
 }
-.lt-control-host>.lt-control-rail.lt-control-rail:hover,
-.lt-control-host>.lt-control-rail.lt-control-rail:focus-within{
+.lt-control-host>.lt-control-rail.lt-control-rail:hover{
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
