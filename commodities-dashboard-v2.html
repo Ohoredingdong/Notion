@@ -24,7 +24,7 @@ body{
   -webkit-font-smoothing:antialiased
 }
 button{font:inherit;color:inherit}
-.commodity-shell{width:100%;max-width:700px;margin:0 auto;container-type:inline-size}
+.commodity-shell{width:100%;max-width:530px;margin:0 auto;container-type:inline-size}
 .widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:12px 13px 10px;box-shadow:var(--shadow);overflow:hidden}
 .widget:before{content:"";position:absolute;left:22px;right:22px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.62}
 
@@ -34,10 +34,9 @@ button{font:inherit;color:inherit}
 .meta{text-align:right;font-size:8px;line-height:1.4;color:var(--muted);white-space:nowrap}
 .meta .delay{color:var(--red);font-weight:730}
 
-.content{display:grid;grid-template-columns:188px 452px;gap:10px;min-width:0;justify-content:center}
+.content{display:grid;grid-template-columns:188px 304px;gap:10px;min-width:0;justify-content:center}
 .panel{min-width:0;height:246px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
 
-/* left list */
 .market{padding:9px 8px 8px}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;padding:0 1px}
 .section-title{font-size:10.5px;font-weight:730;letter-spacing:-.02em}
@@ -57,13 +56,12 @@ button{font:inherit;color:inherit}
 .up{color:var(--green);background:var(--greenbg)}
 .down{color:var(--red);background:var(--redbg)}
 
-/* right detail: compact chart block stays narrow; quote moves above it without changing chart width */
+/* right detail: no phantom right column; quote sits above the compact chart and the panel shrinks to the chart width */
 .detail{padding:9px 10px 7px}
 .detail-grid{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 136px;
+  grid-template-columns:minmax(0,1fr);
   grid-template-rows:64px 18px 82px 38px 18px;
-  column-gap:12px;
   height:100%;
   min-width:0;
 }
@@ -121,30 +119,21 @@ button{font:inherit;color:inherit}
 .stale{color:var(--red);font-weight:700}
 .loading{opacity:.6}
 
-@container(max-width:650px){
-  .content{grid-template-columns:180px minmax(0,1fr);gap:9px;justify-content:stretch}
+@container(max-width:500px){
+  .content{grid-template-columns:170px minmax(0,1fr);gap:8px;justify-content:stretch}
   .panel{height:240px}.asset{height:27px}
-  .detail-grid{grid-template-columns:minmax(0,1fr) 128px;grid-template-rows:62px 18px 78px 38px 17px;column-gap:10px}
+  .asset-name{font-size:9.9px}.asset-side{min-width:61px}.asset-price{font-size:8.6px}
+  .detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 78px 38px 17px}
   .quote-price{font-size:20px}.chart-wrap{height:78px}
 }
-@container(max-width:560px){
-  .content{grid-template-columns:165px minmax(0,1fr);gap:8px}
-  .asset-name{font-size:9.8px}.asset-side{min-width:61px}.asset-price{font-size:8.6px}
-  .detail-grid{grid-template-columns:minmax(0,1fr) 118px;column-gap:9px}
-  .quote-price{font-size:19px}
-}
-@container(max-width:470px){
+@container(max-width:430px){
   .content{grid-template-columns:1fr;gap:9px}.panel{height:auto}
   .asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.asset{height:29px}
   .detail{min-height:250px}
-  .detail-grid{
-    grid-template-columns:minmax(0,1fr) 118px;
-    grid-template-rows:62px 18px 84px 38px 18px
-  }
+  .detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 84px 38px 18px}
   .chart-wrap{height:84px}
 }
 
-/* neutralize the previous shared commodities override; this file owns its layout */
 body:has(.commodity-shell) .detail{display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;column-gap:0!important;padding:9px 10px 7px!important;min-width:0!important}
 body:has(.commodity-shell) .chart-head{grid-column:1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
 body:has(.commodity-shell) .chart-wrap{grid-column:1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
@@ -154,7 +143,7 @@ body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!
 </head>
 <body>
 <div class="commodity-shell">
-<main class="widget" id="widget" data-widget-control-root data-control-sizes="660,680,700">
+<main class="widget" id="widget" data-widget-control-root data-control-sizes="500,515,530">
   <header class="header">
     <div>
       <div class="title">원자재 · 원료 시세</div>
