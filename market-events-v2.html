@@ -100,7 +100,7 @@ button{font:inherit;color:inherit}
 
 <style id="lt-v2-overrides">
 :root{--bg:#fff;--panel:#fff;--line:#e7e7ea;--line-soft:#f0f0f2;--soft:#f7f7f8;--soft-2:#fafafa;--text:#111113;--sub:#6e6e73;--muted:#a1a1a6;--green:#34c759;--green-deep:#218a3d;--green-soft:rgba(52,199,89,.08);--red:#ff3b30;--red-soft:rgba(255,59,48,.07);--amber:#ad8600;--amber-soft:rgba(255,204,0,.11);--blue:#007aff;--blue-soft:rgba(0,122,255,.08);--shadow:0 12px 32px rgba(0,0,0,.055),0 1px 2px rgba(0,0,0,.035)}
-body{padding:6px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}.root{width:min(100%,680px)!important}.widget{position:relative;border-radius:24px;padding:18px 17px 14px;box-shadow:var(--shadow);overflow:hidden}.widget:before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b8b8bd 25%,#f6f6f8 50%,#b8b8bd 75%,transparent);opacity:.8}.title{font-size:19px;font-weight:760;letter-spacing:-.045em}.subtitle{font-size:10px;color:var(--muted);margin-top:5px}.update{height:26px;border-radius:999px;background:#fff}.hero{margin-top:14px;border-radius:16px;background:#fafafa;padding:14px}.hero-label{font-size:11px;color:var(--sub)}.hero-icon{background:rgba(0,122,255,.07);color:var(--blue)}.impact-tag{border-color:rgba(255,204,0,.25);background:rgba(255,204,0,.10);color:#8d7000}.summary{gap:8px}.sum{border-radius:14px;background:#fff}.sum-icon{background:#f3f3f5;color:var(--sub)}.board{border-radius:16px}.col-title{color:var(--text)}.col-title-wrap svg{color:var(--blue)}.controls{display:none!important}.retry{background:#fff}
+body{padding:6px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}.root{width:min(100%,680px)!important}.widget{position:relative;border-radius:24px;padding:18px 17px 14px;box-shadow:var(--shadow);overflow:hidden}.widget:before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b8b8bd 25%,#f6f6f8 50%,#b8b8bd 75%,transparent);opacity:.8}.title{font-size:19px;font-weight:760;letter-spacing:-.045em}.subtitle{font-size:10px;color:var(--muted);margin-top:5px}.update{height:26px;border-radius:999px;background:#fff}.hero{margin-top:14px;border-radius:16px;background:#fafafa;padding:14px}.hero-label{font-size:11px;color:var(--sub)}.hero-icon{background:rgba(0,122,255,.07);color:var(--blue)}.impact-tag{border-color:rgba(255,204,0,.25);background:rgba(255,204,0,.10);color:#8d7000}.summary{gap:8px}.sum{border-radius:14px;background:#fff}.sum-icon{background:#f3f3f5;color:var(--sub)}.board{border-radius:16px}.col-title{color:var(--text)}.col-title-wrap svg{color:var(--blue)}.controls{display:none!important}.retry{background:#fff}.hero-country{font-weight:700;color:var(--text)}
 </style>
 </head>
 <body>
@@ -109,7 +109,7 @@ body{padding:6px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inte
     <header class="top">
       <div class="head-copy">
         <div class="title">마켓 이벤트</div>
-        <div class="subtitle">한국·미국 주요 경제 일정을 한눈에</div>
+        <div class="subtitle">한국·미국·일본·유럽 주요 경제 일정을 한눈에</div>
       </div>
       <div class="update" id="updated"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>업데이트 준비 중</span></div>
     </header>
@@ -120,7 +120,7 @@ body{padding:6px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inte
         <div class="hero-icon" id="heroIcon"></div>
         <div class="hero-copy">
           <div class="hero-title" id="heroTitle">FOMC 금리 결정</div>
-          <div class="meta"><span class="chip" id="heroDate"></span><span class="chip" id="heroTime"></span></div>
+          <div class="meta"><span class="chip hero-country" id="heroCountry"></span><span class="chip" id="heroDate"></span><span class="chip" id="heroTime"></span></div>
           <div class="desc" id="heroDesc">가장 영향도가 높은 예정 이벤트를 자동으로 표시합니다.</div>
         </div>
         <div class="impact"><div class="impact-tag" id="heroImpact">높은 영향도</div><div class="dots" id="heroDots"></div></div>
@@ -191,12 +191,12 @@ const icons={
 const summaryMeta={ rate:{title:'금리 결정',sub:'금리 결정'}, inflation:{title:'인플레이션',sub:'물가지표'}, jobs:{title:'고용지표',sub:'고용 / 실업률'}, growth:{title:'실적 발표',sub:'기업 실적'} };
 const categoryLabel={ rate:'금리 결정', inflation:'인플레이션', jobs:'고용지표', growth:'경기지표', other:'경제지표' };
 const tone={ rate:'red', inflation:'amber', jobs:'green', growth:'blue', other:'green' };
-const flags={US:'🇺🇸',KR:'🇰🇷',JP:'🇯🇵',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',CN:'🇨🇳',EU:'🇪🇺'};
+const flags={US:'🇺🇸',KR:'🇰🇷',JP:'🇯🇵',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',CN:'🇨🇳',EU:'🇪🇺'};const countryNames={US:'미국',KR:'한국',JP:'일본',GB:'영국',DE:'독일',FR:'프랑스',CN:'중국',EU:'유로존'};
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m])); }
 function dots(n,total=5){ return Array.from({length:total}, (_,i)=>`<span class="dot ${i<n?'on':''}"></span>`).join(''); }
 function subtitleForEvent(e){ if(e.actual) return escapeHtml(e.actual); if(e.forecast) return `예상 ${escapeHtml(e.forecast)}`; if(e.previous) return `이전 ${escapeHtml(e.previous)}`; return escapeHtml(categoryLabel[e.category]||'경제지표'); }
 function relativeTime(iso){ if(!iso) return null; try{ const diff = Date.now()-new Date(iso).getTime(); const mins=Math.max(0,Math.round(diff/60000)); if(mins<1) return '방금 전'; if(mins<60) return `${mins}분 전`; const hrs=Math.floor(mins/60); if(hrs<24) return `${hrs}시간 전`; const days=Math.floor(hrs/24); return `${days}일 전`; }catch{return null;} }
-function eventHtml(e, hidden=false){ return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${escapeHtml(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||e.country||''}</span>${escapeHtml(e.title_ko||e.title||'')}</div><div class="event-desc">${subtitleForEvent(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${escapeHtml(categoryLabel[e.category]||'경제지표')}</span>${(e.importance||0)>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`; }
+function eventHtml(e, hidden=false){ return `<div class="event extra-event" ${hidden?'hidden':''}><div class="time">${escapeHtml(e.time_kst||'—')}</div><div class="event-main"><div class="event-title"><span class="country">${flags[e.country]||''} ${escapeHtml(countryNames[e.country]||e.country||'')}</span>${escapeHtml(e.title_ko||e.title||'')}</div><div class="event-desc">${subtitleForEvent(e)}</div><div class="tag-row"><span class="badge ${tone[e.category]||'green'}">${escapeHtml(categoryLabel[e.category]||'경제지표')}</span>${(e.importance||0)>=3?'<span class="badge red">높은 영향도</span>':''}</div></div></div>`; }
 function renderColumn(key,title,en,events){ const first=events.slice(0,3); const rest=events.slice(3); return `<div class="col"><div class="col-head"><div class="col-title-wrap">${icons.cal}<span class="col-title">${title}</span></div><div class="col-en">${en}</div></div><div class="list">${first.map(e=>eventHtml(e)).join('')}${rest.map(e=>eventHtml(e,true)).join('') || (first.length?'':'<div class="empty">예정 이벤트 없음</div>')}</div><button class="more" ${rest.length?'':'hidden'}>${'더 보기 〉'}</button></div>`; }
 function render(data){
   const events=data.events||[]; const highlight=data.highlight || events[0] || sampleData.highlight;
@@ -204,8 +204,8 @@ function render(data){
   document.querySelector('#updated span').textContent = data.stale ? '업데이트 지연' : `업데이트: ${rel}`;
   document.getElementById('retry').hidden = !data.stale;
   document.getElementById('heroIcon').innerHTML = icons[highlight.category] || icons.other;
-  document.getElementById('heroTitle').textContent = highlight.title_ko || highlight.title || '주요 이벤트';
-  document.getElementById('heroDate').innerHTML = `${icons.cal}<span>${escapeHtml(highlight.date_kst || '—')}</span>`;
+  const heroCountryName=countryNames[highlight.country]||highlight.country||''; const heroRawTitle=highlight.title_ko||highlight.title||'주요 이벤트'; document.getElementById('heroTitle').textContent = heroCountryName ? `${heroCountryName} ${heroRawTitle}` : heroRawTitle;
+  document.getElementById('heroCountry').innerHTML = `<span>${flags[highlight.country]||''} ${escapeHtml(heroCountryName)}${highlight.currency?` · ${escapeHtml(highlight.currency)}`:''}</span>`; document.getElementById('heroDate').innerHTML = `${icons.cal}<span>${escapeHtml(highlight.date_kst || '—')}</span>`;
   document.getElementById('heroTime').innerHTML = `${icons.clock}<span>${escapeHtml(highlight.time_kst || '—')}</span>`;
   document.getElementById('heroDesc').textContent = highlight.comment_ko || highlight.comment || '주요 경제 이벤트';
   document.getElementById('heroImpact').textContent = (highlight.importance||0)>=3 ? '높은 영향도' : (highlight.importance||0)===2 ? '중간 영향도' : '낮은 영향도';
