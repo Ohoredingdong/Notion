@@ -7,297 +7,53 @@
 <title>원자재 · 원료 시세</title>
 <link rel="stylesheet" href="./assets/life-town-v2.css" />
 <style>
-:root{
-  --panel:#fff;--soft:#f7f7f8;--line:#e4e5e8;--text:#111113;--sub:#6e6e73;--muted:#9a9aa0;--blue:#007aff;
-  --green:#248a3d;--greenbg:rgba(52,199,89,.10);--red:#d92d27;--redbg:rgba(255,59,48,.09);
-  --shadow:0 8px 22px rgba(0,0,0,.035),0 1px 2px rgba(0,0,0,.02)
-}
-html[data-theme="dark"],html[data-lt-theme="dark"]{
-  --panel:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e8e93;--blue:#0a84ff;
-  --green:#30d158;--greenbg:rgba(48,209,88,.12);--red:#ff453a;--redbg:rgba(255,69,58,.12);--shadow:none
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:transparent}
-body{
-  padding:8px 48px 8px 8px!important;color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  -webkit-font-smoothing:antialiased
-}
-button{font:inherit;color:inherit}
-.commodity-shell{width:100%;max-width:530px;margin:0 auto;container-type:inline-size}
-.widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:12px 13px 10px;box-shadow:var(--shadow);overflow:hidden}
-.widget:before{content:"";position:absolute;left:22px;right:22px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.62}
-
-.header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 1px 10px}
-.title{font-size:17.5px;line-height:1.15;font-weight:760;letter-spacing:-.045em}
-.subtitle{margin-top:4px;font-size:10px;line-height:1.35;color:var(--muted)}
-.meta{text-align:right;font-size:8.4px;line-height:1.4;color:var(--muted);white-space:nowrap}
-.meta .delay{color:var(--red);font-weight:730}
-
-.content{display:grid;grid-template-columns:188px 304px;gap:10px;min-width:0;justify-content:center}
-.panel{min-width:0;height:246px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-
-/* left list */
-.market{padding:9px 8px 8px}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;padding:0 1px}
-.section-title{font-size:11px;font-weight:730;letter-spacing:-.02em}
-.section-count{font-size:8.4px;color:var(--muted)}
-.asset-list{display:grid;gap:1px}
-.asset{
-  width:100%;height:28px;border:1px solid transparent;background:transparent;border-radius:9px;padding:3px 6px;
-  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;text-align:left;cursor:pointer;position:relative
-}
-.asset:hover{background:var(--soft)}
-.asset.active{background:rgba(0,122,255,.055);border-color:rgba(0,122,255,.16)}
-.asset.active:before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:2px;border-radius:999px;background:var(--blue)}
-.asset-name{font-size:10.8px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.asset-side{text-align:right;min-width:66px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
-.asset-price{font-size:9.3px;font-weight:740;white-space:nowrap}
-.change{display:inline-flex;align-items:center;justify-content:center;padding:2px 4px;border-radius:999px;font-size:7.3px;font-weight:720;white-space:nowrap;line-height:1}
-.up{color:var(--green);background:var(--greenbg)}
-.down{color:var(--red);background:var(--redbg)}
-
-/* right detail: no phantom right column; quote sits above the compact chart and the panel shrinks to the chart width */
-.detail{padding:9px 10px 7px}
-.detail-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1fr);
-  grid-template-rows:64px 18px 82px 38px 18px;
-  height:100%;
-  min-width:0;
-}
-.identity{grid-column:1;grid-row:1;align-self:start;min-width:0}
-.kicker{font-size:8px;color:var(--blue);font-weight:740}
-.detail-name{margin-top:3px;font-size:18.5px;line-height:1.05;font-weight:760;letter-spacing:-.045em}
-.detail-unit{margin-top:5px;font-size:8.9px;color:var(--muted)}
-
-.quote{
-  grid-column:1;grid-row:1;
-  justify-self:end;align-self:start;
-  width:122px;max-width:44%;
-  text-align:right;min-width:0;padding-top:1px
-}
-.quote-price{font-size:21.5px;line-height:.98;font-weight:790;letter-spacing:-.055em;white-space:nowrap}
-.quote .change{margin-top:4px}
-.quote-krw{margin-top:4px;font-size:7.5px;color:var(--sub);white-space:nowrap}
-
-.chart-head{
-  grid-column:1;grid-row:2;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  min-width:0
-}
-.chart-label{font-size:9.7px;font-weight:680;color:var(--sub);white-space:nowrap}
-.chart-range{font-size:7.7px;color:var(--muted);white-space:nowrap}
-
-.chart-wrap{
-  grid-column:1;grid-row:3;
-  height:82px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0 1px;overflow:hidden;min-width:0
-}
-.chart{display:block;width:100%;height:100%;color:var(--blue)}
-.gridline{stroke:var(--line);stroke-width:1}
-.line{fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.area{fill:url(#areaFade)}
-.dot{fill:var(--blue);stroke:var(--panel);stroke-width:2}
-.axis{font-size:7.1px;fill:var(--muted)}
-
-.metrics-main{
-  grid-column:1;grid-row:4;
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
-  border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0
-}
-.metric{min-width:0;padding:5px 6px 4px;border-right:1px solid var(--line)}
-.metrics-main .metric:last-child{border-right:0}
-.metric-label{font-size:7.5px;color:var(--muted);white-space:nowrap}
-.metric-value{margin-top:2px;font-size:9.2px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.detail-footer{
-  grid-column:1 / -1;grid-row:5;
-  display:flex;align-items:end;justify-content:space-between;gap:8px;
-  font-size:7.3px;color:var(--muted);min-width:0
-}
-
-.global-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 2px 0;padding-top:7px;border-top:1px solid var(--line);font-size:7.8px;color:var(--muted)}
-.stale{color:var(--red);font-weight:700}
-.loading{opacity:.6}
-
-@container(max-width:500px){
-  .content{grid-template-columns:170px minmax(0,1fr);gap:8px;justify-content:stretch}
-  .panel{height:240px}.asset{height:27px}
-  .asset-name{font-size:10.2px}.asset-side{min-width:61px}.asset-price{font-size:8.9px}
-  .detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 78px 38px 17px}
-  .quote-price{font-size:20.5px}.chart-wrap{height:78px}
-}
-@container(max-width:430px){
-  .content{grid-template-columns:1fr;gap:9px}.panel{height:auto}
-  .asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.asset{height:29px}
-  .detail{min-height:250px}
-  .detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 84px 38px 18px}
-  .chart-wrap{height:84px}
-}
-
-/* neutralize the previous shared commodities override; this file owns its layout */
-body:has(.commodity-shell) .detail{display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;column-gap:0!important;padding:9px 10px 7px!important;min-width:0!important}
-body:has(.commodity-shell) .chart-head{grid-column:1!important;grid-row:2!important;width:auto!important;margin:0!important;align-self:stretch!important}
-body:has(.commodity-shell) .chart-wrap{grid-column:1!important;grid-row:3!important;width:auto!important;height:82px!important;margin:0!important}
-body:has(.commodity-shell) .metrics-main{grid-column:1!important;grid-row:4!important;width:auto!important;margin:0!important}
-body:has(.commodity-shell) .detail-footer{grid-column:1/-1!important;grid-row:5!important;width:auto!important;margin:0!important;align-self:end!important}
+:root{--panel:#fff;--soft:#f7f7f8;--line:#e4e5e8;--text:#111113;--sub:#6e6e73;--muted:#9a9aa0;--blue:#007aff;--green:#248a3d;--greenbg:rgba(52,199,89,.10);--red:#d92d27;--redbg:rgba(255,59,48,.09);--shadow:0 8px 22px rgba(0,0,0,.035),0 1px 2px rgba(0,0,0,.02)}
+html[data-theme="dark"],html[data-lt-theme="dark"]{--panel:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e8e93;--blue:#0a84ff;--green:#30d158;--greenbg:rgba(48,209,88,.12);--red:#ff453a;--redbg:rgba(255,69,58,.12);--shadow:none}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px!important;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased}button{font:inherit;color:inherit}
+.commodity-shell{width:100%;max-width:530px;margin:0 auto;container-type:inline-size}.widget{position:relative;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:12px 13px 10px;box-shadow:var(--shadow);overflow:hidden}.widget:before{content:"";position:absolute;left:22px;right:22px;top:0;height:1px;background:linear-gradient(90deg,transparent,#b9b9be 24%,#f8f8f9 50%,#b9b9be 76%,transparent);opacity:.52}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 1px 10px}.title{font-size:17.5px;line-height:1.15;font-weight:760;letter-spacing:-.045em}.subtitle{margin-top:4px;font-size:10px;line-height:1.35;color:var(--muted)}.meta{text-align:right;font-size:8.6px;line-height:1.4;color:var(--muted);white-space:nowrap}.meta .delay{color:var(--red);font-weight:730}
+.content{display:grid;grid-template-columns:188px 304px;gap:10px;min-width:0;justify-content:center}.panel{min-width:0;height:246px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.market{padding:9px 8px 8px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;padding:0 1px}.section-title{font-size:11px;font-weight:730;letter-spacing:-.02em}.section-count{font-size:8.6px;color:var(--muted)}.asset-list{display:grid;gap:1px}.asset{width:100%;height:28px;border:1px solid transparent;background:transparent;border-radius:9px;padding:3px 6px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;text-align:left;cursor:pointer;position:relative}.asset:hover{background:var(--soft)}.asset.active{background:rgba(0,122,255,.055);border-color:rgba(0,122,255,.16)}.asset.active:before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:2px;border-radius:999px;background:var(--blue)}.asset-name{font-size:10.8px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.asset-side{text-align:right;min-width:66px;display:flex;align-items:center;justify-content:flex-end;gap:4px}.asset-price{font-size:9.4px;font-weight:740;white-space:nowrap}.change{display:inline-flex;align-items:center;justify-content:center;padding:2px 4px;border-radius:999px;font-size:8.1px;font-weight:720;white-space:nowrap;line-height:1}.up{color:var(--green);background:var(--greenbg)}.down{color:var(--red);background:var(--redbg)}
+.detail{padding:9px 10px 7px}.detail-grid{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:64px 18px 82px 38px 18px;height:100%;min-width:0}.identity{grid-column:1;grid-row:1;align-self:start;min-width:0}.kicker{font-size:8.5px;color:var(--blue);font-weight:740}.detail-name{margin-top:3px;font-size:18.5px;line-height:1.05;font-weight:760;letter-spacing:-.045em}.detail-unit{margin-top:5px;font-size:9px;color:var(--muted)}
+.quote{grid-column:1;grid-row:1;justify-self:end;align-self:start;width:122px;max-width:44%;text-align:right;min-width:0;padding-top:1px}.quote-price{font-size:21.5px;line-height:.98;font-weight:790;letter-spacing:-.055em;white-space:nowrap}.quote .change{margin-top:4px}.quote-krw{margin-top:4px;font-size:8.3px;color:var(--sub);white-space:nowrap}
+.chart-head{grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}.chart-label{font-size:9.7px;font-weight:680;color:var(--sub);white-space:nowrap}.chart-range{font-size:8.3px;color:var(--muted);white-space:nowrap}.chart-wrap{grid-column:1;grid-row:3;height:82px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 0 1px;overflow:hidden;min-width:0}.chart{display:block;width:100%;height:100%;color:var(--blue)}.gridline{stroke:var(--line);stroke-width:1}.line{fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.area{fill:url(#areaFade)}.dot{fill:var(--blue);stroke:var(--panel);stroke-width:2}.axis{font-size:8px;fill:var(--muted)}
+.metrics-main{grid-column:1;grid-row:4;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0}.metric{min-width:0;padding:5px 5px 4px;border-right:1px solid var(--line)}.metrics-main .metric:last-child{border-right:0}.metric-label{font-size:8.3px;color:var(--muted);white-space:nowrap}.metric-value{margin-top:2px;font-size:9.3px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.detail-footer{grid-column:1/-1;grid-row:5;display:flex;align-items:end;justify-content:space-between;gap:8px;font-size:8.2px;color:var(--muted);min-width:0}.global-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 2px 0;padding-top:7px;border-top:1px solid var(--line);font-size:8.5px;color:var(--muted)}.stale{color:var(--red);font-weight:700}.loading{opacity:.6}
+@container(max-width:500px){.content{grid-template-columns:170px minmax(0,1fr);gap:8px;justify-content:stretch}.panel{height:240px}.asset{height:27px}.asset-name{font-size:10.2px}.asset-side{min-width:61px}.asset-price{font-size:9px}.detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 78px 38px 17px}.quote-price{font-size:20.5px}.chart-wrap{height:78px}.metric-label{font-size:8px}}
+@container(max-width:430px){.content{grid-template-columns:1fr;gap:9px}.panel{height:auto}.asset-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.asset{height:29px}.detail{min-height:250px}.detail-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:62px 18px 84px 38px 18px}.chart-wrap{height:84px}}
 </style>
 </head>
 <body>
 <div class="commodity-shell">
 <main class="widget" id="widget" data-widget-control-root data-control-sizes="500,515,530">
-  <header class="header">
-    <div>
-      <div class="title">원자재 · 원료 시세</div>
-      <div class="subtitle">주요 원자재의 현재 가격과 최근 7거래일 흐름</div>
-    </div>
-    <div class="meta" id="updated">데이터 불러오는 중</div>
-  </header>
-
+  <header class="header"><div><div class="title">원자재 · 원료 시세</div><div class="subtitle">주요 원자재의 현재 가격과 최근 7거래일 흐름</div></div><div class="meta" id="updated">데이터 불러오는 중</div></header>
   <section class="content">
-    <aside class="panel market">
-      <div class="section-head">
-        <div class="section-title">주요 원자재</div>
-        <div class="section-count" id="assetCount">7개</div>
-      </div>
-      <div class="asset-list" id="assetList"></div>
-    </aside>
-
-    <article class="panel detail">
-      <div class="detail-grid">
-        <div class="identity">
-          <div class="kicker" id="detailGroup">—</div>
-          <div class="detail-name" id="detailName">—</div>
-          <div class="detail-unit" id="detailUnit">—</div>
-        </div>
-
-        <div class="quote">
-          <div class="quote-price" id="detailPrice">—</div>
-          <div class="change" id="detailChange">—</div>
-          <div class="quote-krw" id="detailKrw">—</div>
-        </div>
-
-        <div class="chart-head">
-          <div class="chart-label">최근 7거래일 가격 흐름</div>
-          <div class="chart-range">7일 전 → 최근</div>
-        </div>
-
-        <div class="chart-wrap">
-          <svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg>
-        </div>
-
-        <div class="metrics-main">
-          <div class="metric"><div class="metric-label">전일 종가</div><div class="metric-value" id="prevClose">—</div></div>
-          <div class="metric"><div class="metric-label">7일 고가</div><div class="metric-value" id="weekHigh">—</div></div>
-          <div class="metric"><div class="metric-label">7일 저가</div><div class="metric-value" id="weekLow">—</div></div>
-          <div class="metric"><div class="metric-label">거래 단위</div><div class="metric-value" id="unit">—</div></div>
-        </div>
-
-        <div class="detail-footer">
-          <span id="symbolInfo">심볼 · —</span>
-          <span id="sourceInfo">출처 · Yahoo Finance</span>
-        </div>
-      </div>
-    </article>
+    <aside class="panel market"><div class="section-head"><div class="section-title">주요 원자재</div><div class="section-count" id="assetCount">7개</div></div><div class="asset-list" id="assetList"></div></aside>
+    <article class="panel detail"><div class="detail-grid">
+      <div class="identity"><div class="kicker" id="detailGroup">—</div><div class="detail-name" id="detailName">—</div><div class="detail-unit" id="detailUnit">—</div></div>
+      <div class="quote"><div class="quote-price" id="detailPrice">—</div><div class="change" id="detailChange">—</div><div class="quote-krw" id="detailKrw">—</div></div>
+      <div class="chart-head"><div class="chart-label">최근 7거래일 가격 흐름</div><div class="chart-range">7일 전 → 최근</div></div>
+      <div class="chart-wrap"><svg class="chart" id="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg></div>
+      <div class="metrics-main"><div class="metric"><div class="metric-label">전일 종가</div><div class="metric-value" id="prevClose">—</div></div><div class="metric"><div class="metric-label">7일 고가</div><div class="metric-value" id="weekHigh">—</div></div><div class="metric"><div class="metric-label">7일 저가</div><div class="metric-value" id="weekLow">—</div></div><div class="metric"><div class="metric-label">거래 단위</div><div class="metric-value" id="unit">—</div></div></div>
+      <div class="detail-footer"><span id="symbolInfo">심볼 · —</span><span id="sourceInfo">출처 · Yahoo Finance</span></div>
+    </div></article>
   </section>
-
-  <footer class="global-footer">
-    <span id="fxInfo">기준 통화 USD · 환율 —</span>
-    <span id="timeInfo">출처 · Yahoo Finance</span>
-  </footer>
+  <footer class="global-footer"><span id="fxInfo">기준 통화 USD · 환율 —</span><span id="timeInfo">출처 · Yahoo Finance</span></footer>
 </main>
 </div>
-
 <script>
 const order=['금','은','구리','알루미늄','브렌트유','WTI 원유','천연가스'];
 const groups={'금':'귀금속','은':'귀금속','구리':'산업금속','알루미늄':'산업금속','브렌트유':'에너지','WTI 원유':'에너지','천연가스':'에너지'};
-let state={items:[],selected:'금',fx:0,sourceUpdated:null};
-const $=s=>document.querySelector(s);
-
-function fmtPrice(v){
-  const n=Number(v);
-  return Number.isFinite(n)?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'
-}
-function fmtChange(v){
-  const n=Number(v)||0;
-  return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`
-}
-function fmtDateTime(v){
-  const d=new Date(v);
-  if(isNaN(d))return '—';
-  return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
-}
-function chartSvg(values){
-  const a=(values||[]).slice(-7).map(Number).filter(Number.isFinite);
-  if(a.length<2)return '<text class="axis" x="280" y="68" text-anchor="middle">차트 데이터 없음</text>';
-  const W=560,H=132,l=8,r=8,t=10,b=20,min=Math.min(...a),max=Math.max(...a),range=max-min||1,pw=W-l-r,ph=H-t-b;
-  const pts=a.map((v,i)=>({x:l+pw*i/(a.length-1),y:t+(max-v)/range*ph}));
-  const d=pts.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const area=`${d} L ${pts.at(-1).x.toFixed(1)} ${H-b} L ${pts[0].x.toFixed(1)} ${H-b} Z`;
-  let out=`<defs><linearGradient id="areaFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".16"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>`;
-  [0,.5,1].forEach(q=>{const y=t+q*ph;out+=`<line class="gridline" x1="${l}" y1="${y}" x2="${W-r}" y2="${y}"/>`});
-  out+=`<path class="area" d="${area}"/><path class="line" d="${d}"/><circle class="dot" cx="${pts.at(-1).x}" cy="${pts.at(-1).y}" r="3.5"/><text class="axis" x="${l}" y="${H-5}">7일 전</text><text class="axis" x="${W-r}" y="${H-5}" text-anchor="end">최근</text>`;
-  return out
-}
-function renderList(){
-  const list=$('#assetList');
-  list.innerHTML=state.items.map(i=>`<button class="asset ${i.name===state.selected?'active':''}" data-name="${i.name}"><div class="asset-name">${i.name}</div><div class="asset-side"><div class="asset-price">${fmtPrice(i.price)}</div><div class="change ${Number(i.change_pct)>=0?'up':'down'}">${fmtChange(i.change_pct)}</div></div></button>`).join('');
-  list.querySelectorAll('.asset').forEach(btn=>btn.onclick=()=>{state.selected=btn.dataset.name;renderList();renderDetail()});
-  $('#assetCount').textContent=`${state.items.length}개`
-}
-function renderDetail(){
-  const i=state.items.find(x=>x.name===state.selected)||state.items[0];
-  if(!i)return;
-  const h=(i.history||[]).slice(-7).map(Number).filter(Number.isFinite);
-  const prev=h.length>1?h[h.length-2]:i.price,hi=h.length?Math.max(...h):i.price,lo=h.length?Math.min(...h):i.price;
-  $('#detailGroup').textContent=groups[i.name]||'원자재';
-  $('#detailName').textContent=i.name;
-  $('#detailUnit').textContent=i.unit||'—';
-  $('#detailPrice').textContent=fmtPrice(i.price);
-  $('#detailChange').textContent=fmtChange(i.change_pct);
-  $('#detailChange').className='change '+(Number(i.change_pct)>=0?'up':'down');
-  $('#detailKrw').textContent=i.krw_value?`원화 환산 ₩${Number(i.krw_value).toLocaleString('ko-KR',{maximumFractionDigits:2})} / ${i.krw_label||'환산 단위'}`:'원화 환산 —';
-  $('#chart').innerHTML=chartSvg(h);
-  $('#prevClose').textContent=fmtPrice(prev);
-  $('#weekHigh').textContent=fmtPrice(hi);
-  $('#weekLow').textContent=fmtPrice(lo);
-  $('#unit').textContent=i.unit||'—';
-  $('#symbolInfo').textContent=`심볼 · ${i.symbol||'—'}`;
-  const ts=i.source_timestamp?new Date(i.source_timestamp*1000):state.sourceUpdated;
-  $('#sourceInfo').innerHTML=`출처 · Yahoo Finance · ${fmtDateTime(ts)}${i.stale?' · <span class="stale">지연</span>':''}`
-}
-function renderAll(data){
-  state.items=order.map(n=>(data.items||[]).find(i=>i.name===n)).filter(Boolean);
-  state.fx=Number(data.fx||0);
-  state.sourceUpdated=new Date(data.source_updated_at||data.updated_at||Date.now());
-  if(!state.items.some(i=>i.name===state.selected)&&state.items[0])state.selected=state.items[0].name;
-  renderList();renderDetail();
-  $('#fxInfo').textContent=`기준 통화 USD · USD/KRW ₩${state.fx.toLocaleString('ko-KR',{maximumFractionDigits:2})}`;
-  const ageMin=(Date.now()-state.sourceUpdated.getTime())/60000,delayed=Number.isFinite(ageMin)&&ageMin>180;
-  $('#updated').innerHTML=delayed?`<span class="delay">업데이트 지연</span><br>${fmtDateTime(state.sourceUpdated)} KST`:`업데이트<br>${fmtDateTime(state.sourceUpdated)} KST`;
-  $('#timeInfo').textContent=delayed?`출처 · Yahoo Finance · ${fmtDateTime(state.sourceUpdated)} KST · 지연`:`출처 · Yahoo Finance · ${fmtDateTime(state.sourceUpdated)} KST`
-}
-function placeholders(){
-  state.items=order.map(name=>({name,price:0,change_pct:0,history:[],unit:'—',symbol:'—'}));
-  renderList();
-  $('#detailName').textContent='데이터 불러오는 중';
-  $('#detailPrice').textContent='—'
-}
-async function load(){
-  placeholders();
-  $('#widget').classList.add('loading');
-  try{
-    const r=await fetch('./commodities-data.json?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)throw new Error();
-    renderAll(await r.json())
-  }catch(e){
-    $('#updated').innerHTML='<span class="delay">데이터 불러오기 실패</span>';
-    $('#timeInfo').textContent='출처 · Yahoo Finance · 재시도 필요'
-  }
-  $('#widget').classList.remove('loading')
-}
+let state={items:[],selected:'금',fx:0,sourceUpdated:null};const $=s=>document.querySelector(s);
+function fmtPrice(v){const n=Number(v);return Number.isFinite(n)?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
+function fmtChange(v){const n=Number(v)||0;return `${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%`}
+function fmtDateTime(v){const d=new Date(v);if(isNaN(d))return'—';return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+function chartSvg(values){const a=(values||[]).slice(-7).map(Number).filter(Number.isFinite);if(a.length<2)return '<text class="axis" x="280" y="68" text-anchor="middle">차트 데이터 없음</text>';const W=560,H=132,l=8,r=8,t=10,b=20,min=Math.min(...a),max=Math.max(...a),range=max-min||1,pw=W-l-r,ph=H-t-b;const pts=a.map((v,i)=>({x:l+pw*i/(a.length-1),y:t+(max-v)/range*ph}));const d=pts.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');const area=`${d} L ${pts.at(-1).x.toFixed(1)} ${H-b} L ${pts[0].x.toFixed(1)} ${H-b} Z`;let out=`<defs><linearGradient id="areaFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".16"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>`;[0,.5,1].forEach(q=>{const y=t+q*ph;out+=`<line class="gridline" x1="${l}" y1="${y}" x2="${W-r}" y2="${y}"/>`});out+=`<path class="area" d="${area}"/><path class="line" d="${d}"/><circle class="dot" cx="${pts.at(-1).x}" cy="${pts.at(-1).y}" r="3.5"/><text class="axis" x="${l}" y="${H-5}">7일 전</text><text class="axis" x="${W-r}" y="${H-5}" text-anchor="end">최근</text>`;return out}
+function renderList(){const list=$('#assetList');list.innerHTML=state.items.map(i=>`<button class="asset ${i.name===state.selected?'active':''}" data-name="${i.name}"><div class="asset-name">${i.name}</div><div class="asset-side"><div class="asset-price">${fmtPrice(i.price)}</div><div class="change ${Number(i.change_pct)>=0?'up':'down'}">${fmtChange(i.change_pct)}</div></div></button>`).join('');list.querySelectorAll('.asset').forEach(btn=>btn.onclick=()=>{state.selected=btn.dataset.name;renderList();renderDetail()});$('#assetCount').textContent=`${state.items.length}개`}
+function renderDetail(){const i=state.items.find(x=>x.name===state.selected)||state.items[0];if(!i)return;const h=(i.history||[]).slice(-7).map(Number).filter(Number.isFinite);const prev=h.length>1?h[h.length-2]:i.price,hi=h.length?Math.max(...h):i.price,lo=h.length?Math.min(...h):i.price;$('#detailGroup').textContent=groups[i.name]||'원자재';$('#detailName').textContent=i.name;$('#detailUnit').textContent=i.unit||'—';$('#detailPrice').textContent=fmtPrice(i.price);$('#detailChange').textContent=fmtChange(i.change_pct);$('#detailChange').className='change '+(Number(i.change_pct)>=0?'up':'down');$('#detailKrw').textContent=i.krw_value?`원화 환산 ₩${Number(i.krw_value).toLocaleString('ko-KR',{maximumFractionDigits:2})} / ${i.krw_label||'환산 단위'}`:'원화 환산 —';$('#chart').innerHTML=chartSvg(h);$('#prevClose').textContent=fmtPrice(prev);$('#weekHigh').textContent=fmtPrice(hi);$('#weekLow').textContent=fmtPrice(lo);$('#unit').textContent=i.unit||'—';$('#symbolInfo').textContent=`심볼 · ${i.symbol||'—'}`;const ts=i.source_timestamp?new Date(i.source_timestamp*1000):state.sourceUpdated;$('#sourceInfo').innerHTML=`출처 · Yahoo Finance · ${fmtDateTime(ts)}${i.stale?' · <span class="stale">지연</span>':''}`}
+function renderAll(data){state.items=order.map(n=>(data.items||[]).find(i=>i.name===n)).filter(Boolean);state.fx=Number(data.fx||0);state.sourceUpdated=new Date(data.source_updated_at||data.updated_at||Date.now());if(!state.items.some(i=>i.name===state.selected)&&state.items[0])state.selected=state.items[0].name;renderList();renderDetail();$('#fxInfo').textContent=`기준 통화 USD · USD/KRW ₩${state.fx.toLocaleString('ko-KR',{maximumFractionDigits:2})}`;const ageMin=(Date.now()-state.sourceUpdated.getTime())/60000,delayed=Number.isFinite(ageMin)&&ageMin>180;$('#updated').innerHTML=delayed?`<span class="delay">업데이트 지연</span><br>${fmtDateTime(state.sourceUpdated)} KST`:`업데이트<br>${fmtDateTime(state.sourceUpdated)} KST`;$('#timeInfo').textContent=delayed?`출처 · Yahoo Finance · ${fmtDateTime(state.sourceUpdated)} KST · 지연`:`출처 · Yahoo Finance · ${fmtDateTime(state.sourceUpdated)} KST`}
+function placeholders(){state.items=order.map(name=>({name,price:0,change_pct:0,history:[],unit:'—',symbol:'—'}));renderList();$('#detailName').textContent='데이터 불러오는 중';$('#detailPrice').textContent='—'}
+async function load(){placeholders();$('#widget').classList.add('loading');try{const r=await fetch('./commodities-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error();renderAll(await r.json())}catch(e){$('#updated').innerHTML='<span class="delay">데이터 불러오기 실패</span>';$('#timeInfo').textContent='출처 · Yahoo Finance · 재시도 필요'}$('#widget').classList.remove('loading')}
 load();
 </script>
 <script src="./assets/life-town-controls-v2.js"></script>
-</body>
-</html>
+</body></html>
