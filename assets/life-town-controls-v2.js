@@ -49,7 +49,7 @@
   body{padding-right:8px!important}
   .lt-control-host{position:relative!important;overflow:visible!important;transition:width .18s ease,max-width .18s ease}
   .lt-control-host>.tools,.lt-control-host>.hoverTools{display:none!important}
-  .lt-control-rail{position:absolute;top:8px;right:-6px;z-index:999;width:38px;min-height:165px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding:0 0 4px 6px;opacity:0;visibility:visible;pointer-events:auto;transform:translateX(-3px);transition:opacity .14s ease,transform .14s ease}
+  .lt-control-rail{position:absolute;top:8px;right:-32px;z-index:999;width:38px;min-height:165px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding:0 0 4px 6px;opacity:0;visibility:visible;pointer-events:auto;transform:translateX(-3px);transition:opacity .14s ease,transform .14s ease}
   .lt-control-rail:hover{opacity:1;transform:translateX(0)}
   .lt-control-rail:not(:hover) .lt-control-btn{pointer-events:none}
   .lt-control-line{position:absolute;right:28px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(142,142,147,.05),rgba(142,142,147,.22) 15%,rgba(142,142,147,.12) 84%,rgba(142,142,147,.02));border-radius:999px}
@@ -66,8 +66,8 @@
   html[data-lt-theme="dark"] input,html[data-lt-theme="dark"] select{background:#2c2c2e!important;border-color:#48484a!important;color:#f5f5f7!important}
   html[data-lt-theme="dark"] .lt-control-btn{background:rgba(44,44,46,.97);color:#aeaeb2;border-color:#48484a;box-shadow:0 3px 12px rgba(0,0,0,.26)}
   html[data-lt-theme="dark"] .lt-control-btn:hover,html[data-lt-theme="dark"] .lt-control-btn.is-active{background:#3a3a3c;color:#fff;border-color:#5a5a5e}
-  @media(hover:none){.lt-control-rail{right:3px;opacity:.92;transform:none}.lt-control-rail .lt-control-btn{pointer-events:auto}.lt-control-btn:after{display:none}}
-  @media(max-width:390px){.lt-control-rail{right:3px;width:34px;min-height:150px;padding-left:4px;gap:6px}.lt-control-btn{width:28px;height:28px;min-width:28px;min-height:28px}.lt-control-btn svg{width:12px;height:12px}}
+  @media(hover:none){.lt-control-rail{right:-30px;opacity:.92;transform:none}.lt-control-rail .lt-control-btn{pointer-events:auto}.lt-control-btn:after{display:none}}
+  @media(max-width:390px){.lt-control-rail{right:-30px;width:34px;min-height:150px;padding-left:4px;gap:6px}.lt-control-btn{width:28px;height:28px;min-width:28px;min-height:28px}.lt-control-btn svg{width:12px;height:12px}}
   `;
   document.head.appendChild(css);
 
