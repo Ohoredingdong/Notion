@@ -15,7 +15,7 @@ button,select{font:inherit;color:inherit}.shell{width:100%;max-width:580px;margi
 .tabs{display:flex;gap:4px;margin-top:12px;padding:3px;background:var(--soft);border-radius:11px}.tab{flex:1;height:29px;border:0;border-radius:8px;background:transparent;font-size:10px;color:var(--muted);cursor:pointer}.tab.active{background:var(--panel);color:var(--text);font-weight:720;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 1px 7px}.toolbar-left{display:flex;align-items:center;gap:6px;min-width:0}.status{font-size:9.2px;color:var(--muted);white-space:nowrap}.quality{display:flex;gap:4px;min-width:0}.q{height:19px;padding:0 6px;border-radius:999px;border:1px solid var(--line);display:inline-flex;align-items:center;font-size:8.5px;color:var(--sub);white-space:nowrap}.q strong{margin-left:3px;color:var(--text)}.filters{display:flex;gap:5px;flex:0 0 auto}.filters select{height:26px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:9.2px;color:var(--sub)}
 .list{border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:54px minmax(0,1fr) 52px;gap:9px;align-items:center;min-height:66px;padding:8px 1px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;min-width:0;overflow:hidden}.row:hover{background:linear-gradient(90deg,transparent,var(--soft),transparent)}
-.topic{justify-self:start;max-width:54px;padding:4px 6px;border-radius:999px;background:rgba(0,122,255,.07);color:var(--blue);font-size:8.3px;font-weight:720;line-height:1.15;text-align:center;white-space:normal;overflow-wrap:anywhere;overflow:hidden}.topic.daily{background:rgba(255,204,0,.10);color:var(--yellow)}.topic.market{background:rgba(52,199,89,.09);color:var(--green)}.topic.market-insight{min-width:46px;min-height:30px;padding:4px 5px;display:inline-flex;align-items:center;justify-content:center;line-height:1.05;text-align:center}.topic.market-insight span{display:block;width:100%;text-align:center}
+.topic{justify-self:start;max-width:54px;padding:4px 6px;border-radius:999px;background:rgba(0,122,255,.07);color:var(--blue);font-size:8.3px;font-weight:720;line-height:1.15;text-align:center;white-space:normal;overflow-wrap:anywhere;overflow:hidden}.topic.daily{background:rgba(255,204,0,.10);color:var(--yellow)}.topic.market{background:rgba(52,199,89,.09);color:var(--green)}.topic.market-insight{min-width:46px;min-height:30px;padding:4px 5px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05;text-align:center}.topic.market-insight .market-line,.topic.market-insight .insight-line{display:block;width:100%;text-align:center;white-space:nowrap}
 .copy{min-width:0;overflow:hidden}.headline{max-width:100%;font-size:11.7px;font-weight:720;line-height:1.34;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;word-break:keep-all}.meta{display:flex;align-items:center;gap:5px;margin-top:4px;min-width:0;overflow:hidden}.publisher{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.badge{flex:0 0 auto;max-width:78px;overflow:hidden;text-overflow:ellipsis;height:17px;padding:0 5px;border:1px solid var(--line);border-radius:999px;display:inline-flex;align-items:center;font-size:8.1px;font-weight:700}.badge.a,.badge.official{color:var(--green);background:rgba(52,199,89,.08)}.badge.b{color:var(--blue);background:rgba(0,122,255,.07)}.badge.cross{color:var(--yellow);background:rgba(255,204,0,.09)}.snippet{max-width:100%;margin-top:3px;font-size:9.3px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ago{min-width:0;font-size:8.7px;color:var(--muted);white-space:nowrap;text-align:right;overflow:hidden;text-overflow:ellipsis}
 .quick-head{margin-top:11px;font-size:8.8px;font-weight:700;color:var(--sub)}.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:6px}.quick a{min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 9px;text-decoration:none;color:inherit;background:var(--panel)}.quick-title{font-size:9.7px;font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.quick-sub{margin-top:2px;font-size:8.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font-size:8.6px;color:var(--muted)}.empty{padding:28px 8px;text-align:center;color:var(--muted);font-size:10px}
@@ -28,11 +28,17 @@ button,select{font:inherit;color:inherit}.shell{width:100%;max-width:580px;margi
 <main class="widget" id="widget" data-widget-control-root data-control-sizes="500,540,580">
   <header class="header"><div><div class="title">News Link Hub</div><div class="subtitle">기사 · 실시간 뉴스 · 오피니언을 한 곳에서 확인</div></div></header>
   <nav class="tabs">
-    <button class="tab active" data-tab="news">뉴스</button><button class="tab" data-tab="article">기사</button><button class="tab" data-tab="realtime">실시간</button><button class="tab" data-tab="opinion">오피니언</button>
+    <button class="tab active" data-tab="news">뉴스</button>
+    <button class="tab" data-tab="article">기사</button>
+    <button class="tab" data-tab="realtime">실시간</button>
+    <button class="tab" data-tab="opinion">오피니언</button>
   </nav>
   <div class="toolbar">
     <div class="toolbar-left"><div class="status" id="status">데이터 불러오는 중</div><div class="quality" id="quality"><span class="q">A급 <strong>—</strong></span><span class="q">교차확인 <strong>—</strong></span></div></div>
-    <div class="filters"><select id="region"><option value="all">전체 지역</option><option value="kr">국내</option><option value="us">미국</option><option value="global">글로벌</option></select><select id="sort"><option value="trust">신뢰순</option><option value="new">최신순</option><option value="old">오래된순</option></select></div>
+    <div class="filters">
+      <select id="region"><option value="all">전체 지역</option><option value="kr">국내</option><option value="us">미국</option><option value="global">글로벌</option></select>
+      <select id="sort"><option value="trust">신뢰순</option><option value="new">최신순</option><option value="old">오래된순</option></select>
+    </div>
   </div>
   <section class="list" id="list"><div class="empty">뉴스를 불러오는 중...</div></section>
   <div class="quick-head">주요 뉴스 바로가기</div>
@@ -45,14 +51,31 @@ button,select{font:inherit;color:inherit}.shell{width:100%;max-width:580px;margi
 </main>
 </div>
 <script>
-const FALLBACK={generated_at:new Date().toISOString(),quality:{tier_a:0,cross_confirmed:0},items:[]};let state={tab:'news',region:'all',sort:'trust',data:FALLBACK};const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const FALLBACK={generated_at:new Date().toISOString(),quality:{tier_a:0,cross_confirmed:0},items:[]};
+let state={tab:'news',region:'all',sort:'trust',data:FALLBACK};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 function ago(v){const t=new Date(v).getTime();if(!Number.isFinite(t))return'—';const m=Math.max(0,Math.round((Date.now()-t)/60000));if(m<1)return'방금';if(m<60)return`${m}분 전`;const h=Math.floor(m/60);return h<24?`${h}시간 전`:`${Math.floor(h/24)}일 전`}
 function score(x){if(Number.isFinite(Number(x.ranking_score)))return Number(x.ranking_score);let n=Number(x.source_score||0);if(x.official_source)n+=35;if(x.cross_confirmed)n+=28;return n}
 function badge(x){let a=[];if(x.official_source)a.push('<span class="badge official">공식</span>');else if(x.source_tier==='A')a.push('<span class="badge a">A</span>');else if(x.source_tier==='B')a.push('<span class="badge b">B</span>');if(x.cross_confirmed)a.push(`<span class="badge cross">교차 ${Number(x.cross_count||2)}</span>`);return a.join('')}
-function topicMarkup(x){const raw=String(x.topic||'경제'),norm=raw.replace(/\s+/g,'');const cls=esc(x.topic_class||'');if(norm==='마켓인사이트')return `<span class="topic ${cls} market-insight"><span>마켓<br>인사이트</span></span>`;return `<span class="topic ${cls}">${esc(raw)}</span>`}
-function render(){let a=(state.data.items||[]).filter(x=>x.tab===state.tab&&(state.region==='all'||x.region===state.region));a.sort((x,y)=>state.sort==='new'?new Date(y.published_at)-new Date(x.published_at):state.sort==='old'?new Date(x.published_at)-new Date(y.published_at):score(y)-score(x));a=a.slice(0,6);$('#status').textContent=`${a.length}개 표시 · ${state.tab==='realtime'?'실시간 우선':'신뢰도 우선'}`;$('#list').innerHTML=a.length?a.map(x=>`<a class="row" href="${esc(x.url)}" target="_blank" rel="noopener">${topicMarkup(x)}<span class="copy"><span class="headline">${esc(x.title)}</span><span class="meta"><span class="publisher">${esc(x.source)}</span>${badge(x)}</span><span class="snippet">${esc(x.snippet||'')}</span></span><span class="ago">${ago(x.published_at)}</span></a>`).join(''):'<div class="empty">조건에 맞는 뉴스가 없습니다.</div>'}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render()});$('#region').onchange=e=>{state.region=e.target.value;render()};$('#sort').onchange=e=>{state.sort=e.target.value;render()};
-async function load(){try{const r=await fetch('./news-link-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;state.data=await r.json()}catch{state.data=FALLBACK}const q=state.data.quality||{};$('#quality').innerHTML=`<span class="q">A급 <strong>${Number(q.tier_a||0)}</strong></span><span class="q">교차확인 <strong>${Number(q.cross_confirmed||0)}</strong></span>`;$('#source').textContent=state.data.source||'Google News RSS · 신뢰필터';$('#updated').textContent=ago(state.data.generated_at);render()}load();
+function topicMarkup(x){const raw=String(x.topic||'경제'),norm=raw.replace(/\s+/g,'');const cls=esc(x.topic_class||'');if(norm==='마켓인사이트')return `<span class="topic ${cls} market-insight"><span class="market-line">마켓</span><span class="insight-line">인사이트</span></span>`;return `<span class="topic ${cls}">${esc(raw)}</span>`}
+function render(){
+  let a=(state.data.items||[]).filter(x=>x.tab===state.tab&&(state.region==='all'||x.region===state.region));
+  a.sort((x,y)=>state.sort==='new'?new Date(y.published_at)-new Date(x.published_at):state.sort==='old'?new Date(x.published_at)-new Date(y.published_at):score(y)-score(x));
+  a=a.slice(0,6);
+  $('#status').textContent=`${a.length}개 표시 · ${state.tab==='realtime'?'실시간 우선':'신뢰도 우선'}`;
+  $('#list').innerHTML=a.length?a.map(x=>`<a class="row" href="${esc(x.url)}" target="_blank" rel="noopener">
+${topicMarkup(x)}
+    <span class="copy"><span class="headline">${esc(x.title)}</span><span class="meta"><span class="publisher">${esc(x.source)}</span>${badge(x)}</span><span class="snippet">${esc(x.snippet||'')}</span></span>
+    <span class="ago">${ago(x.published_at)}</span>
+  </a>`).join(''):'<div class="empty">조건에 맞는 뉴스가 없습니다.</div>';
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render()});
+$('#region').onchange=e=>{state.region=e.target.value;render()};$('#sort').onchange=e=>{state.sort=e.target.value;render()};
+async function load(){try{const r=await fetch('./news-link-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;state.data=await r.json()}catch{state.data=FALLBACK}
+ const q=state.data.quality||{};$('#quality').innerHTML=`<span class="q">A급 <strong>${Number(q.tier_a||0)}</strong></span><span class="q">교차확인 <strong>${Number(q.cross_confirmed||0)}</strong></span>`;
+ $('#source').textContent=state.data.source||'Google News RSS · 신뢰필터';$('#updated').textContent=ago(state.data.generated_at);render()}
+load();
 </script>
 <script src="./assets/life-town-controls-v2.js"></script>
 </body></html>
