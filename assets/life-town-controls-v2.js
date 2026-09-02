@@ -46,7 +46,6 @@
 
   const css=document.createElement('style');
   css.textContent=`
-  body{padding-right:8px!important}
   .lt-control-host{position:relative!important;overflow:visible!important;transition:width .18s ease,max-width .18s ease}
   .lt-control-host>.tools,.lt-control-host>.hoverTools{display:none!important}
   .lt-control-rail{position:absolute;top:8px;right:-32px;z-index:999;width:38px;min-height:165px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding:0 0 4px 6px;opacity:0;visibility:visible;pointer-events:auto;transform:translateX(-3px);transition:opacity .14s ease,transform .14s ease}
