@@ -1,4 +1,10 @@
 (()=>{
+  const colorStyleId='lt-color-balance-v2';
+  if(!document.getElementById(colorStyleId)){
+    const link=document.createElement('link');
+    link.id=colorStyleId;link.rel='stylesheet';link.href='./assets/life-town-color-balance-v2.css?v=20260902-1';
+    document.head.appendChild(link);
+  }
   if(document.querySelector('.lt-control-rail')) return;
   const root=document.documentElement;
   const target=document.querySelector('[data-widget-control-root]')||document.querySelector('.widget')||document.querySelector('.card')||document.querySelector('.w');
