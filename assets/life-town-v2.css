@@ -130,5 +130,62 @@ body:has(#priceText) .tval{color:var(--text)!important}
 body:has(#amountValue) .ends,body:has(#amountValue) .result-note,body:has(#amountValue) .breakdown,body:has(#amountValue) .footer{font-size:8.8px!important}
 body:has(.hero-rate) .eyebrow,body:has(.hero-rate) .hero-note,body:has(.hero-rate) .desc,body:has(.hero-rate) .chg,body:has(.hero-rate) .foot,body:has(.hero-rate) .badge{font-size:8.8px!important}
 
+/* Balanced semantic accents — keep color visible without turning categories into a palette. */
+/* Home budget: interaction = blue, attention = yellow, outcome = green/red. */
+body:has(#cashValue):has(#loanValue):has(#priceValue) .input-card{--accent:var(--blue)!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .input-card:before{background:rgba(0,122,255,.48)!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .summary-card.status-card{background:color-mix(in srgb,var(--state) 5%,var(--panel))!important;border-color:color-mix(in srgb,var(--state) 22%,var(--line))!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .summary-card.need-card{background:rgba(255,204,0,.055)!important;border-color:rgba(255,204,0,.22)!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .summary-card.ltv-card{background:rgba(0,122,255,.035)!important;border-color:rgba(0,122,255,.16)!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .eq.result{background:rgba(255,204,0,.055)!important;border-color:rgba(255,204,0,.20)!important}
+body:has(#cashValue):has(#loanValue):has(#priceValue) .sched-card:before{background:var(--lt-silver)!important;opacity:.9!important}
+
+/* Work Today: only Today is selected; completion and sync keep their semantic colors. */
+body:has(#todayList):has(#tomorrowList):has(#weekList) .section{background:var(--panel)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .section:before{background:var(--lt-silver)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{background:rgba(0,122,255,.035)!important;border-color:rgba(0,122,255,.18)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today:before{background:var(--blue)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .add{color:var(--blue)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{background:var(--green)!important;border-color:var(--green)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title i{background:var(--lt-silver)!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{box-shadow:none!important}
+body:has(#todayList):has(#tomorrowList):has(#weekList) .delete-arch:hover,body:has(#todayList):has(#tomorrowList):has(#weekList) .x:hover{color:var(--red)!important}
+
+/* Life Town main: subtle control identity, stronger color only when active/weather-relevant. */
+body:has(#scene):has(#timerBtn):has(#weatherBtn) #timerBtn{color:#8d7000!important;background:rgba(255,204,0,.055)!important;border-color:rgba(255,204,0,.20)!important}
+body:has(#scene):has(#timerBtn):has(#weatherBtn) #timerBtn.active{color:#fff!important;background:var(--blue)!important;border-color:var(--blue)!important}
+body:has(#scene):has(#timerBtn):has(#weatherBtn) #weatherBtn{color:var(--blue)!important;background:rgba(0,122,255,.04)!important;border-color:rgba(0,122,255,.14)!important}
+body:has(#scene):has(#timerBtn):has(#weatherBtn) .status:before{background:var(--lt-silver)!important}
+body:has(#scene):has(#timerBtn):has(#weatherBtn) .scene.is-rain .weather-badge{background:rgba(0,122,255,.62)!important}
+
+/* Stocks: row accents reflect performance, not geography. */
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .market-tab.active,body:has(#marketTabs):has(#rangeTabs):has(.main-price) .range-tab.active{color:var(--blue)!important;background:rgba(0,122,255,.055)!important}
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .row{position:relative!important;padding-left:10px!important}
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .row:before{content:""!important;position:absolute!important;left:0!important;top:50%!important;width:3px!important;height:16px!important;border-radius:999px!important;transform:translateY(-50%)!important;background:var(--lt-silver)!important}
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .row:has(.cell-pct.up):before{background:var(--green)!important}
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .row:has(.cell-pct.down):before{background:var(--red)!important}
+body:has(#marketTabs):has(#rangeTabs):has(.main-price) .statusdot.stale,body:has(#marketTabs):has(#rangeTabs):has(.main-price) .dot.stale{background:var(--yellow)!important}
+
+/* Crypto: filter choice can carry meaning; rows reflect actual direction. */
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .tab.active{color:var(--blue)!important;background:rgba(0,122,255,.055)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .tab[data-filter="TOP GAINERS"].active{color:var(--green)!important;background:rgba(52,199,89,.07)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .tab[data-filter="TOP LOSERS"].active{color:var(--red)!important;background:rgba(255,59,48,.065)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .row{position:relative!important;padding-left:10px!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .row:before{content:""!important;position:absolute!important;left:0!important;top:50%!important;width:3px!important;height:16px!important;border-radius:999px!important;transform:translateY(-50%)!important;background:var(--lt-silver)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .row:has(.pct.up):before{background:var(--green)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .row:has(.pct.down):before{background:var(--red)!important}
+body:has(#filterTabs):has(#rangeTabs):has(.coin) .dot.stale{background:var(--yellow)!important}
+
+/* Supply chain: cards pick up color only from the actual data state. */
+body:has(.topgrid):has(.bottom):has(.sources) .card,body:has(.topgrid):has(.bottom):has(.sources) .mini{background:var(--panel)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .card:has(.badge.good),body:has(.topgrid):has(.bottom):has(.sources) .mini:has(.delta.good){background:rgba(52,199,89,.035)!important;border-color:rgba(52,199,89,.16)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .card:has(.badge.bad),body:has(.topgrid):has(.bottom):has(.sources) .mini:has(.delta.bad){background:rgba(255,59,48,.03)!important;border-color:rgba(255,59,48,.14)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .card:has(.badge.warn){background:rgba(255,204,0,.045)!important;border-color:rgba(255,204,0,.18)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .card:has(.badge.info){background:rgba(0,122,255,.035)!important;border-color:rgba(0,122,255,.15)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .badge.good{background:rgba(52,199,89,.09)!important;color:var(--green)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .badge.warn{background:rgba(255,204,0,.11)!important;color:#8d7000!important}
+body:has(.topgrid):has(.bottom):has(.sources) .badge.bad{background:rgba(255,59,48,.08)!important;color:var(--red)!important}
+body:has(.topgrid):has(.bottom):has(.sources) .badge.info{background:rgba(0,122,255,.08)!important;color:var(--blue)!important}
+
 @container (max-width:340px){.lt-card{border-radius:18px}.lt-title{font-size:16px}}
 @media (prefers-color-scheme:dark){html[data-theme="auto"]{--lt-bg:#000;--lt-surface:#1c1c1e;--lt-surface-2:#2c2c2e;--lt-text:#f5f5f7;--lt-sub:#aeaeb2;--lt-muted:#8e8e93;--lt-line:#38383a;--lt-line-strong:#48484a;--lt-shadow:none}}
