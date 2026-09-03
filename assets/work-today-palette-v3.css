@@ -1,149 +1,169 @@
-/* Work Today v3 — soft candy pastel, restrained and iOS-like */
+/* Work Today v4 — milky pastel, cleaner and softer */
 html body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-sky:#bfe4fb;
-  --wt-sky-soft:#f3faff;
-  --wt-sky-ink:#4f7890;
-  --wt-pink:#f3d4df;
-  --wt-pink-soft:#fdf5f8;
-  --wt-pink-ink:#8a6572;
-  --wt-butter:#f4e3a4;
-  --wt-butter-soft:#fffaeb;
-  --wt-butter-ink:#7f6d32;
-  --wt-sage:#c8dfcc;
-  --wt-sage-soft:#f3f8f4;
-  --wt-sage-ink:#58705d;
-  --wt-gray:#d9dbe1;
-  --wt-gray-soft:#f5f6f8;
-  --wt-gray-ink:#70747c;
+  --wt-butter:#f3dda1;
+  --wt-butter-bg:#fff8dc;
+  --wt-butter-line:#f0e3bd;
+  --wt-pink:#efc8d5;
+  --wt-pink-bg:#fff0f4;
+  --wt-pink-line:#f0dce3;
+  --wt-sky:#b9dff6;
+  --wt-sky-bg:#eef8ff;
+  --wt-sky-line:#d8eaf5;
+  --wt-sage:#afd0b6;
+  --wt-sage-bg:#eef7f0;
+  --wt-sage-line:#d8e8dc;
+  --wt-gray:#cfd2d8;
+  --wt-gray-bg:#f4f5f7;
+  --wt-gray-line:#e2e4e8;
+  --wt-ink:#111113;
+  --wt-sub:#6e6e73;
 }
 
+/* Cards: use a soft milky tint instead of colored bars/gradients. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section{
-  background:#fff!important;
-  border-color:#e7e8ec!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+  border:1px solid var(--section-line)!important;
+  background:var(--section-bg)!important;
+  box-shadow:none!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section:before{
-  width:38px!important;
-  height:4px!important;
-  left:12px!important;
-  border-radius:999px!important;
+  display:none!important;
 }
-
-/* Today — sky blue */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{
-  --accent:var(--wt-sky)!important;
-  --accent-ink:var(--wt-sky-ink)!important;
-  --accent-soft:var(--wt-sky-soft)!important;
-  --accent-line:#dceefa!important;
-  background:linear-gradient(180deg,#fff 0%,#fff 72%,var(--wt-sky-soft) 100%)!important;
-  border-color:#dfeef8!important;
+  --section-accent:var(--wt-butter);
+  --section-bg:var(--wt-butter-bg);
+  --section-line:var(--wt-butter-line);
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today:before{background:var(--wt-sky)!important}
-
-/* Tomorrow — blush pink */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{
-  --accent:var(--wt-pink)!important;
-  --accent-ink:var(--wt-pink-ink)!important;
-  --accent-soft:var(--wt-pink-soft)!important;
-  --accent-line:#f0e0e6!important;
-  background:linear-gradient(180deg,#fff 0%,#fff 72%,var(--wt-pink-soft) 100%)!important;
-  border-color:#f0e1e6!important;
+  --section-accent:var(--wt-pink);
+  --section-bg:var(--wt-pink-bg);
+  --section-line:var(--wt-pink-line);
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow:before{background:var(--wt-pink)!important}
-
-/* This Week — butter yellow */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{
-  --accent:var(--wt-butter)!important;
-  --accent-ink:var(--wt-butter-ink)!important;
-  --accent-soft:var(--wt-butter-soft)!important;
-  --accent-line:#f1e7c8!important;
-  background:linear-gradient(180deg,#fff 0%,#fff 78%,var(--wt-butter-soft) 100%)!important;
-  border-color:#f0e7cb!important;
+  --section-accent:var(--wt-sky);
+  --section-bg:var(--wt-sky-bg);
+  --section-line:var(--wt-sky-line);
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week:before{background:var(--wt-butter)!important}
 
-/* Keep titles dark; pastel belongs to chrome, not body copy. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{color:#111113!important}
+/* One small dot beside the title is enough to carry the color. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:before{
+  content:"";
+  width:7px;
+  height:7px;
+  flex:0 0 7px;
+  border-radius:50%;
+  background:var(--section-accent);
+  box-shadow:0 0 0 3px rgba(255,255,255,.52);
+}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{
+  color:var(--wt-ink)!important;
+}
 
-/* Date + progress chips carry the section color. */
+/* Chips are mostly white so the page stays clean. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date,
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip{
-  background:var(--accent-soft)!important;
-  border-color:color-mix(in srgb,var(--accent) 44%,#e7e8ec)!important;
-  color:var(--accent-ink)!important;
+  background:rgba(255,255,255,.76)!important;
+  border-color:color-mix(in srgb,var(--section-accent) 34%,#e7e8ec)!important;
+  color:#666a72!important;
+  box-shadow:none!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.has-progress{
-  background:color-mix(in srgb,var(--accent) 18%,#fff)!important;
-  border-color:color-mix(in srgb,var(--accent) 54%,#e7e8ec)!important;
+  background:rgba(255,255,255,.9)!important;
+  border-color:color-mix(in srgb,var(--section-accent) 48%,#e7e8ec)!important;
+  color:#555960!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.complete{
-  background:var(--wt-sage-soft)!important;
-  border-color:#d8eadb!important;
-  color:var(--wt-sage-ink)!important;
+  background:var(--wt-sage-bg)!important;
+  border-color:var(--wt-sage-line)!important;
+  color:#5d7863!important;
 }
 
-/* Buttons stay airy, with a faint matching pastel. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add{
-  background:#fff!important;
-  border-color:color-mix(in srgb,var(--accent) 36%,#e7e8ec)!important;
-  color:var(--accent-ink)!important;
+/* Inputs and add buttons stay neutral, not rainbow. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .task{
+  border-top-color:rgba(95,98,106,.08)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add:hover{
-  background:var(--accent-soft)!important;
-  border-color:color-mix(in srgb,var(--accent) 54%,#e7e8ec)!important;
-  color:var(--accent-ink)!important;
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check{
+  background:rgba(255,255,255,.82)!important;
+  border-color:color-mix(in srgb,var(--section-accent) 36%,#d8d9dd)!important;
 }
-
-/* Completion — sage green. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check:hover{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--section-accent) 15%,transparent)!important;
+}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{
   background:var(--wt-sage)!important;
   border-color:var(--wt-sage)!important;
   color:#fff!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{
-  border-color:#dbe9de!important;
-  box-shadow:inset 3px 0 0 var(--wt-sage)!important;
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add{
+  background:rgba(255,255,255,.82)!important;
+  border-color:color-mix(in srgb,var(--section-accent) 34%,#e2e3e6)!important;
+  color:#595d64!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{color:var(--wt-sage-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add:hover{
+  background:#fff!important;
+  border-color:color-mix(in srgb,var(--section-accent) 56%,#e2e3e6)!important;
+  color:#34373c!important;
+}
 
-/* Archive — cool gray with one sage completion cue. */
+/* Archive: cool gray; green only means completed. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive{
-  background:linear-gradient(180deg,#fff,var(--wt-gray-soft))!important;
-  border-color:#e4e5e9!important;
+  background:var(--wt-gray-bg)!important;
+  border-color:var(--wt-gray-line)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive:before{background:var(--wt-gray)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title:before{background:var(--wt-sage)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive:before{
+  display:none!important;
+}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title:before{
+  background:var(--wt-gray)!important;
+}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .count{
   background:#fff!important;
-  border-color:#e3e4e8!important;
-  color:var(--wt-gray-ink)!important;
+  border-color:#e1e3e7!important;
+  color:#71757d!important;
+}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{
+  background:rgba(255,255,255,.86)!important;
+  border-color:#e4e6e9!important;
+  box-shadow:none!important;
+}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{
+  border-color:var(--wt-sage-line)!important;
+  box-shadow:inset 3px 0 0 var(--wt-sage)!important;
+}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{
+  color:#5d7863!important;
 }
 
-/* Sync status: pastel only when status exists. */
+/* Sync stays subtle. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{
-  background:var(--wt-sage-soft)!important;
-  border-color:#dce9de!important;
-  color:var(--wt-sage-ink)!important;
+  background:var(--wt-sage-bg)!important;
+  border-color:var(--wt-sage-line)!important;
+  color:#5d7863!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online:before{background:var(--wt-sage)!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{
-  background:var(--wt-butter-soft)!important;
-  border-color:#efe4bf!important;
-  color:var(--wt-butter-ink)!important;
+  background:var(--wt-butter-bg)!important;
+  border-color:var(--wt-butter-line)!important;
+  color:#7c6c40!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing:before{background:var(--wt-butter)!important}
 
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-sky-soft:rgba(191,228,251,.09);
-  --wt-pink-soft:rgba(243,212,223,.09);
-  --wt-butter-soft:rgba(244,227,164,.09);
-  --wt-sage-soft:rgba(200,223,204,.09);
-  --wt-gray-soft:#27272a;
-  --wt-sky-ink:#bfe4fb;
-  --wt-pink-ink:#f3d4df;
-  --wt-butter-ink:#f4e3a4;
-  --wt-sage-ink:#c8dfcc;
-  --wt-gray-ink:#c4c7ce;
+  --wt-butter-bg:rgba(243,221,161,.09);
+  --wt-pink-bg:rgba(239,200,213,.09);
+  --wt-sky-bg:rgba(185,223,246,.09);
+  --wt-sage-bg:rgba(175,208,182,.09);
+  --wt-gray-bg:#27272a;
+  --wt-butter-line:rgba(243,221,161,.18);
+  --wt-pink-line:rgba(239,200,213,.18);
+  --wt-sky-line:rgba(185,223,246,.18);
+  --wt-sage-line:rgba(175,208,182,.18);
+  --wt-gray-line:#38383a;
 }
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section,
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .archive{border-color:#38383a!important}
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .count{
+  background:rgba(44,44,46,.78)!important;
+  color:#d2d2d7!important;
+}
