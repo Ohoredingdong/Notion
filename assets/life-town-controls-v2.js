@@ -5,6 +5,14 @@
     link.id=colorStyleId;link.rel='stylesheet';link.href='./assets/life-town-color-balance-v2.css?v=20260903-worktoday-color2';
     document.head.appendChild(link);
   }
+  if(document.querySelector('#todayList')&&document.querySelector('#tomorrowList')&&document.querySelector('#weekList')){
+    const wtStyleId='lt-work-today-palette-v3';
+    if(!document.getElementById(wtStyleId)){
+      const wt=document.createElement('link');
+      wt.id=wtStyleId;wt.rel='stylesheet';wt.href='./assets/work-today-palette-v3.css?v=20260903-1';
+      document.head.appendChild(wt);
+    }
+  }
   if(document.querySelector('.lt-control-rail')) return;
   const root=document.documentElement;
   const target=document.querySelector('[data-widget-control-root]')||document.querySelector('.widget')||document.querySelector('.card')||document.querySelector('.w');
