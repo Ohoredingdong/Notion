@@ -1,229 +1,108 @@
-/* Work Today v6 — blended pastel atmosphere, not one-color-per-card */
+/* Work Today v7 — pastel label system: color as stationery tags, not painted cards */
 html body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-sky:#b9ddf8;
-  --wt-pink:#f1ced9;
-  --wt-butter:#f3e2a8;
-  --wt-sage:#c4dcc8;
-  --wt-gray:#d7dae0;
-  --wt-gray-2:#eef0f3;
-  --wt-ink:#171719;
-  --wt-sub:#6f737a;
-  --wt-line:#e7e8ec;
-  --wt-done:#a8cdb0;
-  --wt-done-ink:#55705c;
+  --wt-pink:#f3cfd9;--wt-pink-soft:#fff2f6;--wt-pink-ink:#805f69;
+  --wt-butter:#f3e0a3;--wt-butter-soft:#fff8e4;--wt-butter-ink:#776733;
+  --wt-sage:#c7dfcc;--wt-sage-soft:#f1f7f2;--wt-sage-ink:#58705d;
+  --wt-sky:#c5e2f6;--wt-sky-soft:#f0f8fd;--wt-sky-ink:#55758b;
+  --wt-gray:#d8dae0;--wt-gray-soft:#f6f7f9;--wt-gray-ink:#70747b;
+  --wt-line:#e8e9ec;--wt-ink:#151517;--wt-sub:#72767c;
 }
 
-/* Base canvas */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget{
-  background:#fff!important;
-  border-color:#e7e8eb!important;
-  box-shadow:0 8px 24px rgba(20,24,32,.035),0 1px 2px rgba(20,24,32,.02)!important;
+  background:#fdfdfe!important;border-color:#e7e8eb!important;
+  box-shadow:0 8px 22px rgba(18,22,30,.03),0 1px 2px rgba(18,22,30,.018)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget:before{opacity:.22!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget:before{opacity:.18!important}
 
-/* Header: use the whole palette once, as a composed accent. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .title{
-  position:relative;
-  display:inline-block;
-}
+/* Header: a tiny 4-color signature, instead of a stripe. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .title{position:relative;display:inline-block}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .title:after{
-  content:"";
-  position:absolute;
-  left:0;
-  bottom:-6px;
-  width:46px;
-  height:4px;
-  border-radius:999px;
-  background:linear-gradient(90deg,var(--wt-sky) 0 26%,var(--wt-pink) 26% 50%,var(--wt-butter) 50% 74%,var(--wt-sage) 74% 100%);
+  content:"";position:absolute;left:calc(100% + 9px);top:50%;width:5px;height:5px;border-radius:50%;
+  transform:translateY(-45%);background:var(--wt-pink);
+  box-shadow:8px 0 0 var(--wt-butter),16px 0 0 var(--wt-sage),24px 0 0 var(--wt-sky);
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .date{
-  margin-top:9px!important;
-  display:inline-flex;
-  align-items:center;
-  padding:3px 7px;
-  border-radius:8px;
-  background:linear-gradient(90deg,#f4f9fd 0%,#fdf4f7 48%,#fff9ea 100%)!important;
-  border:1px solid #ece8e8!important;
-  color:#78736f!important;
+  margin-top:5px!important;padding:0!important;background:transparent!important;border:0!important;color:#8a8d93!important;
 }
 
-/* Cards: neutral white with faint two-tone corner washes. */
+/* Cards are quiet cool-white. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section{
-  --section-a:var(--wt-gray);
-  --section-b:var(--wt-gray-2);
-  --section-ink:#73767d;
-  background:
-    radial-gradient(90px 72px at 100% 0%,color-mix(in srgb,var(--section-a) 24%,transparent),transparent 72%),
-    radial-gradient(95px 78px at 0% 100%,color-mix(in srgb,var(--section-b) 18%,transparent),transparent 76%),
-    #fff!important;
-  border:1px solid var(--wt-line)!important;
-  box-shadow:0 1px 0 rgba(0,0,0,.012)!important;
+  --tag:var(--wt-gray);--tag-soft:var(--wt-gray-soft);--tag-ink:var(--wt-gray-ink);
+  background:#fff!important;border:1px solid var(--wt-line)!important;box-shadow:0 1px 0 rgba(0,0,0,.01)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{
-  --section-a:var(--wt-sky);
-  --section-b:var(--wt-pink);
-  --section-ink:#58778a;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{
-  --section-a:var(--wt-pink);
-  --section-b:var(--wt-butter);
-  --section-ink:#7d6770;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{
-  --section-a:var(--wt-sage);
-  --section-b:var(--wt-sky);
-  --section-ink:#617569;
-}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section:before{display:none!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{--tag:var(--wt-pink);--tag-soft:var(--wt-pink-soft);--tag-ink:var(--wt-pink-ink)}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{--tag:var(--wt-butter);--tag-soft:var(--wt-butter-soft);--tag-ink:var(--wt-butter-ink)}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{--tag:var(--wt-sky);--tag-soft:var(--wt-sky-soft);--tag-ink:var(--wt-sky-ink)}
 
-/* Replace category bars with a tiny blended ribbon. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section:before{
-  display:block!important;
-  content:""!important;
-  position:absolute!important;
-  left:11px!important;
-  top:0!important;
-  width:42px!important;
-  height:3px!important;
-  border-radius:999px!important;
-  background:linear-gradient(90deg,var(--section-a),var(--section-b))!important;
-  opacity:.88!important;
+/* Color lives in the section title label. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading{
+  position:relative!important;display:inline-flex!important;align-items:center!important;padding:4px 8px!important;
+  border-radius:999px!important;background:var(--tag-soft)!important;border:1px solid color-mix(in srgb,var(--tag) 40%,#ececef)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:before,
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:before{
+  content:""!important;display:block!important;width:6px!important;height:6px!important;flex:0 0 6px!important;
+  border-radius:50%!important;background:var(--tag)!important;box-shadow:none!important;
+}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:after{display:none!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{color:var(--wt-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{color:#34363a!important;font-weight:740!important}
 
-/* Chips feel like tinted glass, not colored labels. */
+/* Date is neutral. Progress is the small color signal on the right. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--section-a) 12%,#fff),color-mix(in srgb,var(--section-b) 10%,#fff))!important;
-  border:1px solid color-mix(in srgb,var(--section-a) 24%,#e8e8ec)!important;
-  color:var(--section-ink)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+  background:#f7f7f9!important;border:1px solid #ececef!important;color:#85888e!important;box-shadow:none!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip{
-  position:relative;
-  background:rgba(255,255,255,.84)!important;
-  border:1px solid #e5e6e9!important;
-  color:#73767c!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+  background:var(--tag-soft)!important;border:1px solid color-mix(in srgb,var(--tag) 40%,#e8e9ec)!important;
+  color:var(--tag-ink)!important;box-shadow:none!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip:before{
-  content:"";
-  width:6px;
-  height:6px;
-  margin-right:4px;
-  border-radius:50%;
-  background:linear-gradient(135deg,var(--section-a),var(--section-b));
-}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip:before{display:none!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.has-progress{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--section-a) 11%,#fff),color-mix(in srgb,var(--section-b) 9%,#fff))!important;
-  border-color:color-mix(in srgb,var(--section-a) 30%,#e6e7ea)!important;
-  color:var(--section-ink)!important;
+  background:color-mix(in srgb,var(--tag) 18%,#fff)!important;border-color:color-mix(in srgb,var(--tag) 52%,#e6e7ea)!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.complete{
-  background:#f2f8f3!important;
-  border-color:#dce9df!important;
-  color:var(--wt-done-ink)!important;
+  background:var(--wt-sage-soft)!important;border-color:#d8eadb!important;color:var(--wt-sage-ink)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.complete:before{background:var(--wt-done)!important}
 
-/* Task rows stay calm; color appears on interaction. */
+/* Rows and actions remain neutral so the palette feels designed, not sprayed around. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .task{border-top-color:#f0f1f3!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .check{
-  background:#fff!important;
-  border-color:#d9dadd!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .check:hover{
-  border-color:color-mix(in srgb,var(--section-a) 58%,#d9dadd)!important;
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--section-b) 16%,transparent)!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{
-  background:var(--wt-done)!important;
-  border-color:var(--wt-done)!important;
-  color:#fff!important;
-}
-
-/* Add buttons get a restrained two-tone hover wash. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check{background:#fff!important;border-color:#d9dadd!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check:hover{border-color:var(--tag)!important;box-shadow:0 0 0 3px var(--tag-soft)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{background:var(--wt-sage)!important;border-color:var(--wt-sage)!important;color:#fff!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add{
-  background:#fafafb!important;
-  border-color:#e4e5e8!important;
-  color:#65686f!important;
+  background:#f8f8fa!important;border-color:#e4e5e8!important;color:#666a70!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add:hover{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--section-a) 12%,#fff),color-mix(in srgb,var(--section-b) 10%,#fff))!important;
-  border-color:color-mix(in srgb,var(--section-a) 34%,#e3e4e7)!important;
-  color:var(--section-ink)!important;
+  background:var(--tag-soft)!important;border-color:color-mix(in srgb,var(--tag) 48%,#e3e4e7)!important;color:var(--tag-ink)!important;
 }
 
-/* Archive: cool gray glass with a subtle pink/sage trace. */
+/* Archive is deliberately gray; completed history gets sage only. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive{
-  position:relative;
-  background:
-    radial-gradient(120px 70px at 100% 0%,rgba(241,206,217,.12),transparent 74%),
-    radial-gradient(120px 80px at 0% 100%,rgba(196,220,200,.10),transparent 76%),
-    #f7f8fa!important;
-  border-color:#e5e6ea!important;
+  background:var(--wt-gray-soft)!important;border-color:#e5e6e9!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive:before{display:none!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title:before{
-  width:7px!important;
-  height:7px!important;
-  background:linear-gradient(135deg,var(--wt-pink),var(--wt-sage))!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .count{
-  background:rgba(255,255,255,.9)!important;
-  border-color:#e2e4e7!important;
-  color:#72757c!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{
-  background:rgba(255,255,255,.9)!important;
-  border-color:#e4e5e8!important;
-  box-shadow:none!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{
-  border-color:#dce9df!important;
-  box-shadow:inset 3px 0 0 var(--wt-done)!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{color:var(--wt-done-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title:before{background:var(--wt-gray)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#fff!important;border-color:#e2e4e7!important;color:var(--wt-gray-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{background:#fff!important;border-color:#e4e5e8!important;box-shadow:none!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{border-color:#dce9df!important;box-shadow:inset 3px 0 0 var(--wt-sage)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{color:var(--wt-sage-ink)!important}
 
-/* Functional sync states stay muted and coordinated. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{
-  background:#f3f8f4!important;
-  border-color:#dce9df!important;
-  color:var(--wt-done-ink)!important;
-}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online:before{background:var(--wt-done)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{
-  background:#fffaed!important;
-  border-color:#eee4c4!important;
-  color:#7d7048!important;
-}
+/* Sync uses status color only. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{background:var(--wt-sage-soft)!important;border-color:#dce9df!important;color:var(--wt-sage-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online:before{background:var(--wt-sage)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{background:var(--wt-butter-soft)!important;border-color:#eee4c3!important;color:var(--wt-butter-ink)!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing:before{background:var(--wt-butter)!important}
 
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-line:#38383a;
-  --wt-sky:#7399b4;
-  --wt-pink:#a9828e;
-  --wt-butter:#a8965f;
-  --wt-sage:#7d9b84;
-  --wt-gray:#777a81;
-  --wt-gray-2:#2c2c2e;
-  --wt-ink:#f4f4f6;
-  --wt-sub:#b0b0b5;
-  --wt-done:#7ea687;
-  --wt-done-ink:#c4dcc9;
+  --wt-pink:#a9838e;--wt-pink-soft:rgba(169,131,142,.11);--wt-pink-ink:#efcbd5;
+  --wt-butter:#a89561;--wt-butter-soft:rgba(168,149,97,.11);--wt-butter-ink:#f0dfa5;
+  --wt-sage:#7e9c84;--wt-sage-soft:rgba(126,156,132,.11);--wt-sage-ink:#c7dfcc;
+  --wt-sky:#779bb4;--wt-sky-soft:rgba(119,155,180,.11);--wt-sky-ink:#c5e2f6;
+  --wt-gray:#7c7f86;--wt-gray-soft:#27272a;--wt-gray-ink:#c7c9cf;--wt-line:#38383a;
 }
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .widget,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .archive,
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{
-  background:#1c1c1e!important;
-  border-color:#38383a!important;
-}
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{background:#1c1c1e!important;border-color:#38383a!important}
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date,
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add,
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .count{
-  background:#2c2c2e!important;
-  border-color:#3b3b3d!important;
-  color:#c7c7cc!important;
-}
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#2c2c2e!important;border-color:#3b3b3d!important;color:#c7c7cc!important}
