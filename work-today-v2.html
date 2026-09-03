@@ -79,6 +79,6 @@ async function copyCode(){try{await navigator.clipboard.writeText(syncCode);docu
 async function initSync(){if(!syncCode){syncCode=genCode();localStorage.setItem(SYNC_CODE_KEY,syncCode)}cloudReady=true;await cloudLoad(true);setInterval(pollCloud,5000)}
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));document.getElementById('toggleArchive').onclick=()=>{s.archiveOpen=!s.archiveOpen;save();renderArchive()};document.getElementById('clearArchive').onclick=()=>{s.archive=[];save();renderArchive()};document.getElementById('syncBtn').onclick=openSync;document.getElementById('syncClose').onclick=closeSync;document.getElementById('syncOverlay').onclick=e=>{if(e.target.id==='syncOverlay')closeSync()};document.getElementById('useSyncCode').onclick=useCode;document.getElementById('newSyncCode').onclick=newCode;document.getElementById('copySyncCode').onclick=copyCode;rollover();normalize();renderAll();initSync();
 </script>
-<script src="./assets/life-town-controls-v2.js?v=20260903-worktoday-pastel-true"></script>
+<script src="./assets/life-town-controls-v2.js?v=20260903-worktoday-palette-v3"></script>
 </body>
 </html>
