@@ -101,5 +101,24 @@ body:has(#cal) .week>div:first-child{color:var(--lt-red)!important}
 body:has(#cal) .week>div:last-child{color:var(--lt-blue)!important}
 body:has(#cal) .tip i{background:var(--lt-yellow)!important}
 
+/* WORK TODAY — Apple Calendar-style hierarchy: today red, actions blue, completion green. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{background:rgba(255,59,48,.032)!important;border-color:rgba(255,59,48,.14)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today:before{background:var(--lt-red)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today .section-title{color:var(--lt-red)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today .section-date{background:rgba(255,59,48,.06)!important;color:var(--lt-red-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--soft) 44%,var(--panel)))!important;border-color:var(--line)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow:before{background:#b9b9be!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{background:linear-gradient(180deg,var(--panel),rgba(0,122,255,.018))!important;border-color:var(--line)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week:before{background:rgba(0,122,255,.46)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .progress-chip{background:var(--soft)!important;border-color:var(--line)!important;color:var(--muted)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .progress-chip.has-progress{background:rgba(52,199,89,.065)!important;border-color:rgba(52,199,89,.18)!important;color:var(--lt-green-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .progress-chip.complete{background:rgba(52,199,89,.11)!important;border-color:rgba(52,199,89,.25)!important;color:var(--lt-green-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .add{color:var(--lt-blue)!important;background:rgba(0,122,255,.025)!important;border-color:rgba(0,122,255,.13)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{background:var(--lt-green)!important;border-color:var(--lt-green)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{border-color:rgba(52,199,89,.18)!important;box-shadow:inset 3px 0 0 rgba(52,199,89,.58)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{background:rgba(52,199,89,.04)!important;border-color:rgba(52,199,89,.16)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{background:rgba(255,204,0,.065)!important;border-color:rgba(255,204,0,.20)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.offline{background:rgba(255,59,48,.035)!important;border-color:rgba(255,59,48,.14)!important}
+
 /* Dark theme: retain meaning without over-saturating backgrounds. */
 html[data-lt-theme="dark"]{--lt-yellow-ink:#ffd60a;--lt-green-ink:#30d158;--lt-red-ink:#ff453a;--lt-blue-soft:rgba(10,132,255,.13);--lt-green-soft:rgba(48,209,88,.12);--lt-yellow-soft:rgba(255,214,10,.12);--lt-red-soft:rgba(255,69,58,.12)}
