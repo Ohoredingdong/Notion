@@ -1,112 +1,114 @@
-/* Work Today v8 — iOS soft-system palette: clean, luminous, low-saturation fills */
+/* Work Today v9 — iOS Reminders palette: balanced color, quiet chrome */
 html body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-pink:#ff9db6;--wt-pink-soft:#fff2f6;--wt-pink-ink:#9a415a;
-  --wt-butter:#f5d56d;--wt-butter-soft:#fff8e2;--wt-butter-ink:#806710;
-  --wt-sage:#91d49e;--wt-sage-soft:#f1faf3;--wt-sage-ink:#3f774b;
-  --wt-sky:#8ed0f8;--wt-sky-soft:#eff8fe;--wt-sky-ink:#3c7395;
-  --wt-gray:#c7c9cf;--wt-gray-soft:#f5f5f7;--wt-gray-ink:#6e6e73;
-  --wt-line:#e7e7eb;--wt-ink:#161617;--wt-sub:#707078;
+  --wt-rose:#e9a8b8;--wt-rose-soft:rgba(233,168,184,.16);--wt-rose-line:rgba(209,129,149,.24);
+  --wt-yellow:#e9cf72;--wt-yellow-soft:rgba(233,207,114,.17);--wt-yellow-line:rgba(199,168,58,.24);
+  --wt-sky:#8fc7ec;--wt-sky-soft:rgba(143,199,236,.16);--wt-sky-line:rgba(87,157,204,.23);
+  --wt-green:#9dcbaa;--wt-green-soft:rgba(157,203,170,.17);--wt-green-line:rgba(104,164,120,.23);
+  --wt-gray:#c9cbd1;--wt-gray-soft:#f5f5f7;--wt-gray-line:#e3e4e8;
+  --wt-ink:#1c1c1e;--wt-sub:#6e6e73;--wt-muted:#8e8e93;--wt-line:#e7e7eb;
 }
 
+/* Apple-like white surface */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget{
-  background:#fff!important;border-color:#e6e6ea!important;
-  box-shadow:0 8px 22px rgba(18,22,30,.028),0 1px 2px rgba(18,22,30,.016)!important;
+  background:#fff!important;border-color:#e7e7eb!important;
+  box-shadow:0 8px 24px rgba(20,20,25,.028),0 1px 2px rgba(20,20,25,.015)!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget:before{opacity:.14!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .widget:before{opacity:.10!important}
 
-/* Header: four clean system-color dots, like iOS app accents. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .title{position:relative;display:inline-block}
+/* Header: one restrained color signature, not four loud dots */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .title{position:relative;display:inline-flex!important;align-items:center;gap:8px}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .title:after{
-  content:"";position:absolute;left:calc(100% + 9px);top:50%;width:5px;height:5px;border-radius:50%;
-  transform:translateY(-45%);background:var(--wt-pink);
-  box-shadow:8px 0 0 var(--wt-butter),16px 0 0 var(--wt-sage),24px 0 0 var(--wt-sky);
+  content:"";width:20px;height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--wt-rose) 0 25%,var(--wt-yellow) 25% 50%,var(--wt-green) 50% 75%,var(--wt-sky) 75% 100%);
+  opacity:.9;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .date{
-  margin-top:5px!important;padding:0!important;background:transparent!important;border:0!important;color:#8e8e93!important;
+  margin-top:5px!important;padding:0!important;background:transparent!important;border:0!important;color:var(--wt-muted)!important;
 }
 
-/* Sections: white iOS cards, color only in compact labels and progress. */
+/* Sections: white cards. Identity lives in a tiny iOS list marker + soft date tint. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section{
-  --tag:var(--wt-gray);--tag-soft:var(--wt-gray-soft);--tag-ink:var(--wt-gray-ink);
+  --tag:var(--wt-gray);--tag-soft:var(--wt-gray-soft);--tag-line:var(--wt-gray-line);
   background:#fff!important;border:1px solid var(--wt-line)!important;
-  box-shadow:0 1px 0 rgba(0,0,0,.01),inset 0 1px 0 rgba(255,255,255,.9)!important;
+  box-shadow:0 1px 0 rgba(0,0,0,.01)!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section:before{display:none!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{--tag:var(--wt-pink);--tag-soft:var(--wt-pink-soft);--tag-ink:var(--wt-pink-ink)}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{--tag:var(--wt-butter);--tag-soft:var(--wt-butter-soft);--tag-ink:var(--wt-butter-ink)}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{--tag:var(--wt-sky);--tag-soft:var(--wt-sky-soft);--tag-ink:var(--wt-sky-ink)}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.today{--tag:var(--wt-rose);--tag-soft:var(--wt-rose-soft);--tag-line:var(--wt-rose-line)}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.tomorrow{--tag:var(--wt-yellow);--tag-soft:var(--wt-yellow-soft);--tag-line:var(--wt-yellow-line)}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section.week{--tag:var(--wt-sky);--tag-soft:var(--wt-sky-soft);--tag-line:var(--wt-sky-line)}
 
-/* Rounded iOS-style section labels. */
+/* iOS Reminders-style label: neutral capsule + colored marker */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading{
   position:relative!important;display:inline-flex!important;align-items:center!important;gap:6px!important;
-  padding:4px 8px!important;border-radius:999px!important;background:var(--tag-soft)!important;
-  border:1px solid color-mix(in srgb,var(--tag) 28%,#ececef)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.88)!important;
+  padding:4px 8px!important;border-radius:9px!important;background:#f7f7f9!important;
+  border:1px solid #ececef!important;box-shadow:none!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:before{
-  content:""!important;display:block!important;width:6px!important;height:6px!important;flex:0 0 6px!important;
-  border-radius:50%!important;background:var(--tag)!important;box-shadow:none!important;
+  content:""!important;display:block!important;width:7px!important;height:7px!important;flex:0 0 7px!important;
+  border-radius:3px!important;background:var(--tag)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading:after{display:none!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{color:#303034!important;font-weight:740!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-title{color:#2c2c2e!important;font-weight:740!important}
 
-/* Date stays neutral; progress carries the category color. */
+/* Date gets the category tint; progress is neutral until there is progress. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date{
-  background:#f7f7f9!important;border:1px solid #ececef!important;color:#85858b!important;box-shadow:none!important;
+  background:var(--tag-soft)!important;border:1px solid var(--tag-line)!important;color:#646469!important;box-shadow:none!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip{
-  background:var(--tag-soft)!important;border:1px solid color-mix(in srgb,var(--tag) 30%,#e8e8ec)!important;
-  color:var(--tag-ink)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.82)!important;
+  position:relative;background:#f7f7f9!important;border:1px solid #e9e9ed!important;color:#77777d!important;box-shadow:none!important;
 }
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip:before{display:none!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip:before{
+  content:""!important;display:block!important;width:5px!important;height:5px!important;margin-right:4px!important;border-radius:50%!important;background:var(--tag)!important;
+}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.has-progress{
-  background:color-mix(in srgb,var(--tag) 14%,#fff)!important;
-  border-color:color-mix(in srgb,var(--tag) 40%,#e6e7ea)!important;
+  background:var(--tag-soft)!important;border-color:var(--tag-line)!important;color:#56565c!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.complete{
-  background:var(--wt-sage-soft)!important;border-color:color-mix(in srgb,var(--wt-sage) 34%,#e3e8e4)!important;color:var(--wt-sage-ink)!important;
+  background:var(--wt-green-soft)!important;border-color:var(--wt-green-line)!important;color:#51705a!important;
 }
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip.complete:before{background:var(--wt-green)!important}
 
-/* Neutral task area; color appears only on interaction. */
+/* Task rows stay quiet; completion is the only persistent green. */
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .task{border-top-color:#f0f0f2!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .check{background:#fff!important;border-color:#d9d9de!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .check{background:#fff!important;border-color:#d8d8dd!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .check:hover{border-color:var(--tag)!important;box-shadow:0 0 0 3px var(--tag-soft)!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .check.done{
-  background:var(--wt-sage)!important;border-color:var(--wt-sage)!important;color:#fff!important;
+  background:var(--wt-green)!important;border-color:var(--wt-green)!important;color:#fff!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add{
-  background:#f8f8fa!important;border-color:#e4e4e8!important;color:#64646b!important;
+  background:#f8f8fa!important;border-color:#e4e4e8!important;color:#626267!important;
 }
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add:hover{
-  background:var(--tag-soft)!important;border-color:color-mix(in srgb,var(--tag) 38%,#e3e4e7)!important;color:var(--tag-ink)!important;
+  background:var(--tag-soft)!important;border-color:var(--tag-line)!important;color:#3d3d42!important;
 }
 
-/* Archive: Apple neutral gray. Completed history gets green, nothing else. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive{background:var(--wt-gray-soft)!important;border-color:#e5e5e9!important}
+/* Archive = silver/gray only. */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive{background:#f6f6f8!important;border-color:#e5e5e9!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive:before{display:none!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .archive-title:before{background:var(--wt-gray)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#fff!important;border-color:#e2e2e6!important;color:var(--wt-gray-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#fff!important;border-color:#e2e2e6!important;color:#717176!important}
 html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{background:#fff!important;border-color:#e4e4e8!important;box-shadow:none!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{border-color:#d8eadc!important;box-shadow:inset 3px 0 0 var(--wt-sage)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{color:var(--wt-sage-ink)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done{border-color:var(--wt-green-line)!important;box-shadow:inset 3px 0 0 var(--wt-green)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item.is-done .arch-meta{color:#5c7662!important}
 
-/* Sync states use the same iOS-like system colors. */
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{background:var(--wt-sage-soft)!important;border-color:#d8eadc!important;color:var(--wt-sage-ink)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online:before{background:var(--wt-sage)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{background:var(--wt-butter-soft)!important;border-color:#eee3b8!important;color:var(--wt-butter-ink)!important}
-html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing:before{background:var(--wt-butter)!important}
+/* Sync: status colors only */
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online{background:var(--wt-green-soft)!important;border-color:var(--wt-green-line)!important;color:#52705a!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.online:before{background:var(--wt-green)!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing{background:var(--wt-yellow-soft)!important;border-color:var(--wt-yellow-line)!important;color:#75692f!important}
+html body:has(#todayList):has(#tomorrowList):has(#weekList) .sync-btn.syncing:before{background:var(--wt-yellow)!important}
 
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList){
-  --wt-pink:#ff6f95;--wt-pink-soft:rgba(255,111,149,.12);--wt-pink-ink:#ffb3c7;
-  --wt-butter:#e9c95d;--wt-butter-soft:rgba(233,201,93,.12);--wt-butter-ink:#f5dd8d;
-  --wt-sage:#71c987;--wt-sage-soft:rgba(113,201,135,.12);--wt-sage-ink:#a8dfb4;
-  --wt-sky:#69bde9;--wt-sky-soft:rgba(105,189,233,.12);--wt-sky-ink:#a9ddf8;
-  --wt-gray:#8e8e93;--wt-gray-soft:#27272a;--wt-gray-ink:#c7c7cc;--wt-line:#38383a;
+  --wt-rose:#d98599;--wt-rose-soft:rgba(217,133,153,.13);--wt-rose-line:rgba(217,133,153,.22);
+  --wt-yellow:#d7bb61;--wt-yellow-soft:rgba(215,187,97,.13);--wt-yellow-line:rgba(215,187,97,.22);
+  --wt-sky:#75add3;--wt-sky-soft:rgba(117,173,211,.13);--wt-sky-line:rgba(117,173,211,.22);
+  --wt-green:#7fb28b;--wt-green-soft:rgba(127,178,139,.13);--wt-green-line:rgba(127,178,139,.22);
+  --wt-gray:#8e8e93;--wt-gray-soft:#27272a;--wt-gray-line:#3a3a3c;--wt-line:#38383a;
 }
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .widget,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .archive,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .arch-item{background:#1c1c1e!important;border-color:#38383a!important}
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .section-date,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section-heading,
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .progress-chip,
 html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .section .add,
-html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#2c2c2e!important;border-color:#3b3b3d!important;color:#c7c7cc!important}
+html[data-lt-theme="dark"] body:has(#todayList):has(#tomorrowList):has(#weekList) .count{background:#2c2c2e!important;border-color:#3a3a3c!important;color:#c7c7cc!important}
