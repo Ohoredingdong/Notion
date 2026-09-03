@@ -2,7 +2,7 @@
   const colorStyleId='lt-color-balance-v2';
   if(!document.getElementById(colorStyleId)){
     const link=document.createElement('link');
-    link.id=colorStyleId;link.rel='stylesheet';link.href='./assets/life-town-color-balance-v2.css?v=20260902-1';
+    link.id=colorStyleId;link.rel='stylesheet';link.href='./assets/life-town-color-balance-v2.css?v=20260903-worktoday-color2';
     document.head.appendChild(link);
   }
   if(document.querySelector('.lt-control-rail')) return;
