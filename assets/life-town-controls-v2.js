@@ -9,7 +9,7 @@
     const wtStyleId='lt-work-today-palette-v3';
     if(!document.getElementById(wtStyleId)){
       const wt=document.createElement('link');
-      wt.id=wtStyleId;wt.rel='stylesheet';wt.href='./assets/work-today-palette-v3.css?v=20260903-9';
+      wt.id=wtStyleId;wt.rel='stylesheet';wt.href='./assets/work-today-palette-v3.css?v=20260904-10';
       document.head.appendChild(wt);
     }
   }
