@@ -6,109 +6,45 @@
 <meta name="color-scheme" content="light dark">
 <title>Work Today · Life Town v2</title>
 <link rel="stylesheet" href="./assets/life-town-v2.css">
-<link id="lt-work-today-palette-v3" rel="stylesheet" href="./assets/work-today-palette-v3.css?v=20260908-reference-v13">
+<link id="lt-work-today-palette-v3" rel="stylesheet" href="./assets/work-today-palette-v3.css?v=20260908-reference-v14">
 <style>
-*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased}button,input{font:inherit;color:inherit}.root{width:100%;max-width:620px;margin:auto;container-type:inline-size}.widget{position:relative}.header{display:flex}.grid{display:grid}.section{position:relative;min-width:0}.section-head,.archive-head{display:flex}.section-side,.archive-actions{display:flex}.section-heading{min-width:0}.list{display:flex;flex-direction:column}.task{display:grid}.task input{width:100%;min-width:0}.foot{display:flex;justify-content:flex-end}.archive-list{display:none}.archive.open .archive-list{display:block}.sync-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.16);backdrop-filter:blur(7px);z-index:9999}.sync-overlay.open{display:flex}.sync-panel{width:min(330px,92vw);position:relative;background:#fff;padding:18px 16px 15px}.sync-title{text-align:center;font-size:17px;font-weight:760;letter-spacing:-.03em}.sync-desc{margin:5px 5px 13px;text-align:center;font-size:9px;line-height:1.45;color:#6e6e73}.sync-field{display:flex;gap:6px}.sync-input{flex:1;min-width:0;height:34px;border:1px solid #e7e8ec;border-radius:10px;padding:0 9px;outline:0;font:650 9px ui-monospace,SFMono-Regular,Menlo,monospace}.sync-action{height:34px;border:1px solid #e7e8ec;border-radius:10px;background:#fff;padding:0 10px;font-size:8.8px;font-weight:700;cursor:pointer}.sync-actions{display:flex;justify-content:center;gap:6px;margin-top:8px}.sync-status{min-height:14px;margin-top:8px;text-align:center;font-size:8.8px;color:#6e6e73}.sync-hint{text-align:center;font-size:8.5px;color:#8e8e93;line-height:1.4}.sync-close{position:absolute;right:10px;top:9px;border:0;background:transparent;color:#8e8e93;font-size:18px;cursor:pointer}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}body{padding:8px;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased}button,input{font:inherit;color:inherit}.root{width:100%;max-width:720px;margin:auto;container-type:inline-size}.widget{position:relative}.header{display:flex}.grid{display:grid}.section{position:relative;min-width:0}.section-head,.archive-head{display:flex}.section-side,.archive-actions{display:flex}.section-heading{min-width:0}.list{display:flex;flex-direction:column}.task{display:grid}.task input{width:100%;min-width:0}.foot{display:flex;justify-content:flex-end}.archive-list{display:none}.archive.open .archive-list{display:block}.sync-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.16);backdrop-filter:blur(7px);z-index:9999}.sync-overlay.open{display:flex}.sync-panel{width:min(330px,92vw);position:relative;background:#fff;padding:18px 16px 15px}.sync-title{text-align:center;font-size:17px;font-weight:760;letter-spacing:-.03em}.sync-desc{margin:5px 5px 13px;text-align:center;font-size:9px;line-height:1.45;color:#6e6e73}.sync-field{display:flex;gap:6px}.sync-input{flex:1;min-width:0;height:34px;border:1px solid #e7e8ec;border-radius:10px;padding:0 9px;outline:0;font:650 9px ui-monospace,SFMono-Regular,Menlo,monospace}.sync-action{height:34px;border:1px solid #e7e8ec;border-radius:10px;background:#fff;padding:0 10px;font-size:8.8px;font-weight:700;cursor:pointer}.sync-actions{display:flex;justify-content:center;gap:6px;margin-top:8px}.sync-status{min-height:14px;margin-top:8px;text-align:center;font-size:8.8px;color:#6e6e73}.sync-hint{text-align:center;font-size:8.5px;color:#8e8e93;line-height:1.4}.sync-close{position:absolute;right:10px;top:9px;border:0;background:transparent;color:#8e8e93;font-size:18px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="root">
-<main class="widget" data-widget-control-root data-control-sizes="430,540,620">
-  <header class="header">
-    <div class="header-left">
-      <div class="app-icon" aria-hidden="true"></div>
-      <div class="header-copy">
-        <div class="title">Work Today</div>
-        <div class="header-subtitle">오늘도, 차근차근. 좋은 일이 더 가까워져요.</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="head-date" id="headDate"></div>
-      <button class="sync-btn" id="syncBtn" type="button" aria-label="기기 동기화">Sync</button>
-    </div>
-  </header>
-
-  <div class="grid">
-    <section class="section today">
-      <div class="section-head">
-        <div class="section-heading">
-          <div class="section-title">Today</div>
-          <div class="section-subtitle">오늘의 할 일을 집중해서 처리해요.</div>
-        </div>
-        <div class="section-side">
-          <span class="progress-chip" id="todayCount" style="--p:0%">0</span>
-          <div class="section-date" id="todayDate"></div>
-        </div>
-      </div>
-      <div class="list" id="todayList"></div>
-      <div class="foot"><button class="add" data-add="today" type="button">+ 추가</button></div>
-    </section>
-
-    <section class="section tomorrow">
-      <div class="section-head">
-        <div class="section-heading">
-          <div class="section-title">Tomorrow</div>
-          <div class="section-subtitle">내일의 일정을 미리 준비해요.</div>
-        </div>
-        <div class="section-side">
-          <span class="progress-chip" id="tomorrowCount" style="--p:0%">0</span>
-          <div class="section-date" id="tomorrowDate"></div>
-        </div>
-      </div>
-      <div class="list" id="tomorrowList"></div>
-      <div class="foot"><button class="add" data-add="tomorrow" type="button">+ 추가</button></div>
-    </section>
-
-    <section class="section week">
-      <div class="section-head">
-        <div class="section-heading">
-          <div class="section-title">This Week</div>
-          <div class="section-subtitle">이번 주의 할 일을 한눈에 확인해요.</div>
-        </div>
-        <div class="section-side">
-          <span class="progress-chip" id="weekCount" style="--p:0%" data-pct="0%">0</span>
-          <div class="section-date" id="weekDate"></div>
-        </div>
-      </div>
-      <div class="list" id="weekList"></div>
-      <div class="foot"><button class="add" data-add="week" type="button">+ 추가</button></div>
-    </section>
+<main class="widget" data-widget-control-root data-control-sizes="520,620,720">
+<header class="header">
+  <div class="header-left">
+    <div class="app-icon" aria-hidden="true"></div>
+    <div class="header-copy"><div class="title">Work Today</div><div class="header-subtitle">오늘도, 차근차근. 좋은 일이 더 가까워져요.</div></div>
   </div>
+  <div class="header-right"><div class="head-date" id="headDate"></div><button class="sync-btn" id="syncBtn" type="button" aria-label="기기 동기화">Sync</button></div>
+</header>
 
-  <section class="archive open" id="archiveBox">
-    <div class="archive-head">
-      <div>
-        <div class="archive-title">Archive</div>
-        <div class="archive-subtitle">완료한 작업을 기록해요.</div>
-      </div>
-      <div class="archive-actions">
-        <span class="count" id="archiveCount">0 saved</span>
-        <button class="small" id="toggleArchive" type="button">Hide</button>
-        <button class="small" id="clearArchive" type="button">Clear</button>
-      </div>
-    </div>
-    <div class="archive-list" id="archiveList"></div>
+<div class="grid">
+  <section class="section today">
+    <div class="section-head"><div class="section-heading"><div class="section-title">Today</div><div class="section-subtitle">오늘의 할 일을 집중해서 처리해요.</div></div><div class="section-side"><span class="progress-chip" id="todayCount" style="--p:0%">0</span><div class="section-date" id="todayDate"></div></div></div>
+    <div class="list" id="todayList"></div><div class="foot"><button class="add" data-add="today" type="button">+ 추가</button></div>
   </section>
+  <section class="section tomorrow">
+    <div class="section-head"><div class="section-heading"><div class="section-title">Tomorrow</div><div class="section-subtitle">내일의 일정을 미리 준비해요.</div></div><div class="section-side"><span class="progress-chip" id="tomorrowCount" style="--p:0%">0</span><div class="section-date" id="tomorrowDate"></div></div></div>
+    <div class="list" id="tomorrowList"></div><div class="foot"><button class="add" data-add="tomorrow" type="button">+ 추가</button></div>
+  </section>
+  <section class="section week">
+    <div class="section-head"><div class="section-heading"><div class="section-title">This Week</div><div class="section-subtitle">이번 주의 할 일을 한눈에 확인해요.</div></div><div class="section-side"><span class="progress-chip" id="weekCount" style="--p:0%" data-pct="0%">0</span><div class="section-date" id="weekDate"></div></div></div>
+    <div class="list" id="weekList"></div><div class="foot"><button class="add" data-add="week" type="button">+ 추가</button></div>
+  </section>
+</div>
+
+<section class="archive open" id="archiveBox">
+  <div class="archive-head"><div><div class="archive-title">Archive</div><div class="archive-subtitle">완료한 작업을 기록해요.</div></div><div class="archive-actions"><span class="count" id="archiveCount">0 saved</span><button class="small" id="toggleArchive" type="button">최근 완료순⌄</button><button class="small" id="clearArchive" type="button" aria-label="완료 기록 비우기">Clear</button></div></div>
+  <div class="archive-list" id="archiveList"></div>
+</section>
 </main>
 </div>
 
-<div class="sync-overlay" id="syncOverlay" aria-hidden="true">
-  <div class="sync-panel">
-    <button class="sync-close" id="syncClose" type="button">×</button>
-    <div class="sync-title">기기 동기화</div>
-    <div class="sync-desc">같은 코드를 휴대폰·태블릿·PC에 입력하면 동일한 Work Today 데이터를 공유합니다.</div>
-    <div class="sync-field">
-      <input class="sync-input" id="syncCodeInput" autocomplete="off" spellcheck="false">
-      <button class="sync-action" id="copySyncCode" type="button">복사</button>
-    </div>
-    <div class="sync-actions">
-      <button class="sync-action" id="useSyncCode" type="button">이 코드 사용</button>
-      <button class="sync-action" id="newSyncCode" type="button">새 코드</button>
-    </div>
-    <div class="sync-status" id="syncStatusText"></div>
-    <div class="sync-hint">동기화 코드는 비공개로 보관해 주세요.</div>
-  </div>
-</div>
+<div class="sync-overlay" id="syncOverlay" aria-hidden="true"><div class="sync-panel"><button class="sync-close" id="syncClose" type="button">×</button><div class="sync-title">기기 동기화</div><div class="sync-desc">같은 코드를 휴대폰·태블릿·PC에 입력하면 동일한 Work Today 데이터를 공유합니다.</div><div class="sync-field"><input class="sync-input" id="syncCodeInput" autocomplete="off" spellcheck="false"><button class="sync-action" id="copySyncCode" type="button">복사</button></div><div class="sync-actions"><button class="sync-action" id="useSyncCode" type="button">이 코드 사용</button><button class="sync-action" id="newSyncCode" type="button">새 코드</button></div><div class="sync-status" id="syncStatusText"></div><div class="sync-hint">동기화 코드는 비공개로 보관해 주세요.</div></div></div>
 
 <script>
 const STORAGE_KEY='lifetown_work_today_compact_v3',SYNC_CODE_KEY='lifetown_work_today_sync_code_v1',SYNC_ENDPOINT='https://dfklyngtjqvlirgrtdfb.supabase.co/functions/v1/work-today-sync';
@@ -122,46 +58,11 @@ function normalize(){['today','tomorrow','week'].forEach(k=>{if(!Array.isArray(s
 function archiveToday(k){(s.today||[]).filter(x=>x.text.trim()).reverse().forEach(x=>s.archive.unshift({id:uid(),text:x.text.trim(),done:!!x.done,date:k}))}
 function rollover(){const now=dateKey(new Date());if(!s.lastDate){s.lastDate=now;save();return}if(s.lastDate===now)return;let gap=Math.floor((fromKey(now)-fromKey(s.lastDate))/86400000);if(!Number.isFinite(gap)||gap<1)gap=1;for(let i=0;i<gap;i++){archiveToday(s.lastDate);const moved=(s.tomorrow||[]).filter(x=>x.text.trim()||x.done).map(x=>({id:uid(),text:x.text,done:!!x.done}));s.today=moved.length?moved:[blank()];s.tomorrow=[blank()];const n=fromKey(s.lastDate);n.setDate(n.getDate()+1);s.lastDate=dateKey(n)}s.lastDate=now;save()}
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function updateSectionCount(k){
-  const items=(s[k]||[]).filter(x=>x.text.trim()),done=items.filter(x=>x.done).length,total=items.length,chip=document.getElementById(k+'Count');
-  if(!chip)return;
-  const pct=total?Math.round(done/total*100):0;
-  chip.textContent=total?`${done}/${total}`:'0';
-  chip.style.setProperty('--p',pct+'%');
-  chip.dataset.pct=pct+'%';
-  chip.classList.toggle('has-progress',done>0&&done<total);
-  chip.classList.toggle('complete',total>0&&done===total);
-}
-function renderSection(k){
-  const root=document.getElementById(k+'List');root.innerHTML='';
-  s[k].forEach(t=>{
-    const r=document.createElement('div');r.className='task'+(t.done?' done':'');
-    r.innerHTML=`<button class="check ${t.done?'done':''}" type="button">${t.done?'✓':''}</button><input value="${esc(t.text)}" placeholder="메모 입력"><button class="x" type="button">×</button>`;
-    r.querySelector('.check').onclick=()=>{t.done=!t.done;save();renderSection(k)};
-    const inp=r.querySelector('input');
-    inp.oninput=e=>{t.text=e.target.value;save();updateSectionCount(k)};
-    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add(k)}};
-    r.querySelector('.x').onclick=()=>{s[k]=s[k].filter(x=>x.id!==t.id);if(!s[k].length)s[k]=[blank()];save();renderSection(k)};
-    root.appendChild(r);
-  });
-  updateSectionCount(k);
-}
+function updateSectionCount(k){const items=(s[k]||[]).filter(x=>x.text.trim()),done=items.filter(x=>x.done).length,total=items.length,chip=document.getElementById(k+'Count');if(!chip)return;const pct=total?Math.round(done/total*100):0;chip.textContent=total?`${done}/${total}`:'0';chip.style.setProperty('--p',pct+'%');chip.dataset.pct=pct+'%';chip.classList.toggle('has-progress',done>0&&done<total);chip.classList.toggle('complete',total>0&&done===total)}
+function renderSection(k){const root=document.getElementById(k+'List');root.innerHTML='';s[k].forEach(t=>{const r=document.createElement('div');r.className='task'+(t.done?' done':'');r.innerHTML=`<button class="check ${t.done?'done':''}" type="button">${t.done?'✓':''}</button><input value="${esc(t.text)}" placeholder="메모 입력"><button class="x" type="button">×</button>`;r.querySelector('.check').onclick=()=>{t.done=!t.done;save();renderSection(k)};const inp=r.querySelector('input');inp.oninput=e=>{t.text=e.target.value;save();updateSectionCount(k)};inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add(k)}};r.querySelector('.x').onclick=()=>{s[k]=s[k].filter(x=>x.id!==t.id);if(!s[k].length)s[k]=[blank()];save();renderSection(k)};root.appendChild(r)});updateSectionCount(k)}
 function add(k){s[k].push(blank());save();renderSection(k);const xs=document.querySelectorAll('#'+k+'List input');xs[xs.length-1]?.focus()}
-function renderArchive(){
-  const box=document.getElementById('archiveBox'),root=document.getElementById('archiveList');
-  box.classList.toggle('open',s.archiveOpen);document.getElementById('toggleArchive').textContent=s.archiveOpen?'Hide':'Show';document.getElementById('archiveCount').textContent=s.archive.length+' saved';root.innerHTML='';
-  if(!s.archiveOpen)return;
-  if(!s.archive.length){root.innerHTML='<div class="archive-empty">완료된 Today 메모가 날짜가 지나면 여기에 저장됩니다.</div>';return}
-  s.archive.forEach(a=>{const c=document.createElement('div');c.className='arch-item'+(a.done?' is-done':'');c.innerHTML=`<button class="delete-arch" type="button">×</button><div class="arch-meta">${a.date}${a.done?' · 완료':''}</div><div class="arch-text">${esc(a.text)}</div>`;c.querySelector('.delete-arch').onclick=()=>{s.archive=s.archive.filter(x=>x.id!==a.id);save();renderArchive()};root.appendChild(c)})
-}
-function renderDates(){
-  const n=new Date(),tm=new Date(n);tm.setDate(n.getDate()+1);
-  document.getElementById('headDate').textContent=n.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-  document.getElementById('todayDate').textContent=n.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});
-  document.getElementById('tomorrowDate').textContent=tm.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});
-  const st=new Date(n),diff=(st.getDay()+6)%7;st.setDate(st.getDate()-diff);const en=new Date(st);en.setDate(st.getDate()+6),f=d=>d.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});
-  document.getElementById('weekDate').textContent=f(st)+' – '+f(en);
-}
+function renderArchive(){const box=document.getElementById('archiveBox'),root=document.getElementById('archiveList');box.classList.toggle('open',s.archiveOpen);document.getElementById('toggleArchive').textContent=s.archiveOpen?'최근 완료순⌄':'완료 내역 보기';document.getElementById('archiveCount').textContent=s.archive.length+' saved';root.innerHTML='';if(!s.archiveOpen)return;if(!s.archive.length){root.innerHTML='<div class="archive-empty">완료된 Today 메모가 날짜가 지나면 여기에 저장됩니다.</div>';return}s.archive.forEach(a=>{const c=document.createElement('div');c.className='arch-item'+(a.done?' is-done':'');c.innerHTML=`<button class="delete-arch" type="button">×</button><div class="arch-meta">${a.date}${a.done?' · 완료':''}</div><div class="arch-text">${esc(a.text)}</div>`;c.querySelector('.delete-arch').onclick=()=>{s.archive=s.archive.filter(x=>x.id!==a.id);save();renderArchive()};root.appendChild(c)})}
+function renderDates(){const n=new Date(),tm=new Date(n);tm.setDate(n.getDate()+1);document.getElementById('headDate').textContent=n.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});document.getElementById('todayDate').textContent=n.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});document.getElementById('tomorrowDate').textContent=tm.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});const st=new Date(n),diff=(st.getDay()+6)%7;st.setDate(st.getDate()-diff);const en=new Date(st);en.setDate(st.getDate()+6),f=d=>d.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});document.getElementById('weekDate').textContent=f(st)+' – '+f(en)}
 function renderAll(){renderDates();renderSection('today');renderSection('tomorrow');renderSection('week');renderArchive()}
 function setSyncStatus(mode,label){const b=document.getElementById('syncBtn'),t=document.getElementById('syncStatusText');b.classList.remove('online','syncing','offline');b.classList.add(mode);b.textContent=label||'Sync';b.title=label||'Sync';if(t&&label)t.textContent=label}
 function genCode(){const a=new Uint8Array(18);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(36).padStart(2,'0')).join('').slice(0,28).toUpperCase()}
@@ -176,12 +77,8 @@ async function useCode(){const v=document.getElementById('syncCodeInput').value.
 async function newCode(){syncCode=genCode();localStorage.setItem(SYNC_CODE_KEY,syncCode);cloudReady=true;document.getElementById('syncCodeInput').value=syncCode;await cloudSave();document.getElementById('syncStatusText').textContent='새 동기화 공간을 만들었습니다.'}
 async function copyCode(){try{await navigator.clipboard.writeText(syncCode);document.getElementById('syncStatusText').textContent='동기화 코드를 복사했습니다.'}catch{const i=document.getElementById('syncCodeInput');i.select();document.execCommand('copy');document.getElementById('syncStatusText').textContent='동기화 코드를 복사했습니다.'}}
 async function initSync(){if(!syncCode){syncCode=genCode();localStorage.setItem(SYNC_CODE_KEY,syncCode)}cloudReady=true;await cloudLoad(true);setInterval(pollCloud,5000)}
-document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
-document.getElementById('toggleArchive').onclick=()=>{s.archiveOpen=!s.archiveOpen;save();renderArchive()};
-document.getElementById('clearArchive').onclick=()=>{s.archive=[];save();renderArchive()};
-document.getElementById('syncBtn').onclick=openSync;document.getElementById('syncClose').onclick=closeSync;document.getElementById('syncOverlay').onclick=e=>{if(e.target.id==='syncOverlay')closeSync()};document.getElementById('useSyncCode').onclick=useCode;document.getElementById('newSyncCode').onclick=newCode;document.getElementById('copySyncCode').onclick=copyCode;
-rollover();normalize();renderAll();initSync();
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));document.getElementById('toggleArchive').onclick=()=>{s.archiveOpen=!s.archiveOpen;save();renderArchive()};document.getElementById('clearArchive').onclick=()=>{s.archive=[];save();renderArchive()};document.getElementById('syncBtn').onclick=openSync;document.getElementById('syncClose').onclick=closeSync;document.getElementById('syncOverlay').onclick=e=>{if(e.target.id==='syncOverlay')closeSync()};document.getElementById('useSyncCode').onclick=useCode;document.getElementById('newSyncCode').onclick=newCode;document.getElementById('copySyncCode').onclick=copyCode;rollover();normalize();renderAll();initSync();
 </script>
-<script src="./assets/life-town-controls-v2.js?v=20260908-reference-v13"></script>
+<script src="./assets/life-town-controls-v2.js?v=20260908-reference-v14"></script>
 </body>
 </html>
