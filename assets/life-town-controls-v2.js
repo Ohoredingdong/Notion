@@ -5,6 +5,12 @@
     link.id=colorStyleId;link.rel='stylesheet';link.href='./assets/life-town-color-balance-v2.css?v=20260903-worktoday-color2';
     document.head.appendChild(link);
   }
+  const flatStyleId='lt-flat-white-v3';
+  if(!document.getElementById(flatStyleId)){
+    const flat=document.createElement('link');
+    flat.id=flatStyleId;flat.rel='stylesheet';flat.href='./assets/life-town-flat-white-v3.css?v=20260911-detail-pass1';
+    document.head.appendChild(flat);
+  }
   if(document.querySelector('#todayList')&&document.querySelector('#tomorrowList')&&document.querySelector('#weekList')){
     const wtStyleId='lt-work-today-palette-v3';
     if(!document.getElementById(wtStyleId)){
