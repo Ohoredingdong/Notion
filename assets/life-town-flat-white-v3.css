@@ -4,6 +4,7 @@
 body:has(.pair) .widget,
 body:has(.segment button[data-country]) .widget,
 body:has(#assetList) .widget,
+body:has(#heroTitle) .widget,
 body:has(#amountValue) .widget,
 body:has(.hero-rate) .w,
 body:has(#tracker) .card,
@@ -20,6 +21,7 @@ body:has(#score):has(#thumb) .widget{
 
 /* Remove the old glossy top hairline used by the previous pass. */
 body:has(#assetList) .widget:before,
+body:has(#heroTitle) .widget:before,
 body:has(#tracker) .card:before,
 body:has(#calendar) .card:before,
 body:has(.pinyin) .widget:before,
@@ -49,6 +51,17 @@ body:has(#assetList) .panel{background:#fff!important;border-color:#e7e7ea!impor
 body:has(#assetList) .metrics-main{background:#fff!important;border-color:#e7e7ea!important}
 body:has(#assetList) .metric{border-color:#ececef!important}
 body:has(#assetList) .asset{box-shadow:none!important}
+
+/* Market Events — flatten the older layered treatment but keep information hierarchy. */
+body:has(#heroTitle) .widget{border-radius:20px!important;padding:17px 16px 13px!important}
+body:has(#heroTitle) .hero{background:#fafafa!important;border-color:#e7e7ea!important;box-shadow:none!important;border-radius:15px!important}
+body:has(#heroTitle) .sum,body:has(#heroTitle) .board{background:#fff!important;border-color:#e7e7ea!important;box-shadow:none!important}
+body:has(#heroTitle) .sum{border-radius:13px!important}
+body:has(#heroTitle) .board{border-radius:15px!important}
+body:has(#heroTitle) .chip,body:has(#heroTitle) .update,body:has(#heroTitle) .retry{box-shadow:none!important}
+body:has(#heroTitle) .col+ .col{border-color:#ececef!important}
+body:has(#heroTitle) .footer{border-color:#ececef!important}
+body:has(#heroTitle) .controls{display:none!important}
 
 /* Loan planner — white cards, quiet result surface, no slider thumb shadow. */
 body:has(#amountValue) .widget{border-radius:20px!important}
@@ -120,7 +133,11 @@ html[data-lt-theme="dark"] body:has(.pinyin) .widget,
 html[data-lt-theme="dark"] body:has(.fr) .widget,
 html[data-lt-theme="dark"] body:has(#choices) .card,
 html[data-lt-theme="dark"] body:has(#cal) .card,
-html[data-lt-theme="dark"] body:has(#score):has(#thumb) .widget{
+html[data-lt-theme="dark"] body:has(#score):has(#thumb) .widget,
+html[data-theme="dark"] body:has(#heroTitle) .widget{
   background:#1c1c1e!important;
   border-color:#38383a!important;
 }
+html[data-theme="dark"] body:has(#heroTitle) .hero,
+html[data-theme="dark"] body:has(#heroTitle) .sum,
+html[data-theme="dark"] body:has(#heroTitle) .board{background:#1c1c1e!important;border-color:#38383a!important}
