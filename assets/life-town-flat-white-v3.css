@@ -1,0 +1,126 @@
+/* Life Town v3 detail pass — flat white, no decorative shadows, preserve semantic color */
+
+/* Main surfaces: current unfinished v2 widgets only. */
+body:has(.pair) .widget,
+body:has(.segment button[data-country]) .widget,
+body:has(#assetList) .widget,
+body:has(#amountValue) .widget,
+body:has(.hero-rate) .w,
+body:has(#tracker) .card,
+body:has(#calendar) .card,
+body:has(.pinyin) .widget,
+body:has(.fr) .widget,
+body:has(#choices) .card,
+body:has(#cal) .card,
+body:has(#score):has(#thumb) .widget{
+  background:#fff!important;
+  border-color:#e7e7ea!important;
+  box-shadow:none!important;
+}
+
+/* Remove the old glossy top hairline used by the previous pass. */
+body:has(#assetList) .widget:before,
+body:has(#tracker) .card:before,
+body:has(#calendar) .card:before,
+body:has(.pinyin) .widget:before,
+body:has(.fr) .widget:before,
+body:has(#choices) .card:before,
+body:has(#cal) .card:before,
+body:has(#score):has(#thumb) .widget:before{
+  display:none!important;
+}
+
+/* Exchange rates — tighter table hierarchy, no decorative depth. */
+body:has(.pair) .widget{border-radius:20px!important}
+body:has(.pair) .refresh{box-shadow:none!important;background:#fff!important}
+body:has(.pair) .table,body:has(.pair) .chart-wrap{border-color:#ececef!important}
+body:has(.pair) .code{box-shadow:none!important}
+
+/* Bond yields — segmented control stays functional, but flat. */
+body:has(.segment button[data-country]) .widget{border-radius:20px!important}
+body:has(.segment button[data-country]) .segment{background:#f6f6f8!important}
+body:has(.segment button[data-country]) .segment button.active{box-shadow:none!important;background:#fff!important}
+body:has(.segment button[data-country]) .refresh{box-shadow:none!important;background:#fff!important}
+body:has(.segment button[data-country]) .hero,body:has(.segment button[data-country]) .row,body:has(.segment button[data-country]) .footer{border-color:#ececef!important}
+
+/* Commodities — keep the established 188/304 content geometry, flatten chrome only. */
+body:has(#assetList) .widget{border-radius:20px!important}
+body:has(#assetList) .panel{background:#fff!important;border-color:#e7e7ea!important;box-shadow:none!important}
+body:has(#assetList) .metrics-main{background:#fff!important;border-color:#e7e7ea!important}
+body:has(#assetList) .metric{border-color:#ececef!important}
+body:has(#assetList) .asset{box-shadow:none!important}
+
+/* Loan planner — white cards, quiet result surface, no slider thumb shadow. */
+body:has(#amountValue) .widget{border-radius:20px!important}
+body:has(#amountValue) .controls .card{background:#fff!important;border-color:#e7e7ea!important;box-shadow:none!important}
+body:has(#amountValue) .result{background:#fafafa!important;border-color:#e7e7ea!important;box-shadow:none!important}
+body:has(#amountValue) .track input::-webkit-slider-thumb{box-shadow:none!important}
+
+/* Mortgage watch — keep benchmark emphasis without a shaded outer card. */
+body:has(.hero-rate) .w{border-radius:20px!important}
+body:has(.hero-rate) .hero{box-shadow:none!important}
+body:has(.hero-rate) .rows .row,body:has(.hero-rate) .head,body:has(.hero-rate) .foot{border-color:#ececef!important}
+
+/* Routine tracker — latest Work Today language: flat white + thin rules + one green progress accent. */
+body:has(#tracker) .card{border-radius:20px!important;padding:17px!important}
+body:has(#tracker) .wide-stats{background:#fafafa!important;border:1px solid #e7e7ea!important;border-radius:14px!important;box-shadow:none!important}
+body:has(#tracker) .dot{box-shadow:none!important}
+body:has(#tracker) .dot.active{box-shadow:none!important}
+body:has(#tracker) .eyebrow i{box-shadow:none!important}
+body:has(#tracker) .remove{box-shadow:none!important}
+body:has(#tracker) .add-input:focus{box-shadow:none!important;border-color:#c7c7cc!important}
+body:has(#tracker) .divider,body:has(#tracker) .add-area{border-color:#ececef!important}
+
+/* Zero Spend — calendar stays green, menus and sync panels become flat. */
+body:has(#calendar) .card{border-radius:20px!important}
+body:has(#calendar) .marked.today .datebtn{box-shadow:none!important}
+body:has(#calendar) .today .datebtn{box-shadow:inset 0 0 0 1.5px var(--lt-blue)!important}
+body:has(#calendar) .menu,body:has(#calendar) .syncPanel{box-shadow:none!important;border-color:#e7e7ea!important}
+body:has(#calendar) .syncOverlay{background:rgba(255,255,255,.96)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body:has(#calendar) .syncInput:focus{box-shadow:none!important}
+body:has(#calendar) .divider,body:has(#calendar) .statline{background:#ececef!important}
+
+/* Chinese / French words — keep language color identity, remove ornamental shine and halos. */
+body:has(.pinyin) .widget,body:has(.fr) .widget{border-radius:20px!important}
+body:has(.pinyin) .label:before,body:has(.fr) .label:before{box-shadow:none!important}
+body:has(.pinyin) .speaker,body:has(.fr) .speaker{background:#fafafa!important;box-shadow:none!important}
+body:has(.pinyin) .divider,body:has(.pinyin) .footer,body:has(.fr) .divider,body:has(.fr) .footer{border-color:#ececef!important}
+
+/* Tone quiz — flatten the shell while preserving correct/wrong feedback. */
+body:has(#choices) .card{border-radius:20px!important}
+body:has(#choices) .speaker,body:has(#choices) .choice,body:has(#choices) .result{box-shadow:none!important}
+body:has(#choices) .choice:hover{transform:none!important}
+body:has(#choices) .bar{background:#ececef!important}
+body:has(#choices) .meta{border-color:#ececef!important}
+
+/* Cycle Notes — calendar and controls stay functional, remove glossy/raised treatment. */
+body:has(#cal) .card{border-radius:20px!important;box-shadow:none!important}
+body:has(#cal) .sub:before{box-shadow:none!important}
+body:has(#cal) .settings{box-shadow:none!important;border-color:#e7e7ea!important}
+body:has(#cal) .memo:focus{box-shadow:none!important;border:1px solid rgba(0,122,255,.28)!important}
+body:has(#cal) .tip{background:#fafafa!important;box-shadow:none!important}
+body:has(#cal) .flow,body:has(#cal) .memoBox,body:has(#cal) .nav{border-color:#e7e7ea!important;box-shadow:none!important}
+
+/* Fear & Greed — remove card/tab/thumb depth; keep red-yellow-green gauge semantics. */
+body:has(#score):has(#thumb) .widget{border-radius:20px!important}
+body:has(#score):has(#thumb) .tab.active{box-shadow:none!important}
+body:has(#score):has(#thumb) .thumb{box-shadow:none!important}
+body:has(#score):has(#thumb) .bar-shell,body:has(#score):has(#thumb) .state button{box-shadow:none!important}
+body:has(#score):has(#thumb) .footer{border-color:#ececef!important}
+
+/* Dark mode remains dark; this pass only removes depth, not theme support. */
+html[data-lt-theme="dark"] body:has(.pair) .widget,
+html[data-lt-theme="dark"] body:has(.segment button[data-country]) .widget,
+html[data-lt-theme="dark"] body:has(#assetList) .widget,
+html[data-lt-theme="dark"] body:has(#amountValue) .widget,
+html[data-lt-theme="dark"] body:has(.hero-rate) .w,
+html[data-lt-theme="dark"] body:has(#tracker) .card,
+html[data-lt-theme="dark"] body:has(#calendar) .card,
+html[data-lt-theme="dark"] body:has(.pinyin) .widget,
+html[data-lt-theme="dark"] body:has(.fr) .widget,
+html[data-lt-theme="dark"] body:has(#choices) .card,
+html[data-lt-theme="dark"] body:has(#cal) .card,
+html[data-lt-theme="dark"] body:has(#score):has(#thumb) .widget{
+  background:#1c1c1e!important;
+  border-color:#38383a!important;
+}
