@@ -1,0 +1,131 @@
+/* Life Town detail batch 1 — Routine / Zero Spend / Cycle Notes
+   Goal: same flat-white iOS + Notion family language as Work Today.
+   Functional colors stay semantic; decorative depth is removed. */
+
+/* Shared: quieter shell and controls */
+body:has(#tracker) .card,
+body:has(#calendar) .card,
+body:has(#cal) .card{background:#fff!important;border:1px solid #e7e7ea!important;border-radius:20px!important;box-shadow:none!important}
+body:has(#tracker) .card:before,
+body:has(#calendar) .card:before,
+body:has(#cal) .card:before{display:none!important}
+body:has(#tracker) .lt-control-btn,
+body:has(#calendar) .lt-control-btn,
+body:has(#cal) .lt-control-btn{box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* ROUTINE TRACKER — clearer hierarchy, less dashboard-like */
+body:has(#tracker) .card{padding:17px 16px 15px!important}
+body:has(#tracker) .head{align-items:center!important;gap:14px!important}
+body:has(#tracker) .eyebrow{font-size:9px!important;font-weight:650!important;color:#8e8e93!important;gap:5px!important}
+body:has(#tracker) .eyebrow i{width:5px!important;height:5px!important;background:var(--lt-green)!important;box-shadow:none!important}
+body:has(#tracker) .title{margin-top:4px!important;font-size:18px!important;font-weight:780!important;letter-spacing:-.045em!important}
+body:has(#tracker) .summary{gap:12px!important}
+body:has(#tracker) .ring{width:48px!important;height:48px!important;background:conic-gradient(var(--lt-green) calc(var(--p)*1%),#ececef 0)!important}
+body:has(#tracker) .ring:after{width:38px!important;height:38px!important}
+body:has(#tracker) .ring span{font-size:9px!important}
+body:has(#tracker) .metric-label{font-size:8.7px!important;color:#8e8e93!important}
+body:has(#tracker) .metric-value{font-size:22px!important;letter-spacing:-.05em!important}
+body:has(#tracker) .divider{margin:13px 0 12px!important;background:#ececef!important}
+body:has(#tracker) .body-grid{gap:14px!important}
+body:has(#tracker) .wide-stats{background:#fff!important;border:1px solid #e7e7ea!important;border-radius:14px!important;padding:13px 12px!important;box-shadow:none!important}
+body:has(#tracker) .wide-big{font-size:29px!important;font-weight:780!important;letter-spacing:-.055em!important}
+body:has(#tracker) .wide-caption{font-size:8.8px!important;line-height:1.4!important;color:#8e8e93!important}
+body:has(#tracker) .mini-progress{height:4px!important;background:#ececef!important;margin-top:10px!important}
+body:has(#tracker) .tracker{column-gap:6px!important;row-gap:9px!important}
+body:has(#tracker) .day{font-size:8.6px!important;color:#8e8e93!important;font-weight:650!important}
+body:has(#tracker) .row-label{font-size:10.8px!important;font-weight:690!important}
+body:has(#tracker) .dot{width:18px!important;height:18px!important;border-color:#d8d8dc!important;box-shadow:none!important;transform:none!important}
+body:has(#tracker) .dot:hover{border-color:#b8b8bd!important;transform:none!important}
+body:has(#tracker) .dot.active{background:var(--lt-green)!important;border-color:var(--lt-green)!important;box-shadow:none!important}
+body:has(#tracker) .remove{opacity:0!important;background:transparent!important;color:#a1a1a6!important}
+body:has(#tracker) .row-wrap:hover .remove{opacity:1!important}
+body:has(#tracker) .add-area{margin-top:13px!important;padding:4px!important;border:1px solid #e7e7ea!important;border-radius:12px!important;background:#fafafa!important;gap:5px!important}
+body:has(#tracker) .add-input{height:32px!important;border:0!important;background:transparent!important;border-radius:9px!important;padding:0 9px!important;font-size:10.3px!important;box-shadow:none!important}
+body:has(#tracker) .add-btn{height:32px!important;border:1px solid #e7e7ea!important;border-radius:9px!important;background:#fff!important;color:#007aff!important;font-size:9.5px!important;font-weight:720!important;padding:0 12px!important}
+body:has(#tracker) .add-btn:hover{background:#f7f7f8!important;opacity:1!important}
+@container (min-width:520px){body:has(#tracker) .body-grid{grid-template-columns:145px minmax(0,1fr)!important;gap:16px!important}}
+
+/* ZERO SPEND — calendar first, statistics as a clean side summary */
+body:has(#calendar) .card{padding:17px 16px 15px!important}
+body:has(#calendar) .top{align-items:center!important}
+body:has(#calendar) .title{font-size:18px!important;font-weight:780!important;letter-spacing:-.045em!important}
+body:has(#calendar) .subtitleRow{margin-top:4px!important;gap:6px!important}
+body:has(#calendar) .subtitle{font-size:9.2px!important;color:#8e8e93!important}
+body:has(#calendar) .syncMini{font-size:8.4px!important}
+body:has(#calendar) .syncMini:before{width:5px!important;height:5px!important}
+body:has(#calendar) .more{width:30px!important;height:30px!important;border:1px solid #e7e7ea!important;border-radius:10px!important;background:#fff!important;font-size:16px!important;line-height:1!important}
+body:has(#calendar) .more:hover{background:#f7f7f8!important}
+body:has(#calendar) .monthnav{margin-top:14px!important;grid-template-columns:32px 1fr 32px!important;padding:3px!important;border:1px solid #ececef!important;border-radius:12px!important;background:#f7f7f8!important}
+body:has(#calendar) .navbtn{width:30px!important;height:30px!important;border:0!important;border-radius:9px!important;background:#fff!important;font-size:19px!important;box-shadow:none!important}
+body:has(#calendar) .navbtn:hover{border:0!important;background:#fff!important}
+body:has(#calendar) .monthlabel{font-size:12px!important;font-weight:720!important}
+body:has(#calendar) .week{margin-top:10px!important}
+body:has(#calendar) .wk{height:23px!important;font-size:8.5px!important}
+body:has(#calendar) .grid{grid-auto-rows:37px!important}
+body:has(#calendar) .day{height:37px!important}
+body:has(#calendar) .datebtn{width:29px!important;height:29px!important;font-size:10.3px!important}
+body:has(#calendar) .datebtn:hover{background:#f7f7f8!important}
+body:has(#calendar) .marked .datebtn{background:rgba(52,199,89,.10)!important;color:#248a3d!important}
+body:has(#calendar) .marked.today .datebtn{background:var(--lt-green)!important;color:#fff!important;box-shadow:none!important}
+body:has(#calendar) .today .datebtn{box-shadow:inset 0 0 0 1.25px var(--lt-blue)!important}
+body:has(#calendar) .statlabel{font-size:9px!important;color:#8e8e93!important;margin-bottom:6px!important}
+body:has(#calendar) .rate,body:has(#calendar) .count{font-size:28px!important;font-weight:780!important;letter-spacing:-.055em!important}
+body:has(#calendar) .unit{font-size:12px!important;padding-bottom:2px!important}
+body:has(#calendar) .countSuffix{font-size:9.5px!important;padding-bottom:2px!important}
+body:has(#calendar) .progress{height:4px!important;background:#ececef!important;margin-top:9px!important}
+body:has(#calendar) .hint{font-size:8.5px!important;color:#8e8e93!important;margin-top:8px!important}
+body:has(#calendar) .menu{top:51px!important;right:14px!important;width:196px!important;border-radius:13px!important;padding:7px!important;box-shadow:none!important}
+body:has(#calendar) .menuAction{height:33px!important;font-size:10px!important}
+body:has(#calendar) .goalbtn{height:29px!important;border-radius:8px!important;background:#fff!important}
+body:has(#calendar) .syncOverlay{background:rgba(255,255,255,.98)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body:has(#calendar) .syncPanel{border-radius:16px!important;padding:15px!important;box-shadow:none!important}
+body:has(#calendar) .syncStatusBox,body:has(#calendar) .syncCodeBox{background:#fafafa!important;border-color:#e7e7ea!important;box-shadow:none!important}
+body:has(#calendar) .closeBtn{background:#f7f7f8!important;box-shadow:none!important}
+@container (min-width:430px){body:has(#calendar) .calendar-block{grid-template-columns:minmax(0,1.55fr) 158px!important;gap:16px!important;align-items:stretch!important}body:has(#calendar) .calendar-side{border-left:0!important;padding:13px 12px!important;border:1px solid #e7e7ea!important;border-radius:14px!important;background:#fff!important;display:flex!important;flex-direction:column!important;justify-content:center!important}body:has(#calendar) .calendar-side .stats{gap:13px!important}}
+
+/* CYCLE NOTES — compact diary, less clinical dashboard */
+body:has(#cal) .card{padding:17px 16px 15px!important}
+body:has(#cal) .top{align-items:center!important}
+body:has(#cal) .title{font-size:18px!important;font-weight:780!important;letter-spacing:-.045em!important}
+body:has(#cal) .sub{margin-top:4px!important;font-size:9.2px!important;color:#8e8e93!important;gap:5px!important}
+body:has(#cal) .sub:before{width:5px!important;height:5px!important;box-shadow:none!important}
+body:has(#cal) .nav{grid-template-columns:31px 1fr 31px!important;height:33px!important;border:1px solid #e7e7ea!important;border-radius:11px!important;background:#f7f7f8!important;box-shadow:none!important}
+body:has(#cal) .nav button{width:31px!important;height:31px!important;background:transparent!important;font-size:18px!important}
+body:has(#cal) .nav button:first-child,body:has(#cal) .nav button:last-child{border-color:#ececef!important}
+body:has(#cal) .month{min-width:86px!important;font-size:10px!important}
+body:has(#cal) .week{margin-top:13px!important;font-size:8.8px!important}
+body:has(#cal) .week div{padding-bottom:6px!important}
+body:has(#cal) .cal{row-gap:3px!important}
+body:has(#cal) .day{height:30px!important;font-size:10.2px!important}
+body:has(#cal) .day.sel:after{width:29px!important;height:29px!important;border-width:1.25px!important}
+body:has(#cal) .day.period:before{top:4px!important;bottom:4px!important;background:rgba(255,59,48,.09)!important}
+body:has(#cal) .section{margin-top:14px!important}
+body:has(#cal) .label{font-size:11px!important;margin-bottom:8px!important}
+body:has(#cal) .label small{font-size:8.3px!important}
+body:has(#cal) .chips{gap:6px!important}
+body:has(#cal) .chip{height:28px!important;padding:0 9px!important;border-radius:999px!important;background:#fff!important;border-color:#e7e7ea!important;font-size:9.2px!important;box-shadow:none!important}
+body:has(#cal) .chip.on{background:rgba(0,122,255,.06)!important;border-color:rgba(0,122,255,.18)!important;color:#007aff!important}
+body:has(#cal) .flow{border:1px solid #e7e7ea!important;border-radius:13px!important;overflow:hidden!important;box-shadow:none!important}
+body:has(#cal) .flowBtn{height:53px!important;background:#fff!important;border-color:#ececef!important;font-size:8px!important;box-shadow:none!important}
+body:has(#cal) .flowBtn.on{background:rgba(255,59,48,.055)!important;box-shadow:inset 0 0 0 1px rgba(255,59,48,.20)!important;color:#c72d26!important}
+body:has(#cal) .drops{height:20px!important;margin-bottom:2px!important}
+body:has(#cal) .drops svg{width:9px!important;height:14px!important}
+body:has(#cal) .memoBox{border:1px solid #e7e7ea!important;border-radius:13px!important;background:#fff!important;padding:10px!important;box-shadow:none!important}
+body:has(#cal) .memoTitle{font-size:11px!important}
+body:has(#cal) .date{font-size:8.3px!important}
+body:has(#cal) .memo{height:56px!important;border:1px solid #f0f0f2!important;border-radius:10px!important;background:#fafafa!important;padding:10px!important;font-size:10px!important;box-shadow:none!important}
+body:has(#cal) .memo:focus{border-color:rgba(0,122,255,.24)!important;background:#fff!important;box-shadow:none!important}
+body:has(#cal) .tip{margin-top:9px!important;border:0!important;border-top:1px solid #ececef!important;border-radius:0!important;background:#fff!important;padding:9px 1px 0!important;font-size:8.6px!important;color:#8e8e93!important;box-shadow:none!important}
+body:has(#cal) .tip i{width:5px!important;height:5px!important;flex-basis:5px!important;margin-top:3px!important}
+
+/* Dark theme keeps structure and removes depth. */
+html[data-lt-theme="dark"] body:has(#tracker) .card,
+html[data-lt-theme="dark"] body:has(#calendar) .card,
+html[data-lt-theme="dark"] body:has(#cal) .card,
+html[data-lt-theme="dark"] body:has(#tracker) .wide-stats,
+html[data-lt-theme="dark"] body:has(#calendar) .calendar-side,
+html[data-lt-theme="dark"] body:has(#cal) .memoBox,
+html[data-lt-theme="dark"] body:has(#cal) .tip{background:#1c1c1e!important;border-color:#38383a!important}
+html[data-lt-theme="dark"] body:has(#tracker) .add-area,
+html[data-lt-theme="dark"] body:has(#calendar) .monthnav,
+html[data-lt-theme="dark"] body:has(#cal) .nav{background:#2c2c2e!important;border-color:#38383a!important}
