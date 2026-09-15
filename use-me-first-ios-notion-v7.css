@@ -1,0 +1,44 @@
+@import url('./use-me-first-ios-notion-v6.css?v=20260915-qa1');
+
+/* v7 QA fixes: compact-state overflow, readability floor, rail interaction balance */
+
+/* Compact size is a real layout state, not just a narrower 3-column shell. */
+html[data-widget-size="compact"] .umf-columns{grid-template-columns:minmax(280px,34fr) minmax(0,66fr)!important;gap:10px!important}
+html[data-widget-size="compact"] .umf-insights{grid-column:1/-1!important;grid-template-columns:1.15fr 1fr 1fr!important;gap:10px!important}
+html[data-widget-size="compact"] .umf-insights .insight-card:first-child,html[data-widget-size="compact"] .umf-insights .insight-card:nth-child(2),html[data-widget-size="compact"] .umf-insights .insight-card:nth-child(3){min-height:142px!important}
+
+/* Keep body text readable; previous passes over-shrunk metadata. */
+.umf-left>.head .sub:after{font-size:9px!important}
+.umf-left .ss,.recipeSec .ss{font-size:8.7px!important}
+.umf-left .ex{font-size:8.4px!important}
+.umf-left .foot,.umf-left .link{font-size:8.6px!important}
+.umf-left .tog{font-size:8.7px!important}
+.umf-badge{font-size:8.4px!important}
+.umf-menu-card:not(.missing) .umf-menu-photo:after,.umf-menu-missing{font-size:7.8px!important}
+.umf-menu-desc{font-size:8.5px!important;min-height:31px!important;max-height:31px!important}
+.umf-menu-meta span{font-size:8.2px!important}
+.umf-selected-desc{font-size:8.3px!important}.umf-selected-meta{font-size:8px!important}
+.umf-selection-label{font-size:8.5px!important}.umf-selection-chip{font-size:8.3px!important}.umf-selection-actions button{font-size:8.7px!important}
+.insight-sub{font-size:8.2px!important}.balance-label{font-size:8.4px!important}.balance-pct{font-size:8.2px!important}.balance-note{font-size:8px!important}
+.missing-name,.meal-name{font-size:9.2px!important}.missing-use,.meal-time{font-size:8px!important}.meal-actions button{font-size:8.2px!important}
+.summary-label{font-size:8.3px!important}
+
+/* Make the horizontal recipe rail visibly intentional without adding chrome. */
+.umf-recipe-grid{padding-right:10px!important;scroll-padding-inline:1px 10px!important}
+.umf-menu-card{scroll-snap-stop:normal!important}
+
+/* Large mode can breathe a little more without changing hierarchy. */
+html[data-widget-size="large"] .umf-columns{grid-template-columns:minmax(320px,30fr) minmax(470px,45fr) minmax(260px,25fr)!important}
+html[data-widget-size="large"] .umf-menu-card{min-width:148px!important}
+
+@media(max-width:1040px){
+  html[data-widget-size="compact"] .umf-columns,html[data-widget-size="normal"] .umf-columns,html[data-widget-size="large"] .umf-columns{grid-template-columns:minmax(280px,34fr) minmax(0,66fr)!important}
+  html[data-widget-size="compact"] .umf-insights,html[data-widget-size="normal"] .umf-insights,html[data-widget-size="large"] .umf-insights{grid-column:1/-1!important;grid-template-columns:1.15fr 1fr 1fr!important}
+}
+@media(max-width:760px){
+  html[data-widget-size="compact"] .umf-columns,html[data-widget-size="normal"] .umf-columns,html[data-widget-size="large"] .umf-columns{grid-template-columns:1fr!important}
+  html[data-widget-size="compact"] .umf-insights,html[data-widget-size="normal"] .umf-insights,html[data-widget-size="large"] .umf-insights{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:470px){
+  html[data-widget-size="compact"] .umf-insights,html[data-widget-size="normal"] .umf-insights,html[data-widget-size="large"] .umf-insights{grid-template-columns:1fr!important}
+}
