@@ -1,4 +1,13 @@
 (()=>{
+  /* Load the latest proportion pass without touching the functional HTML/JS stack. */
+  if(!document.querySelector('link[data-umf-proportion-v5]')){
+    const style=document.createElement('link');
+    style.rel='stylesheet';
+    style.href='./use-me-first-ios-notion-v5.css?v=20260915-proportion-pass';
+    style.dataset.umfProportionV5='';
+    document.head.appendChild(style);
+  }
+
   const btn=document.getElementById('syncBtn');
   if(!btn) return;
 
