@@ -109,6 +109,22 @@ details.shared-details input[type=range]::-moz-range-track{background:#f6d9e5!im
 #myBar{background:#e6c74e!important}
 #hisBar{background:#59b88a!important}
 .amount,.line strong,#myCapacity,#hisCapacity,#myDelta,#hisDelta,#myTime,#hisTime,#myPct,#hisPct{color:#191919!important}
+
+/* Remove all colored card outlines / decorative edge strips */
+main>section.shared-card,.two>section.my-card,.two>section.his-card,details>section {
+ border:1px solid #e8e8e8!important;
+ border-top:1px solid #e8e8e8!important;
+ border-left:1px solid #e8e8e8!important;
+ border-right:1px solid #e8e8e8!important;
+ border-bottom:1px solid #e8e8e8!important;
+ box-shadow:none!important;
+ background:#fff!important;
+}
+details.shared-details>summary {
+ border:1px solid #e8e8e8!important;
+ border-left:1px solid #e8e8e8!important;
+ background:#fff!important;
+}
 </style><main><section class="shared-card"><div class="line"><div><h1>우리집 자산·생활비 계산기</h1><small>Notion용 · 공동생활비 먼저 차감 · 각자 1억원 목표</small></div></div><div class="control"><label>포토부스 월 건수 <span class="amount" id="jobsV"></span></label><input id="jobs" type="range" min="0" max="24" step="1"></div><div class="line"><small>공동수입</small><strong id="earned"></strong></div><div class="line"><small>공동생활비 합계</small><strong id="shared"></strong></div><div class="line"><small>기본 반반 부담액</small><strong id="equal"></strong></div><div class="divide"></div><div class="line"><small>오빠 실제 입금</small><strong id="actuallyPaid"></strong></div><div class="line"><small>내 실제 부담</small><strong id="myActual"></strong></div></section>
 <div class="two"><section class="my-card"><h2>나 · 1억원 저축</h2><small>현재 6,000만원 · 월수입 400만원 초기값</small><div id="mineControls"></div><div class="divide"></div><div class="line"><small>저축 여력</small><strong id="myCapacity"></strong></div><div class="line"><small>목표 대비 차이</small><strong id="myDelta"></strong></div><div class="progress"><div id="myBar" class="bar"></div></div><div class="line"><small id="myPct"></small><strong id="myTime"></strong></div><div class="notice" id="myNote"></div></section>
 <section class="his-card"><h2>오빠 · 1억원 저축</h2><small>헬스트레이너 수입 · 포토부스 별도 처리</small><div id="hisControls"></div><div class="divide"></div><div class="line"><small>저축 여력</small><strong id="hisCapacity"></strong></div><div class="line"><small>목표 대비 차이</small><strong id="hisDelta"></strong></div><div class="progress"><div id="hisBar" class="bar"></div></div><div class="line"><small id="hisPct"></small><strong id="hisTime"></strong></div><div class="notice" id="hisNote"></div></section></div>
