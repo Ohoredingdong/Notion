@@ -1,0 +1,53 @@
+name: Verify investment widget embeds
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'stock-paper-investing.html'
+      - 'property-paper-investing.html'
+      - 'assets/investment-labs-20261016/**'
+      - '.github/workflows/verify-investment-embeds.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify public pages, asset integrity and iframe headers
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, time, urllib.request
+          base = 'https://ohoredingdong.github.io/Notion/'
+          expected = {
+              'stock-paper-investing.html': '0334c3a981d6e9a11c42b74658dd18410ad4ab0eea2564c1cc56f62d3a75083d',
+              'property-paper-investing.html': '3ed57909876ed0851cb1524a508e602d5002511221ae1863e05da30b4e5926f9',
+              'assets/investment-labs-20261016/common.js': '2cc34ff9ae1f466edf4f149f4dec7f7c1e6beddd323386e8250a9e52199c5304',
+              'assets/investment-labs-20261016/lab.css': '8c37f79943771a27c3bbb6040a6b27070f7f17c2eaaddc2d53ec2a7e6bbb2d2c',
+              'assets/investment-labs-20261016/stock.js': 'b94da928241d656d58c29dec534dc84ff251e4b2af0ce7c7331957ec69baf567',
+              'assets/investment-labs-20261016/property.js': 'd06379d93e56964327f3ad479804be1f246d5212ada8d9813dd927b224a20358',
+          }
+          for path, digest in expected.items():
+              for attempt in range(10):
+                  try:
+                      request = urllib.request.Request(base + path + '?verify=20261016-' + str(attempt), headers={'User-Agent': 'Investment-Widget-Deployment-Check/1.0'})
+                      with urllib.request.urlopen(request, timeout=15) as response:
+                          data = response.read()
+                          assert response.status == 200, response.status
+                          assert hashlib.sha256(data).hexdigest() == digest, 'Deployed file differs from tested source'
+                          if path.endswith('.html'):
+                              assert response.headers.get_content_type() == 'text/html', 'Not an HTML response'
+                              assert response.headers.get('X-Frame-Options', '').upper() not in ('DENY', 'SAMEORIGIN'), 'Embedding blocked'
+                              csp = response.headers.get('Content-Security-Policy', '').lower()
+                              assert "frame-ancestors 'none'" not in csp, 'Embedding blocked by CSP'
+                              assert "frame-ancestors 'self'" not in csp, 'Embedding restricted by CSP'
+                          print('PASS', path, 'HTTP 200', len(data), 'bytes', 'sha256=' + digest, flush=True)
+                      break
+                  except Exception as error:
+                      if attempt == 9:
+                          raise
+                      print('Retry', path, str(error), flush=True)
+                      time.sleep(5)
+          print('All six published files verified. HTML pages permit iframe embedding.', flush=True)
+          PY
