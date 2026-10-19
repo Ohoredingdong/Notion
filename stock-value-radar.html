@@ -189,7 +189,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const fmt=(n,d=1)=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('ko-KR',{maximumFractionDigits:d});
 const pct=n=>n==null?'—':(n>0?'+':'')+fmt(n,1)+'%';
-const currency=(n,cc)=>n==null?'—':cc==='KRW'?'₩'+fmt(n,0):'+fmt(n,2);
+const currency=(n,cc)=>n==null?'—':cc==='KRW'?'₩'+fmt(n,0):String.fromCharCode(36)+fmt(n,2);
 const freshness=(date)=>{const ms=Date.parse(date||'');return Number.isFinite(ms)?(Date.now()-ms)/3600000:Infinity};
 let data=null,health=null;
 function healthView(){
