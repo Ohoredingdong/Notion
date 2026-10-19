@@ -1,0 +1,1788 @@
+{
+  "version": "official-audit-v1",
+  "generated_at": "2026-10-19T14:32:09.301126+00:00",
+  "started_at": "2026-10-19T14:31:42.233788+00:00",
+  "input_generated_at": "2026-10-19T22:56:18.778022+09:00",
+  "input_sha256": "0a47db11b5a47b703e31b4d2353dc3a04fef4fd0c06d3a52f6a62d7a2cefcfd8",
+  "scope": "고정 관심종목의 연간 재무 수치 대조. 주가·미래 전망·확률·신용위험 검증은 별도입니다.",
+  "counts": {
+    "companies": 10,
+    "source_fetched": 4,
+    "fields": 80,
+    "unverified": 59,
+    "match": 14,
+    "period_mismatch": 6,
+    "mismatch": 1
+  },
+  "companies": [
+    {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "market": "US",
+      "input_key": "f26dc52ea1054a9b650f0d3cfdb8acdec6b6e212ead78492c81c5941cd4e42a6",
+      "input_period": "2025-09-30",
+      "checked_at": "2026-10-19T14:31:43.213284+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 416161000000.0,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 6.43,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 133050000000.0,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 31.97,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 112010000000.0,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 7.46,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 12715000000.0,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 98767000000.0,
+          "widget_period": "2025-09-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    },
+    {
+      "symbol": "MSFT",
+      "name": "Microsoft",
+      "market": "US",
+      "input_key": "35cefbdeb112a404a7e1dcbc879817063317c08a8f466f1bbdf9b9856b860a45",
+      "input_period": "2026-06-30",
+      "checked_at": "2026-10-19T14:31:44.388012+00:00",
+      "status": "partial",
+      "counts": {
+        "unverified": 6,
+        "match": 2
+      },
+      "source": {
+        "period": "2026-06-30",
+        "kind": "기업 공식 실적발표 GAAP (SEC 최종공시와 별개)",
+        "facts": {
+          "net_income": {
+            "value": 133749000000.0,
+            "account": "Net\r\n                                income",
+            "unit": "USD",
+            "period": "2026-06-30",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+            "document_sha256": "01ef31c99d0782114d6816089a9ecc5d55b81fa41fda62ef11e5b6d986c17a41",
+            "fetched_at": "2026-10-19T14:31:44.153378+00:00"
+          },
+          "eps": {
+            "value": 17.95,
+            "account": "Diluted",
+            "unit": "USD/shares",
+            "period": "2026-06-30",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+            "document_sha256": "01ef31c99d0782114d6816089a9ecc5d55b81fa41fda62ef11e5b6d986c17a41",
+            "fetched_at": "2026-10-19T14:31:44.153378+00:00"
+          }
+        },
+        "document": {
+          "url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+          "sha256": "01ef31c99d0782114d6816089a9ecc5d55b81fa41fda62ef11e5b6d986c17a41",
+          "fetched_at": "2026-10-19T14:31:44.153378+00:00",
+          "bytes": 809251
+        }
+      },
+      "attempts": [
+        {
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 331839000000.0,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 17.79,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 155237000000.0,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 46.78,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 133749000000.0,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": 133749000000.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2026-06-30",
+          "official_unit": "USD",
+          "official_account": "Net\r\n                                income",
+          "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+          "document_sha256": "01ef31c99d0782114d6816089a9ecc5d55b81fa41fda62ef11e5b6d986c17a41",
+          "fetched_at": "2026-10-19T14:31:44.153378+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 500013.3749
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 17.95,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": 17.95,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2026-06-30",
+          "official_unit": "USD/shares",
+          "official_account": "Diluted",
+          "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
+          "document_sha256": "01ef31c99d0782114d6816089a9ecc5d55b81fa41fda62ef11e5b6d986c17a41",
+          "fetched_at": "2026-10-19T14:31:44.153378+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 0.005000001795
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 115948000000.0,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 66987000000.0,
+          "widget_period": "2026-06-30",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": "2026-10-19T14:31:44.153378+00:00"
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA",
+      "market": "US",
+      "input_key": "c208c44de094f4139c017973ad3cacc89f7e2ac4c6a430602aa2a20f75ca17c0",
+      "input_period": "2026-01-31",
+      "checked_at": "2026-10-19T14:31:45.460354+00:00",
+      "status": "differences",
+      "counts": {
+        "period_mismatch": 6,
+        "unverified": 2
+      },
+      "source": {
+        "period": "2026-01-25",
+        "kind": "기업 공식 실적발표 GAAP (SEC 최종공시와 별개)",
+        "facts": {
+          "revenue": {
+            "value": 215938000000.0,
+            "account": "Revenue",
+            "unit": "USD",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "revenue_previous": {
+            "value": 130497000000.0,
+            "account": "Revenue",
+            "unit": "USD",
+            "period": "2025-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "operating_income": {
+            "value": 130387000000.0,
+            "account": "Operating income",
+            "unit": "USD",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "net_income": {
+            "value": 120067000000.0,
+            "account": "Net income",
+            "unit": "USD",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "eps": {
+            "value": 4.9,
+            "account": "Diluted",
+            "unit": "USD/shares",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "operating_cash_flow": {
+            "value": 102718000000.0,
+            "account": "Net cash provided by operating activities",
+            "unit": "USD",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00"
+          },
+          "operating_margin": {
+            "value": 60.38168363141272,
+            "account": "영업이익 / 매출액 ×100",
+            "unit": "percent",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+            "components": {
+              "operating_income": 130387000000.0,
+              "revenue": 215938000000.0
+            }
+          },
+          "revenue_growth": {
+            "value": 65.47353579009479,
+            "account": "전년 동기 대비 매출 성장률",
+            "unit": "percent",
+            "period": "2026-01-25",
+            "start": null,
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+            "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+            "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+            "prior_period": "2025-01-25",
+            "components": {
+              "current": 215938000000.0,
+              "prior": 130497000000.0
+            }
+          }
+        },
+        "document": {
+          "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "bytes": 458461
+        }
+      },
+      "attempts": [
+        {
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 215938000000.0,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 215938000000.0,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "USD",
+          "official_account": "Revenue",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": null
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 65.47,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 65.47353579009479,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "percent",
+          "official_account": "전년 동기 대비 매출 성장률",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "current": 215938000000.0,
+            "prior": 130497000000.0
+          }
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 130387000000.0,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 130387000000.0,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "USD",
+          "official_account": "Operating income",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": null
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 60.38,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 60.38168363141272,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "percent",
+          "official_account": "영업이익 / 매출액 ×100",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "operating_income": 130387000000.0,
+            "revenue": 215938000000.0
+          }
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 120067000000.0,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 120067000000.0,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "USD",
+          "official_account": "Net income",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": null
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 4.9,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": 4.9,
+          "status": "period_mismatch",
+          "reason": "결산일이 다릅니다. 52/53주 회계연도와 제공처의 달력말일 표기 차이를 확인해야 합니다.",
+          "official_period": "2026-01-25",
+          "official_unit": "USD/shares",
+          "official_account": "Diluted",
+          "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
+          "document_sha256": "e3c7cbf9cf608aa13c4510529c5b43e007822c719f7e0291aa610a351dc2a5c6",
+          "fetched_at": "2026-10-19T14:31:45.274427+00:00",
+          "official_basis": "consolidated",
+          "formula": null
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 6042000000.0,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 96676000000.0,
+          "widget_period": "2026-01-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": "2026-10-19T14:31:45.274427+00:00"
+    },
+    {
+      "symbol": "AMZN",
+      "name": "Amazon",
+      "market": "US",
+      "input_key": "89bd153dce9eb78324d8ef51669cbadf2cbf8a94dee97087d0a52562e71c2d4b",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:31:46.580195+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        },
+        {
+          "url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/default.aspx",
+          "code": "parse_error",
+          "message": "문서구조·단위·계정 처리 실패; 검증 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 716924000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 12.38,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 79975000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 11.16,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 77670000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 7.17,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 131819000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 7695000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    },
+    {
+      "symbol": "TSLA",
+      "name": "Tesla",
+      "market": "US",
+      "input_key": "f18ed53671536ce6e69e03f7dfb977f26aae1f225ec0e527877f70785df53e1b",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:31:47.402237+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001318605.json",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm",
+          "code": "http_403",
+          "message": "공식 서버 HTTP 403; 우회하지 않고 검증 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 94827000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": -2.93,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 4849000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 5.11,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 3794000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 1.08,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 8527000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 6220000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "USD",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    },
+    {
+      "symbol": "005930",
+      "name": "삼성전자",
+      "market": "KR",
+      "input_key": "bfcbddcc904484cfb31d85253aa267ad56dc8c869db3af2845bb38a27cbde05d",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:31:58.548083+00:00",
+      "status": "partial",
+      "counts": {
+        "match": 6,
+        "unverified": 2
+      },
+      "source": {
+        "period": "2025-12-31",
+        "start": "2025-01-01",
+        "kind": "KIND 사업보고서 연결재무제표",
+        "facts": {
+          "revenue": {
+            "value": 333605938000000.0,
+            "account": "매출액 (주30)",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "revenue_previous": {
+            "value": 300870903000000.0,
+            "account": "매출액 (주30)",
+            "unit": "KRW",
+            "period": "2024-12-31",
+            "start": "2024-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "operating_income": {
+            "value": 43601051000000.0,
+            "account": "영업이익 (주30)",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "operating_cash_flow": {
+            "value": 85315148000000.0,
+            "account": "영업활동현금흐름",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "ppe": {
+            "value": -47522179000000.0,
+            "account": "유형자산의 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "intangible": {
+            "value": -4630970000000.0,
+            "account": "무형자산의 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00"
+          },
+          "operating_margin": {
+            "value": 13.069626776247608,
+            "account": "영업이익 / 매출액 ×100",
+            "unit": "percent",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+            "components": {
+              "operating_income": 43601051000000.0,
+              "revenue": 333605938000000.0
+            }
+          },
+          "revenue_growth": {
+            "value": 10.880093313642902,
+            "account": "전년 동기 대비 매출 성장률",
+            "unit": "percent",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+            "prior_period": "2024-12-31",
+            "components": {
+              "current": 333605938000000.0,
+              "prior": 300870903000000.0
+            }
+          },
+          "capex": {
+            "value": 52153149000000.0,
+            "account": "현금 지급 유형자산 취득 + 무형자산 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 2000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+            "components": {
+              "ppe": -47522179000000.0,
+              "intangible": -4630970000000.0
+            },
+            "definition": "ppe_plus_intangibles"
+          },
+          "fcf": {
+            "value": 33161999000000.0,
+            "account": "영업활동현금흐름 − CAPEX",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 3000000,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+            "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+            "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+            "components": {
+              "operating_cash_flow": 85315148000000.0,
+              "capex": 52153149000000.0
+            },
+            "definition": "ppe_plus_intangibles"
+          }
+        },
+        "document": {
+          "url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "bytes": 5101926
+        }
+      },
+      "attempts": [
+        {
+          "url": "https://opendart.fss.or.kr/",
+          "code": "credential_required",
+          "message": "DART_API_KEY 미설정 또는 회사 고유번호 조회 실패; 한국 공시 API 자동탐색 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 333605938000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 333605938000000.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "매출액 (주30)",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 533360.5938
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 10.88,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 10.880093313642902,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "percent",
+          "official_account": "전년 동기 대비 매출 성장률",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "current": 333605938000000.0,
+            "prior": 300870903000000.0
+          },
+          "difference": -9.331364290154909e-05,
+          "difference_pct": -0.0008576548032408884,
+          "tolerance": 0.015
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 43601051000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 43601051000000.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "영업이익 (주30)",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 504360.1051
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 13.07,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 13.069626776247608,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "percent",
+          "official_account": "영업이익 / 매출액 ×100",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "operating_income": 43601051000000.0,
+            "revenue": 333605938000000.0
+          },
+          "difference": 0.00037322375239234873,
+          "difference_pct": 0.0028556573097453376,
+          "tolerance": 0.015
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 44260956000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 6603.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 52153149000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 52153149000000.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "현금 지급 유형자산 취득 + 무형자산 취득",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "ppe": -47522179000000.0,
+            "intangible": -4630970000000.0
+          },
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 1005215.3149
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 33161999000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 33161999000000.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "영업활동현금흐름 − CAPEX",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm",
+          "document_sha256": "2b9f9d1d628dd36a24b0880a06e22e7bcec61a4200ac4fba14605f6549641f07",
+          "fetched_at": "2026-10-19T14:31:50.318576+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "operating_cash_flow": 85315148000000.0,
+            "capex": 52153149000000.0
+          },
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 1503316.1999
+        }
+      ],
+      "last_successful_fetch_at": "2026-10-19T14:31:50.318576+00:00"
+    },
+    {
+      "symbol": "000660",
+      "name": "SK하이닉스",
+      "market": "KR",
+      "input_key": "588f74f63389fdab36f4a859530a893f8608a9176c59528ed053e85b7634b5d7",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:31:59.444770+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://opendart.fss.or.kr/",
+          "code": "credential_required",
+          "message": "DART_API_KEY 미설정 또는 회사 고유번호 조회 실패; 한국 공시 API 자동탐색 보류"
+        },
+        {
+          "url": "https://kind.krx.co.kr/external/2026/03/05/001321/20260305003044/00660.htm",
+          "code": "parse_error",
+          "message": "연결 연간 표·단위·계정을 확실하게 식별하지 못했습니다."
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 97146675000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 46.76,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 47206319000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 48.59,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 42919287000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 60378.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 28579343000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 24793783000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    },
+    {
+      "symbol": "035420",
+      "name": "NAVER",
+      "market": "KR",
+      "input_key": "e023e161b01131b5abca9be4528ebbfe58ebf7188dd9505aec1ae3e5f428c1d1",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:32:09.300966+00:00",
+      "status": "differences",
+      "counts": {
+        "match": 6,
+        "mismatch": 1,
+        "unverified": 1
+      },
+      "source": {
+        "period": "2025-12-31",
+        "start": "2025-01-01",
+        "kind": "KIND 사업보고서 연결재무제표",
+        "facts": {
+          "revenue": {
+            "value": 12035007218975.0,
+            "account": "영업수익 (주35)",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "revenue_previous": {
+            "value": 10737719264647.0,
+            "account": "영업수익 (주35)",
+            "unit": "KRW",
+            "period": "2024-12-31",
+            "start": "2024-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "operating_income": {
+            "value": 2208138388720.0,
+            "account": "영업이익",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "eps": {
+            "value": 12907.0,
+            "account": "희석주당순이익 (단위 : 원) (주29)",
+            "unit": "KRW/shares",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "operating_cash_flow": {
+            "value": 3095806604677.0,
+            "account": "영업활동현금흐름",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "ppe": {
+            "value": -1234693161100.0,
+            "account": "유형자산의 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "intangible": {
+            "value": -84690628410.0,
+            "account": "무형자산의 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 1,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00"
+          },
+          "operating_margin": {
+            "value": 18.347628285910268,
+            "account": "영업이익 / 매출액 ×100",
+            "unit": "percent",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+            "components": {
+              "operating_income": 2208138388720.0,
+              "revenue": 12035007218975.0
+            }
+          },
+          "revenue_growth": {
+            "value": 12.08159686758814,
+            "account": "전년 동기 대비 매출 성장률",
+            "unit": "percent",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 0.01,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+            "prior_period": "2024-12-31",
+            "components": {
+              "current": 12035007218975.0,
+              "prior": 10737719264647.0
+            }
+          },
+          "capex": {
+            "value": 1319383789510.0,
+            "account": "현금 지급 유형자산 취득 + 무형자산 취득",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 2,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+            "components": {
+              "ppe": -1234693161100.0,
+              "intangible": -84690628410.0
+            },
+            "definition": "ppe_plus_intangibles"
+          },
+          "fcf": {
+            "value": 1776422815167.0,
+            "account": "영업활동현금흐름 − CAPEX",
+            "unit": "KRW",
+            "period": "2025-12-31",
+            "start": "2025-01-01",
+            "basis": "consolidated",
+            "resolution": 3,
+            "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+            "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+            "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+            "components": {
+              "operating_cash_flow": 3095806604677.0,
+              "capex": 1319383789510.0
+            },
+            "definition": "ppe_plus_intangibles"
+          }
+        },
+        "document": {
+          "url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "bytes": 4618905
+        }
+      },
+      "attempts": [
+        {
+          "url": "https://opendart.fss.or.kr/",
+          "code": "credential_required",
+          "message": "DART_API_KEY 미설정 또는 회사 고유번호 조회 실패; 한국 공시 API 자동탐색 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 12035007218970.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 12035007218975.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "영업수익 (주35)",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": -5.0,
+          "difference_pct": -4.15454673937939e-11,
+          "tolerance": 1204.0007218975
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 12.08,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 12.08159686758814,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "percent",
+          "official_account": "전년 동기 대비 매출 성장률",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "current": 12035007218975.0,
+            "prior": 10737719264647.0
+          },
+          "difference": -0.0015968675881392613,
+          "difference_pct": -0.013217355335065451,
+          "tolerance": 0.015
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 2208138388970.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 2208138388720.0,
+          "status": "mismatch",
+          "reason": "같은 기간·단위의 수치가 반올림 허용범위 밖에서 다릅니다. 정정공시·표준화 조정·데이터 오류를 확인하세요.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "영업이익",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 250.0,
+          "difference_pct": 1.1321754165277586e-08,
+          "tolerance": 221.31383887200002
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 18.35,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 18.347628285910268,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "percent",
+          "official_account": "영업이익 / 매출액 ×100",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "operating_income": 2208138388720.0,
+            "revenue": 12035007218975.0
+          },
+          "difference": 0.0023717140897332456,
+          "difference_pct": 0.012926543162826995,
+          "tolerance": 0.015
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 1953214734950.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 12907.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 12907.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW/shares",
+          "official_account": "희석주당순이익 (단위 : 원) (주29)",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": null,
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 0.5000012907
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 1319383789510.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 1319383789510.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "현금 지급 유형자산 취득 + 무형자산 취득",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "ppe": -1234693161100.0,
+            "intangible": -84690628410.0
+          },
+          "difference": 0.0,
+          "difference_pct": 0.0,
+          "tolerance": 132.938378951
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 1776422815160.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": 1776422815167.0,
+          "status": "match",
+          "reason": "같은 기간·통화의 원문 수치와 표시 반올림 허용범위에서 일치합니다.",
+          "official_period": "2025-12-31",
+          "official_unit": "KRW",
+          "official_account": "영업활동현금흐름 − CAPEX",
+          "source_url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm",
+          "document_sha256": "6834c3de7ffda15efd4c22c5c974604d85fbe71d0f4bf106484c67e7f3c9a9aa",
+          "fetched_at": "2026-10-19T14:32:01.886096+00:00",
+          "official_basis": "consolidated",
+          "formula": {
+            "operating_cash_flow": 3095806604677.0,
+            "capex": 1319383789510.0
+          },
+          "difference": -7.0,
+          "difference_pct": -3.9405033194993816e-10,
+          "tolerance": 179.1422815167
+        }
+      ],
+      "last_successful_fetch_at": "2026-10-19T14:32:01.886096+00:00"
+    },
+    {
+      "symbol": "207940",
+      "name": "삼성바이오로직스",
+      "market": "KR",
+      "input_key": "49f8caf8c38cfece48113fbc7776e0115424151a75024aba5044b75139d1bc8b",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:32:09.301044+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://opendart.fss.or.kr/",
+          "code": "credential_required",
+          "message": "DART_API_KEY 미설정 또는 회사 고유번호 조회 실패; 한국 공시 API 자동탐색 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 4556971695180.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 30.31,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 2069221266710.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 45.41,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 1784352060590.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 26628.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 1475073515280.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": 772733911270.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    },
+    {
+      "symbol": "005380",
+      "name": "현대자동차",
+      "market": "KR",
+      "input_key": "d830810eb64fbeb2d407f2d226196520bf0d51f506ef236be9e83a12aad3c9c3",
+      "input_period": "2025-12-31",
+      "checked_at": "2026-10-19T14:32:09.301093+00:00",
+      "status": "unavailable",
+      "counts": {
+        "unverified": 8
+      },
+      "source": null,
+      "attempts": [
+        {
+          "url": "https://opendart.fss.or.kr/",
+          "code": "credential_required",
+          "message": "DART_API_KEY 미설정 또는 회사 고유번호 조회 실패; 한국 공시 API 자동탐색 보류"
+        }
+      ],
+      "fields": [
+        {
+          "field": "revenue",
+          "label": "매출액",
+          "widget_value": 186254472000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "revenue_growth",
+          "label": "매출 성장률",
+          "widget_value": 6.29,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_income",
+          "label": "영업이익",
+          "widget_value": 11467851000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "operating_margin",
+          "label": "영업이익률",
+          "widget_value": 6.16,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "net_income",
+          "label": "순이익",
+          "widget_value": 9445987000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "eps",
+          "label": "EPS",
+          "widget_value": 36088.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "capex",
+          "label": "CAPEX",
+          "widget_value": 11069856000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        },
+        {
+          "field": "fcf",
+          "label": "FCF",
+          "widget_value": -17061126000000.0,
+          "widget_period": "2025-12-31",
+          "widget_currency": "KRW",
+          "official_value": null,
+          "status": "unverified",
+          "reason": "공식 원문 수집 또는 해당 계정 추출이 필요합니다."
+        }
+      ],
+      "last_successful_fetch_at": null
+    }
+  ],
+  "limitations": [
+    "KIND 주총 참고서류와 기업 실적발표는 최종 감사보고서가 아닙니다. 문서 유형을 확인하세요.",
+    "기간이 달라지면 과거 HTML 주소를 새 기간의 검증자료로 재사용하지 않습니다.",
+    "DART 인증키가 없거나 SEC 접근이 차단되면 해당 경로의 최신 공시 자동탐색이 제한됩니다.",
+    "기존 원시 수치를 자동으로 수정하거나 투자 주문을 실행하지 않습니다."
+  ]
+}
