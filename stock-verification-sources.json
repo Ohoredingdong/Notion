@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "notes": "Source addresses and parsing configuration only. No financial reference values are embedded. SEC/OpenDART discover the requested fiscal period; public HTML fallbacks are period-limited and never silently reused for a new year. Missing credentials, parsing ambiguity and accounting-basis differences must remain unverified.",
+  "companies": {
+    "AAPL": {"cik": 320193, "name": "Apple", "currency": "USD", "aliases": ["Apple Inc."], "fallbacks": [{"type": "ixbrl", "period": "2025-09-27", "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm"}]},
+    "MSFT": {"cik": 789019, "name": "Microsoft", "currency": "USD", "aliases": ["Microsoft"], "fallbacks": [{"type": "us_release", "period": "2026-06-30", "index": 2, "prior_index": 3, "url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast"}]},
+    "NVDA": {"cik": 1045810, "name": "NVIDIA", "currency": "USD", "aliases": ["NVIDIA"], "fallbacks": [{"type": "us_release", "period": "2026-01-25", "index": 2, "prior_index": 3, "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/"}]},
+    "AMZN": {"cik": 1018724, "name": "Amazon", "currency": "USD", "aliases": ["Amazon.com"], "fallbacks": [{"type": "us_release", "period": "2025-12-31", "index": 3, "prior_index": 2, "url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/default.aspx"}]},
+    "TSLA": {"cik": 1318605, "name": "Tesla", "currency": "USD", "aliases": ["Tesla"], "fallbacks": [{"type": "ixbrl", "period": "2025-12-31", "url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm"}]},
+    "005930": {"name": "삼성전자", "currency": "KRW", "aliases": ["삼성전자주식회사", "삼성전자 주식회사"], "fallbacks": [{"type": "kind_html", "period": "2025-12-31", "url": "https://kind.krx.co.kr/external/2026/03/10/001404/20260310003123/11011.htm"}]},
+    "000660": {"name": "SK하이닉스", "currency": "KRW", "aliases": ["에스케이하이닉스", "SK하이닉스"], "fallbacks": [{"type": "kind_proxy", "period": "2025-12-31", "url": "https://kind.krx.co.kr/external/2026/03/05/001321/20260305003044/00660.htm"}]},
+    "035420": {"name": "NAVER", "currency": "KRW", "aliases": ["네이버 주식회사", "네이버주식회사"], "fallbacks": [{"type": "kind_html", "period": "2025-12-31", "url": "https://kind.krx.co.kr/external/2026/03/13/001554/20260313003887/11011.htm"}]},
+    "207940": {"name": "삼성바이오로직스", "currency": "KRW", "aliases": ["삼성바이오로직스"], "fallbacks": []},
+    "005380": {"name": "현대자동차", "currency": "KRW", "aliases": ["현대자동차"], "fallbacks": []}
+  },
+  "documentation": {
+    "sec": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "dart": "https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&apiId=2019020",
+    "dart_key": "https://opendart.fss.or.kr/uss/umt/EgovMberInsertView.do",
+    "repository_secrets": "https://github.com/Ohoredingdong/Notion/settings/secrets/actions"
+  }
+}
