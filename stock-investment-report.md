@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-19T20:55:45.792019+09:00
+- 계산일: 2026-10-19T22:47:38.978924+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -36,8 +36,8 @@
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
 - [실적 발표에는 널뛰는 주식…기준금리 변화 영향은 미미 한 까닭 (너드의 투자법) - 매일경제 마켓](https://news.google.com/rss/articles/CBMiUkFVX3lxTE1xd0h1MTJHRkZuYkI3NnNKMXpkdHJlQWI2MlZGZThZYmFfbWN1T09TY3V5cFNkVnI2UXgwTU9PZ01KdWVrMF9LWHVPYzlTZlh5eFE?oc=5)
 - [또 외국인 양털깎기 당했나…코스피만 출렁인 까닭 (박상현의 경제수다) - 한겨레](https://news.google.com/rss/articles/CBMiZ0FVX3lxTE5zNkh6ZTNHYVZzeVJhU1ZnTzBrVDZlSGxiZHJ2N0JwSjBVSkozTm9QLVRGYmpkNHdmUVVudWxJTTVRdTFlSnFVSGQwbTlpOGI4d0JTLVlWQWFGdlE3cE5ZSi1nSUtOUEE?oc=5)
+- [(박래혁의 테크오딧세이) 삼성전자와 TSMC의 HBM 공조...엔비디아가 바꾸는 반도체 질서 - 알티케이뉴스](https://news.google.com/rss/articles/CBMibEFVX3lxTE1kLXdGMlp0d25FdmRtd3ktcjd5RjhhRldsa0JFRG84aW5ZRkFQVjkyaFZCaW1yd3ZVRVhveHptdGNEcXQ2Zl93eG1LOVcwMWZYOU1WNDZmR2IwUUN4NGFEWERpbGNLTGtrV3d5aw?oc=5)
 - [2026년 10월 19일(월) / 삼성전자·SK하이닉스 투자 리스크 점검 삼성전자가 TSMC에 HBM 생산을 맡긴다? 반도체 투자자가 주목해야 할 변화 - 네이버 프리미엄콘텐츠](https://news.google.com/rss/articles/CBMikgFBVV95cUxPTHowRGR5eDJIR3JSbHlXLXFVMGNuSEIzbzBQenp5eDNlYzJod05OQVFXeDVpN3JOOVB6dmo3SGtjTjNEUFBuT1FJUGJSc0NiQ2RXVkF5RW1ZYlBvUU1VdFdvWk5OZU9iYkV3T1VidUhHbEJPRkpBOEtBbGh2a2tDUTdybHNfU3RoaXBJaUYxOHlXZw?oc=5)
-- [에이전틱 AI가 엔비디아 CPU의 D램 수요 높인다, 삼성전자 SK하이닉스에 새 성장 기회 - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTFBTVkZCSl9Zd0hMOGt2MG1LSlBNWGJzN2FWR1J6NHhURS1nZUUweDhVamdaWHMyS1VKSGx0MmlZWTZOSml0YTN5VjJFVUxtQU1uRjhkLTJjVDBXTlBVUmppYnowNjQ0d29GV3oyMENPeVVHSWc?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
