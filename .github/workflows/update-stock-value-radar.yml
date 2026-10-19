@@ -2,38 +2,58 @@ name: Update Stock Value Radar
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 3,13 * * *"
+    - cron: "15 3,13 * * *" # 12:15 and 22:15 KST
   push:
     branches: [main]
     paths:
       - "scripts/update-stock-value-radar.py"
+      - "scripts/build-stock-investment-intelligence.py"
       - ".github/workflows/update-stock-value-radar.yml"
 permissions:
   contents: write
+concurrency:
+  group: update-stock-value-radar
+  cancel-in-progress: false
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install fallback financial-data reader
-        run: pip install 'yfinance>=0.2.65,<2' 
-      - name: Update SEC and OpenDART fundamentals
+      - name: Install data reader
+        run: pip install "yfinance>=0.2.65,<2"
+      - name: Update financials and price-linked metrics
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: python scripts/update-stock-value-radar.py
-      - name: Commit only if changed
+      - name: Analyze, make scenarios, discover headlines, track history
+        run: python scripts/build-stock-investment-intelligence.py
+      - name: Validate analysis output
         run: |
-          if git diff --quiet -- stock-value-radar-data.json && [ -f stock-value-radar-data.json ]; then
-            echo "No change"
-            exit 0
-          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path("stock-investment-intelligence.json").read_text())
+          h=json.loads(Path("stock-investment-history.json").read_text())
+          assert len(a.get("companies",[]))>=5
+          assert len(h.get("entries",[]))>=5
+          assert all("quality" in c and "dual_thesis" in c for c in a["companies"])
+          print("analysis:",a["state"],"companies",len(a["companies"]))
+          PY
+      - name: Commit results with rebase retry
+        shell: bash
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stock-value-radar-data.json
-          git commit -m "data: refresh stock value radar"
-          git pull --rebase origin main
-          git push
+          git add stock-value-radar-data.json stock-investment-intelligence.json stock-investment-history.json
+          if git diff --cached --quiet; then echo "No update"; exit 0; fi
+          git commit -m "data: refresh investor research"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((attempt*2))
+          done
+          echo "Push failed" >&2
+          exit 1
