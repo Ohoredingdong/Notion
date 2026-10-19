@@ -99,11 +99,18 @@ def scenarios(row):
     """Transparent SENSITIVITY TEST only; not a fair-value model."""
     eps=num(row.get("eps"));pe=num(row.get("annual_per"));price=num(row.get("price"))
     if not eps or eps<=0 or not pe or pe<=0 or not price:return None
-    assumptions=[("bear",-0.20,0.70),("base",0.10,0.90),("bull",0.30,1.10)]
+    # Explicit sensitivity assumptions anchored to CURRENT reported revenue growth;
+    # not an EPS forecast and NOT a fair-value estimate.
+    rev_growth=num(row.get("revenue_growth"))
+    g0=max(-0.20,min(0.25,rev_growth/100*0.60)) if rev_growth is not None else 0.0
+    base_pe_factor=0.70 if pe>=70 else 0.85 if pe>=40 else 0.95 if pe>=25 else 1.0
+    assumptions=[("bear",max(-0.60,g0-0.25),base_pe_factor*0.75),
+                 ("base",g0,base_pe_factor),
+                 ("bull",min(0.70,g0+0.25),min(1.2,base_pe_factor*1.15))]
     result={}
     for name,g,m in assumptions:
         val=round(eps*(1+g)*pe*m,2)
-        result[name]={"eps_change_pct":int(g*100),"pe_multiple_factor":m,
+        result[name]={"eps_change_pct":round(g*100,1),"pe_multiple_factor":m,
                       "implied_price":val,"vs_price_pct":round((val/price-1)*100,2)}
     return result
 
