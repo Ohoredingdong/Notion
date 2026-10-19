@@ -1,0 +1,62 @@
+name: Monitor Stock Radar Health
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 0,4,8,12,16,20 * * *" # Every 4 hours (UTC)
+  push:
+    branches: [main]
+    paths:
+      - "scripts/monitor-stock-value-radar.py"
+      - ".github/workflows/monitor-stock-value-radar.yml"
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: monitor-stock-radar
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Inspect timestamps, data coverage, source quality, anomalies
+        run: python scripts/monitor-stock-value-radar.py
+      - name: Write independent health heartbeat
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stock-radar-health.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "ops: update independent stock data health heartbeat"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((attempt*2))
+          done
+          exit 1
+      - name: Open or close actionable GitHub alert issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          issue=$(gh issue list --state open --limit 100 --json number,title --jq '.[] | select(.title == "[Stock Radar] 자동 데이터 이상 감지") | .number' | head -n 1)
+          required=$(python -c 'import json;d=json.load(open("stock-radar-health.json"));print("yes" if d.get("notification_required") else "no")')
+          if [ "$required" = "yes" ]; then
+            summary=$(python -c 'import json;d=json.load(open("stock-radar-health.json"));print("\n".join("- "+x for x in d.get("issues",[])))')
+            if [ -z "$issue" ]; then
+              gh issue create --title "[Stock Radar] 자동 데이터 이상 감지" --body "자동 데이터 감시가 연속 2회 이상 이상을 감지했습니다.\n\n${summary}\n\n상태: https://ohoredingdong.github.io/Notion/stock-value-radar.html\n\n재실행: https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-value-radar.yml"
+            else
+              gh issue comment "$issue" --body "이상 지속: ${summary}"
+            fi
+          elif [ -n "$issue" ]; then
+            level=$(python -c 'import json;print(json.load(open("stock-radar-health.json")).get("status"))')
+            if [ "$level" != "error" ]; then
+              gh issue close "$issue" --comment "데이터 갱신 경보가 해제되었습니다. 품질경고는 위젯에서 계속 확인하세요."
+            fi
+          fi
