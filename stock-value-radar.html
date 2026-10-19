@@ -419,7 +419,7 @@ function evidenceSources(r,kind){
 function qualityChecklist(r,text){
  const kind=kindOfClaim(text),src=evidenceSources(r,kind);
  const financial=String(r.filing_source||"");
- const official=(financial.includes("SEC")||financial.includes("OpenDART"))&&!financial.includes("Yahoo");
+ const official=false; // v5: only the independent source audit can establish a match
  const period=Date.parse(r.filing_period||"");
  const recent=Number.isFinite(period)&&Date.now()-period<540*86400000&&Date.now()-period>=-86400000;
  const numeric=({
@@ -577,4 +577,5 @@ el.addEventListener('click',async function(event){
  }catch(e){b.textContent='복사 실패 · '+code}
 });
 })();
-</script></body></html>
+</script><script src="./assets/stock-official-audit-v5.js"></script>
+</body></html>
