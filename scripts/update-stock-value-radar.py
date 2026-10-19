@@ -200,11 +200,10 @@ def main():
         try:
             row=stock_sec(symbol,name,cik)
         except Exception as e:
-            errors.append(f"SEC {symbol}: {str(e)[:140]}")
             try:
                 row=stock_yahoo(symbol,name)
             except Exception as yf_error:
-                errors.append(f"Yahoo {symbol}: {str(yf_error)[:140]}")
+                errors.append(f"SEC {symbol}: {str(e)[:100]} / Yahoo: {str(yf_error)[:100]}")
                 row=old_records.get(symbol) or base_record(symbol,name,"US","재무 데이터 소스 일시적 이용 불가")
         row=dict(row);row.update(pricing.get(symbol) or {"price":None,"price_updated_at":None,"price_change_pct":None})
         eps=number(row.get("eps"));price=number(row.get("price"))
