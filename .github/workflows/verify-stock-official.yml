@@ -1,0 +1,106 @@
+name: Verify Stock Official Filings
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 3,13 * * *'
+  workflow_run:
+    workflows: ['Update Stock Value Radar']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/stock_official_audit.py'
+      - 'scripts/test_stock_official_audit.py'
+      - 'scripts/install_stock_audit_ui.py'
+      - 'assets/stock-official-audit-v5.js'
+      - 'stock-verification-sources.json'
+      - '.github/workflows/verify-stock-official.yml'
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: stock-official-audit
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser
+        run: pip install 'beautifulsoup4==4.14.3'
+      - name: Test period, entity, unit and definition safeguards
+        run: python scripts/test_stock_official_audit.py
+      - name: Re-fetch official sources and reconcile every tracked company
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: python scripts/stock_official_audit.py
+      - name: Install verification UI when available
+        run: |
+          if [ -f scripts/install_stock_audit_ui.py ] && [ -f assets/stock-official-audit-v5.js ]; then
+            python scripts/install_stock_audit_ui.py
+            node --check assets/stock-official-audit-v5.js
+          fi
+      - name: Keep audit artifacts even when tests fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-official-audit-diagnostics
+          retention-days: 7
+          path: |
+            stock-audit-unit-tests.json
+            stock-official-audit.json
+            stock-verification-sources.json
+            scripts/stock_official_audit.py
+            scripts/test_stock_official_audit.py
+            stock-value-radar.html
+            stock-value-radar-data.json
+            stock-investment-intelligence.json
+            stock-radar-health.json
+            stocks-dashboard-data.json
+            assets/stock-official-audit-v5.js
+      - name: Publish audit result without changing source financial numbers
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-official-audit.json stock-official-audit-history.json stock-audit-unit-tests.json
+          if [ -f scripts/install_stock_audit_ui.py ]; then
+            git add stock-value-radar.html scripts/build-stock-investment-intelligence.py
+          fi
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit: publish independently fetched official comparisons and freshness'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((attempt*3))
+          done
+          exit 1
+      - name: Persistent actionable alert for material differences
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          d=json.loads(Path('stock-official-audit.json').read_text())
+          issues=json.loads(subprocess.check_output(['gh','issue','list','--state','open','--limit','100','--json','number,title'],text=True))
+          title='[Stock Radar] 공식 공시 대조 차이'
+          current=next((x['number'] for x in issues if x['title']==title),None)
+          mismatches=[(r,x) for r in d['companies'] for x in r['fields'] if x['status']=='mismatch']
+          if mismatches:
+            lines=['공식 원문과 같은 기간의 수치가 다릅니다. 자동 매매 또는 숫자 자동수정을 하지 않았습니다.','']
+            for r,x in mismatches:
+              lines.append(f"- {r['name']} {x['label']} ({x['widget_period']}): 위젯 {x['widget_value']} / 원문 {x['official_value']} / 차이 {x.get('difference')}. 원문: {x.get('source_url')}")
+            lines.append('\n검증 화면: https://ohoredingdong.github.io/Notion/stock-value-radar.html')
+            body='\n'.join(lines)
+            Path('/tmp/stock-audit-issue.md').write_text(body)
+            if current: subprocess.run(['gh','issue','edit',str(current),'--body-file','/tmp/stock-audit-issue.md'],check=True)
+            else: subprocess.run(['gh','issue','create','--title',title,'--body-file','/tmp/stock-audit-issue.md'],check=True)
+          elif current and all(r['source'] for r in d['companies']):
+            subprocess.run(['gh','issue','close',str(current),'--comment','새 대조에서 동일 기준 숫자의 불일치가 해소되었습니다. 기간/계정/접근 경고는 위젯을 확인하세요.'],check=True)
+          PY
