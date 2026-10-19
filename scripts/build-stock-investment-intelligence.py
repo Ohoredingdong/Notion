@@ -119,31 +119,46 @@ def scenarios(row):
     return result
 
 def verify_official_release(row, official_sources):
-    """Limited numeric cross-check against company-issued release, not DART/SEC audited filing."""
-    entry=next((e for e in official_sources if e.get("symbol")==row.get("symbol") and e.get("period")==row.get("filing_period")),None)
-    if not entry:return None
+    """Check the SAME financial statement basis/period, with exact source provenance.
+
+    A regulatory financial statement is evidence for reported historic figures,
+    not a probability estimate for the company's future performance.
+    """
+    candidates=[e for e in official_sources
+                if e.get("symbol")==row.get("symbol") and e.get("period")==row.get("filing_period")]
+    if not candidates:return None
+    entry=next((e for e in candidates if str(e.get("source_type","")).startswith("krx_")),candidates[0])
     official=entry.get("figures",{})
+    refmap={
+        "revenue":"revenue", "operating_income":"operating_income",
+        "net_income":"net_income_attributable" if "net_income_attributable" in official else "net_income",
+        "eps":"diluted_eps", "fcf":"fcf", "capex":"capex"
+    }
     results={}
-    for key in ("revenue","operating_income","net_income"):
-        ref=num(official.get(key));got=num(row.get(key))
+    for field,srcname in refmap.items():
+        ref=num(official.get(srcname));got=num(row.get(field))
         if ref is None or got is None:continue
-        # press releases commonly round to one hundred million KRW
         diff=abs(got-ref)/max(1,abs(ref))
-        results[key]={"match":diff<=0.001,"relative_difference_pct":round(diff*100,4)}
-    ref_rev=num(official.get("revenue"));prior=num(official.get("revenue_previous"))
+        tolerance=0.00001 if str(entry.get("source_type","")).startswith("krx_") else 0.001
+        results[field]={"match":diff<=tolerance,"relative_difference_pct":round(diff*100,5),
+                        "official_account":srcname,"official_amount":ref}
+    ref_rev=num(official.get("revenue")); prior=num(official.get("revenue_previous"))
     rg=num(row.get("revenue_growth"))
     if ref_rev and prior and rg is not None:
         dg=round((ref_rev/prior-1)*100,2)
-        results["revenue_growth"]={"match":abs(dg-rg)<0.2,"source_growth_pct":dg}
-    if ref_rev and num(official.get("operating_income")) and num(row.get("operating_margin")) is not None:
-        om=round(num(official["operating_income"])/ref_rev*100,2)
-        results["operating_margin"]={"match":abs(om-num(row["operating_margin"]))<0.2,"source_margin_pct":om}
+        results["revenue_growth"]={"match":abs(dg-rg)<0.15,"source_growth_pct":dg}
+    op=num(official.get("operating_income"));om=num(row.get("operating_margin"))
+    if ref_rev and op is not None and om is not None:
+        margin=round(op/ref_rev*100,2)
+        results["operating_margin"]={"match":abs(margin-om)<0.15,"source_margin_pct":margin}
     passed=[k for k,v in results.items() if v.get("match")]
+    independent=next((e for e in candidates if e!=entry and e.get("source_type")=="company_official_earnings_release"),None)
     return {"source_url":entry.get("source_url"),"source_title":entry.get("source_title"),
-            "source_type":"company_earnings_release_not_audited_filing",
-            "published":entry.get("published"),"period":entry.get("period"),
-            "checks":results,"verified_fields":passed,
-            "scope_note":"기업 공식 연간 실적발표와 수치 교차대조. DART 감사보고서 검증 또는 향후 주가/고객 수요 검증을 의미하지 않음."}
+            "source_type":entry.get("source_type"),"published":entry.get("published"),
+            "period":entry.get("period"),"checks":results,"verified_fields":passed,
+            "supporting_release_url":independent.get("source_url") if independent else None,
+            "supporting_release_title":independent.get("source_title") if independent else None,
+            "scope_note":"공식 재무제표의 과거 보고 금액·계산식만 대조함. 미래 실적·주가·신용 및 규제 위험의 확인으로 확대할 수 없음."}
 
 def thesis(row):
     growth=num(row.get("revenue_growth"));margin=num(row.get("operating_margin"))
