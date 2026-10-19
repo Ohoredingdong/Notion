@@ -118,6 +118,33 @@ def scenarios(row):
                       "implied_price":val,"vs_price_pct":round((val/price-1)*100,2)}
     return result
 
+def verify_official_release(row, official_sources):
+    """Limited numeric cross-check against company-issued release, not DART/SEC audited filing."""
+    entry=next((e for e in official_sources if e.get("symbol")==row.get("symbol") and e.get("period")==row.get("filing_period")),None)
+    if not entry:return None
+    official=entry.get("figures",{})
+    results={}
+    for key in ("revenue","operating_income","net_income"):
+        ref=num(official.get(key));got=num(row.get(key))
+        if ref is None or got is None:continue
+        # press releases commonly round to one hundred million KRW
+        diff=abs(got-ref)/max(1,abs(ref))
+        results[key]={"match":diff<=0.001,"relative_difference_pct":round(diff*100,4)}
+    ref_rev=num(official.get("revenue"));prior=num(official.get("revenue_previous"))
+    rg=num(row.get("revenue_growth"))
+    if ref_rev and prior and rg is not None:
+        dg=round((ref_rev/prior-1)*100,2)
+        results["revenue_growth"]={"match":abs(dg-rg)<0.2,"source_growth_pct":dg}
+    if ref_rev and num(official.get("operating_income")) and num(row.get("operating_margin")) is not None:
+        om=round(num(official["operating_income"])/ref_rev*100,2)
+        results["operating_margin"]={"match":abs(om-num(row["operating_margin"]))<0.2,"source_margin_pct":om}
+    passed=[k for k,v in results.items() if v.get("match")]
+    return {"source_url":entry.get("source_url"),"source_title":entry.get("source_title"),
+            "source_type":"company_earnings_release_not_audited_filing",
+            "published":entry.get("published"),"period":entry.get("period"),
+            "checks":results,"verified_fields":passed,
+            "scope_note":"기업 공식 연간 실적발표와 수치 교차대조. DART 감사보고서 검증 또는 향후 주가/고객 수요 검증을 의미하지 않음."}
+
 def thesis(row):
     growth=num(row.get("revenue_growth"));margin=num(row.get("operating_margin"))
     fcf=num(row.get("fcf"));per=num(row.get("annual_per"))
@@ -181,6 +208,7 @@ def main():
     for k in ("US","KOR"):
         for q in quotes.get("datasets",{}).get(k,{}).get("rows",[]):
             quote_lookup[q.get("symbol")]=q
+    official_sources=load(Path("stock-official-verifications.json"),{}).get("source_entries",[])
     companies=[]
     for r in raw["rows"]:
         x=dict(r);symbol=x.get("symbol")
@@ -197,6 +225,7 @@ def main():
         x["quality"]=quality
         x["review_rank"]=rank(x)
         x["dual_thesis"]=thesis(x)
+        x["official_audit"]=verify_official_release(x,official_sources)
         x["sensitivity"]=scenarios(x)
         companies.append(x)
     critical=[r["symbol"] for r in companies if r["quality"]["status"]=="error"]
