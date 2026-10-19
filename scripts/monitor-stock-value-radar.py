@@ -32,6 +32,10 @@ def main():
     prices=data["prices"];fund=data["fundamentals"];intel=data["analysis"]
     if prices.get("stale"):warnings.append("기존 가격 수집기가 일부 시장을 갱신하지 못함")
     if prices.get("last_errors"):warnings += [str(e)[:160] for e in prices["last_errors"][:3]]
+    if fund.get("errors"):
+        warnings.append("재무 수집 오류 "+str(len(fund["errors"]))+"건: "+str(fund["errors"][0])[:110])
+        if len(fund["errors"]) >= max(3,len(fund.get("rows") or [])//3):
+            issues.append("재무 API 수집 실패가 여러 종목에서 동시 발생")
     rows=fund.get("rows") or [];analysis=intel.get("companies") or []
     n_fin=sum(1 for r in rows if r.get("revenue") is not None)
     if len(rows)<5:issues.append("추적 종목 수가 5개 미만: 구성 데이터 손상 가능성")
