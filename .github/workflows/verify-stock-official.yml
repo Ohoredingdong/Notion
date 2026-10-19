@@ -11,7 +11,10 @@ on:
     branches: [main]
     paths:
       - 'scripts/stock_official_audit.py'
+      - 'scripts/run_stock_audit.py'
+      - 'scripts/stock_audit_adapters.py'
       - 'scripts/test_stock_official_audit.py'
+      - 'scripts/test_stock_audit_adapters.py'
       - 'scripts/install_stock_audit_ui.py'
       - 'assets/stock-official-audit-v5.js'
       - 'stock-verification-sources.json'
@@ -34,12 +37,14 @@ jobs:
       - name: Install parser
         run: pip install 'beautifulsoup4==4.14.3'
       - name: Test period, entity, unit and definition safeguards
-        run: python scripts/test_stock_official_audit.py
+        run: |
+          python scripts/test_stock_official_audit.py
+          if [ -f scripts/test_stock_audit_adapters.py ]; then python scripts/test_stock_audit_adapters.py; fi
       - name: Re-fetch official sources and reconcile every tracked company
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
-        run: python scripts/stock_official_audit.py
+        run: python scripts/run_stock_audit.py
       - name: Install verification UI when available
         run: |
           if [ -f scripts/install_stock_audit_ui.py ] && [ -f assets/stock-official-audit-v5.js ]; then
@@ -51,24 +56,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stock-official-audit-diagnostics
-          retention-days: 7
+          retention-days: 3
           path: |
             stock-audit-unit-tests.json
+            stock-audit-adapter-tests.json
             stock-official-audit.json
             stock-verification-sources.json
             scripts/stock_official_audit.py
+            scripts/stock_audit_adapters.py
+            scripts/run_stock_audit.py
             scripts/test_stock_official_audit.py
+            scripts/test_stock_audit_adapters.py
             stock-value-radar.html
             stock-value-radar-data.json
             stock-investment-intelligence.json
             stock-radar-health.json
             stocks-dashboard-data.json
             assets/stock-official-audit-v5.js
+            audit-source-fixtures/
       - name: Publish audit result without changing source financial numbers
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add stock-official-audit.json stock-official-audit-history.json stock-audit-unit-tests.json
+          if [ -f stock-audit-adapter-tests.json ]; then git add stock-audit-adapter-tests.json; fi
           if [ -f scripts/install_stock_audit_ui.py ]; then
             git add stock-value-radar.html scripts/build-stock-investment-intelligence.py
           fi
@@ -97,8 +108,7 @@ jobs:
             for r,x in mismatches:
               lines.append(f"- {r['name']} {x['label']} ({x['widget_period']}): 위젯 {x['widget_value']} / 원문 {x['official_value']} / 차이 {x.get('difference')}. 원문: {x.get('source_url')}")
             lines.append('\n검증 화면: https://ohoredingdong.github.io/Notion/stock-value-radar.html')
-            body='\n'.join(lines)
-            Path('/tmp/stock-audit-issue.md').write_text(body)
+            Path('/tmp/stock-audit-issue.md').write_text('\n'.join(lines))
             if current: subprocess.run(['gh','issue','edit',str(current),'--body-file','/tmp/stock-audit-issue.md'],check=True)
             else: subprocess.run(['gh','issue','create','--title',title,'--body-file','/tmp/stock-audit-issue.md'],check=True)
           elif current and all(r['source'] for r in d['companies']):
