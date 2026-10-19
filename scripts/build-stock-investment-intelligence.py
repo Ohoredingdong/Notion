@@ -73,6 +73,10 @@ def validate(row,previous):
     if rev is None or eps is None:warnings.append("필수 재무항목 누락")
     if finance_hours is None:warnings.append("공시 대상기간 미상")
     elif finance_hours > 24*640:warnings.append("연간 재무 대상기간이 오래됨")
+    if row.get("financial_fetch_status")=="cached":
+        last=age_hours(row.get("financial_last_success_at"))
+        if last is None or last>72:critical.append("과거 재무자료 재사용: 최근 정상 수집 기록 없음 또는 72시간 초과")
+        else:warnings.append("최근 재무자료 수집 실패로 기존 데이터 재사용")
     if rev is not None and rev<0:critical.append("매출액 음수: 자료 오류 가능")
     if op is not None and abs(op)>250:critical.append("이익률 이상치: 회계 단위 확인")
     if rg is not None and abs(rg)>500:warnings.append("매출 성장률 극단값: 공시 확인 필요")
