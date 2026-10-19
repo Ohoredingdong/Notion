@@ -30,7 +30,7 @@ REVENUE_TAGS = [
     "Revenues", "SalesRevenueNet", "SalesRevenueGoodsNet"
 ]
 HEADERS = {"User-Agent": "Investment research educational dashboard (github.com/Ohoredingdong/Notion)",
-           "Accept": "application/json", "Accept-Encoding": "gzip, deflate"}
+           "Accept": "application/json"}
 
 def get_json(url, params=None):
     if params: url += "?" + urllib.parse.urlencode(params)
@@ -51,6 +51,7 @@ def growth(new, old):
 
 def metric(facts, tags, unit="USD", min_days=300):
     """Use annual facts with 10-K sources; return newest and previous comparable FY."""
+    best_items, best_tag = [], None
     for tag in tags:
         data = (facts.get(tag) or {}).get("units", {}).get(unit) or []
         items = []
@@ -69,9 +70,9 @@ def metric(facts, tags, unit="USD", min_days=300):
             if end not in by_end or x.get("filed", "") > by_end[end].get("filed", ""):
                 by_end[end] = x
         ordered = sorted(by_end.values(), key=lambda x: x["end"], reverse=True)
-        if ordered:
-            return ordered[:2], tag
-    return [], None
+        if ordered and (not best_items or ordered[0]["end"] > best_items[0]["end"]):
+            best_items, best_tag = ordered[:2], tag
+    return best_items, best_tag
 
 def latest_value(facts, tags, unit="USD", min_days=300):
     return metric(facts, tags, unit, min_days)[0]
