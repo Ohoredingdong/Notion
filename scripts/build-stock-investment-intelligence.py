@@ -213,13 +213,24 @@ def main():
             "assumptions_note":"Scenario prices are WHAT-IF sensitivities, not computed fair values or forecasts.",
             "headlines":rss,"companies":companies}
     # Log one market snapshot per quote-market day. Score is *retrospective observational*, not a claim of skill.
-    stamp=datetime.now(KST).date().isoformat()
-    by_date={(e.get("date"),e.get("symbol")):e for e in entries if isinstance(e,dict)}
+    # Use ACTUAL quoted market session date, not pipeline calendar day.
+    # Weekends and exchange holidays must not create a fake trading observation.
+    by_date={}
+    for e in entries:
+        if not isinstance(e,dict) or not e.get("symbol"):continue
+        session=dt(e.get("price_asof"))
+        if not session:continue
+        key=(session.date().isoformat(),e["symbol"])
+        e["date"]=key[0]
+        by_date.setdefault(key,e)
     for r in companies:
-        key=(stamp,r["symbol"])
-        # Historical record retains FIRST quote seen that day to prevent hindsight substitution.
+        ts=dt(r.get("price_updated_at"))
+        if not ts or num(r.get("price")) is None:continue
+        session_date=ts.date().isoformat()
+        key=(session_date,r["symbol"])
+        # Keep first quote captured on each MARKET day to avoid weekend duplicates.
         if key not in by_date:
-            by_date[key]={"date":stamp,"symbol":r["symbol"],"price":r.get("price"),
+            by_date[key]={"date":session_date,"symbol":r["symbol"],"price":r.get("price"),
                           "price_asof":r.get("price_updated_at"),
                           "review_score":r["review_rank"]["score"],"quality":r["quality"]["status"]}
     entries=sorted(by_date.values(),key=lambda x:(x.get("date",""),x.get("symbol","")))
@@ -236,7 +247,7 @@ def main():
             else:r[f"forward_{n}_observation_return_pct"]=None
     entries=entries[-MAX_HISTORY*max(1,len(companies)):]
     HISTORY.write_text(json.dumps({"updated_at":report["generated_at"],
-          "method":"Once per calendar day, first captured quote; 5/20 subsequent observation dates, NOT necessarily trading sessions.",
+          "method":"One first-observed quote for each exchange market timestamp date; 5/20 subsequent observed trading sessions, subject to missing schedule dates.",
           "entries":entries},ensure_ascii=False,indent=2),encoding="utf-8")
     report["validation"]={"last_error":raw.get("errors",[])[:15],
              "source":"SEC/OpenDART when available, Yahoo unofficial fallback",
