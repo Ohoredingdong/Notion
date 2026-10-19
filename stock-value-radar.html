@@ -459,6 +459,8 @@ function citedList(items,r){
   '<p class="verify-instruction"><b>③ 비교 방법:</b> '+esc(p.check)+'</p>'+
   (e.regulatoryChecked&&e.release?.source_url?'<div class="release-proof"><b>거래소 공시와 수치 대조 완료:</b> '+esc(e.release.period)+' 과거 재무 수치가 공시 원문과 일치합니다. <a href="'+esc(e.release.source_url)+'" target="_blank" rel="noopener noreferrer">KIND 연결재무제표 원문 ↗</a>'+ (e.companyReleaseChecked?'<br><a href="'+esc(e.release.supporting_release_url)+'" target="_blank" rel="noopener noreferrer">회사 별도 실적발표와도 비교 ↗</a>':'')+'<br><span>※ 확인된 것은 과거 실적 금액입니다. 미래 수요·실적·주가의 확률을 검증한 것은 아닙니다.</span></div>':'')+
   '<div class="verify-links"><a href="'+url(p.directSearch)+'" target="_blank" rel="noopener noreferrer">'+esc(p.officialLabel)+' ↗</a>'+
+  (r.official_audit?.source_url&&!e.regulatoryChecked?'<a href="'+url(r.official_audit.source_url)+'" target="_blank" rel="noopener noreferrer">이 회사의 실제 공시 원문 ↗</a>':'')+
+  (r.symbol==="000660"&&(e.kind==="outlook"||e.kind==="cash")?'<a href="https://www.skhynix.com/ir/UI-FR-IR01/" target="_blank" rel="noopener noreferrer">SK하이닉스 공식 IR ↗</a>':'')+
   '<a href="'+url(p.peer)+'" target="_blank" rel="noopener noreferrer">'+esc(p.peerLabel)+' ↗</a>'+
   (e.kind==='policy'?'<a href="'+url(r.market==="KR"?"https://www.motie.go.kr/":"https://www.bis.gov/regulations/ear")+'" target="_blank" rel="noopener noreferrer">정책·수출규제 공식 자료 ↗</a>':'')+
   (e.kind==='valuation'?'<a href="'+url(p.quotes)+'" target="_blank" rel="noopener noreferrer">'+esc(p.quoteLabel)+' ↗</a>':'')+
