@@ -50,7 +50,7 @@ jobs:
           if [ "$required" = "yes" ]; then
             summary=$(python -c 'import json;d=json.load(open("stock-radar-health.json"));print("\n".join("- "+x for x in d.get("issues",[])))')
             if [ -z "$issue" ]; then
-              gh issue create --title "[Stock Radar] 자동 데이터 이상 감지" --body "자동 데이터 감시가 연속 2회 이상 이상을 감지했습니다.\n\n${summary}\n\n상태: https://ohoredingdong.github.io/Notion/stock-value-radar.html\n\n재실행: https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-value-radar.yml"
+              gh issue create --assignee "$GITHUB_REPOSITORY_OWNER" --title "[Stock Radar] 자동 데이터 이상 감지" --body "자동 데이터 감시가 연속 2회 이상 이상을 감지했습니다.\n\n${summary}\n\n상태: https://ohoredingdong.github.io/Notion/stock-value-radar.html\n\n재실행: https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-value-radar.yml"
             else
               gh issue comment "$issue" --body "이상 지속: ${summary}"
             fi
