@@ -138,7 +138,7 @@ def thesis(row):
     if per is not None and 0<per<20:bulls.append(f"연간 PER {per:.1f}배: 저평가인지 업황 악화인지 조사")
     tests.append("추정 EPS와 공시 주당이익, 차입금 만기")
     return {"bull":bulls or ["향후 수주·이익 회복의 객관적 근거 필요"],
-            "bear":bears or ["실적 전망 하향·부채·정책 충격 점검"],
+            "bear":bears or ["실적 전망이 실제로 하향됐는지 확인 필요", "차입금 만기·이자 부담 확인 필요", "관세·수출 규제 등 정책 충격 여부 확인 필요"],
             "tests":tests}
 
 def news_headlines(rows):
