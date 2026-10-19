@@ -254,6 +254,43 @@ def main():
              "source_reliability":"unverified" if any("Yahoo" in str(x.get("filing_source","")) for x in companies) else "filing"}
     report["history_summary"]={"recorded_days":len({e.get("date") for e in entries}),
         "evaluated_5_observations":sum(1 for e in entries if e.get("forward_5_observation_return_pct") is not None)}
+    # Audit-friendly daily report; every displayed item has a source and a limitation.
+    safe=lambda x: str(x).replace("|","/").replace("\n"," ")
+    fmt=lambda n: "미확인" if n is None else f"{n:,.1f}"
+    ordered=sorted(companies,key=lambda r:(r["quality"]["status"]=="error",
+           len(r["review_rank"].get("risks",[]))>0,
+           -(r["review_rank"]["score"] if r["review_rank"]["score"] is not None else -1)))
+    lines=["# 기업 가치 레이더 · 자동 후보 조사 보고서",
+      "",f"- 계산일: {report['generated_at']}",
+      f"- 수집 규모: {len(companies)}개 고정 관심종목 (전체 시장 스크리닝 아님)",
+      f"- 건강 상태: {report['state']} / 이상치 {len(critical)}개 / 품질 경고 {len(warnings)}개",
+      "- 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.",
+      "- 본 보고서는 **기업 조사 순서**이며 매수추천·기대수익률·적정가치가 아닙니다.",
+      "", "## 우선 조사할 기업", "",
+      "| 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |",
+      "|---|---:|---:|---|---:|---|"]
+    for r in ordered[:10]:
+        lines.append("| "+ " | ".join([
+          safe(r["name"])+" ("+safe(r["symbol"])+")",
+          fmt(r.get("revenue_growth"))+"%",fmt(r.get("operating_margin"))+"%",
+          "양수" if r.get("fcf") is not None and r["fcf"]>0 else "적자" if r.get("fcf") is not None else "미확인",
+          fmt(r.get("annual_per"))+"배",safe(r["quality"]["status"])
+        ])+" |")
+    lines+=["","## 데이터 이상·제약"]
+    lines+=["- "+safe(x["symbol"])+": "+safe("; ".join(x["quality"].get("critical") or x["quality"].get("warnings") or []))
+            for x in ordered if x["quality"]["status"]!="ok"] or ["- 해당 사항 없음"]
+    lines+=["","## 자동 수집 뉴스 제목 (원문 확인 필요)"]
+    for item in (rss.get("market",[])+rss.get("semis",[])):
+        url=item.get("url","");title=item.get("title","")
+        if url.startswith("https://") or url.startswith("http://"):
+            lines.append("- ["+safe(title).replace("[","(").replace("]",")")+"]("+url+")")
+    lines+=["","## 계산과 검증 한계",
+      "- 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.",
+      "- 연간 EPS와 현재 주가를 나눈 PER은 TTM/선행 PER이 아닙니다.",
+      "- 시나리오 가격은 공시 기반의 적정주가가 아니라 명시적 가정을 둔 교육용 민감도입니다.",
+      "- 공식 보고서와 직접 대조하기 전에는 큰 금액을 거래하지 마세요.",
+      "- 사후 수익률은 향후 실제 시세 관측일이 쌓여야 계산됩니다.",""]
+    Path("stock-investment-report.md").write_text("\n".join(lines),encoding="utf-8")
     OUTPUT.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
     print("investment intelligence",state,report["counts"], "history days",report["history_summary"]["recorded_days"])
     if state=="error":raise SystemExit(2)
