@@ -1,0 +1,59 @@
+name: Verify Stock Value Radar
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "stock-value-radar.html"
+      - "scripts/build-stock-investment-intelligence.py"
+      - "scripts/monitor-stock-value-radar.py"
+      - "scripts/update-stock-value-radar.py"
+      - ".github/workflows/verify-stock-value-radar.yml"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python syntax and data quality unit checks
+        run: |
+          python -m py_compile scripts/update-stock-value-radar.py scripts/build-stock-investment-intelligence.py scripts/monitor-stock-value-radar.py
+          python - <<'PY'
+          import importlib.util,json
+          from pathlib import Path
+          def module(file):
+            spec=importlib.util.spec_from_file_location("module",file)
+            mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);return mod
+          m=module("scripts/build-stock-investment-intelligence.py")
+          data=json.loads(Path("stock-value-radar-data.json").read_text())
+          assert len(data["rows"])>=5
+          test=dict(data["rows"][0])
+          test["revenue"]=-100
+          assert m.validate(test,None)["status"]=="error"
+          test["revenue"]=100
+          test["price"]=-1
+          assert m.validate(test,None)["status"]=="error"
+          assert m.scenarios({"price":100,"eps":-1,"annual_per":10}) is None
+          assert m.rank({"revenue_growth":None,"operating_margin":20})["score"] is None
+          print("PASS data validation and negative test cases")
+          PY
+      - name: Validate embedded JavaScript syntax and required UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path("stock-value-radar.html").read_text()
+          scripts=re.findall(r"<script[^>]*>(.*?)</script>",html,re.S)
+          assert len(scripts)>=2
+          for n,script in enumerate(scripts):Path(f"/tmp/stock-radar-{n}.js").write_text(script)
+          for element in ["systemBanner","healthDetails","candidateCards","researchDetails","historySummary"]:
+            assert 'id="'+element+'"' in html,element
+          print("HTML UI sections PASS")
+          PY
+          for f in /tmp/stock-radar-*.js; do node --check "$f"; done
+          echo "JavaScript syntax PASS"
