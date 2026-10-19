@@ -104,6 +104,45 @@ def stock_sec(symbol, name, cik):
             "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
             "capex":capex, "currency":"USD", "revenue_tag":rev_tag}
 
+def stock_yahoo(symbol, name):
+    """Best-effort fallback: yfinance financial time series (unofficial; not SEC)."""
+    import yfinance as yf
+    ticker = yf.Ticker(symbol)
+    inc = ticker.get_income_stmt(freq="yearly")
+    if inc is None or inc.empty: raise RuntimeError("Yahoo 연간 손익계산서가 비어 있음")
+    inc = inc.loc[:, sorted(inc.columns, reverse=True)]
+    cf = ticker.get_cashflow(freq="yearly")
+    if cf is not None and not cf.empty:
+        cf = cf.loc[:, sorted(cf.columns, reverse=True)]
+    latest = inc.columns[0]
+    prior = inc.columns[1] if len(inc.columns)>1 else None
+    def val(frame, keys, dt):
+        if frame is None or frame.empty or dt is None: return None
+        for k in keys:
+            if k in frame.index and dt in frame.columns: 
+                return number(frame.loc[k,dt])
+        return None
+    rev = val(inc, ["Total Revenue", "TotalRevenue", "Operating Revenue", "OperatingRevenue"], latest)
+    prev = val(inc, ["Total Revenue", "TotalRevenue", "Operating Revenue", "OperatingRevenue"], prior)
+    op = val(inc, ["Operating Income", "OperatingIncome"], latest)
+    ni = val(inc, ["Net Income", "NetIncome", "Net Income Common Stockholders", "NetIncomeCommonStockholders"], latest)
+    eps = val(inc, ["Diluted EPS", "DilutedEPS", "Basic EPS", "BasicEPS"], latest)
+    ocf = val(cf, ["Operating Cash Flow", "OperatingCashFlow"], latest)
+    raw_capex = val(cf, ["Capital Expenditure", "CapitalExpenditure"], latest)
+    capex = abs(raw_capex) if raw_capex is not None else None
+    direct_fcf = val(cf, ["Free Cash Flow", "FreeCashFlow"], latest)
+    fcf = ocf - capex if ocf is not None and capex is not None else direct_fcf
+    if rev is None and eps is None: raise RuntimeError("Yahoo 재무항목 미제공")
+    return {"symbol":symbol,"name":name,"market":"US","filing_source":"Yahoo Finance (비공식 보조자료)",
+            "filing_url":f"https://finance.yahoo.com/quote/{symbol}/financials/",
+            "filing_period":str(latest)[:10],"statement_basis":"최근 연간 수치 (TTM 아님)",
+            "revenue":rev,"revenue_growth":growth(rev,prev),
+            "operating_income":op,"operating_margin":round(op/rev*100,2) if op is not None and rev and rev>0 else None,
+            "net_income":ni,"eps":eps,"fcf":fcf,
+            "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
+            "capex":capex,"currency":"USD",
+            "note":"SEC가 자동 접속을 차단하여 Yahoo 보조자료로 조회. 실거래 전 SEC 정기보고서로 반드시 교차 검증."}
+
 def dart_code_lookup(key):
     req = urllib.request.Request("https://opendart.fss.or.kr/api/corpCode.xml?"+urllib.parse.urlencode({"crtfc_key":key}),headers=HEADERS)
     with urllib.request.urlopen(req, timeout=35) as response:
@@ -162,7 +201,11 @@ def main():
             row=stock_sec(symbol,name,cik)
         except Exception as e:
             errors.append(f"SEC {symbol}: {str(e)[:140]}")
-            row=old_records.get(symbol) or base_record(symbol,name,"US","SEC 연결 실패")
+            try:
+                row=stock_yahoo(symbol,name)
+            except Exception as yf_error:
+                errors.append(f"Yahoo {symbol}: {str(yf_error)[:140]}")
+                row=old_records.get(symbol) or base_record(symbol,name,"US","재무 데이터 소스 일시적 이용 불가")
         row=dict(row);row.update(pricing.get(symbol) or {"price":None,"price_updated_at":None,"price_change_pct":None})
         eps=number(row.get("eps"));price=number(row.get("price"))
         row["annual_per"]=round(price/eps,2) if price is not None and eps and eps>0 else None
