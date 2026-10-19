@@ -163,6 +163,38 @@ button,input,select{outline-offset:2px}button:focus-visible,input:focus-visible,
  #researchDetails .source-guide{padding:14px}
  #researchDetails .whatif th,#researchDetails .whatif td{padding:9px 4px;font-size:10px}
 }
+
+/* Verification guide — actionable links and per-claim instructions */
+#researchDetails .claim-row{padding:19px 0 21px;border-top:1px solid var(--line2);list-style:none}
+#researchDetails .claim-row:first-child{border-top:none}
+#researchDetails .claim-row:before{display:none}
+#researchDetails .claim-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:11px}
+#researchDetails .claim-text{font-size:13px;line-height:1.7;flex:1;min-width:0;font-weight:640}
+#researchDetails .evidence-badge{margin:1px 0 0;padding:4px 7px;font-size:10px;border-radius:7px;flex:none}
+#researchDetails .evidence-missing{color:var(--red);background:rgba(195,79,85,.07);border-color:rgba(195,79,85,.27)}
+#researchDetails .verify-steps{margin:0;padding:15px 16px;border-radius:9px;background:var(--soft);line-height:1.77}
+#researchDetails .verify-title{font-size:12px;font-weight:760;line-height:1.7;margin-bottom:9px;color:var(--text)}
+#researchDetails .verify-instruction{font-size:11px;line-height:1.82;color:var(--sub);margin:6px 0;overflow-wrap:anywhere}
+#researchDetails .verify-instruction b{font-weight:730;color:var(--text)}
+#researchDetails .verify-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:13px 0 11px}
+#researchDetails .verify-links a,#researchDetails .verify-links button{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:11px;font-weight:670;color:var(--blue);text-decoration:none;line-height:1.2;cursor:pointer}
+#researchDetails .verify-links a:hover,#researchDetails .verify-links button:hover{border-color:var(--blue);background:var(--panel)}
+#researchDetails .verify-more{border:none;padding:0;margin:9px 0;background:transparent}
+#researchDetails .verify-more summary{font-size:11px;color:var(--sub);padding:3px 0;cursor:pointer;font-weight:660}
+#researchDetails .verify-more[open] summary{border:none}
+#researchDetails .verify-checks{padding:8px 0 2px}
+#researchDetails .verify-check{font-size:10px;padding:4px 0;line-height:1.7;color:var(--sub)}
+#researchDetails .verify-yes{color:var(--green);font-weight:760}
+#researchDetails .verify-no{color:var(--red);font-weight:760}
+#researchDetails .verify-next{font-size:11px;color:var(--sub);line-height:1.7;border-top:1px solid var(--line);margin:12px 0 0;padding-top:10px}
+#researchDetails .argument li{border-top:0;padding:0}
+#researchDetails .argument ul{padding:0;margin:0}
+@media(max-width:530px){
+#researchDetails .claim-head{flex-direction:column;gap:6px}
+#researchDetails .verify-steps{padding:12px 11px}
+#researchDetails .verify-instruction{font-size:11px}
+#researchDetails .verify-links a,#researchDetails .verify-links button{padding:8px 9px}
+}
 </style></head><body><main>
 <header class="top"><div><div class="eyebrow">INVESTMENT RESEARCH</div><h1>기업 가치 레이더</h1><p class="sub">기업 찾기부터 재무·투자 가설 검증까지</p></div><button id="reload" type="button" aria-label="저장된 최신 자료 새로고침">↻ 새로고침</button></header>
 <div id="systemBanner" class="audit-banner warning" role="status" aria-live="polite"><div class="audit-title">자료 상태 확인 중</div><div class="sub">주가·재무·오류 감시 데이터를 검사하고 있습니다.</div></div>
@@ -345,32 +377,79 @@ function candidates(){
    '<p class="warn">공시 교차검증 필요 · 점수는 기대수익률 아님</p></button>'
  }).join('');
 }
-function qualityChecklist(r,text){
+function kindOfClaim(text){
  const t=String(text||"");
- const checks=[];
- const source=String(r.filing_source||"");
- const official=(source.includes("SEC")||source.includes("OpenDART"))&&!source.includes("Yahoo");
+ if(/FCF|현금흐름|현금 창출|잉여현금|CAPEX/.test(t))return "cash";
+ if(/차입|부채|만기|이자 부담|채무|신용/.test(t))return "debt";
+ if(/관세|정책|규제|수출제한|제재/.test(t))return "policy";
+ if(/실적 전망|다음 분기|가이던스|하향|전망치/.test(t))return "outlook";
+ if(/PER|기업가치|밸류|주가 배수|가격/.test(t))return "valuation";
+ if(/매출|수요|고객|수주|성장률/.test(t))return "sales";
+ if(/영업이익|마진|수익성|경쟁 우위|이익률/.test(t))return "margin";
+ return "unknown";
+}
+function evidenceSources(r,kind){
+ const korea=r.market==="KR",sym=String(r.symbol||""),name=String(r.name||sym);
+ const official=korea?"https://dart.fss.or.kr/dsab001/main.do":"https://www.sec.gov/edgar/search/";
+ const directSearch=korea?"https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm="+encodeURIComponent(name):official;
+ const peer=korea?"https://comp.fnguide.com/SVO2/ASP/SVD_Invest.asp?gicode=A"+encodeURIComponent(sym):"https://finance.yahoo.com/quote/"+encodeURIComponent(sym)+"/financials/";
+ const quotes=korea?"https://data.krx.co.kr/":"https://www.nasdaq.com/market-activity/stocks/"+encodeURIComponent(sym.toLowerCase());
+ const finUrl=(r.filing_url&&/^https:\/\//.test(r.filing_url))?r.filing_url:peer;
+ const pages={
+   sales:{target:"연간 매출액과 전년도 같은 기준 매출액",route:korea?"사업보고서 → 연결포괄손익계산서 → 매출액(수익)":"10-K → Consolidated Statements of Operations → Revenue",check:"두 연도의 매출액을 같은 회계기준으로 확인하고 성장률=(당해−전년)÷전년×100을 계산하세요.",second:"미래 고객 수요의 지속 여부는 다음 분기 가이던스·수주잔고·사업부별 실적을 추가로 확인해야 합니다."},
+   margin:{target:"매출액·영업이익 및 영업이익률",route:korea?"사업보고서 → 연결포괄손익계산서 → 매출액·영업이익":"10-K → Consolidated Statements of Operations → Revenue·Operating Income",check:"영업이익÷매출액×100을 계산하고 전년도와 동종 업계 이익률을 비교하세요.",second:"'경쟁 우위 지속'은 이익률 한 해 수치만으로 입증되지 않습니다. 가격 경쟁·제품 믹스·점유율 변화도 확인하세요."},
+   cash:{target:"영업활동현금흐름·유형/무형자산 취득액",route:korea?"사업보고서 → 연결현금흐름표 → 영업활동현금흐름·유형자산의 취득, 주석":"10-K → Consolidated Statements of Cash Flows → Operating cash flow·Capital expenditures",check:"FCF(간이)=영업활동현금흐름−자본적지출을 같은 연도·동일 기준으로 계산하세요. FnGuide의 FCFF는 같은 공식이 아닐 수 있습니다.",second:"FCF가 앞으로도 유지될지는 차기 CAPEX 계획, 매출채권·재고, 영업현금흐름 추세를 확인해야 합니다."},
+   valuation:{target:"동일 기준 EPS와 주가로 계산한 PER",route:korea?"사업보고서 주석 → 주당이익(EPS), KRX → 종가":"10-K → Earnings Per Share, 거래소 → Price",check:"위젯의 연간 PER=주가÷최근 연간 EPS입니다. FnGuide의 PER/12M PER과 비교할 때 기준기간·수정주가를 일치시키세요.",second:"비싼지 저렴한지는 동일 업종, 예상 이익 성장, 현금흐름을 함께 봐야 합니다."},
+   debt:{target:"차입금·이자비용·상환 만기·현금 보유액",route:korea?"사업보고서 → 연결재무상태표, 차입금·금융비용 주석":"10-K → Debt·Liquidity and Capital Resources·Interest Expense",check:"단기차입금과 1년 내 상환액을 현금·영업현금흐름과 비교하고, 다음 1~3년 만기표를 확인하세요.",second:"현재 자동 분석에는 부채 만기·신용등급 원자료가 없어 '위험'이라고 확정할 수 없습니다."},
+   outlook:{target:"회사 가이던스와 애널리스트 이익 전망의 변동",route:korea?"기업 IR 자료·실적발표 → 회사 전망; FnGuide → 컨센서스":"10-Q/8-K·Earnings Release → Outlook; Earnings Call",check:"이전 가이던스와 최신 가이던스, 예상 EPS 상향·하향 폭을 같은 회계연도로 비교하세요.",second:"'전망 하향'은 현재 자동 수집 데이터로 확인하지 못한 가능성입니다. 실제 하향 기록을 확인해야 합니다."},
+   policy:{target:"회사에 적용되는 정책·관세·수출 규제",route:korea?"공식 관계부처 발표 → 기업 공시의 규제·사업 위험":"SEC 10-K Risk Factors → 미국 정부 공식 정책 공지",check:"발표일·시행일·대상 제품·매출 노출도·예외 조건을 확인하세요.",second:"일반적인 정책 위험을 이 기업에 실제로 발생한 악재로 표시해서는 안 됩니다."},
+   unknown:{target:"주장의 숫자 근거·기준기간·출처",route:korea?"DART → 사업보고서 → 사업의 내용·재무제표 주석":"SEC → 10-K → Business·Risk Factors·Financial Statements",check:"주장에 사용한 구체적 숫자와 비교 기간을 확인하고, 공시와 독립된 두 번째 자료로 검증하세요.",second:"관련 데이터가 없는 가설은 검증 완료로 간주하지 않습니다."}
+ };
+ const item=pages[kind]||pages.unknown;
+ return {...item, official, directSearch, peer, quotes,finUrl, company:name,symbol:sym,
+         officialLabel:korea?"DART 회사 공시":"SEC 10-K/10-Q",
+         peerLabel:korea?"FnGuide 투자지표":"Yahoo Finance 재무자료",
+         quoteLabel:korea?"KRX 주가":"Nasdaq 주가"};
+}
+function qualityChecklist(r,text){
+ const kind=kindOfClaim(text),src=evidenceSources(r,kind);
+ const financial=String(r.filing_source||"");
+ const official=(financial.includes("SEC")||financial.includes("OpenDART"))&&!financial.includes("Yahoo");
  const period=Date.parse(r.filing_period||"");
- const periodRecent=Number.isFinite(period)&&(Date.now()-period)<540*86400000&&(Date.now()-period)>-86400000;
- let direct=false,history=false;
- if(/매출|수요|고객/.test(t)){direct=r.revenue_growth!=null&&r.revenue!=null;history=r.revenue_growth!=null}
- else if(/영업이익|마진|수익성/.test(t)){direct=r.operating_margin!=null&&r.operating_income!=null}
- else if(/FCF|현금흐름|현금 창출/.test(t)){direct=r.fcf!=null}
- else if(/PER|주가 배수|가격/.test(t)){direct=r.annual_per!=null&&r.eps!=null}
- // Debt, future earnings or policy require evidence we have not actually collected.
- checks.push({ok:direct,desc:"직접 관련된 재무 수치 확인"});
- checks.push({ok:history,desc:"전년도 대비 추세 확인"});
- checks.push({ok:direct&&periodRecent,desc:"해당 수치와 연간 공시 대상기간이 18개월 이내"});
- checks.push({ok:official,desc:"공식 공시와 직접 대조"});
- checks.push({ok:false,desc:"독립 자료·회사 가이던스·동종기업으로 재검증"});
+ const recent=Number.isFinite(period)&&Date.now()-period<540*86400000&&Date.now()-period>=-86400000;
+ const numeric=({
+ sales:r.revenue!=null&&r.revenue_growth!=null,
+ margin:r.operating_income!=null&&r.operating_margin!=null,
+ cash:r.fcf!=null,
+ valuation:r.annual_per!=null&&r.eps!=null&&r.price!=null
+ })[kind]===true;
+ const prior=(kind==="sales"&&r.revenue_growth!=null); // source-based comparison, not independently confirmed
+ const checks=[
+ {ok:numeric,desc:"관련 재무 숫자를 자동으로 가져옴 (공식 대조는 별개)"},
+ {ok:numeric&&recent,desc:"그 숫자의 회계연도 확인 (18개월 이내)"},
+ {ok:prior,desc:"전년 대비 계산값 확보 (원본 연도별 값 미대조)"},
+ {ok:official,desc:"공식 공시와 자동 교차대조 완료"},
+ {ok:false,desc:"독립 출처·사업 전망과 검증 완료"}
+ ];
  const done=checks.filter(x=>x.ok).length;
- return {pct:done*20,done,total:5,checks};
+ return {kind,src,checks,done,pct:done*20,numberAvailable:numeric,official};
 }
 function citedList(items,r){
- return '<ul>'+items.map(s=>{
- const c=qualityChecklist(r,s);
- return '<li>'+esc(s)+' <span class="evidence-badge" title="상승·하락 확률 아님: 검증 항목 '+c.done+'/5">근거 확인 '+c.pct+'%</span>'+
- '<div class="evidence-details">검증 '+c.done+'/5 · '+c.checks.map(x=>(x.ok?'✓ ':'○ ')+esc(x.desc)).join(' · ')+'</div></li>';
+ return '<ul>'+items.map((s,i)=>{
+  const e=qualityChecklist(r,s),p=e.src;
+  const url=u=>esc(u),label=e.done===0?'자동 검증 전':"확인 범위 "+e.done+"/5 ("+e.pct+"%)";
+  const checkitems=e.checks.map(x=>'<div class="verify-check"><span class="'+(x.ok?'verify-yes':'verify-no')+'">'+(x.ok?'✓':'○')+'</span> '+esc(x.desc)+'</div>').join('');
+  return '<li class="claim-row"><div class="claim-head"><span class="claim-text">'+esc(s)+'</span><span class="evidence-badge '+(e.done===0?'evidence-missing':'')+'" title="주가 상승·하락 확률이 아닌 자동 확인 항목 수">'+label+'</span></div>'+
+  '<div class="verify-steps"><div class="verify-title">'+(e.done===0?'현재 데이터에서 검증하지 못한 주장입니다.':'자동 확보한 자료와 아직 부족한 근거')+'</div>'+
+  '<p class="verify-instruction"><b>① 먼저 확인할 것:</b> '+esc(p.target)+'</p>'+
+  '<p class="verify-instruction"><b>② 공시에서 찾을 위치:</b> '+esc(p.route)+'</p>'+
+  '<p class="verify-instruction"><b>③ 비교 방법:</b> '+esc(p.check)+'</p>'+
+  '<div class="verify-links"><a href="'+url(p.directSearch)+'" target="_blank" rel="noopener noreferrer">'+esc(p.officialLabel)+' ↗</a>'+
+  '<a href="'+url(p.peer)+'" target="_blank" rel="noopener noreferrer">'+esc(p.peerLabel)+' ↗</a>'+
+  (e.kind==='valuation'?'<a href="'+url(p.quotes)+'" target="_blank" rel="noopener noreferrer">'+esc(p.quoteLabel)+' ↗</a>':'')+
+  '<button type="button" class="copy-symbol" data-copy="'+esc(r.market==='KR'?r.symbol:r.symbol)+'">종목코드 복사</button></div>'+
+  '<details class="verify-more"><summary>검증 '+e.done+'/5 항목 자세히 보기</summary><div class="verify-checks">'+checkitems+'</div></details>'+
+  '<p class="verify-next">추가 판단: '+esc(p.second)+'</p></div></li>';
  }).join('')+'</ul>';
 }
 function detailed(r){
@@ -463,5 +542,22 @@ reload();setInterval(reload,15*60*1000);setInterval(healthView,60*1000);
   const observer=new MutationObserver(updateCompact);
   observer.observe(document.querySelector('#rows'),{childList:true});
   updateCompact();
+})();
+</script>
+<script>
+(function(){
+const el=document.querySelector('#researchDetails');
+if(!el)return;
+el.addEventListener('click',async function(event){
+ const b=event.target.closest('.copy-symbol');
+ if(!b)return;
+ const code=b.getAttribute('data-copy');
+ try{
+  await navigator.clipboard.writeText(code);
+  const before=b.textContent;
+  b.textContent='복사됨 ✓';
+  setTimeout(()=>{b.textContent=before},1400);
+ }catch(e){b.textContent='복사 실패 · '+code}
+});
 })();
 </script></body></html>
