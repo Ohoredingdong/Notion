@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark"><title>기업 가치 레이더 · 자동 분석</title>
+<style>
+:root{--bg:#f5f6f9;--card:#fff;--text:#172033;--muted:#718096;--line:#e7eaf0;--accent:#3d64d6;--good:#0b9569;--bad:#d24d5b;--soft:#edf1f9}
+@media(prefers-color-scheme:dark){:root{--bg:#151923;--card:#202633;--text:#f3f4f7;--muted:#a0aabe;--line:#384254;--accent:#97aeff;--good:#59d5ab;--bad:#ff8491;--soft:#2a3546}}
+*{box-sizing:border-box}html,body{margin:0;background:transparent;color:var(--text);font:13px/1.48 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}body{padding:8px}
+main{max-width:940px;margin:auto;background:var(--card);padding:20px;border:1px solid var(--line);border-radius:18px}
+h1{font-size:21px;letter-spacing:-.04em;margin:0 0 3px}h2{font-size:15px;margin:0 0 8px}p{margin:0}.sub{color:var(--muted);font-size:11px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.tool{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:15px 0}
+button,input,select{font:inherit}button{cursor:pointer;background:var(--soft);border:1px solid var(--line);padding:8px 10px;color:var(--text);border-radius:9px}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:white;border-color:var(--accent)}
+input,select{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:8px 10px}
+input{width:160px;max-width:100%}.stamp{color:var(--muted);font-size:10px;margin:3px 0 11px}
+.status{border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:11px;margin-bottom:13px;color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 14px}.stat{border:1px solid var(--line);padding:10px;border-radius:11px}.stat b{display:block;font-size:18px;color:var(--text)}
+.scroll{overflow:auto}.tbl{width:100%;border-collapse:collapse;min-width:720px;text-align:left}.tbl th{font-size:11px;color:var(--muted);font-weight:600;background:var(--bg)}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:10px 8px;white-space:nowrap}.tbl tr.tap{cursor:pointer}.tbl tr.tap:hover{background:var(--bg)}.ticker{font-weight:760;color:var(--accent)}.name{font-size:11px;color:var(--muted)}.pos{color:var(--good)}.neg{color:var(--bad)}.chip{font-size:10px;padding:3px 7px;border-radius:8px;background:var(--soft);white-space:nowrap}
+.foot{border-top:1px solid var(--line);padding-top:12px;margin-top:13px;display:grid;gap:7px;font-size:10px;color:var(--muted)}
+.detail{margin-top:14px;border:1px solid var(--line);border-radius:13px;padding:15px}.detail[hidden]{display:none}.heading{display:flex;justify-content:space-between;align-items:center;gap:8px}.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0}.metric{padding:10px;border:1px solid var(--line);border-radius:9px;min-width:0}.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;font-size:16px}.split{display:grid;grid-template-columns:1fr 1fr;gap:8px}.argument{border:1px solid var(--line);padding:11px;border-radius:10px}.argument b{font-size:12px}.argument ul{padding-left:17px;margin:8px 0 0}.argument li{margin:4px 0}.alert{color:var(--bad)}.ok{color:var(--good)}a{color:var(--accent)}
+@media(max-width:560px){main{padding:13px}.stats{grid-template-columns:repeat(3,1fr)}.detail-grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}.top{flex-direction:column}h1{font-size:19px}}
+</style></head><body><main>
+<div class="top"><div><h1>기업 가치 레이더</h1><p class="sub">실제 공시로 자동 분석 · 가격은 지연될 수 있음 · 매수추천 아님</p></div><button id="reload">↻ 최신 데이터 확인</button></div>
+<div class="tool"><button class="active" data-market="ALL">전체</button><button data-market="KR">한국</button><button data-market="US">미국</button>
+<input id="search" placeholder="기업명·종목코드 검색" aria-label="종목 검색"/>
+<select id="sort" aria-label="정렬"><option value="review">재무 확인 가능 우선</option><option value="growth">매출 성장률순</option><option value="margin">영업이익률순</option><option value="fcf">잉여현금흐름순</option><option value="per">연간 PER 낮은순</option></select></div>
+<div id="status" class="status">자동 공시·주가 데이터를 확인하는 중입니다.</div>
+<div class="stats"><div class="stat"><span class="sub">추적 기업</span><b id="countAll">—</b></div><div class="stat"><span class="sub">재무분석 가능</span><b id="countReady">—</b></div><div class="stat"><span class="sub">주의 신호</span><b id="countRisk">—</b></div></div>
+<div class="scroll"><table class="tbl"><thead><tr><th>기업</th><th>주가</th><th>1일 등락</th><th>매출 성장</th><th>영업이익률</th><th>FCF</th><th>연간 PER*</th><th>조사 우선순위</th></tr></thead><tbody id="rows"><tr><td colspan="8">불러오는 중...</td></tr></tbody></table></div>
+<section id="detail" class="detail" hidden></section>
+<div class="foot"><div id="asof">자료 갱신 중</div>
+<div>* PER은 최근 연간 기본/희석 EPS 중 공시에서 확인한 값과 지연 주가로 계산한 <b>간이 연간 PER</b>입니다. 실시간·TTM·선행 PER과 다릅니다. 업종 간 점수 비교를 권하지 않습니다.</div>
+<div>스코어는 검토 순서 정리용 휴리스틱일 뿐 기업의 적정가치나 향후 수익률 예측이 아닙니다. 재무정보가 누락된 종목은 점수를 매기지 않습니다. 미국은 SEC의 연간 공시, 한국은 OpenDART 연결 시 연간 연결 주요계정에 기반합니다.</div>
+<div>데이터: <a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noopener">미국 SEC</a> · <a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">한국 OpenDART</a> · 주가 스냅샷 Yahoo Finance(지연/비공식). 공시 수치·결제 통화·자료 날짜를 거래 전에 별도 확인하세요.</div></div>
+</main>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const fmt=(n,d=1)=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:0});
+const percent=n=>n==null?'—':((n>0?'+':'')+fmt(n,1)+'%');
+const cash=(n,c)=>n==null?'—':(c==='KRW'?fmt(n/1e8,1)+'억 원':(fmt(n/1e9,2)+'B 달러'));
+const money=(n,c)=>n==null?'—':(c==='KRW'?'₩'+fmt(n,0):'$'+fmt(n,2));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let all=[], sel='ALL', selected=null, sourceInfo={};
+function rank(r){
+ if(r.revenue_growth==null||r.operating_margin==null)return {label:'자료 부족',score:-1,risk:false};
+ let s=0;
+ if(r.revenue_growth>15)s+=2;else if(r.revenue_growth>0)s++;
+ if(r.operating_margin>20)s+=2;else if(r.operating_margin>5)s++;
+ if(r.fcf!=null&&r.fcf>0)s+=2;
+ if(r.annual_per!=null&&r.annual_per>0&&r.annual_per<25)s++;
+ let risk=(r.fcf!=null&&r.fcf<0)||(r.revenue_growth<-5)||(r.operating_margin<0)||(r.annual_per!=null&&r.annual_per>60);
+ return {score:s,label:risk?'위험 점검':s>=5?'우선 조사':s>=3?'관찰 후보':'추가 검증',risk:risk};
+}
+function pctClass(n){return n!=null?(n>0?'pos':n<0?'neg':''):'';}
+function metrics(r){return [
+ ['연간 매출',cash(r.revenue,r.currency)], ['매출 성장률',percent(r.revenue_growth)],
+ ['연간 영업이익',cash(r.operating_income,r.currency)], ['영업이익률',percent(r.operating_margin)],
+ ['연간 순이익',cash(r.net_income,r.currency)], ['연간 EPS',money(r.eps,r.currency)],
+ ['FCF',cash(r.fcf,r.currency)], ['CAPEX',cash(r.capex,r.currency)],
+ ['간이 연간 PER',r.annual_per==null?'—':fmt(r.annual_per,1)+'배']] }
+function argumentsFor(r){
+ const bull=[],bear=[];
+ if(r.revenue_growth!=null&&r.revenue_growth>10)bull.push('매출 성장률 '+percent(r.revenue_growth)+' — 수요 성장 지속 여부 확인');
+ if(r.operating_margin!=null&&r.operating_margin>15)bull.push('영업이익률 '+percent(r.operating_margin)+' — 경쟁사와 비교');
+ if(r.fcf!=null&&r.fcf>0)bull.push('연간 FCF '+cash(r.fcf,r.currency)+' — 현금 창출의 지속성 확인');
+ if(r.revenue_growth!=null&&r.revenue_growth<0)bear.push('매출 역성장 '+percent(r.revenue_growth)+' — 원인 확인');
+ if(r.operating_margin!=null&&r.operating_margin<10)bear.push('영업이익률 '+percent(r.operating_margin)+' — 비용·경쟁력 분석 필요');
+ if(r.fcf!=null&&r.fcf<0)bear.push('FCF 적자 — CAPEX 때문인지, 본업 현금 부족인지 확인');
+ if(r.annual_per!=null&&r.annual_per>35)bear.push('간이 연간 PER '+fmt(r.annual_per,1)+'배 — 미래 성장 기대가 과도한지 확인');
+ if(!bull.length)bull.push('수익성 회복, 주문 증가 또는 산업 성장의 증거를 추가 확인');
+ if(!bear.length)bear.push('부채 만기, 다음 분기 실적 전망, 주가에 반영된 기대를 추가 확인');
+ return {bull,bear};
+}
+function show(r){
+ selected=r.symbol;
+ const {bull,bear}=argumentsFor(r);
+ const list=items=>'<ul>'+items.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>';
+ const date=r.filing_period||'미연결',source=r.filing_source||'연결 대기';
+ const meta='재무 기준: '+date+' · '+source+' · '+(r.statement_basis||'공시 자료 없음');
+ const detail=$('#detail');detail.hidden=false;
+ detail.innerHTML='<div class="heading"><div><h2>'+esc(r.name)+' <span class="ticker">'+esc(r.symbol)+'</span></h2><p class="sub">'+esc(meta)+'</p></div><button id="closeDetail">닫기 ×</button></div>'+
+ '<div class="detail-grid">'+metrics(r).map(m=>'<div class="metric"><small>'+esc(m[0])+'</small><strong>'+esc(m[1])+'</strong></div>').join('')+'</div>'+
+ '<div class="split"><div class="argument"><b class="ok">매수자 관점에서 확인할 근거</b>'+list(bull)+'</div><div class="argument"><b class="alert">매도자 관점에서 확인할 위험</b>'+list(bear)+'</div></div>'+
+ '<p class="stamp">'+esc(r.note||'현재 수치는 연간 공시 기준. 미래 EPS, 밸류에이션 변화와 업황을 별도 분석하세요.')+'</p>'+
+ (r.filing_url?'<p><a href="'+esc(r.filing_url)+'" target="_blank" rel="noopener">공식 공시 원문 열기 ↗</a></p>':'');
+ $('#closeDetail').onclick=()=>{detail.hidden=true;selected=null};
+}
+function render(){
+ const q=$('#search').value.trim().toLowerCase(), sort=$('#sort').value;
+ let rs=all.filter(r=>(sel==='ALL'||r.market===sel)&&(!q||String(r.symbol).toLowerCase().includes(q)||String(r.name).toLowerCase().includes(q)));
+ const v=(r,k)=>r[k]==null?-1e30:Number(r[k]);
+ rs.sort((a,b)=>{if(sort==='review')return rank(b).score-rank(a).score;
+ if(sort==='per')return (a.annual_per??1e20)-(b.annual_per??1e20);
+ return v(b,sort==='growth'?'revenue_growth':sort==='margin'?'operating_margin':'fcf')-v(a,sort==='growth'?'revenue_growth':sort==='margin'?'operating_margin':'fcf')});
+ $('#countAll').textContent=rs.length;$('#countReady').textContent=rs.filter(r=>rank(r).score>=0).length;$('#countRisk').textContent=rs.filter(r=>rank(r).risk).length;
+ $('#rows').innerHTML=rs.length?rs.map(r=>{
+ const rd=rank(r),pct=r.price_change_pct;
+ const priceDate=r.price_updated_at?(new Date(r.price_updated_at).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric'})):'미확인';
+ return '<tr class="tap" data-symbol="'+esc(r.symbol)+'" title="기업을 눌러 상세 분석"><td><span class="ticker">'+esc(r.symbol)+'</span><div class="name">'+esc(r.name)+'</div></td>'+
+ '<td>'+esc(money(r.price,r.currency))+'<div class="name">기준 '+esc(priceDate)+'</div></td>'+
+ '<td class="'+pctClass(pct)+'">'+esc(percent(pct))+'</td>'+
+ '<td class="'+pctClass(r.revenue_growth)+'">'+esc(percent(r.revenue_growth))+'</td>'+
+ '<td>'+esc(percent(r.operating_margin))+'</td>'+
+ '<td class="'+pctClass(r.fcf)+'">'+esc(cash(r.fcf,r.currency))+'</td>'+
+ '<td>'+esc(r.annual_per==null?'—':fmt(r.annual_per,1)+'배')+'</td><td><span class="chip">'+esc(rd.label)+'</span></td></tr>'}).join(''):'<tr><td colspan="8">조건에 해당하는 기업이 없습니다.</td></tr>';
+ document.querySelectorAll('tr[data-symbol]').forEach(tr=>tr.onclick=()=>{const r=all.find(x=>x.symbol===tr.dataset.symbol);if(r)show(r)});
+ if(selected){const r=rs.find(x=>x.symbol===selected);if(r)show(r);else $('#detail').hidden=true}
+}
+async function load(){
+ $('#status').textContent='공식 재무 데이터와 갱신 중인 주가를 읽고 있습니다...';
+ try{
+ const nonce=Date.now();
+ const [radar,prices]=await Promise.all([
+ fetch('./stock-value-radar-data.json?t='+nonce,{cache:'no-store'}).then(x=>{if(!x.ok)throw Error('재무 스냅샷 HTTP '+x.status);return x.json()}),
+ fetch('./stocks-dashboard-data.json?t='+nonce,{cache:'no-store'}).then(x=>{if(!x.ok)throw Error('주가 스냅샷 HTTP '+x.status);return x.json()})
+ ]);
+ const px={};for(const [market,key] of [['US','US'],['KR','KOR']])for(const x of (prices.datasets?.[key]?.rows||[]))px[x.symbol]=x;
+ all=(radar.rows||[]).map(r=>{const p=px[r.symbol];const row={...r};if(p){row.price=p.raw_price;row.price_updated_at=p.market_time;row.price_change_pct=p.pct}row.annual_per=row.eps>0&&row.price>0?Math.round(row.price/row.eps*100)/100:null;return row});
+ sourceInfo=radar;
+ let warn=[];
+ if(!radar.dart_connected)warn.push('한국 공시 분석은 DART API 키 연결 전이며 주가만 제공됩니다.');
+ if(radar.errors?.length)warn.push('일부 재무정보 갱신 실패: '+radar.errors.length+'건 (세부 원인은 데이터 JSON 참조)');
+ if(prices.stale)warn.push('주가 소스 일부 갱신 지연');
+ $('#status').textContent=warn.length?warn.join(' '):'공시와 주가 데이터를 불러왔습니다. 기업을 선택해 양쪽의 투자 가설을 확인하세요.';
+ $('#asof').textContent='공시 분석 갱신: '+(radar.generated_at||'미확인')+' · 주가 데이터 갱신: '+(prices.generated_at||'미확인')+' · 자동 확인 15분 간격';
+ render();
+ }catch(e){$('#status').textContent='실제 데이터 파일을 아직 읽을 수 없습니다: '+e.message+' · 자동 생성 작업 완료 후 다시 시도하세요.';$('#rows').innerHTML='<tr><td colspan="8">데이터 연결 대기 중 — 숫자를 임의로 표시하지 않습니다.</td></tr>'}
+}
+document.querySelectorAll('[data-market]').forEach(b=>b.onclick=()=>{sel=b.dataset.market;document.querySelectorAll('[data-market]').forEach(x=>x.classList.toggle('active',x===b));render()});
+$('#search').addEventListener('input',render);$('#sort').addEventListener('change',render);$('#reload').addEventListener('click',load);
+load();setInterval(load,15*60*1000);
+})();
+</script></body></html>
