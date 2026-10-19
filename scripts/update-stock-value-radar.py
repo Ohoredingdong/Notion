@@ -104,7 +104,7 @@ def stock_sec(symbol, name, cik):
             "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
             "capex":capex, "currency":"USD", "revenue_tag":rev_tag}
 
-def stock_yahoo(symbol, name):
+def stock_yahoo(symbol, name, market='US'):
     """Best-effort fallback: yfinance financial time series (unofficial; not SEC)."""
     import yfinance as yf
     ticker = yf.Ticker(symbol)
@@ -133,15 +133,15 @@ def stock_yahoo(symbol, name):
     direct_fcf = val(cf, ["Free Cash Flow", "FreeCashFlow"], latest)
     fcf = ocf - capex if ocf is not None and capex is not None else direct_fcf
     if rev is None and eps is None: raise RuntimeError("Yahoo 재무항목 미제공")
-    return {"symbol":symbol,"name":name,"market":"US","filing_source":"Yahoo Finance (비공식 보조자료)",
+    return {"symbol":symbol.replace(".KS", ""),"name":name,"market":market,"filing_source":"Yahoo Finance (비공식 보조자료)",
             "filing_url":f"https://finance.yahoo.com/quote/{symbol}/financials/",
             "filing_period":str(latest)[:10],"statement_basis":"최근 연간 수치 (TTM 아님)",
             "revenue":rev,"revenue_growth":growth(rev,prev),
             "operating_income":op,"operating_margin":round(op/rev*100,2) if op is not None and rev and rev>0 else None,
             "net_income":ni,"eps":eps,"fcf":fcf,
             "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
-            "capex":capex,"currency":"USD",
-            "note":"SEC가 자동 접속을 차단하여 Yahoo 보조자료로 조회. 실거래 전 SEC 정기보고서로 반드시 교차 검증."}
+            "capex":capex,"currency":"KRW" if market=="KR" else "USD",
+            "note":"Yahoo 비공식 보조자료. 매매 전 해당 국가의 공식 정기보고서에서 매출·EPS·FCF를 교차 검증."}
 
 def dart_code_lookup(key):
     req = urllib.request.Request("https://opendart.fss.or.kr/api/corpCode.xml?"+urllib.parse.urlencode({"crtfc_key":key}),headers=HEADERS)
@@ -220,10 +220,16 @@ def main():
             korean={s:dart_build(s,name,codes[s],rows,2025) for s,name in KOREA.items() if s in codes}
         except Exception as e: errors.append("OpenDART: "+str(e)[:160])
     for symbol,name in KOREA.items():
-        row=korean.get(symbol) or old_records.get(symbol) or base_record(symbol,name,"KR",
-          "DART_API_KEY 미연결: 주가는 자동 갱신, 재무 분석은 데이터 미연결")
+        row=korean.get(symbol)
+        if row is None:
+            try:
+                row=stock_yahoo(symbol+".KS",name,market="KR")
+            except Exception as e:
+                errors.append(f"KR Yahoo {symbol}: {str(e)[:110]}")
+                row=old_records.get(symbol) or base_record(symbol,name,"KR","한국 공식/보조 재무자료 연결 실패")
         row=dict(row);row.update(pricing.get(symbol) or {"price":None,"price_updated_at":None,"price_change_pct":None})
-        row["annual_per"]=None
+        eps=number(row.get("eps"));price=number(row.get("price"))
+        row["annual_per"]=round(price/eps,2) if price is not None and eps and eps>0 else None
         results.append(row)
     out={"generated_at":datetime.now(KST).isoformat(),
          "price_source":snap.get("source_label","Yahoo Finance · delayed/indicative"),
