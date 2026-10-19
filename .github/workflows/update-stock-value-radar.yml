@@ -1,0 +1,36 @@
+name: Update Stock Value Radar
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3,13 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/update-stock-value-radar.py"
+      - ".github/workflows/update-stock-value-radar.yml"
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Update SEC and OpenDART fundamentals
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/update-stock-value-radar.py
+      - name: Commit only if changed
+        run: |
+          if git diff --quiet -- stock-value-radar-data.json && [ -f stock-value-radar-data.json ]; then
+            echo "No change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stock-value-radar-data.json
+          git commit -m "data: refresh stock value radar"
+          git push
