@@ -119,10 +119,9 @@ def scenarios(row):
     return result
 
 def verify_official_release(row, official_sources):
-    """Legacy static reference figures are not current automatic verification.
+    """Old hand-entered reference values are not a live verification.
 
-    The independently fetched result is stock-official-audit.json. This function
-    deliberately returns no proof rather than reusing hand-entered figures.
+    Read stock-official-audit.json for independent re-fetched source comparisons.
     """
     return None
 
