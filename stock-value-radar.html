@@ -450,7 +450,7 @@ function qualityChecklist(r,text){
 function citedList(items,r){
  return '<ul>'+items.map((s,i)=>{
   const e=qualityChecklist(r,s),p=e.src;
-  const url=u=>esc(u),label=e.done===0?'자동 검증 전':"확인 범위 "+e.done+"/5 ("+e.pct+"%)";
+  const url=u=>esc(u),label=e.done===0?'자동 검증 전':"과거 수치 확인 "+e.done+"/5 ("+e.pct+"%)";
   const checkitems=e.checks.map(x=>'<div class="verify-check"><span class="'+(x.ok?'verify-yes':'verify-no')+'">'+(x.ok?'✓':'○')+'</span> '+esc(x.desc)+'</div>').join('');
   return '<li class="claim-row"><div class="claim-head"><span class="claim-text">'+esc(s)+'</span><span class="evidence-badge '+(e.done===0?'evidence-missing':'')+'" title="주가 상승·하락 확률이 아닌 자동 확인 항목 수">'+label+'</span></div>'+
   '<div class="verify-steps"><div class="verify-title">'+(e.done===0?'현재 데이터에서 검증하지 못한 주장입니다.':'자동 확보한 자료와 아직 부족한 근거')+'</div>'+
@@ -487,7 +487,7 @@ function detailed(r){
   ['bear','base','bull'].map(k=>{const x=r.sensitivity[k];return '<tr><td>'+names[k]+'</td><td>'+pct(x.eps_change_pct)+'</td><td>현재 × '+fmt(x.pe_multiple_factor,2)+'</td><td>'+currency(x.implied_price,r.currency)+'</td><td>'+pct(x.vs_price_pct)+'</td></tr>'}).join('')+'</tbody></table></div>';
  }else scenario='<p class="data-note">EPS가 0 이하이거나 주가·PER이 없어 가격 민감도 계산을 보류했습니다.</p>';
  el.className='detail';
- el.innerHTML='<div class="evidence-row"><strong>이 점수의 뜻</strong> · 근거 확인률은 5개 검사 항목 중 충족한 비율입니다. 60%면 3/5를 확인했다는 뜻이지 주가가 60% 확률로 상승한다는 뜻이 아닙니다. <strong>미래 상승확률은 검증 표본 부족으로 산출하지 않았습니다.</strong></div>'+
+ el.innerHTML='<div class="evidence-row"><strong>이 점수의 뜻</strong> · 과거 수치 확인률은 5개 자료 검사 항목 중 충족한 비율입니다. 100%여도 과거 숫자의 대조 범위만 뜻하며, 미래 수요 지속이나 주가가 상승할 확률은 포함하지 않습니다. <strong>미래 상승확률은 검증 표본 부족으로 산출하지 않았습니다.</strong></div>'+
  '<div class="split"><div class="argument"><b class="ok">매수자가 주장할 수 있는 논리</b>'+citedList(bull,r)+'</div><div class="argument"><b class="alert">매도자가 주장할 수 있는 논리</b>'+citedList(bear,r)+'</div></div>'+
  '<div class="source-guide"><h3>숫자가 맞는지 직접 비교하는 곳</h3>'+
  '<p><a href="'+marketURL+'" target="_blank" rel="noopener noreferrer">① 주가·종가 확인 ('+(r.market==='KR'?'KRX':'Nasdaq')+')</a> · <a href="'+officialURL+'" target="_blank" rel="noopener noreferrer">② 재무제표 원본 ('+(r.market==='KR'?'DART':'SEC')+')</a> · <a href="'+compareURL+'" target="_blank" rel="noopener noreferrer">③ 재무지표 비교 ('+(r.market==='KR'?'FnGuide':'Yahoo')+')</a></p>'+
