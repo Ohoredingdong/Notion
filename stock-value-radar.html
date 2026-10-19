@@ -360,7 +360,7 @@ function qualityChecklist(r,text){
  // Debt, future earnings or policy require evidence we have not actually collected.
  checks.push({ok:direct,desc:"직접 관련된 재무 수치 확인"});
  checks.push({ok:history,desc:"전년도 대비 추세 확인"});
- checks.push({ok:periodRecent,desc:"최신 연간 공시 대상기간(18개월 이내)"});
+ checks.push({ok:direct&&periodRecent,desc:"해당 수치와 연간 공시 대상기간이 18개월 이내"});
  checks.push({ok:official,desc:"공식 공시와 직접 대조"});
  checks.push({ok:false,desc:"독립 자료·회사 가이던스·동종기업으로 재검증"});
  const done=checks.filter(x=>x.ok).length;
@@ -378,11 +378,11 @@ function detailed(r){
  const bull=r.dual_thesis?.bull||[],bear=r.dual_thesis?.bear||[];
  const tests=(r.dual_thesis?.tests||[]).slice(0,5).map(s=>'<li>'+esc(s)+'</li>').join('');
  const qwarn=(quality.critical||[]).concat(quality.warnings||[]);
- const searchName=encodeURIComponent(r.name+' 사업보고서');
+ 
  const searchLink='https://dart.fss.or.kr/';
  const officialURL=r.market==='KR'?searchLink:'https://www.sec.gov/edgar/search/';
  const compareURL=r.market==='KR'?'https://comp.fnguide.com/':'https://finance.yahoo.com/quote/'+encodeURIComponent(r.symbol)+'/financials/';
- const marketURL=r.market==='KR'?'https://data.krx.co.kr/':'https://www.nasdaq.com/market-activity/stocks/'+encodeURIComponent(r.symbol.toLowerCase());
+ const marketURL=r.market==='KR'?'https://data.krx.co.kr/':'https://www.nasdaq.com/market-activity/stocks';
  const per=r.annual_per!=null?fmt(r.annual_per,1)+'배':'확인 불가';
  let scenario='';
  if(r.sensitivity){
