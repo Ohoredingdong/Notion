@@ -431,17 +431,21 @@ function qualityChecklist(r,text){
  const prior=(kind==="sales"&&r.revenue_growth!=null); // source-based comparison, not independently confirmed
  const audit=r.official_audit||null;
  const fields=audit?.verified_fields||[];
- const secondary=(kind==="sales"&&fields.includes("revenue")&&fields.includes("revenue_growth"))||
-    (kind==="margin"&&fields.includes("operating_income")&&fields.includes("operating_margin"));
+ const matching=(kind==="sales"&&fields.includes("revenue")&&fields.includes("revenue_growth"))||
+    (kind==="margin"&&fields.includes("operating_income")&&fields.includes("operating_margin"))||
+    (kind==="cash"&&fields.includes("fcf"))||
+    (kind==="valuation"&&fields.includes("eps"));
+ const regulatory=Boolean(audit?.source_type?.startsWith("krx_")&&matching);
+ const secondary=Boolean(matching&&audit?.supporting_release_url&&(kind==="sales"||kind==="margin"));
  const checks=[
- {ok:numeric,desc:"관련 재무 숫자를 보조 데이터에서 자동 수집"},
- {ok:numeric&&recent,desc:"해당 숫자의 회계연도 확인 (18개월 이내)"},
+ {ok:numeric,desc:"관련 수치를 수집함 (수집만으로는 검증 완료 아님)"},
+ {ok:numeric&&recent,desc:"해당 수치의 회계연도 확인 (18개월 이내)"},
  {ok:prior,desc:"전년 대비 계산값 확보 (원본 공시와 대조는 별개)"},
- {ok:secondary,desc:"해당 지표를 회사 공식 실적발표와 수치 대조"},
- {ok:official,desc:"DART·SEC 최종 공시와 직접 교차대조"}
+ {ok:secondary,desc:"회사 공식 실적발표와 해당 과거 실적 숫자 대조"},
+ {ok:regulatory||official,desc:"거래소 공개 재무제표 또는 DART·SEC 제출 자료와 숫자 대조"}
  ];
  const done=checks.filter(x=>x.ok).length;
- return {kind,src,checks,done,pct:done*20,numberAvailable:numeric,official,companyReleaseChecked:secondary,release:audit};
+ return {kind,src,checks,done,pct:done*20,numberAvailable:numeric,official:regulatory||official,companyReleaseChecked:secondary,regulatoryChecked:regulatory,release:audit};
 }
 function citedList(items,r){
  return '<ul>'+items.map((s,i)=>{
@@ -453,7 +457,7 @@ function citedList(items,r){
   '<p class="verify-instruction"><b>① 먼저 확인할 것:</b> '+esc(p.target)+'</p>'+
   '<p class="verify-instruction"><b>② 공시에서 찾을 위치:</b> '+esc(p.route)+'</p>'+
   '<p class="verify-instruction"><b>③ 비교 방법:</b> '+esc(p.check)+'</p>'+
-  (e.companyReleaseChecked&&e.release?.source_url?'<div class="release-proof"><b>실제 대조 완료:</b> '+esc(e.release.period)+' 실적 숫자가 회사 공식 발표와 일치합니다. <a href="'+esc(e.release.source_url)+'" target="_blank" rel="noopener noreferrer">실적 발표 원문 ↗</a><br><span>※ 기업 발표 확인이며 DART 감사 재무제표·미래 성장성 검증을 의미하지 않습니다.</span></div>':'')+
+  (e.regulatoryChecked&&e.release?.source_url?'<div class="release-proof"><b>거래소 공시와 수치 대조 완료:</b> '+esc(e.release.period)+' 과거 재무 수치가 공시 원문과 일치합니다. <a href="'+esc(e.release.source_url)+'" target="_blank" rel="noopener noreferrer">KIND 연결재무제표 원문 ↗</a>'+ (e.companyReleaseChecked?'<br><a href="'+esc(e.release.supporting_release_url)+'" target="_blank" rel="noopener noreferrer">회사 별도 실적발표와도 비교 ↗</a>':'')+'<br><span>※ 확인된 것은 과거 실적 금액입니다. 미래 수요·실적·주가의 확률을 검증한 것은 아닙니다.</span></div>':'')+
   '<div class="verify-links"><a href="'+url(p.directSearch)+'" target="_blank" rel="noopener noreferrer">'+esc(p.officialLabel)+' ↗</a>'+
   '<a href="'+url(p.peer)+'" target="_blank" rel="noopener noreferrer">'+esc(p.peerLabel)+' ↗</a>'+
   (e.kind==='policy'?'<a href="'+url(r.market==="KR"?"https://www.motie.go.kr/":"https://www.bis.gov/regulations/ear")+'" target="_blank" rel="noopener noreferrer">정책·수출규제 공식 자료 ↗</a>':'')+
