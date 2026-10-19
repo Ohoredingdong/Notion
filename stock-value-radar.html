@@ -28,7 +28,7 @@ input{width:160px;max-width:100%}.stamp{color:var(--muted);font-size:10px;margin
 <section id="detail" class="detail" hidden></section>
 <div class="foot"><div id="asof">자료 갱신 중</div>
 <div>* PER은 최근 연간 기본/희석 EPS 중 공시에서 확인한 값과 지연 주가로 계산한 <b>간이 연간 PER</b>입니다. 실시간·TTM·선행 PER과 다릅니다. 업종 간 점수 비교를 권하지 않습니다.</div>
-<div>스코어는 검토 순서 정리용 휴리스틱일 뿐 기업의 적정가치나 향후 수익률 예측이 아닙니다. 재무정보가 누락된 종목은 점수를 매기지 않습니다. 미국은 SEC 연간 공시 우선·접속 차단 시 비공식 Yahoo 보조자료, 한국은 OpenDART 연결 시 연간 연결 주요계정에 기반합니다.</div>
+<div>스코어는 검토 순서 정리용 휴리스틱일 뿐 기업의 적정가치나 향후 수익률 예측이 아닙니다. 재무정보가 누락된 종목은 점수를 매기지 않습니다. 미국은 SEC 연간 공시 우선·접속 차단 시 비공식 Yahoo 보조자료, 한국은 OpenDART 우선·연결 전 비공식 Yahoo 보조자료에 기반합니다.</div>
 <div>데이터: <a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noopener">미국 SEC</a> · <a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">한국 OpenDART</a> · 주가 스냅샷 Yahoo Finance(지연/비공식). 공시 수치·결제 통화·자료 날짜를 거래 전에 별도 확인하세요.</div></div>
 </main>
 <script>
@@ -118,7 +118,7 @@ async function load(){
  all=(radar.rows||[]).map(r=>{const p=px[r.symbol];const row={...r};if(p){row.price=p.raw_price;row.price_updated_at=p.market_time;row.price_change_pct=p.pct}row.annual_per=row.eps>0&&row.price>0?Math.round(row.price/row.eps*100)/100:null;return row});
  sourceInfo=radar;
  let warn=[];
- if(!radar.dart_connected)warn.push('한국 공시 분석은 DART API 키 연결 전이며 주가만 제공됩니다.');
+ if(!radar.dart_connected)warn.push('국내 공식 DART 미연결: 한국 재무 숫자는 비공식 보조자료이며 공시 교차검증이 필요합니다.');
  if(radar.errors?.length)warn.push('일부 재무정보 갱신 실패: '+radar.errors.length+'건 (세부 원인은 데이터 JSON 참조)');
  if(prices.stale)warn.push('주가 소스 일부 갱신 지연');
  $('#status').textContent=warn.length?warn.join(' '):'공시와 주가 데이터를 불러왔습니다. 기업을 선택해 양쪽의 투자 가설을 확인하세요.';
