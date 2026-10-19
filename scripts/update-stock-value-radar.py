@@ -197,15 +197,19 @@ def main():
             pricing[x.get("symbol")]={"price":x.get("raw_price"),"price_updated_at":x.get("market_time"),"price_change_pct":x.get("pct")}
     results=[];errors=[]
     for symbol,(name,cik) in USA.items():
+        source_fresh=True
         try:
             row=stock_sec(symbol,name,cik)
         except Exception as e:
             try:
                 row=stock_yahoo(symbol,name)
             except Exception as yf_error:
+                source_fresh=False
                 errors.append(f"SEC {symbol}: {str(e)[:100]} / Yahoo: {str(yf_error)[:100]}")
                 row=old_records.get(symbol) or base_record(symbol,name,"US","재무 데이터 소스 일시적 이용 불가")
         row=dict(row);row.update(pricing.get(symbol) or {"price":None,"price_updated_at":None,"price_change_pct":None})
+        row["financial_fetch_status"]="fresh" if source_fresh else "cached"
+        row["financial_last_success_at"]=datetime.now(KST).isoformat() if source_fresh else (old_records.get(symbol) or {}).get("financial_last_success_at")
         eps=number(row.get("eps"));price=number(row.get("price"))
         row["annual_per"]=round(price/eps,2) if price is not None and eps and eps>0 else None
         results.append(row)
@@ -220,14 +224,18 @@ def main():
             korean={s:dart_build(s,name,codes[s],rows,2025) for s,name in KOREA.items() if s in codes}
         except Exception as e: errors.append("OpenDART: "+str(e)[:160])
     for symbol,name in KOREA.items():
+        source_fresh=True
         row=korean.get(symbol)
         if row is None:
             try:
                 row=stock_yahoo(symbol+".KS",name,market="KR")
             except Exception as e:
+                source_fresh=False
                 errors.append(f"KR Yahoo {symbol}: {str(e)[:110]}")
                 row=old_records.get(symbol) or base_record(symbol,name,"KR","한국 공식/보조 재무자료 연결 실패")
         row=dict(row);row.update(pricing.get(symbol) or {"price":None,"price_updated_at":None,"price_change_pct":None})
+        row["financial_fetch_status"]="fresh" if source_fresh else "cached"
+        row["financial_last_success_at"]=datetime.now(KST).isoformat() if source_fresh else (old_records.get(symbol) or {}).get("financial_last_success_at")
         eps=number(row.get("eps"));price=number(row.get("price"))
         row["annual_per"]=round(price/eps,2) if price is not None and eps and eps>0 else None
         results.append(row)
