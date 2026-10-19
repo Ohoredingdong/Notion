@@ -1,4 +1,4 @@
-"""Install v5 UI without replacing unrelated widget logic or data collectors."""
+"""Install the tested audit view without replacing unrelated widget functions."""
 from pathlib import Path
 import re
 
@@ -6,25 +6,28 @@ page=Path('stock-value-radar.html')
 text=page.read_text(encoding='utf-8')
 for marker in ('id="researchDetails"','id="detail"','id="systemBanner"'):
  if marker not in text:raise RuntimeError('Widget structure changed: '+marker)
-tag='<script src="./assets/stock-official-audit-v5.js"></script>'
-if tag not in text:
- if '</body>' not in text:raise RuntimeError('Cannot find document body end')
- text=text.replace('</body>',tag+'\n</body>',1)
-# Data collection is not a primary-source cross-check. The new UI computes field
-# verification from stock-official-audit.json; do not credit a source label alone.
-text=text.replace('const official=(financial.includes("SEC")||financial.includes("OpenDART"))&&!financial.includes("Yahoo");','const official=false; // v5: only the independent source audit can establish a match')
+asset=Path('assets/stock-official-audit-v5.js').read_text(encoding='utf-8')
+# Preserve insignificant numeric discrepancies, without mislabelling them as an outage.
+asset=asset.replace("const states={match:","const states={minor_difference:'미세 금액 차이',match:")
+asset=asset.replace("new Set(['mismatch',", "new Set(['minor_difference','mismatch',")
+# Compile the UI into the existing document to avoid stale third-party embed asset caches.
+compiled='<script id="official-audit-v5">\n'+asset+'\n</script>'
+text=re.sub(r'<script id="official-audit-v5">[\s\S]*?</script>','',text)
+text=text.replace('<script src="./assets/stock-official-audit-v5.js"></script>','')
+if '</body>' not in text:raise RuntimeError('Document body missing')
+text=text.replace('</body>',compiled+'\n</body>',1)
+text=text.replace('const official=(financial.includes("SEC")||financial.includes("OpenDART"))&&!financial.includes("Yahoo");','const official=false; // v5: independent actual source audit required')
 page.write_text(text,encoding='utf-8')
 
 builder=Path('scripts/build-stock-investment-intelligence.py')
 code=builder.read_text(encoding='utf-8')
 start=code.find('def verify_official_release(row, official_sources):')
 end=code.find('def thesis(row):',start)
-if start<0 or end<start:raise RuntimeError('Cannot locate legacy static verification function safely')
+if start<0 or end<start:raise RuntimeError('Legacy verification boundary changed')
 replacement='''def verify_official_release(row, official_sources):
-    """Legacy static reference figures are not current automatic verification.
+    """Old hand-entered reference values are not a live verification.
 
-    The independently fetched result is stock-official-audit.json. This function
-    deliberately returns no proof rather than reusing hand-entered figures.
+    Read stock-official-audit.json for independent re-fetched source comparisons.
     """
     return None
 
@@ -32,5 +35,5 @@ replacement='''def verify_official_release(row, official_sources):
 code=code[:start]+replacement+code[end:]
 compile(code,str(builder),'exec')
 builder.write_text(code,encoding='utf-8')
-assert page.read_text().count(tag)==1
-print('Installed official audit UI once; retired static figure comparisons.')
+assert text.count('id="official-audit-v5"')==1
+print('Audit UI installed once. Old static figures no longer establish verification.')
