@@ -13,9 +13,16 @@ on:
       - 'scripts/build_stock_investment_cases.py'
       - 'scripts/test_stock_investment_cases.py'
       - 'scripts/check_stock_investment_cases.py'
+      - 'scripts/update_market_context.py'
+      - 'scripts/test_market_context.py'
+      - 'scripts/build_stock_decision_guide.py'
+      - 'scripts/test_stock_decision_guide.py'
+      - 'scripts/install_stock_decision_guide.py'
       - 'scripts/install_stock_investment_cases.py'
       - 'scripts/publish_stock_investment_cases.py'
       - 'assets/stock-investment-cases.js'
+      - 'assets/stock-decision-guide.js'
+      - 'assets/stock-decision-guide.css'
       - '.github/workflows/stock-investment-cases.yml'
 permissions:
   contents: write
@@ -25,7 +32,7 @@ concurrency:
 jobs:
   cases:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,20 +40,30 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Test decisions and financial-period parsing
-        run: python scripts/test_stock_investment_cases.py
+      - name: Install bounded readers
+        run: pip install 'beautifulsoup4==4.14.3' 'yfinance==0.2.66'
+      - name: Test decisions, macro parsers and decision guide
+        run: |
+          python scripts/test_stock_investment_cases.py
+          python -m unittest scripts.test_market_context -v
+          python -m unittest scripts.test_stock_decision_guide -v
       - name: Authenticate and fetch source evidence without exposing keys
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
           python scripts/build_stock_investment_cases.py
           python scripts/check_stock_investment_cases.py
-      - name: Publish evidence snapshot
+      - name: Fetch current rates, Treasury yield, inflation, FX and indexes
+        run: python scripts/update_market_context.py
+      - name: Build market-to-company decision path
+        run: python scripts/build_stock_decision_guide.py
+      - name: Publish evidence and decision-guide snapshots
         run: >-
-          python scripts/publish_widget_data.py --message 'research: publish explicit investment reasoning with authenticated evidence' stock-investment-cases.json stock-investment-cases-summary.json
-      - name: Install integrated verdict view
+          python scripts/publish_widget_data.py --message 'research: publish investment evidence, macro context and full decision path' stock-investment-cases.json stock-investment-cases-summary.json stock-market-context.json stock-decision-guide.json stock-decision-guide-summary.json
+      - name: Install integrated verdict and decision-guide view
         run: |
           node --check assets/stock-investment-cases.js
+          node --check assets/stock-decision-guide.js
           python scripts/publish_stock_investment_cases.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -55,12 +72,20 @@ jobs:
           retention-days: 2
           path: |
             stock-investment-cases*.json
+            stock-market-context.json
+            stock-decision-guide*.json
             stock-opportunity-data.json
             stock-official-audit.json
             stock-market-groups.json
             stock-value-radar.html
             scripts/*stock_investment_cases.py
+            scripts/update_market_context.py
+            scripts/test_market_context.py
+            scripts/build_stock_decision_guide.py
+            scripts/test_stock_decision_guide.py
+            scripts/install_stock_decision_guide.py
             assets/stock-investment-cases.js
+            assets/stock-decision-guide.*
             assets/stock-radar-v8.*
             assets/stock-radar-v9.js
             assets/stock-market-groups.js
