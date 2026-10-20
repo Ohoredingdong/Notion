@@ -5,7 +5,8 @@ const codes={KSC:'KOSPI',KOE:'KOSDAQ',NMS:'NASDAQ',NGM:'NASDAQ',NCM:'NASDAQ',NYQ
 let snapshot=null,loading=null,error=null,deep=[];
 const key=r=>r.source_symbol||r.symbol;
 const isFresh=()=>{const t=Date.parse(snapshot?.generated_at||'');const age=(Date.now()-t)/36e5;return Number.isFinite(age)&&age>=-1&&age<=(snapshot?.max_age_hours||36)};
-function get(r){const found=isFresh()?snapshot?.members?.[key(r)]:null;let venue=found?.venue||codes[r.exchange]||'UNKNOWN';const s=key(r)||'';
+function get(r){let found=isFresh()?snapshot?.members?.[key(r)]:null;if(!found&&isFresh()&&r.market==='KR'){const aliases=[snapshot?.members?.[r.symbol+'.KS'],snapshot?.members?.[r.symbol+'.KQ']].filter(Boolean);if(aliases.length===1)found=aliases[0]}
+let venue=found?.venue||codes[r.exchange]||'UNKNOWN';const s=key(r)||'';
 if(r.market==='KR'&&!found)venue=s.endsWith('.KQ')?'KOSDAQ':s.endsWith('.KS')?'KOSPI':venue;
 if(r.market==='US'&&['KOSPI','KOSDAQ'].includes(venue))venue='UNKNOWN';
 if(!['KOSPI','KOSDAQ','NASDAQ','NYSE','UNKNOWN'].includes(venue))venue='OTHER';
