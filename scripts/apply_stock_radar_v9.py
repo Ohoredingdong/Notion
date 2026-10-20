@@ -1,9 +1,7 @@
-"""Idempotent v9 enhancement of the existing v8 page; training is untouched."""
+"""Idempotent v9 enhancement; training and numeric risk thresholds stay unchanged."""
 from pathlib import Path
-import hashlib
-
+import hashlib,re
 css_path=Path('assets/stock-radar-v8.css');css=css_path.read_text()
-# Keep colored accents and text contrast; lighten only large neutral surfaces.
 css=css.replace('--bg:#f2f3f8','--bg:#f9fafb').replace('--soft:#f6f7fb','--soft:#fbfbfc')
 marker='/* RADAR_V9_FIRST_CHOICES */'
 if marker not in css:
@@ -26,7 +24,6 @@ if 'id="wideDirectory"' not in html:
 '''
  html=html.replace(anchor,anchor+directory)
 asset=Path('assets/stock-radar-v9.js').read_text();token=hashlib.sha256(asset.encode()).hexdigest()[:12]
-import re
 html=re.sub(r'<script src="\./assets/stock-radar-v9\.js[^\"]*" defer></script>\s*','',html)
 html=html.replace('</head>','<script src="./assets/stock-radar-v9.js?v='+token+'" defer></script>\n</head>')
 html_path.write_text(html)
@@ -35,10 +32,11 @@ if 'radar:v9-data' not in js:
  anchor='function renderCards(){summary();'
  if anchor not in js:raise RuntimeError('renderCards anchor changed')
  js=js.replace(anchor,anchor+"document.dispatchEvent(new CustomEvent('radar:v9-data',{detail:{data,mode,paused:paused()}}));",1)
-# Automatically discovered additions belong in the expanded filter too.
+# A real sector/issuer mismatch must not keep a generic-company score.
+js=js.replace("function priorityValue(r){return r.period_integrity?.status==='needs_review'?null:r.priority?.score;}","function priorityValue(r){return r.period_integrity?.status==='needs_review'||r.model_integrity?.status==='needs_sector_model'?null:r.priority?.score;}")
+js=js.replace("기준기간 불일치: 아래 가격을 매수 행동 기준으로 사용하지 마세요.","기준기간 또는 업종모델 미확인: 아래 가격을 매수 행동 기준으로 사용하지 마세요.")
 js=js.replace("r.cohort==='확장'", "r.cohort!=='기존'")
 js=js.replace("'한국·미국 고정 후보'", "'한국·미국 정밀 분석'")
 js=js.replace("'고정 후보 '+(c.tracked||0)+'개", "'정밀 분석 '+(c.tracked||0)+'개")
-js=js.replace("실적·가격 후보 / 공식 대조 전", "실적·가격 후보 / 공식 대조 전")
 js_path.write_text(js)
-print('v9 lighter gray, explicit shortlist and broad directory installed; no training or risk-gate changes')
+print('v9 lighter gray, explicit shortlist and wide directory; unsupported model score hidden')
