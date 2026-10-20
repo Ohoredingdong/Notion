@@ -513,6 +513,51 @@
       suppressClickUntil = Date.now() + 500; moveItem(id, target.dataset.zone, position || undefined);
     }
   }
+
+  async function refreshLegacyDemoExpiries() {
+    let storage;
+    try { storage = window.localStorage; } catch (_) { return false; }
+    const migrationKey = 'umf-demo-expiry-balance-v1';
+    try { if (storage?.getItem(migrationKey) === 'done') return false; } catch (_) { return false; }
+
+    const state = S.getState();
+    const specs = [
+      { test: /애호박|주키니/, qty: /1\s*개/i, days: 3 },
+      { test: /우유/, qty: /900\s*ml/i, days: 2 },
+      { test: /두부/, qty: /300\s*g/i, days: -1 },
+      { test: /계란|달걀/, qty: /10\s*개/i, days: 7 },
+      { test: /양파/, qty: /3\s*개/i, days: -2 },
+      { test: /요거트|요구르트|요거트컵/, qty: /1\s*개/i, days: 5 }
+    ];
+    const matches = [];
+    for (const item of state.items) {
+      const spec = specs.find(value => value.test.test(item.name) && value.qty.test(String(item.quantity || '')));
+      if (spec) matches.push({ item, spec });
+    }
+    const expired = matches.filter(({ item }) => {
+      const left = D.daysLeft(item.expiry);
+      return left !== null && left < 0;
+    }).length;
+    // This signature belongs to the old visual demo set. Do not touch normal user data.
+    if (matches.length < 5 || expired < 4) return false;
+
+    const dateAt = days => {
+      const d = new Date();
+      d.setHours(12, 0, 0, 0);
+      d.setDate(d.getDate() + days);
+      return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    };
+    const byId = new Map(matches.map(({ item, spec }) => [item.id, dateAt(spec.days)]));
+    const ok = await S.updateAsync(draft => {
+      for (const item of draft.items) if (byId.has(item.id)) item.expiry = byId.get(item.id);
+    }, { origin: 'demo-expiry-balance' });
+    if (ok) {
+      try { storage?.setItem(migrationKey, 'done'); } catch (_) { /* optional marker */ }
+      return true;
+    }
+    return false;
+  }
+
   mountScene(); mountHero();
   const handlers = { click: onSceneClick, keydown: onKeyDown, pointerdown: onPointerDown, pointermove: onPointerMove, pointerup: onPointerUp, pointercancel: onPointerCancel, lostpointercapture: onPointerCancel, dragstart: onDragStart, dragover: onDragOver, dragleave: onDragLeave, dragend: clearDrag, drop: onDrop };
   for (const [event, handler] of Object.entries(handlers)) scene.addEventListener(event, handler);
@@ -522,7 +567,7 @@
   window.addEventListener('umf:navigation', onNavigation);
   window.addEventListener('pointermove', onPointerMove); window.addEventListener('pointerup', onPointerUp); window.addEventListener('pointercancel', onPointerCancel); window.addEventListener('keydown', onWindowKeyDown);
   window.addEventListener('blur', abortGesture); window.addEventListener('resize', abortGesture); document.addEventListener('visibilitychange', onVisibilityChange);
-  const ready = Promise.all([S.ready, K.ready]).then(() => { initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
+  const ready = Promise.all([S.ready, K.ready]).then(async () => { await refreshLegacyDemoExpiries(); initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
   window.UMFKitchen = {
     ready, render, navigate, arrangeItem, foodIdFor, itemStatus, zones, positionFor,
     geometry: Object.freeze({ normalizedPoint, defaultPosition }),
