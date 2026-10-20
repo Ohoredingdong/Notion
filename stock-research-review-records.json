@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "purpose": "숫자 수집만으로 확인되지 않는 사업·부채·감사·가격 가정의 원문 검토 기록. 확인하지 않은 내용을 승인으로 채우지 않습니다.",
+  "companies": {},
+  "instructions": {
+    "author": "정확한 회사 공시와 독립된 전망 자료를 읽고 근거를 기록한 검토자. 일반 이용자가 위젯에서 체크해 초록으로 바꾸는 기능은 없습니다.",
+    "binding": "각 종목에 stock-green-review.json의 fundamental_fingerprint와 sections를 기록합니다. 새 재무수치·공시 접수번호·EPS 전망이 반영되면 기존 확인은 재검토 대상입니다.",
+    "section_fields": ["reviewer", "reviewed_at", "decision: resolved 또는 unresolved", "findings: 각 필수 주제에 대한 검토 내용", "sources: url, publisher, published_at, locator, document_sha256, evidence_excerpt"],
+    "limits": "일반 검토는 30일, 최근 공시·감사의견 검토는 1일 내 재확인이 필요합니다. URL 또는 해시 존재만으로 내용의 진실까지 자동 증명하지 않습니다.",
+    "debt": "금리·만기·제한현금·리스·투자약정의 근거와 amounts: currency, as_of, unrestricted_cash, stressed_operating_inflow_12m, all_committed_cash_uses_12m을 확인합니다.",
+    "valuation": "애널리스트 목표가를 복사하지 않습니다. normalised_eps_pe와 fcfe_dcf를 각각 보수·기준·스트레스 시나리오로 작성하고 가정을 출처로 뒷받침합니다. FCFE는 부채 관련 현금흐름 반영 후 보통주 몫이며 EBITDA와 다릅니다.",
+    "no_override": "가격·실적·기간·단위 등 자동 오류를 확인 버튼으로 무시할 수 없습니다. 누락·실패는 초록색에 포함하지 않습니다.",
+    "no_guarantee": "검토 완료는 미래 수익, 원금 안전, 최대손실, 개인별 적합성을 보장하지 않습니다. 전략의 실제 성과 검증은 별도이며 아직 미완료입니다."
+  }
+}
