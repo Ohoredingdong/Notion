@@ -1,0 +1,51 @@
+name: Stock Recommendations
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Stock Investment Cases', 'Stock Three-Year Reading']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_stock_recommendations.py'
+      - 'scripts/test_stock_recommendations.py'
+      - 'assets/stock-recommendations.js'
+      - '.github/workflows/stock-recommendations.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-recommendations
+  cancel-in-progress: true
+jobs:
+  recommend:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test recommendation policy
+        run: python -m unittest scripts.test_stock_recommendations -v
+      - name: Build practical recommendations
+        run: python scripts/build_stock_recommendations.py
+      - name: Publish recommendation snapshots
+        run: >-
+          python scripts/publish_widget_data.py --message 'research: publish practical ranked investment recommendations' stock-recommendations.json stock-recommendations-summary.json
+      - name: Check recommendation UI
+        run: node --check assets/stock-recommendations.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-recommendation-diagnostics
+          retention-days: 2
+          path: |
+            stock-recommendations*.json
+            stock-opportunity-data.json
+            stock-investment-cases.json
+            stock-reading-depth.json
+            assets/stock-recommendations.js
