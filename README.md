@@ -19,8 +19,8 @@
 | Habit Tracker | [열기](https://ohoredingdong.github.io/Notion/habit-tracker-v2.html) | 습관 체크·기록 보존 확인 |
 | Zero Spend | [열기](https://ohoredingdong.github.io/Notion/zero-spend-v3.html) | 동기화 실패를 성공으로 표시하던 문제 수정 |
 | 무지출 챌린지 | [열기](https://ohoredingdong.github.io/Notion/nospend-dashboard.html) | 무지출 기록·달 이동·보존 확인 |
-| Life Town | [열기](https://ohoredingdong.github.io/Notion/life-town-widget-v2.html) | 화면·메뉴 연결 확인 |
-| Minimal Greeting | [열기](https://ohoredingdong.github.io/Notion/minimal-greeting.html) | 인사·날씨·타이머 확인 |
+| Life Town | [열기](https://ohoredingdong.github.io/Notion/life-town-widget-v2.html) | 시간·날씨·집중 타이머·메뉴 연결 확인 |
+| Minimal Greeting | [열기](https://ohoredingdong.github.io/Notion/minimal-greeting.html) | 시간대 인사·날짜·이름 저장 확인 |
 | Dot Web To-Do | [열기](https://ohoredingdong.github.io/Notion/widgetstation-dot-todo.html) | 할 일 추가·완료·기록 보존 확인 |
 | Daily English Word | [열기](https://ohoredingdong.github.io/Notion/english-word-widget-v2.html) | 단어 이동·학습 화면 확인 |
 | Daily French Word | [열기](https://ohoredingdong.github.io/Notion/french-word-widget-v2.html) | 단어 이동·학습 화면 확인 |
