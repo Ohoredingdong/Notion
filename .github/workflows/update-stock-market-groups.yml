@@ -1,0 +1,66 @@
+name: Update Stock Market Groups
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 8,23 * * *'
+  workflow_run:
+    workflows: ['Update Stock Opportunities']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_stock_market_groups.py'
+      - 'scripts/test_stock_market_groups.py'
+      - 'scripts/install_stock_market_groups.py'
+      - 'scripts/publish_stock_market_groups.py'
+      - 'assets/stock-market-groups.js'
+      - '.github/workflows/update-stock-market-groups.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-market-groups
+  cancel-in-progress: false
+jobs:
+  classify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test listing and membership boundaries
+        run: python scripts/test_stock_market_groups.py
+      - name: Fetch dated exchange and Dow sources
+        run: python scripts/update_stock_market_groups.py
+      - name: Integrate filters without changing research numbers
+        run: |
+          python scripts/install_stock_market_groups.py
+          python scripts/apply_stock_radar_v9.py
+          python scripts/refine_stock_radar_v8.py
+          python scripts/install_stock_radar_v8.py
+          node --check assets/stock-market-groups.js
+          node --check assets/stock-radar-v8.js
+          node --check assets/stock-radar-v9.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-market-group-check
+          retention-days: 2
+          path: |
+            stock-market-groups.json
+            stock-value-radar.html
+            stock-opportunity-data.json
+            stock-opportunity-discovery.json
+            stock-official-audit.json
+            stock-radar-health.json
+            assets/stock-market-groups.js
+            assets/stock-radar-v8.*
+            assets/stock-radar-v9.js
+            scripts/*stock_market_groups.py
+      - name: Publish classification and compatible UI on latest main
+        run: python scripts/publish_stock_market_groups.py
