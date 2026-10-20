@@ -32,6 +32,8 @@ jobs:
       - name: Test recommendation policy
         run: python -m unittest scripts.test_stock_recommendations -v
       - name: Build practical recommendations
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: python scripts/build_stock_recommendations.py
       - name: Publish recommendation snapshots
         run: >-
