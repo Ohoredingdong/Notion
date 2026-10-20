@@ -72,8 +72,230 @@ select{font:inherit;touch-action:manipulation}select:focus-visible{outline:3px s
 @media(max-width:780px){.data-basis{padding:11px 13px;margin-top:14px}.data-basis strong{font-size:13px}.data-basis small{font-size:10px}.summary-line{font-size:12px;gap:8px;margin:11px 0}.summary-title{font-size:17px}.summary-bottom{font-size:10px}.metric-meaning{font-size:11px}.metric-period{font-size:9px;min-height:44px}.action-tiles{grid-template-columns:1fr}.action-tile{min-height:76px}.action-tile small{font-size:11px}.company-business{font-size:12px}.section-header{align-items:flex-start}.section-header>span{font-size:10px}.cash-explainer{padding:1px 15px 17px}.cash-compare{gap:8px;padding:12px 10px}.cash-compare strong,.cash-equation strong{font-size:17px}.cash-equation{gap:4px;grid-template-columns:1fr 10px 1fr 10px 1fr}.cash-compare span,.cash-equation div>span{font-size:9px}.cash-explainer h2{font-size:13px}.finance-checks{grid-template-columns:1fr 1fr}.finance-checks .mini-panel{padding:14px}.finance-checks .mini-panel>p{font-size:11px}.decision-fields{gap:12px}.latest-stats{grid-template-columns:1fr}.latest-note summary{flex-wrap:wrap;gap:4px}.latest-note summary span{text-align:left;margin-left:7px}.dialog-title{font-size:21px}.financial-table th:first-child{min-width:155px}.notes-form textarea{font-size:13px}.record-actions{justify-content:flex-start}.scenario-presets{gap:5px}.scenario-presets .secondary{font-size:10px}.scenario-result strong{font-size:21px}}
 @media(max-width:390px){.data-status small{font-size:9px}.metric-period{font-size:8.5px}.metric-meaning{font-size:10px}.cash-compare strong,.cash-equation strong{font-size:15px}.cash-explainer{padding-left:12px;padding-right:12px}.decision-fields{grid-template-columns:1fr}.scenario-fields{grid-template-columns:1fr}.scenario-base-field{grid-column:auto}.scenario-result{padding:9px}.scenario-result strong{font-size:20px}.summary-top .subtle{font-size:9px}}
 
+</style><style>
+/* Visual hierarchy: category colors identify metrics; they are not ratings. */
+:root{
+  --bg:#f3f4f6;--line:#dfe4e9;--ink:#243140;--muted:#5f6b79;
+  --blue:#285fa9;--blue-soft:#edf4ff;--green:#1d6749;--green-soft:#edf7f0;
+  --amber:#96500e;--amber-soft:#fff5e5;--red:#a44842;
+  --focus-blue:#285fa9;--focus-purple:#7150a2;--focus-teal:#176e70;
+  font-size:13px;line-height:1.65;
+}
+body{background:var(--bg)}
+main{color:var(--ink)}
+.sidebar{background:#f7f8fa;border-right-color:#dfe4e9}
+.company-item.selected{background:#edf3fd;border-color:#c5d5ee;box-shadow:none}
+.company-item.selected:before{background:#285fa9;width:3px}
+.company-text strong{font-size:12px;color:#26384b}
+.company-text small,.brand small,.sidebar-bottom p,.tiny-label,.list-top,
+.eyebrow,.breadcrumb,.snapshot-badge,.company-heading h1 span,.company-meta>span:not(.pill){color:#637082;font-size:11px}
+.market-filters button{color:#596677;font-size:11px}
+.market-filters button.active{color:#244f90;background:#e2ebfb}
+.company-business{font-size:13px;color:#4b596a;line-height:1.7}
+.secondary{color:#3f5066;border-color:#d2dbe6;font-size:12px}
+.primary{background:#2b64b5;font-size:12px}
+.text-button{color:#365e91;font-size:11px}
+.icon-button{color:#5c6f86;border-color:#d7dfe9}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #407fc6;outline-offset:3px}
+.search-box input{color:#26384b;font-size:12px}
+.search-box input::placeholder,.notes-form textarea::placeholder{color:#68768a;opacity:1}
+.tabbar{border-bottom-color:#cfd7e2}
+.tabbar button{color:#5e6d80;font-size:12px}
+.tabbar button.active{color:#234f8c;font-weight:750}
+.tabbar button.active:after{height:3px;background:#386bbb}
+.data-basis{padding:10px 15px;background:#fafbfc;border-color:#dce3eb}
+.data-basis>div>span:not(.pill),.data-basis small,.data-basis .pill{color:#5e6d7e;font-size:11px}
+.data-basis strong{color:#2e435e;font-size:13px}
+.data-status{border-color:#dce3eb}
+.section-header{margin-top:20px;margin-bottom:10px}
+.section-header h2{font-size:14px;color:#283b50;font-weight:750}
+.section-header>span,.subtle{font-size:11px;color:#627083}
+
+/* The legend uses both words and dots; no meaning depends on color alone. */
+.color-legend{display:flex;align-items:center;flex-wrap:wrap;gap:5px 15px;font-size:11px;color:#526174;line-height:1.55;margin:8px 0 10px}
+.color-legend>span,.color-legend>div{display:inline-flex;align-items:center;gap:5px}
+.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:0 0 7px;margin-right:4px;vertical-align:middle}
+.legend-dot.green{background:#2f825b}.legend-dot.amber{background:#bc6b1e}.legend-dot.blue{background:#4177b9}
+.summary-panel{padding:18px 21px;border-color:#dce3eb;background:#fff;box-shadow:0 2px 7px #20344e04}
+.summary-top{margin-bottom:5px}
+.summary-top .subtle{font-size:11px;color:#647083}
+.summary-title{font-size:18px;line-height:1.5;margin:6px 0 12px;color:#25384b;letter-spacing:-.4px}
+.summary-line{grid-template-columns:40px minmax(0,1fr);gap:9px;align-items:baseline;margin:7px 0;padding:8px 10px;border-radius:9px;border:1px solid transparent;font-size:13px;line-height:1.65;color:#34465a}
+.summary-line p{margin:0;min-width:0;overflow-wrap:break-word;word-break:keep-all}
+.summary-tag{font-size:11px;font-weight:750;line-height:1.5;padding:3px 5px;border-radius:6px;color:#485b72;background:#e8edf3}
+.summary-line.tone-growth{background:#f0f8f3;border-color:#dbece0}
+.summary-line.tone-growth .summary-tag{background:#dceee1;color:#1c6141}
+.summary-line.tone-watch{background:#fff7eb;border-color:#f1dfc5}
+.summary-line.tone-watch .summary-tag{background:#f8e6c9;color:#8a450a}
+.summary-line.tone-info{background:#f0f5fd;border-color:#dce7f6}
+.summary-line.tone-info .summary-tag{background:#deebfd;color:#2a5997}
+.summary-line.tone-neutral{background:#f4f6f8;border-color:#e4e8ed}
+.summary-line .number-emphasis,.number-emphasis{font-weight:800;color:#223a53;font-variant-numeric:tabular-nums}
+.summary-line.tone-growth .number-emphasis{color:#1a6244}
+.summary-line.tone-watch .number-emphasis{color:#8d470b}
+.summary-line.tone-info .number-emphasis{color:#285c9d}
+.summary-bottom{margin-top:11px;padding-top:10px;font-size:11px;color:#5d6a7b;line-height:1.6;border-color:#e5e9ef}
+.summary-bottom .text-button{color:#2d5c9f;font-size:11px}
+
+/* One short, explicit review priority. */
+.focus-callout{display:flex;align-items:center;gap:12px;margin:12px 0 16px;padding:11px 14px;border:1px solid #e9cda7;border-left:4px solid #c47728;border-radius:11px;background:#fff6e8;color:#66451f;min-width:0}
+.focus-callout>div{flex:1;min-width:0}
+.focus-label{display:inline-flex;align-items:center;font-size:11px;font-weight:800;letter-spacing:.1px;color:#84430b;line-height:1.5}
+.focus-title{display:block;color:#6d3f12;font-size:13px;font-weight:750;line-height:1.6;margin:2px 0}
+.focus-description{font-size:12px;line-height:1.65;color:#725534;margin:2px 0 0;word-break:keep-all;overflow-wrap:break-word}
+.focus-callout>button,.focus-callout>a{flex:0 0 auto;align-self:center;font-size:11px;font-weight:700;color:#85450e;border:1px solid #dfbd90;border-radius:8px;background:#fffdf8;padding:7px 10px;white-space:nowrap}
+.focus-callout button:hover,.focus-callout>a:hover{background:#ffefcf;border-color:#ca985c}
+
+/* Blue, purple and teal describe PER / PBR / ROE, not investment suitability. */
+.metrics-grid{gap:11px}
+.metric-card{position:relative;padding:14px 16px 12px;border-radius:13px;border-color:#dbe3ed;border-top:3px solid var(--metric-color,#63758d);background:#fff;box-shadow:none;min-width:0;transition:border-color .15s,box-shadow .15s}
+.metric-card.metric-per{--metric-color:#285fa9;--metric-soft:#edf4ff;border-color:#cfdef2;border-top-color:#326bb4;background:linear-gradient(180deg,#f5f9ff 0%,#fff 65%)}
+.metric-card.metric-pbr{--metric-color:#7150a2;--metric-soft:#f3edfa;border-color:#ddd1ec;border-top-color:#8061ad;background:linear-gradient(180deg,#faf7fd 0%,#fff 65%)}
+.metric-card.metric-roe{--metric-color:#176e70;--metric-soft:#e9f6f5;border-color:#c7e2df;border-top-color:#2e8583;background:linear-gradient(180deg,#f2faf9 0%,#fff 65%)}
+.metric-card:hover{transform:none;box-shadow:0 3px 12px #253b5610;border-color:var(--metric-color,#63758d)}
+.metric-label{font-size:12px;color:var(--metric-color,#405775);font-weight:750;gap:6px}
+.metric-topic{display:block;font-size:11px;font-weight:650;color:#526176;line-height:1.5;margin-top:3px}
+.metric-value{font-size:29px;line-height:1.25;margin:8px 0 5px;color:var(--metric-color,#304e73);font-weight:800;letter-spacing:-.7px;font-variant-numeric:tabular-nums;overflow-wrap:normal!important;word-break:keep-all}
+.help-circle{width:17px;height:17px;flex-shrink:0;font-size:10px;background:#fff;color:var(--metric-color,#536d8f);border-color:currentColor;opacity:1}
+.metric-meaning{display:block;color:#42556d;font-size:12px;line-height:1.6;min-height:0}
+.metric-hint{display:block;font-size:11px;line-height:1.55;color:var(--metric-color,#4f6582);font-weight:650;margin-top:7px;word-break:keep-all;overflow-wrap:break-word}
+.metric-period{font-size:11px;line-height:1.55;color:#617083;border-color:#dfe5ed;margin-top:9px;padding-top:8px;min-height:0}
+.action-tile{min-height:74px;padding:13px 16px;border-color:#dce3ec}
+.action-tile strong{color:#344e6e;font-size:13px}.action-tile small{color:#617288;font-size:11px}
+.tile-symbol{background:#eaf1fc;color:#3265a7}
+.latest-note{border-color:#dbe4ef;background:#f7f9fc;color:#536c89;padding:12px 15px}
+.latest-note summary,.latest-note small,.coverage-note{font-size:11px;color:#596c84}
+.latest-note p{font-size:12px;color:#405773}
+
+/* Real financial rows receive priority, while movement labels remain explicit. */
+.financial-table{font-size:12px}
+.financial-table thead th{background:#edf1f6;color:#4b6079;font-size:11px}
+.financial-table tbody th{color:#304b69;font-size:12px;background:#fff}
+.financial-table td{color:#344b65}
+.financial-table small{font-size:11px;color:#65758b;line-height:1.5}
+.financial-table tr.row-core th,.financial-table tr.row-core td{background:#f0f5fc;border-bottom-color:#dce5f1}
+.financial-table tr.row-core th{box-shadow:inset 3px 0 #497ab8}
+.financial-table tr.row-core td strong{color:#244e84;font-weight:800}
+.table-delta{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:5px;font-size:11px;font-weight:700;line-height:1.45;white-space:nowrap}
+.table-delta.up{color:#275b9d;background:#e6effc}
+.table-delta.down{color:#8d4a14;background:#fff0dc}
+.table-delta.neutral{color:#526276;background:#edf1f5}
+.row-important{display:inline-block;margin-left:6px;padding:2px 5px;border-radius:5px;font-size:10px;font-weight:750;line-height:1.4;background:#dce8fa;color:#2b5892;vertical-align:middle;white-space:nowrap}
+.table-note,.mini-panel>small,.charts-grid small,.bar-label{font-size:11px;color:#63738a}
+.bar-label strong{color:#3d5878}
+
+/* Positive evidence and review risks are separate, equally legible sections. */
+.analysis-card{padding:18px;border-color:#dce3e9}
+.analysis-card.good{background:#f5faf6;border-color:#cfe3d5;border-top:3px solid #488967}
+.analysis-card.risk{background:#fff9f0;border-color:#ecd8ba;border-top:3px solid #bf7b2d}
+.analysis-card.good h3{color:#2c5d43}.analysis-card.risk h3{color:#80501c}
+.analysis-card h3{font-size:13px;line-height:1.65;margin:10px 0}
+.analysis-card ul{font-size:12px;color:#405269;line-height:1.8}
+.analysis-card li{margin:9px 0}
+.pill.green{color:#1b6042;background:#dfefe4}.pill.amber{color:#874408;background:#f9e8cc}.pill.blue{color:#2c5c9e;background:#e4eefc}
+.next-checks{padding:18px;border-color:#dce3e9}
+.next-checks h3{font-size:13px;color:#304b6b}
+.next-checks ol{font-size:12px;color:#43566e;line-height:1.8}
+.next-checks ol li:first-child{background:#fff4e3;border:1px solid #efd8b5;border-radius:8px;padding:9px 11px;margin:3px 0 5px;font-weight:700;color:#79501e}
+
+/* Cash figures are emphasized within their existing, compact layout. */
+.cash-explainer{border-color:#dbe3ed;background:#fff}
+.cash-explainer.cash-watch{border-color:#e8d0b0;border-left:4px solid #c4873c;background:#fffdfa}
+.cash-explainer.cash-stable{border-color:#cfe2d9;border-left:4px solid #4d8a70;background:#fcfefd}
+.cash-explainer .section-label{font-size:11px;color:#63738a}
+.cash-compare{background:#f2f5f9;gap:9px;padding:10px}
+.cash-compare>div{padding:7px 8px;border-radius:8px;min-width:0}
+.cash-compare .cash-emphasis{background:#e7f1ff;box-shadow:inset 0 0 0 1px #cbdcf2}
+.cash-compare span,.cash-equation div>span{font-size:11px;color:#576c86}
+.cash-compare strong,.cash-equation strong{font-size:20px;font-weight:750;color:#314f73;letter-spacing:-.3px;overflow-wrap:anywhere}
+.cash-watch .cash-total strong{color:#94500f}
+.cash-stable .cash-total strong{color:#20624b}
+.cash-total{border-radius:8px;padding:7px 9px;background:#edf3fb;box-shadow:inset 0 0 0 1px #d7e2f1}
+.cash-watch .cash-total{background:#fff1df;box-shadow:inset 0 0 0 1px #ebd2b1}
+.cash-stable .cash-total{background:#eaf5ef;box-shadow:inset 0 0 0 1px #cfe3d8}
+.cash-interpretation{font-size:12px;color:#4d627c;line-height:1.8}
+.cash-details summary{font-size:12px;color:#355e91;font-weight:650}
+.cash-details p{font-size:12px;color:#526982}.cash-details small{font-size:11px;color:#63738a}
+.quick-stats{font-size:12px}.quick-stats dt{color:#596d85}.quick-stats dd{color:#344f72}.quick-stats small{font-size:11px;color:#64738a}
+
+/* Secondary information remains readable without competing with key values. */
+.source-list small,.sources-panel summary span,.source-notes,.method-list,
+.page-footer,.dialog-footnote,.input-group small,.range-labels,.save-status,
+.context-card small,.decision-fields small,.note-toolbar>span,.saved-scenario small,
+.fold-panel summary span,.basis-label,.scenario-result small,.import-summary small{font-size:11px;color:#617289;line-height:1.65}
+.source-list a{color:#2c5e9f}.source-list{font-size:12px}
+.note-label{font-size:12px;color:#3d5470}.notes-form textarea{color:#344d6b;font-size:13px;border-color:#cfd9e6;background:#fff}
+.decision-fields input,.decision-fields select{color:#375271;border-color:#cfd9e6}
+.fold-panel summary{color:#425f81}.context-card p,.saved-scenario p{color:#536e8e;font-size:12px}
+.dialog-intro,.scenario-description{color:#4e6683;font-size:12px}
+.formula-box{background:#edf3fd;color:#355f98;border:1px solid #d5e1f4}
+.case-row p{color:#506984;font-size:12px}
+.scenario-result span{font-size:11px;color:#546c8a}.scenario-result strong{color:#2e609f}
+.scenario-result{border:1px solid #dce5f1;background:#f1f6fd}
+.calculation-inputs h3{color:#365c8d}.calculation-total{color:#2f609e}
+
+@media(max-width:1000px){
+  .summary-panel{padding:17px 18px}.metric-card{padding:13px 13px 11px}.metric-value{font-size:27px}
+}
+@media(max-width:780px){
+  .company-business{font-size:12px}.company-text small,.brand small{font-size:11px}
+  .data-basis{padding:10px 12px}.data-basis small,.data-basis>div>span:not(.pill),.data-status small{font-size:11px}
+  .summary-panel{padding:15px}.summary-title{font-size:17px;margin-bottom:10px}
+  .summary-line{font-size:12px;padding:7px 8px;grid-template-columns:36px minmax(0,1fr);gap:7px;margin:6px 0;line-height:1.65}
+  .summary-tag{font-size:11px;padding:3px 4px}.summary-top .subtle,.summary-bottom{font-size:11px}
+  .color-legend{gap:4px 10px;font-size:11px;margin:7px 0 9px}
+  .focus-callout{padding:10px 11px;gap:9px;margin:10px 0 14px;align-items:flex-start}
+  .focus-callout>button,.focus-callout>a{padding:6px 8px;font-size:11px}
+  .focus-description{font-size:12px;line-height:1.6}.focus-title{font-size:13px}
+  .metrics-grid{gap:7px}.metric-card{padding:11px 10px 10px;border-radius:11px}
+  .metric-label{font-size:12px}.metric-topic{font-size:11px}.metric-value{font-size:25px;margin:7px 0 5px;letter-spacing:-.6px}
+  .metric-meaning,.metric-hint,.metric-period{font-size:11px;line-height:1.55;min-height:0}
+  .metric-period{padding-top:7px;margin-top:7px}.help-circle{width:16px;height:16px;font-size:10px}
+  .action-tile{min-height:66px;padding:11px 14px}.action-tile strong{font-size:12px}
+  .cash-explainer{padding-left:12px;padding-right:12px}.cash-compare{gap:5px;padding:7px}
+  .cash-compare>div{padding:6px 5px}.cash-compare strong,.cash-equation strong{font-size:18px}
+  .cash-compare span,.cash-equation div>span{font-size:11px}.cash-total{padding:6px}
+  .cash-equation{gap:5px;grid-template-columns:minmax(0,1fr) 9px minmax(0,1fr) 9px minmax(0,1fr)}
+  .financial-table th,.financial-table td{padding:11px 10px}.financial-table small{font-size:11px}
+  .row-important{font-size:10px;margin-left:4px}.analysis-card,.next-checks{padding:16px}
+  .section-header>span,.metric-period,.page-footer,.dialog-footnote{font-size:11px}
+  .latest-note summary{font-size:12px}.latest-note summary span{font-size:11px}
+}
+@media(max-width:390px){
+  .focus-callout{flex-wrap:wrap}.focus-callout>div{flex-basis:100%}.focus-callout>button,.focus-callout>a{margin-left:0}
+  .metric-card{padding:10px 8px}.metric-value{font-size:23px}.metric-meaning,.metric-period,.metric-topic,.metric-hint{font-size:11px}
+  .cash-compare strong,.cash-equation strong{font-size:16px}.cash-compare>div{padding:5px 3px}
+  .summary-title{font-size:16px}.summary-line{grid-template-columns:34px minmax(0,1fr);padding:7px;gap:6px}
+  .color-legend{gap:4px 8px}.financial-table th:first-child{min-width:146px}
+}
+@media print{
+  .summary-line,.metric-card,.focus-callout,.analysis-card,.cash-explainer{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .focus-callout>button,.focus-callout>a{display:none}
+}
+/* Keep the summary and its priority inside a compact first view. */
+.topbar{margin-bottom:17px}
+.company-heading h1{margin-top:4px;margin-bottom:7px}
+.data-basis{margin-top:12px}
+.tabbar{margin-top:16px;margin-bottom:17px}
+.tabbar button{padding-top:10px;padding-bottom:10px}
+.summary-top{margin-bottom:4px}
+.summary-title{margin-top:4px;margin-bottom:9px}
+.summary-line{margin-top:5px;margin-bottom:5px;padding-top:7px;padding-bottom:7px}
+.summary-panel .focus-callout{margin:9px 0 0;padding:8px 11px;gap:10px}
+.summary-panel .focus-title{line-height:1.5;margin:1px 0 0}
+.summary-panel .color-legend{margin:8px 0 0;line-height:1.5}
+.summary-panel .summary-bottom{margin-top:9px;padding-top:8px}
+@media(max-width:780px){
+  main{padding-top:16px}.topbar{margin-bottom:13px}
+  .data-basis{margin-top:11px}.tabbar{margin-top:13px;margin-bottom:14px}
+  .summary-panel{padding:14px}.summary-title{margin-bottom:8px}
+  .summary-line{margin-top:5px;margin-bottom:5px;padding-top:6px;padding-bottom:6px}
+  .summary-panel .focus-callout{padding:8px 10px;margin-top:8px}
+  .summary-panel .color-legend{margin-top:7px}
+}
+
 </style>
-</head><body>
+</head><body data-ui-revision="20261020-focus">
 <div class="app-shell">
 <aside class="sidebar" aria-label="기업 선택">
 <a class="brand" href="#" aria-label="기업 노트 홈"><span class="brand-icon">▤</span><span>기업 노트<small>한 회사씩, 이해하고 투자하기</small></span></a>
@@ -82,7 +304,7 @@ select{font:inherit;touch-action:manipulation}select:focus-visible{outline:3px s
 <div class="list-top"><span id="list-count">기업 노트</span><button id="favorite-filter" class="text-button" aria-pressed="false">☆ 관심만</button></div><nav id="company-list" aria-label="기업 목록"></nav>
 <div class="sidebar-bottom"><div class="tiny-label">MY NOTEBOOK</div><strong id="progress-label">차근차근 읽어 보세요</strong><div class="progress-track"><span id="progress-fill"></span></div><p>오늘은 한 기업만 이해해도 충분해요.</p><button id="export-all" class="secondary full-width">내 기록 백업</button><button class="text-button restore-button" data-import>백업 불러오기</button></div>
 </aside>
-<main id="main" tabindex="-1"><header class="topbar"><div class="breadcrumb">나의 투자 공부 <span>/</span> 기업 분석 노트</div><div class="snapshot-badge"><i></i> 2026.10.20 자료 · v2</div></header>
+<main id="main" tabindex="-1"><header class="topbar"><div class="breadcrumb">나의 투자 공부 <span>/</span> 기업 분석 노트</div><div class="snapshot-badge"><i></i> 2026.10.20 자료</div></header>
 <div id="company-header"></div>
 <div class="tabbar" role="tablist" aria-label="노트 내용"><button role="tab" aria-selected="true" data-tab="overview" class="active">한눈에</button><button role="tab" aria-selected="false" data-tab="financials">재무제표</button><button role="tab" aria-selected="false" data-tab="reasoning">판단 근거</button><button role="tab" aria-selected="false" data-tab="notes">내 기록 <span id="note-dot" aria-hidden="true"></span></button></div>
 <section id="tab-content" role="tabpanel"></section><footer class="page-footer"><span>실적·가격의 기준일을 확인해 주세요. 저장된 자료이며 자동으로 갱신되지 않습니다.</span><button class="text-button" id="method-button">계산 기준</button></footer></main>
@@ -1259,7 +1481,7 @@ let scenarioDraft=null,pendingBackup=null;
 function snapshotContext(c){const m=math.metrics(c);return {price:c.quote?.price??null,priceAsOf:c.quote?.asOf||'',period:period(c),per:m.per,pbr:m.pbr,roe:m.roe,capturedAt:new Date().toISOString()};}
 function updateRecord(fields){state.records[state.id]={...record(state.id),...fields,context:snapshotContext(current()),updatedAt:new Date().toISOString()};persist();progress();if($('save-status'))$('save-status').textContent=saveText();if($('saved-context'))$('saved-context').innerHTML=contextCard(record(state.id),current());}
 function latestSection(c){if(!c.latest)return '<p class="coverage-note">최근 분기 자료는 아직 확인하지 못했습니다. 위 내용은 표시된 연간 자료를 기준으로 읽어 주세요.</p>';const l=c.latest,tag=l.preliminary&&!String(l.label).includes('잠정')?' · 잠정':'';return `<details class="latest-note"><summary>최근 분기·반기 참고 <span>${esc(l.label||l.end)}${tag}</span></summary><p>${esc(Array.isArray(l.notes)?l.notes.join(' '):l.notes||'')}</p><dl class="quick-stats latest-stats">${[['revenue','매출'],['operatingIncome','영업이익'],['netIncome','순이익'],['cfo','영업현금']].filter(([k])=>math.valid(l[k])).map(([k,t])=>`<div><dt>${t}</dt><dd>${num(l[k])} <small>${esc(c.unit)}</small></dd></div>`).join('')}</dl><small>위 주요 지표는 ${esc(period(c))} 실적으로 계산합니다. 이 분기·반기 수치와 합치거나 단순히 연간으로 늘려 계산하지 않았습니다.</small></details>`;}
-function cashExplanation(c){const a=c.annual||{},m=math.metrics(c),has=math.valid(m.fcf),diff=has?(m.fcf>=0?'영업현금이 명시된 투자 지출보다 많았습니다.':'명시된 투자 지출이 영업현금보다 컸습니다.'):'영업현금과 투자 지출 자료 확인이 필요합니다.';return `<section class="cash-explainer"><div class="section-header"><div><span class="section-label">이익과 실제 현금은 달라요</span><h2>이익이 났는데, 현금도 들어왔을까요?</h2></div><span>${esc(a.label)}</span></div><div class="cash-compare"><div><span>회계상 순이익</span><strong>${num(a.netIncome,c.currency==='KRW'?2:0)}</strong></div><div><span>영업현금흐름</span><strong>${num(a.cfo,c.currency==='KRW'?2:0)}</strong></div><div><span>영업현금 ÷ 순이익</span><strong>${pct(m.cfoToNetIncome)}</strong></div></div><p class="cash-interpretation">${math.valid(m.cfoToNetIncome)?(m.cfoToNetIncome>=100?'영업현금이 순이익 이상입니다. 차이가 난 이유도 함께 확인해 보세요.':'영업현금이 순이익보다 적습니다. 아직 못 받은 판매대금·재고 등의 변화를 확인해 보세요.'):'순이익이 0 이하이거나 자료가 없으면 비율로 비교하지 않습니다.'}</p><div class="cash-equation"><div><span>영업현금</span><strong>${num(a.cfo,c.currency==='KRW'?2:0)}</strong></div><span aria-hidden="true">−</span><div><span>현금 설비투자</span><strong>${num(a.capex,c.currency==='KRW'?2:0)}</strong></div><span aria-hidden="true">=</span><div class="cash-total"><span>단순 FCF</span><strong>${num(m.fcf,c.currency==='KRW'?2:0)}</strong></div></div><p class="cash-interpretation">${diff} ${has&&m.fcf<0?'음수라고 보유 현금이 부족하다는 뜻은 아닙니다.':'이 값은 회사 통장의 잔액이나 전체 현금 증감이 아닙니다.'}</p><details class="cash-details"><summary>왜 이익과 현금이 다를까요?</summary><p>매출을 기록해도 대금을 나중에 받으면 현금은 아직 들어오지 않습니다. 재고를 미리 사 두는 일, 현금이 나가지 않는 감가상각 등도 차이를 만듭니다. 정확한 원인은 현금흐름표와 주석을 확인해 주세요. <a href="https://www.sec.gov/about/reports-publications/investorpubsbegfinstmtguide" target="_blank" rel="noopener noreferrer">SEC 재무제표 안내 ↗</a></p><p>영업현금이 순이익보다 많다고 항상 좋은 것도 아닙니다. 받을 돈을 회수한 시점이나 지급을 미룬 대금 등에 따라 달라질 수 있습니다.</p><small>금액 단위: ${esc(c.unit)}. 설비투자 범위: ${esc(a.capexDefinition||'원자료 기준')}. 단순 FCF는 회사 발표 FCF와 다를 수 있습니다.</small></details></section>`;}
+function cashExplanation(c){const a=c.annual||{},m=math.metrics(c),has=math.valid(m.fcf),diff=has?(m.fcf>=0?'영업현금이 명시된 투자 지출보다 많았습니다.':'명시된 투자 지출이 영업현금보다 컸습니다.'):'영업현금과 투자 지출 자료 확인이 필요합니다.';return `<section class="cash-explainer ${cashNeedsReview(c)?'cash-watch':'cash-stable'}"><div class="section-header"><div><span class="section-label">이익과 실제 현금은 달라요</span><h2>이익이 났는데, 현금도 들어왔을까요?</h2></div><span>${esc(a.label)}</span></div><div class="cash-compare"><div><span>회계상 순이익</span><strong>${num(a.netIncome,c.currency==='KRW'?2:0)}</strong></div><div><span>영업현금흐름</span><strong>${num(a.cfo,c.currency==='KRW'?2:0)}</strong></div><div class="cash-emphasis"><span>영업현금 ÷ 순이익</span><strong>${pct(m.cfoToNetIncome)}</strong></div></div><p class="cash-interpretation">${math.valid(m.cfoToNetIncome)?(m.cfoToNetIncome>=100?'영업현금이 순이익 이상입니다. 차이가 난 이유도 함께 확인해 보세요.':'영업현금이 순이익보다 적습니다. 아직 못 받은 판매대금·재고 등의 변화를 확인해 보세요.'):'순이익이 0 이하이거나 자료가 없으면 비율로 비교하지 않습니다.'}</p><div class="cash-equation"><div><span>영업현금</span><strong>${num(a.cfo,c.currency==='KRW'?2:0)}</strong></div><span aria-hidden="true">−</span><div><span>현금 설비투자</span><strong>${num(a.capex,c.currency==='KRW'?2:0)}</strong></div><span aria-hidden="true">=</span><div class="cash-total"><span>단순 FCF</span><strong>${num(m.fcf,c.currency==='KRW'?2:0)}</strong></div></div><p class="cash-interpretation">${diff} ${has&&m.fcf<0?'음수라고 보유 현금이 부족하다는 뜻은 아닙니다.':'이 값은 회사 통장의 잔액이나 전체 현금 증감이 아닙니다.'}</p><details class="cash-details"><summary>왜 이익과 현금이 다를까요?</summary><p>매출을 기록해도 대금을 나중에 받으면 현금은 아직 들어오지 않습니다. 재고를 미리 사 두는 일, 현금이 나가지 않는 감가상각 등도 차이를 만듭니다. 정확한 원인은 현금흐름표와 주석을 확인해 주세요. <a href="https://www.sec.gov/about/reports-publications/investorpubsbegfinstmtguide" target="_blank" rel="noopener noreferrer">SEC 재무제표 안내 ↗</a></p><p>영업현금이 순이익보다 많다고 항상 좋은 것도 아닙니다. 받을 돈을 회수한 시점이나 지급을 미룬 대금 등에 따라 달라질 수 있습니다.</p><small>금액 단위: ${esc(c.unit)}. 설비투자 범위: ${esc(a.capexDefinition||'원자료 기준')}. 단순 FCF는 회사 발표 FCF와 다를 수 있습니다.</small></details></section>`;}
 function calculationInputs(c,k){const a=c.annual||{},v=c.valuation||{},m=math.metrics(c),r=v.roeInputs||{netIncome:a.netIncome,openingEquity:a.previousEquity??c.previous?.equity,closingEquity:a.equity};if(k==='roe')return `<p class="basis-label">${esc(roeBasis(c))} · 단위 ${esc(c.unit)}</p><dl class="quick-stats"><div><dt>연간 순이익</dt><dd>${num(r.netIncome,2)}</dd></div><div><dt>기초 자본</dt><dd>${num(r.openingEquity,2)}</dd></div><div><dt>기말 자본</dt><dd>${num(r.closingEquity,2)}</dd></div><div><dt>평균 자본</dt><dd>${num(m.averageEquity,2)}</dd></div></dl>${v.roeInputs?'<p class="dialog-footnote">지배주주에게 속한 순이익과 자본을 함께 사용했습니다. 재무제표 탭의 연결 전체 금액과 구별됩니다.</p>':''}`;return `<dl class="quick-stats"><div><dt>기준 주가</dt><dd>${money(c.quote?.price,c)}</dd></div><div><dt>${k==='per'?'주당순이익 EPS':'주당순자산 BPS'}</dt><dd>${num(v[k==='per'?'eps':'bps'],c.currency==='KRW'?0:4)}${c.currency==='KRW'?'원':'달러'}</dd></div></dl>${k==='pbr'&&v.bpsInputs?`<p class="dialog-footnote">BPS = 기말 자본 ${num(v.bpsInputs.equity)}백만 달러 ÷ 실제 유통주식 ${num(v.bpsInputs.shares)}백만 주</p>`:''}<p class="dialog-footnote">${c.currency==='KRW'?'국내 기업은 FnGuide 완료 연간 EPS·BPS 기준입니다. 공시 기본 EPS와 제공사 산식은 다를 수 있습니다.':'완료 연간 기본 EPS·기말 BPS 기준입니다.'} 최근 12개월·예상 실적 기준 값과는 다를 수 있습니다.</p>`;}
 function contextCard(r,c){const x=r.context;if(!x)return '';return `<details class="fold-panel context-card"><summary>기록할 때 참고한 숫자 <span>${esc((r.updatedAt||x.capturedAt||'').slice(0,10))}</span></summary><p>${esc(x.period)} · 주가 ${money(x.price,c)} (${esc(x.priceAsOf)})</p><p>PER ${ratio(x.per,'per')} · PBR ${ratio(x.pbr,'pbr')} · ROE ${ratio(x.roe,'roe')}</p><small>마지막으로 기록을 수정할 때 화면에 있던 자료입니다.</small></details>`;}
 function scenarioSavedCard(x,c){return `<section class="saved-scenario"><span class="section-label">저장한 가정 · 실제 전망 아님</span><h3>주가 ${signed(x.priceChange)} · 이익 ${signed(x.profitChange)}</h3><p>가정한 주가 ${money(x.price,c)} · PER ${math.valid(x.per)?ratio(x.per,'per'):'계산 불가'} · PBR ${ratio(x.pbr,'pbr')} · ROE ${ratio(x.roe,'roe')}</p><small>${esc(x.period)} · 저장 ${esc((x.savedAt||'').slice(0,10))}</small><button class="text-button" data-scenario>새 가정으로 바꿔 보기 →</button></section>`;}
@@ -1280,16 +1502,31 @@ per:{name:'PER',title:'이익과 비교한 주식 가격',intro:'회사가 벌�
 pbr:{name:'PBR',title:'회사 자본과 비교한 주식 가격',intro:'회계상 자기자본에 비해 주가가 몇 배인지 보는 숫자입니다. 자기자본은 자산에서 부채를 뺀 금액입니다.',formula:'PBR = 주가 ÷ 주당순자산(BPS)',high:'PBR가 높으면 자본으로 이익을 잘 내거나 브랜드·기술을 높게 평가받을 수 있습니다. 성장 기대가 지나치게 반영됐는지도 살펴봅니다.',low:'PBR가 1배보다 낮으면 장부상 자본보다 낮은 가격일 수 있습니다. 수익성이 낮거나 자산의 실제 가치가 줄어들 위험이 있을 수도 있습니다.',note:'장부상 자기자본은 회사를 팔거나 청산할 때 받는 금액을 보장하지 않습니다. 업종과 ROE를 함께 보셔야 합니다.'},
 roe:{name:'ROE',title:'주주의 자본으로 얼마나 벌었나요?',intro:'주주에게 속한 자본에 비해 1년 동안 순이익을 얼마나 냈는지 보여 줍니다.',formula:'ROE = 연간 순이익 ÷ 평균 자기자본 × 100\n평균 자기자본 = (기초 자기자본 + 기말 자기자본) ÷ 2',high:'ROE가 높으면 자본 대비 이익을 잘 낸 것입니다. 다만 많은 부채나 자사주 매입으로 자본이 줄어도 높아질 수 있어 원인을 확인해야 합니다.',low:'ROE가 낮으면 자본에 비해 이익이 적은 상태입니다. 수익성이 약해졌을 수도 있고, 새 사업에 투자한 자본이 아직 이익을 내기 전일 수도 있습니다.',note:'기초·기말 자기자본이 0 이하이면 일반적인 해석을 제한합니다. 일회성 이익과 자본 변동도 함께 확인합니다.'}};
 function meaning(k,v){const currency=current()?.currency==='USD'?'달러':'원';if(!math.valid(v))return k==='roe'?'순이익과 평균 자본 확인이 필요해요':'가격 또는 계산 자료가 부족해요';return k==='per'?'주당순이익의 '+num(v,1)+'배인 가격':k==='pbr'?'주당 장부상 자본의 '+num(v,1)+'배':'평균 자본 100'+currency+'당 순이익 약 '+num(v,1)+currency;}
-function cards(c){const m=math.metrics(c);return '<div class="metrics-grid">'+['per','pbr','roe'].map(k=>`<button class="metric-card" data-metric="${k}" aria-label="${info[k].name} ${ratio(m[k],k)}, 뜻과 해석 보기"><span class="metric-label">${info[k].name}<span class="help-circle" aria-hidden="true">?</span></span><strong class="metric-value">${ratio(m[k],k)}</strong><span class="metric-meaning">${esc(meaning(k,m[k]))}</span><span class="metric-period">${k==='roe'?esc(roeBasis(c)):'주가 '+esc((c.quote?.asOf||'미확인').slice(0,10))+' ÷ 연간 '+(k==='per'?'EPS':'BPS')}<br>${esc(period(c))}</span></button>`).join('')+'</div>';}
+
+const focusMessages={
+ 'samsung-electronics':'다음 확정 실적에서 순이익과 영업현금을 함께 확인하세요.',
+ 'sk-hynix':'순이익 증가에 본업 외 이익이 얼마나 섞였는지 확인하세요.',
+ leeno:'매출 성장과 높은 영업이익률이 함께 이어지는지 보세요.',
+ 'park-systems':'외상대금·재고 부담이 줄고 영업현금이 회복되는지 보세요.',
+ msft:'늘어난 AI 투자가 매출과 현금으로 이어지는지 보세요.',
+ nvda:'다음 분기에 외상대금이 실제 현금으로 들어오는지 보세요.'
+};
+const emphasize=t=>esc(t).replace(/([+−-]?\d[\d,]*(?:\.\d+)?\s*(?:%|배|억원|백만 달러))/g,'<strong class="number-emphasis">$1</strong>');
+function cashNeedsReview(c){const m=math.metrics(c);return (math.valid(m.fcf)&&m.fcf<0)||(math.valid(m.cfoToNetIncome)&&m.cfoToNetIncome<100)||(math.valid(m.fcf)&&math.valid(m.previousFcf)&&m.fcf<m.previousFcf);}
+function summaryTone(c,i){const m=math.metrics(c);if(i===2)return 'info';if(i===0){if(!math.valid(m.revenueGrowth)||!math.valid(m.operatingGrowth))return 'neutral';return m.revenueGrowth>0&&m.operatingGrowth>0?'growth':m.revenueGrowth<0||m.operatingGrowth<0?'watch':'neutral';}if(!math.valid(m.fcf)||!math.valid(c.annual?.cfo))return 'neutral';return cashNeedsReview(c)?'watch':'growth';}
+function focusCallout(c){return `<div class="focus-callout"><div><span class="focus-label">다음 실적에서 꼭 볼 것</span><p class="focus-title">${esc(focusMessages[c.id]||c.analysis?.nextChecks?.[0]||'다음 실적의 이익과 영업현금을 함께 확인해 주세요.')}</p></div><button class="text-button" data-open-tab="reasoning">이유 보기 →</button></div>`;}
+function financialRow(k,l,t,a,p){const core=['operatingIncome','cfo','totalLiabilities'].includes(k),isChange=math.valid(a[k])&&math.valid(p[k]),direction=isChange?(a[k]>p[k]?'up':a[k]<p[k]?'down':'flat'):'unknown',flow=['revenue','operatingIncome','netIncome','cfo'].includes(k),tone=flow&&['up','down'].includes(direction)?direction:'neutral',arrow={up:'↑ ',down:'↓ ',flat:'',unknown:''}[direction];return `<tr${core?' class="row-core"':''}><th scope="row">${l}${core?' <span class="row-important">핵심</span>':''}<small>${t}</small></th><td>${num(p[k])}</td><td><strong>${num(a[k])}</strong></td><td><span class="table-delta ${tone}">${arrow}${esc(change(a[k],p[k]))}</span></td></tr>`;}
+function cards(c){const m=math.metrics(c),topics={per:'이익 대비 가격',pbr:'자본 대비 가격',roe:'자본으로 버는 힘'},hints={per:'이익이 계속 유지되는지 보세요',pbr:'ROE와 업종을 함께 보세요',roe:'부채와 일회성 이익도 보세요'};return '<div class="metrics-grid">'+['per','pbr','roe'].map(k=>`<button class="metric-card metric-${k}" data-metric="${k}" aria-label="${info[k].name} ${ratio(m[k],k)}, 뜻과 해석 보기"><span class="metric-label">${info[k].name}<span class="help-circle" aria-hidden="true">?</span></span><span class="metric-topic">${topics[k]}</span><strong class="metric-value">${ratio(m[k],k)}</strong><span class="metric-meaning">${esc(meaning(k,m[k]))}</span><span class="metric-hint">${hints[k]}</span><span class="metric-period">${k==='roe'?esc(roeBasis(c)):'주가 '+esc((c.quote?.asOf||'미확인').slice(0,10))+' ÷ 연간 '+(k==='per'?'EPS':'BPS')}<br>${esc(period(c))}</span></button>`).join('')+'</div>';}
 function overview(c){
  const summary=(c.analysis?.summary||[]).slice(0,3),r=record(c.id);
- return `<section class="summary-panel panel"><div class="summary-top"><span class="section-label">이 회사, 세 줄로 이해하기</span><span class="subtle">${esc(c.annual?.label)}</span></div><h2 class="summary-title">${esc(c.analysis?.headline)}</h2>${summary.map((t,i)=>`<div class="summary-line"><span class="summary-tag">${['사업','현금','가격'][i]}</span><p class="text">${esc(t)}</p></div>`).join('')}<div class="summary-bottom"><span>실적이 좋아도 가격은 성장 전망과 함께 확인해 주세요.</span><button class="text-button" data-open-tab="reasoning">판단 근거 보기 →</button></div></section><div class="section-header"><h2>주요 지표</h2><span>눌러서 뜻·계산식·높고 낮을 때 보기</span></div>${cards(c)}<div class="overview-bottom action-tiles"><button class="mini-panel action-tile" data-scenario><span class="tile-symbol" aria-hidden="true">↕</span><span><strong>이익이 절반으로 줄면?</strong><small>주가·이익을 바꿔서 가정해 보세요</small></span><span aria-hidden="true">↗</span></button><button class="mini-panel action-tile" data-open-tab="notes"><span class="tile-symbol" aria-hidden="true">✓</span><span><strong>내 검토 조건 남기기</strong><small>${r.reviewDate?'다음 확인 '+esc(r.reviewDate):'무엇을 확인하면 생각이 달라질까요?'}</small></span><span aria-hidden="true">→</span></button></div>${latestSection(c)}`;
+ return `<section class="summary-panel panel"><div class="summary-top"><span class="section-label">이 회사, 세 줄로 이해하기</span><span class="subtle">${esc(c.annual?.label)}</span></div><h2 class="summary-title">${esc(c.analysis?.headline)}</h2>${summary.map((t,i)=>`<div class="summary-line tone-${summaryTone(c,i)}"><span class="summary-tag">${['사업','현금','가격'][i]}</span><p class="text">${emphasize(t)}</p></div>`).join('')}${focusCallout(c)}<div class="color-legend"><span>요약 표시</span><span><i class="legend-dot green" aria-hidden="true"></i>확인된 개선</span><span><i class="legend-dot amber" aria-hidden="true"></i>추가 확인</span><span><i class="legend-dot blue" aria-hidden="true"></i>가격 정보</span></div></section><div class="section-header"><h2>이 3개 숫자를 함께 보세요</h2><span>카드를 누르면 뜻과 계산 근거가 나와요</span></div>${cards(c)}<div class="overview-bottom action-tiles"><button class="mini-panel action-tile" data-scenario><span class="tile-symbol" aria-hidden="true">↕</span><span><strong>이익이 절반으로 줄면?</strong><small>주가·이익을 바꿔서 가정해 보세요</small></span><span aria-hidden="true">↗</span></button><button class="mini-panel action-tile" data-open-tab="notes"><span class="tile-symbol" aria-hidden="true">✓</span><span><strong>내 검토 조건 남기기</strong><small>${r.reviewDate?'다음 확인 '+esc(r.reviewDate):'무엇을 확인하면 생각이 달라질까요?'}</small></span><span aria-hidden="true">→</span></button></div>${latestSection(c)}`;
 }
+
 const rows=[['revenue','매출','물건·서비스를 팔아 번 전체 금액'],['operatingIncome','영업이익','본업에서 비용을 빼고 남긴 이익'],['netIncome','순이익','이자·세금 등을 반영한 최종 이익'],['cfo','영업현금흐름','영업활동으로 실제 들어오고 나간 현금의 차이'],['capex','설비투자','설비·무형자산 등에 사용한 현금'],['totalAssets','자산','회사가 가진 자원'],['totalLiabilities','부채','회사가 갚거나 이행해야 할 의무'],['equity','자기자본','자산에서 부채를 뺀 주주의 몫']];
 function change(a,b){if(!math.valid(a)||!math.valid(b))return '확인 필요';if(b<0&&a>0)return '흑자 전환';if(b>0&&a<0)return '적자 전환';return b<=0?'비교 어려움':signed(math.growth(a,b));}
 function charts(c){return '<div class="charts-grid">'+[['revenue','매출'],['operatingIncome','영업이익'],['cfo','영업현금흐름']].map(([k,title])=>{const p=c.previous?.[k],a=c.annual?.[k],max=Math.max(math.valid(p)?Math.abs(p):0,math.valid(a)?Math.abs(a):0,1);return '<section class="mini-panel"><h3>'+title+'</h3>'+[[p,c.previous?.label||'전년',''],[a,c.annual?.label||'당년','current']].map(([v,l,cls])=>'<div class="bar-row"><div class="bar-label"><span>'+esc(l)+'</span><strong>'+num(v)+'</strong></div><div class="bar-track" aria-hidden="true"><span class="bar-fill '+cls+(math.valid(v)&&v<0?' negative':'')+'" style="width:'+(math.valid(v)?Math.abs(v)/max*100:0)+'%"></span></div></div>').join('')+'<small>'+esc(c.unit)+' · 각 항목 안에서 비교'+([p,a].some(v=>math.valid(v)&&v<0)?' · 막대 길이는 절댓값, 음수는 수치와 색으로 표시':'')+'</small></section>';}).join('')+'</div>';}
 function sources(c){return '<details class="sources-panel"><summary>출처와 계산에 사용한 기준 보기 <span>'+(c.sources?.length||0)+'개 자료</span></summary><ul class="source-list">'+(c.sources||[]).map(s=>'<li>'+(url(s.url)?'<a href="'+esc(url(s.url))+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+' ↗</a>':'<span>'+esc(s.title)+'</span>')+'<small>'+esc(s.period||'')+(s.kind?' · '+esc(s.kind):'')+'</small></li>').join('')+'</ul>'+((c.notes||[]).length?'<ul class="source-notes">'+lines(c.notes,'')+'</ul>':'')+'<p class="dialog-footnote">자료 확인일 '+esc(dataset.asOf||'확인 필요')+' · 저장된 자료이며 자동 갱신되지 않습니다.</p></details>';}
-function financials(c){const a=c.annual||{},p=c.previous||{},m=math.metrics(c);return `<div class="section-header"><div><span class="section-label">숫자를 읽는 순서</span><h2>이익 → 현금 → 부채를 확인해 보세요</h2></div><span>단위: ${esc(c.unit)}</span></div><div class="table-wrap"><table class="financial-table"><caption class="sr-only">${esc(c.name)} 전년과 당년 재무제표 비교, 단위 ${esc(c.unit)}</caption><thead><tr><th scope="col">무엇을 보나요?</th><th scope="col">${esc(p.label||'전년')}<small>${esc(p.end||'')}</small></th><th scope="col">${esc(a.label||'당년')}<small>${esc(a.end||'')}</small></th><th scope="col">전년 대비</th></tr></thead><tbody>${rows.map(([k,l,t])=>`<tr><th scope="row">${l}<small>${t}</small></th><td>${num(p[k])}</td><td><strong>${num(a[k])}</strong></td><td>${esc(change(a[k],p[k]))}</td></tr>`).join('')}</tbody></table></div><p class="table-note">자산·부채·자기자본은 결산일의 금액이고, 나머지는 해당 연간의 합계입니다. ${esc(a.statementBasis||'원자료 기준')}. ${c.valuation?.roeInputs?'ROE는 아래 표의 전체 자본과 구별한 지배주주 기준입니다.':''}</p>${cashExplanation(c)}<div class="finance-checks"><section class="mini-panel"><span class="section-label">본업의 수익성</span><h3>100을 팔면 본업에서 얼마나 남나요?</h3><strong class="check-value">${pct(m.operatingMargin)}</strong><p>${math.valid(m.operatingMargin)?'매출 100'+(c.currency==='KRW'?'원':'달러')+'당 영업이익 약 '+num(m.operatingMargin,1)+(c.currency==='KRW'?'원':'달러')+'입니다.':'매출과 영업이익 확인이 필요합니다.'}</p></section><section class="mini-panel"><span class="section-label">부채와 자본</span><h3>총부채 ÷ 자기자본</h3><strong class="check-value">${pct(m.debtRatio)}</strong><p>낮을수록 자본 대비 총부채가 적습니다. 실제 부담은 차입금·만기·이자도 보셔야 합니다.</p></section></div><details class="fold-panel"><summary>전년과 비교한 그래프 보기</summary>${charts(c)}</details>${sources(c)}`;}
+function financials(c){const a=c.annual||{},p=c.previous||{},m=math.metrics(c);return `<div class="section-header"><div><span class="section-label">숫자를 읽는 순서</span><h2>이익 → 현금 → 부채를 확인해 보세요</h2></div><span>단위: ${esc(c.unit)}</span></div><div class="table-wrap"><table class="financial-table"><caption class="sr-only">${esc(c.name)} 전년과 당년 재무제표 비교, 단위 ${esc(c.unit)}</caption><thead><tr><th scope="col">무엇을 보나요?</th><th scope="col">${esc(p.label||'전년')}<small>${esc(p.end||'')}</small></th><th scope="col">${esc(a.label||'당년')}<small>${esc(a.end||'')}</small></th><th scope="col">전년 대비</th></tr></thead><tbody>${rows.map(([k,l,t])=>financialRow(k,l,t,a,p)).join('')}</tbody></table></div><p class="table-note">자산·부채·자기자본은 결산일의 금액이고, 나머지는 해당 연간의 합계입니다. ${esc(a.statementBasis||'원자료 기준')}. ${c.valuation?.roeInputs?'ROE는 위 표의 전체 자본과 구별한 지배주주 기준입니다.':''}</p>${cashExplanation(c)}<div class="finance-checks"><section class="mini-panel"><span class="section-label">본업의 수익성</span><h3>100을 팔면 본업에서 얼마나 남나요?</h3><strong class="check-value">${pct(m.operatingMargin)}</strong><p>${math.valid(m.operatingMargin)?'매출 100'+(c.currency==='KRW'?'원':'달러')+'당 영업이익 약 '+num(m.operatingMargin,1)+(c.currency==='KRW'?'원':'달러')+'입니다.':'매출과 영업이익 확인이 필요합니다.'}</p></section><section class="mini-panel"><span class="section-label">부채와 자본</span><h3>총부채 ÷ 자기자본</h3><strong class="check-value">${pct(m.debtRatio)}</strong><p>낮을수록 자본 대비 총부채가 적습니다. 실제 부담은 차입금·만기·이자도 보셔야 합니다.</p></section></div><details class="fold-panel"><summary>전년과 비교한 그래프 보기</summary>${charts(c)}</details>${sources(c)}`;}
 function reasoning(c){return '<div class="section-header"><div><span class="section-label">판단의 이유를 함께 봐요</span><h2>좋은 점과 걱정되는 점</h2></div></div><div class="analysis-grid"><section class="analysis-card good"><span class="pill green">좋은 점</span><h3>이 부분은 긍정적으로 볼 수 있어요</h3><ul>'+lines(c.analysis?.positives,'추가 자료 확인이 필요합니다.')+'</ul></section><section class="analysis-card risk"><span class="pill amber">주의할 점</span><h3>이 부분은 한 번 더 확인해 주세요</h3><ul>'+lines(c.analysis?.risks,'추가 자료 확인이 필요합니다.')+'</ul></section></div><section class="next-checks"><h3>다음 실적에서 확인할 것</h3><ol>'+lines(c.analysis?.nextChecks,'새로운 공시가 나오면 실적과 현금흐름을 확인합니다.')+'</ol></section><p class="table-note">위 내용은 공시 숫자에 대한 해석입니다. '+esc(c.analysis?.priceComment||'')+'</p>'+sources(c);}
 const saveText=()=>persistence?'이 브라우저에 자동 저장됩니다.':'브라우저 저장이 제한되어 현재 화면에만 보관됩니다. 내 기록 백업을 이용해 주세요.';
 function notes(c){const r=record(c.id),oldHas=[r.learned,r.reason,r.concern].some(t=>typeof t==='string'&&t.trim());return `<div class="section-header"><div><span class="section-label">나중의 제가 다시 볼 수 있도록</span><h2>내 생각과 확인할 조건</h2></div><span class="save-status" id="save-status" role="status">${esc(saveText())}</span></div><form class="notes-form"><div class="decision-fields"><div><label class="note-label" for="note-status">지금의 검토 상태</label><select id="note-status" data-note="status">${Object.entries(statusLabels).map(([v,t])=>`<option value="${v}"${(r.status||'')===v?' selected':''}>${t}</option>`).join('')}</select></div><div><label class="note-label" for="note-reviewDate">다음 확인 날짜</label><input type="date" id="note-reviewDate" data-note="reviewDate" value="${esc(r.reviewDate||'')}"><small>노트에 날짜만 저장되며 알림은 보내지 않습니다.</small></div></div><label class="note-label" for="note-condition">어떤 변화가 생기면 다시 판단할까요?</label><textarea maxlength="20000" id="note-condition" data-note="condition" rows="2" placeholder="예: 다음 실적에서도 이익은 늘지만 영업현금이 줄면 다시 살펴보겠습니다.">${esc(r.condition||'')}</textarea><label class="note-label" for="note-nextCheck">다음에 확인할 자료</label><textarea maxlength="20000" id="note-nextCheck" data-note="nextCheck" rows="2" placeholder="예: 다음 분기 실적발표에서 영업현금·설비투자·차입금 만기를 확인하겠습니다.">${esc(r.nextCheck||'')}</textarea><button type="button" class="text-button" data-use-checks>이 기업의 확인 항목을 불러오기</button><details class="fold-panel record-details"${oldHas?' open':''}><summary>자유 메모 · 알게 된 점과 관심 이유</summary>${[['learned','새롭게 알게 된 점','예: 이 회사의 주력 사업과 돈을 버는 방식을 정리해 보세요.'],['reason','관심을 유지하는 이유','예: 매출이 늘면서 현금 유입도 늘어 관심을 갖고 있습니다.'],['concern','걱정되는 점 · 더 확인할 것','예: 최근 이익에 일회성 이익이 포함됐는지 궁금합니다.']].map(([k,l,t])=>`<label class="note-label" for="note-${k}">${l}</label><textarea maxlength="20000" id="note-${k}" data-note="${k}" rows="3" placeholder="${t}">${esc(r[k]||'')}</textarea>`).join('')}</details><div class="note-toolbar"><label class="checkbox-label"><input type="checkbox" id="note-read"${r.read?' checked':''}> 이 기업 노트를 읽었어요</label><span>내용을 바꾸면 자동으로 저장됩니다.</span></div></form><div id="saved-context">${contextCard(r,c)}</div>${r.savedScenario?scenarioSavedCard(r.savedScenario,c):''}<div class="dialog-actions record-actions"><button class="secondary" data-export-current>이 기업 기록 백업</button><button class="secondary" data-import>백업 불러오기</button><button class="primary" data-copy>분석과 내 기록 복사</button></div><p class="dialog-footnote">기록은 이 브라우저에 저장되며 기기 사이에 동기화되지 않습니다. 백업 파일은 다른 기기에서 불러올 수 있습니다.</p>`;}
@@ -1297,7 +1534,7 @@ function content(){const c=current();if(!c){$('tab-content').innerHTML='<p>기�
 function render(){renderList();if(current())header(current());content();}
 function setTab(t){if(!['overview','financials','reasoning','notes'].includes(t))return;state.tab=t;content();}
 function openDialog(eyebrow,html){$('dialog-eyebrow').textContent=eyebrow;$('dialog-content').innerHTML=html;if(!$('detail-dialog').open)$('detail-dialog').showModal();}
-function metricDialog(k){const i=info[k],c=current();if(!i||!c)return;const v=math.metrics(c)[k];openDialog('숫자가 쉬워지는 설명',`<h2 class="dialog-title" id="dialog-title">${i.name} · ${i.title}</h2><p class="dialog-intro">${i.intro}</p><div class="formula-box">${esc(i.formula).replace(/\n/g,'<br>')}</div><div class="case-row"><span class="pill blue">높을 때</span><p>${i.high}</p></div><div class="case-row"><span class="pill amber">낮을 때</span><p>${i.low}</p></div><section class="calculation-inputs"><h3>${esc(c.name)}는 이렇게 계산했어요</h3>${calculationInputs(c,k)}<strong class="calculation-total">${i.name} ${ratio(v,k)}</strong></section><p class="dialog-footnote">${esc(period(c))} 실적 기준 · ${k==='roe'?esc(roeBasis(c)):esc(priceDate(c))}<br>${i.note}</p><button class="primary full-width" data-scenario>숫자를 바꿔 보며 이해하기</button>`);}
+function metricDialog(k){const i=info[k],c=current();if(!i||!c)return;const v=math.metrics(c)[k];openDialog('숫자가 쉬워지는 설명',`<h2 class="dialog-title" id="dialog-title">${i.name} · ${i.title}</h2><p class="dialog-intro">${i.intro}</p><div class="formula-box">${esc(i.formula).replace(/\n/g,'<br>')}</div><div class="case-row"><span class="pill blue">높을 때</span><p>${i.high}</p></div><div class="case-row"><span class="pill blue">낮을 때</span><p>${i.low}</p></div><section class="calculation-inputs"><h3>${esc(c.name)}는 이렇게 계산했어요</h3>${calculationInputs(c,k)}<strong class="calculation-total">${i.name} ${ratio(v,k)}</strong></section><p class="dialog-footnote">${esc(period(c))} 실적 기준 · ${k==='roe'?esc(roeBasis(c)):esc(priceDate(c))}<br>${i.note}</p><button class="primary full-width" data-scenario>숫자를 바꿔 보며 이해하기</button>`);}
 function scenarioDialog(){const c=current(),q=math.valid(c.quote?.price)&&c.quote.price>0?c.quote.price:'',cur=c.currency==='KRW'?'원':'달러';openDialog('이익이 없어지는 상황도 살펴봐요',`<h2 class="dialog-title" id="dialog-title">가격과 이익, 가정해 보기</h2><p class="dialog-intro">${esc(c.name)} · ${esc(period(c))}을 바탕으로 한 연습입니다. 전망이나 목표주가가 아닙니다.</p><div class="scenario-presets" role="group" aria-label="상황 빠르게 선택"><button class="secondary" data-preset="price-low">주가 −20%</button><button class="secondary" data-preset="profit-half">이익 절반</button><button class="secondary" data-preset="profit-zero">이익 0원</button><button class="secondary" data-preset="profit-loss">적자 전환</button></div><div class="scenario-fields"><label class="input-group scenario-base-field" for="scenario-base"><span>기준 주가 (${cur})</span><input id="scenario-base" type="number" inputmode="decimal" min="0.01" step="any" value="${q}" placeholder="가격을 직접 입력해 주세요"><small>${esc(priceDate(c))} · 이 계산에만 사용합니다.</small></label><div class="input-group"><div class="range-header"><label for="scenario-price">주가가 달라진다면</label><output id="price-output" for="scenario-price">0%</output></div><input id="scenario-price" type="range" min="-50" max="50" step="1" value="0"><div class="range-labels"><span>−50%</span><span>+50%</span></div></div><div class="input-group"><div class="range-header"><label for="scenario-profit">순이익이 달라진다면</label><output id="profit-output" for="scenario-profit">0%</output></div><input id="scenario-profit" type="range" min="-150" max="100" step="1" value="0"><div class="range-labels"><span>−150% · 적자</span><span>+100%</span></div></div></div><div class="scenario-results" id="scenario-results" aria-live="polite"></div><p class="scenario-description" id="scenario-description"></p><p class="dialog-footnote">자기자본·주식수는 고정하고, 순이익과 EPS가 같은 비율로 변한다고 가정합니다. −100%는 이익 0원, −150%는 원래 이익 절반만큼의 손실입니다.</p><div class="dialog-actions"><button class="secondary" id="reset-scenario">처음 값으로</button><button class="primary" id="save-scenario">이 가정을 내 기록에 저장</button></div>`);updateScenario();}
 function updateScenario(){if(!$('scenario-base'))return;const c=current(),pc=Number($('scenario-price').value),ec=Number($('scenario-profit').value),raw=$('scenario-base').value.trim(),typed=raw!==''?Number(raw):null,r=math.scenario(c,pc,ec,typed),zero=ec===-100,loss=ec < -100;scenarioDraft={basePrice:typed,priceChange:pc,profitChange:ec,price:r.price,per:r.per,pbr:r.pbr,roe:r.roe};$('price-output').textContent=(pc>0?'+':'')+pc+'%';$('profit-output').textContent=(ec>0?'+':'')+ec+'%';$('scenario-results').innerHTML=[['가정한 주가',math.valid(r.price)?money(r.price,c):'직접 입력'],['PER',zero?'이익 0':loss?'적자':ratio(r.per,'per')],['PBR',ratio(r.pbr,'pbr')],['ROE',ratio(r.roe,'roe')]].map(([l,v])=>`<div class="scenario-result"><span>${l}</span><strong>${v}</strong>${l==='PER'&&(zero||loss)?'<small>일반적인 PER 계산 불가</small>':''}</div>`).join('');$('scenario-description').textContent=zero?'이익이 0이면 PER은 계산할 수 없고 ROE는 0%가 됩니다. 주가와 자본이 그대로라면 PBR은 변하지 않습니다.':loss?'적자에서는 일반적인 PER로 싼지 판단하지 않습니다. 평균 자본이 양수이면 손실에 따라 ROE도 음수가 됩니다.':!math.valid(r.price)?'양수인 주가를 입력해 주세요. ROE는 주가와 관계없이 이익 변화에 따라 움직입니다.':pc===-20&&ec===0?'이익이 그대로인데 주가만 20% 내리면 PER·PBR도 20% 낮아집니다. 회사가 돈 버는 능력을 보는 ROE는 그대로입니다.':pc===0&&ec===-50?'주가는 그대로인데 이익이 절반이면 PER은 두 배, ROE는 절반이 됩니다. 주가가 오르지 않아도 PER이 높아질 수 있습니다.':'주가 변화는 PER·PBR에, 이익 변화는 PER·ROE에 반영됩니다. 한 숫자의 높고 낮음보다 바뀐 이유를 확인해 주세요.';$('save-scenario').disabled=!math.valid(r.price);}
 function methodDialog(){const c=current();openDialog('같은 기준으로 비교하기','<h2 class="dialog-title" id="dialog-title">이 노트의 계산 기준</h2><p class="dialog-intro">기업별 결산일과 재무제표 기준을 표시합니다. 아래 값은 저장된 자료이며 자동으로 갱신되지 않습니다.</p><div class="formula-box">PER = 주가 ÷ EPS<br>PBR = 주가 ÷ BPS<br>ROE = 연간 순이익 ÷ 평균 자기자본 × 100<br>평균 자기자본 = (기초 자본 + 기말 자본) ÷ 2<br>영업이익률 = 영업이익 ÷ 매출 × 100<br>부채비율 = 총부채 ÷ 자기자본 × 100<br>증감률 = (당년 값 ÷ 전년 값 − 1) × 100<br>단순 FCF = 영업현금흐름 − 현금 설비투자</div><ul class="method-list"><li>한국 기업의 금액은 억원, 미국 기업은 백만 달러입니다. 서로 다른 단위의 절대 금액을 그대로 비교하지 마세요.</li><li>PER·PBR는 표시된 주가 시점과 실적 기간의 조합입니다. ROE는 표시된 완료 연간 순이익과 평균 자본을 사용합니다.</li><li>전년 값이 0 또는 음수이면 성장률을 표시하지 않습니다. EPS·BPS·기초 또는 기말 자본이 0 이하인 지표도 일반적인 배수 비교를 하지 않습니다.</li><li>총부채에는 매입채무 등도 들어 있습니다. 총부채와 이자가 붙는 차입금은 다릅니다.</li><li>설비투자의 포함 항목과 회사별 FCF 정의는 다를 수 있습니다. 이 노트는 영업현금에서 명시된 현금 설비투자를 빼서 보여 드립니다.</li><li>분기와 연간, 잠정 발표와 확정 자료를 구분합니다. 다른 기업과 비교할 때도 기간·업종·계산 기준을 맞춰 주세요.</li></ul><section class="mini-panel"><h3>'+esc(c.name)+'에 적용한 기준</h3><p>연간 실적: '+esc(c.annual?.label)+' ('+esc(c.annual?.start||'')+' ~ '+esc(c.annual?.end||'')+')</p><p>재무제표: '+esc(c.annual?.statementBasis||'출처 기준')+'</p><p>설비투자: '+esc(c.annual?.capexDefinition||'출처의 현금 지출 기준')+'</p><p>지표 산식·이익 기준: '+esc(c.valuation?.basis||'완료 연간 실적과 평균 자기자본 사용')+'</p><p>'+esc(priceDate(c))+'</p></section>'+sources(c));}
