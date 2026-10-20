@@ -1,0 +1,168 @@
+{
+  "date": "2026-10-20",
+  "widget_url": "https://ohoredingdong.github.io/Notion/use-me-first.html",
+  "scope": "냉장고 레시피 위젯의 판정·재고 편집·로컬 저장·기기 동기화·화면 동작 오류 분석과 수정",
+  "fixed_findings": [
+    {
+      "id": "expired-and-empty-stock",
+      "before": "소비기한이 지난 재료도 메뉴 재료로 인정",
+      "after": "유효한 날짜와 소진 수량을 공통 도메인에서 판정하여 추천·부족 재료·식사 기록 버튼에 적용"
+    },
+    {
+      "id": "ingredient-matching",
+      "before": "달걀 별칭을 놓치고 무계란빵을 계란으로 오인; 냉장고에 등록한 간장 누락",
+      "after": "명시적 별칭과 정확한 재료명 일치, 등록된 보관 위치를 함께 확인"
+    },
+    {
+      "id": "batch-quantities",
+      "before": "재료명별 수량으로 같은 이름의 여러 항목이 값을 공유",
+      "after": "각 항목의 고유 ID에 이름·기한·수량 저장; 수정·삭제도 항목 단위"
+    },
+    {
+      "id": "migration-and-corruption",
+      "before": "분리된 저장 키·손상된 상태·오래 열린 수정창이 자료를 덮어쓸 가능성",
+      "after": "v5 단일 상태·기존 키 보존·손상 상태 쓰기 차단·백업 복구·항목 변경 검사"
+    },
+    {
+      "id": "sync-state-loss",
+      "before": "수량·식사·즐겨찾기 누락, 통신 중 변경 유실, 늦은 응답의 덮어쓰기",
+      "after": "v2 전체 상태 전송, 후속 전송 대기열, 스냅샷과 연결 세대 검사, 명시적 충돌 선택"
+    },
+    {
+      "id": "backend-paused",
+      "before": "기존 서버 프로젝트 INACTIVE; 실제 endpoint HTTP 503",
+      "after": "동일 프로젝트 복구 후 ACTIVE_HEALTHY와 정상 HTTP 응답 확인"
+    },
+    {
+      "id": "cross-device-race",
+      "before": "두 기기가 동시에 읽고 저장하면 최종 기록 하나가 다른 기록을 덮음",
+      "after": "기존 updated_at을 조건으로 원자적 서버 갱신; 충돌 409 및 구버전 덮어쓰기 428"
+    },
+    {
+      "id": "hidden-and-misleading-ui",
+      "before": "사용자 정의 재료 추가 숨김, 잘못된 요리 사진, 근거 없는 영양 비율",
+      "after": "추가 버튼 노출, 메뉴별 재료 구성 그림, 실제 보유 재료 종류 수로 표시"
+    },
+    {
+      "id": "selection-and-history",
+      "before": "필터·재고 변경 시 선택과 상세 상태 불일치, 기록과 부족 재료 일부만 확인 가능",
+      "after": "선택 상태 일치, 상세 펼침 유지, 전체 조회·개별 취소·복원"
+    },
+    {
+      "id": "korean-ime",
+      "before": "한글 조합 확정 Enter가 저장까지 실행",
+      "after": "조합 중 이벤트는 무시하고 일반 Enter에서만 저장"
+    },
+    {
+      "id": "daily-date",
+      "before": "날짜 미입력 시 임의 기한, 자정 이후 날짜 판정 미갱신",
+      "after": "기한 선택 입력 및 미입력 안내, 자정·화면 복귀 시 날짜 기준 갱신"
+    },
+    {
+      "id": "same-browser-race",
+      "before": "여러 탭의 실제 동시 read/modify/write에서 한 변경이 유실",
+      "after": "Web Locks에서 최초 이관과 상태 변경을 직렬화하고 대기 후 스냅샷·연결 코드·수정 항목을 재검사"
+    }
+  ],
+  "backend": {
+    "project_status_after_restore": "ACTIVE_HEALTHY",
+    "edge_function": "use-me-first-sync",
+    "deployed_version": 2,
+    "concurrency_contract": "updated_at-v1",
+    "database_schema_changed": false,
+    "authentication_mode_changed": false,
+    "live_http_checks_passed": 12,
+    "synthetic_test_records_removed": 1,
+    "synthetic_test_data_only": true,
+    "live_http_checks": [
+      {
+        "test": "GitHub Pages origin CORS preflight",
+        "pass": true
+      },
+      {
+        "test": "missing code rejected",
+        "pass": true
+      },
+      {
+        "test": "unknown synthetic code starts empty with CAS contract",
+        "pass": true
+      },
+      {
+        "test": "new record create",
+        "pass": true
+      },
+      {
+        "test": "complete state roundtrip",
+        "pass": true
+      },
+      {
+        "test": "conditional update advances version",
+        "pass": true
+      },
+      {
+        "test": "two actual simultaneous device writes have one winner",
+        "pass": true,
+        "detail": {
+          "statuses": [
+            409,
+            200
+          ]
+        }
+      },
+      {
+        "test": "conflict leaves winning record intact",
+        "pass": true
+      },
+      {
+        "test": "legacy overwrite blocked with CORS",
+        "pass": true
+      },
+      {
+        "test": "duplicate create blocked",
+        "pass": true
+      },
+      {
+        "test": "malformed payload rejected",
+        "pass": true
+      },
+      {
+        "test": "rejected requests preserve all stored fields",
+        "pass": true
+      }
+    ]
+  },
+  "limitations": [
+    "실제 클라우드 브라우저 연결이 시간 초과되어 CSS 배치·모바일 화면·Notion 임베드 화면은 직접 검증하지 못했습니다.",
+    "레시피 예시 분량과 보유 수량의 수치 비교는 하지 않으므로 재료를 갖춘 메뉴에도 실제 분량 확인을 표시합니다.",
+    "식사 기록은 남은 재료 수량을 자동 차감하지 않습니다.",
+    "Web Locks API가 없는 환경에서는 최신 상태 재조회 방식으로 동작하며, 여러 탭의 완전히 동시인 저장을 보장하지 않습니다."
+  ],
+  "references": [
+    "https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API",
+    "https://supabase.com/docs/guides/functions/cors"
+  ],
+  "security_advisory": {
+    "table": "public.use_me_first_sync",
+    "level": "INFO",
+    "name": "rls_enabled_no_policy",
+    "disposition": "기존의 서버 함수 경유 접근 구조와 RLS 설정을 유지했습니다. 이번 작업에서 테이블 정책을 변경하지 않았습니다.",
+    "reference": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+  },
+  "migration_note": "기존 저장 키는 삭제하지 않습니다. 기존 이름별 수량 자료는 같은 이름 첫 항목에 한 번만 이관하고, 구별할 수 없는 다른 항목은 수량 미입력으로 표시합니다.",
+  "automated_verification": {
+    "passed": 92,
+    "failed": 0,
+    "domain": 24,
+    "store_and_backend_handler": 47,
+    "dom_integration": 21,
+    "javascript_syntax_files": 7,
+    "git_diff_check": "passed",
+    "runtime": "Node.js v24.19.0",
+    "dom_runtime": "linkedom 0.18.12",
+    "lock_runtime": "native Node navigator.locks",
+    "real_browser_layout_verified": false,
+    "command": "FRIDGE_TEST_DOM=/tmp/fridge-audit-dom/node_modules/linkedom node --test --test-isolation=none tests/fridge-domain.test.cjs tests/fridge-store.test.cjs tests/fridge-ui.test.cjs",
+    "dependency_setup": "npm install --prefix /tmp/fridge-audit-dom --ignore-scripts --no-audit --no-fund linkedom@0.18.12"
+  }
+}

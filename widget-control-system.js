@@ -102,7 +102,7 @@
   `;
   document.head.appendChild(css);
 
-  function persist(){localStorage.setItem(KEY,JSON.stringify(state));}
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){/* Keep controls usable when browser storage is unavailable. */}}
   function apply(){
     root.dataset.widgetSize=state.size;
     root.dataset.widgetTheme=state.theme;
@@ -123,7 +123,7 @@
   sizeBtn.addEventListener('click',cycleSize);
   themeBtn.addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';persist();apply()});
   lockBtn.addEventListener('click',()=>{state.locked=!state.locked;persist();apply()});
-  resetBtn.addEventListener('click',()=>{state.size='normal';state.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';state.locked=false;localStorage.removeItem(KEY);apply()});
+  resetBtn.addEventListener('click',()=>{state.size='normal';state.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';state.locked=false;try{localStorage.removeItem(KEY);}catch(e){}apply()});
 
   const ro=new ResizeObserver(entries=>{
     const w=entries[0].contentRect.width;
