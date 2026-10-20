@@ -6,6 +6,7 @@
 <title>투자 레이더 · 발견에서 판단까지</title>
 <link rel="stylesheet" href="./assets/stock-radar-v8.css?v=8.0">
 <script src="./assets/stock-radar-v8.js?v=8.0" defer></script>
+<script src="./assets/stock-radar-v9.js?v=2500fa266824" defer></script>
 </head>
 <body>
 <div class="app">
@@ -19,6 +20,7 @@
 <section id="view-discover" class="view" role="tabpanel" aria-labelledby="tab-discover">
  <div class="page-heading"><div><p class="eyebrow">A CLEARER NEXT STEP</p><h2>무엇부터 살펴볼까요?</h2></div><div class="segmented" aria-label="투자 관점"><button class="active" data-mode="long">장기 가치</button><button data-mode="short">단기 기회</button></div></div>
  <div class="summary-grid" id="summary"></div>
+ <section id="todayBrief" aria-label="먼저 비교할 기업"><p class="brief-explain">후보별 투자 관점을 요약하는 중입니다.</p></section>
  <div class="guide" id="actionGuide"><strong>가격 매력과 매수 준비는 다릅니다.</strong><span>점수가 높아도 공식 대조·위험 조건이 남아 있으면 분리해서 표시합니다.</span></div>
  <div class="filterbar"><input id="search" type="search" placeholder="기업명 또는 종목코드" aria-label="기업 검색"><select id="market" aria-label="시장"><option value="ALL">한국 + 미국</option><option value="KR">한국</option><option value="US">미국</option></select><select id="size" aria-label="규모"><option value="ALL">모든 규모</option><option value="smid">중소형만</option><option value="big">대형·초대형</option><option value="expanded">새로 추가한 기업</option></select></div>
  <div class="chips" id="filters" aria-label="조건 필터"><button data-filter="all" class="active">전체</button><button data-filter="potential">가격·실적 후보</button><button data-filter="ready">매수 조건 충족</button><button data-filter="price">가격 대기</button><button data-filter="risk">위험 확인</button><button data-filter="star">★ 관심</button></div>
@@ -26,6 +28,8 @@
  <p class="caption" id="rankNote">후보 내부의 조사 순서입니다. 점수는 성공확률·내재가치가 아닙니다.</p>
  <div id="cards" class="cards"><div class="empty">확인 중…</div></div>
  <button type="button" class="more" id="more" hidden>더 보기</button>
+ <details id="wideDirectory"><summary id="directoryTitle">더 넓게 찾기</summary><div class="details-inner"><p class="directory-note" id="directoryNote">기본 탐색과 정밀 분석은 구분합니다. 이 목록 자체는 매수 추천이 아닙니다.</p><div class="directory-controls"><input id="directorySearch" type="search" placeholder="넓은 목록에서 기업 검색" aria-label="전체 탐색 기업 검색"><select id="directoryMarket" aria-label="탐색 시장"><option value="ALL">전체 시장</option><option value="KR">한국</option><option value="US">미국</option></select></div><div class="directory-count" id="directoryCount"></div><div id="directoryRows">목록 확인 중…</div><button class="more" id="directoryMore" type="button" hidden>40개 더 보기</button></div></details>
+
 </section>
 <section id="view-detail" class="view" role="tabpanel" aria-labelledby="tab-detail" hidden>
  <div class="detail-select"><button class="text-button" id="back">‹ 목록으로</button><select id="companySelect" aria-label="분석할 기업 선택"></select></div>
