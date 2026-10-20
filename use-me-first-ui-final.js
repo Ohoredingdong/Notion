@@ -106,7 +106,7 @@
         if(!D.evaluate(current.recipe,st).available){stillAvailable=false;return;}
         st.meals.unshift({id:S.newId(),name:current.recipe.name,ts:now,day:dayKey(new Date(now))});
       });
-      if(ok&&stillAvailable){lastLog=now;feedback(current.recipe.name+'을 기록했어요. 남은 수량은 재료의 ⋮ → 수정에서 바꿀 수 있어요.');}
+      if(ok&&stillAvailable){lastLog=now;feedback(current.recipe.name+'을 기록했어요. 남은 수량은 재료의 ⋮ → 수정에서 바꿀 수 있어요.');window.UMFKitchenNav?.go('diary');}
       else if(!stillAvailable)feedback('다른 화면에서 재료가 바뀌었어요. 추천을 다시 확인해 주세요.');
       else feedback('식사 기록을 저장하지 못했어요. 저장 상태를 확인해 주세요.');
     }finally{logBusy=false;if(button){delete button.dataset.busy;button.disabled=!R.getSelected()?.available;}}

@@ -1,0 +1,76 @@
+{
+  "feature": "Han-kki Kitchen presentation for the existing fridge widget",
+  "date": "2026-10-20",
+  "public_path": "https://ohoredingdong.github.io/Notion/use-me-first.html",
+  "reference": "Previously created Han-kki Kitchen app; reused kitchen scene and SVG art",
+  "automated": {
+    "total": 110,
+    "passed": 110,
+    "failed": 0,
+    "domain": 24,
+    "store_and_sync_contract": 47,
+    "dom_integration": 29,
+    "kitchen_state": 10,
+    "additional_final_navigation_regression": {
+      "passed": 8,
+      "failed": 0
+    },
+    "javascript_syntax": {
+      "passed": 11,
+      "failed": 0
+    },
+    "command": "FRIDGE_TEST_DOM=/tmp/fridge-audit-dom/node_modules/linkedom node --test --test-isolation=none tests/fridge-domain.test.cjs tests/fridge-store.test.cjs tests/fridge-ui.test.cjs tests/fridge-kitchen-state.test.cjs"
+  },
+  "browser": {
+    "engine": "Cloud Chrome via CUA",
+    "desktop": {
+      "document_client_width": 1348,
+      "document_scroll_width": 1348
+    },
+    "mobile_iframes": [
+      {
+        "outer_width": 390,
+        "document_client_width": 375,
+        "document_scroll_width": 375
+      },
+      {
+        "outer_width": 320,
+        "document_client_width": 305,
+        "document_scroll_width": 305
+      }
+    ],
+    "verified": [
+      "home scene and independent doors",
+      "duplicate-name items with 2개 and 7개 quantities",
+      "tap to move only the selected ID from fridge to freezer",
+      "seasoning and pantry ownership toggles",
+      "recipe availability and detail quantities/steps",
+      "meal logging followed by diary navigation",
+      "mobile bottom navigation",
+      "no horizontal overflow on home and recipe pages"
+    ],
+    "test_data": "Synthetic local-preview data only; no production inventory was added."
+  },
+  "preservation": {
+    "existing_inventory_storage": "use-me-first-state-v5 (unchanged schema)",
+    "kitchen_preferences_storage": "use-me-first-kitchen-view-v1",
+    "positions_are_local_to_browser": true,
+    "position_changes_do_not_change_quantity_or_expiry": true,
+    "no_sample_inventory_added": true,
+    "backend_unchanged": true
+  },
+  "limits": [
+    "Mobile viewports were tested in desktop Chrome iframes, not on a physical phone.",
+    "Drag behavior was covered in DOM integration; real browser interaction used tap-to-move.",
+    "Kitchen positions and door preferences are local browser settings and do not enter the existing cloud payload.",
+    "Current widget catalog has no complete nutrition or purchase-price inputs; the home card displays only supported stock and recipe counts."
+  ],
+  "reference_png_sha256": "67ce0713b43526c0833c315ec3d0a63fef053df6ab10a526315b9f8d8464701f",
+  "deployed_asset": {
+    "path": "assets/kitchen-scene.webp",
+    "bytes": 36698,
+    "sha256": "79f4c0676046bbcc46ba2172e60030ce00ec2630362f48809629fa5c12ab9108",
+    "encoding": "WebP quality 88, original dimensions",
+    "source_bytes": 1742608
+  }
+}

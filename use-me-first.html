@@ -1,30 +1,49 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="보유 재료와 소비기한으로 메뉴를 찾고 부족한 재료와 식사를 기록하는 냉장고 위젯">
-<title>냉장고 & 레시피</title>
-<link rel="stylesheet" href="use-me-first-final.css?v=20261020-audit2">
-<script defer src="use-me-first-domain.js?v=20261020-audit2"></script>
-<script defer src="use-me-first-store.js?v=20261020-audit2"></script>
-<script defer src="use-me-first-core-final.js?v=20261020-audit2"></script>
-<script defer src="use-me-first-recipe-grid-final.js?v=20261020-audit2"></script>
-<script defer src="use-me-first-ui-final.js?v=20261020-audit2"></script>
-<script defer src="widget-control-system.js?v=20261020-audit2"></script>
-<script defer src="use-me-first-sync-icon-guard.js?v=20261020-audit2"></script>
+<meta name="theme-color" content="#f8f5ee">
+<title>한끼의 부엌 — 냉장고 & 레시피</title>
+<link rel="stylesheet" href="use-me-first-final.css?v=20261020-kitchen1">
+<link rel="stylesheet" href="use-me-first-kitchen.css?v=20261020-kitchen1">
+<script defer src="use-me-first-domain.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-store.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-core-final.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-recipe-grid-final.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-ui-final.js?v=20261020-kitchen1"></script>
+<script defer src="widget-control-system.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-sync-icon-guard.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-kitchen-state.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-kitchen-art.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-kitchen-nav.js?v=20261020-kitchen1"></script>
+<script defer src="use-me-first-kitchen.js?v=20261020-kitchen1"></script>
 </head>
-<body data-widget-layout="wide">
-<main class="w umf-wide-layout">
+<body class="kitchen-app" data-widget-layout="wide" data-widget-key="냉장고 & 레시피">
+<a class="skip-link" href="#main">본문으로 이동</a>
+<aside class="sidebar" aria-label="주 메뉴">
+<button type="button" class="logo-mark" data-kitchen-page="home" aria-label="한끼의 부엌 홈"><span data-kitchen-icon="fridge" aria-hidden="true"></span></button>
+<nav class="nav-list" aria-label="부엌 메뉴"><button type="button" class="nav-btn active" data-kitchen-page="home" aria-current="page"><span data-kitchen-icon="fridge" aria-hidden="true"></span><span>냉장고</span></button><button type="button" class="nav-btn" data-kitchen-page="recipes"><span data-kitchen-icon="recipes" aria-hidden="true"></span><span>식단 추천</span></button><button type="button" class="nav-btn" data-kitchen-page="diary"><span data-kitchen-icon="diary" aria-hidden="true"></span><span>식사 기록</span></button><button type="button" class="nav-btn" data-kitchen-page="shopping"><span data-kitchen-icon="basket" aria-hidden="true"></span><span>장보기</span></button></nav>
+<div class="nav-bottom"><span class="nav-caption">A LITTLE KITCHEN, A GOOD DAY</span><button type="button" class="icon-btn" data-kitchen-help aria-label="사용 방법"><span data-kitchen-icon="help" aria-hidden="true"></span></button></div>
+</aside>
+<div class="w umf-wide-layout page-shell">
 <div class="hoverTools"><button type="button" id="syncBtn" aria-label="동기화 설정"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11m-3-3 3 3-3 3M20 17H9m3-3-3 3 3 3"/></svg><i class="syncDot" id="syncDot"></i></button></div>
 <span class="umf-sr-only" id="syncStatus">이 기기는 로컬 저장만 사용 중</span>
-<header class="umf-dashboard-head">
-<div class="umf-brand"><div class="umf-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M7 11.5h10M9.5 6.5v2.3M9.5 14.5v2.3"/></svg></div><div><h1 class="umf-dashboard-title">냉장고 & 레시피</h1><p class="umf-dashboard-sub">있는 재료를 먼저 쓰는, 오늘의 한 끼</p></div></div>
-<div class="umf-head-right"><div class="umf-date"><div id="umfDateMain">오늘</div><div id="umfDateSub">내 냉장고에서 시작해요</div></div><button class="umf-primary-add" id="umfTopAdd" type="button">＋ 재료 추가</button></div>
+<header class="header">
+<a class="brand" href="#home" data-kitchen-page="home"><h2>한끼의 부엌</h2><span class="eyebrow">MY LITTLE KITCHEN</span></a>
+<div class="header-meta"><div class="date-pill"><span data-kitchen-icon="sun" aria-hidden="true"></span><div><span id="umfDateMain">오늘</span><span class="umf-sr-only" id="umfDateSub">내 냉장고에서 시작해요</span></div></div>
+<details class="kitchen-settings" id="umfKitchenSettings"><summary class="icon-btn" aria-label="화면과 동기화 설정"><span data-kitchen-icon="settings" aria-hidden="true"></span></summary><div class="kitchen-settings-popover"><strong>화면과 동기화</strong><div id="umfKitchenTools"></div><p>크기 · 테마 · 크기 잠금 · 화면 초기화 · 동기화</p><small>화면 초기화는 재료와 식사 기록을 지우지 않아요.</small></div></details>
+</div>
 </header>
 <div id="umfStorageStatus" class="umf-notice bad" role="alert" hidden></div>
-<div class="umf-columns">
-<section class="umf-left" aria-labelledby="inventoryTitle">
-<header class="head"><h2 id="inventoryTitle">보유 재료</h2><button type="button" class="link" id="all">접기</button></header>
+<div id="umfKitchenError" class="umf-notice bad" role="alert" hidden></div>
+<main id="main" tabindex="-1">
+<section class="kitchen-page" id="umfHomePage" data-kitchen-view="home" aria-labelledby="umfHomeTitle">
+<div class="intro"><div><div class="eyebrow">A LITTLE KITCHEN, A GOOD DAY</div><h1 id="umfHomeTitle" tabindex="-1">작은 부엌, 든든한 하루.</h1><p class="sub">냉장고를 열고, 우리 집 재료로 오늘의 한 끼를 골라요.</p></div><button class="btn btn-soft" id="umfTopAdd" type="button"><span data-kitchen-icon="plus" aria-hidden="true"></span>재료 넣기</button></div>
+<div class="home-grid"><section class="kitchen-play" aria-label="냉장고 정리"><div id="umfKitchenScene"></div><div class="kitchen-under"><button type="button" class="btn btn-sage" data-kitchen-page="recipes"><span data-kitchen-icon="recipes" aria-hidden="true"></span>오늘 뭐 먹지?<span data-kitchen-icon="arrow" aria-hidden="true"></span></button><p>냉장고 속 재료부터 살펴보고<br>우리에게 맞는 한 끼를 골라요.</p></div></section><section id="umfKitchenHero" class="panel today-panel" aria-label="오늘의 추천 메뉴"></section></div>
+<section class="umf-summary-strip kitchen-summary" aria-label="우리 부엌 요약"><button type="button" class="summary-cell" data-kitchen-page="inventory"><span class="summary-label">먼저 살펴볼 재료</span><span class="summary-value" id="umfSoonCount">0개</span><span class="summary-caption">2일 안에 소비기한이 와요 <span aria-hidden="true">↗</span></span></button><button type="button" class="summary-cell" data-kitchen-page="recipes"><span class="summary-label">우리 재료로 만들 메뉴</span><span class="summary-value" id="umfPossibleCount">0개</span><span class="summary-caption">필요한 재료 종류를 갖췄어요 <span aria-hidden="true">↗</span></span></button><button type="button" class="summary-cell" data-kitchen-page="shopping"><span class="summary-label" id="umfMissingCountLabel">선택 메뉴의 부족한 재료</span><span class="summary-value" id="umfMissingCount">0개</span><span class="summary-caption">장보기 전에 확인해요 <span aria-hidden="true">↗</span></span></button></section>
+<div class="kitchen-inventory-grid"><section class="umf-left kitchen-inventory" id="umfKitchenInventory" aria-labelledby="inventoryTitle">
+<header class="head"><h2 id="inventoryTitle" tabindex="-1">우리 집 재료</h2><button type="button" class="link" id="all">접기</button></header>
 <div class="tabs" role="tablist" aria-label="재료 보관 위치"><button type="button" class="tab on" id="fridgeTab" role="tab" aria-selected="true" aria-controls="fridge" data-tab="fridge">냉장고 <span id="fc">0</span></button><button type="button" class="tab" id="seasonTab" role="tab" aria-selected="false" aria-controls="season" data-tab="season">기본 양념 <span id="sc">0</span></button></div>
 <div class="view on" id="fridge" role="tabpanel" aria-labelledby="fridgeTab">
 <p class="section-note">소비기한이 가까운 순서 · ⋮에서 수정·삭제</p>
@@ -37,9 +56,17 @@
 <div class="sh pantry-head"><div><h3>상비 재료</h3><p class="section-note">밥·면 등 냉장고 밖 재료</p></div><button type="button" class="tinyAdd" id="addPantry">＋ 추가</button></div>
 <div class="season"><div class="grid" id="pg"></div></div>
 </div>
+</section><section class="insight-card balance-card"><div class="insight-head"><h2>보유 재료 구성</h2><span class="subtle">종류 수</span></div><div class="balance-list">
+<div class="balance-row"><span class="balance-label">단백질 재료</span><span class="balance-track"><i data-balance="protein"></i></span><span class="balance-pct" data-balance-pct="protein">0종</span></div>
+<div class="balance-row"><span class="balance-label">채소·버섯</span><span class="balance-track"><i data-balance="veg"></i></span><span class="balance-pct" data-balance-pct="veg">0종</span></div>
+<div class="balance-row"><span class="balance-label">밥·면·빵 등</span><span class="balance-track"><i data-balance="carb"></i></span><span class="balance-pct" data-balance-pct="carb">0종</span></div>
+<div class="balance-row"><span class="balance-label">유제품</span><span class="balance-track"><i data-balance="dairy"></i></span><span class="balance-pct" data-balance-pct="dairy">0종</span></div></div>
+<p class="balance-note" id="umfBalanceNote">등록한 재료 종류를 보여드려요.</p><details class="umf-method"><summary>집계 기준</summary><p>기한이 지나거나 소진된 냉장고 재료를 제외하고, 체크한 양념·상비 재료를 합칩니다. 같은 재료 이름과 알려진 별칭은 한 번만 세며 일부 재료는 두 분류에 포함됩니다. 영양소 양이나 권장 섭취량을 계산한 값은 아닙니다.</p></details></section></div>
 </section>
+<section class="kitchen-page" id="umfRecipesPage" data-kitchen-view="recipes" aria-labelledby="umfRecipesTitle" hidden>
+<div class="intro"><div><div class="eyebrow">WHAT SHALL WE EAT?</div><h1 id="umfRecipesTitle" tabindex="-1">있는 재료로, 맛있는 한 끼.</h1><p class="sub">재료를 갖춘 메뉴부터 살펴보고, 마음에 드는 레시피를 골라요.</p></div><button type="button" class="btn btn-soft" data-kitchen-page="shopping"><span data-kitchen-icon="basket" aria-hidden="true"></span>장보기</button></div>
 <section class="recipeSec" aria-labelledby="recipesTitle">
-<div class="sh"><div><h2 id="recipesTitle">오늘의 추천 레시피</h2><p class="section-note">재료를 갖춘 메뉴부터, 임박한 재료를 먼저</p></div><button type="button" class="link" id="umfExpandRecipes" aria-expanded="false">전체 펼치기</button></div>
+<div class="sh"><div><h2 id="recipesTitle">우리 부엌의 메뉴</h2><p class="section-note">재료를 갖춘 메뉴부터, 임박한 재료를 먼저</p></div><button type="button" class="link" id="umfExpandRecipes" aria-expanded="false">전체 펼치기</button></div>
 <div id="umfRecipeGridShell">
 <div class="umf-recipe-toolbar"><label class="umf-sr-only" for="umfRecipeSearch">메뉴·재료 검색</label><input type="search" id="umfRecipeSearch" placeholder="메뉴·재료 검색" maxlength="80"><label class="umf-sr-only" for="umfRecipeFilter">레시피 필터</label><select id="umfRecipeFilter"><option value="all">전체 메뉴</option><option value="available">재료 갖춘 메뉴</option><option value="favorites">즐겨찾기</option></select></div>
 <div class="umf-badge" id="umfAvailableCount">재료 갖춘 메뉴 0 / 전체 8</div>
@@ -48,22 +75,22 @@
 </div>
 <p class="tip">입력한 소비기한이 지난 재료와 소진된 재료는 추천에서 제외해요. 기한 미입력 재료는 보관 상태를, 모든 메뉴는 실제 분량을 조리 전에 확인해 주세요.</p>
 </section>
-<aside class="umf-insights" aria-label="재료와 식사 요약">
-<section class="insight-card balance-card"><div class="insight-head"><h2>보유 재료 구성</h2><span class="subtle">종류 수</span></div><div class="balance-list">
-<div class="balance-row"><span class="balance-label">단백질 재료</span><span class="balance-track"><i data-balance="protein"></i></span><span class="balance-pct" data-balance-pct="protein">0종</span></div>
-<div class="balance-row"><span class="balance-label">채소·버섯</span><span class="balance-track"><i data-balance="veg"></i></span><span class="balance-pct" data-balance-pct="veg">0종</span></div>
-<div class="balance-row"><span class="balance-label">밥·면·빵 등</span><span class="balance-track"><i data-balance="carb"></i></span><span class="balance-pct" data-balance-pct="carb">0종</span></div>
-<div class="balance-row"><span class="balance-label">유제품</span><span class="balance-track"><i data-balance="dairy"></i></span><span class="balance-pct" data-balance-pct="dairy">0종</span></div></div>
-<p class="balance-note" id="umfBalanceNote">등록한 재료 종류를 보여드려요.</p><details class="umf-method"><summary>집계 기준</summary><p>기한이 지나거나 소진된 냉장고 재료를 제외하고, 체크한 양념·상비 재료를 합칩니다. 같은 재료 이름과 알려진 별칭은 한 번만 세며 일부 재료는 두 분류에 포함됩니다. 영양소 양이나 권장 섭취량을 계산한 값은 아닙니다.</p></details></section>
-<section class="insight-card"><div class="insight-head"><h2>부족한 재료</h2><label class="umf-sr-only" for="umfMissingScope">부족한 재료 기준</label><select id="umfMissingScope"><option value="selected">선택 메뉴</option><option value="all">전체 메뉴</option></select></div><p class="section-note" id="umfMissingContext"></p><div class="missing-list" id="umfMissingList"></div><p class="small-note">＋는 보유 등록입니다. 실제로 준비한 뒤 눌러 주세요.</p></section>
-<section class="insight-card"><div class="insight-head"><h2>먹은 것 기록</h2><label class="umf-sr-only" for="umfMealScope">식사 기록 기간</label><select id="umfMealScope"><option value="today">오늘</option><option value="all">전체 기록</option></select></div><p class="section-note">식사 기록은 재고를 자동 차감하지 않아요.</p><div class="meal-list" id="umfMealList"></div><div id="umfMealFeedback" role="status" aria-live="polite"></div><button id="umfUndoMeal" type="button" class="link" hidden>방금 취소한 기록 복원</button><div class="meal-actions"><button type="button" class="clear" id="umfClearMeals">오늘 기록 비우기</button></div></section>
-</aside>
-</div>
-<section class="umf-summary-strip" aria-label="냉장고 요약"><div class="summary-cell"><div class="summary-label">2일 안에 소비기한이 오는 재료</div><div class="summary-value" id="umfSoonCount">0개</div></div><div class="summary-cell"><div class="summary-label">재료 종류를 모두 갖춘 메뉴</div><div class="summary-value" id="umfPossibleCount">0개</div></div><div class="summary-cell"><div class="summary-label" id="umfMissingCountLabel">선택 메뉴의 부족한 재료</div><div class="summary-value" id="umfMissingCount">0개</div></div></section>
+</section>
+<section class="kitchen-page" id="umfDiaryPage" data-kitchen-view="diary" aria-labelledby="umfDiaryTitle" hidden>
+<div class="intro"><div><div class="eyebrow">ONE MEAL AT A TIME</div><h1 id="umfDiaryTitle" tabindex="-1">잘 먹은 하루를 모아요.</h1><p class="sub">우리 부엌에서 만든 한 끼, 잊지 않도록 남겨두세요.</p></div><button type="button" class="btn btn-soft" data-kitchen-page="recipes"><span data-kitchen-icon="plus" aria-hidden="true"></span>메뉴 고르기</button></div>
+<div class="kitchen-note-layout"><section class="insight-card"><div class="insight-head"><h2>한 끼씩 쌓이는 기록</h2><label class="umf-sr-only" for="umfMealScope">식사 기록 기간</label><select id="umfMealScope"><option value="today">오늘</option><option value="all">전체 기록</option></select></div><p class="section-note">식사 기록은 재고를 자동 차감하지 않아요.</p><div class="meal-list" id="umfMealList"></div><div id="umfMealFeedback" role="status" aria-live="polite"></div><button id="umfUndoMeal" type="button" class="link" hidden>방금 취소한 기록 복원</button><div class="meal-actions"><button type="button" class="clear" id="umfClearMeals">오늘 기록 비우기</button></div></section><aside class="panel kitchen-guide"><span data-kitchen-icon="diary" class="guide-art" aria-hidden="true"></span><h2>오늘도 잘 먹었나요?</h2><p>식단 추천에서 메뉴를 고르고<br>‘먹은 것으로 기록’을 눌러보세요.</p><p>기록을 취소했다면 바로 복원할 수 있어요. 남은 재료의 수량은 냉장고에서 직접 수정해 주세요.</p><button type="button" class="btn btn-line" data-kitchen-page="recipes">오늘의 메뉴 둘러보기<span data-kitchen-icon="arrow" aria-hidden="true"></span></button></aside></div>
+</section>
+<section class="kitchen-page" id="umfShoppingPage" data-kitchen-view="shopping" aria-labelledby="umfShoppingTitle" hidden>
+<div class="intro"><div><div class="eyebrow">JUST WHAT WE NEED</div><h1 id="umfShoppingTitle" tabindex="-1">필요한 만큼, 알뜰하게.</h1><p class="sub">고른 메뉴에서 부족한 재료만 확인하고 준비해요.</p></div><button type="button" class="btn btn-soft" data-kitchen-page="inventory"><span data-kitchen-icon="fridge" aria-hidden="true"></span>재료 확인</button></div>
+<div class="kitchen-note-layout"><section class="insight-card"><div class="insight-head"><h2>부족한 재료</h2><label class="umf-sr-only" for="umfMissingScope">부족한 재료 기준</label><select id="umfMissingScope"><option value="selected">선택 메뉴</option><option value="all">전체 메뉴</option></select></div><p class="section-note" id="umfMissingContext"></p><div class="missing-list" id="umfMissingList"></div><p class="small-note">＋는 보유 등록입니다. 실제로 준비한 뒤 눌러 주세요.</p></section><aside class="panel kitchen-guide"><span data-kitchen-icon="basket" class="guide-art" aria-hidden="true"></span><h2>장을 보기 전에</h2><p>냉장고 속 재료와 기본 양념을<br>한 번 더 살펴보세요.</p><p>재료를 실제로 준비한 뒤 ＋ 버튼으로 보유 등록하면, 만들 수 있는 메뉴도 함께 바뀌어요.</p><button type="button" class="btn btn-line" data-kitchen-page="recipes">다른 메뉴도 둘러보기<span data-kitchen-icon="arrow" aria-hidden="true"></span></button></aside></div>
+</section>
 </main>
+<footer class="kitchen-footer"><span>한 칸씩 정리하고, 한 끼씩 잘 먹어요.</span><details id="umfKitchenHelp"><summary>부엌 사용 안내</summary><div><p>냉장실과 냉동실 문을 각각 눌러 열 수 있어요. ‘자리 정리’에서 재료를 고른 뒤 옮길 칸을 누르세요. 마우스로 끌어 옮길 수도 있어요.</p><p>문과 선반 위치는 이 브라우저에 저장해요. 재료·수량·소비기한·식사 기록은 기존 자료를 이어 쓰며, 기기 동기화는 위쪽 설정에서 관리해요.</p><p>선반 이동은 보관 위치 표시만 바꿔요. 실제로 냉동한 재료만 냉동실로 옮기고, 소비기한과 실제 분량은 직접 확인해 주세요.</p></div></details></footer>
+</div>
 <div class="modalbg" id="mb"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="umfIngredientTitle"><div class="mh"><b id="umfIngredientTitle">재료 추가</b><button type="button" id="close" aria-label="재료 창 닫기">×</button></div><div class="field"><label for="name">재료명</label><input id="name" placeholder="예: 계란 또는 달걀" maxlength="60" autocomplete="off" required></div><div class="field"><label for="expiry">소비기한 <span>(선택)</span></label><input id="expiry" type="date" min="1900-01-01" max="9999-12-31"><p class="small-note">포장에 표시된 날짜를 입력해 주세요. 모르면 비워두세요.</p></div><div class="field" id="umfQtyField"><label for="umfQty">남은 수량 <span>(선택)</span></label><input id="umfQty" placeholder="예: 300g, 10개, 1팩" maxlength="40"><p class="small-note">0개·0g·소진으로 입력하면 추천에서 제외해요.</p></div><p id="umfFormError" class="field-error" role="alert" hidden></p><div class="ma"><button type="button" id="cancel">취소</button><button type="button" class="save" id="save">추가하기</button></div></div></div>
 <div class="modalbg" id="customModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="customTitle"><div class="mh"><b id="customTitle">보유 등록</b><button type="button" id="customClose" aria-label="보유 등록 창 닫기">×</button></div><input id="customType" type="hidden"><div class="field"><label for="customName">실제로 보유한 재료명</label><input id="customName" placeholder="예: 굴소스" maxlength="60" autocomplete="off"></div><p id="umfCustomError" class="field-error" role="alert" hidden></p><div class="ma"><button type="button" id="customCancel">취소</button><button type="button" class="save" id="customSave">보유한 재료로 체크</button></div></div></div>
 <div class="modalbg" id="syncModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="syncTitle"><div class="mh"><b id="syncTitle">기기 동기화</b><button type="button" id="syncClose" aria-label="동기화 창 닫기">×</button></div><div class="field"><label for="syncCode">동기화 코드</label><div class="codeRow"><input id="syncCode" placeholder="다른 기기의 코드 붙여넣기" autocomplete="off" spellcheck="false"><button type="button" id="syncCopy">복사</button></div></div><div id="syncFeedback" class="syncHelp" role="status" aria-live="polite"></div><div class="syncHelp" id="syncHelp"></div><div class="syncActions"><button type="button" id="syncCreate">새 코드 만들기</button><button type="button" class="save" id="syncConnect">이 코드로 연결</button></div><div class="syncActions"><button type="button" id="syncUpload">이 기기 자료 올리기</button><button type="button" id="syncReload">서버 자료 불러오기</button></div><button type="button" id="syncRestore" class="disconnect" hidden>가져오기 전 이 기기 자료 복원</button><button type="button" class="disconnect" id="syncDisconnect">이 기기 연결 해제</button></div></div>
-<noscript><p>냉장고 위젯을 사용하려면 브라우저의 JavaScript를 켜 주세요.</p></noscript>
+
+<noscript><p>한끼의 부엌을 사용하려면 브라우저의 JavaScript를 켜 주세요.</p></noscript>
 </body>
 </html>

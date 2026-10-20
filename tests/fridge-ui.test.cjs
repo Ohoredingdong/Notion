@@ -60,7 +60,7 @@ async function boot(options = {}) {
     }
   });
   Object.defineProperty(document, 'activeElement', { configurable: true, get: () => focused || document.body });
-  for (const element of document.querySelectorAll('button,input,select,textarea')) element.focus = () => { focused = element; };
+  for (const element of document.querySelectorAll('button,input,select,textarea,[tabindex],summary,a[href]')) element.focus = () => { focused = element; };
   class TestMutationObserver {
     constructor(callback) { this.observer = new dom.MutationObserver(callback); observers.push(this); }
     observe(...args) { this.observer.observe(...args); }
@@ -104,9 +104,9 @@ async function boot(options = {}) {
         await Promise.allSettled([...pendingLocks]);
       }
     },
-    close() { w.UMFCore?.sync.destroy(); w.UMFStore?.destroy(); observers.forEach(x => x.disconnect()); timers.clear(); assert.deepEqual(errors, [], 'No application exceptions should be logged'); }
+    close() { w.UMFKitchen?.destroy(); w.UMFKitchenState?.destroy(); w.UMFCore?.sync.destroy(); w.UMFStore?.destroy(); observers.forEach(x => x.disconnect()); timers.clear(); assert.deepEqual(errors, [], 'No application exceptions should be logged'); }
   };
-  await w.UMFStore.ready;
+  await Promise.all([w.UMFStore.ready, w.UMFKitchenState?.ready, w.UMFKitchen?.ready]);
   await api.flush();
   return api;
 }
@@ -392,4 +392,248 @@ test('queued meal and favorite actions use current transaction state and reject 
   });
   await app.flush();
   assert.equal(app.w.UMFStore.getState().favorites.includes('계란 볶음밥'), false);
+});
+
+const KITCHEN_VIEW = 'use-me-first-kitchen-view-v1';
+const kitchenItem = (id, name, quantity = '1개', expiry = '2099-01-01') => ({ id, name, quantity, expiry });
+function existingFridge(items, extras = {}) {
+  return {
+    version: 5, revision: 7, updatedAt: seedTime, items,
+    season: [], pantry: [], customSeason: [], customPantry: [], meals: [], favorites: [],
+    ...extras
+  };
+}
+function assertKitchenPage(app, page) {
+  const visible = [...app.document.querySelectorAll('[data-kitchen-view]')].filter(node => !node.hidden);
+  assert.deepEqual(visible.map(node => node.dataset.kitchenView), [page], 'Exactly one application page is visible');
+  assert.equal(app.w.UMFKitchenNav.getPage(), page);
+  const active = [...app.document.querySelectorAll('.nav-btn[data-kitchen-page][aria-current="page"]')];
+  assert.deepEqual(active.map(node => node.dataset.kitchenPage), [page], 'The active navigation item matches the visible page');
+}
+function shelfItem(app, id) {
+  const button = [...app.document.querySelectorAll('#umfKitchenScene .fridge-food')].find(node => node.dataset.lot === id);
+  assert.ok(button, 'The actual inventory lot is visible on a shelf: ' + id);
+  return button;
+}
+
+test('kitchen navigation shows one of four pages and inventory opens the complete real stock list', async t => {
+  const items = ['계란', '양파', '당근', '감자', '우유', '두부', '대파', '버섯'].map((name, index) => kitchenItem('route-' + index, name));
+  const app = await boot({ seed: { [STATE]: existingFridge(items) } }); t.after(() => app.close());
+  const ids = [...app.document.querySelectorAll('[id]')].map(node => node.id);
+  assert.equal(new Set(ids).size, ids.length, 'Generated scene elements also have unique IDs');
+  assert.equal(app.document.querySelectorAll('[data-kitchen-view]').length, 4);
+  assertKitchenPage(app, 'home');
+  for (const page of ['recipes', 'diary', 'shopping', 'home']) {
+    await app.click('.nav-btn[data-kitchen-page="' + page + '"]');
+    assertKitchenPage(app, page);
+  }
+  await app.click('#all');
+  assert.equal(app.document.querySelectorAll('#list .row').length, 6);
+  await app.click('#seasonTab');
+  await app.click('.nav-btn[data-kitchen-page="shopping"]');
+  app.w.UMFKitchenNav.go('inventory'); await app.flush();
+  assertKitchenPage(app, 'home');
+  assert.equal(app.$('#fridgeTab').getAttribute('aria-selected'), 'true');
+  assert.equal(app.$('#fridge').classList.contains('on'), true);
+  assert.equal(app.$('#all').getAttribute('aria-expanded'), 'true');
+  assert.equal(app.document.querySelectorAll('#list .row').length, items.length);
+  assert.equal(app.document.activeElement, app.$('#inventoryTitle'));
+});
+
+test('kitchen ordinary recipe and modal clicks do not navigate again or steal input focus', async t => {
+  const app = await boot(); t.after(() => app.close());
+  await app.click('.nav-btn[data-kitchen-page="recipes"]');
+  const navigation = [];
+  app.w.addEventListener('umf:navigation', event => navigation.push(event.detail));
+  await app.selectRecipe('계란 볶음밥');
+  assertKitchenPage(app, 'recipes');
+  assert.equal(navigation.length, 0, 'Selecting a recipe is not an application navigation action');
+  await app.click('.nav-btn[data-kitchen-page="home"]');
+  navigation.length = 0;
+  await app.click('#umfTopAdd');
+  app.$('#name').focus(); await app.click('#name');
+  assert.equal(app.$('#mb').classList.contains('on'), true);
+  assert.equal(app.document.activeElement, app.$('#name'));
+  assert.equal(navigation.length, 0, 'Opening a form or clicking its input must not route through the body element');
+});
+
+test('kitchen doors open independently and a closed compartment cannot open a stock editor', async t => {
+  const items = [kitchenItem('frozen-egg', '계란', '2개'), kitchenItem('fresh-onion', '양파')];
+  const app = await boot({ seed: {
+    [STATE]: existingFridge(items),
+    [KITCHEN_VIEW]: { version: 1, doors: { freezer: false, fridge: false }, placements: { 'frozen-egg': 'freezer-top' } }
+  } }); t.after(() => app.close());
+  const before = app.memory.get(STATE);
+  assert.equal(app.$('#inside-freezer').hasAttribute('inert'), true);
+  assert.equal(app.$('#inside-fridge').getAttribute('aria-hidden'), 'true');
+  await app.click('#umfKitchenScene .fridge-door[data-compartment="freezer"]');
+  assert.equal(app.$('#inside-freezer').hasAttribute('inert'), false);
+  assert.equal(app.$('#inside-freezer').getAttribute('aria-hidden'), 'false');
+  assert.equal(app.$('#inside-fridge').hasAttribute('inert'), true);
+  assert.equal(app.w.UMFKitchenState.getState().doors.fridge, false);
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="freezer"]');
+  assert.equal(app.w.UMFKitchenState.getState().doors.freezer, false);
+  assert.equal(app.w.UMFKitchenState.getState().doors.fridge, true);
+  assert.equal(app.$('#inside-freezer').hasAttribute('inert'), true);
+  assert.equal(app.$('#inside-fridge').hasAttribute('inert'), false);
+  const frozen = shelfItem(app, 'frozen-egg');
+  assert.equal(frozen.disabled, true);
+  frozen.click(); await app.flush();
+  assert.equal(app.$('#mb').classList.contains('on'), false, 'A synthetic click cannot bypass a closed door');
+  await app.click(shelfItem(app, 'fresh-onion'));
+  assert.equal(app.$('#mb').classList.contains('on'), true);
+  assert.equal(app.$('#name').value, '양파');
+  assert.equal(app.memory.get(STATE), before, 'Opening doors and inspecting stock never changes inventory');
+});
+
+test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and saved shelf positions', async t => {
+  const firstId = 'lot" data-injected="yes', secondId = 'other-egg';
+  const saved = existingFridge([kitchenItem(firstId, '계란', '2개'), kitchenItem(secondId, '계란', '7개')]);
+  const memory = new Map([[STATE, JSON.stringify(saved)]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  const before = memory.get(STATE);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  assert.equal(app.w.UMFKitchenState.getState().doors.freezer, true);
+  assert.equal(app.w.UMFKitchenState.getState().doors.fridge, true);
+  await app.click(shelfItem(app, firstId));
+  assert.equal(app.w.UMFKitchen.getMovingId(), firstId);
+  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-bottom"]');
+  assert.equal(app.w.UMFKitchenState.zoneFor(firstId), 'freezer-bottom');
+  assert.equal(app.w.UMFKitchenState.zoneFor(secondId), 'middle');
+  assert.equal(shelfItem(app, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
+  assert.equal(shelfItem(app, firstId).querySelector('.quantity-mini').textContent, '2개');
+  assert.equal(shelfItem(app, secondId).querySelector('.quantity-mini').textContent, '7개');
+  assert.equal(app.document.querySelector('[data-injected]'), null, 'An unusual persisted ID is data, not an HTML attribute');
+  const transfer = {
+    values: new Map(),
+    setData(type, value) { this.values.set(type, value); },
+    getData(type) { return this.values.get(type) || ''; }
+  };
+  const dispatchDrag = (target, type) => {
+    const event = new app.w.CustomEvent(type, { bubbles: true, cancelable: true });
+    event.dataTransfer = transfer; target.dispatchEvent(event); return event;
+  };
+  const dragged = shelfItem(app, secondId), destination = app.$('#umfKitchenScene .shelf[data-zone="top"]');
+  dispatchDrag(dragged, 'dragstart');
+  assert.equal(transfer.getData('text/plain'), secondId);
+  assert.equal(dispatchDrag(destination, 'dragover').defaultPrevented, true);
+  dispatchDrag(destination, 'drop'); await app.flush(); dispatchDrag(dragged, 'dragend');
+  assert.equal(app.w.UMFKitchenState.zoneFor(secondId), 'top');
+  assert.equal(app.w.UMFKitchenState.zoneFor(firstId), 'freezer-bottom');
+  assert.equal(shelfItem(app, secondId).closest('.shelf').dataset.zone, 'top');
+  assert.equal(memory.get(STATE), before, 'Only the separate kitchen view record changes when arranging');
+  assert.deepEqual(JSON.parse(memory.get(KITCHEN_VIEW)).placements, { [firstId]: 'freezer-bottom', [secondId]: 'top' });
+  app.close();
+  const reloaded = await boot({ memory }); t.after(() => reloaded.close());
+  assert.equal(shelfItem(reloaded, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
+  assert.equal(shelfItem(reloaded, secondId).closest('.shelf').dataset.zone, 'top');
+  assert.equal(memory.get(STATE), before);
+});
+
+test('kitchen overflow opens all inventory and lets the user move a lot hidden behind plus N', async t => {
+  const items = Array.from({ length: 8 }, (_, index) => kitchenItem('overflow-' + index, '계란', (index + 1) + '개'));
+  const app = await boot({ seed: { [STATE]: existingFridge(items) } }); t.after(() => app.close());
+  const before = app.memory.get(STATE), hiddenId = items[7].id;
+  await app.click('#all');
+  assert.equal(app.document.querySelectorAll('#list .row').length, 6);
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  const more = app.$('#umfKitchenScene .shelf[data-zone="middle"] .shelf-more');
+  assert.equal(more.hidden, false); assert.equal(more.textContent, '+6');
+  assert.equal(app.document.querySelectorAll('#umfKitchenScene .shelf[data-zone="middle"] .fridge-food').length, 2);
+  await app.click(more);
+  assertKitchenPage(app, 'home');
+  assert.equal(app.document.querySelectorAll('#list .row').length, items.length);
+  assert.equal(app.document.activeElement, app.$('#inventoryTitle'));
+  const row = [...app.document.querySelectorAll('#list .row')].find(node => node.dataset.id === hiddenId);
+  assert.ok(row);
+  const arrange = row.querySelector('[data-kitchen-arrange]');
+  assert.ok(arrange, 'Overflow stock has an actionable placement control in the real inventory list');
+  await app.click(arrange);
+  assert.equal(app.w.UMFKitchen.getOrganizing(), true);
+  assert.equal(app.w.UMFKitchen.getMovingId(), hiddenId);
+  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="pantry"]');
+  assert.equal(shelfItem(app, hiddenId).closest('.shelf').dataset.zone, 'pantry');
+  assert.equal(shelfItem(app, hiddenId).querySelector('.quantity-mini').textContent, '8개');
+  assert.equal(app.w.UMFKitchenState.zoneFor(items[0].id), 'middle');
+  assert.equal(app.memory.get(STATE), before);
+});
+
+test('kitchen hero follows the selected recipe and opens its live detail instead of a separate recommendation', async t => {
+  const app = await readyRice(t);
+  await app.click('.nav-btn[data-kitchen-page="recipes"]');
+  const other = app.w.UMFRecipes.catalog.find(recipe => recipe.name !== '계란 볶음밥');
+  await app.selectRecipe(other.name);
+  assertKitchenPage(app, 'recipes');
+  assert.equal(app.$('#umfKitchenHero .recipe-title').textContent, other.name);
+  assert.equal(app.$('#umfKitchenHero').dataset.recipe, other.name);
+  assert.equal(app.$('#umfKitchenHero .today-dish').getAttribute('aria-label'), other.name + ' 재료를 표현한 일러스트');
+  assert.equal(app.$('#umfSelectedName').textContent, other.name);
+  await app.click('.nav-btn[data-kitchen-page="home"]');
+  await app.click('#umfKitchenHero [data-action="recipe"]');
+  assertKitchenPage(app, 'recipes');
+  assert.equal(app.w.UMFRecipes.getSelected().recipe.name, other.name);
+  assert.equal(app.$('#umfRecipeDetail').classList.contains('on'), true);
+  assert.match(app.$('#umfRecipeDetail').textContent, new RegExp(other.name));
+  await app.click('.nav-btn[data-kitchen-page="home"]');
+  await app.click('#umfKitchenHero [data-action="shuffle"]');
+  const shuffled = app.w.UMFRecipes.getSelected().recipe.name;
+  assert.notEqual(shuffled, other.name);
+  assert.equal(app.$('#umfKitchenHero .recipe-title').textContent, shuffled);
+});
+
+test('kitchen successful meal logging goes to the diary while an unavailable meal does not change pages', async t => {
+  const app = await readyRice(t);
+  const stock = JSON.stringify(app.w.UMFStore.getState().items);
+  await app.click('.nav-btn[data-kitchen-page="recipes"]');
+  await app.click('#umfLogBtn');
+  assertKitchenPage(app, 'diary');
+  assert.equal(app.w.UMFStore.getState().meals.length, 1);
+  assert.match(app.$('#umfMealList').textContent, /계란 볶음밥/);
+  assert.match(app.$('#umfMealFeedback').textContent, /기록했어요/);
+  assert.equal(JSON.stringify(app.w.UMFStore.getState().items), stock);
+  await app.click('.nav-btn[data-kitchen-page="recipes"]');
+  await app.w.UMFStore.updateAsync(state => { state.items.find(item => item.name === '달걀').quantity = '0개'; });
+  await app.flush(); app.advance(1000);
+  await app.w.UMFInsights.logSelected(); await app.flush();
+  assertKitchenPage(app, 'recipes');
+  assert.equal(app.w.UMFStore.getState().meals.length, 1);
+  assert.equal(app.$('#umfLogBtn').disabled, true);
+});
+
+test('kitchen preserves v5 records and sync settings without adding sample food, nutrition or prices', async t => {
+  const original = existingFridge([
+    kitchenItem('legacy-tofu', '두부', '1모', ''),
+    kitchenItem('legacy-herbs', '허브', '조금', '')
+  ], {
+    season: ['식용유', '굴소스'], pantry: ['오트밀'],
+    customSeason: ['굴소스'], customPantry: ['오트밀'],
+    meals: [{ id: 'legacy-meal', name: '어제 메뉴', ts: seedTime - 86400000, day: '2026-10-19' }],
+    favorites: ['계란 볶음밥']
+  });
+  const syncCode = 'UMF-012345678901234567890123456789012345';
+  const metadata = JSON.stringify({ code: syncCode, local: 'preserved-local', remote: 'preserved-remote' });
+  const raw = JSON.stringify(original);
+  const memory = new Map([[STATE, raw], ['use-me-first-sync-code-v1', syncCode], ['use-me-first-sync-meta-v2', metadata]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  const requests = app.requests.length;
+  assert.equal(memory.get(STATE), raw);
+  assert.equal(app.w.UMFStore.getState().items.length, original.items.length);
+  assert.equal(app.document.querySelectorAll('#umfKitchenScene .fridge-food').length, original.items.length);
+  assert.match(app.$('#umfKitchenScene').textContent, /1모/);
+  assert.match(app.$('#umfKitchenScene').textContent, /조금/);
+  assert.doesNotMatch(app.$('#umfHomePage').textContent, /샘플 체험 중|샘플 냉장고|내 냉장고로 시작/);
+  assert.doesNotMatch(app.$('#umfKitchenHero').textContent, /\d[\d,.]*\s*(?:kcal|원)/i);
+  assert.equal(app.w.UMFStore.getState().favorites[0], '계란 볶음밥');
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  await app.click(shelfItem(app, 'legacy-tofu'));
+  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-top"]');
+  assert.equal(memory.get(STATE), raw);
+  assert.equal(memory.get('use-me-first-sync-code-v1'), syncCode);
+  assert.equal(memory.get('use-me-first-sync-meta-v2'), metadata);
+  assert.equal(app.requests.length, requests, 'Door and placement changes do not start inventory synchronization');
+  assert.equal(app.w.UMFStore.getState().meals[0].day, '2026-10-19');
+  assert.equal(app.w.UMFStore.getState().meals[0].name, '어제 메뉴');
+  assert.equal(JSON.parse(memory.get(KITCHEN_VIEW)).placements['legacy-tofu'], 'freezer-top');
 });
