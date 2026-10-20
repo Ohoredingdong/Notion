@@ -20,9 +20,13 @@ on:
       - 'scripts/refine_stock_radar_v8.py'
       - 'scripts/publish_stock_opportunities.py'
       - 'scripts/install_stock_radar_v8.py'
-      - 'assets/stock-radar-v8.html'
-      - 'assets/stock-radar-v8.css'
-      - 'assets/stock-radar-v8.js'
+      - 'scripts/discover_stock_candidates_v9.py'
+      - 'scripts/run_stock_research_v9.py'
+      - 'scripts/curate_stock_decisions_v9.py'
+      - 'scripts/test_stock_discovery_v9.py'
+      - 'scripts/apply_stock_radar_v9.py'
+      - 'assets/stock-radar-v8.*'
+      - 'assets/stock-radar-v9.js'
       - '.github/workflows/update-stock-opportunities.yml'
 permissions:
   contents: write
@@ -32,7 +36,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,23 +46,28 @@ jobs:
           python-version: '3.12'
       - name: Install data and session readers
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.11.3' 'beautifulsoup4==4.14.3'
-      - name: Test risk, filing and date gates
+      - name: Test risk, filing, date and discovery gates
         run: |
           python scripts/test_stock_opportunities.py
           python scripts/test_stock_opportunity_filings.py
           python scripts/test_stock_opportunity_dates.py
-      - name: Fetch expanded universe
+          python scripts/test_stock_discovery_v9.py
+      - name: Discover and deeply collect real market candidates
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python scripts/update_stock_opportunities.py
+        run: python scripts/run_stock_research_v9.py
       - name: Re-fetch official filing and check accounting losses
         run: python scripts/finalize_stock_opportunities.py
-      - name: Reject stale fiscal metadata and balance values
-        run: python scripts/validate_stock_opportunity_dates.py
-      - name: Verify current UI sources
+      - name: Reject stale metadata and create explicit first choices
         run: |
+          python scripts/validate_stock_opportunity_dates.py
+          python scripts/curate_stock_decisions_v9.py
+      - name: Verify lighter UI and independent training separation
+        run: |
+          python scripts/apply_stock_radar_v9.py
           python scripts/refine_stock_radar_v8.py
           node --check assets/stock-radar-v8.js
+          node --check assets/stock-radar-v9.js
           python scripts/install_stock_radar_v8.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -72,11 +81,13 @@ jobs:
             stock-official-audit.json
             stock-radar-health.json
             scripts/*stock*opportunit*.py
+            scripts/*v9.py
             scripts/update_stock_decisions.py
             scripts/refine_stock_radar_v8.py
             scripts/install_stock_radar_v8.py
             scripts/install_stock_decision_ui.py
             scripts/install_stock_audit_ui.py
             assets/stock-radar-v8.*
-      - name: Publish on latest main without force push or raw value rewrites
+            assets/stock-radar-v9.js
+      - name: Publish current snapshot safely
         run: python scripts/publish_stock_opportunities.py
