@@ -1,7 +1,5 @@
-"""Collect decision inputs, then attach official publication metadata.
-
-An official publication proves the event exists, not its effect on price.
-No company announcement is automatically labelled bullish/bearish.
+"""Attach official publication metadata and actual audit-document provenance.
+Publication metadata is not a bullish/bearish catalyst verdict.
 """
 from pathlib import Path
 from datetime import datetime,timezone,timedelta
@@ -17,7 +15,6 @@ def fetch(url,params=None):
  try:
   with urllib.request.urlopen(request,timeout=15) as response:return response.read(2000000)
  except Exception as error:
-  # Never expose request query parameters: OpenDART keys are credentials.
   raise RuntimeError(type(error).__name__+': upstream unavailable') from None
 
 def feeds(url):
@@ -52,9 +49,23 @@ def filings(key,companies):
   out[symbol]=[{'title':x['report_nm'],'published':x['rcept_dt'],'url':'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='+x['rcept_no'],'source':'금융감독원 DART 공시목록','status':'official_filing_metadata_not_directional_catalyst'} for x in payload.get('list',[])[:3]]
  return out
 
+def attach_provenance(d,audit):
+ audits={r['symbol']:r for r in audit.get('companies',[])}
+ for r in d['companies']:
+  item=audits.get(r['symbol'],{});source=item.get('source') or {};doc=source.get('document') or {}
+  actual=doc.get('url') or next((f.get('source_url') for f in item.get('fields',[]) if f.get('source_url')),None)
+  if actual and str(actual).startswith('https://'):
+   proof=r.setdefault('official_history',{})
+   proof['source_url']=actual;proof['document_type']=source.get('kind','종류 확인 필요')
+   proof['source_fetched_at']=doc.get('fetched_at')
+   proof['source_note']='발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다.'
+   r.setdefault('sources',{})['official']=actual
+
+
 def main():
  core.main()
  p=Path('stock-decision-data.json');d=json.loads(p.read_text());by={r['symbol']:r for r in d['companies']}
+ attach_provenance(d,core.read('stock-official-audit.json',{}))
  for symbol,url in FEEDS.items():
   if symbol not in by:continue
   row=by[symbol]
@@ -72,6 +83,10 @@ def main():
  d['counts']['official_event_links']=sum(len(r.get('official_events',[])) for r in d['companies'])
  d['events_checked_at']=datetime.now(timezone.utc).isoformat()
  p.write_text(json.dumps(core.clean(d),ensure_ascii=False,indent=2,allow_nan=False)+'\n')
- print('Official event links',d['counts']['official_event_links'])
+ summary=core.read('stock-decision-run-summary.json',{});summary['counts']=d['counts']
+ summary['official_proof_links']=sum(bool(r.get('sources',{}).get('official')) for r in d['companies'])
+ summary['events_checked_at']=d['events_checked_at']
+ Path('stock-decision-run-summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+ print('Official event links',d['counts']['official_event_links'],'historical proof links',summary['official_proof_links'])
 
 if __name__=='__main__':main()
