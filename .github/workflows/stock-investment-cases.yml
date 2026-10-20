@@ -40,7 +40,8 @@ jobs:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: python scripts/build_stock_investment_cases.py
       - name: Publish evidence snapshot
-        run: python scripts/publish_widget_data.py --message 'research: publish explicit investment reasoning with authenticated evidence' stock-investment-cases.json stock-investment-cases-summary.json
+        run: >-
+          python scripts/publish_widget_data.py --message 'research: publish explicit investment reasoning with authenticated evidence' stock-investment-cases.json stock-investment-cases-summary.json
       - name: Install integrated verdict view when available
         run: |
           if [ -f scripts/publish_stock_investment_cases.py ] && [ -f scripts/install_stock_investment_cases.py ] && [ -f assets/stock-investment-cases.js ]; then
