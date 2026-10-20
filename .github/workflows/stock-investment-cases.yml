@@ -1,0 +1,65 @@
+name: Stock Investment Cases
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Update Stock Opportunities']
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '17 8,23 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_stock_investment_cases.py'
+      - 'scripts/test_stock_investment_cases.py'
+      - 'scripts/install_stock_investment_cases.py'
+      - 'scripts/publish_stock_investment_cases.py'
+      - 'assets/stock-investment-cases.js'
+      - '.github/workflows/stock-investment-cases.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-investment-cases
+  cancel-in-progress: false
+jobs:
+  cases:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test decisions and financial-period parsing
+        run: |
+          if [ -f scripts/test_stock_investment_cases.py ]; then python scripts/test_stock_investment_cases.py; fi
+      - name: Authenticate and fetch source evidence without exposing keys
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/build_stock_investment_cases.py
+      - name: Publish evidence snapshot
+        run: python scripts/publish_widget_data.py --message 'research: publish explicit investment reasoning with authenticated evidence' stock-investment-cases.json stock-investment-cases-summary.json
+      - name: Install integrated verdict view when available
+        run: |
+          if [ -f scripts/publish_stock_investment_cases.py ] && [ -f scripts/install_stock_investment_cases.py ] && [ -f assets/stock-investment-cases.js ]; then
+            node --check assets/stock-investment-cases.js
+            python scripts/publish_stock_investment_cases.py
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: investment-cases-diagnostics
+          retention-days: 2
+          path: |
+            stock-investment-cases*.json
+            stock-opportunity-data.json
+            stock-official-audit.json
+            stock-market-groups.json
+            stock-value-radar.html
+            scripts/*stock_investment_cases.py
+            assets/stock-investment-cases.js
+            assets/stock-radar-v8.*
+            assets/stock-radar-v9.js
+            assets/stock-market-groups.js
