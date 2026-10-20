@@ -1,0 +1,38 @@
+name: Test Stock Decision UI
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/test_stock_decision_browser.py'
+      - '.github/workflows/test-stock-decisions-ui.yml'
+  workflow_run:
+    workflows: ['Update Stock Decisions']
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: stock-decision-ui-qa
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real browser
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Test full widget interaction and layout
+        run: python scripts/test_stock_decision_browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-decision-browser-tests
+          path: decision-browser-tests/
+          retention-days: 3
