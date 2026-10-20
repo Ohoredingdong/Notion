@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko" data-radar-version="8">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark"><meta name="robots" content="noindex,nofollow">
+<title>투자 레이더 · 발견에서 판단까지</title>
+<link rel="stylesheet" href="./assets/stock-radar-v8.css?v=8.0">
+<script src="./assets/stock-radar-v8.js?v=8.0" defer></script>
+</head>
+<body>
+<div class="app">
+<header class="header">
+ <div class="brand"><div class="app-icon" aria-hidden="true">↗</div><div><div class="eyebrow">MY INVESTMENT RADAR</div><h1>투자 레이더</h1><p>좋은 기업보다, 내게 맞는 기회를.</p></div></div>
+ <button id="reload" class="icon-button" type="button">↻ <span>새로고침</span></button>
+</header>
+<div class="notice" id="liveStatus" role="status" aria-live="polite">실제 수집 결과를 확인하고 있습니다.</div>
+<nav class="tabs" role="tablist" aria-label="주요 화면"><button id="tab-discover" data-view="discover" role="tab" aria-selected="true" class="active">발견</button><button id="tab-detail" data-view="detail" role="tab" aria-selected="false">기업 분석</button><button id="tab-system" data-view="system" role="tab" aria-selected="false">검증 · 설정</button></nav>
+<main>
+<section id="view-discover" class="view" role="tabpanel" aria-labelledby="tab-discover">
+ <div class="page-heading"><div><p class="eyebrow">A CLEARER NEXT STEP</p><h2>무엇부터 살펴볼까요?</h2></div><div class="segmented" aria-label="투자 관점"><button class="active" data-mode="long">장기 가치</button><button data-mode="short">단기 기회</button></div></div>
+ <div class="summary-grid" id="summary"></div>
+ <div class="guide" id="actionGuide"><strong>가격 매력과 매수 준비는 다릅니다.</strong><span>점수가 높아도 공식 대조·위험 조건이 남아 있으면 분리해서 표시합니다.</span></div>
+ <div class="filterbar"><input id="search" type="search" placeholder="기업명 또는 종목코드" aria-label="기업 검색"><select id="market" aria-label="시장"><option value="ALL">한국 + 미국</option><option value="KR">한국</option><option value="US">미국</option></select><select id="size" aria-label="규모"><option value="ALL">모든 규모</option><option value="smid">중소형만</option><option value="big">대형·초대형</option><option value="expanded">새로 추가한 기업</option></select></div>
+ <div class="chips" id="filters" aria-label="조건 필터"><button data-filter="all" class="active">전체</button><button data-filter="potential">가격·실적 후보</button><button data-filter="ready">매수 조건 충족</button><button data-filter="price">가격 대기</button><button data-filter="risk">위험 확인</button><button data-filter="star">★ 관심</button></div>
+ <div class="section-heading"><h3 id="listTitle">분석 우선순위</h3><span id="listCount"></span></div>
+ <p class="caption" id="rankNote">후보 내부의 조사 순서입니다. 점수는 성공확률·내재가치가 아닙니다.</p>
+ <div id="cards" class="cards"><div class="empty">확인 중…</div></div>
+ <button type="button" class="more" id="more" hidden>더 보기</button>
+</section>
+<section id="view-detail" class="view" role="tabpanel" aria-labelledby="tab-detail" hidden>
+ <div class="detail-select"><button class="text-button" id="back">‹ 목록으로</button><select id="companySelect" aria-label="분석할 기업 선택"></select></div>
+ <div id="detailBody"><div class="empty">발견 화면에서 기업을 선택하세요.</div></div>
+</section>
+<section id="view-system" class="view" role="tabpanel" aria-labelledby="tab-system" hidden>
+ <div class="page-heading"><div><p class="eyebrow">DATA, NOT PROMISES</p><h2>무엇을 확인했나요?</h2></div></div>
+ <div id="systemBody"></div>
+ <div class="panel"><h3>훈련은 별도 위젯에서</h3><p>이 레이더는 자료 비교와 투자 판단용입니다. 모의 매매나 학습 입력란은 넣지 않았습니다.</p><a class="source-link" href="./stock-paper-investing.html" target="_blank" rel="noopener noreferrer">주식 모의투자 훈련 열기 ↗</a></div>
+</section>
+</main>
+<footer><strong>숫자로 설명하고, 모르는 것은 구분합니다.</strong><p>확정 실적·애널리스트 전망·가격 조건은 서로 다릅니다. 목표가와 점수는 수익 보장이 아니며, 주문을 실행하지 않습니다. 장기 사용·공개 재배포·상품화에는 데이터 제공처 이용 권한을 별도로 확인해야 합니다.</p></footer>
+</div>
+</body></html>
