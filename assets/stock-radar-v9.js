@@ -15,7 +15,7 @@ function filteredBrief(){
  const now=choose(['ready','verify'],3),wait=choose(['price'],2),name=window.RadarMarkets.labels[selectedMarket]||selectedMarket;
  return {...original,now,wait,summary:name+' 분류 안에서 기존 판단 기준을 통과한 후보입니다. '+(now.length?'공식 대조 여부와 남은 조건을 확인하세요.':'현재 가격·실적 우선 후보가 없습니다. 가격 대기 후보가 있으면 아래에 표시합니다.')};
 }
-function brief(){const root=$('#todayBrief');if(!root)return;const b=filteredBrief();if(paused){root.innerHTML='<div class="brief-warning">최신 자료를 확인하기 전에는 우선 매수 후보를 표시하지 않습니다.</div>';return}
+function brief(){const root=$('#todayBrief');if(!root)return;if(mode==='long'&&!paused&&window.StockInvestmentCase){root.innerHTML=window.StockInvestmentCase.brief(current,typeof selectedMarket==='undefined'?'ALL':selectedMarket);return;}const b=filteredBrief();if(paused){root.innerHTML='<div class="brief-warning">최신 자료를 확인하기 전에는 우선 매수 후보를 표시하지 않습니다.</div>';return}
 if(mode==='short'){
  const ready=(current.companies||[]).filter(r=>r.status==='current'&&r.short?.state==='conditional'&&r.period_integrity?.status==='ok'&&window.RadarMarkets.match(r,selectedMarket));
  root.innerHTML='<div class="brief-heading"><h3>단기: 지금 조건을 충족했나요?</h3><span>'+ready.length+'개</span></div><p class="brief-explain">'+(ready.length?'아래 기업이 기존 기술적 조건을 통과했습니다. 뉴스 효과와 실제 체결 가능성은 별도 확인이 필요합니다.':'현재 완료된 거래일 자료에서는 돌파·거래량·손익비 조건을 모두 충족한 기업이 없습니다. 장기 기업가치 후보와 단기 진입 신호는 구분합니다.')+'</p>'+ready.slice(0,3).map(r=>'<button class="brief-open" data-brief="'+esc(r.symbol)+'">'+esc(r.name)+' · '+cash(r.price,r.currency)+' · 조건 보기 ›</button>').join('');return;
