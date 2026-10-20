@@ -43,11 +43,12 @@ jobs:
           python-version: '3.12'
       - name: Install bounded readers
         run: pip install 'beautifulsoup4==4.14.3' 'yfinance==0.2.66'
-      - name: Test decisions, macro parsers and decision guide
+      - name: Test decisions, macro parsers and strict due diligence
         run: |
           python scripts/test_stock_investment_cases.py
           python -m unittest scripts.test_market_context -v
           python -m unittest scripts.test_stock_decision_guide -v
+          python scripts/test_stock_strict_green.py
       - name: Authenticate and fetch source evidence without exposing keys
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -56,15 +57,18 @@ jobs:
           python scripts/check_stock_investment_cases.py
       - name: Fetch current rates, Treasury yield, inflation, FX and indexes
         run: python scripts/run_market_context.py
+      - name: Require all strict checks before generating the visible opinion
+        run: python scripts/stock_strict_green.py
       - name: Build market-to-company decision path
         run: python scripts/build_stock_decision_guide.py
-      - name: Publish evidence and decision-guide snapshots
+      - name: Publish source-bound opinions and proof
         run: >-
-          python scripts/publish_widget_data.py --message 'research: publish investment evidence, macro context and full decision path' stock-investment-cases.json stock-investment-cases-summary.json stock-market-context.json stock-decision-guide.json stock-decision-guide-summary.json
+          python scripts/publish_widget_data.py --message 'research: publish strictly gated investment evidence and macro context' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json stock-market-context.json stock-decision-guide.json stock-decision-guide-summary.json
       - name: Install integrated verdict and decision-guide view
         run: |
           node --check assets/stock-investment-cases.js
           node --check assets/stock-decision-guide.js
+          node --check assets/stock-green-review.js
           python scripts/publish_stock_investment_cases.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -73,6 +77,7 @@ jobs:
           retention-days: 2
           path: |
             stock-investment-cases*.json
+            stock-green-*.json
             stock-market-context.json
             stock-decision-guide*.json
             stock-opportunity-data.json
@@ -80,6 +85,7 @@ jobs:
             stock-market-groups.json
             stock-value-radar.html
             scripts/*stock_investment_cases.py
+            scripts/*strict_green.py
             scripts/update_market_context.py
             scripts/run_market_context.py
             scripts/test_market_context.py
@@ -87,6 +93,7 @@ jobs:
             scripts/test_stock_decision_guide.py
             scripts/install_stock_decision_guide.py
             assets/stock-investment-cases.js
+            assets/stock-green-review.js
             assets/stock-decision-guide.*
             assets/stock-radar-v8.*
             assets/stock-radar-v9.js
