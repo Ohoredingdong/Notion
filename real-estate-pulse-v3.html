@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
-<title>Real Estate Pulse v2</title><link rel="stylesheet" href="./assets/life-town-v2.css">
+<title>Real Estate Pulse</title><link rel="stylesheet" href="./assets/life-town-v2.css">
 <style>
 :root{--panel:#fff;--soft:#f7f7f8;--line:#e5e5e8;--text:#111113;--sub:#6e6e73;--muted:#9a9aa0;--blue:#007aff;--red:#d92d27;--green:#248a3d;--shadow:0 8px 22px rgba(0,0,0,.035),0 1px 2px rgba(0,0,0,.02)}
 html[data-theme="dark"],html[data-lt-theme="dark"]{--panel:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e8e93;--blue:#0a84ff;--red:#ff453a;--green:#30d158;--shadow:none}
@@ -19,10 +19,27 @@ html[data-theme="dark"],html[data-lt-theme="dark"]{--panel:#1c1c1e;--soft:#2c2c2
 <div class="summary"><span id="metric">매매 주간</span><strong class="s-up" id="upCount">↑ —</strong><strong class="s-down" id="downCount">↓ —</strong><strong id="flatCount">— —</strong></div>
 <section class="grid" id="grid"></section>
 <footer class="footer"><span><i class="dot"></i>한국부동산원 · 한국은행</span><span id="asOf">기준일 —</span></footer>
-</main></div>
+<div id="refreshStatus" role="status" aria-live="polite" style="padding:8px 13px;border-top:1px solid var(--line);font-size:9px;line-height:1.5;color:var(--muted)">공식 자료를 확인하고 있습니다.</div></main></div>
 <script>
 let mode='sale',data=null;const $=s=>document.querySelector(s);const fmt=v=>`${Number(v)>0?'+':''}${Number(v).toFixed(2)}%`;const cls=v=>Number(v)>0?'up':Number(v)<0?'down':'flat';const arrow=v=>Number(v)>0?'▲':Number(v)<0?'▼':'•';const date=s=>s?String(s).replaceAll('-','.'):'—';
-function render(){if(!data)return;const vals=data.regions.map(r=>Number(r[mode]));$('#grid').innerHTML=data.regions.map(r=>{const v=Number(r[mode]);return `<div class="item"><span class="name">${r.name}</span><span class="value ${cls(v)}"><span class="arrow">${arrow(v)}</span>${fmt(v)}</span></div>`}).join('');$('#metric').textContent=mode==='sale'?'매매 주간':'전세 주간';$('#upCount').textContent=`↑ ${vals.filter(v=>v>0).length}`;$('#downCount').textContent=`↓ ${vals.filter(v=>v<0).length}`;$('#flatCount').textContent=`— ${vals.filter(v=>v===0).length}`}
+function render(){if(!data)return;const vals=data.regions.map(r=>Number(r[mode]));$('#grid').replaceChildren(...data.regions.map(r=>{const v=Number(r[mode]),row=document.createElement('div'),name=document.createElement('span'),value=document.createElement('span');row.className='item';name.className='name';name.textContent=r.name;value.className='value '+cls(v);value.textContent=arrow(v)+' '+fmt(v);row.append(name,value);return row}));$('#metric').textContent=mode==='sale'?'매매 주간':'전세 주간';$('#upCount').textContent=`↑ ${vals.filter(v=>v>0).length}`;$('#downCount').textContent=`↓ ${vals.filter(v=>v<0).length}`;$('#flatCount').textContent=`— ${vals.filter(v=>v===0).length}`}
 document.querySelectorAll('.segment button').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('.segment button').forEach(x=>x.classList.toggle('active',x===b));render()});
-async function load(){try{const r=await fetch('./real-estate-pulse-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;data=await r.json();$('#baseRate').textContent=`${Number(data.baseRate.value).toFixed(2)}%`;$('#rateDate').textContent=date(data.baseRate.changedAt);$('#asOf').textContent=`${date(data.asOf)} 기준`;render()}catch{$('#grid').innerHTML='<div class="item" style="grid-column:1/-1"><span class="name">데이터를 불러오지 못했습니다.</span></div>'}}load();
+async function json(path){const response=await fetch(path+'?t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()}
+async function load(){
+ try{
+  const [result,healthResult]=await Promise.allSettled([json('./real-estate-pulse-data.json'),json('./real-estate-pulse-health.json')]);
+  if(result.status!=='fulfilled')throw result.reason;
+  const next=result.value;
+  if(!Array.isArray(next.regions)||next.regions.length!==16||next.regions.some(r=>!Number.isFinite(r.sale)||!Number.isFinite(r.lease))||!Number.isFinite(next.baseRate?.value))throw new Error('필수 통계 누락');
+  data=next;$('#baseRate').textContent=fmt(data.baseRate.value).replace('+','');$('#rateDate').textContent=date(data.baseRate.changedAt)+' 변경';$('#asOf').textContent=date(data.asOf)+' 기준';render();
+  const health=healthResult.status==='fulfilled'?healthResult.value:null;
+  const checked=new Date(health?.checked_at),age=Date.now()-checked.getTime(),publicationAge=Date.now()-new Date(data.published+'T00:00:00+09:00').getTime();
+  const stale=!health||health.status!=='ok'||!Number.isFinite(age)||age>72*3600000||publicationAge>12*86400000;
+  const status=$('#refreshStatus');status.replaceChildren();status.style.color=stale?'#b06512':'var(--muted)';
+  const source=document.createElement('a');source.textContent='공식 발표 '+date(data.published);source.href=data.releaseUrl;source.target='_blank';source.rel='noopener noreferrer';source.style.color='inherit';
+  status.append(source,document.createTextNode(' · '+(stale?'갱신 확인 지연 · 마지막 검증 자료 표시':'16개 지역 검증 · 매일 발표 확인')));
+  if(Number.isFinite(checked.getTime()))status.append(document.createElement('br'),document.createTextNode('확인 '+checked.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' KST'));
+ }catch(error){$('#refreshStatus').textContent=data?'새로 불러오지 못했습니다. 마지막 표시 자료를 유지합니다.':'공식 자료를 불러오지 못했습니다. 잠시 후 다시 시도합니다.';$('#refreshStatus').style.color='#b06512';}
+}
+load();setInterval(load,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 </script><script src="./assets/life-town-controls-v2.js"></script></body></html>

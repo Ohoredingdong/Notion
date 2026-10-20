@@ -2,9 +2,9 @@
   const KEY='use-me-first-v4',SK='use-me-first-seasonings-v1',PK='use-me-first-pantry-v1';
   const IMG={
     '계란 볶음밥':'assets/use-me-first/kimchi-fried-rice.webp?v=10',
-    '두부 된장국':'assets/use-me-first/kimchi-dubu-jjigae-ai.webp?v=10',
+    '두부 된장국':'assets/use-me-first/kimchi-tofu-stew.svg?v=20261020',
     '닭가슴살 샐러드':'assets/use-me-first/chicken-onion-soy-stirfry.webp?v=10',
-    '애호박 계란전':'assets/use-me-first/egg-steam.webp?v=10',
+    '애호박 계란전':'assets/use-me-first/egg-steam.svg?v=20261020',
     '요거트 계란 샐러드':'assets/use-me-first/gyeran-jjim-ai.webp?v=10',
     '두부 스테이크':'assets/use-me-first/dubu-buchim-ai.webp?v=10',
     '버섯 두부볶음':'assets/use-me-first/dubu-kimchi.webp?v=10',
@@ -29,27 +29,30 @@
   function renderSelection(r,st){
     document.querySelectorAll('#umfRecipeGrid .umf-menu-card').forEach(x=>x.classList.toggle('selected',x.dataset.name===r.name));
     const u=actual(r,st),chips=document.getElementById('umfSelectionChips'),detail=document.getElementById('umfRecipeDetail');
+    const name=document.getElementById('umfSelectedName');if(name)name.textContent=r.name;
+    const log=document.getElementById('umfLogBtn');if(log)log.disabled=missing(r,st).length>0;
     if(chips)chips.innerHTML=u.length?u.map(x=>`<span class="umf-selection-chip">${esc(x)}</span>`).join(''):'<span class="umf-selection-chip">냉장고 재료 확인</span>';
     if(detail){detail.innerHTML=`<b>${esc(r.name)}</b><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;detail.classList.remove('on')}
   }
   function render(){
     const grid=document.getElementById('umfRecipeGrid');if(!grid)return;
-    const st=state(),list=C.map(r=>({...r,missing:missing(r,st)})),av=list.filter(r=>!r.missing.length);
+    const selected=grid.querySelector('.selected')?.dataset.name;
+    const st=state(),list=C.map(r=>({...r,missing:missing(r,st)})).sort((a,b)=>Boolean(a.missing.length)-Boolean(b.missing.length)),av=list.filter(r=>!r.missing.length);
     const count=document.getElementById('umfAvailableCount');if(count)count.textContent=`지금 가능 ${av.length} / 전체 ${list.length}`;
     grid.replaceChildren(...list.map((r,i)=>{
-      const el=document.createElement('article');el.className='umf-menu-card'+(r.missing.length?' missing':'');el.dataset.name=r.name;
+      const el=document.createElement('article');el.className='umf-menu-card'+(r.missing.length?' missing':'');el.dataset.name=r.name;el.dataset.missing=JSON.stringify(r.missing);el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label',r.name+' 선택');
       const src=IMG[r.name],priority=i<3?'eager':'lazy',fetchPriority=i===0?'high':'low';
-      el.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span><img src="${src}" alt="${esc(r.name)}" loading="${priority}" fetchpriority="${fetchPriority}" decoding="async"><div class="umf-menu-fallback" style="display:none">이미지를 준비 중이에요<br>${esc(r.name)}</div>${r.missing.length?`<div class="umf-menu-missing">필요 · ${esc(r.missing.slice(0,2).join(' · '))}</div>`:''}</div><div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
+      el.innerHTML=`<div class="umf-menu-photo"><span class="umf-menu-num">추천 ${i+1}</span><img src="${src}" alt="요리 참고 이미지" loading="${priority}" fetchpriority="${fetchPriority}" decoding="async"><span class="umf-photo-note">참고 이미지</span><div class="umf-menu-fallback" style="display:none">이미지를 준비 중이에요<br>${esc(r.name)}</div></div>${r.missing.length?`<div class="umf-menu-missing" title="${esc(r.missing.join(' · '))}">필요 · ${esc(r.missing.slice(0,2).join(' · '))}${r.missing.length>2?` 외 ${r.missing.length-2}개`:''}</div>`:''}<div class="umf-menu-body"><div class="umf-menu-name">${esc(r.name)}</div><div class="umf-menu-desc">${esc(r.desc)}</div><div class="umf-menu-meta"><span>${esc(r.time)}</span><span>${esc(r.level)}</span></div></div>`;
       const img=el.querySelector('img'),fb=el.querySelector('.umf-menu-fallback');
       img.onerror=()=>{img.style.display='none';fb.style.display='grid'};img.onload=()=>{img.style.display='block';fb.style.display='none'};
-      if(!r.missing.length)el.onclick=()=>renderSelection(r,st);
+      el.onclick=()=>renderSelection(r,st);el.onkeydown=e=>{if(e.target===el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();renderSelection(r,st)}};
       return el;
     }));
-    if(av.length)renderSelection(av[0],st);else{const chips=document.getElementById('umfSelectionChips'),detail=document.getElementById('umfRecipeDetail');if(chips)chips.innerHTML='<span class="umf-selection-chip">기본 양념/상비 재료를 체크하면 메뉴가 열려요</span>';if(detail)detail.innerHTML=''}
+    renderSelection(list.find(r=>r.name===selected)||av[0]||list[0],st);
   }
   const rb=document.getElementById('umfRecipeBtn');if(rb)rb.onclick=()=>document.getElementById('umfRecipeDetail')?.classList.toggle('on');
-  const sb=document.getElementById('umfShuffleBtn');if(sb)sb.onclick=()=>{const cards=[...document.querySelectorAll('#umfRecipeGrid .umf-menu-card:not(.missing)')];if(!cards.length)return;const i=Math.max(0,cards.findIndex(x=>x.classList.contains('selected')));cards[(i+1)%cards.length].click()};
-  const listNode=document.getElementById('list');if(listNode)new MutationObserver(()=>queueMicrotask(render)).observe(listNode,{childList:true,subtree:true});
+  const sb=document.getElementById('umfShuffleBtn');if(sb)sb.onclick=()=>{const cards=[...document.querySelectorAll('#umfRecipeGrid .umf-menu-card')];if(!cards.length)return;const i=Math.max(0,cards.findIndex(x=>x.classList.contains('selected')));cards[(i+1)%cards.length].click()};
+  const listNode=document.getElementById('list');if(listNode)new MutationObserver(()=>queueMicrotask(render)).observe(listNode,{childList:true});
   document.addEventListener('click',e=>{if(e.target.closest('.tog,.tinyAdd,.add,.rm,.tab'))setTimeout(render,40)});
   window.addEventListener('storage',render);render();
 })();

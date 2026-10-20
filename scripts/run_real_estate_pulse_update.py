@@ -11,13 +11,13 @@ from zoneinfo import ZoneInfo
 import update_real_estate_pulse as updater
 
 OUT = Path("real-estate-pulse-data.json")
+HEALTH = Path("real-estate-pulse-health.json")
 EXPECTED_REGIONS = [
     "서울", "부산", "대구", "인천", "대전", "울산", "전남광주", "세종",
     "경기", "강원", "충북", "충남", "전북", "경북", "경남", "제주",
 ]
 
-# The legacy parser was written before the 2026-07-01 Gwangju/Jeonnam integration.
-# Reuse its official R-ONE/PDF parsing logic with the current 16-region geography.
+# Match the 16-region geography in the current official REB release.
 updater.REGIONS = EXPECTED_REGIONS
 
 
@@ -63,6 +63,8 @@ def validate_dataset(data, require_verification=True):
     published = parse_iso_date(data.get("published"), "published")
     if published < as_of:
         raise RuntimeError("published cannot be earlier than asOf")
+    if published > datetime.now(ZoneInfo("Asia/Seoul")).date():
+        raise RuntimeError("published cannot be in the future")
 
     regions = data.get("regions")
     if not isinstance(regions, list):
@@ -144,45 +146,28 @@ def add_verification(data):
 def refresh():
     original_text = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
     original = json.loads(original_text) if original_text else {}
-    error = None
-
-    for attempt in range(2):
-        try:
-            updater.main()
-            error = None
-            break
-        except Exception as exc:
-            error = exc
-            if original_text:
-                OUT.write_text(original_text, encoding="utf-8")
-            print(f"Official REB refresh attempt {attempt + 1}/2 failed: {exc}")
-            if attempt == 0:
-                time.sleep(8)
-
-    if error is not None:
-        print("Official source unavailable. Keeping the last verified dataset unchanged.")
-        return False
-
-    data = json.loads(OUT.read_text(encoding="utf-8"))
-    validate_dataset(data, require_verification=False)
-
-    if original.get("asOf"):
-        old_as_of = parse_iso_date(original.get("asOf"), "previous asOf")
-        new_as_of = parse_iso_date(data.get("asOf"), "new asOf")
-        if new_as_of < old_as_of:
-            if original_text:
-                OUT.write_text(original_text, encoding="utf-8")
+    checked = datetime.now(ZoneInfo("Asia/Seoul")).isoformat(timespec="seconds")
+    try:
+        data = updater.collect()
+        validate_dataset(data, require_verification=False)
+        if original.get("asOf") and data["asOf"] < original["asOf"]:
             raise RuntimeError("refusing to replace data with an older official release")
-
-    if original and comparable(original) == comparable(data):
-        OUT.write_text(original_text, encoding="utf-8")
-        print("Latest official dataset is already published; no file change.")
+        add_verification(data)
+        validate_dataset(data, require_verification=True)
+        # All collection and validation finish before touching the last good file.
+        temporary = OUT.with_suffix(".json.tmp")
+        temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(OUT)
+        health = {"checked_at": checked, "status": "ok", "asOf": data["asOf"],
+                  "published": data["published"], "sourceUrl": data["releaseUrl"]}
+        print(f"Prepared verified 16-region dataset for {data['asOf']}.")
+    except Exception as exc:
+        health = {"checked_at": checked, "status": "stale" if original else "error",
+                  "asOf": original.get("asOf"), "error": str(exc)[:500]}
+        print(f"Official REB refresh failed; previous dataset preserved: {exc}")
+        HEALTH.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return False
-
-    add_verification(data)
-    validate_dataset(data, require_verification=True)
-    OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Prepared verified 16-region dataset for {data['asOf']}.")
+    HEALTH.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return True
 
 
@@ -197,7 +182,8 @@ def main():
         print("Verified: 16 regions / 32 current values / official provenance / integrity hash.")
         return
 
-    refresh()
+    if not refresh():
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

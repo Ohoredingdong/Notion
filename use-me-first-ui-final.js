@@ -33,14 +33,14 @@
   function score(regex,target){const p=textPool();let n=0;for(const r of regex)if(r.test(p))n++;return Math.min(100,Math.round(n/target*100))}
   function ringGradient(vals){const e=[['protein','#75aef5'],['veg','#7ec78a'],['carb','#ffd166'],['ferment','#d7d9de']],sum=e.reduce((a,[k])=>a+Math.max(vals[k],1),0)||4;let cur=0,parts=[];for(const[k,c]of e){const pct=Math.max(vals[k],1)/sum*100;parts.push(`${c} ${cur.toFixed(1)}% ${(cur+pct).toFixed(1)}%`);cur+=pct}return`conic-gradient(${parts.join(',')})`}
   function renderBalance(){
-    const vals={protein:score([/계란|달걀/,/닭|고기|참치|두부/,/우유|요거트|치즈/],3),veg:score([/시금치|상추|배추|김치|양파|대파|애호박|토마토|버섯|달래|깻잎|당근/],4),carb:score([/밥|쌀/,/면|라면/,/식빵|빵|감자|고구마/],2),ferment:score([/김치|된장|고추장/,/요거트|요구르트|우유|치즈/],2)};
+    const vals={protein:score([/계란|달걀/,/닭|고기|참치|두부/,/우유|요거트|치즈/],3),veg:score([/시금치/,/상추/,/배추|김치/,/양파/,/대파/,/애호박/,/토마토/,/버섯/,/달래/,/깻잎/,/당근/],4),carb:score([/밥|쌀/,/면|라면/,/식빵|빵|감자|고구마/],2),ferment:score([/김치|된장|고추장/,/요거트|요구르트|우유|치즈/],2)};
     for(const[k,v]of Object.entries(vals)){const bar=$(`[data-balance="${k}"]`),txt=$(`[data-balance-pct="${k}"]`);if(bar)bar.style.width=v+'%';if(txt)txt.textContent=v+'%'}
     $('.umf-insights .insight-card:first-child')?.style.setProperty('--ring',ringGradient(vals));
-    const note=$('#umfBalanceNote');if(note){const low=Object.entries(vals).sort((a,b)=>a[1]-b[1])[0],labels={protein:'단백질',veg:'채소',carb:'탄수화물',ferment:'발효·유제품'};note.innerHTML=`<span class="v10-leaf">${icons.leaf}</span>등록 재료 기준으로 보면 ${labels[low[0]]} 구성이 가장 약해요.`}
+    const note=$('#umfBalanceNote');if(note){const low=Object.entries(vals).sort((a,b)=>a[1]-b[1])[0],labels={protein:'단백질',veg:'채소',carb:'탄수화물',ferment:'발효·유제품'};note.innerHTML=`<span class="v10-leaf">${icons.leaf}</span>등록 재료 중 ${labels[low[0]]} 종류가 가장 적어요. 재료 종류를 세는 참고 지표이며 섭취량이나 영양 분석은 아니에요.`}
   }
-  function parseMissing(){const out=new Map;$$('#umfRecipeGrid .umf-menu-missing').forEach(el=>String(el.textContent||'').replace(/^필요\s*·\s*/,'').split('·').map(x=>x.trim()).filter(Boolean).forEach(x=>out.set(x,(out.get(x)||0)+1)));return[...out.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4)}
+  function parseMissing(){const out=new Map;$$('#umfRecipeGrid .umf-menu-card').forEach(el=>{let names=[];try{names=JSON.parse(el.dataset.missing||'[]')}catch{}names.forEach(x=>out.set(x,(out.get(x)||0)+1))});return[...out.entries()].sort((a,b)=>b[1]-a[1])}
   function renderMissing(){
-    const box=$('#umfMissingList');if(!box)return;const a=parseMissing();
+    const box=$('#umfMissingList');if(!box)return;const a=parseMissing().slice(0,4);
     box.innerHTML=a.length?a.map(([name,count])=>`<div class="missing-item"><div class="v9-missing-main"><span class="v9-missing-ico">${ingredientEmoji(name)}</span><span class="v9-copy"><div class="missing-name">${esc(name)}</div><div class="missing-use">${count}개 추천 메뉴에서 필요</div></span></div><button class="missing-add" data-add-missing="${esc(name)}" aria-label="${esc(name)} 재료로 추가">+</button></div>`).join(''):'<div class="missing-item"><div><div class="missing-name">부족한 핵심 재료 없음</div><div class="missing-use">지금 있는 재료로 가능한 메뉴가 있어요.</div></div></div>';
     $$('[data-add-missing]',box).forEach(b=>b.onclick=()=>{const name=$('#name');$('#openAdd')?.click();setTimeout(()=>{if(name){name.value=b.dataset.addMissing;name.focus()}},30)})
   }
@@ -54,7 +54,7 @@
     const box=$('#umfMealList');if(!box)return;const logs=read(LOG,[]).filter(x=>x.day===todayKey()).slice(0,3);
     box.innerHTML=logs.length?logs.map(x=>{const src=recipeImage(x.name);return`<div class="meal-item"><div class="v9-meal-main"><span class="v9-meal-thumb">${src?`<img src="${src}" alt="" loading="lazy">`:'🍽️'}</span><span class="v9-copy"><div class="meal-name">${esc(x.name)}</div><div class="meal-time">${new Intl.DateTimeFormat('ko-KR',{hour:'2-digit',minute:'2-digit'}).format(new Date(x.ts))}</div></span></div><span style="font-size:10px;color:#34a853">✓</span></div>`}).join(''):'<div class="meal-item"><div><div class="meal-name">아직 기록이 없어요</div><div class="meal-time">추천 메뉴에서 기록을 추가해보세요.</div></div></div>';
   }
-  function logSelected(){const c=$('#umfRecipeGrid .umf-menu-card.selected');if(!c)return;const name=$('.umf-menu-name',c)?.textContent?.trim();if(!name)return;const logs=read(LOG,[]);logs.unshift({name,ts:Date.now(),day:todayKey()});write(LOG,logs.slice(0,40));renderMeals()}
+  function logSelected(){const c=$('#umfRecipeGrid .umf-menu-card.selected');if(!c||c.classList.contains('missing')){alert('보유 재료로 만들 수 있는 메뉴를 선택한 뒤 기록해 주세요.');return}const name=$('.umf-menu-name',c)?.textContent?.trim();if(!name)return;const logs=read(LOG,[]);logs.unshift({name,ts:Date.now(),day:todayKey()});write(LOG,logs.slice(0,40));renderMeals()}
 
   function decorateStatic(){
     const sub=$('.umf-dashboard-sub');if(sub)sub.textContent='지금 있는 재료로, 오늘도 맛있는 하루';
@@ -65,10 +65,9 @@
     const ft=$('.umf-left .tab[data-tab="fridge"]'),st=$('.umf-left .tab[data-tab="season"]');if(ft&&!$('.v10-tab-ico',ft))ft.insertAdjacentHTML('afterbegin',`<span class="v10-tab-ico">${icons.fridge}</span>`);if(st&&!$('.v10-tab-ico',st))st.insertAdjacentHTML('afterbegin',`<span class="v10-tab-ico">${icons.bottle}</span>`);
     const rh=$('.recipeSec>.sh');if(rh&&!$('.v10-title-icon',rh))rh.insertAdjacentHTML('afterbegin',`<span class="v10-title-icon">${icons.chef}</span>`);if(rh&&!$('.umf-section-link',rh)){const b=document.createElement('button');b.type='button';b.className='umf-section-link';b.textContent='전체 보기';b.onclick=()=>{const sec=$('.recipeSec');if(!sec)return;const open=sec.classList.toggle('show-all');b.textContent=open?'접기':'전체 보기'};rh.appendChild(b)}
     const cards=$$('.umf-insights .insight-card'),kinds=['bars','cart','fork'];cards.forEach((c,i)=>{if(c&&!$('.v10-insight-icon',c)){const s=document.createElement('span');s.className='v10-insight-icon';s.innerHTML=icons[kinds[i]]||'';c.appendChild(s)}});
-    if(cards[0]&&!$('.v10-card-link',cards[0])){const b=document.createElement('button');b.type='button';b.className='v10-card-link';b.textContent='자세히 보기';b.onclick=()=>$('#umfBalanceNote')?.scrollIntoView({block:'nearest',behavior:'smooth'});cards[0].appendChild(b)}
-    if(cards[1]&&!$('.v10-card-link',cards[1])){const s=document.createElement('span');s.className='v10-card-link';s.textContent='전체 보기';cards[1].appendChild(s)}
+    if(cards[0]&&!$('.v10-card-link',cards[0])){const b=document.createElement('button');b.type='button';b.className='v10-card-link';b.textContent='기준 보기';b.onclick=()=>alert('등록한 재료의 종류를 셉니다. 단백질 3종, 채소 4종, 탄수화물 2종, 발효·유제품 2종이면 각 항목이 100%가 됩니다. 같은 종류는 한 번만 세며, 섭취량이나 영양 성분을 계산한 값은 아닙니다.');cards[0].appendChild(b)}
     if(cards[2]&&!$('.v10-card-link',cards[2])){const b=document.createElement('button');b.type='button';b.className='v10-card-link';b.textContent='기록 추가 +';b.onclick=logSelected;cards[2].appendChild(b)}
-    if(cards[0])$('.insight-title',cards[0]).textContent='오늘의 영양 밸런스';
+    if(cards[0])$('.insight-title',cards[0]).textContent='보유 재료 구성';
     const labels=$$('.summary-label');if(labels[0])labels[0].textContent='곧 유통기한이 돌아오는 재료';if(labels[1])labels[1].textContent='지금 바로 만들 수 있는 레시피';if(labels[2])labels[2].textContent='부족한 재료';
     const summaryKinds=['warn','ok','warn'];$$('.summary-cell').forEach((cell,i)=>{if(!$('.summary-icon',cell)){const s=document.createElement('span');s.className=`summary-icon ${i===0?'warn':i===1?'ok':'need'}`;s.innerHTML=icons[summaryKinds[i]];cell.appendChild(s)}if(!$('.v10-summary-arrow',cell))cell.insertAdjacentHTML('beforeend','<span class="v10-summary-arrow">›</span>')});
   }
@@ -82,8 +81,12 @@
   function patchRowMenu(row){const old=$('.rm',row);if(!old||old.dataset.finalMenu)return;const originalDelete=old.onclick,btn=old.cloneNode(true);btn.dataset.finalMenu='1';btn.textContent='⋮';btn.setAttribute('aria-label','재료 메뉴');old.replaceWith(btn);btn.onclick=e=>{e.stopPropagation();$$('.umf-row-menu').forEach(x=>{if(x.parentElement!==row)x.remove()});const existing=$('.umf-row-menu',row);if(existing){existing.remove();return}const menu=document.createElement('div');menu.className='umf-row-menu';menu.innerHTML='<button type="button">삭제</button>';menu.firstElementChild.onclick=ev=>{ev.stopPropagation();menu.remove();if(typeof originalDelete==='function')originalDelete.call(old,ev)};row.appendChild(menu)}}
   function decorateRecipeCards(){const fav=readFav();$$('#umfRecipeGrid .umf-menu-card').forEach(card=>{const name=card.dataset.name||$('.umf-menu-name',card)?.textContent?.trim();if(!name)return;let b=$('.umf-fav',card);if(!b){b=document.createElement('button');b.type='button';b.className='umf-fav';b.innerHTML=icons.heart;b.onclick=e=>{e.stopPropagation();const set=readFav();set.has(name)?set.delete(name):set.add(name);write(FAV,[...set]);b.classList.toggle('on',set.has(name));b.setAttribute('aria-label',set.has(name)?`${name} 즐겨찾기 해제`:`${name} 즐겨찾기`)};card.appendChild(b)}b.classList.toggle('on',fav.has(name));b.setAttribute('aria-label',fav.has(name)?`${name} 즐겨찾기 해제`:`${name} 즐겨찾기`)})}
 
-  let pending=false;
-  function refresh(){pending=false;decorateStatic();ensureQuantity();patchRows();decorateRecipeCards();renderBalance();renderMissing();renderSummary();renderMeals()}
+  let pending=false,observer=null,observedRoot=null;
+  function refresh(){
+    pending=false;observer?.disconnect();
+    try{decorateStatic();ensureQuantity();patchRows();decorateRecipeCards();renderBalance();renderMissing();renderSummary();renderMeals()}
+    finally{if(observer&&observedRoot)observer.observe(observedRoot,{childList:true,subtree:true})}
+  }
   function schedule(){if(pending)return;pending=true;requestAnimationFrame(refresh)}
   function bind(){
     $('#umfTopAdd')?.addEventListener('click',()=>$('#openAdd')?.click());
@@ -91,7 +94,7 @@
     $('#umfClearMeals')?.addEventListener('click',()=>{write(LOG,read(LOG,[]).filter(x=>x.day!==todayKey()));renderMeals()});
     document.addEventListener('click',e=>{if(!e.target.closest('.rm,.umf-row-menu'))$$('.umf-row-menu').forEach(x=>x.remove());if(e.target.closest('.tog,.tab,.tinyAdd,.add,.umf-menu-card,#umfShuffleBtn'))setTimeout(schedule,40)});
     window.addEventListener('storage',schedule);
-    const root=$('.umf-columns');if(root)new MutationObserver(records=>{const meaningful=records.some(r=>!r.target.closest?.('#umfMissingList,#umfMealList'));if(meaningful)schedule()}).observe(root,{childList:true,subtree:true});
+    observedRoot=$('.umf-columns');if(observedRoot){observer=new MutationObserver(records=>{const meaningful=records.some(r=>!r.target.closest?.('#umfMissingList,#umfMealList'));if(meaningful)schedule()});observer.observe(observedRoot,{childList:true,subtree:true})}
   }
   renderDate();bind();refresh();setTimeout(schedule,120);
 })();

@@ -44,8 +44,9 @@ html[data-lt-theme="dark"] [data-widget-control-root]{box-shadow:none!important}
 
 /* Control rail is a true overlay. It never reserves horizontal layout space. */
 .lt-control-rail{visibility:visible!important;pointer-events:auto!important;opacity:0!important}
-.lt-control-host:hover>.lt-control-rail:not(:hover),.lt-control-host:focus-within>.lt-control-rail:not(:hover){opacity:0!important;transform:translateX(-3px)!important}
-.lt-control-host>.lt-control-rail.lt-control-rail:hover{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:translateX(0)!important}
+@media(hover:hover){.lt-control-host:hover>.lt-control-rail:not(:hover):not(:focus-within),.lt-control-host:focus-within>.lt-control-rail:not(:hover):not(:focus-within){opacity:0!important;transform:translateX(-3px)!important}}
+.lt-control-host>.lt-control-rail.lt-control-rail:hover,.lt-control-host>.lt-control-rail.lt-control-rail:focus-within{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:translateX(0)!important}
+@media(hover:none){.lt-control-host>.lt-control-rail{opacity:.92!important;transform:none!important}}
 
 /* Typography floor — ordinary metadata should not fall into 7px territory. */
 body:has(#list) .topic,body:has(#list) .q,body:has(#list) .badge,body:has(#list) .ago,body:has(#list) .quick-sub,body:has(#list) .footer{font-size:8.8px!important}

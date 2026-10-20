@@ -39,7 +39,7 @@ html[data-theme="dark"]{--bg:#191a17;--text:#f2f3ed;--sub:#b6baae;--muted:#888c8
 <div class="schedule"><div class="section-head"><div class="section-title">매매 대금 일정</div><div class="section-hint">예시 10% · 50% · 40%</div></div><div class="bar"><div class="seg seg1">10%</div><div class="seg seg2">50%</div><div class="seg seg3">40%</div></div><div class="sched-grid"><div class="sched-item"><div class="sched-label">계약금 (10%)</div><div class="sched-amount" id="contractAmt">₩50,000,000</div><div class="sched-note">계약 시</div></div><div class="sched-item"><div class="sched-label">중도금 (50%)</div><div class="sched-amount" id="middleAmt">₩250,000,000</div><div class="sched-note">중도금 납부 시</div></div><div class="sched-item"><div class="sched-label">잔금 (40%)</div><div class="sched-amount" id="balanceAmt">₩200,000,000</div><div class="sched-note">입주·잔금 시</div></div></div></div>
 </div>
 </section>
-<footer class="footer"><span id="footLeft">예산 내 · 남는 현금 ₩0</span><span id="asOf">기준일: —</span></footer>
+<footer class="footer"><span id="footLeft">예산 내 · 남는 현금 ₩0</span><span id="asOf">계산일: —</span></footer>
 </main>
 <script>
 const q=new URLSearchParams(location.search),forced=q.get('theme'),dark=matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=(forced==='light'||forced==='dark')?forced:(dark?'dark':'light');
@@ -48,7 +48,7 @@ const won=n=>'₩'+Math.round(n).toLocaleString('ko-KR');
 function fill(el){const a=+el.min,b=+el.max,v=+el.value;el.style.setProperty('--fill',((v-a)/(b-a)*100)+'%')}
 function calc(){const c=+cash.value,l=+loan.value,p=+price.value,b=c+l,n=Math.max(p-l,0),r=c-n,u=b?p/b*100:0,cr=b?c/b*100:0,lr=b?l/b*100:0,ltv=p?l/p*100:0;cashValue.textContent=cashStat.textContent=won(c);loanValue.textContent=loanStat.textContent=loanEq.textContent=won(l);priceValue.textContent=priceEq.textContent=won(p);budgetStat.textContent=won(b);needEq.textContent=won(n);contractAmt.textContent=won(p*.1);middleAmt.textContent=won(p*.5);balanceAmt.textContent=won(p*.4);budgetStatus.textContent=p<=b?'구매 가능 범위':'예산 초과';gaugeNote.textContent=`예산 사용률 ${Math.round(u)}%`;miniNote.textContent=`현금 ${Math.round(cr)}% · 대출 ${Math.round(lr)}% · LTV ${Math.round(ltv)}%`;gaugeRing.style.setProperty('--pct',Math.max(0,Math.min(u,100)));footLeft.textContent=r>=0?`예산 내 · 남는 현금 ${won(r)}`:`현금 부족 · 추가 필요 ${won(-r)}`;footLeft.style.color=r>=0?'var(--muted)':'var(--danger)';[cash,loan,price].forEach(fill)}
 [cash,loan,price].forEach(x=>x.addEventListener('input',calc));
-const d=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=t=>d.find(x=>x.type===t)?.value||'';asOf.textContent=`기준일: ${g('year')}.${g('month')}.${g('day')}`;calc();
+const d=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=t=>d.find(x=>x.type===t)?.value||'';asOf.textContent=`계산일: ${g('year')}.${g('month')}.${g('day')}`;calc();
 </script>
 </body>
 </html>

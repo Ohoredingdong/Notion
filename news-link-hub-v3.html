@@ -51,7 +51,7 @@ button,select{font:inherit;color:inherit}.shell{width:100%;max-width:580px;margi
 </main>
 </div>
 <script>
-const FALLBACK={generated_at:new Date().toISOString(),quality:{tier_a:0,cross_confirmed:0},items:[]};
+const FALLBACK={generated_at:null,quality:{tier_a:0,cross_confirmed:0},items:[]};
 let state={tab:'news',region:'all',sort:'trust',data:FALLBACK};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -72,10 +72,10 @@ ${topicMarkup(x)}
 }
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render()});
 $('#region').onchange=e=>{state.region=e.target.value;render()};$('#sort').onchange=e=>{state.sort=e.target.value;render()};
-async function load(){try{const r=await fetch('./news-link-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;state.data=await r.json()}catch{state.data=FALLBACK}
+async function load(){let failed=false;try{const r=await fetch('./news-link-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();if(!Array.isArray(d.items)||!d.generated_at)throw new Error('Invalid news data');state.data=d}catch{failed=true}
  const q=state.data.quality||{};$('#quality').innerHTML=`<span class="q">A급 <strong>${Number(q.tier_a||0)}</strong></span><span class="q">교차확인 <strong>${Number(q.cross_confirmed||0)}</strong></span>`;
- $('#source').textContent=state.data.source||'Google News RSS · 신뢰필터';$('#updated').textContent=ago(state.data.generated_at);render()}
-load();
+ $('#source').textContent=state.data.source||'Google News RSS · 신뢰필터';$('#updated').textContent=(failed?'연결 오류 · ':state.data.stale?'갱신 지연 · ':'')+(state.data.generated_at?ago(state.data.generated_at)+' 수집':'수집 시각 미확인');render()}
+load();setInterval(load,300000);
 </script>
 <script src="./assets/life-town-controls-v2.js"></script>
 </body></html>

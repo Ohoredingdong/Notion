@@ -24,14 +24,14 @@ html[data-lt-theme="dark"]{--bg:#1c1c1e;--text:#f5f5f7;--sub:#aeaeb2;--muted:#8e
 <div class="card"><div class="label">대출 기간</div><div class="value"><span id="yearsValue">30</span><span class="unit">년</span></div><div class="range"><div class="track"><input id="years" type="range" min="10" max="50" step="1" value="30" aria-label="대출 기간"></div><div class="ends"><span>10년</span><span>50년*</span></div></div></div>
 </section>
 <section class="result" aria-live="polite"><div class="result-main"><div><div class="result-label">예상 월 상환액</div><div class="result-note">원금 + 이자 · 원리금균등상환</div></div><div class="monthly" id="monthly">₩1,858,265</div></div><div class="breakdown"><span><strong>월 상환액</strong> = 원금 + 이자</span><span id="firstBreakdown">첫 달 원금 — · 이자 —</span></div></section>
-<footer class="footer"><span>* 최장 50년 선택 가능. 실제 만기는 상품·연령·심사 조건에 따라 달라질 수 있습니다.</span><span id="asOf">기준일: —</span></footer>
+<footer class="footer"><span>* 최장 50년 선택 가능. 실제 만기는 상품·연령·심사 조건에 따라 달라질 수 있습니다.</span><span id="asOf">계산일: —</span></footer>
 </main>
 <script>
 const q=new URLSearchParams(location.search),forced=q.get('theme'),dark=matchMedia('(prefers-color-scheme:dark)').matches;if(!document.documentElement.dataset.ltTheme)document.documentElement.dataset.ltTheme=(forced==='light'||forced==='dark')?forced:(dark?'dark':'light');
 const amount=document.getElementById('amount'),rate=document.getElementById('rate'),years=document.getElementById('years');const won=n=>'₩'+Math.round(n).toLocaleString('ko-KR');
 function fill(el){const min=+el.min,max=+el.max,val=+el.value;el.style.setProperty('--fill',((val-min)/(max-min)*100)+'%')}
 function calc(){const p=+amount.value,a=+rate.value/100,n=+years.value*12,r=a/12;const payment=r===0?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);const firstInterest=p*r;const firstPrincipal=payment-firstInterest;document.getElementById('amountValue').textContent=won(p);document.getElementById('rateValue').textContent=(+rate.value).toFixed(2);document.getElementById('yearsValue').textContent=years.value;document.getElementById('monthly').textContent=won(payment);document.getElementById('firstBreakdown').textContent=`첫 달 원금 ${won(firstPrincipal)} · 이자 ${won(firstInterest)}`;[amount,rate,years].forEach(fill)}
-[amount,rate,years].forEach(el=>el.addEventListener('input',calc));const parts=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=t=>parts.find(x=>x.type===t)?.value||'';document.getElementById('asOf').textContent=`기준일: ${get('year')}.${get('month')}.${get('day')}`;calc();
+[amount,rate,years].forEach(el=>el.addEventListener('input',calc));const parts=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=t=>parts.find(x=>x.type===t)?.value||'';document.getElementById('asOf').textContent=`계산일: ${get('year')}.${get('month')}.${get('day')}`;calc();
 </script>
 <script src="./assets/life-town-controls-v2.js"></script>
 </body>

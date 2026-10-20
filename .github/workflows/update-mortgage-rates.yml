@@ -1,0 +1,36 @@
+name: Update Mortgage Reference Rates
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 7 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_mortgage_rates.py'
+      - 'scripts/publish_widget_data.py'
+      - '.github/workflows/update-mortgage-rates.yml'
+permissions:
+  contents: write
+concurrency:
+  group: mortgage-rates-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests beautifulsoup4
+      - name: Collect official announcements
+        id: collect
+        continue-on-error: true
+        run: python scripts/update_mortgage_rates.py
+      - name: Publish rates and source health
+        run: >-
+          python scripts/publish_widget_data.py --message 'data: update official mortgage reference rates' mortgage-rates-data.json
+      - name: Report collection failure
+        if: steps.collect.outcome == 'failure'
+        run: exit 1

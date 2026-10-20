@@ -11,11 +11,12 @@ html,body{margin:0;padding:0;background:transparent;font-family:Inter,-apple-sys
 body{padding:4px 0}
 .market{width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
-.item{min-width:0;height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.item{min-width:0;height:80px;padding:9px 11px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 .item:nth-child(5n){border-right:0}.item:nth-child(n+6){border-bottom:0}
 .label{font-size:9px;font-weight:700;letter-spacing:.02em;color:#77736c;white-space:nowrap}
 .value{margin-top:4px;font-size:17px;line-height:1;font-weight:760;letter-spacing:-.025em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .move{margin-top:5px;font-size:9px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.asof{margin-top:4px;font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pos{color:var(--up)}.neg{color:var(--down)}.neu{color:var(--muted)}
 .foot{height:24px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);font-size:8px;color:#aaa59d}
 .left{display:flex;align-items:center;gap:6px;min-width:0}.dot{width:5px;height:5px;border-radius:50%;background:#58a477;flex:0 0 auto}.updated{white-space:nowrap}.hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -27,20 +28,19 @@ body{padding:4px 0}
   <div class="grid" id="grid"></div>
   <div class="foot">
     <div class="left"><span class="dot"></span><span id="updated" class="updated">불러오는 중</span></div>
-    <span class="hint">일부 시세는 지연될 수 있음</span>
+    <span class="hint">시세 지연·휴장 시 최근 종가 · 환율은 일별 기준값</span>
   </div>
 </div>
 <script>
-const ENDPOINT='https://dfklyngtjqvlirgrtdfb.supabase.co/functions/v1/market-radar-quotes';
-const KEY='sb_publishable_UOucR8YcmGFQRxL2GjvgnA_2so7ZpSC';
 const ORDER=['KOSPI','KOSDAQ','S&P500','Nasdaq','US10Y','USD/KRW','DXY','Gold','Bitcoin','WTI'];
 const grid=document.getElementById('grid');
 const id=s=>s.replace(/[^a-zA-Z0-9]/g,'');
-grid.innerHTML=ORDER.map(k=>`<div class="item" id="c-${id(k)}"><div class="label">${k}</div><div class="value">—</div><div class="move neu">불러오는 중</div></div>`).join('');
+grid.innerHTML=ORDER.map(k=>`<div class="item" id="c-${id(k)}"><div class="label">${k}</div><div class="value">—</div><div class="move neu">불러오는 중</div><div class="asof">원본 시각 확인 중</div></div>`).join('');
 const fmt=(v,d=2)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
-function draw(q){const el=document.getElementById('c-'+id(q.key));if(!el)return;const value=el.querySelector('.value'),move=el.querySelector('.move');if(!q.ok){value.textContent='—';move.className='move neu';move.textContent='일시적 오류';return;}const cls=q.diff>0?'pos':q.diff<0?'neg':'neu';const sign=q.diff>0?'+':'';value.textContent=fmt(q.price,q.decimals)+(q.suffix||'');move.className='move '+cls;move.textContent=`${sign}${fmt(q.diff,q.decimals)}${q.suffix||''} · ${sign}${fmt(q.pct,2)}%`;}
-function stamp(){const d=new Date();document.getElementById('updated').textContent=d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})+' 갱신';}
-async function load(){try{const r=await fetch(ENDPOINT,{cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();(data.quotes||[]).forEach(draw);stamp();}catch(e){document.getElementById('updated').textContent='재연결 중';document.querySelectorAll('.move').forEach(x=>{x.className='move neu';x.textContent='연결 재시도';});}}
+const sourceDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'')?v+' 기준':Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+' KST':'시각 미확인';
+function draw(q){const el=document.getElementById('c-'+id(q.key));if(!el)return;const value=el.querySelector('.value'),move=el.querySelector('.move'),asof=el.querySelector('.asof');if(!q.ok||q.price==null||!Number.isFinite(Number(q.price))){value.textContent='—';move.className='move neu';move.textContent='원본 확인 필요';asof.textContent='마지막 유효값 없음';return;}el.querySelector('.label').textContent=q.label||q.key;const cls=q.diff>0?'pos':q.diff<0?'neg':'neu';const sign=q.diff>0?'+':'';value.textContent=fmt(q.price,q.decimals)+(q.suffix||'');move.className='move '+cls;move.textContent=q.diff_unit?`${sign}${fmt(q.diff,1)} ${q.diff_unit}`:`${sign}${fmt(q.diff,q.decimals)} · ${q.pct>0?'+':''}${fmt(q.pct,2)}%`;asof.textContent=(q.stale?'갱신 지연 · ':'')+(q.time_label?q.time_label+' ':'')+sourceDate(q.source_time);el.title=[q.source,q.source_note,sourceDate(q.source_time),q.error||''].filter(Boolean).join(' · ');}
+let lastData=null;
+async function load(){try{const r=await fetch('./market-radar-data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();if(!Array.isArray(data.quotes)||!data.quotes.length)throw new Error('Empty quotes');data.quotes.forEach(draw);lastData=data;const delayed=data.stale||Date.now()-Date.parse(data.generated_at)>6*3600000;document.getElementById('updated').textContent=delayed?'일부 갱신 지연 · 원본 시각 확인':'항목별 관측·수집 시각 표시';document.querySelector('.dot').style.background=delayed?'#be9136':'#58a477';}catch(e){document.getElementById('updated').textContent=lastData?'연결 오류 · 마지막 유효값 표시':'데이터 연결 오류';document.querySelector('.dot').style.background='#be9136';if(!lastData)ORDER.forEach(key=>draw({key,ok:false}));}}
 load();setInterval(load,300000);
 </script>
 </body>

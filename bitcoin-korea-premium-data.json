@@ -1,25 +1,39 @@
 {
-  "generated_at": "2026-08-22T14:15:00+09:00",
-  "updated_at": "2026-08-22T14:13:00+09:00",
-  "source": "Upbit vs Global spot benchmark",
+  "generated_at": "2026-10-20T04:23:45.474573+00:00",
+  "checked_at": "2026-10-20T04:23:45.474578+00:00",
+  "updated_at": "2026-10-20T04:23:39.280000+00:00",
+  "source": "Upbit KRW spot / Coinbase Exchange USD spot / ECB daily reference FX",
   "source_url": "https://docs.upbit.com/kr/reference/ticker",
-  "update_interval_sec": 60,
-  "usdkrw": 1395,
-  "premium_pct": -1.23,
-  "premium_label": "BTC 프리미엄",
-  "summary": "업비트가 글로벌보다 낮습니다 (역프 상태)",
+  "sources": {
+    "local": "https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-ETH",
+    "global": "https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-ticker",
+    "fx": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
+  },
+  "update_interval_sec": 1800,
+  "usdkrw": 1329.49,
+  "fx_reference_date": "2026-10-19",
+  "premium_pct": 0.7499,
+  "premium_label": "BTC 참고 프리미엄",
+  "summary": "업비트가 환산 가격보다 높습니다. ECB 일별 기준환율로 계산합니다.",
   "rows": [
     {
       "symbol": "BTC",
-      "local_krw": 103750000,
-      "global_usd": 75044.64,
-      "premium_pct": -1.23
+      "local_krw": 109926000.0,
+      "global_usd": 82067.38,
+      "premium_pct": 0.7499,
+      "local_source_time": "2026-10-20T04:23:45.086000+00:00",
+      "global_source_time": "2026-10-20T04:23:44.542571902Z"
     },
     {
       "symbol": "ETH",
-      "local_krw": 3245000,
-      "global_usd": 2286.249,
-      "premium_pct": -1.26
+      "local_krw": 3229000.0,
+      "global_usd": 2410.8,
+      "premium_pct": 0.7446,
+      "local_source_time": "2026-10-20T04:23:39.280000+00:00",
+      "global_source_time": "2026-10-20T04:23:43.834001157Z"
     }
-  ]
+  ],
+  "stale": false,
+  "status": "reference",
+  "accuracy_note": "거래소별 시세 시각이 다르고 환율은 ECB 일별 기준값입니다. 실시간 차익거래 수익률이 아닙니다."
 }

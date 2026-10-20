@@ -69,8 +69,8 @@
   .lt-control-host{position:relative!important;overflow:visible!important;transition:width .18s ease,max-width .18s ease}
   .lt-control-host>.tools,.lt-control-host>.hoverTools{display:none!important}
   .lt-control-rail{position:absolute;top:8px;right:-32px;z-index:999;width:38px;min-height:165px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding:0 0 4px 6px;opacity:0;visibility:visible;pointer-events:auto;transform:translateX(-3px);transition:opacity .14s ease,transform .14s ease}
-  .lt-control-rail:hover{opacity:1;transform:translateX(0)}
-  .lt-control-rail:not(:hover) .lt-control-btn{pointer-events:none}
+  .lt-control-rail:hover,.lt-control-rail:focus-within{opacity:1;transform:translateX(0)}
+  .lt-control-rail:not(:hover):not(:focus-within) .lt-control-btn{pointer-events:none}
   .lt-control-line{position:absolute;right:28px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(142,142,147,.05),rgba(142,142,147,.22) 15%,rgba(142,142,147,.12) 84%,rgba(142,142,147,.02));border-radius:999px}
   .lt-control-btn{position:relative;width:30px;height:30px;min-width:30px;min-height:30px;border:1px solid #e2e2e6;background:rgba(255,255,255,.97);color:#6e6e73;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .14s ease,background .14s ease,color .14s ease,border-color .14s ease,opacity .14s ease}
   .lt-control-btn:hover{transform:translateY(-1px);background:#f7f7f8;color:#111113;border-color:#d4d4d8}
@@ -85,18 +85,28 @@
   html[data-lt-theme="dark"] input,html[data-lt-theme="dark"] select{background:#2c2c2e!important;border-color:#48484a!important;color:#f5f5f7!important}
   html[data-lt-theme="dark"] .lt-control-btn{background:rgba(44,44,46,.97);color:#aeaeb2;border-color:#48484a;box-shadow:0 3px 12px rgba(0,0,0,.26)}
   html[data-lt-theme="dark"] .lt-control-btn:hover,html[data-lt-theme="dark"] .lt-control-btn.is-active{background:#3a3a3c;color:#fff;border-color:#5a5a5e}
-  @media(hover:none){.lt-control-rail{right:-30px;opacity:.92;transform:none}.lt-control-rail .lt-control-btn{pointer-events:auto}.lt-control-btn:after{display:none}}
+  @media(hover:none){.lt-control-rail{right:-30px;opacity:.92;transform:none}.lt-control-rail .lt-control-btn{pointer-events:auto!important}.lt-control-btn:after{display:none}}
   @media(max-width:390px){.lt-control-rail{right:-30px;width:34px;min-height:150px;padding-left:4px;gap:6px}.lt-control-btn{width:28px;height:28px;min-width:28px;min-height:28px}.lt-control-btn svg{width:12px;height:12px}}
   `;
   document.head.appendChild(css);
 
+  function placeRail(){
+    const edge=host.getBoundingClientRect().right;
+    const viewport=document.documentElement.clientWidth||window.innerWidth;
+    const preferred=matchMedia('(max-width:390px), (hover:none)').matches?-30:-32;
+    rail.style.right=Math.max(preferred,edge-viewport+4)+'px';
+  }
+  window.addEventListener('resize',placeRail,{passive:true});
+  if('ResizeObserver'in window)new ResizeObserver(placeRail).observe(host);
+
   function persist(){try{localStorage.setItem(key,JSON.stringify(state))}catch{}}
   function apply(){
-    const px=sizes[state.sizeIndex];host.style.width='100%';host.style.maxWidth=px+'px';
+    const px=sizes[state.sizeIndex];host.style.width='100%';host.style.setProperty('max-width',px+'px','important');
     if(getComputedStyle(root).getPropertyValue('--card-w').trim()) root.style.setProperty('--card-w',px+'px');
     root.dataset.ltTheme=state.theme;root.dataset.theme=state.theme;sizeBtn.disabled=!!state.locked;
     lockBtn.classList.toggle('is-active',!!state.locked);lockBtn.innerHTML=state.locked?icons.lock:icons.unlock;lockBtn.dataset.tip=state.locked?'크기 잠금 해제':'크기 잠금';lockBtn.setAttribute('aria-label',lockBtn.dataset.tip);
     themeBtn.innerHTML=state.theme==='dark'?icons.sun:icons.moon;themeBtn.dataset.tip=state.theme==='dark'?'라이트 모드':'다크 모드';themeBtn.setAttribute('aria-label',themeBtn.dataset.tip);
+    placeRail();
   }
   sizeBtn.onclick=()=>{if(state.locked)return;state.sizeIndex=(state.sizeIndex+1)%sizes.length;persist();apply()};
   themeBtn.onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';persist();apply()};

@@ -10,10 +10,15 @@ on:
       - 'fear-greed-dashboard-v3.html'
       - 'market-mood-v3.html'
       - 'scripts/update_fear_greed.py'
+      - 'scripts/market_data_utils.py'
       - '.github/workflows/update-fear-greed.yml'
 
 permissions:
   contents: write
+
+concurrency:
+  group: update-fear-greed-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -23,16 +28,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: pip install curl_cffi
       - name: Fetch US Korea Crypto sentiment data
         run: python scripts/update_fear_greed.py
-      - name: Commit data if changed
-        run: |
-          if git diff --quiet -- fear-greed-data.json korea-market-sentiment.json crypto-fear-greed-data.json; then
-            echo "No data changes"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- fear-greed-data.json korea-market-sentiment.json crypto-fear-greed-data.json
-          git commit -m "chore: update market sentiment data"
-          git push
+      - name: Publish data on current main
+        run: >-
+          python scripts/publish_widget_data.py --message "data: update market sentiment" fear-greed-data.json korea-market-sentiment.json crypto-fear-greed-data.json

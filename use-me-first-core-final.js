@@ -12,7 +12,7 @@
   const iso=n=>{const d=today();d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
   const parse=v=>{const[y,m,d]=String(v||'').split('-').map(Number);return new Date(y,m-1,d)};
   const left=v=>Math.ceil((parse(v)-today())/864e5),fmt=v=>{const d=parse(v);return`${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}까지`},dt=d=>d<0?`D+${-d}`:d?`D-${d}`:'D-DAY';
-  let items=readArray(IK),season=readSet(SK),pantry=readSet(PK),customSeason=readArray(CSK),customPantry=readArray(CPK),show=true,syncBusy=false,syncTimer=null;
+  let items=readArray(IK),season=readSet(SK),pantry=readSet(PK),customSeason=readArray(CSK),customPantry=readArray(CPK),show=true,syncBusy=false,syncTimer=null,syncVerified=false;
   const saveItems=()=>localStorage.setItem(IK,JSON.stringify(items)),allSeason=()=>uniq([...BASE_S,...customSeason]),allPantry=()=>uniq([...BASE_P,...customPantry]);
 
   function icon(n){
@@ -41,19 +41,58 @@
   const payload=()=>({items,season:[...season],pantry:[...pantry],customSeason,customPantry,version:1});
   function applyPayload(p){if(!p||typeof p!=='object')return;items=Array.isArray(p.items)?p.items:items;season=new Set(Array.isArray(p.season)?p.season:[]);pantry=new Set(Array.isArray(p.pantry)?p.pantry:[]);customSeason=Array.isArray(p.customSeason)?uniq(p.customSeason):[];customPantry=Array.isArray(p.customPantry)?uniq(p.customPantry):[];saveItems();saveSet(SK,season);saveSet(PK,pantry);localStorage.setItem(CSK,JSON.stringify(customSeason));localStorage.setItem(CPK,JSON.stringify(customPantry));render()}
   const syncCode=()=>localStorage.getItem(SYNC_KEY)||'';
-  function setStatus(text,ok=true){const el=$('#syncStatus');if(!el)return;el.textContent=text;el.classList.toggle('bad',!ok)}
-  function renderSyncStatus(){setStatus(syncCode()?'이 기기는 동기화 연결됨':'이 기기는 아직 로컬 저장만 사용 중',!!syncCode())}
+  function setStatus(text,ok=true,state=ok?'ready':'error'){
+    for(const el of [$('#syncStatus'),$('#syncFeedback')])if(el){el.textContent=text;el.classList.toggle('bad',!ok);el.dataset.syncState=state}
+  }
+  function renderSyncStatus(){
+    if(!syncCode())setStatus('이 기기는 아직 로컬 저장만 사용 중',true,'local');
+    else if(syncVerified)setStatus('동기화 완료');
+    else setStatus('저장된 코드 · 연결 확인 필요',true,'configured');
+  }
+  function setSyncBusy(value){syncBusy=value;for(const id of ['#syncCreate','#syncConnect','#syncDisconnect'])if($(id))$(id).disabled=value}
   function randomCode(){const a=new Uint8Array(18);crypto.getRandomValues(a);return'UMF-'+[...a].map(b=>b.toString(16).padStart(2,'0')).join('')}
-  async function pushSync(){const code=syncCode();if(!code||syncBusy)return;syncBusy=true;setStatus('동기화 중…');try{const r=await fetch(SYNC_URL,{method:'PUT',headers:{'Content-Type':'application/json','x-sync-code':code},body:JSON.stringify({payload:payload()})});if(!r.ok)throw new Error();setStatus('동기화 완료')}catch{setStatus('동기화 실패 · 인터넷 연결 확인',false)}finally{syncBusy=false}}
+  async function pushSync(code=syncCode()){
+    if(!code||syncBusy)return false;
+    setSyncBusy(true);setStatus('동기화 중…',true,'busy');
+    try{
+      const r=await fetch(SYNC_URL,{method:'PUT',headers:{'Content-Type':'application/json','x-sync-code':code},body:JSON.stringify({payload:payload()})});
+      if(!r.ok)throw new Error();
+      syncVerified=true;setStatus('동기화 완료');return true;
+    }catch{syncVerified=false;setStatus('동기화 실패 · 인터넷 연결 확인',false);return false}
+    finally{setSyncBusy(false)}
+  }
   function queueSync(){if(!syncCode())return;clearTimeout(syncTimer);syncTimer=setTimeout(pushSync,500)}
-  async function pullSync(code=syncCode()){if(!code)return null;setStatus('동기화 불러오는 중…');try{const r=await fetch(SYNC_URL,{headers:{'x-sync-code':code}});if(!r.ok)throw new Error();const j=await r.json();setStatus('동기화 완료');return j.payload}catch{setStatus('동기화 실패 · 인터넷 연결 확인',false);return null}}
+  async function pullSync(code=syncCode()){
+    if(!code||syncBusy)return null;
+    setSyncBusy(true);setStatus('동기화 불러오는 중…',true,'busy');
+    try{
+      const r=await fetch(SYNC_URL,{headers:{'x-sync-code':code}});
+      if(r.status===404){syncVerified=false;setStatus('저장된 냉장고를 찾지 못했어요 · 코드를 확인해 주세요',false);return null}
+      if(!r.ok)throw new Error();
+      const j=await r.json();
+      if(!j.payload||!Array.isArray(j.payload.items)){syncVerified=false;setStatus('저장된 냉장고를 찾지 못했어요 · 코드를 확인해 주세요',false);return null}
+      syncVerified=true;setStatus('동기화 완료');return j.payload;
+    }catch{syncVerified=false;setStatus('동기화 실패 · 인터넷 연결 확인',false);return null}
+    finally{setSyncBusy(false)}
+  }
 
   function openCustom(type){$('#customType').value=type;$('#customTitle').textContent=type==='season'?'기본 양념 추가':'상비 재료 추가';$('#customName').value='';$('#customModal').classList.add('on');setTimeout(()=>$('#customName')?.focus(),30)}
   function saveCustom(){const type=$('#customType').value,n=$('#customName').value.trim();if(!n)return;const arr=type==='season'?customSeason:customPantry,base=type==='season'?BASE_S:BASE_P;if([...base,...arr].includes(n)){alert('이미 있는 항목이에요.');return}if(type==='season'){customSeason=uniq([...customSeason,n]);localStorage.setItem(CSK,JSON.stringify(customSeason));season.add(n);saveSet(SK,season)}else{customPantry=uniq([...customPantry,n]);localStorage.setItem(CPK,JSON.stringify(customPantry));pantry.add(n);saveSet(PK,pantry)}$('#customModal').classList.remove('on');renderSets();queueSync()}
   function openSync(){const code=syncCode();$('#syncCode').value=code;$('#syncModal').classList.add('on');$('#syncHelp').textContent=code?'이 코드를 다른 기기에 입력하면 같은 냉장고를 불러와요.':'첫 기기라면 새 코드를 만들고, 다른 기기라면 기존 코드를 붙여넣으세요.'}
-  async function createSync(){const code=randomCode();localStorage.setItem(SYNC_KEY,code);$('#syncCode').value=code;await pushSync();renderSyncStatus();$('#syncHelp').textContent='코드가 만들어졌어요. 다른 기기에서 같은 코드를 입력해 연결하세요.'}
-  async function connectSync(){const code=$('#syncCode').value.trim();if(code.length<20){$('#syncHelp').textContent='동기화 코드를 확인해 주세요.';return}localStorage.setItem(SYNC_KEY,code);const remote=await pullSync(code);if(remote){applyPayload(remote);$('#syncHelp').textContent='다른 기기의 데이터를 불러왔어요.'}else{await pushSync();$('#syncHelp').textContent='새 동기화 공간으로 연결했어요.'}renderSyncStatus()}
-  function disconnectSync(){localStorage.removeItem(SYNC_KEY);$('#syncCode').value='';$('#syncHelp').textContent='이 기기만 동기화 연결을 해제했어요. 로컬 데이터는 그대로예요.';renderSyncStatus()}
+  async function createSync(){
+    if(syncBusy)return;
+    const code=randomCode();
+    if(await pushSync(code)){localStorage.setItem(SYNC_KEY,code);$('#syncCode').value=code;renderSyncStatus();$('#syncHelp').textContent='코드가 만들어졌어요. 다른 기기에서 같은 코드를 입력해 연결하세요.'}
+    else $('#syncHelp').textContent='코드를 만들지 못했어요. 현재 코드와 이 기기의 기록은 유지됩니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+  }
+  async function connectSync(){
+    if(syncBusy)return;
+    const code=$('#syncCode').value.trim();if(code.length<20){$('#syncHelp').textContent='동기화 코드를 확인해 주세요.';return}
+    const remote=await pullSync(code);
+    if(!remote){$('#syncHelp').textContent='연결하지 못했어요. 현재 코드와 이 기기의 기록은 유지됩니다. 첫 기기에서는 새 코드를 만들어 주세요.';return}
+    localStorage.setItem(SYNC_KEY,code);applyPayload(remote);$('#syncHelp').textContent='다른 기기의 데이터를 불러왔어요.';
+  }
+  function disconnectSync(){clearTimeout(syncTimer);localStorage.removeItem(SYNC_KEY);syncVerified=false;$('#syncCode').value='';$('#syncHelp').textContent='이 기기만 동기화 연결을 해제했어요. 로컬 데이터는 그대로예요.';renderSyncStatus()}
 
   $('.tabs')?.addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));$('#fridge')?.classList.toggle('on',b.dataset.tab==='fridge');$('#season')?.classList.toggle('on',b.dataset.tab==='season');const add=$('#openAdd');if(add)add.style.display=b.dataset.tab==='fridge'?'block':'none'});
   $('#all')?.addEventListener('click',()=>{show=!show;renderItems()});

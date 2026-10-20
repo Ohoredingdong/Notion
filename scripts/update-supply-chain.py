@@ -1,63 +1,177 @@
+"""Collect dated, public first-party supply-chain releases; preserve valid values."""
 from __future__ import annotations
-import json,re
-from datetime import datetime
-from pathlib import Path
-from zoneinfo import ZoneInfo
-import requests
-from bs4 import BeautifulSoup
 
-OUT=Path("supply-chain-data.json")
-KST=ZoneInfo("Asia/Seoul")
-UA={"User-Agent":"Mozilla/5.0 AppleWebKit/537.36 Chrome/124 Safari/537.36"}
-NYFED="https://www.newyorkfed.org/research/policy/gscpi"
-TE="https://tradingeconomics.com/world/supply-chain-pressure-index"
-ISM="https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/pmi/"
-DREWRY="https://www.drewry.co.uk/trackers-and-indices/latest-trackers-and-indices/world-container-index-assessed-by-drewry"
+import calendar
+import csv
+import io
+import json
+import re
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from html.parser import HTMLParser
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / 'supply-chain-data.json'
+NYFED = 'https://www.newyorkfed.org/research/policy/gscpi'
+NYFED_CSV = 'https://www.newyorkfed.org/medialibrary/research/interactives/data/gscpi/gscpi_interactive_data.csv'
+ISM = 'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/pmi/'
+ISM_RELEASES = 'https://www.prnewswire.com/news/institute-for-supply-management/'
+DREWRY = 'https://www.drewry.co.uk/trackers-and-indices/latest-trackers-and-indices/world-container-index-assessed-by-drewry'
+MONTHS = {name.lower(): number for number, name in enumerate(calendar.month_name) if name}
+
+
+class TextParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ('script', 'style'):
+            self.skip += 1
+
+    def handle_endtag(self, tag):
+        if tag in ('script', 'style'):
+            self.skip = max(0, self.skip - 1)
+
+    def handle_data(self, data):
+        if not self.skip and data.strip():
+            self.parts.append(data.strip())
+
+
+def text(html):
+    parser = TextParser()
+    parser.feed(html)
+    return re.sub(r'\s+', ' ', ' '.join(parser.parts))
+
 
 def get(url):
-    r=requests.get(url,headers=UA,timeout=30);r.raise_for_status()
-    return BeautifulSoup(r.text,"html.parser").get_text(" ",strip=True)
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0', 'Accept': '*/*'})
+    with urllib.request.urlopen(req, timeout=25) as response:
+        if '/errors/404' in response.url or '/SSO/' in response.url:
+            raise ValueError('Public report is unavailable at this URL')
+        return response.read().decode('utf-8-sig')
 
-def existing():
-    return json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
 
-def parse_gscpi(text,old):
-    m=re.search(r"(?:decreased|increased|fell|rose) to\s+(-?\d+(?:\.\d+)?)\s+points?\s+in\s+([A-Za-z]+).*?from\s+(?:a\s+downwardly\s+revised\s+)?(-?\d+(?:\.\d+)?)",text,re.I|re.S)
-    if not m: raise ValueError("GSCPI parse failed")
-    val=float(m.group(1));prev=float(m.group(3))
-    hist=(old.get("gscpi") or {}).get("history",[])
-    if not hist:
-        hist=[{"label":"02","value":0.58},{"label":"03","value":0.68},{"label":"04","value":1.84},{"label":"05","value":1.81},{"label":"06","value":1.19},{"label":"07","value":0.79}]
-    if abs(hist[-1]["value"]-val)>1e-9:
-        hist.append({"label":datetime.now(KST).strftime("%m"),"value":val})
-    return {"value":val,"previous":prev,"reference_month":datetime.now(KST).strftime("%Y-%m"),"history":hist[-6:],"primary_source":"Federal Reserve Bank of New York","numeric_mirror":"Trading Economics"}
+def parse_gscpi(raw):
+    rows = list(csv.reader(io.StringIO(raw)))
+    if not rows or rows[0][0] != 'Date':
+        raise ValueError('NYFed observation CSV missing Date column')
+    # Columns are release vintages, rows are observation months. Use one vintage
+    # for the entire history so revisions do not mix different releases.
+    vintage_columns = [i for i, value in enumerate(rows[0]) if i and re.fullmatch(r'[A-Z][a-z]{2}-\d{2}', value)]
+    points = []
+    for column in reversed(vintage_columns):
+        points = []
+        for row in rows[1:]:
+            try:
+                date = datetime.strptime(row[0], '%d-%b-%Y')
+                value = float(row[column])
+            except (ValueError, IndexError):
+                continue
+            points.append({'label': date.strftime('%m'), 'date': date.date().isoformat(), 'value': value})
+        if points:
+            break
+    if len(points) < 2:
+        raise ValueError('NYFed CSV has fewer than two observations')
+    points.sort(key=lambda point: point['date'])
+    return {'value': points[-1]['value'], 'previous': points[-2]['value'],
+            'reference_month': points[-1]['date'][:7], 'reference_date': points[-1]['date'],
+            'source_vintage': datetime.strptime(rows[0][column], '%b-%y').strftime('%Y-%m'),
+            'history': points[-6:], 'primary_source': 'Federal Reserve Bank of New York',
+            'source_url': NYFED_CSV, 'stale': False, 'cadence': 'monthly'}
 
-def parse_ism(text):
-    md=re.search(r"Supplier Deliveries Index.*?registered\s+([0-9.]+)\s+percent.*?(?:from|compared to)\s+(?:the\s+)?([0-9.]+)\s+percent",text,re.I|re.S)
-    mp=re.search(r"Prices Index.*?registered\s+([0-9.]+)\s+percent.*?(?:from|compared to).*?([0-9.]+)\s+percent",text,re.I|re.S)
-    if not md or not mp: raise ValueError("ISM parse failed")
-    sd,sdprev=float(md.group(1)),float(md.group(2));pr,prprev=float(mp.group(1)),float(mp.group(2))
-    return {"supplier_deliveries":{"value":sd,"previous":sdprev,"change":round(sd-sdprev,1),"reference_month":"latest"},"ism_prices":{"value":pr,"previous":prprev,"change":round(pr-prprev,1),"reference_month":"latest"}}
 
-def parse_wci(text):
-    m=re.search(r"(\d{1,2}\s+[A-Za-z]{3}\s+\d{4}).*?World Container Index.*?(increased|decreased)\s+([0-9.]+)%\s+to\s+\$([0-9,]+)\s+per\s+40ft",text,re.I|re.S)
-    if not m: raise ValueError("WCI parse failed")
-    pct=float(m.group(3))*(1 if m.group(2).lower()=="increased" else -1)
-    return {"value":int(m.group(4).replace(",","")),"change_pct":pct,"reference_date":m.group(1)}
+def parse_ism(html, source_url):
+    report = text(html)
+    match = re.search(r'([A-Za-z]+)\s+(20\d{2})\s+ISM.{0,12}Manufacturing PMI', report, re.I)
+    if not match or match.group(1).lower() not in MONTHS:
+        raise ValueError('ISM report observation month missing')
+    month = f'{int(match.group(2)):04d}-{MONTHS[match.group(1).lower()]:02d}'
+    result = {}
+    for key, label in [('supplier_deliveries', 'Supplier Deliveries'), ('ism_prices', 'Prices')]:
+        row = re.search(r'\b' + label + r'\s+([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)\s+([+−-]?[0-9]+(?:\.[0-9]+)?)(?:\s|$)', report, re.I)
+        if not row:
+            raise ValueError(f'ISM at-a-glance row missing: {label}')
+        value, previous = float(row.group(1)), float(row.group(2))
+        if not (0 <= value <= 100 and 0 <= previous <= 100):
+            raise ValueError('ISM index outside 0–100')
+        result[key] = {'value': value, 'previous': previous, 'change': round(value - previous, 1),
+                       'reference_month': month, 'source_url': source_url, 'cadence': 'monthly', 'stale': False}
+    return result
+
+
+def collect_ism():
+    # ISM's public month pages are sometimes moved; the institute's own public
+    # release channel carries the same monthly report without requiring a login.
+    listing = get(ISM_RELEASES)
+    links = set(re.findall(r'href=["\']([^"\']*manufacturing-pmi[^"\']*)["\']', listing))
+    dated = []
+    for link in links:
+        match = re.search(r'-(' + '|'.join(MONTHS) + r')-(20\d{2})-ism-manufacturing-pmi-report-', link)
+        if match:
+            dated.append(((int(match.group(2)), MONTHS[match.group(1)]), link))
+    if not dated:
+        raise ValueError('No dated ISM manufacturing release in the official release channel')
+    url = urllib.parse.urljoin(ISM_RELEASES, max(dated)[1])
+    return parse_ism(get(url), url)
+
+
+def parse_wci(html, source_url=DREWRY):
+    report = text(html)
+    pattern = (r'(\d{1,2}\s+[A-Za-z]{3,9}\s+20\d{2})\s*[:–-]?\s*(?:Drewry[’\']?s?\s+)?World Container Index.{0,100}?'
+               r'(?:(increased|decreased|rose|fell|dropped|declined)\s+([0-9.]+)%\s+to|(?:remained|was)\s+(?:stable|unchanged)\s+at)\s+\$([0-9,]+)\s+per\s+40(?:ft|[- ]foot)')
+    match = re.search(pattern, report, re.I)
+    if not match:
+        raise ValueError('Dated WCI weekly quote missing')
+    date = None
+    for fmt in ('%d %b %Y', '%d %B %Y'):
+        try:
+            date = datetime.strptime(match.group(1), fmt).date().isoformat()
+            break
+        except ValueError:
+            pass
+    if not date:
+        raise ValueError('WCI release date unreadable')
+    pct = float(match.group(3)) * (1 if match.group(2).lower() in ('increased', 'rose') else -1) if match.group(2) else 0.0
+    return {'value': int(match.group(4).replace(',', '')), 'change_pct': pct,
+            'reference_date': date, 'source_url': source_url, 'cadence': 'weekly', 'stale': False}
+
 
 def main():
-    now=datetime.now(KST);old=existing();data=dict(old);errors=[]
-    try:data["gscpi"]=parse_gscpi(get(TE),old)
-    except Exception as e:errors.append(str(e))
-    try:data.update(parse_ism(get(ISM)))
-    except Exception as e:errors.append(str(e))
-    try:data["wci"]=parse_wci(get(DREWRY))
-    except Exception as e:errors.append(str(e))
-    data["generated_at"]=now.isoformat();data["data_as_of"]=now.date().isoformat()
-    data["sources"]={"nyfed":NYFED,"ism":ISM,"drewry":DREWRY,"gscpi_numeric_mirror":TE}
-    data["stale"]=bool(errors)
-    if errors:data["last_errors"]=errors
-    else:data.pop("last_errors",None)
-    OUT.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding="utf-8")
+    checked = datetime.now(timezone.utc).isoformat()
+    old = json.loads(OUT.read_text()) if OUT.exists() else {}
+    data = dict(old)
+    errors = []
+    successes = 0
+    for keys, fetch in [(['gscpi'], lambda: {'gscpi': parse_gscpi(get(NYFED_CSV))}),
+                        (['supplier_deliveries', 'ism_prices'], collect_ism),
+                        (['wci'], lambda: {'wci': parse_wci(get(DREWRY))})]:
+        try:
+            values = fetch()
+            for key, value in values.items():
+                value['checked_at'] = checked
+                data[key] = value
+            successes += 1
+        except Exception as exc:
+            errors.append(f'{" / ".join(keys)}: {exc}')
+            for key in keys:
+                data[key] = {**(old.get(key) or {}), 'checked_at': checked, 'stale': True, 'error': str(exc)[:180]}
+            print(f'::warning::{keys}: kept last valid release: {exc}')
+    data['checked_at'] = checked
+    if successes:
+        data['generated_at'] = checked
+    periods = [x.get('reference_date') or (x.get('reference_month') + '-01' if x.get('reference_month') else None)
+               for key in ('gscpi', 'supplier_deliveries', 'ism_prices', 'wci') if isinstance(x := data.get(key), dict)]
+    # Each card shows its own reference period; this is the newest actual release.
+    data['data_as_of'] = max([x for x in periods if x and re.fullmatch(r'20\d{2}-\d{2}-\d{2}', x)], default=None)
+    data['sources'] = {'nyfed': NYFED, 'nyfed_data': NYFED_CSV, 'ism': ISM_RELEASES, 'drewry': DREWRY}
+    data['stale'] = bool(errors)
+    data['last_errors'] = errors
+    OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
 
-if __name__=="__main__":main()
+
+if __name__ == '__main__':
+    main()

@@ -126,7 +126,7 @@ def parse_feed(tab: str, region: str, q: str) -> list[dict]:
         try:
             dt = parsedate_to_datetime(pub).astimezone(KST)
         except Exception:
-            dt = datetime.now(KST)
+            continue  # Do not invent publication times for malformed RSS items.
         topic, cls = topic_for(title)
         if len(desc) > 115:
             desc = desc[:112].rstrip() + '…'
@@ -252,7 +252,8 @@ def main() -> None:
         data = {
             'source': 'Google News RSS + source trust grading',
             'generated_at': now.isoformat(),
-            'stale': False,
+            'stale': bool(errors),
+            'last_errors': errors,
             'trust_policy_version': 2,
             'quality': counts,
             'items': items[:100],

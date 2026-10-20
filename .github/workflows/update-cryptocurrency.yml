@@ -6,10 +6,16 @@ on:
   push:
     branches: [main]
     paths:
+      - "scripts/update-bitcoin-korea-premium.py"
+      - "scripts/market_data_utils.py"
       - "scripts/update-cryptocurrency.py"
       - ".github/workflows/update-cryptocurrency.yml"
 permissions:
   contents: write
+concurrency:
+  group: update-cryptocurrency-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -20,14 +26,7 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
       - run: python scripts/update-cryptocurrency.py
-      - name: Commit data if changed
-        run: |
-          if git diff --quiet -- cryptocurrency-data.json; then
-            echo "No data change"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add cryptocurrency-data.json
-          git commit -m "data: update cryptocurrency dashboard"
-          git push
+      - run: python scripts/update-bitcoin-korea-premium.py
+      - name: Publish data on current main
+        run: >-
+          python scripts/publish_widget_data.py --message "data: update cryptocurrency and Korea premium" cryptocurrency-data.json bitcoin-korea-premium-data.json

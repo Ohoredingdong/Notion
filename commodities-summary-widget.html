@@ -84,21 +84,21 @@ body{
 </head>
 <body>
 <div class="widget">
-  <div class="title">Compost Summary</div>
+  <div class="title">Commodities Summary</div>
   <div class="grid">
     <section class="panel">
       <div class="panel-title">핵심 요약</div>
       <div id="summary" class="summary-list"></div>
-      <button class="cta">전체 보기 〉</button>
+      <button class="cta" onclick="location.href='./commodities-dashboard-v3.html'">전체 보기 〉</button>
     </section>
     <section class="panel">
-      <div class="panel-title">주요 가격 추이 <span class="small">(7일)</span></div>
+      <div class="panel-title">주요 가격 추이 <span class="small">(최근 7거래일)</span></div>
       <div id="trends" class="trend-list"></div>
     </section>
   </div>
   <div class="footer">
-    <span id="fx">통화: USD &nbsp;&nbsp; 환율: ₩1,360.5</span>
-    <span id="time">10:30 KST · 2분 지연</span>
+    <span id="fx">USD 선물 시세 · 환율 확인 중</span>
+    <span id="time">원본 시각 확인 중</span>
   </div>
 </div>
 
@@ -109,17 +109,12 @@ document.documentElement.dataset.theme =
   theme==='light' ? 'light' :
   (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
 
-const data = [
-  {name:'금', icon:'🟡', price:2345.60, change:0.42, color:'var(--gold)', hist:[2284,2290,2301,2316,2308,2320,2312,2327,2338,2345.6]},
-  {name:'은', icon:'⚪', price:29.82, change:1.32, color:'var(--silver)', hist:[28.7,28.9,29.0,29.1,29.0,29.3,29.2,29.5,29.6,29.82]},
-  {name:'WTI 원유', icon:'🛢️', price:78.64, change:1.87, color:'var(--blue)', hist:[76.9,77.2,77.5,77.3,77.8,78.0,77.6,78.2,78.4,78.64]},
-  {name:'천연가스', icon:'🔥', price:2.55, change:-0.93, color:'var(--blue)', hist:[2.61,2.59,2.63,2.58,2.56,2.59,2.57,2.54,2.57,2.55]},
-  {name:'구리', icon:'🟫', price:4.72, change:0.68, color:'var(--orange)', hist:[4.60,4.61,4.59,4.63,4.64,4.70,4.67,4.71,4.69,4.72]},
-  {name:'옥수수', icon:'🌽', price:4.56, change:0.33, color:'#78b24d', hist:[4.42,4.41,4.45,4.44,4.49,4.46,4.52,4.50,4.54,4.56]}
-];
-
+let data = [];
 const summaryNames = ['금','은','WTI 원유','천연가스','구리'];
-const trendNames = ['금','WTI 원유','천연가스','구리','옥수수'];
+const trendNames = ['금','WTI 원유','천연가스','구리','브렌트유'];
+const icons={gold:'🟡',silver:'⚪',wti:'🛢️',brent:'🛢️',gas:'🔥',copper:'🟫',aluminum:'⬜'};
+const colors={gold:'var(--gold)',silver:'var(--silver)',energy:'var(--blue)',industrial:'var(--orange)'};
+const stamp=v=>Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+' KST':'시각 미확인';
 
 function fmtPrice(v){
   return '$' + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -129,7 +124,8 @@ function fmtChange(v){
   return `${n >= 0 ? '▲' : '▼'} ${Math.abs(n).toFixed(2)}%`;
 }
 function sparkline(values, color){
-  const nums = values.map(Number);
+  const nums = values.map(Number).filter(Number.isFinite);
+  if(nums.length<2)return `<span class="small">추이 미제공</span>`;
   const W=160,H=24,P=2;
   const min = Math.min(...nums), max = Math.max(...nums), range = max-min || 1;
   const pts = nums.map((v,i)=>{
@@ -143,10 +139,11 @@ function sparkline(values, color){
   </svg>`;
 }
 
+function render(){
 document.getElementById('summary').innerHTML = data
   .filter(item => summaryNames.includes(item.name))
   .map(item => `
-    <div class="summary-item">
+    <div class="summary-item" title="${item.unit} · ${item.sourceLabel}">
       <div class="icon">${item.icon}</div>
       <div class="name">${item.name}</div>
       <div class="price">${fmtPrice(item.price)}</div>
@@ -156,6 +153,7 @@ document.getElementById('summary').innerHTML = data
 
 document.getElementById('trends').innerHTML = trendNames.map(name=>{
   const item = data.find(d=>d.name===name);
+  if(!item)return '';
   return `
     <div class="trend-item">
       <div class="icon">${item.icon}</div>
@@ -164,7 +162,26 @@ document.getElementById('trends').innerHTML = trendNames.map(name=>{
       <div class="trend-price">${fmtPrice(item.price)}</div>
     </div>
   `;
-}).join('');
+ }).join('');
+}
+async function load(){
+  try{
+    const response=await fetch('./commodities-data.json?t='+Date.now(),{cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const payload=await response.json();
+    const items=(payload.items||[]).filter(x=>Number.isFinite(Number(x.price))&&Number(x.price)>0);
+    if(!items.length)throw new Error('No valid commodity prices');
+    data=items.map(x=>({...x,icon:icons[x.id]||'•',change:x.change_pct,hist:x.history||[],color:colors[x.color]||'var(--blue)',sourceLabel:(x.stale?'갱신 지연 · ':'')+stamp(x.source_timestamp?new Date(x.source_timestamp*1000).toISOString():null)}));
+    render();
+    document.getElementById('fx').textContent='USD 선물 시세 · USD/KRW '+(Number.isFinite(Number(payload.fx))?'₩'+Number(payload.fx).toLocaleString('ko-KR'):'미확인');
+    const delayed=items.some(x=>x.stale)||!payload.source_updated_at||Date.now()-Date.parse(payload.updated_at)>24*3600000;
+    document.getElementById('time').textContent=(delayed?'갱신 지연 · ':'원본 ')+stamp(payload.source_updated_at)+' · 거래소별 지연';
+  }catch(e){
+    document.getElementById('time').textContent=data.length?'연결 오류 · 마지막 유효값 표시':'가격 데이터를 불러오지 못했습니다';
+    if(!data.length)document.getElementById('summary').textContent='새로고침 후 다시 확인해 주세요.';
+  }
+}
+load();setInterval(load,300000);
 </script>
 </body>
 </html>
