@@ -4,7 +4,8 @@ A recommendation is a research opinion, never a return probability or trade orde
 from __future__ import annotations
 from pathlib import Path
 from datetime import datetime, timezone
-import json, math, hashlib
+import json, math, hashlib, os, io, zipfile, urllib.request
+import xml.etree.ElementTree as ET
 
 VERSION='recommendation-v1.0'
 def n(x):
@@ -17,12 +18,32 @@ def change(a,b):
     a,b=n(a),n(b)
     return (a/b-1)*100 if a is not None and b is not None and b>0 else None
 def read(name): return json.loads(Path(name).read_text())
+
+def dart_names():
+    key=os.getenv('DART_API_KEY','').strip()
+    if not key: return {}
+    try:
+        url='https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key='+key
+        req=urllib.request.Request(url,headers={'User-Agent':'PersonalFinancialResearch/1.0'})
+        with urllib.request.urlopen(req,timeout=15) as r: raw=r.read(12_000_000)
+        if not raw.startswith(b'PK'): return {}
+        with zipfile.ZipFile(io.BytesIO(raw)) as z:
+            root=ET.fromstring(z.read(next(n for n in z.namelist() if n.lower().endswith('.xml'))))
+        out={}
+        for x in root.findall('list'):
+            code=(x.findtext('stock_code') or '').strip()
+            name=(x.findtext('corp_name') or '').strip()
+            if code and name: out[code]=name
+        return out
+    except Exception:
+        return {}
+
 def official_ok(row,case):
     if row.get('market')!='KR': return None
     annual=(case.get('official') or {}).get('annual') or {}
     matches={x.get('field') for x in (case.get('official_comparison') or []) if x.get('status')=='matched'}
     return annual.get('status')=='ok' and {'revenue','operating_income'}.issubset(matches) and bool(matches & {'cfo','fcf'})
-def evaluate(row,case,depth):
+def evaluate(row,case,depth,display_name=None):
     series=(depth.get('series') or [])[:3]
     latest=series[0] if series else {}
     h=row.get('history') or {}; f=row.get('forecasts') or {}; t=row.get('targets') or {}; b=row.get('balance') or {}
@@ -107,14 +128,15 @@ def evaluate(row,case,depth):
       f"예상 PER {fpe:.1f}배·EPS성장 대비 PER {peg:.2f}" if fpe is not None and peg is not None else '가격 지표 일부 미확인',
       f"순차입금/EBITDA {leverage:.2f}배" if leverage is not None else '부채부담 미확인'
     ]
-    return {'symbol':row['symbol'],'name':row.get('name'),'market':row.get('market'),'sector':row.get('sector'),'currency':row.get('currency'),'price':row.get('price'),'price_session':row.get('price_session'),'grade':grade,'action':action,'score':score,'scores':{'quality':quality,'growth':growth,'valuation':valuation,'risk':risk},'why':why,'blockers':blockers,'warnings':warnings,'metrics':{'operating_margin_pct':margin,'roe_pct':roe,'cfo_to_profit':conversion,'revenue_growth_pct':revenue_growth,'eps_growth_next_fy_pct':eps_growth,'eps_revision30_pct':revision,'forward_pe':fpe,'peer_forward_pe':peer,'peg_like':peg,'target_gap_pct':target_gap,'net_debt_ebitda':leverage,'analysts':analysts,'eps_spread':spread,'official_core_checked':official},'not_probability':True,'not_personal_allocation_advice':True}
+    return {'symbol':row['symbol'],'name':row.get('name'),'display_name':display_name or row.get('name'),'market':row.get('market'),'sector':row.get('sector'),'currency':row.get('currency'),'price':row.get('price'),'price_session':row.get('price_session'),'grade':grade,'action':action,'score':score,'scores':{'quality':quality,'growth':growth,'valuation':valuation,'risk':risk},'why':why,'blockers':blockers,'warnings':warnings,'metrics':{'operating_margin_pct':margin,'roe_pct':roe,'cfo_to_profit':conversion,'revenue_growth_pct':revenue_growth,'eps_growth_next_fy_pct':eps_growth,'eps_revision30_pct':revision,'forward_pe':fpe,'peer_forward_pe':peer,'peg_like':peg,'target_gap_pct':target_gap,'net_debt_ebitda':leverage,'analysts':analysts,'eps_spread':spread,'official_core_checked':official},'not_probability':True,'not_personal_allocation_advice':True}
 
 def main():
     raw_bytes=Path('stock-opportunity-data.json').read_bytes(); raw=json.loads(raw_bytes)
     cases=read('stock-investment-cases.json'); depth=read('stock-reading-depth.json')
     if cases.get('source_generated_at')!=raw.get('generated_at') or depth.get('source_generated_at')!=raw.get('generated_at'): raise SystemExit('source snapshot mismatch')
     c={x['symbol']:x for x in cases['companies']}; d={x['symbol']:x for x in depth['companies']}
-    results=[evaluate(r,c.get(r['symbol'],{}),d.get(r['symbol'],{})) for r in raw['companies']]
+    names=dart_names()
+    results=[evaluate(r,c.get(r['symbol'],{}),d.get(r['symbol'],{}),names.get(r['symbol']) if r.get('market')=='KR' else r.get('name')) for r in raw['companies']]
     order={'우선 추천':0,'추천':1,'관심':2,'보류':3,'제외':4}
     results.sort(key=lambda x:(order[x['grade']],-x['score'],x['symbol']))
     top=[x for x in results if x['grade'] in ('우선 추천','추천')][:5]
