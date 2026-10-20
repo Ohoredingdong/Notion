@@ -1,0 +1,25 @@
+name: Probe Decision Sources
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['scripts/probe_decision_sources.py', '.github/workflows/probe-decision-sources.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66'
+      - run: python scripts/probe_decision_sources.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: decision-source-probe
+          path: decision-source-probe.json
+          retention-days: 1
