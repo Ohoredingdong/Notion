@@ -1,0 +1,60 @@
+name: Stock Three-Year Reading
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Stock Investment Cases']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/stock_reading_depth.py'
+      - 'scripts/test_stock_reading_depth.py'
+      - '.github/workflows/stock-reading-depth.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-reading-depth
+  cancel-in-progress: false
+jobs:
+  reading:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66'
+      - name: Test comparable accounts and average-equity ROE
+        run: python scripts/test_stock_reading_depth.py
+      - name: Read source statements with protected credentials
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/stock_reading_depth.py
+      - name: Publish reading snapshot only
+        run: >-
+          python scripts/publish_widget_data.py --message 'research: publish three-year statements with shareholder-scope ROE' stock-reading-depth.json stock-reading-depth-summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-reading-depth-diagnostics
+          retention-days: 2
+          path: |
+            stock-reading-depth*.json
+            stock-market-context.json
+            stock-decision-guide*.json
+            stock-investment-cases*.json
+            stock-opportunity-data.json
+            stock-market-groups.json
+            stock-value-radar.html
+            scripts/stock_reading_depth.py
+            scripts/test_stock_reading_depth.py
+            assets/stock-decision-guide.*
+            assets/stock-report-reading-guide.js
+            assets/stock-radar-v8.*
+            assets/stock-radar-v9.js
+            assets/stock-market-groups.js
+            assets/stock-investment-cases.js
