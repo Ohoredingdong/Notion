@@ -1,4 +1,11 @@
 """Idempotent decision-only UI deployment. Training files remain untouched."""
+
+# RADAR_V8_LEGACY_UI_GUARD
+from pathlib import Path as _V8Path
+if 'data-radar-version="8"' in _V8Path('stock-value-radar.html').read_text(encoding='utf-8'):
+    print('Standalone v8 owns the UI; legacy data collection remains unchanged.')
+    raise SystemExit(0)
+
 from pathlib import Path
 import re
 page=Path('stock-value-radar.html');s=page.read_text(encoding='utf-8')
