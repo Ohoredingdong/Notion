@@ -3,7 +3,10 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from bs4 import BeautifulSoup
-import update_market_context as base
+try:
+    from . import update_market_context as base
+except ImportError:
+    import update_market_context as base
 
 
 def parse_fed_funds(html, year=None):
