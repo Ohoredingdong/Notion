@@ -115,12 +115,13 @@
     if (button.dataset.signature !== signature) {
       button.dataset.signature = signature;
       button.innerHTML = A.foodArt(foodIdFor(item.name)) + '<span class="quantity-mini">' + esc(status.quantity) + '</span><span class="food-label">' + esc(item.name) + '</span>' +
-        (status.d !== null && status.d <= 2 ? '<i class="expiry-dot" aria-hidden="true"></i>' : '');
+        '';
       for (const image of button.querySelectorAll('img')) image.draggable = false;
     }
     const label = item.name + ', ' + status.quantity + ', ' + zones[zone] + ', ' + status.label;
     button.setAttribute('aria-label', label + (organizing ? ', 옮길 재료 선택' : ', 재료 수정'));
     button.title = label; button.classList.toggle('expired', status.d !== null && status.d < 0);
+    button.style.opacity = status.d !== null && status.d < 0 ? '0.45' : '1';
     button.classList.toggle('exhausted', status.empty); button.classList.toggle('selected', movingId === item.id);
     button.disabled = !initialized || moveBusy || !openZone(zone, doors);
     button.draggable = !button.disabled && (!organizing || htmlDrag?.id === item.id);
