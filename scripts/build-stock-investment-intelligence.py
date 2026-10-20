@@ -38,25 +38,41 @@ def age_hours(s):
 def pct(a,b):
     if not a or b is None:return None
     return round((b/a-1)*100,2)
+SECTOR_POLICY={
+ "000660":("반도체","메모리 가격·HBM 계약·CAPEX·재고"),
+ "005930":("반도체","메모리 가격·HBM 경쟁·파운드리 수율·CAPEX"),
+ "NVDA":("AI 반도체","데이터센터 수요·GPU 수익성·고객 투자"),
+ "035420":("인터넷 플랫폼","광고·커머스·영업현금흐름"),
+ "AMZN":("커머스·클라우드","AWS 성장·소매마진·CAPEX"),
+ "MSFT":("클라우드·SW","구독 매출·클라우드 성장·CAPEX"),
+ "AAPL":("소비자 기술","제품 교체주기·서비스마진·주주환원"),
+ "TSLA":("자동차·에너지","차량판매·가격인하·마진·CAPEX"),
+ "005380":("자동차","판매량·영업이익률·금융계열사 영향"),
+ "207940":("바이오 생산","수주잔고·공장가동률·설비수익률")
+}
 def rank(r):
-    """Score is for INVESTIGATION priority, NOT expected return."""
-    rg=num(r.get("revenue_growth"));op=num(r.get("operating_margin"))
-    fcf=num(r.get("fcf"));per=num(r.get("annual_per"))
-    if rg is None or op is None:return {"score":None,"label":"자료 부족","reasons":["매출 성장 또는 수익성 정보 부족"]}
-    score=0; reasons=[]
-    if rg>=15:score+=2;reasons.append("연간 매출 고성장")
-    elif rg>0:score+=1
-    if op>=20:score+=2;reasons.append("영업이익률 20% 이상")
-    elif op>5:score+=1
-    if fcf is not None and fcf>0:score+=2;reasons.append("FCF 양수")
-    if per is not None and 0<per<30:score+=1;reasons.append("연간 PER 30배 미만")
-    risks=[]
-    if rg<-5:risks.append("매출 감소")
-    if op<0:risks.append("영업손실")
-    if fcf is not None and fcf<0:risks.append("FCF 적자")
-    if per is not None and per>65:risks.append("높은 이익 대비 주가 배수")
-    reasons += risks
-    return {"score":score,"label":("위험 우선 검토" if risks else "심층 검토 후보" if score>=5 else "관찰 대상"),"reasons":reasons,"risks":risks}
+    """Industry-aware WATCHLIST priority; never a buy recommendation or success probability."""
+    sector,drivers=SECTOR_POLICY.get(r.get("symbol"),("분류 필요","비교기업과 산업주기 확인"))
+    growth=num(r.get("revenue_growth")); margin=num(r.get("operating_margin"))
+    fcf=num(r.get("fcf")); pe=num(r.get("annual_per"))
+    risks=[];reasons=[]
+    if growth is None or margin is None:
+        return {"score":None,"label":"재무정보 부족","sector":sector,
+                "method":"산업별 조사 필요","drivers":drivers,
+                "reasons":["매출·영업이익률 확인 불가"],"risks":[]}
+    # no absolute sector-agnostic PER screen; benchmark to peers when available.
+    score=int(growth>0)+int(growth>=15)+int(margin>0)+int(margin>=15)
+    if fcf is not None and fcf>0:score+=1
+    if growth<0:risks.append("매출 역성장")
+    if margin<0:risks.append("영업손실")
+    if sector!="자동차" and fcf is not None and fcf<0:risks.append("잉여현금흐름 감소 원인 확인")
+    if growth>15:reasons.append("연간 매출 성장; 산업 사이클과 비교")
+    if margin>=15:reasons.append("영업수익성; 동일 업종 비교 필요")
+    if fcf is not None and fcf>0:reasons.append("FCF 양수; 계산 범위 검증 필요")
+    if pe is not None:reasons.append("연간 PER "+str(round(pe,1))+"배; 동종기업과 비교 전 저평가 결론 금지")
+    return {"score":score,"label":"위험 검토" if risks else "심층 조사" if score>=4 else "기본 조사",
+            "sector":sector,"drivers":drivers,"method":"산업별 주요 검증 항목 참고; 현재 데이터만으로 업종 내 적정가치 확정 불가",
+            "reasons":reasons,"risks":risks}
 
 def validate(row,previous):
     warnings=[]; critical=[]
