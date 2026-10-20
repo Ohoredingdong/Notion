@@ -8,6 +8,11 @@ try:
 except ImportError:
     import update_market_context as base
 
+# The legacy FOMC/fundsrate.htm route no longer exposes the current table
+# consistently to automated readers. This is the Federal Reserve's current
+# official open-market-operations table.
+base.FED_URL='https://www.federalreserve.gov/monetarypolicy/openmarket.htm'
+
 
 def parse_fed_funds(html, year=None):
     soup=BeautifulSoup(html,'html.parser');rows=[]
