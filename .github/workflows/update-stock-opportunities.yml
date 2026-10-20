@@ -1,0 +1,77 @@
+name: Update Stock Opportunities
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '57 7,22 * * *'
+  workflow_run:
+    workflows: ['Verify Stock Official Filings']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'stock-opportunity-universe.json'
+      - 'scripts/update_stock_opportunities.py'
+      - 'scripts/test_stock_opportunities.py'
+      - 'scripts/install_stock_radar_v8.py'
+      - 'assets/stock-radar-v8.js'
+      - 'assets/stock-radar-v8.css'
+      - 'assets/stock-radar-v8.html'
+      - '.github/workflows/update-stock-opportunities.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-opportunity-v8
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install bounded data and session readers
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.11.3'
+      - name: Test evidence and risk gates
+        run: python scripts/test_stock_opportunities.py
+      - name: Fetch expanded equity universe
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/update_stock_opportunities.py
+      - name: Install tested v8 view when present
+        run: |
+          if [ -f scripts/install_stock_radar_v8.py ] && [ -f assets/stock-radar-v8.js ] && [ -f assets/stock-radar-v8.css ] && [ -f assets/stock-radar-v8.html ]; then
+            node --check assets/stock-radar-v8.js
+            python scripts/install_stock_radar_v8.py
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-opportunity-diagnostics
+          retention-days: 2
+          path: |
+            stock-opportunity-*.json
+            stock-value-radar.html
+            stock-value-radar-data.json
+            stock-official-audit.json
+            stock-radar-health.json
+            scripts/update_stock_opportunities.py
+            scripts/update_stock_decisions.py
+            scripts/test_stock_opportunities.py
+            scripts/install_stock_radar_v8.py
+            assets/stock-radar-v8.*
+      - name: Publish research without altering source financials or training widget
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-opportunity-data.json stock-opportunity-summary.json stock-opportunity-tests.json
+          git add stock-value-radar.html scripts/install_stock_decision_ui.py scripts/install_stock_audit_ui.py
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'data: refresh 24-company opportunity research and tested v8 view'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep $((attempt*3))
+          done
+          exit 1
