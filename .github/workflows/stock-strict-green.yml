@@ -1,0 +1,68 @@
+name: Strict Green Review
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Stock Investment Cases', 'Stock Three-Year Reading']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/stock_strict_green.py'
+      - 'scripts/test_stock_strict_green.py'
+      - 'scripts/install_stock_strict_green.py'
+      - 'assets/stock-green-review.js'
+      - 'stock-research-review-records.json'
+      - '.github/workflows/stock-strict-green.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-strict-green-review
+  cancel-in-progress: true
+jobs:
+  review:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test missing, stale, conflicting and unsafe positive decisions
+        run: python scripts/test_stock_strict_green.py
+      - name: Re-evaluate current cases against source-aligned evidence
+        run: python scripts/stock_strict_green.py
+      - name: Publish source-bound strict opinions and audit trail
+        run: >-
+          python scripts/publish_widget_data.py --message 'audit: require all strict due-diligence checks before green' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json
+      - name: Install gated labels and plain-language explanations
+        run: python scripts/publish_stock_investment_cases.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strict-green-diagnostics
+          retention-days: 3
+          path: |
+            stock-green-*.json
+            stock-investment-cases*.json
+            stock-opportunity-data.json
+            stock-reading-depth*.json
+            stock-market-context.json
+            stock-market-groups.json
+            stock-decision-guide*.json
+            stock-value-radar.html
+            stock-research-review-records.json
+            assets/stock-*.js
+            assets/stock-*.css
+            assets/stock-radar-v8.html
+            scripts/stock_strict_green.py
+            scripts/test_stock_strict_green.py
+            scripts/install_stock_strict_green.py
+            scripts/install_stock_investment_cases.py
+            scripts/install_stock_radar_v8.py
+            scripts/install_stock_term_labels.py
+            scripts/install_stock_decision_guide.py
+            scripts/publish_stock_investment_cases.py
