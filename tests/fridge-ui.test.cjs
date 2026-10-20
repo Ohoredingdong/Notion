@@ -26,6 +26,16 @@ async function boot(options = {}) {
     constructor(...args) { super(...(args.length ? args : [currentTime])); }
     static now() { return currentTime; }
   }
+  class TestPointerEvent extends dom.Event {
+    constructor(type, options = {}) {
+      super(type, { bubbles: true, cancelable: true, ...options });
+      for (const [key, value] of Object.entries({
+        pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0,
+        buttons: type === 'pointerup' || type === 'pointercancel' ? 0 : 1,
+        clientX: 0, clientY: 0, ...options
+      })) if (!['bubbles', 'cancelable', 'composed'].includes(key)) this[key] = value;
+    }
+  }
   const storage = {
     getItem(key) { if (options.storageDenied) throw new Error('Test storage denied'); return memory.get(key) ?? null; },
     setItem(key, value) { if (options.storageDenied) throw new Error('Test storage denied'); memory.set(key, String(value)); },
@@ -41,7 +51,7 @@ async function boot(options = {}) {
     }
   } };
   const w = {
-    navigator, document, localStorage: storage, crypto: webcrypto, CustomEvent: dom.CustomEvent,
+    navigator, document, localStorage: storage, crypto: webcrypto, CustomEvent: dom.CustomEvent, PointerEvent: TestPointerEvent,
     confirm: () => true,
     addEventListener: dom.addEventListener.bind(dom),
     removeEventListener: dom.removeEventListener.bind(dom),
@@ -74,7 +84,7 @@ async function boot(options = {}) {
     matchMedia: () => ({ matches: false }),
     ResizeObserver: class { observe() {} disconnect() {} },
     MutationObserver: TestMutationObserver,
-    CustomEvent: dom.CustomEvent, Event: dom.Event, Node: dom.Node,
+    CustomEvent: dom.CustomEvent, Event: dom.Event, PointerEvent: TestPointerEvent, Node: dom.Node,
     setTimeout(callback, ms) { timers.set(++sequence, { callback, ms }); return sequence; },
     clearTimeout(id) { timers.delete(id); },
     AbortController, TextEncoder, TextDecoder,
@@ -116,11 +126,11 @@ async function readyRice(t, options) {
   await app.toggle('#sg', '식용유'); await app.toggle('#sg', '간장'); await app.toggle('#pg', '밥/즉석밥');
   await app.selectRecipe('계란 볶음밥'); return app;
 }
-async function whileStoreLocked(action) {
+async function whileStoreLocked(action, key = STATE) {
   let release, acquired;
   const gate = new Promise(resolve => { release = resolve; });
   const entered = new Promise(resolve => { acquired = resolve; });
-  const holding = nodeLocks.request(STATE + ':transaction', { mode: 'exclusive' }, async () => {
+  const holding = nodeLocks.request(key + ':transaction', { mode: 'exclusive' }, async () => {
     acquired(); await gate;
   });
   await entered;
@@ -132,8 +142,18 @@ test('HTML identifiers are unique and all local script dependencies are ordered 
   const ids = [...document.querySelectorAll('[id]')].map(x => x.id);
   assert.equal(new Set(ids).size, ids.length);
   const sources = [...document.querySelectorAll('script[src]')].map(x => x.getAttribute('src'));
-  assert.match(sources[0], /^use-me-first-domain\.js\?v=/);
-  assert.match(sources[1], /^use-me-first-store\.js\?v=/);
+  const before = (dependency, consumer) => {
+    const first = sources.findIndex(src => src.split('?')[0] === dependency);
+    const second = sources.findIndex(src => src.split('?')[0] === consumer);
+    assert.ok(first >= 0 && second > first, dependency + ' must load before ' + consumer);
+  };
+  before('use-me-first-domain.js', 'use-me-first-core-final.js');
+  before('use-me-first-store.js', 'use-me-first-core-final.js');
+  before('use-me-first-core-final.js', 'use-me-first-recipe-grid-final.js');
+  before('use-me-first-recipe-grid-final.js', 'use-me-first-ui-final.js');
+  before('use-me-first-kitchen-state.js', 'use-me-first-kitchen.js');
+  before('use-me-first-kitchen-art.js', 'use-me-first-kitchen.js');
+  before('use-me-first-kitchen-nav.js', 'use-me-first-kitchen.js');
   for (const src of sources) { assert.match(src, /\?v=.+/); assert.ok(fs.existsSync(path.join(root, src.split('?')[0]))); }
 });
 
@@ -147,7 +167,9 @@ test('all scripts boot together with empty stock and no fabricated food or nutri
   for (const el of app.document.querySelectorAll('[data-balance-pct]')) assert.equal(el.textContent, '0종');
   assert.equal(app.document.querySelectorAll('.umf-menu-card').length, 8);
   assert.equal(app.$('#umfLogBtn').disabled, true);
-  assert.equal(app.document.querySelectorAll('#umfRecipeGrid img').length, 0);
+  for (const image of app.document.querySelectorAll('#umfRecipeGrid img')) {
+    assert.doesNotMatch(image.getAttribute('src') || '', /^https?:\/\//, 'Recipe art is a bundled asset, not an unrelated external photograph');
+  }
   assert.equal(app.requests.length, 0);
 });
 
@@ -175,7 +197,7 @@ test('invalid inputs preserve stored stock and special characters cannot insert 
   app.fill('#umfQty', '2개'); app.fill('#expiry', '2026-02-30'); await app.click('#save');
   assert.match(app.$('#umfFormError').textContent, /올바른 날짜/); assert.equal(app.w.UMFStore.getState().items.length, 0);
   app.fill('#name', '<img src=x onerror=alert(1)>'); app.fill('#expiry', ''); await app.click('#save');
-  assert.equal(app.document.querySelectorAll('#list img').length, 0);
+  assert.equal(app.document.querySelector('#list img[onerror],#list img[src="x"]'), null);
   assert.equal(app.$('#list .nm').textContent, '<img src=x onerror=alert(1)>');
 });
 
@@ -415,6 +437,62 @@ function shelfItem(app, id) {
   assert.ok(button, 'The actual inventory lot is visible on a shelf: ' + id);
   return button;
 }
+function kitchenGeometry(app) {
+  // Deterministic hit testing validates event/coordinate logic, not CSS layout.
+  const rectangles = new Map(), captures = new Map();
+  const rectangle = (left, top, width, height) => ({ left, top, width, height, x: left, y: top, right: left + width, bottom: top + height });
+  for (const [index, canvas] of [...app.document.querySelectorAll('#umfKitchenScene .shelf-canvas')].entries()) {
+    const rect = rectangle(40 + index % 2 * 300, 50 + Math.floor(index / 2) * 220, 240, 160);
+    rectangles.set(canvas, rect); canvas.getBoundingClientRect = () => rect;
+    Object.defineProperties(canvas, { clientWidth: { configurable: true, value: rect.width }, clientHeight: { configurable: true, value: rect.height } });
+  }
+  for (const button of app.document.querySelectorAll('#umfKitchenScene .fridge-food')) {
+    button.getBoundingClientRect = () => {
+      const rect = rectangles.get(button.closest('.shelf-canvas'));
+      return rectangle(rect.left + Number(button.dataset.x) * 200, rect.top + Number(button.dataset.y) * 120, 40, 40);
+    };
+    Object.defineProperties(button, { offsetWidth: { configurable: true, value: 40 }, offsetHeight: { configurable: true, value: 40 } });
+    button.setPointerCapture = id => captures.set(id, button);
+    button.hasPointerCapture = id => captures.get(id) === button;
+    button.releasePointerCapture = id => { if (captures.get(id) === button) captures.delete(id); };
+  }
+  app.document.elementFromPoint = (x, y) => [...rectangles].find(([, rect]) => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom)?.[0] || null;
+  return {
+    captures,
+    canvas(zone) { return app.$('#umfKitchenScene .shelf-canvas[data-zone="' + zone + '"]'); },
+    point(zone, x, y) {
+      const rect = rectangles.get(this.canvas(zone));
+      return { clientX: rect.left + x * 200 + 20, clientY: rect.top + y * 120 + 20 };
+    },
+    itemPoint(id) { const rect = shelfItem(app, id).getBoundingClientRect(); return { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 }; },
+    pointer(target, type, point, properties = {}) {
+      const event = new app.w.PointerEvent(type, { ...point, ...properties });
+      target.dispatchEvent(event); return event;
+    },
+    click(target, point) {
+      const event = new app.w.CustomEvent('click', { bubbles: true, cancelable: true });
+      Object.assign(event, { button: 0, detail: 1, ...point }); target.dispatchEvent(event); return event;
+    }
+  };
+}
+function assertKitchenPosition(app, id, zone, x, y) {
+  const saved = app.w.UMFKitchenState.positionFor(id), button = shelfItem(app, id);
+  assert.ok(saved, 'An arranged lot has a saved position');
+  assert.equal(app.w.UMFKitchenState.zoneFor(id), zone);
+  assert.equal(button.closest('.shelf-canvas').dataset.zone, zone);
+  for (const [key, expected] of [['x', x], ['y', y]]) {
+    assert.ok(Math.abs(saved[key] - expected) < 1e-10, key + ' expected ' + expected + ', got ' + saved[key]);
+    assert.ok(Math.abs(Number(button.dataset[key]) - expected) < 1e-10, 'Rendered ' + key + ' matches the saved position');
+  }
+  assert.equal(Number(button.dataset.z), saved.z);
+  assert.ok(Number.isSafeInteger(saved.z) && saved.z > 0);
+  return saved;
+}
+async function kitchenKey(app, target, key, options = {}) {
+  const event = new app.w.CustomEvent('keydown', { bubbles: true, cancelable: true });
+  Object.assign(event, { key, shiftKey: false, repeat: false, ...options });
+  target.dispatchEvent(event); await app.flush(); return event;
+}
 
 test('kitchen navigation shows one of four pages and inventory opens the complete real stock list', async t => {
   const items = ['계란', '양파', '당근', '감자', '우유', '두부', '대파', '버섯'].map((name, index) => kitchenItem('route-' + index, name));
@@ -531,32 +609,262 @@ test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and 
   assert.equal(memory.get(STATE), before);
 });
 
-test('kitchen overflow opens all inventory and lets the user move a lot hidden behind plus N', async t => {
-  const items = Array.from({ length: 8 }, (_, index) => kitchenItem('overflow-' + index, '계란', (index + 1) + '개'));
-  const app = await boot({ seed: { [STATE]: existingFridge(items) } }); t.after(() => app.close());
-  const before = app.memory.get(STATE), hiddenId = items[7].id;
+test('kitchen renders every overlapping lot and inventory can select a buried lot to change its layer', async t => {
+  const items = Array.from({ length: 8 }, (_, index) => kitchenItem('overlap-' + index, '계란', (index + 1) + '개'));
+  const view = {
+    version: 2, doors: { freezer: false, fridge: true }, placements: {},
+    positions: Object.fromEntries(items.map((item, index) => [item.id, { x: .4, y: .6, z: index + 1 }]))
+  };
+  const memory = new Map([[STATE, JSON.stringify(existingFridge(items))], [KITCHEN_VIEW, JSON.stringify(view)]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  const before = memory.get(STATE), buriedId = items[0].id;
+  const rendered = [...app.document.querySelectorAll('#umfKitchenScene .shelf-canvas[data-zone="middle"] .fridge-food')];
+  assert.equal(rendered.length, items.length, 'No inventory lot is replaced by a hidden-count placeholder');
+  assert.deepEqual(rendered.map(node => node.dataset.lot), items.map(item => item.id));
+  for (const [index, button] of rendered.entries()) {
+    assert.equal(button.hidden, false); assert.equal(button.disabled, false);
+    assert.equal(button.querySelector('.quantity-mini').textContent, (index + 1) + '개');
+    assertKitchenPosition(app, items[index].id, 'middle', .4, .6);
+    assert.equal(button.style.left, '40%'); assert.equal(button.style.top, '60%');
+    assert.equal(Number(button.style.zIndex), index + 1);
+  }
+  assert.equal(new Set(rendered.map(button => button.style.transform)).size, 1, 'Equal coordinates deliberately overlap');
+  assert.doesNotMatch(app.$('#umfKitchenScene').textContent, /\+\s*[1-9]\d*\s*(?:개)?/);
   await app.click('#all');
   assert.equal(app.document.querySelectorAll('#list .row').length, 6);
-  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
-  const more = app.$('#umfKitchenScene .shelf[data-zone="middle"] .shelf-more');
-  assert.equal(more.hidden, false); assert.equal(more.textContent, '+6');
-  assert.equal(app.document.querySelectorAll('#umfKitchenScene .shelf[data-zone="middle"] .fridge-food').length, 2);
-  await app.click(more);
+  await app.click('#umfKitchenScene [data-action="navigate"][data-page="inventory"]');
   assertKitchenPage(app, 'home');
   assert.equal(app.document.querySelectorAll('#list .row').length, items.length);
   assert.equal(app.document.activeElement, app.$('#inventoryTitle'));
-  const row = [...app.document.querySelectorAll('#list .row')].find(node => node.dataset.id === hiddenId);
+  const row = [...app.document.querySelectorAll('#list .row')].find(node => node.dataset.id === buriedId);
   assert.ok(row);
   const arrange = row.querySelector('[data-kitchen-arrange]');
-  assert.ok(arrange, 'Overflow stock has an actionable placement control in the real inventory list');
+  assert.ok(arrange, 'An overlapped lot remains reachable through its inventory row');
   await app.click(arrange);
   assert.equal(app.w.UMFKitchen.getOrganizing(), true);
-  assert.equal(app.w.UMFKitchen.getMovingId(), hiddenId);
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="pantry"]');
-  assert.equal(shelfItem(app, hiddenId).closest('.shelf').dataset.zone, 'pantry');
-  assert.equal(shelfItem(app, hiddenId).querySelector('.quantity-mini').textContent, '8개');
-  assert.equal(app.w.UMFKitchenState.zoneFor(items[0].id), 'middle');
+  assert.equal(app.w.UMFKitchen.getMovingId(), buriedId);
+  await app.click('#umfKitchenScene [data-action="layer-front"]');
+  const front = assertKitchenPosition(app, buriedId, 'middle', .4, .6);
+  assert.ok(items.slice(1).every(item => app.w.UMFKitchenState.positionFor(item.id).z < front.z));
+  assert.equal(Number(shelfItem(app, buriedId).style.zIndex), items.length);
+  await app.click('#umfKitchenScene [data-action="layer-back"]');
+  const back = assertKitchenPosition(app, buriedId, 'middle', .4, .6);
+  assert.ok(items.slice(1).every(item => app.w.UMFKitchenState.positionFor(item.id).z > back.z));
+  assert.equal(Number(shelfItem(app, buriedId).style.zIndex), 1);
+  assert.equal(memory.get(STATE), before);
+  const arranged = memory.get(KITCHEN_VIEW);
+  app.close();
+  const reloaded = await boot({ memory }); t.after(() => reloaded.close());
+  assert.equal(reloaded.document.querySelectorAll('#umfKitchenScene .fridge-food').length, items.length);
+  for (const item of items) assertKitchenPosition(reloaded, item.id, 'middle', .4, .6);
+  assert.equal(Number(shelfItem(reloaded, buriedId).style.zIndex), 1);
+  assert.equal(memory.get(KITCHEN_VIEW), arranged);
+  assert.equal(memory.get(STATE), before);
+});
+
+test('kitchen layer changes preserve the relative order and coordinates of unselected saved and default lots', async t => {
+  const items = [kitchenItem('saved-onion', '양파'), kitchenItem('default-egg', '계란'), kitchenItem('selected-tofu', '두부')];
+  const app = await boot({ seed: {
+    [STATE]: existingFridge(items),
+    [KITCHEN_VIEW]: { version: 2, doors: { freezer: false, fridge: true }, placements: {}, positions: { 'saved-onion': { x: .4, y: .5, z: 1 } } }
+  } }); t.after(() => app.close());
+  const before = app.memory.get(STATE);
+  const positions = new Map(items.map(item => [item.id, { x: Number(shelfItem(app, item.id).dataset.x), y: Number(shelfItem(app, item.id).dataset.y) }]));
+  assert.ok(Number(shelfItem(app, 'default-egg').style.zIndex) < Number(shelfItem(app, 'saved-onion').style.zIndex));
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  await app.click(shelfItem(app, 'selected-tofu'));
+  await app.click('#umfKitchenScene [data-action="layer-front"]');
+  for (const item of items) {
+    const position = positions.get(item.id);
+    assertKitchenPosition(app, item.id, 'middle', position.x, position.y);
+  }
+  assert.ok(app.w.UMFKitchenState.positionFor('default-egg').z < app.w.UMFKitchenState.positionFor('saved-onion').z, 'Sending C to the front must not move an unrelated default B in front of saved A');
+  assert.ok(app.w.UMFKitchenState.positionFor('saved-onion').z < app.w.UMFKitchenState.positionFor('selected-tofu').z);
   assert.equal(app.memory.get(STATE), before);
+});
+
+test('kitchen mouse placement uses captured-pointer destination coordinates and keeps repaired duplicate lots independent', async t => {
+  const app = await boot({ seed: { [STATE]: existingFridge([kitchenItem('duplicate-lot', '계란', '2개'), kitchenItem('duplicate-lot', '계란', '7개')]) } });
+  t.after(() => app.close());
+  const items = app.w.UMFStore.getState().items;
+  assert.equal(items.length, 2); assert.notEqual(items[0].id, items[1].id, 'Restored duplicate IDs are repaired before the scene maps lots');
+  const movedId = items[1].id, untouchedId = items[0].id, stock = app.memory.get(STATE);
+  assert.equal(app.document.querySelectorAll('#umfKitchenScene .fridge-food').length, 2);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  const geometry = kitchenGeometry(app), food = shelfItem(app, movedId);
+  const start = geometry.itemPoint(movedId), destination = geometry.point('freezer-top', .7, .3);
+  // Grab at 75% across and 25% down: preserving the grab anchor prevents a jump
+  // when the pointer is not at the center of the food.
+  start.clientX += 10; start.clientY -= 10;
+  destination.clientX += 10; destination.clientY -= 10;
+  const viewBefore = app.memory.get(KITCHEN_VIEW);
+  geometry.pointer(food, 'pointerdown', start);
+  assert.equal(geometry.captures.get(1), food);
+  geometry.pointer(food, 'pointermove', destination);
+  assert.equal(app.memory.get(KITCHEN_VIEW), viewBefore, 'A drag preview must not write a position before release');
+  assert.ok(app.document.querySelector('.kitchen-drag-ghost'));
+  // The original source receives pointerup under capture; its event.target is
+  // deliberately not the destination canvas returned by elementFromPoint.
+  geometry.pointer(food, 'pointerup', destination); await app.flush();
+  assertKitchenPosition(app, movedId, 'freezer-top', .7, .3);
+  assert.equal(app.w.UMFKitchenState.positionFor(untouchedId), null);
+  assert.equal(app.w.UMFKitchenState.zoneFor(untouchedId), 'middle');
+  assert.equal(shelfItem(app, movedId).querySelector('.quantity-mini').textContent, '7개');
+  assert.equal(shelfItem(app, untouchedId).querySelector('.quantity-mini').textContent, '2개');
+  assert.equal(app.document.querySelector('.kitchen-drag-ghost'), null);
+  assert.equal(geometry.captures.size, 0);
+  assert.equal(geometry.click(food, destination).defaultPrevented, true, 'The synthetic click following pointerup is consumed');
+  await app.flush();
+  assert.equal(app.w.UMFKitchen.getMovingId(), movedId);
+  assert.equal(app.$('#mb').classList.contains('on'), false);
+  app.advance(501);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  await app.click(food);
+  assert.equal(app.$('#mb').classList.contains('on'), true, 'A later intentional click still opens the editor');
+  assert.equal(app.$('#umfQty').value, '7개');
+  assert.equal(app.memory.get(STATE), stock);
+});
+
+test('kitchen touch placement, canvas taps and arrow nudges preserve v1 preferences while upgrading the same key', async t => {
+  const items = [kitchenItem('touch-egg', '계란', '2개'), kitchenItem('pantry-onion', '양파')];
+  const legacy = { version: 1, doors: { freezer: true, fridge: false }, placements: { 'touch-egg': 'freezer-top', 'pantry-onion': 'pantry' } };
+  const rawLegacy = JSON.stringify(legacy), rawStock = JSON.stringify(existingFridge(items));
+  const memory = new Map([[STATE, rawStock], [KITCHEN_VIEW, rawLegacy]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  assert.equal(memory.get(KITCHEN_VIEW), rawLegacy, 'Reading a valid v1 preference does not rewrite it');
+  assert.equal(app.w.UMFKitchenState.getState().version, 2);
+  assert.equal(app.w.UMFKitchenState.positionFor('touch-egg'), null);
+  assert.equal(app.w.UMFKitchenState.getState().doors.fridge, false);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  const geometry = kitchenGeometry(app), food = shelfItem(app, 'touch-egg');
+  const touch = { pointerId: 31, pointerType: 'touch' }, destination = geometry.point('freezer-top', .6, .4);
+  geometry.pointer(food, 'pointerdown', geometry.itemPoint('touch-egg'), touch);
+  geometry.pointer(food, 'pointermove', destination, touch);
+  geometry.pointer(food, 'pointerup', destination, touch); await app.flush();
+  assertKitchenPosition(app, 'touch-egg', 'freezer-top', .6, .4);
+  geometry.click(food, destination); await app.flush();
+  assert.equal(app.w.UMFKitchen.getMovingId(), 'touch-egg');
+  const canvas = geometry.canvas('middle'), tap = geometry.point('middle', .25, .75);
+  geometry.pointer(canvas, 'pointerdown', tap, touch);
+  geometry.pointer(canvas, 'pointerup', tap, touch);
+  geometry.click(canvas, tap); await app.flush();
+  assertKitchenPosition(app, 'touch-egg', 'middle', .25, .75);
+  assert.equal((await kitchenKey(app, food, 'ArrowRight')).defaultPrevented, true);
+  assertKitchenPosition(app, 'touch-egg', 'middle', .27, .75);
+  await kitchenKey(app, food, 'ArrowDown', { shiftKey: true });
+  assertKitchenPosition(app, 'touch-egg', 'middle', .27, .85);
+  await kitchenKey(app, food, 'ArrowDown', { shiftKey: true });
+  await kitchenKey(app, food, 'ArrowDown', { shiftKey: true });
+  assertKitchenPosition(app, 'touch-egg', 'middle', .27, 1);
+  const atEdge = memory.get(KITCHEN_VIEW);
+  await kitchenKey(app, food, 'ArrowDown');
+  assert.equal(memory.get(KITCHEN_VIEW), atEdge, 'A nudge beyond the edge causes no extra write or layer change');
+  const upgraded = JSON.parse(memory.get(KITCHEN_VIEW));
+  assert.equal(upgraded.version, 2);
+  assert.equal(upgraded.placements['pantry-onion'], 'pantry');
+  assert.equal(upgraded.positions['pantry-onion'], undefined);
+  assert.equal(memory.get(STATE), rawStock);
+  assert.equal([...memory.keys()].filter(key => /^use-me-first-kitchen-view/.test(key)).length, 1);
+  app.close();
+  const reloaded = await boot({ memory }); t.after(() => reloaded.close());
+  assertKitchenPosition(reloaded, 'touch-egg', 'middle', .27, 1);
+  assert.equal(reloaded.w.UMFKitchenState.zoneFor('pantry-onion'), 'pantry');
+  assert.equal(memory.get(STATE), rawStock);
+});
+
+test('kitchen pointer cancellation, Escape and an outside release discard the preview and late pointerup', async t => {
+  const app = await boot({ seed: {
+    [STATE]: existingFridge([kitchenItem('cancel-egg', '계란')]),
+    [KITCHEN_VIEW]: { version: 2, doors: { freezer: true, fridge: true }, placements: {}, positions: { 'cancel-egg': { x: .2, y: .3, z: 1 } } }
+  } }); t.after(() => app.close());
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  const geometry = kitchenGeometry(app), food = shelfItem(app, 'cancel-egg');
+  const before = app.memory.get(KITCHEN_VIEW), stock = app.memory.get(STATE), destination = geometry.point('top', .8, .6);
+  for (const cancellation of ['pointercancel', 'Escape', 'outside']) {
+    app.advance(501);
+    geometry.pointer(food, 'pointerdown', geometry.itemPoint('cancel-egg'));
+    geometry.pointer(food, 'pointermove', destination);
+    assert.ok(app.document.querySelector('.kitchen-drag-ghost'), cancellation + ' starts from a real drag preview');
+    if (cancellation === 'Escape') await kitchenKey(app, food, 'Escape');
+    else if (cancellation === 'pointercancel') geometry.pointer(food, 'pointercancel', destination);
+    else geometry.pointer(food, 'pointerup', { clientX: -100, clientY: -100 });
+    geometry.pointer(food, 'pointerup', destination); await app.flush();
+    assert.equal(app.memory.get(KITCHEN_VIEW), before, cancellation + ' must not save any coordinate, zone or layer');
+    assertKitchenPosition(app, 'cancel-egg', 'middle', .2, .3);
+    assert.equal(app.document.querySelector('.kitchen-drag-ghost,.is-drag-source,.shelf-canvas.is-over'), null);
+    assert.equal(geometry.captures.size, 0);
+    assert.equal(app.$('#mb').classList.contains('on'), false);
+  }
+  assert.equal(app.memory.get(STATE), stock);
+});
+
+test('kitchen closed doors reject a drag source, a drop target and a gesture interrupted by door closing', async t => {
+  const items = [kitchenItem('closed-frozen', '계란'), kitchenItem('open-fresh', '양파')];
+  const app = await boot({ seed: {
+    [STATE]: existingFridge(items),
+    [KITCHEN_VIEW]: { version: 2, doors: { freezer: true, fridge: true }, placements: { 'closed-frozen': 'freezer-top' }, positions: { 'closed-frozen': { x: .2, y: .3, z: 1 }, 'open-fresh': { x: .4, y: .5, z: 2 } } }
+  } }); t.after(() => app.close());
+  const stock = app.memory.get(STATE);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="freezer"]');
+  const geometry = kitchenGeometry(app), frozen = shelfItem(app, 'closed-frozen'), fresh = shelfItem(app, 'open-fresh');
+  const before = app.memory.get(KITCHEN_VIEW), openPoint = geometry.point('top', .6, .7), closedPoint = geometry.point('freezer-top', .6, .7);
+  assert.equal(frozen.disabled, true);
+  geometry.pointer(frozen, 'pointerdown', geometry.itemPoint('closed-frozen'));
+  geometry.pointer(frozen, 'pointermove', openPoint);
+  geometry.pointer(frozen, 'pointerup', openPoint); await app.flush();
+  assert.equal(app.memory.get(KITCHEN_VIEW), before, 'Inert stock cannot begin a gesture');
+  geometry.pointer(fresh, 'pointerdown', geometry.itemPoint('open-fresh'));
+  geometry.pointer(fresh, 'pointermove', closedPoint);
+  geometry.pointer(fresh, 'pointerup', closedPoint); await app.flush();
+  assert.equal(app.memory.get(KITCHEN_VIEW), before, 'A closed destination cannot receive an item');
+  app.advance(501);
+  geometry.pointer(fresh, 'pointerdown', geometry.itemPoint('open-fresh'));
+  geometry.pointer(fresh, 'pointermove', openPoint);
+  await app.w.UMFKitchenState.toggleDoor('fridge'); await app.flush();
+  const afterClosing = app.memory.get(KITCHEN_VIEW);
+  geometry.pointer(fresh, 'pointerup', openPoint); await app.flush();
+  assert.equal(app.memory.get(KITCHEN_VIEW), afterClosing, 'A late pointerup cannot revive a gesture canceled by closing the source');
+  assertKitchenPosition(app, 'closed-frozen', 'freezer-top', .2, .3);
+  assertKitchenPosition(app, 'open-fresh', 'middle', .4, .5);
+  assert.equal(app.$('#inside-fridge').hasAttribute('inert'), true);
+  assert.equal(app.document.querySelector('.kitchen-drag-ghost'), null);
+  assert.equal(geometry.captures.size, 0);
+  assert.equal(app.memory.get(STATE), stock);
+});
+
+test('kitchen a queued pointer placement cannot commit after navigation, global Escape or a changed inventory lot', async t => {
+  for (const cancellation of ['navigation', 'Escape', 'inventory change']) {
+    const app = await boot({ seed: {
+      [STATE]: existingFridge([kitchenItem('queued-egg', '계란', '2개')]),
+      [KITCHEN_VIEW]: { version: 2, doors: { freezer: true, fridge: true }, placements: {}, positions: { 'queued-egg': { x: .2, y: .3, z: 1 } } }
+    } }); t.after(() => app.close());
+    await app.click('#umfKitchenScene [data-action="organize"]');
+    const geometry = kitchenGeometry(app), food = shelfItem(app, 'queued-egg');
+    const before = app.memory.get(KITCHEN_VIEW), destination = geometry.point('freezer-bottom', .6, .8);
+    await whileStoreLocked(async () => {
+      geometry.pointer(food, 'pointerdown', geometry.itemPoint('queued-egg'));
+      geometry.pointer(food, 'pointermove', destination);
+      geometry.pointer(food, 'pointerup', destination);
+      assert.equal(food.disabled, true, 'The position save is waiting for the real Web Lock');
+      assert.equal(app.memory.get(KITCHEN_VIEW), before);
+      if (cancellation === 'navigation') app.w.UMFKitchenNav.go('recipes');
+      else if (cancellation === 'Escape') {
+        const event = new app.w.CustomEvent('keydown', { bubbles: true, cancelable: true });
+        event.key = 'Escape'; app.document.body.dispatchEvent(event);
+      } else await app.w.UMFStore.updateAsync(state => { state.items[0].quantity = '7개'; });
+      // Do not flush while holding the lock: the UI action is intentionally
+      // still queued, and must validate its captured context after release.
+    }, KITCHEN_VIEW);
+    await app.flush();
+    assert.equal(app.memory.get(KITCHEN_VIEW), before, cancellation + ' cancels the delayed position write');
+    assertKitchenPosition(app, 'queued-egg', 'middle', .2, .3);
+    assert.equal(app.document.querySelector('.kitchen-drag-ghost'), null);
+    assert.equal(app.$('#mb').classList.contains('on'), false);
+    if (cancellation === 'navigation') assertKitchenPage(app, 'recipes');
+    if (cancellation === 'inventory change') assert.equal(shelfItem(app, 'queued-egg').querySelector('.quantity-mini').textContent, '7개');
+    app.close();
+  }
 });
 
 test('kitchen hero follows the selected recipe and opens its live detail instead of a separate recommendation', async t => {

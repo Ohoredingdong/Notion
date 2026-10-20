@@ -71,7 +71,9 @@
     '버섯': '<path d="M10 13h4l1 8H9l1-8Z" fill="#f4e8d4" stroke="#aa9479"/><path d="M3 13C3 1 21 1 21 13H3Z" fill="#ceb6a0" stroke="#9b8067"/><path d="M7 9h.1M13 6h.1M17 10h.1" stroke="#fff4df" stroke-width="2.5"/>',
     '치즈': '<path d="m4 10 12-6 5 6v10H4V10Z" fill="#f8da83" stroke="#c39e4a"/><path d="M4 10h17" stroke="#c39e4a"/><circle cx="9" cy="15" r="1.3" fill="#dcb65c"/><circle cx="16" cy="16" r="1.8" fill="#dcb65c"/>'
   };
-  const artIcon = (name) => ingredientParts[name]
+  const artIcon = (name) => window.UMFKitchenArt?.foodIdForName
+    ? window.UMFKitchenArt.foodArt(window.UMFKitchenArt.foodIdForName(name))
+    : ingredientParts[name]
     ? `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">${ingredientParts[name]}</svg>`
     : (window.UMFCore?.icon(name) || '<svg viewBox="0 0 24 24" fill="none"><path d="M4 11h16l-2 9H6L4 11Z" stroke="currentColor"/></svg>');
   const heart = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';

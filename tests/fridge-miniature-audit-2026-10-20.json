@@ -1,0 +1,88 @@
+{
+  "feature": "Reference-inspired miniature food art and freely overlapping fridge arrangements",
+  "date": "2026-10-20",
+  "public_path": "https://ohoredingdong.github.io/Notion/use-me-first.html",
+  "automated": {
+    "total": 130,
+    "passed": 130,
+    "failed": 0,
+    "domain": 24,
+    "store_and_sync_contract": 47,
+    "dom_integration": 35,
+    "kitchen_state": 24,
+    "javascript_syntax": {
+      "passed": 11,
+      "failed": 0
+    },
+    "command": "FRIDGE_TEST_DOM=/tmp/fridge-audit-dom/node_modules/linkedom node --test --test-isolation=none tests/fridge-domain.test.cjs tests/fridge-store.test.cjs tests/fridge-ui.test.cjs tests/fridge-kitchen-state.test.cjs"
+  },
+  "art": {
+    "path": "assets/food-miniatures-v2.webp",
+    "bytes": 432316,
+    "sha256": "7fe2a2c1907cbac1f3a73a7d215a7d7b84701c3b8767a213bf7a83793f736f37",
+    "size": [
+      1254,
+      1254
+    ],
+    "encoding": "WebP quality 90, original alpha retained",
+    "ingredients": 28,
+    "dishes": 8,
+    "source": "Built-in image generation using the user-provided image as style reference",
+    "prompt_summary": "Warm ivory and sage, tactile 3D miniature groceries and eight plated Korean meals; matching soft daylight, transparent background, separate atlas sprites without brand text.",
+    "presentation": "One locally hosted atlas, per-sprite clipped SVG viewports, shared across fridge, inventory, recipe ingredients, shopping list and the selected dish."
+  },
+  "browser": {
+    "engine": "Cloud Chrome via CUA",
+    "desktop": {
+      "document_client_width": 1348,
+      "document_scroll_width": 1348
+    },
+    "mobile_iframes": [
+      {
+        "outer_width": 390,
+        "document_client_width": 375,
+        "document_scroll_width": 375
+      },
+      {
+        "outer_width": 320,
+        "document_client_width": 305,
+        "document_scroll_width": 305
+      },
+      {
+        "outer_width": 430,
+        "document_client_width": 415,
+        "document_scroll_width": 415
+      }
+    ],
+    "verified": [
+      "Eight synthetic inventory lots displayed; duplicate egg names retained their separate 2개 and 7개 quantities",
+      "Actual mouse dragging between compartments and into a specific shelf position",
+      "Cheese and carrot placed at overlapping coordinates; layer-back changed their order without changing coordinates",
+      "Reload preserved both overlap coordinates and relative stacking order",
+      "390px and 320px home views preserved the normalized placement without horizontal overflow",
+      "320px, 390px and 430px recipe layouts displayed the miniature art without page/card horizontal overflow",
+      "Transparent miniature silhouettes visually inspected in the browser"
+    ],
+    "test_data": "Synthetic local preview only; no production stock was added."
+  },
+  "independent_regressions": [
+    "A delayed move is rejected when its source door was closed before the storage event arrived",
+    "Queued materialization uses the latest per-shelf item order",
+    "Changing one layer preserves the relative order and saved coordinates of other items"
+  ],
+  "preservation": {
+    "inventory_key": "use-me-first-state-v5",
+    "inventory_schema_changed": false,
+    "preferences_key": "use-me-first-kitchen-view-v1",
+    "preferences_version": 2,
+    "migration": "Version 1 is read in memory without writing; the first actual preference change writes version 2.",
+    "position_changes_do_not_change_quantity_or_expiry": true,
+    "backend_changed": false,
+    "sample_stock_added_to_product": false
+  },
+  "limits": [
+    "Mobile screen widths were checked in desktop Chrome iframes, not on physical phones.",
+    "Touch pointer behavior and cancellation were tested through DOM events; real browser interaction used mouse dragging.",
+    "Door state, positions and stacking order are local browser preferences, separate from the existing inventory sync payload."
+  ]
+}

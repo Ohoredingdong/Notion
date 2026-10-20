@@ -7,6 +7,7 @@
   const hero = document.querySelector('#umfKitchenHero');
   if (!S || !D || !R || !K || !A || !scene) return;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const objectPhrase = name => { const word = String(name), last = word.charCodeAt(word.length - 1); return word + (last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 ? '을' : '를'); };
   const zones = Object.freeze({
     top: '냉장실 · 윗칸', middle: '냉장실 · 채소칸', bottom: '냉장실 · 밀폐 보관칸',
     'freezer-top': '냉동실 · 윗칸', 'freezer-middle': '냉동실 · 가운데 칸', 'freezer-bottom': '냉동실 · 아랫칸', pantry: '실온 · 양념 선반'
@@ -23,21 +24,46 @@
     '마늘': 'garlic', '다진마늘': 'garlic', '소금': 'salt'
   });
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
-  const foodIdFor = name => { const key = D.canonical(name); return own(foods, key) ? foods[key] : 'ingredient'; };
+  const foodIdFor = name => { const key = D.canonical(name); return A.foodIdForName?.(name) || (own(foods, key) ? foods[key] : 'ingredient'); };
   const compartmentFor = zone => zone === 'pantry' ? 'pantry' : zone.startsWith('freezer-') ? 'freezer' : 'fridge';
   const zoneFor = item => { const value = K.zoneFor(item); return own(zones, value) ? value : 'middle'; };
   const text = (parent, selector, value) => { const node = parent?.querySelector(selector); if (node && node.textContent !== String(value)) node.textContent = value; };
   const itemButtons = new Map();
+  const displayedPositions = new Map();
+  const handledPointerMoves = new WeakSet();
   let initialized = false, organizing = false, movingId = null, draggedId = null, moveBusy = false, organizeBusy = false;
   let interaction = 0, destroyed = false, lastHeroName = null, localError = '';
+  let pointerSession = null, htmlDrag = null, suppressClickUntil = 0, ghostSequence = 0;
   const doorBusy = { freezer: false, fridge: false };
+  const unit = value => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+  function defaultPosition(id, index) {
+    const row = Math.floor(index % 9 / 3), column = index % 3;
+    const seed = [...String(id)].reduce((value, letter) => (value * 31 + letter.charCodeAt(0)) >>> 0, 17);
+    const offset = index < 9 ? 0 : ((seed % 11) - 5) * .006;
+    return { x: unit((column + (row % 2) * .18) / 2.2 + offset), y: unit(.76 - row * .33 - offset), z: 0 };
+  }
+  function normalizedPoint(rect, size, point, anchor = { x: .5, y: .5 }) {
+    const width = rect.width - size.width, height = rect.height - size.height;
+    return { x: width > 0 ? unit((point.x - rect.left - size.width * anchor.x) / width) : 0, y: height > 0 ? unit((point.y - rect.top - size.height * anchor.y) / height) : 0 };
+  }
+  function positionFor(id) { return K.positionFor?.(id) || displayedPositions.get(id) || { x: .5, y: .5, z: 0 }; }
+  function placementFingerprint(id) {
+    const item = S.getState().items.find(value => value.id === id);
+    return item ? JSON.stringify([item, zoneFor(item), K.positionFor?.(id) || null, D.daysLeft(item.expiry)]) : null;
+  }
+  function placeButton(button, position, layer) {
+    button.dataset.x = String(position.x); button.dataset.y = String(position.y); button.dataset.z = String(position.z);
+    button.style.setProperty('--food-x', String(position.x)); button.style.setProperty('--food-y', String(position.y)); button.style.setProperty('--food-z', String(layer));
+    button.style.position = 'absolute'; button.style.left = position.x * 100 + '%'; button.style.top = position.y * 100 + '%';
+    button.style.transform = 'translate(' + (-position.x * 100) + '%, ' + (-position.y * 100) + '%)'; button.style.zIndex = String(layer);
+  }
 
   function shelfMarkup(zone) {
     const label = zones[zone].split(' · ')[1];
     return '<div class="shelf" data-zone="' + zone + '"><span class="shelf-name">' + label + '</span>' +
       '<button type="button" class="shelf-name shelf-target" data-action="move-zone" data-zone="' + zone + '" aria-label="' + zones[zone] + '으로 옮기기" hidden>' + label + ' <span aria-hidden="true">＋</span></button>' +
       '<button type="button" class="shelf-more" data-action="show-zone" data-zone="' + zone + '" hidden></button>' +
-      '<span class="shelf-empty">차곡차곡 담아주세요</span></div>';
+      '<div class="shelf-canvas" data-zone="' + zone + '" aria-label="' + zones[zone] + ' 재료 배치"><span class="shelf-empty">차곡차곡 담아주세요</span></div></div>';
   }
   function mountScene() {
     const inside = Object.entries(compartments).map(([key, c]) =>
@@ -58,7 +84,9 @@
       '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
       '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
-      '<div class="drag-note kitchen-arrange-tools" hidden><p id="umfKitchenArrangeHelp">끌어서 옮기거나, 재료 → 칸 순서로 눌러주세요.</p><div class="kitchen-zone-controls" role="group" aria-label="선택한 재료를 옮길 보관 위치">' +
+      '<div class="drag-note kitchen-arrange-tools" hidden><p id="umfKitchenArrangeHelp">정리 모드에서 재료를 끌어 원하는 자리에 놓으세요. 재료를 고른 뒤 선반의 빈 자리를 눌러도 돼요. 방향키로 조금씩, Shift와 함께 누르면 더 크게 옮겨요. Escape로 이동을 취소해요.</p>' +
+      '<div class="kitchen-layer-controls" role="group" aria-label="선택한 재료의 앞뒤 순서"><strong class="kitchen-selected-material">옮길 재료를 골라주세요</strong><button type="button" class="btn btn-small btn-line" data-action="layer-front" disabled>앞에 놓기</button><button type="button" class="btn btn-small btn-line" data-action="layer-back" disabled>뒤에 놓기</button></div>' +
+      '<div class="kitchen-zone-controls" role="group" aria-label="선택한 재료를 옮길 보관 위치">' +
       Object.entries(zones).map(([zone, label]) => '<button type="button" class="btn btn-small btn-line" data-action="move-zone" data-zone="' + zone + '">' + label + '</button>').join('') +
       '</div><p class="tiny">위치를 옮겨도 수량과 소비기한은 바뀌지 않아요.</p></div>' +
       '<section class="kitchen-pantry" aria-label="실온 양념 선반" hidden>' + shelfMarkup('pantry') + '</section>' +
@@ -88,13 +116,14 @@
       button.dataset.signature = signature;
       button.innerHTML = A.foodArt(foodIdFor(item.name)) + '<span class="quantity-mini">' + esc(status.quantity) + '</span><span class="food-label">' + esc(item.name) + '</span>' +
         (status.d !== null && status.d <= 2 ? '<i class="expiry-dot" aria-hidden="true"></i>' : '');
+      for (const image of button.querySelectorAll('img')) image.draggable = false;
     }
     const label = item.name + ', ' + status.quantity + ', ' + zones[zone] + ', ' + status.label;
     button.setAttribute('aria-label', label + (organizing ? ', 옮길 재료 선택' : ', 재료 수정'));
     button.title = label; button.classList.toggle('expired', status.d !== null && status.d < 0);
     button.classList.toggle('exhausted', status.empty); button.classList.toggle('selected', movingId === item.id);
     button.disabled = !initialized || moveBusy || !openZone(zone, doors);
-    button.draggable = !button.disabled;
+    button.draggable = !button.disabled && (!organizing || htmlDrag?.id === item.id);
     if (organizing) { button.setAttribute('aria-pressed', String(movingId === item.id)); button.setAttribute('aria-describedby', 'umfKitchenArrangeHelp'); }
     else { button.removeAttribute('aria-pressed'); button.removeAttribute('aria-describedby'); }
     return button;
@@ -102,7 +131,10 @@
   function renderScene() {
     const items = S.getState().items, state = K.getState(), doors = state.doors, focused = document.activeElement;
     const focusedInside = scene.contains(focused) ? focused.closest('.fridge-inside') : null;
-    const placements = new Map(items.map(item => [item.id, zoneFor(item)]));
+    const placements = new Map(items.map(item => [item.id, own(state.placements, item.id) ? state.placements[item.id] : 'middle']));
+    if (pointerSession && (!items.some(item => item.id === pointerSession.id) || !openZone(pointerSession.sourceZone, doors) || placementFingerprint(pointerSession.id) !== pointerSession.fingerprint)) {
+      cleanupPointer(); interaction++; announce('재료 상태가 바뀌어 이동을 취소했어요. 다시 골라주세요.');
+    }
     if (movingId && (!placements.has(movingId) || !openZone(placements.get(movingId), doors))) { movingId = null; interaction++; }
     const anyOpen = doors.freezer || doors.fridge;
     const stage = scene.querySelector('.fridge-stage');
@@ -120,15 +152,20 @@
         else { control.disabled = busy; control.classList.toggle('is-open', !!doors[key]); text(control, '.toggle-label', compartment.label + ' ' + (doors[key] ? '닫기' : '열기')); text(control, 'small', count); }
       }
     }
+    displayedPositions.clear();
     for (const zone of Object.keys(zones)) {
       const shelf = scene.querySelector('.shelf[data-zone="' + zone + '"]'), lots = items.filter(item => placements.get(item.id) === zone);
       const more = shelf.querySelector('.shelf-more'), label = shelf.querySelector('span.shelf-name'), target = shelf.querySelector('.shelf-target');
-      const wanted = lots.slice(0, 2).map(item => foodButton(item, zone, doors));
-      for (const button of shelf.querySelectorAll('.fridge-food')) if (!wanted.includes(button)) button.remove();
-      let anchor = more;
-      for (let n = wanted.length - 1; n >= 0; n--) { if (wanted[n].nextElementSibling !== anchor) shelf.insertBefore(wanted[n], anchor); anchor = wanted[n]; }
+      const canvas = shelf.querySelector('.shelf-canvas');
+      const layout = lots.map((item, index) => ({ item, index, position: own(state.positions || {}, item.id) ? state.positions[item.id] : defaultPosition(item.id, index) }));
+      const layers = new Map([...layout].sort((a, b) => a.position.z - b.position.z || a.index - b.index).map((entry, index) => [entry.item.id, index + 1]));
+      const wanted = layout.map(({ item, position }) => { const button = foodButton(item, zone, doors); displayedPositions.set(item.id, { ...position }); placeButton(button, position, layers.get(item.id)); return button; });
+      for (const button of canvas.querySelectorAll('.fridge-food')) if (!wanted.includes(button)) button.remove();
+      let anchor = canvas.querySelector('.shelf-empty');
+      for (let n = wanted.length - 1; n >= 0; n--) { if (wanted[n].nextElementSibling !== anchor) canvas.insertBefore(wanted[n], anchor); anchor = wanted[n]; }
       label.hidden = organizing; target.hidden = !organizing; target.disabled = !initialized || !movingId || moveBusy || !openZone(zone, doors);
-      shelf.classList.toggle('drop-mode', organizing); more.hidden = lots.length <= 2; more.textContent = '+' + Math.max(0, lots.length - 2);
+      canvas.classList.toggle('is-organizing', organizing); canvas.setAttribute('aria-disabled', String(!initialized || !openZone(zone, doors)));
+      shelf.classList.toggle('drop-mode', organizing); more.hidden = lots.length <= 2; more.textContent = '전체 ' + lots.length + '개';
       more.disabled = !openZone(zone, doors); more.setAttribute('aria-label', zones[zone] + ' 재료 ' + lots.length + '개 전체 재고에서 보기');
       shelf.querySelector('.shelf-empty').hidden = lots.length > 0;
     }
@@ -140,14 +177,19 @@
     if (organize.dataset.mode !== String(organizing)) { organize.dataset.mode = String(organizing); organize.querySelector('.organize-icon').innerHTML = A.icon(organizing ? 'check' : 'sparkles'); }
     const moving = items.find(item => item.id === movingId);
     scene.querySelector('.organize-banner').hidden = !organizing;
-    text(scene, '.organize-banner span', moving ? moving.name + ' · 옮길 칸을 눌러주세요' : '재료를 누른 뒤, 옮길 칸을 눌러주세요');
+    text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
     scene.querySelector('.kitchen-arrange-tools').hidden = !organizing;
+    text(scene, '.kitchen-selected-material', moving ? moving.name + ' 선택됨' : '옮길 재료를 골라주세요');
+    for (const button of scene.querySelectorAll('.kitchen-layer-controls button')) {
+      button.disabled = !initialized || !moving || moveBusy || !!pointerSession || !openZone(placements.get(movingId) || 'middle', doors);
+      button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + (button.dataset.action === 'layer-front' ? '앞에 놓기' : '뒤에 놓기'));
+    }
     scene.querySelector('.kitchen-pantry').hidden = !organizing && !items.some(item => placements.get(item.id) === 'pantry');
     for (const button of scene.querySelectorAll('.kitchen-zone-controls [data-zone]')) {
       button.disabled = !initialized || !movingId || moveBusy || !openZone(button.dataset.zone, doors);
-      button.setAttribute('aria-label', (moving ? moving.name + '을 ' : '') + zones[button.dataset.zone] + '으로 옮기기');
+      button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + zones[button.dataset.zone] + '으로 옮기기');
     }
-    const hint = organizing ? '재료를 누르고, 옮길 칸을 골라주세요' : anyOpen ? '재료를 누르면 수량과 기한을 볼 수 있어요' : '왼쪽은 냉동실, 오른쪽은 냉장실이에요';
+    const hint = organizing ? '겹쳐 놓을 수 있어요 · 앞뒤 순서도 바꿔보세요' : anyOpen ? '재료를 누르면 수량과 기한을 볼 수 있어요' : '왼쪽은 냉동실, 오른쪽은 냉장실이에요';
     const hintNode = scene.querySelector('.scene-hint');
     if (hintNode.dataset.message !== hint) { hintNode.dataset.message = hint; hintNode.innerHTML = A.icon(anyOpen ? 'leaf' : 'heart') + esc(hint); }
     if (focusedInside && !doors[focusedInside.dataset.compartment] && (document.activeElement === focused || document.activeElement === document.body)) scene.querySelector('.toggle-' + focusedInside.dataset.compartment)?.focus();
@@ -210,7 +252,7 @@
   async function toggleOrganize() {
     if (!initialized || moveBusy || organizeBusy) return;
     const token = ++interaction;
-    if (organizing) { organizing = false; movingId = null; draggedId = null; renderScene(); announce('자리 정리를 마쳤어요.'); return; }
+    if (organizing) { cleanupPointer(); organizing = false; movingId = null; draggedId = null; renderScene(); announce('자리 정리를 마쳤어요.'); return; }
     organizeBusy = true; renderScene();
     try {
       if (await K.setDoors({ freezer: true, fridge: true })) { localError = ''; if (token === interaction) { organizing = true; movingId = null; announce('옮길 재료를 누른 뒤, 옮길 칸을 골라주세요.'); } }
@@ -245,35 +287,79 @@
     interaction++; movingId = movingId === id ? null : id; renderScene();
     announce(movingId ? item.name + ' 선택. 옮길 칸을 골라주세요.' : '재료 선택을 취소했어요.');
   }
-  async function moveItem(id, zone) {
+  function restoreItemFocus(id, focused, token) {
+    if (token !== interaction || !(document.activeElement === focused || document.activeElement === document.body)) return;
+    const moved = itemButtons.get(id);
+    if (moved?.isConnected && !moved.disabled) moved.focus();
+  }
+  async function moveItem(id, zone, requestedPosition) {
     if (!initialized || moveBusy || !own(zones, zone) || !openZone(zone)) return;
     const item = S.getState().items.find(value => value.id === id);
     if (!item) { movingId = null; announce('먼저 옮길 재료를 골라주세요.'); renderScene(); return; }
     const token = interaction, focused = document.activeElement, ownedFocus = scene.contains(document.activeElement);
+    const fingerprint = placementFingerprint(id);
+    const previousZone = zoneFor(item), fallback = previousZone === zone ? positionFor(id) : defaultPosition(id, S.getState().items.filter(value => zoneFor(value) === zone).length);
+    const position = requestedPosition || fallback;
+    const guard = () => !destroyed && token === interaction && openZone(previousZone) && openZone(zone) && placementFingerprint(id) === fingerprint;
     moveBusy = true; renderScene();
     try {
-      if (await K.setZone(id, zone)) {
+      if (await K.setPosition(id, zone, { x: unit(position.x), y: unit(position.y) }, guard)) {
         localError = '';
-        if (token === interaction) { movingId = null; announce(item.name + '을 ' + zones[zone] + '으로 옮겼어요.'); }
-      } else localError = K.error || '재료 위치를 저장하지 못했어요. 다시 시도해 주세요.';
+        if (token === interaction) { movingId = id; announce(objectPhrase(item.name) + ' ' + zones[zone] + '의 원하는 자리에 놓았어요.'); }
+      } else if (!guard()) announce('재료나 선택이 바뀌어 이동을 취소했어요.');
+      else localError = K.error || '재료 위치를 저장하지 못했어요. 다시 시도해 주세요.';
     } catch (_) { localError = '재료 위치를 저장하지 못했어요. 다시 시도해 주세요.'; }
     finally {
       moveBusy = false; draggedId = null; render();
-      if (token === interaction && ownedFocus && (document.activeElement === focused || document.activeElement === document.body)) {
-        const moved = itemButtons.get(id), more = scene.querySelector('.shelf[data-zone="' + zone + '"] .shelf-more');
-        if (moved?.isConnected && !moved.disabled) moved.focus();
-        else if (more && !more.hidden && !more.disabled) more.focus();
-        else scene.querySelector('[data-action="organize"]')?.focus();
-      }
+      if (ownedFocus) restoreItemFocus(id, focused, token);
     }
   }
+  async function changeLayer(direction) {
+    const id = movingId, item = S.getState().items.find(value => value.id === id);
+    if (!organizing || !item || moveBusy || pointerSession || !openZone(zoneFor(item))) return;
+    const zone = zoneFor(item), token = interaction, focused = document.activeElement;
+    const guard = () => !destroyed && token === interaction && S.getState().items.some(value => value.id === id) && zoneFor(id) === zone && openZone(zone);
+    moveBusy = true; renderScene();
+    try {
+      // Materialize the visible defaults together so sending a saved tile behind
+      // an unsaved tile has the same meaning after reload. No inventory is changed.
+      const seeded = await K.updateAsync(draft => {
+        const lots = S.getState().items.filter(value => (own(draft.placements, value.id) ? draft.placements[value.id] : 'middle') === zone);
+        const missing = lots.filter(value => !own(draft.positions, value.id));
+        if (!missing.length) return;
+        lots.forEach((value, index) => {
+          if (own(draft.positions, value.id)) return;
+          const position = defaultPosition(value.id, index);
+          Object.defineProperty(draft.positions, value.id, { value: { x: position.x, y: position.y, z: 0 }, writable: true, enumerable: true, configurable: true });
+        });
+        // Defaults were behind saved positions. Preserve that whole order while
+        // assigning positive stored layers, then move only the selected tile.
+        const order = new Map(S.getState().items.map((value, index) => [value.id, index]));
+        Object.entries(draft.positions).sort((a, b) => a[1].z - b[1].z || (order.get(a[0]) ?? Infinity) - (order.get(b[0]) ?? Infinity)).forEach(([, position], index) => { position.z = index + 1; });
+      }, guard);
+      if (seeded && await K.changeLayer(id, direction, guard)) {
+        localError = ''; announce(objectPhrase(item.name) + ' ' + (direction === 'front' ? '앞에' : '뒤에') + ' 놓았어요.');
+      } else if (!guard()) announce('재료나 선택이 바뀌어 순서 변경을 취소했어요.');
+      else localError = K.error || '재료의 앞뒤 순서를 저장하지 못했어요.';
+    } catch (_) { localError = '재료의 앞뒤 순서를 저장하지 못했어요.'; }
+    finally { moveBusy = false; render(); restoreItemFocus(id, focused, token); }
+  }
   function onSceneClick(event) {
+    if (suppressClickUntil && Date.now() <= suppressClickUntil) { suppressClickUntil = 0; event.preventDefault(); event.stopPropagation(); return; }
+    const canvas = event.target.closest('.shelf-canvas');
+    if (organizing && movingId && canvas && !event.target.closest('.fridge-food')) {
+      const position = pointOnCanvas(canvas, itemButtons.get(movingId), event);
+      if (position && openZone(canvas.dataset.zone)) moveItem(movingId, canvas.dataset.zone, position);
+      return;
+    }
     const target = event.target.closest('[data-action]');
     if (!target || !scene.contains(target) || target.disabled || target.getAttribute('aria-disabled') === 'true') return;
     if (target.dataset.action === 'toggle-fridge') toggleDoor(target.dataset.compartment);
     else if (target.dataset.action === 'organize') toggleOrganize();
     else if (target.dataset.action === 'fridge-food') selectItem(target.dataset.lot);
     else if (target.dataset.action === 'move-zone' && organizing) moveItem(movingId, target.dataset.zone);
+    else if (target.dataset.action === 'layer-front') changeLayer('front');
+    else if (target.dataset.action === 'layer-back') changeLayer('back');
     else if (target.dataset.action === 'show-zone') navigate('inventory');
     else if (target.dataset.action === 'navigate') navigate(target.dataset.page);
     else if (target.dataset.action === 'add-food') window.UMFCore?.openAdd();
@@ -288,45 +374,159 @@
     else if (target.dataset.action === 'navigate') navigate('recipes');
   }
   function onKeyDown(event) {
+    if (event.key !== 'Escape') suppressClickUntil = 0;
+    if (event.key === 'Escape' && (pointerSession || organizing)) {
+      event.preventDefault(); event.stopPropagation(); cleanupPointer(); clearDrag(); interaction++; movingId = null; renderScene(); announce('옮길 재료 선택을 취소했어요.'); return;
+    }
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (organizing && movingId && own(arrows, event.key) && event.target.closest('.fridge-food,.kitchen-arrange-tools')) {
+      event.preventDefault(); suppressClickUntil = 0;
+      if (moveBusy || pointerSession) return;
+      const step = event.shiftKey ? .1 : .02, current = positionFor(movingId), vector = arrows[event.key];
+      const next = { x: unit(current.x + vector[0] * step), y: unit(current.y + vector[1] * step) };
+      if (next.x !== current.x || next.y !== current.y) moveItem(movingId, zoneFor(movingId), next);
+      return;
+    }
     const target = event.target.closest('.fridge-door[role="button"]');
     if (target && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) target.click(); }
-    else if (event.key === 'Escape' && organizing) { interaction++; movingId = null; draggedId = null; renderScene(); announce('옮길 재료 선택을 취소했어요.'); }
   }
   function onNavigation(event) {
-    interaction++;
+    interaction++; cleanupPointer(); clearDrag();
     if (event.detail?.page !== 'home') { organizing = false; movingId = null; draggedId = null; renderScene(); }
   }
-  function dragTarget(event) { const target = event.target.closest('.shelf[data-zone],.kitchen-zone-controls [data-zone]'); return target && scene.contains(target) ? target : null; }
+  function sizeOf(button) {
+    const rect = button?.getBoundingClientRect?.();
+    return { width: rect?.width || button?.offsetWidth || 0, height: rect?.height || button?.offsetHeight || 0 };
+  }
+  function pointOnCanvas(canvas, button, event, anchor) {
+    const rect = canvas?.getBoundingClientRect?.();
+    if (!rect || rect.width <= 0 || rect.height <= 0 || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
+    if (event.clientX < rect.left || event.clientX > rect.left + rect.width || event.clientY < rect.top || event.clientY > rect.top + rect.height) return null;
+    return normalizedPoint(rect, sizeOf(button), { x: event.clientX, y: event.clientY }, anchor);
+  }
+  function canvasAtPoint(event) {
+    if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
+    // Pointer capture keeps event.target on the source. Hit-testing is essential
+    // both for another shelf and for rejecting an outside release.
+    let hit;
+    if (typeof document.elementFromPoint === 'function') hit = document.elementFromPoint(event.clientX, event.clientY);
+    else hit = event.target;
+    const canvas = hit?.closest?.('.shelf-canvas');
+    if (!canvas || !scene.contains(canvas) || !openZone(canvas.dataset.zone) || canvas.closest('[inert]')) return null;
+    const rect = canvas.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && event.clientX >= rect.left && event.clientX <= rect.left + rect.width && event.clientY >= rect.top && event.clientY <= rect.top + rect.height ? canvas : null;
+  }
+  function clearHighlights() { for (const target of scene.querySelectorAll('.is-over')) target.classList.remove('is-over'); }
+  function makeGhost(button) {
+    const ghost = button.cloneNode(true), rect = button.getBoundingClientRect(), prefix = 'umf-drag-' + (++ghostSequence) + '-';
+    ghost.removeAttribute('id'); ghost.removeAttribute('data-action'); ghost.removeAttribute('data-lot');
+    ghost.classList.remove('selected', 'is-drag-source'); ghost.classList.add('kitchen-drag-ghost');
+    ghost.disabled = true; ghost.draggable = false; ghost.tabIndex = -1; ghost.setAttribute('aria-hidden', 'true');
+    const renamed = new Map();
+    for (const node of ghost.querySelectorAll('[id]')) { renamed.set(node.id, prefix + node.id); node.id = prefix + node.id; }
+    for (const node of ghost.querySelectorAll('*')) for (const attribute of [...node.attributes]) {
+      let value = attribute.value;
+      for (const [before, after] of renamed) value = value.replaceAll('url(#' + before + ')', 'url(#' + after + ')').replace(/^#(.+)$/, (match, id) => id === before ? '#' + after : match);
+      if (value !== attribute.value) node.setAttribute(attribute.name, value);
+    }
+    Object.assign(ghost.style, { position: 'fixed', width: rect.width + 'px', height: rect.height + 'px', maxWidth: 'none', minWidth: '0', transform: 'none', margin: '0', pointerEvents: 'none', zIndex: '2147483647', transition: 'none', opacity: '1' });
+    document.body.appendChild(ghost); return ghost;
+  }
+  function cleanupPointer(suppress = true) {
+    const active = pointerSession; if (!active) return;
+    pointerSession = null;
+    active.ghost?.remove(); active.button.classList.remove('is-drag-source'); clearHighlights();
+    if (suppress) suppressClickUntil = Date.now() + 500;
+    try { if (active.button.hasPointerCapture?.(active.pointerId)) active.button.releasePointerCapture(active.pointerId); } catch (_) { /* The browser may already have released it. */ }
+  }
+  function onPointerDown(event) {
+    suppressClickUntil = 0;
+    const button = event.target.closest('.fridge-food');
+    if (!button || !organizing || !initialized || moveBusy || pointerSession || button.disabled || event.isPrimary === false || (event.button ?? 0) !== 0) return;
+    const item = S.getState().items.find(value => value.id === button.dataset.lot);
+    if (!item || !openZone(zoneFor(item))) return;
+    const rect = button.getBoundingClientRect(); interaction++;
+    pointerSession = {
+      id: item.id, pointerId: event.pointerId ?? 1, button, sourceZone: zoneFor(item), fingerprint: placementFingerprint(item.id),
+      startX: event.clientX, startY: event.clientY, dragging: false, ghost: null,
+      anchor: { x: rect.width ? unit((event.clientX - rect.left) / rect.width) : .5, y: rect.height ? unit((event.clientY - rect.top) / rect.height) : .5 }
+    };
+    event.preventDefault(); button.focus();
+    try { button.setPointerCapture?.(pointerSession.pointerId); } catch (_) { /* Window listeners provide an uncaptured fallback. */ }
+  }
+  function onPointerMove(event) {
+    const active = pointerSession; if (!active || (event.pointerId ?? 1) !== active.pointerId) return;
+    if (handledPointerMoves.has(event)) return; handledPointerMoves.add(event);
+    if (placementFingerprint(active.id) !== active.fingerprint || !openZone(active.sourceZone)) { cleanupPointer(); interaction++; renderScene(); return; }
+    if (!active.dragging && Math.hypot(event.clientX - active.startX, event.clientY - active.startY) < 5) return;
+    event.preventDefault();
+    if (!active.dragging) {
+      active.dragging = true; movingId = active.id; active.ghost = makeGhost(active.button); active.button.classList.add('is-drag-source');
+      renderScene(); announce(S.getState().items.find(item => item.id === active.id)?.name + ' 이동 중. 원하는 선반 안에 놓아주세요.');
+    }
+    if (pointerSession !== active) return;
+    const size = sizeOf(active.button), canvas = canvasAtPoint(event);
+    active.ghost.style.left = event.clientX - size.width * active.anchor.x + 'px'; active.ghost.style.top = event.clientY - size.height * active.anchor.y + 'px';
+    active.ghost.classList.toggle('is-outside', !canvas); clearHighlights(); canvas?.classList.add('is-over');
+  }
+  function onPointerUp(event) {
+    const active = pointerSession; if (!active || (event.pointerId ?? 1) !== active.pointerId) return;
+    event.preventDefault();
+    const canvas = active.dragging ? canvasAtPoint(event) : null;
+    const position = canvas ? pointOnCanvas(canvas, active.button, event, active.anchor) : null;
+    const current = placementFingerprint(active.id) === active.fingerprint;
+    cleanupPointer();
+    if (!current) { interaction++; renderScene(); announce('재료가 바뀌어 이동을 취소했어요.'); }
+    else if (!active.dragging) selectItem(active.id);
+    else if (canvas && position) moveItem(active.id, canvas.dataset.zone, position);
+    else { renderScene(); announce('선반 밖에 놓아 이동을 취소했어요.'); }
+  }
+  function onPointerCancel(event) {
+    if (!pointerSession || (event.pointerId ?? 1) !== pointerSession.pointerId) return;
+    cleanupPointer(); interaction++; renderScene(); announce('재료 이동을 취소했어요.');
+  }
+  function onWindowKeyDown(event) { if (event.key === 'Escape' && (pointerSession || (moveBusy && organizing))) { cleanupPointer(); clearDrag(); interaction++; movingId = null; renderScene(); announce('재료 이동을 취소했어요.'); event.preventDefault(); } }
+  function abortGesture() { if (pointerSession || draggedId) { cleanupPointer(); clearDrag(); interaction++; renderScene(); announce('재료 이동을 취소했어요.'); } }
+  function onVisibilityChange() { if (document.hidden) abortGesture(); }
+  function dragTarget(event) { const target = event.target.closest('.shelf-canvas[data-zone],.shelf[data-zone],.kitchen-zone-controls [data-zone]'); return target && scene.contains(target) ? target : null; }
   function onDragStart(event) {
     const button = event.target.closest('.fridge-food');
-    if (!button || button.disabled || moveBusy || !initialized) { event.preventDefault(); return; }
+    if (!button || button.disabled || moveBusy || !initialized || pointerSession) { event.preventDefault(); return; }
     const item = S.getState().items.find(value => value.id === button.dataset.lot);
     if (!item || !openZone(zoneFor(item))) { event.preventDefault(); return; }
     interaction++; organizing = true; movingId = draggedId = item.id;
+    htmlDrag = { id: item.id, fingerprint: placementFingerprint(item.id) };
     if (event.dataTransfer) { event.dataTransfer.setData('text/plain', item.id); event.dataTransfer.effectAllowed = 'move'; }
     renderScene();
   }
   function onDragOver(event) { const target = dragTarget(event); if (target && draggedId && !moveBusy && openZone(target.dataset.zone)) { event.preventDefault(); if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'; target.classList.add('is-over'); } }
   function onDragLeave(event) { const target = dragTarget(event); if (target && !target.contains(event.relatedTarget)) target.classList.remove('is-over'); }
-  function clearDrag() { for (const target of scene.querySelectorAll('.is-over')) target.classList.remove('is-over'); draggedId = null; }
+  function clearDrag() { if (draggedId) suppressClickUntil = Date.now() + 500; clearHighlights(); draggedId = null; htmlDrag = null; }
   function onDrop(event) {
     const target = dragTarget(event); if (!target) return;
     event.preventDefault(); target.classList.remove('is-over');
     const id = event.dataTransfer?.getData('text/plain') || draggedId;
-    if (id && id === draggedId && openZone(target.dataset.zone)) moveItem(id, target.dataset.zone);
+    if (id && id === draggedId && openZone(target.dataset.zone) && (!htmlDrag || htmlDrag.fingerprint === placementFingerprint(id))) {
+      const canvas = target.classList.contains('shelf-canvas') ? target : target.querySelector('.shelf-canvas');
+      const position = canvas ? pointOnCanvas(canvas, itemButtons.get(id), event) : null;
+      suppressClickUntil = Date.now() + 500; moveItem(id, target.dataset.zone, position || undefined);
+    }
   }
   mountScene(); mountHero();
-  const handlers = { click: onSceneClick, keydown: onKeyDown, dragstart: onDragStart, dragover: onDragOver, dragleave: onDragLeave, dragend: clearDrag, drop: onDrop };
+  const handlers = { click: onSceneClick, keydown: onKeyDown, pointerdown: onPointerDown, pointermove: onPointerMove, pointerup: onPointerUp, pointercancel: onPointerCancel, lostpointercapture: onPointerCancel, dragstart: onDragStart, dragover: onDragOver, dragleave: onDragLeave, dragend: clearDrag, drop: onDrop };
   for (const [event, handler] of Object.entries(handlers)) scene.addEventListener(event, handler);
   hero?.addEventListener('click', onHeroClick);
   const offStore = S.subscribe(render), offKitchen = K.subscribe(render);
   window.addEventListener('umf:selectionchange', renderHero); window.addEventListener('umf:daychange', render); window.addEventListener('umf:kitchenerror', renderError);
   window.addEventListener('umf:navigation', onNavigation);
+  window.addEventListener('pointermove', onPointerMove); window.addEventListener('pointerup', onPointerUp); window.addEventListener('pointercancel', onPointerCancel); window.addEventListener('keydown', onWindowKeyDown);
+  window.addEventListener('blur', abortGesture); window.addEventListener('resize', abortGesture); document.addEventListener('visibilitychange', onVisibilityChange);
   const ready = Promise.all([S.ready, K.ready]).then(() => { initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
   window.UMFKitchen = {
-    ready, render, navigate, arrangeItem, foodIdFor, itemStatus, zones,
+    ready, render, navigate, arrangeItem, foodIdFor, itemStatus, zones, positionFor,
+    geometry: Object.freeze({ normalizedPoint, defaultPosition }),
     getOrganizing: () => organizing, getMovingId: () => movingId,
-    destroy() { destroyed = true; offStore?.(); offKitchen?.(); for (const [event, handler] of Object.entries(handlers)) scene.removeEventListener(event, handler); hero?.removeEventListener('click', onHeroClick); window.removeEventListener('umf:selectionchange', renderHero); window.removeEventListener('umf:daychange', render); window.removeEventListener('umf:kitchenerror', renderError); window.removeEventListener('umf:navigation', onNavigation); }
+    destroy() { destroyed = true; cleanupPointer(false); clearDrag(); offStore?.(); offKitchen?.(); for (const [event, handler] of Object.entries(handlers)) scene.removeEventListener(event, handler); hero?.removeEventListener('click', onHeroClick); window.removeEventListener('umf:selectionchange', renderHero); window.removeEventListener('umf:daychange', render); window.removeEventListener('umf:kitchenerror', renderError); window.removeEventListener('umf:navigation', onNavigation); window.removeEventListener('pointermove', onPointerMove); window.removeEventListener('pointerup', onPointerUp); window.removeEventListener('pointercancel', onPointerCancel); window.removeEventListener('keydown', onWindowKeyDown); window.removeEventListener('blur', abortGesture); window.removeEventListener('resize', abortGesture); document.removeEventListener('visibilitychange', onVisibilityChange); }
   };
   render();
 })();

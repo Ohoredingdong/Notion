@@ -369,3 +369,55 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 .kitchen-app .recipeSec:not(.show-all) .umf-menu-card:nth-child(n+7){display:none}
 .kitchen-app .fridge-food.exhausted .food-art{opacity:.4}
 @media(max-width:760px){.kitchen-app .recipeSec:not(.show-all) .umf-menu-card:nth-child(n+5){display:none}}
+
+/* Tactile miniature groceries and freely overlapping shelf arrangements. */
+.kitchen-app .miniature-art{display:block;overflow:hidden;pointer-events:none;user-select:none;filter:drop-shadow(0 3px 2px #68563418)}
+.kitchen-app .today-dish{padding:8px 17px 9px;margin-bottom:5px}
+.kitchen-app .today-dish .miniature-art{width:100%;height:172px;filter:drop-shadow(0 9px 6px #77633d21)}
+.kitchen-app .ic .miniature-art{width:43px;height:43px}
+.kitchen-app .ingredient-mini .miniature-art{width:39px;height:39px}
+.kitchen-app .umf-art-ingredient .miniature-art{width:100%;max-width:67px;height:67px}
+.kitchen-app .umf-ingredient-scene{width:100%;flex-wrap:nowrap;gap:clamp(5px,1vw,12px)}
+.kitchen-app .umf-art-ingredient{flex:1 1 0;min-width:0;max-width:76px;gap:7px}.kitchen-app .umf-art-label{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.kitchen-app .kitchen-scene{height:652px}
+.kitchen-app .fridge-stage{width:min(420px,84%);height:454px;top:100px}
+.kitchen-app .fridge-inside{padding:43px 9px 10px}
+.kitchen-app .shelf{display:flex;align-items:stretch;justify-content:stretch;padding:22px 0 11px;gap:0;isolation:isolate}
+.kitchen-app .shelf-canvas{position:relative;flex:1 1 auto;width:100%;min-height:65px;isolation:isolate;overflow:visible;border-radius:9px}
+.kitchen-app .shelf-canvas.is-organizing{cursor:crosshair}
+.kitchen-app .shelf-canvas.is-over{background:#f7e7b354;outline:2px dashed #aa9369;outline-offset:2px}
+.kitchen-app .shelf-canvas .fridge-food{position:absolute;flex:none;display:grid;place-items:center;justify-content:normal;width:64px;max-width:none;min-width:0;height:66px;padding:0;margin:0;border:0;background:transparent;z-index:var(--food-z,0);transition:filter .15s,opacity .15s;cursor:pointer}
+.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:62px;height:62px;max-width:100%;transform:none;transition:filter .15s}
+.kitchen-app .shelf-canvas .fridge-food:hover .food-art{transform:none;filter:drop-shadow(0 4px 3px #66553635)}
+.kitchen-app .shelf-canvas.is-organizing .fridge-food{touch-action:none;cursor:grab;-webkit-user-select:none;-webkit-touch-callout:none}
+.kitchen-app .shelf-canvas .fridge-food.selected{outline:2px solid #9b7a42;outline-offset:3px;background:#ffefb43d;box-shadow:0 0 0 4px #fff9e588;border-radius:9px}
+.kitchen-app .shelf-canvas .fridge-food:focus-visible{outline:2px solid #5b8069;outline-offset:4px}
+.kitchen-app .shelf-canvas .fridge-food.is-drag-source{opacity:.3}
+.kitchen-app .shelf-canvas .fridge-food .quantity-mini{bottom:-2px;right:-2px;max-width:64px;min-height:15px;padding:2px 4px;border:1px solid #e8dbc4;background:#fffaf0f2;color:#67553d;font-size:8px;line-height:1.25;box-shadow:0 1px 3px #80633817;pointer-events:none}
+.kitchen-app .shelf-canvas .fridge-food .food-label{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);padding:3px 6px;max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:10px;pointer-events:none}
+.kitchen-app .shelf-canvas .fridge-food .expiry-dot{top:0;right:1px;pointer-events:none}
+.kitchen-app .shelf-name{z-index:2;font-size:9px;top:1px;left:1px}
+.kitchen-app .shelf-name.shelf-target{z-index:3;top:-1px;left:-1px;min-height:23px;padding:3px 5px;font-size:9px}
+.kitchen-app .shelf-more{z-index:3;top:0;right:0;max-width:52%;padding:3px 4px;min-height:22px;min-width:28px;font-size:8px}
+.kitchen-app .shelf.drop-mode .shelf-more{top:0}
+.kitchen-app .shelf-empty{position:absolute;inset:21px 0 10px;z-index:-1;height:auto;pointer-events:none;padding:0;font-size:10px}
+.kitchen-app .kitchen-pantry>.shelf{min-height:136px;padding-top:27px}
+.kitchen-app .kitchen-pantry .shelf-canvas{min-height:96px}
+.kitchen-app .kitchen-pantry .shelf-name{font-size:11px}
+.kitchen-app .kitchen-layer-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:11px 0;border-top:1px solid #b2b58b55;border-bottom:1px solid #b2b58b55}
+.kitchen-app .kitchen-layer-controls .btn{min-height:40px;font-size:12px;padding:8px 13px}
+.kitchen-app .kitchen-layer-controls .btn:disabled{opacity:.45;cursor:default}
+.kitchen-app .kitchen-layer-controls>span,.kitchen-app .kitchen-layer-controls>p{font-size:12px;color:var(--ink)}
+.kitchen-app .kitchen-arrange-tools{padding:14px 16px;font-size:12px;line-height:1.85}
+.kitchen-app .kitchen-zone-controls{gap:7px}
+.kitchen-app .kitchen-zone-controls .btn{min-height:40px}
+.kitchen-app .organize-banner span{display:inline-block;max-width:100%;padding:6px 10px;line-height:1.4}
+.kitchen-drag-ghost{position:fixed!important;display:grid!important;place-items:center!important;pointer-events:none!important;z-index:2147483600!important;margin:0!important;min-width:0!important;max-width:none!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;transition:none!important;transform:none!important;opacity:.96!important;filter:drop-shadow(0 12px 7px #5f4e3b3b);user-select:none}
+.kitchen-drag-ghost .miniature-art{width:100%;height:100%;display:block;overflow:hidden;pointer-events:none}
+.kitchen-drag-ghost .quantity-mini{position:absolute;right:0;bottom:0;background:#fffaf0;border:1px solid #deccb0;border-radius:5px;padding:2px 4px;font:9px sans-serif;color:#67553d}
+.kitchen-drag-ghost .food-label,.kitchen-drag-ghost .expiry-dot{display:none}
+.kitchen-drag-ghost.is-outside{opacity:.45!important}
+.kitchen-app .kitchen-selected-material{flex-basis:100%;font-size:12px;font-weight:600}
+@media(max-width:1150px){.kitchen-app .fridge-stage{width:min(390px,84%)}.kitchen-app .shelf-canvas .fridge-food{width:59px;height:62px}.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:58px;height:58px}}
+@media(max-width:760px){.kitchen-app .kitchen-scene{height:626px}.kitchen-app .fridge-stage{width:min(398px,86%);height:428px;top:98px}.kitchen-app .fridge-inside{padding:41px 7px 9px}.kitchen-app .today-dish .miniature-art{height:150px}.kitchen-app .today-dish{padding:10px 4px}.kitchen-app .shelf-canvas .fridge-food{width:62px;height:64px}.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:60px;height:60px}.kitchen-app .kitchen-layer-controls .btn{min-height:44px}}
+@media(max-width:390px){.kitchen-app .fridge-stage{width:88%;height:424px}.kitchen-app .fridge-inside{padding-left:5px;padding-right:5px}.kitchen-app .shelf-canvas .fridge-food{width:54px;height:58px}.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:53px;height:54px}.kitchen-app .shelf-canvas .fridge-food .quantity-mini{font-size:7px;max-width:56px}.kitchen-app .shelf-name{font-size:8px}.kitchen-app .shelf-name.shelf-target{font-size:8px;padding:3px}.kitchen-app .shelf-more{font-size:7px;padding:3px}.kitchen-app .umf-art-ingredient .miniature-art{width:100%;max-width:70px;height:70px}.kitchen-app .today-dish .miniature-art{height:126px}}

@@ -10,6 +10,8 @@
   const uniq=a=>[...new Set(a)];
   let showAll=true,editingId=null,editingOriginal=null,previousFocus=null,modalVersion=0,savingItem=false,savingCustom=false;
   function icon(n){
+    const art=window.UMFKitchenArt;
+    if(art?.foodArt&&art?.foodIdForName)return art.foodArt(art.foodIdForName(n));
     if(/두부/.test(n))return'<svg viewBox="0 0 24 24" fill="none"><path d="M6 8.5 12 5l6 3.5v7L12 19l-6-3.5v-7Z" fill="#FFF1CE" stroke="#C7A257" stroke-width="1.5"/><path d="m6 8.5 6 3.4 6-3.4M12 11.9V19" stroke="#D8B66E" stroke-width="1.2"/></svg>';
     if(/시금치|상추|배추|달래|깻잎/.test(n))return'<svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5c-5.8.2-9.4 2.5-10.5 6.8-.8 3 1 5.6 4.1 5.8 4.8.2 7.4-3.8 6.4-12.6Z" fill="#C5E2BD" stroke="#6D9968" stroke-width="1.4"/><path d="M8.6 16.8c2.1-3 4.6-5.1 7.7-6.7" stroke="#6D9968" stroke-width="1.3" stroke-linecap="round"/></svg>';
     if(/애호박|호박/.test(n))return'<svg viewBox="0 0 24 24" fill="none"><path d="M5 14c2.5-5 8.8-7.2 14-4.4-2 5.7-8.5 8.1-14 4.4Z" fill="#B8D98C" stroke="#6A9A50" stroke-width="1.4"/><path d="M6.5 13.6c3.2-.5 6.4-1.4 10.3-3.3" stroke="#6A9A50" stroke-width="1.1" stroke-linecap="round"/></svg>';
