@@ -44,15 +44,15 @@ class PublicationTests(unittest.TestCase):
     def remote_json(self, name):
         return json.loads(command(self.remote, "show", "main:" + name))
 
-    def test_real_push_race_preserves_both_widgets(self):
+    def test_six_consecutive_real_push_races_preserve_both_widgets(self):
         self.write(self.a, "a.json", "2026-01-02T00:00:00Z", 2)
-        original_git, raced = publisher.git, False
+        original_git, races = publisher.git, 0
 
         def race(root, *args, **kwargs):
-            nonlocal raced
-            if args[:1] == ("push",) and not raced:
-                raced = True
-                self.write(self.b, "b.json", "2026-01-03T00:00:00Z", 3)
+            nonlocal races
+            if args[:1] == ("push",) and races < 6:
+                races += 1
+                self.write(self.b, "b.json", f"2026-01-03T00:00:0{races}Z", races + 1)
                 command(self.b, "add", "b.json")
                 command(self.b, "commit", "-m", "parallel widget")
                 command(self.b, "push", "origin", "main")
@@ -60,9 +60,9 @@ class PublicationTests(unittest.TestCase):
 
         with patch.object(publisher, "git", side_effect=race), patch.object(publisher.time, "sleep"):
             publisher.publish(self.a, ["a.json"], "publish A")
-        self.assertTrue(raced)
+        self.assertEqual(races, 6)
         self.assertEqual(self.remote_json("a.json")["value"], 2)
-        self.assertEqual(self.remote_json("b.json")["value"], 3)
+        self.assertEqual(self.remote_json("b.json")["value"], 7)
 
     def test_older_snapshot_cannot_replace_newer_same_file(self):
         self.write(self.a, "a.json", "2026-01-02T00:00:00Z", 2)

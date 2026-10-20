@@ -6,6 +6,7 @@ and a normal fast-forward push, so unrelated widget jobs cannot be overwritten.
 """
 import argparse
 import json
+import random
 import subprocess
 import tempfile
 import time
@@ -48,7 +49,7 @@ def snapshot_time(body):
     return None
 
 
-def publish(root, names, message, attempts=4):
+def publish(root, names, message, attempts=12):
     root = Path(root).resolve()
     payload, baseline = {}, {}
     for name in names:
@@ -103,7 +104,10 @@ def publish(root, names, message, attempts=4):
             # Do not include remote URLs or credentials from stderr in logs.
         finally:
             git(root, "worktree", "remove", "--force", str(worktree), check=False)
-        time.sleep(2 * (attempt + 1))
+        if attempt + 1 < attempts:
+            # A source change can start all twelve widget jobs together. Spread
+            # their retries so the last finisher can publish after the burst.
+            time.sleep(min(15, 2 * (attempt + 1)) + random.uniform(0, 3))
     raise RuntimeError("Publication could not fast-forward after retries; existing main is preserved.")
 
 
