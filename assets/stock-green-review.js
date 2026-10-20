@@ -11,9 +11,11 @@ function normalise(c,r,d){if(!c)return null;const g=c.green_review,t=Date.now(),
  const aligned=g?.version===version&&g.source_generated_at===d.generated_at&&g.input_price===r.price&&g.input_price_session===r.price_session&&g.input_forecast_eps===(r.forecasts?.next_fy?.avg??null)&&Number.isFinite(checked)&&checked<=t+300000&&t-checked<=18*3600000&&Number.isFinite(expires)&&expires>t;
  const checks=Array.isArray(g?.checks)?g.checks:[];
  const all=aligned&&g.green_eligible===true&&checks.length===ids.length&&new Set(checks.map(x=>x.id)).size===ids.length&&ids.every(id=>checks.some(x=>x.id===id&&x.status==='pass'));
- if(c.state==='attractive'&&!all)return {...c,state:'conditional',label:'기존 긍정 평가 · 엄격 검증은 확인 전',confidence:'초록 기준 미충족',strict_ui_blocked:true,green_verified:false};
- if(g&&!aligned)return {...c,state:'insufficient',label:'새 자료로 엄격 검증을 다시 해야 해요',confidence:'검증 기한·입력값 불일치',strict_ui_blocked:true,green_verified:false};
- return {...c,green_verified:all,strict_ui_blocked:!g};
+ if(c.state==='attractive'&&!all)return {...c,state:'conditional',label:'기존 긍정 평가 · 엄격 검증은 확인 전',confidence:'초록 기준 미충족',strict_ui_blocked:true,green_verified:false,missing:[...(c.missing||[]),'현재 자료에 대한 12개 엄격 검증이 완료되지 않았어요.']};
+ if(g&&!aligned)return {...c,state:'insufficient',label:'새 자료로 엄격 검증을 다시 해야 해요',confidence:'검증 기한·입력값 불일치',strict_ui_blocked:true,green_verified:false,missing:[...(c.missing||[]),'엄격 검증 기록의 날짜나 입력값이 현재 자료와 맞지 않아요.']};
+ const risks=[...(c.risks||[]).filter(x=>x.origin!=='strict_green'),...checks.filter(x=>x.status==='review').map(x=>({origin:'strict_green',type:'엄격 검증에서 확인한 신호',field:'strict_'+x.id,text:x.term+' → '+x.explanation,source_url:x.source_urls?.[0]}))];
+ const missing=[...new Set([...(c.missing||[]),...checks.filter(x=>['missing','blocked'].includes(x.status)).map(x=>'엄격 검증: '+x.term+' → '+x.explanation)])];
+ return {...c,risks,missing,green_verified:all,strict_ui_blocked:!g};
 }
 function description(c){if(!c?.green_review||c.strict_ui_blocked)return '기존 자료의 좋은 점과 엄격 검증 완료는 달라요. 현재 입력에 맞는 검증 기록이 없으면 초록색으로 표시하지 않아요.';
  const g=c.green_review;if(c.green_verified)return '명시한 12개 실사 조건을 통과했어요. 확인한 사실과 평가 가정을 공개하지만, 미래 수익이나 손실 한도를 보장하는 뜻은 아니에요.';
