@@ -1,11 +1,16 @@
 import unittest
 from scripts import update_market_context as m
+from scripts import run_market_context as runner
 
 class MarketContextTests(unittest.TestCase):
     def test_fed(self):
-        html='''<table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
-        x=m.parse_fed_funds(html,2026)
+        html='''<h4>2026</h4><table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
+        x=runner.parse_fed_funds(html)
         self.assertEqual(x['direction'],'인상');self.assertEqual(x['low'],3.75);self.assertEqual(x['date'],'2026-09-17')
+    def test_fed_cross_year(self):
+        html='''<h4>2026</h4><table><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table><h4>2025</h4><table><tr><td>December 11</td><td>0</td><td>25</td><td>3.50-3.75</td></tr></table>'''
+        x=runner.parse_fed_funds(html)
+        self.assertEqual(x['date'],'2026-09-17');self.assertEqual(x['direction'],'인상')
     def test_bok(self):
         html='<div>통화정책방향 (2026.8.27) 금융통화위원회는 기준금리를 2.75%에서 3.00%로 0.25%p 상향 조정 한국은행기준금리 3.00%</div>'
         x=m.parse_bok(html);self.assertEqual(x['value'],3.0);self.assertEqual(x['direction'],'인상')
