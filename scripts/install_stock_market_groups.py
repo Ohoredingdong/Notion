@@ -1,7 +1,6 @@
 """Idempotent market-filter integration; no financial/decision value changes."""
 from pathlib import Path
 import hashlib,re
-
 p=Path('assets/stock-radar-v8.js');s=p.read_text(encoding='utf-8')
 if '// MARKET_GROUP_FILTERS_V1' not in s:
  if "(market==='ALL'||r.market===market)" not in s:raise RuntimeError('Main market filter anchor changed')
@@ -15,22 +14,20 @@ if '// MARKET_GROUP_FILTERS_V1' not in s:
  if anchor not in s:raise RuntimeError('Refresh anchor changed')
  s=s.replace(anchor,"// MARKET_GROUP_FILTERS_V1\ndocument.addEventListener('radar:markets-ready',()=>{if(data){renderCards();detail();for(const o of $('#companySelect').options){const r=rows().find(x=>x.symbol===o.value);if(r)o.textContent=r.name+' · '+r.symbol+' ['+window.RadarMarkets.label(r)+']'}}});\n"+anchor)
  p.write_text(s,encoding='utf-8')
-
 p=Path('assets/stock-radar-v9.js');s=p.read_text(encoding='utf-8')
 if '// MARKET_GROUP_BRIEF_V1' not in s:
  s=s.replace("mode='long',paused=true;", "mode='long',paused=true,selectedMarket='ALL';")
- anchor='function brief(){'
  helper="""// MARKET_GROUP_BRIEF_V1
 function filteredBrief(){
  const original=current?.decision_brief;if(!original||selectedMarket==='ALL')return original;
  const pool=(current.companies||[]).filter(r=>window.RadarMarkets.match(r,selectedMarket)&&r.status==='current'&&r.period_integrity?.status==='ok'&&r.model_integrity?.status!=='needs_sector_model');
- function choose(states,n){const rs=pool.filter(r=>states.includes(r.assessment?.state)).sort((a,b)=>(a.assessment.state!=='ready')-(b.assessment.state!=='ready')-(a.priority?.display_score??a.priority?.score??0)+(b.priority?.display_score??b.priority?.score??0));const picked=[],seen=new Set();for(const r of rs){if(seen.has(r.sector))continue;picked.push(r);seen.add(r.sector);if(picked.length===n)break}for(const r of rs){if(picked.length===n)break;if(!picked.includes(r))picked.push(r)}return picked.map(r=>({symbol:r.symbol,source_symbol:r.source_symbol,name:r.name,market:r.market,sector:r.sector,currency:r.currency,state:r.assessment.state,price:r.price,price_session:r.price_session,price_condition:r.assessment.price_condition,why:['다음 FY 예상 EPS 성장 '+(number(r.forecasts?.eps_growth_next_fy_pct)?fmt(r.forecasts.eps_growth_next_fy_pct)+'%':'미확인'),'같은 FY EPS 30일 변화 '+(number(r.forecasts?.eps_revision30_pct)?fmt(r.forecasts.eps_revision30_pct)+'%':'미확인')]}));}
+ function choose(states,n){const rs=pool.filter(r=>states.includes(r.assessment?.state)).sort((a,b)=>((a.assessment.state!=='ready')-(b.assessment.state!=='ready'))||((b.priority?.display_score??b.priority?.score??0)-(a.priority?.display_score??a.priority?.score??0)));const picked=[],seen=new Set();for(const r of rs){if(seen.has(r.sector))continue;picked.push(r);seen.add(r.sector);if(picked.length===n)break}for(const r of rs){if(picked.length===n)break;if(!picked.includes(r))picked.push(r)}return picked.map(r=>({symbol:r.symbol,source_symbol:r.source_symbol,name:r.name,market:r.market,sector:r.sector,currency:r.currency,state:r.assessment.state,price:r.price,price_session:r.price_session,price_condition:r.assessment.price_condition,why:['다음 FY 예상 EPS 성장 '+(number(r.forecasts?.eps_growth_next_fy_pct)?fmt(r.forecasts.eps_growth_next_fy_pct)+'%':'미확인'),'같은 FY EPS 30일 변화 '+(number(r.forecasts?.eps_revision30_pct)?fmt(r.forecasts.eps_revision30_pct)+'%':'미확인')]}));}
  const now=choose(['ready','verify'],3),wait=choose(['price'],2),name=window.RadarMarkets.labels[selectedMarket]||selectedMarket;
  return {...original,now,wait,summary:name+' 분류 안에서 기존 판단 기준을 통과한 후보입니다. '+(now.length?'공식 대조 여부와 남은 조건을 확인하세요.':'현재 가격·실적 우선 후보가 없습니다. 가격 대기 후보가 있으면 아래에 표시합니다.')};
 }
 """
- if anchor not in s:raise RuntimeError('Brief anchor changed')
- s=s.replace(anchor,helper+anchor,1)
+ if 'function brief(){' not in s:raise RuntimeError('Brief anchor changed')
+ s=s.replace('function brief(){',helper+'function brief(){',1)
  s=s.replace('const b=current?.decision_brief;', 'const b=filteredBrief();',1)
  s=s.replace("r.short?.state==='conditional'&&r.period_integrity?.status==='ok'", "r.short?.state==='conditional'&&r.period_integrity?.status==='ok'&&window.RadarMarkets.match(r,selectedMarket)")
  s=s.replace("esc(r.sector)+'</div><button class=", "esc(r.sector)+' · '+esc(window.RadarMarkets.label(r))+'</div><button class=")
@@ -40,7 +37,6 @@ function filteredBrief(){
  s=s.replace('current=e.detail.data;mode=e.detail.mode;',"current=e.detail.data;mode=e.detail.mode;selectedMarket=e.detail.market||'ALL';")
  s=s.replace("$('#wideDirectory')?.addEventListener", "document.addEventListener('radar:markets-ready',()=>{brief();if(scan)directory()});\n$('#wideDirectory')?.addEventListener",1)
  p.write_text(s,encoding='utf-8')
-
 p=Path('assets/stock-radar-v8.html');html=p.read_text(encoding='utf-8')
 if 'id="marketGroupsBar"' not in html:
  anchor=' <div class="summary-grid" id="summary">'
