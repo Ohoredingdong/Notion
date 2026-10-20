@@ -6,27 +6,27 @@
 <title>투자 레이더 · 발견에서 판단까지</title>
 <link rel="stylesheet" href="./assets/stock-radar-v8.css?v=8.0">
 <script src="./assets/stock-market-groups.js?v=a5c28e09efe5" defer></script>
-<script src="./assets/stock-investment-cases.js?v=aea36be522aa" defer></script>
+<script src="./assets/stock-investment-cases.js?v=09b2baa660bb" defer></script>
 <script src="./assets/stock-radar-v8.js?v=8.0" defer></script>
 <script src="./assets/stock-radar-v9.js?v=115cbde52d56" defer></script>
 </head>
 <body>
 <div class="app">
 <header class="header">
- <div class="brand"><div class="app-icon" aria-hidden="true">↗</div><div><div class="eyebrow">MY INVESTMENT RADAR</div><h1>투자 레이더</h1><p>좋은 기업보다, 내게 맞는 기회를.</p></div></div>
+ <div class="brand"><div class="app-icon" aria-hidden="true">↗</div><div><div class="eyebrow">내 투자 후보</div><h1>투자 레이더</h1><p>살 만한 이유와 조심할 점을 한눈에.</p></div></div>
  <button id="reload" class="icon-button" type="button">↻ <span>새로고침</span></button>
 </header>
 <div class="notice" id="liveStatus" role="status" aria-live="polite">실제 수집 결과를 확인하고 있습니다.</div>
 <nav class="tabs" role="tablist" aria-label="주요 화면"><button id="tab-discover" data-view="discover" role="tab" aria-selected="true" class="active">발견</button><button id="tab-detail" data-view="detail" role="tab" aria-selected="false">기업 분석</button><button id="tab-system" data-view="system" role="tab" aria-selected="false">검증 · 설정</button></nav>
 <main>
 <section id="view-discover" class="view" role="tabpanel" aria-labelledby="tab-discover">
- <div class="page-heading"><div><p class="eyebrow">A CLEARER NEXT STEP</p><h2>무엇부터 살펴볼까요?</h2></div><div class="segmented" aria-label="투자 관점"><button class="active" data-mode="long">장기 가치</button><button data-mode="short">단기 기회</button></div></div>
+ <div class="page-heading"><div><p class="eyebrow">어떤 종목부터 볼까요?</p><h2>무엇부터 살펴볼까요?</h2></div><div class="segmented" aria-label="투자 관점"><button class="active" data-mode="long">장기 가치</button><button data-mode="short">단기 기회</button></div></div>
  <div class="market-groups" id="marketGroupsBar" role="group" aria-label="코스피 코스닥 나스닥 다우 분류"></div><p class="market-groups-note" id="marketGroupsNote">상장시장과 다우 지수 편입 여부를 구분해서 확인합니다.</p>
  <div class="summary-grid" id="summary"></div>
  <section id="todayBrief" aria-label="먼저 비교할 기업"><p class="brief-explain">후보별 투자 관점을 요약하는 중입니다.</p></section>
  <div class="guide" id="actionGuide"><strong>가격 매력과 매수 준비는 다릅니다.</strong><span>점수가 높아도 공식 대조·위험 조건이 남아 있으면 분리해서 표시합니다.</span></div>
  <div class="filterbar"><input id="search" type="search" placeholder="기업명 또는 종목코드" aria-label="기업 검색"><select id="market" aria-label="시장"><option value="ALL">한국 + 미국</option><option value="KR">한국</option><option value="US">미국</option></select><select id="size" aria-label="규모"><option value="ALL">모든 규모</option><option value="smid">중소형만</option><option value="big">대형·초대형</option><option value="expanded">새로 추가한 기업</option></select></div>
- <div class="chips" id="filters" aria-label="조건 필터"><button data-filter="all" class="active">전체</button><button data-filter="potential">긍정·조건부 의견</button><button data-filter="ready">투자 매력 있음</button><button data-filter="price">가격 대기</button><button data-filter="risk">위험 확인</button><button data-filter="star">★ 관심</button></div>
+ <div class="chips" id="filters" aria-label="조건 필터"><button data-filter="all" class="active">전체</button><button data-filter="potential">괜찮아 보이는 종목</button><button data-filter="ready">지금 살 만한 편</button><button data-filter="price">가격 대기</button><button data-filter="risk">위험 확인</button><button data-filter="star">★ 관심</button></div>
  <div class="section-heading"><h3 id="listTitle">분석 우선순위</h3><span id="listCount"></span></div>
  <p class="caption" id="rankNote">후보 내부의 조사 순서입니다. 점수는 성공확률·내재가치가 아닙니다.</p>
  <div id="cards" class="cards"><div class="empty">확인 중…</div></div>
