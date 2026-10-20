@@ -105,7 +105,6 @@ button{border:0;background:none;color:inherit}.kitchen-app a{color:inherit}.kitc
 .fridge-food:hover .food-label,.fridge-food:focus-visible .food-label{display:block}
 .fridge-food .expiry-dot{position:absolute;top:10px;right:2px;width:7px;height:7px;background:#d2a26c;border:1.5px solid #faf4da;border-radius:50%}
 .fridge-food.expired .expiry-dot{background:#b96f5c}
-.fridge-food.expired .food-art{opacity:.45}
 .fridge-food .quantity-mini{position:absolute;bottom:1px;right:1px;max-width:100%;border-radius:4px;padding:1px 3px;background:#fffff4e8;font:8px 'Noto Sans KR',sans-serif;color:#8f876d;white-space:nowrap}
 .shelf-more{position:absolute;right:0;top:0;min-width:20px;min-height:20px;font-size:9px;border-radius:5px;color:#8c8061;background:#f8f3dfed;padding:2px 4px;z-index:4}
 .shelf.drop-mode .shelf-more{top:24px}
@@ -367,7 +366,6 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 /* Recipe browsing scrolls with the app page. Expand reveals the remaining cards. */
 .kitchen-app .umf-recipe-grid{max-height:none;overflow:visible}
 .kitchen-app .recipeSec:not(.show-all) .umf-menu-card:nth-child(n+7){display:none}
-.kitchen-app .fridge-food.exhausted .food-art{opacity:.4}
 @media(max-width:760px){.kitchen-app .recipeSec:not(.show-all) .umf-menu-card:nth-child(n+5){display:none}}
 
 /* Tactile miniature groceries and freely overlapping shelf arrangements. */
@@ -386,7 +384,9 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 .kitchen-app .shelf-canvas{position:relative;flex:1 1 auto;width:100%;min-height:65px;isolation:isolate;overflow:visible;border-radius:9px}
 .kitchen-app .shelf-canvas.is-organizing{cursor:crosshair}
 .kitchen-app .shelf-canvas.is-over{background:#f7e7b354;outline:2px dashed #aa9369;outline-offset:2px}
-.kitchen-app .shelf-canvas .fridge-food{position:absolute;flex:none;display:grid;place-items:center;justify-content:normal;width:64px;max-width:none;min-width:0;height:66px;padding:0;margin:0;border:0;background:transparent;z-index:var(--food-z,0);transition:filter .15s,opacity .15s;cursor:pointer}
+/* Keep groceries solid when expired, exhausted, or briefly disabled while saving.
+   Status belongs to the expiry dot, quantity label, and accessible description. */
+.kitchen-app .shelf-canvas .fridge-food{position:absolute;flex:none;display:grid;place-items:center;justify-content:normal;width:64px;max-width:none;min-width:0;height:66px;padding:0;margin:0;border:0;background:transparent;opacity:1;z-index:var(--food-z,0);transition:filter .15s,opacity .15s;cursor:pointer}
 .kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:62px;height:62px;max-width:100%;transform:none;transition:filter .15s}
 .kitchen-app .shelf-canvas .fridge-food:hover .food-art{transform:none;filter:drop-shadow(0 4px 3px #66553635)}
 .kitchen-app .shelf-canvas.is-organizing .fridge-food{touch-action:none;cursor:grab;-webkit-user-select:none;-webkit-touch-callout:none}
@@ -394,6 +394,7 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 .kitchen-app .shelf-canvas .fridge-food:focus-visible{outline:2px solid #5b8069;outline-offset:4px}
 .kitchen-app .shelf-canvas .fridge-food.is-drag-source{opacity:.3}
 .kitchen-app .shelf-canvas .fridge-food .quantity-mini{bottom:-2px;right:-2px;max-width:64px;min-height:15px;padding:2px 4px;border:1px solid #e8dbc4;background:#fffaf0f2;color:#67553d;font-size:8px;line-height:1.25;box-shadow:0 1px 3px #80633817;pointer-events:none}
+.kitchen-app .shelf-canvas .fridge-food.exhausted .quantity-mini{background:#eee7db;border-color:#b6aa93;color:#635b4d}
 .kitchen-app .shelf-canvas .fridge-food .food-label{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);padding:3px 6px;max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:10px;pointer-events:none}
 .kitchen-app .shelf-canvas .fridge-food .expiry-dot{top:0;right:1px;pointer-events:none}
 .kitchen-app .shelf-name{z-index:2;font-size:9px;top:1px;left:1px}
@@ -412,7 +413,7 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 .kitchen-app .kitchen-zone-controls{gap:7px}
 .kitchen-app .kitchen-zone-controls .btn{min-height:40px}
 .kitchen-app .organize-banner span{display:inline-block;max-width:100%;padding:6px 10px;line-height:1.4}
-.kitchen-drag-ghost{position:fixed!important;display:grid!important;place-items:center!important;pointer-events:none!important;z-index:2147483600!important;margin:0!important;min-width:0!important;max-width:none!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;transition:none!important;transform:none!important;opacity:.96!important;filter:drop-shadow(0 12px 7px #5f4e3b3b);user-select:none}
+.kitchen-drag-ghost{position:fixed!important;display:grid!important;place-items:center!important;pointer-events:none!important;z-index:2147483600!important;margin:0!important;min-width:0!important;max-width:none!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;transition:none!important;transform:none!important;opacity:1!important;filter:drop-shadow(0 12px 7px #5f4e3b3b);user-select:none}
 .kitchen-drag-ghost .miniature-art{width:100%;height:100%;display:block;overflow:hidden;pointer-events:none}
 .kitchen-drag-ghost .quantity-mini{position:absolute;right:0;bottom:0;background:#fffaf0;border:1px solid #deccb0;border-radius:5px;padding:2px 4px;font:9px sans-serif;color:#67553d}
 .kitchen-drag-ghost .food-label,.kitchen-drag-ghost .expiry-dot{display:none}
