@@ -1,6 +1,6 @@
 # Notion 위젯
 
-공개 배포 위젯 39종의 대표 실행 주소입니다. 같은 위젯의 과거 버전은 아래 최신 주소로 연결됩니다.
+공개 배포 위젯 38종의 대표 실행 주소입니다. 같은 위젯의 과거 버전은 아래 최신 주소로 연결됩니다.
 
 **점검: 2026-10-20 (KST)** · 실제 브라우저·데이터 기준일·자동 수집 작업·요청 실패 시 동작을 확인했습니다.
 
@@ -19,7 +19,6 @@
 | Habit Tracker | [열기](https://ohoredingdong.github.io/Notion/habit-tracker-v2.html) | 습관 체크·기록 보존 확인 |
 | Zero Spend | [열기](https://ohoredingdong.github.io/Notion/zero-spend-v3.html) | 동기화 실패를 성공으로 표시하던 문제 수정 |
 | 무지출 챌린지 | [열기](https://ohoredingdong.github.io/Notion/nospend-dashboard.html) | 무지출 기록·달 이동·보존 확인 |
-| Life Town | [열기](https://ohoredingdong.github.io/Notion/life-town-widget-v2.html) | 시간·날씨·집중 타이머·메뉴 연결 확인 |
 | Minimal Greeting | [열기](https://ohoredingdong.github.io/Notion/minimal-greeting.html) | 시간대 인사·날짜·이름 저장 확인 |
 | Dot Web To-Do | [열기](https://ohoredingdong.github.io/Notion/widgetstation-dot-todo.html) | 할 일 추가·완료·기록 보존 확인 |
 | Daily English Word | [열기](https://ohoredingdong.github.io/Notion/english-word-widget-v2.html) | 단어 이동·학습 화면 확인 |
