@@ -4,6 +4,8 @@ Idempotent with explicit structural anchors; no financial or training file chang
 from pathlib import Path
 import hashlib,re,subprocess,sys
 root=Path('.')
+# Keep original terminology next to the plain explanation, without new signals.
+subprocess.run([sys.executable,'scripts/install_stock_term_labels.py'],check=True)
 def replace_once(s,a,b):
  if b in s:return s
  if s.count(a)!=1:raise RuntimeError('Changed UI anchor: '+a[:60])
