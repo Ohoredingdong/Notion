@@ -12,6 +12,7 @@ on:
     paths:
       - 'scripts/build_stock_investment_cases.py'
       - 'scripts/test_stock_investment_cases.py'
+      - 'scripts/check_stock_investment_cases.py'
       - 'scripts/install_stock_investment_cases.py'
       - 'scripts/publish_stock_investment_cases.py'
       - 'assets/stock-investment-cases.js'
@@ -33,21 +34,20 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test decisions and financial-period parsing
-        run: |
-          if [ -f scripts/test_stock_investment_cases.py ]; then python scripts/test_stock_investment_cases.py; fi
+        run: python scripts/test_stock_investment_cases.py
       - name: Authenticate and fetch source evidence without exposing keys
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python scripts/build_stock_investment_cases.py
+        run: |
+          python scripts/build_stock_investment_cases.py
+          python scripts/check_stock_investment_cases.py
       - name: Publish evidence snapshot
         run: >-
           python scripts/publish_widget_data.py --message 'research: publish explicit investment reasoning with authenticated evidence' stock-investment-cases.json stock-investment-cases-summary.json
-      - name: Install integrated verdict view when available
+      - name: Install integrated verdict view
         run: |
-          if [ -f scripts/publish_stock_investment_cases.py ] && [ -f scripts/install_stock_investment_cases.py ] && [ -f assets/stock-investment-cases.js ]; then
-            node --check assets/stock-investment-cases.js
-            python scripts/publish_stock_investment_cases.py
-          fi
+          node --check assets/stock-investment-cases.js
+          python scripts/publish_stock_investment_cases.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
