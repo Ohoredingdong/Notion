@@ -13,7 +13,7 @@ for attempt in range(4):
  try:
   existing=work/'stock-market-groups.json'
   if not existing.exists() or generated(existing.read_bytes())<=generated(payload):existing.write_bytes(payload)
-  for script in ('scripts/apply_stock_radar_v9.py','scripts/refine_stock_radar_v8.py','scripts/install_stock_market_groups.py','scripts/install_stock_radar_v8.py'):
+  for script in ('scripts/install_stock_market_groups.py','scripts/apply_stock_radar_v9.py','scripts/refine_stock_radar_v8.py','scripts/install_stock_radar_v8.py'):
    subprocess.run([sys.executable,script],cwd=work,check=True)
   for asset in ('assets/stock-radar-v8.js','assets/stock-radar-v9.js','assets/stock-market-groups.js'):subprocess.run(['node','--check',asset],cwd=work,check=True)
   git('config','user.name','github-actions[bot]',cwd=work);git('config','user.email','41898282+github-actions[bot]@users.noreply.github.com',cwd=work)
