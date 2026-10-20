@@ -15,7 +15,7 @@ let data=null,audit=null,health=null,selected=null,view='discover',mode='long',f
 let favorites=new Set();try{favorites=new Set(JSON.parse(localStorage.getItem('radar-v8-stars')||'[]'))}catch{}
 function paused(){const t=Date.parse(data?.generated_at||'');return !!loadError||!Number.isFinite(t)||(Date.now()-t)/36e5>(data?.max_age_hours||18)||(Date.now()-t)<-36e5}
 function rows(){return data?.companies||[]}
-function priorityValue(r){return r.period_integrity?.status==='needs_review'?null:r.priority?.score;}
+function priorityValue(r){return r.period_integrity?.status==='needs_review'||r.model_integrity?.status==='needs_sector_model'?null:r.priority?.score;}
 function tag(r){if(paused()||r.status!=='current'||r.period_integrity?.status==='needs_review')return{state:'data',text:'새 자료 확인 필요'};if(mode==='short'){const s=r.short||{};return{state:s.state==='conditional'?'ready':s.state==='avoid_entry'?'risk':s.state==='data_wait'?'data':'price',text:s.state==='conditional'?'단기 기술 조건 충족':s.state==='avoid_entry'?'단기 추세 약세':s.state==='data_wait'?'단기 시세 확인':'돌파·거래량 조건 대기'}}return{state:r.assessment?.state||'data',text:fullstates[r.assessment?.state]||'자료 확인'}}
 function filtered(){const q=$('#search').value.trim().toLowerCase(),market=$('#market').value,size=$('#size').value;
 let list=rows().filter(r=>(market==='ALL'||r.market===market)&&(!q||(r.name+' '+r.symbol).toLowerCase().includes(q))&&(size==='ALL'||size==='smid'&&['mid','small'].includes(r.size_group)||size==='big'&&['large','mega'].includes(r.size_group)||size==='expanded'&&r.cohort!=='기존'));
@@ -41,7 +41,7 @@ function dataCell(label,value,note,source){return '<div class="data-cell"><span>
 function listText(list){return (list||[]).map(x=>'<p>• '+esc(x)+'</p>').join('')}
 function detail(){const r=rows().find(x=>x.symbol===selected);if(!r)return;const a=r.assessment||{},pc=a.price_condition||{},f=r.forecasts||{},t=r.targets||{},b=r.balance||{},tech=r.technical||{},h=r.history||{},src=r.sources||{},short=r.short||{};
 const state=paused()?'data':a.state||'data',label=paused()?'새 자료가 올 때까지 평가 중지':fullstates[state];
-const ceilingNote=a.price_condition_usable===false?'기준기간 불일치: 아래 가격을 매수 행동 기준으로 사용하지 마세요.':!finite(pc.move_pct)?'조건가격을 계산할 자료가 없습니다.':pc.move_pct>=0?'현재 가격은 이 가격 조건 이내입니다. 나머지 조건도 확인하세요.':'현재 종가보다 '+fmt(Math.abs(pc.move_pct),1)+'% 낮은 수준입니다.';
+const ceilingNote=a.price_condition_usable===false?'기준기간 또는 업종모델 미확인: 아래 가격을 매수 행동 기준으로 사용하지 마세요.':!finite(pc.move_pct)?'조건가격을 계산할 자료가 없습니다.':pc.move_pct>=0?'현재 가격은 이 가격 조건 이내입니다. 나머지 조건도 확인하세요.':'현재 종가보다 '+fmt(Math.abs(pc.move_pct),1)+'% 낮은 수준입니다.';
 const sourceList=link(src.estimates,'EPS 전망·목표가')+link(src.history,'가격·거래량')+link(src.official,'공식 공시·IR')+link(src.cashflow,'현금흐름')+link(src.balance,'현금·부채');
 const metrics=[dataCell('다음 회계연도 예상 EPS',money(f.next_fy?.avg,r.currency),fmt(f.analysts,0)+'명 · 제공처 0y 결산일 '+(f.current_fy_end_provider||'미상')+' · 확정 실적 아님',src.estimates),dataCell('예상 EPS의 30일 변화',pct(f.eps_revision30_pct),'동일 +1y 추정치끼리 비교',src.estimates),dataCell('다음 회계연도 예상 PER',fmt(f.next_fy_pe,2)+'배','완료 종가 ÷ +1y 예상 EPS · NTM과 다름',src.estimates),dataCell('목표가 중앙값',money(t.median,r.currency),'애널리스트 의견의 분포 · 적정주가 아님',src.estimates),dataCell('다음 FY 예상 EPS 성장',pct(f.eps_growth_next_fy_pct),'다음 FY / 이번 FY 예상치 비교',src.estimates),dataCell('순차입금 / EBITDA',fmt(b.net_debt_ebitda,2)+'배','기준일 '+(b.asof||'미상')+' · '+(b.basis||'연결 범위·만기표 별도 확인'),src.balance)];
 const support=money(tech.support10,r.currency),breakout=money(tech.prior_high20,r.currency);
