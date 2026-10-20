@@ -2,7 +2,7 @@ name: Update Stock Decisions
 on:
   workflow_dispatch:
   schedule:
-    - cron: '47 7,22 * * 1-5'
+    - cron: '47 7,22 * * *'
   workflow_run:
     workflows: ['Verify Stock Official Filings']
     types: [completed]
@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/update_stock_decisions.py'
+      - 'scripts/refresh_stock_decisions.py'
       - 'scripts/test_stock_decisions.py'
       - 'scripts/install_stock_decision_ui.py'
       - 'assets/stock-decision-v7.js'
@@ -33,14 +34,14 @@ jobs:
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.11.3'
       - name: Test numerical and market-clock safeguards
         run: python scripts/test_stock_decisions.py
-      - name: Fetch actual prices, forecasts, revisions and events
+      - name: Fetch actual prices, forecasts, revisions and official events
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python scripts/update_stock_decisions.py
-      - name: Install decision view if present
+        run: python scripts/refresh_stock_decisions.py
+      - name: Install decision view
         run: |
-          if [ -f scripts/install_stock_decision_ui.py ]; then python scripts/install_stock_decision_ui.py; fi
-          if [ -f assets/stock-decision-v7.js ]; then node --check assets/stock-decision-v7.js; fi
+          python scripts/install_stock_decision_ui.py
+          node --check assets/stock-decision-v7.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -58,12 +59,13 @@ jobs:
             stock-investment-intelligence.json
             assets/stock-decision-v7.js
             scripts/update_stock_decisions.py
+            scripts/refresh_stock_decisions.py
             scripts/test_stock_decisions.py
       - name: Publish only decision outputs; do not alter raw financial values
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add stock-decision-data.json stock-decision-run-summary.json stock-decision-tests.json stock-value-radar.html
+          git add stock-decision-data.json stock-decision-run-summary.json stock-decision-tests.json stock-value-radar.html assets/stock-decision-v7.js
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'data: refresh auditable short-term and long-term stock assessments'
           for attempt in 1 2 3; do
