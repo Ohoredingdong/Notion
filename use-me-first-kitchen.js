@@ -23,6 +23,10 @@
     '애호박': 'zucchini', '식용유': 'oil', '올리브유': 'oil', '간장': 'soy', '참치캔': 'tuna', '참치': 'tuna',
     '마늘': 'garlic', '다진마늘': 'garlic', '소금': 'salt'
   });
+  const recipeCalories = Object.freeze({
+    '계란 볶음밥': 450, '두부 된장국': 320, '닭가슴살 샐러드': 330, '애호박 계란전': 280,
+    '요거트 계란 샐러드': 260, '두부 스테이크': 310, '버섯 두부볶음': 290, '토마토 치즈 오믈렛': 360
+  });
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const foodIdFor = name => { const key = D.canonical(name); return A.foodIdForName?.(name) || (own(foods, key) ? foods[key] : 'ingredient'); };
   const seasoningFoodId = name => {
@@ -76,6 +80,33 @@
       '<button type="button" class="shelf-more" data-action="show-zone" data-zone="' + zone + '" hidden></button>' +
       '<div class="shelf-canvas" data-zone="' + zone + '" aria-label="' + zones[zone] + ' 재료 배치"><span class="shelf-empty">차곡차곡 담아주세요</span></div></div>';
   }
+  function doorDisplayMarkup(key) {
+    if (key === 'freezer') return '<section class="door-display door-display-expiry" aria-label="유통기한 임박 재료"><div class="door-display-head"><strong>유통기한 임박</strong><small>3일 이내</small></div><div class="door-display-content" data-door-expiry></div></section>';
+    return '<section class="door-display door-display-recipes" aria-label="추천 레시피"><div class="door-display-head"><strong>추천 레시피</strong><small>우리 재료 기준</small></div><div class="door-display-content" data-door-recipes></div></section>';
+  }
+  function renderDoorDisplays() {
+    const state = S.getState();
+    const expiryNode = scene.querySelector('[data-door-expiry]');
+    if (expiryNode) {
+      const upcoming = state.items.map(item => ({ item, status: itemStatus(item) }))
+        .filter(entry => !entry.status.empty && entry.status.d !== null && entry.status.d >= 0 && entry.status.d <= 3)
+        .sort((a, b) => a.status.d - b.status.d || a.item.name.localeCompare(b.item.name, 'ko'))
+        .slice(0, 3);
+      expiryNode.innerHTML = upcoming.length ? upcoming.map(({ item, status }) => {
+        const badge = status.d === 0 ? '오늘' : status.d === 1 ? '내일' : status.d + '일';
+        return '<div class="display-row display-food-row"><span class="display-food-art">' + A.foodArt(foodIdFor(item.name)) + '</span><span class="display-row-copy"><b>' + esc(item.name) + '</b><small>' + esc(status.quantity) + '</small></span><em class="display-badge d' + status.d + '">' + badge + '</em></div>';
+      }).join('') : '<div class="display-empty">3일 안에 임박한 재료가 없어요.</div>';
+    }
+    const recipeNode = scene.querySelector('[data-door-recipes]');
+    if (recipeNode) {
+      const ranked = R.getRanked().slice(0, 2);
+      recipeNode.innerHTML = ranked.length ? ranked.map(entry => {
+        const recipe = entry.recipe, missing = entry.missing?.length || 0;
+        const status = entry.available ? '바로 가능' : '재료 ' + missing + '개 부족';
+        return '<div class="display-row display-recipe-row"><span class="display-recipe-art">' + A.dishArt({ id: recipe.name }) + '</span><span class="display-row-copy"><b>' + esc(recipe.name) + '</b><small>' + esc(status) + '</small><span class="display-meta">' + esc(recipe.time) + ' · 약 ' + (recipeCalories[recipe.name] || '—') + ' kcal</span></span></div>';
+      }).join('') : '<div class="display-empty">추천할 메뉴를 준비 중이에요.</div>';
+    }
+  }
   function mountScene() {
     const inside = Object.entries(compartments).map(([key, c]) =>
       '<section class="fridge-inside compartment-' + key + '" id="inside-' + key + '" data-compartment="' + key + '" aria-label="' + c.label + ' 안쪽" aria-hidden="true" tabindex="-1" inert>' +
@@ -83,9 +114,8 @@
     ).join('');
     const doors = Object.entries(compartments).map(([key, c]) =>
       '<div class="fridge-door door-' + key + '" role="button" tabindex="0" aria-label="' + c.label + ' 문 열기" aria-expanded="false" aria-controls="inside-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '">' +
-      '<div class="door-front"><div class="door-compartment-label">' + A.icon(c.icon) + '<strong>' + c.label + '</strong><small>' + c.english + '</small></div><i class="door-handle" aria-hidden="true"></i>' +
-      (key === 'freezer' ? '<div class="ice-magnet">' + A.icon('snowflake') + '</div><div class="freezer-scribble">시원하게<br>차곡차곡</div><span class="door-flower" aria-hidden="true">✿</span>' : '<div class="magnet-carrot">' + A.foodArt('carrot') + '</div><div class="door-note">잘 먹고,<br>잘 지내요.<small>A GOOD LITTLE DAY</small></div><span class="fridge-brand">little kitchen</span>') +
-      '</div><div class="door-back" aria-hidden="true"><span></span><span></span><span></span></div></div>'
+      '<div class="door-front">' + doorDisplayMarkup(key) + '<i class="door-handle" aria-hidden="true"></i><span class="fridge-brand">little kitchen</span></div>' +
+      '<div class="door-back" aria-hidden="true"><span></span><span></span><span></span></div></div>'
     ).join('');
     const controls = Object.entries(compartments).map(([key, c]) =>
       '<button type="button" class="compartment-toggle toggle-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '" aria-expanded="false" aria-controls="inside-' + key + '" aria-label="' + c.label + ' 문 열기">' + A.icon(c.icon) + '<span class="toggle-label">' + c.label + ' 열기</span><small>0</small></button>'
@@ -206,6 +236,7 @@
     const hint = organizing ? '겹쳐 놓을 수 있어요 · 앞뒤 순서도 바꿔보세요' : anyOpen ? '재료를 누르면 수량과 기한을 볼 수 있어요' : '왼쪽은 냉동실, 오른쪽은 냉장실이에요';
     const hintNode = scene.querySelector('.scene-hint');
     if (hintNode.dataset.message !== hint) { hintNode.dataset.message = hint; hintNode.innerHTML = A.icon(anyOpen ? 'leaf' : 'heart') + esc(hint); }
+    renderDoorDisplays();
     if (focusedInside && !doors[focusedInside.dataset.compartment] && (document.activeElement === focused || document.activeElement === document.body)) scene.querySelector('.toggle-' + focusedInside.dataset.compartment)?.focus();
     else if (focused?.classList?.contains('fridge-food') && !focused.isConnected && document.activeElement === document.body) scene.querySelector('[data-action="organize"]')?.focus();
     renderError();
