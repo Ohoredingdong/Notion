@@ -2,7 +2,7 @@
 from pathlib import Path
 import subprocess,sys,tempfile,time,shutil,json
 ROOT=Path.cwd()
-FILES=['stock-value-radar.html','assets/stock-radar-v8.html','assets/stock-radar-v8.js','assets/stock-radar-v9.js','assets/stock-investment-cases.js','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
+FILES=['stock-value-radar.html','assets/stock-radar-v8.html','assets/stock-radar-v8.js','assets/stock-radar-v9.js','assets/stock-investment-cases.js','assets/stock-recommendations.js','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
 def git(*args,cwd=ROOT,check=True):return subprocess.run(['git',*args],cwd=cwd,check=check,text=True,capture_output=True)
 for attempt in range(4):
  git('fetch','origin','main');path=Path(tempfile.mkdtemp(prefix='investment-case-ui-'));path.rmdir();git('worktree','add','--detach',str(path),'origin/main')
