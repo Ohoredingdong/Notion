@@ -26,13 +26,18 @@ p.write_text(s)
 p=root/'assets/stock-radar-v9.js';s=p.read_text();a="function brief(){const root=$('#todayBrief');if(!root)return;";b=a+"if(mode==='long'&&!paused&&window.StockInvestmentCase){root.innerHTML=window.StockInvestmentCase.brief(current,typeof selectedMarket==='undefined'?'ALL':selectedMarket);return;}"
 s=replace_once(s,a,b);p.write_text(s)
 p=root/'assets/stock-radar-v8.html';s=p.read_text();code=(root/'assets/stock-investment-cases.js').read_text();digest=hashlib.sha256(code.encode()).hexdigest()[:12]
+rec=(root/'assets/stock-recommendations.js').read_text();rec_digest=hashlib.sha256(rec.encode()).hexdigest()[:12]
+s=re.sub(r'<script src="\\./assets/stock-recommendations\\.js[^\\"]*" defer></script>\\s*','',s)
+rec_anchor=re.search(r'<script src="\\./assets/stock-investment-cases\\.js',s)
+if not rec_anchor:raise RuntimeError('Investment cases JS tag not found')
+s=s[:rec_anchor.start()]+'<script src="./assets/stock-recommendations.js?v='+rec_digest+'" defer></script>\\n'+s[rec_anchor.start():]
 s=re.sub(r'<script src="\./assets/stock-investment-cases\.js[^\"]*" defer></script>\s*','',s);anchor=re.search(r'<script src="\./assets/stock-radar-v8\.js',s)
 if not anchor:raise RuntimeError('Main JS tag not found')
 s=s[:anchor.start()]+'<script src="./assets/stock-investment-cases.js?v='+digest+'" defer></script>\n'+s[anchor.start():]
 for before,after in [('>매수 조건 충족</button>','>엄격 검증 통과</button>'),('>투자 매력 있음</button>','>엄격 검증 통과</button>'),('>지금 살 만한 편</button>','>엄격 검증 통과</button>'),('>가격·실적 후보</button>','>괜찮아 보이는 종목</button>'),('>긍정·조건부 의견</button>','>괜찮아 보이는 종목</button>'),('MY INVESTMENT RADAR','내 투자 후보'),('A CLEARER NEXT STEP','어떤 종목부터 볼까요?'),('좋은 기업보다, 내게 맞는 기회를.','살 만한 이유와 조심할 점을 한눈에.')]:s=s.replace(before,after)
 p.write_text(s)
 code=(root/'assets/stock-radar-v9.js').read_text();digest=hashlib.sha256(code.encode()).hexdigest()[:12];s=re.sub(r'(stock-radar-v9\.js\?v=)[^\"]+',lambda m:m[1]+digest,s);p.write_text(s)
-for name in ('stock-radar-v8.js','stock-radar-v9.js','stock-investment-cases.js','stock-decision-guide.js','stock-green-review.js'):subprocess.run(['node','--check',str(root/'assets'/name)],check=True)
+for name in ('stock-radar-v8.js','stock-radar-v9.js','stock-investment-cases.js','stock-recommendations.js','stock-decision-guide.js','stock-green-review.js'):subprocess.run(['node','--check',str(root/'assets'/name)],check=True)
 subprocess.run([sys.executable,'scripts/install_stock_decision_guide.py'],check=True)
 subprocess.run([sys.executable,'scripts/install_stock_radar_v8.py'],check=True)
 print('Strict green view, term+meaning and market-to-company guide installed; source figures and training unchanged.')
