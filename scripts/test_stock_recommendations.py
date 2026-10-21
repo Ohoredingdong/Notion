@@ -19,7 +19,7 @@ class RecommendationTests(unittest.TestCase):
  def test_target_gap_cannot_dominate(self):
   r,c,d=self.base();r['targets']['median_gap_pct']=500;r['forecasts']['next_fy_pe']=55;x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[]});self.assertLess(x['scores']['valuation'],20)
  def test_korea_requires_dart(self):
-  r,c,d=self.base();r['market']='KR';r['currency']='KRW';x=m.evaluate(r,c,d);self.assertEqual(x['grade'],'제외')
+  r,c,d=self.base();r['market']='KR';r['currency']='KRW';x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[]});self.assertEqual(x['grade'],'제외')
  def test_event_warning_downgrades(self):
   r,c,d=self.base();x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[{'severity':'medium','category':'labor_dispute','title':'총파업 연기·노사갈등 지속'}]});self.assertEqual(x['grade'],'관심')
  def test_missing_event_scan_blocks(self):
