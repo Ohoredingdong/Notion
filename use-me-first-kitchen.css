@@ -426,3 +426,57 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 
 /* The refrigerator itself is the organizer UI; keep the legacy helper panel out of view. */
 .kitchen-app .kitchen-arrange-tools{display:none!important}
+
+
+/* Visible seasoning shelf: checked seasonings become miniature jars and bottles. */
+.kitchen-app .seasoning-rack{
+  margin-top:18px;padding:14px 16px 16px;border:1px solid #ddd1b9;border-radius:18px;
+  background:linear-gradient(180deg,#fbf5e8 0%,#f5ecd9 100%);
+  box-shadow:inset 0 1px 0 #fff8,0 7px 18px #7d684416;
+}
+.kitchen-app .seasoning-rack-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.kitchen-app .seasoning-rack-head>div{display:flex;align-items:baseline;gap:9px;min-width:0}
+.kitchen-app .seasoning-rack-head strong{font-family:'Gowun Batang',serif;font-size:15px;color:#6f604b;white-space:nowrap}
+.kitchen-app .seasoning-rack-head small{font-size:10px;color:#9b8b72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kitchen-app .seasoning-rack-head .btn{min-height:34px;padding:6px 10px;font-size:10px;flex-shrink:0}
+.kitchen-app .seasoning-rack-board{
+  position:relative;min-height:118px;border-radius:12px 12px 8px 8px;
+  background:linear-gradient(180deg,#f7f2df 0%,#eef0d8 72%,#e3dfc2 73%,#d0c6a7 79%,#ede4ca 80%);
+  border:1px solid #ded5ba;box-shadow:inset 0 5px 12px #8f8b6320;
+  overflow:hidden;
+}
+.kitchen-app .seasoning-rack-board:after{
+  content:'';position:absolute;left:8px;right:8px;bottom:15px;height:9px;border-radius:4px;
+  background:linear-gradient(#fff8de,#d4c7a7 68%,#b9a984);box-shadow:0 4px 5px #6e5d4128;pointer-events:none;z-index:1;
+}
+.kitchen-app .seasoning-rack-items{
+  position:relative;z-index:2;display:flex;align-items:flex-end;min-height:116px;padding:15px 18px 25px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#c7b99a transparent;
+}
+.kitchen-app .seasoning-mini{
+  position:relative;display:flex;flex:0 0 66px;height:82px;align-items:center;justify-content:flex-end;flex-direction:column;
+  padding:0 2px 14px;margin-left:-8px;border:0;background:transparent;color:#6b5d49;cursor:pointer;z-index:2;
+  transition:transform .16s ease,filter .16s ease;
+}
+.kitchen-app .seasoning-mini:first-child{margin-left:0}
+.kitchen-app .seasoning-mini:nth-child(3n+1){transform:rotate(-2deg)}
+.kitchen-app .seasoning-mini:nth-child(3n+2){transform:translateY(-2px) rotate(1deg)}
+.kitchen-app .seasoning-mini:nth-child(3n){transform:rotate(2deg)}
+.kitchen-app .seasoning-mini:hover{transform:translateY(-5px) scale(1.04);z-index:5}
+.kitchen-app .seasoning-mini .food-art{width:61px;height:61px;max-width:none;filter:drop-shadow(0 4px 3px #6655362b)}
+.kitchen-app .seasoning-mini>span{
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);max-width:64px;padding:2px 5px;border:1px solid #e1d3b8;border-radius:5px;
+  background:#fffaf0ed;color:#725f45;font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.kitchen-app .seasoning-empty{
+  margin:auto;min-height:62px;padding:10px 14px;border:1px dashed #c9b993;border-radius:11px;background:#fffaf0a8;
+  color:#8b795e;font-size:11px;
+}
+@media(max-width:760px){
+  .kitchen-app .seasoning-rack{margin-top:14px;padding:12px}
+  .kitchen-app .seasoning-rack-head small{display:none}
+  .kitchen-app .seasoning-rack-board{min-height:108px}
+  .kitchen-app .seasoning-rack-items{min-height:106px;padding:12px 13px 23px}
+  .kitchen-app .seasoning-mini{flex-basis:59px;height:75px;margin-left:-9px}
+  .kitchen-app .seasoning-mini .food-art{width:55px;height:55px}
+}
