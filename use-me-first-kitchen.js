@@ -25,6 +25,17 @@
   });
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const foodIdFor = name => { const key = D.canonical(name); return A.foodIdForName?.(name) || (own(foods, key) ? foods[key] : 'ingredient'); };
+  const seasoningFoodId = name => {
+    const key = String(name || '').normalize('NFKC').trim();
+    if (/간장/.test(key)) return 'soy';
+    if (/식용유|올리브유|참기름|식초/.test(key)) return 'oil';
+    if (/소금|설탕|후추/.test(key)) return 'salt';
+    if (/다진마늘|마늘/.test(key)) return 'garlic';
+    if (/고춧가루|고추장/.test(key)) return 'pepper';
+    if (/케첩/.test(key)) return 'tomato';
+    if (/된장/.test(key)) return 'soy';
+    return A.foodIdForName?.(key) || 'ingredient';
+  };
   const compartmentFor = zone => zone === 'pantry' ? 'pantry' : zone.startsWith('freezer-') ? 'freezer' : 'fridge';
   const zoneFor = item => { const value = K.zoneFor(item); return own(zones, value) ? value : 'middle'; };
   const text = (parent, selector, value) => { const node = parent?.querySelector(selector); if (node && node.textContent !== String(value)) node.textContent = value; };
@@ -85,7 +96,7 @@
       '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
 
-      '<section class="kitchen-pantry" aria-label="실온 양념 선반" hidden>' + shelfMarkup('pantry') + '</section>' +
+      '<section class="seasoning-rack" aria-label="양념 선반"><div class="seasoning-rack-head"><div><strong>양념 선반</strong><small>체크한 양념이 여기 보여요</small></div><button type="button" class="btn btn-small btn-line" data-action="add-seasoning">양념 ＋</button></div><div class="seasoning-rack-board"><div class="seasoning-rack-items"></div></div></section>' +
       '<div class="kitchen-inventory-link"><button type="button" class="btn btn-ghost" data-action="navigate" data-page="inventory">전체 재고 보기 ' + A.icon('chevron') + '</button><button type="button" class="btn btn-ghost" data-action="add-food">' + A.icon('plus') + '재료 넣기</button></div>' +
       '<p class="tiny kitchen-live" id="umfKitchenLive" role="status" aria-live="polite" aria-atomic="true"></p>';
   }
@@ -125,6 +136,16 @@
     else button.removeAttribute('aria-pressed');
     button.removeAttribute('aria-describedby');
     return button;
+  }
+  function renderSeasoningShelf() {
+    const rack = scene.querySelector('.seasoning-rack-items');
+    if (!rack) return;
+    const state = S.getState();
+    const names = [...new Set((state.season || []).map(name => String(name).trim()).filter(Boolean))];
+    rack.innerHTML = names.length ? names.map((name, index) =>
+      '<button type="button" class="seasoning-mini" data-action="manage-seasonings" title="' + esc(name) + '" aria-label="' + esc(name) + ' 양념 관리" style="--season-index:' + index + '">' +
+      A.foodArt(seasoningFoodId(name)) + '<span>' + esc(name) + '</span></button>'
+    ).join('') : '<button type="button" class="seasoning-empty" data-action="add-seasoning">양념을 체크하거나 추가해 주세요 <span aria-hidden="true">＋</span></button>';
   }
   function renderScene() {
     const items = S.getState().items, state = K.getState(), doors = state.doors, focused = document.activeElement;
@@ -176,7 +197,7 @@
     const moving = items.find(item => item.id === movingId);
     scene.querySelector('.organize-banner').hidden = !organizing;
     text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
-    scene.querySelector('.kitchen-pantry').hidden = !organizing && !items.some(item => placements.get(item.id) === 'pantry');
+    renderSeasoningShelf();
     for (const button of scene.querySelectorAll('.kitchen-zone-controls [data-zone]')) {
       button.disabled = !initialized || !movingId || moveBusy || !openZone(button.dataset.zone, doors);
       button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + zones[button.dataset.zone] + '으로 옮기기');
@@ -349,6 +370,11 @@
     if (target.dataset.action === 'toggle-fridge') toggleDoor(target.dataset.compartment);
     else if (target.dataset.action === 'organize') toggleOrganize();
     else if (target.dataset.action === 'fridge-food') selectItem(target.dataset.lot);
+    else if (target.dataset.action === 'add-seasoning') document.querySelector('#addSeason')?.click();
+    else if (target.dataset.action === 'manage-seasonings') {
+      document.querySelector('#seasonTab')?.click();
+      document.querySelector('#umfKitchenInventory')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
     else if (target.dataset.action === 'move-zone' && organizing) moveItem(movingId, target.dataset.zone);
     else if (target.dataset.action === 'layer-front') changeLayer('front');
     else if (target.dataset.action === 'layer-back') changeLayer('back');
