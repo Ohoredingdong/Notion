@@ -123,7 +123,7 @@
     scene.innerHTML = '<div class="kitchen-scene"><div class="scene-top"><div class="scene-label">' + A.icon('fridge') + '<strong>나의 냉장고</strong><small class="muted" data-kitchen-count>0개</small></div>' +
       '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
       '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
-      '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
+      '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '<div class="fridge-lower" aria-hidden="true"><div class="fridge-drawer fridge-drawer-one"><i></i></div><div class="fridge-drawer fridge-drawer-two"><i></i></div></div></div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
 
       '<section class="seasoning-rack" aria-label="양념 선반"><div class="seasoning-rack-head"><div><strong>양념 선반</strong><small>체크한 양념이 여기 보여요</small></div><button type="button" class="btn btn-small btn-line" data-action="add-seasoning">양념 ＋</button></div><div class="seasoning-rack-board"><div class="seasoning-rack-items"></div></div></section>' +
