@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-21T03:01:42.387324+09:00
+- 계산일: 2026-10-21T17:30:51.011020+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -11,15 +11,15 @@
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
 | Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.6배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.3배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 45.7배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.2배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 45.5배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.7배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.6배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 346.7배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 346.0배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [이번엔 프랑스 국채금리 뇌관…한국 경제 여파는? - 매일경제TV](https://news.google.com/rss/articles/CBMiaEFVX3lxTE8wZXYyRU92Q3BqZ1BOcWVhN0c2bktMN3RuLWR3dFV6RlJaamVzVDY0QlBYd3VORW5NXzRZYzhUUXFqUTNIMUtQX05zUExZMHF1WFJzY2tmZWtjbXlRUTNnWDZ5MGxNZ3I4?oc=5)
-- [“AI에 돈 쏟아붓더니 얼마나 벌었나”…메타·테슬라 성적표에 쏠린 눈 - 매일경제 마켓](https://news.google.com/rss/articles/CBMiUkFVX3lxTE95Slo5MXZzaHgzX2lMZTVSLTJCZnZiQkJ6eHBQXzBFZ0xKTHJYN3VlcG9MNkJhaXNtVG5BU2w2SXhoZEtQbktfMHhxamJuSEtkQ3c?oc=5)
-- [HBM 공급사 셋인데 생산 공정은 하나?…엔비디아의 'TSMC 쏠림' 우려 - 월요신문](https://news.google.com/rss/articles/CBMiakFVX3lxTFBEZlJ0VENieUh0MU8wWUxha0pHd25NMVJERGc0dWw1bGw1Qll3Z2xfQy1tMU9tM0c1Z0puV0YwRWJ5TXdDMUFUcGpFbi11TDNaRmVDM0tjVzRLUlh4SkJsTFhpQTA2T3pDcEE?oc=5)
-- [(박래혁의 테크오딧세이) 삼성전자와 TSMC의 HBM 공조...엔비디아가 바꾸는 반도체 질서 - 알티케이뉴스](https://news.google.com/rss/articles/CBMibkFVX3lxTFA2RVE5M2NxX2RKR0tDSDRYN0RDOHIyTXFMWWVacEk2VVZUREIyZm9STjduNVhYd2ZOejNHZ0ZWaGdmQlVfSFNGNFItN1FNOTJ2SnV3d0tWcmpHTFlJM1hpa3NYYjJkUzRhbHlGTHBR?oc=5)
+- [“주가는 출렁이고, 금리는 불안하다”…한국 경제 어디로 가나 - 용인신문](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5LUDV2aFQxQUg5X2tra1VWaV8wM2JBcUxHb0xCNEJCYldlYkpuQ1d1S3g2eWl1bjN6eGdreE5mMUF6dTVGN09Lbk1OeGNKQTRfZTlTS0FtaFgtN0F4cVROYUpQR2Q?oc=5)
+- [국내 최대 ETF 순위 바뀜이 의미하는 것 - 스트레이트뉴스](https://news.google.com/rss/articles/CBMic0FVX3lxTFA2MnlmZC1sbnM3UHdDQ1RrYWVjMmQ5NGppdnlLc3V0bmRIUGxqN3BidkNBUjB0Qk01cXBlUHR0MVdqZXhldV9WbjlEX0gtWnFhekJrakc0dHBpSXIydktrdGVWdGQzNTlmU1lpZ0JGNVNDNEXSAXdBVV95cUxORW03eWg2aUkxM2wwT0VoSHcwQnRhc2gtbFlpX2ZpSnMxTWhUQUFNVS10RW5UY2tPYVBHZkp6ODd6eEk3bHVVRGZlSHp1N2JDSTA3T2NCQmR5a24ybmlnc3JxUUpfcktYNDA3VmpiSkh4S0NEZEhkVQ?oc=5)
+- [공정 바꾸고 대체품까지…'금값' AI메모리에 빅테크 대응 몸부림 - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTFBWcHZfMFRmYW84X1JrY2MzQU5FbGF1Y1RhZU5INEhLb1FYV0x5b21Kd1J1RGFVZnRzU1pudUNVX3RWeGM5ZmhIeldpRkFRY0VQS0JLdERnVEtzWEdtZVNjR9IBYEFVX3lxTFBWcHZfMFRmYW84X1JrY2MzQU5FbGF1Y1RhZU5INEhLb1FYV0x5b21Kd1J1RGFVZnRzU1pudUNVX3RWeGM5ZmhIeldpRkFRY0VQS0JLdERnVEtzWEdtZVNjRw?oc=5)
+- [HBM 공급 부족에 엔비디아·인텔 대응 총력…삼성·하이닉스 득실은 - 매일신문](https://news.google.com/rss/articles/CBMiYkFVX3lxTE5qdFNaU0hScm1ORnFlMDRGdU1OY0RTM2pJZU5ZQUNYSFhySWlscG5SM01QTDdCbE96V2Z0bTN5T2c1U2J2eTBfYnl2TkRRd0hkbWpELVZBQy11UVhFaE1kdDd3?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
