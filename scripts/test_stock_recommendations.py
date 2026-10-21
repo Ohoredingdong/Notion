@@ -13,7 +13,7 @@ class RecommendationTests(unittest.TestCase):
  def test_low_analyst_count_blocks(self):
   r,c,d=self.base();r['forecasts']['analysts']=2;x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[]});self.assertEqual(x['grade'],'제외')
  def test_bad_pe_blocks(self):
-  r,c,d=self.base();r['forecasts']['next_fy_pe']=2;x=m.evaluate(r,c,d);self.assertEqual(x['grade'],'제외')
+  r,c,d=self.base();r['forecasts']['next_fy_pe']=2;x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[]});self.assertEqual(x['grade'],'제외')
  def test_quality_flag_downgrades(self):
   r,c,d=self.base();r['history']['quality_flags']=['재고 급증'];x=m.evaluate(r,c,d,{'status':'ok','scanned_at':'2099-01-01T00:00:00+00:00','events':[]});self.assertNotEqual(x['grade'],'우선 추천')
  def test_target_gap_cannot_dominate(self):
