@@ -174,6 +174,7 @@
     displayedPositions.clear();
     for (const zone of Object.keys(zones)) {
       const shelf = scene.querySelector('.shelf[data-zone="' + zone + '"]'), lots = items.filter(item => placements.get(item.id) === zone);
+      if (!shelf) continue;
       const more = shelf.querySelector('.shelf-more'), label = shelf.querySelector('span.shelf-name'), target = shelf.querySelector('.shelf-target');
       const canvas = shelf.querySelector('.shelf-canvas');
       const layout = lots.map((item, index) => ({ item, index, position: own(state.positions || {}, item.id) ? state.positions[item.id] : defaultPosition(item.id, index) }));
