@@ -80,7 +80,7 @@ def evaluate(row,case,depth,event_scan,display_name=None):
     else:
         for ev in event_scan.get('events',[]):
             sev=ev.get('severity')
-            if sev not in ('medium','high'): continue
+            if sev not in ('caution','medium','high'): continue
             entry={'category':ev.get('category'),'severity':sev,'title':ev.get('title'),'why_it_matters':ev.get('why_it_matters'),'event_date':ev.get('event_date'),'sources':ev.get('sources') or []}
             event_risks.append(entry)
             if sev=='high':
