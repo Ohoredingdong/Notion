@@ -43,11 +43,11 @@ def official_ok(row,case):
     annual=(case.get('official') or {}).get('annual') or {}
     matches={x.get('field') for x in (case.get('official_comparison') or []) if x.get('status')=='matched'}
     return annual.get('status')=='ok' and {'revenue','operating_income'}.issubset(matches) and bool(matches & {'cfo','fcf'})
-def evaluate(row,case,depth,display_name=None):
+def evaluate(row,case,depth,event_scan,display_name=None):
     series=(depth.get('series') or [])[:3]
     latest=series[0] if series else {}
     h=row.get('history') or {}; f=row.get('forecasts') or {}; t=row.get('targets') or {}; b=row.get('balance') or {}
-    blockers=[]; warnings=[]
+    blockers=[]; warnings=[]; event_risks=[]
     liq=next((x.get('ok') for x in (row.get('assessment') or {}).get('checks',[]) if x.get('key')=='liquidity'),None)
     if row.get('status')!='current': blockers.append('최근 완료 거래일 시세가 아니에요.')
     if (row.get('period_integrity') or {}).get('status')!='ok': blockers.append('회계기간이 서로 맞지 않아요.')
@@ -68,6 +68,25 @@ def evaluate(row,case,depth,display_name=None):
     if fpe is None or not 5<=fpe<=60: blockers.append('예상 PER이 비정상 범위이거나 기준을 확인하기 어려워요.')
     official=official_ok(row,case)
     if row.get('market')=='KR' and official is not True: blockers.append('DART에서 매출·영업이익·현금흐름 핵심 대조가 충분하지 않아요.')
+    # Recent material-event gate: recommendations require a fresh, aligned news scan.
+    scan_ok=isinstance(event_scan,dict) and event_scan.get('status') in ('ok','partial')
+    scan_time=event_scan.get('scanned_at') if isinstance(event_scan,dict) else None
+    try:
+        scan_age=(datetime.now(timezone.utc)-datetime.fromisoformat(str(scan_time).replace('Z','+00:00'))).total_seconds()/3600
+    except Exception:
+        scan_age=999
+    if not scan_ok or scan_age>6:
+        blockers.append('최근 중요뉴스·공시 이벤트 확인이 6시간 이내에 완료되지 않았어요.')
+    else:
+        for ev in event_scan.get('events',[]):
+            sev=ev.get('severity')
+            if sev not in ('medium','high'): continue
+            entry={'category':ev.get('category'),'severity':sev,'title':ev.get('title'),'why_it_matters':ev.get('why_it_matters'),'event_date':ev.get('event_date'),'sources':ev.get('sources') or []}
+            event_risks.append(entry)
+            if sev=='high':
+                blockers.append('중대 이벤트 위험: '+str(ev.get('title') or ev.get('category')))
+            else:
+                warnings.append('최근 중요 이벤트: '+str(ev.get('title') or ev.get('category')))
 
     for x in (h.get('quality_flags') or []): warnings.append(x)
     # 35: business/financial quality
@@ -101,7 +120,7 @@ def evaluate(row,case,depth,display_name=None):
     valuation=round(valuation,1)
 
     # 15: observed risk. Missing risks are not turned into positives.
-    risk=15-min(9,3*len(warnings))
+    risk=15-min(12,3*len(warnings))
     if len(series)>1:
         names={'net_income':'순이익','cfo':'영업현금흐름','fcf':'FCF'}
         for key,cut in [('net_income',-15),('cfo',-15),('fcf',-20)]:
@@ -128,20 +147,20 @@ def evaluate(row,case,depth,display_name=None):
       f"예상 PER {fpe:.1f}배·EPS성장 대비 PER {peg:.2f}" if fpe is not None and peg is not None else '가격 지표 일부 미확인',
       f"순차입금/EBITDA {leverage:.2f}배" if leverage is not None else '부채부담 미확인'
     ]
-    return {'symbol':row['symbol'],'name':row.get('name'),'display_name':display_name or row.get('name'),'market':row.get('market'),'sector':row.get('sector'),'currency':row.get('currency'),'price':row.get('price'),'price_session':row.get('price_session'),'grade':grade,'action':action,'score':score,'scores':{'quality':quality,'growth':growth,'valuation':valuation,'risk':risk},'why':why,'blockers':blockers,'warnings':warnings,'metrics':{'operating_margin_pct':margin,'roe_pct':roe,'cfo_to_profit':conversion,'revenue_growth_pct':revenue_growth,'eps_growth_next_fy_pct':eps_growth,'eps_revision30_pct':revision,'forward_pe':fpe,'peer_forward_pe':peer,'peg_like':peg,'target_gap_pct':target_gap,'net_debt_ebitda':leverage,'analysts':analysts,'eps_spread':spread,'official_core_checked':official},'not_probability':True,'not_personal_allocation_advice':True}
+    return {'symbol':row['symbol'],'name':row.get('name'),'display_name':display_name or row.get('name'),'market':row.get('market'),'sector':row.get('sector'),'currency':row.get('currency'),'price':row.get('price'),'price_session':row.get('price_session'),'grade':grade,'action':action,'score':score,'scores':{'quality':quality,'growth':growth,'valuation':valuation,'risk':risk},'why':why,'blockers':blockers,'warnings':warnings,'event_risks':event_risks,'metrics':{'operating_margin_pct':margin,'roe_pct':roe,'cfo_to_profit':conversion,'revenue_growth_pct':revenue_growth,'eps_growth_next_fy_pct':eps_growth,'eps_revision30_pct':revision,'forward_pe':fpe,'peer_forward_pe':peer,'peg_like':peg,'target_gap_pct':target_gap,'net_debt_ebitda':leverage,'analysts':analysts,'eps_spread':spread,'official_core_checked':official},'not_probability':True,'not_personal_allocation_advice':True}
 
 def main():
     raw_bytes=Path('stock-opportunity-data.json').read_bytes(); raw=json.loads(raw_bytes)
-    cases=read('stock-investment-cases.json'); depth=read('stock-reading-depth.json')
-    if cases.get('source_generated_at')!=raw.get('generated_at') or depth.get('source_generated_at')!=raw.get('generated_at'): raise SystemExit('source snapshot mismatch')
-    c={x['symbol']:x for x in cases['companies']}; d={x['symbol']:x for x in depth['companies']}
+    cases=read('stock-investment-cases.json'); depth=read('stock-reading-depth.json'); event_data=read('stock-event-risks.json')
+    if cases.get('source_generated_at')!=raw.get('generated_at') or depth.get('source_generated_at')!=raw.get('generated_at') or event_data.get('source_generated_at')!=raw.get('generated_at'): raise SystemExit('source snapshot mismatch')
+    c={x['symbol']:x for x in cases['companies']}; d={x['symbol']:x for x in depth['companies']}; e={x['symbol']:x for x in event_data.get('companies',[])}
     names=dart_names()
-    results=[evaluate(r,c.get(r['symbol'],{}),d.get(r['symbol'],{}),names.get(r['symbol']) if r.get('market')=='KR' else r.get('name')) for r in raw['companies']]
+    results=[evaluate(r,c.get(r['symbol'],{}),d.get(r['symbol'],{}),e.get(r['symbol'],{}),names.get(r['symbol']) if r.get('market')=='KR' else r.get('name')) for r in raw['companies']]
     order={'우선 추천':0,'추천':1,'관심':2,'보류':3,'제외':4}
     results.sort(key=lambda x:(order[x['grade']],-x['score'],x['symbol']))
     top=[x for x in results if x['grade'] in ('우선 추천','추천')][:5]
     counts={g:sum(x['grade']==g for x in results) for g in order}
-    out={'version':VERSION,'generated_at':datetime.now(timezone.utc).isoformat(),'source_generated_at':raw['generated_at'],'source_sha256':hashlib.sha256(raw_bytes).hexdigest(),'counts':counts,'top_recommendations':top,'companies':results,'method':{'hard_gates':['최신 완료시세·기간·업종모형·유동성','비교 가능한 3년 실적','영업이익·CFO·FCF 양수','순차입금/EBITDA 3배 이하','예상 EPS 성장·30일 수정·분석가 수·편차','예상 PER 5~60배 sanity check','한국기업은 DART 핵심 실적 대조'],'weights':{'사업·재무 질':35,'성장':25,'가격':25,'관측 위험':15},'target_price_weight':'애널리스트 목표가 차이는 100점 중 최대 4점만 반영','labels':{'우선 추천':'85점 이상·탈락조건/경고 없음','추천':'75점 이상·탈락조건/경고 없음','관심':'경고가 있거나 65~74.9점','제외':'탈락조건 존재'},'note':'점수는 기대수익률·상승확률이 아닙니다. 같은 입력으로 후보 우선순위를 일관되게 비교하기 위한 규칙입니다.'}}
+    out={'version':VERSION,'generated_at':datetime.now(timezone.utc).isoformat(),'source_generated_at':raw['generated_at'],'source_sha256':hashlib.sha256(raw_bytes).hexdigest(),'counts':counts,'top_recommendations':top,'companies':results,'method':{'hard_gates':['최신 완료시세·기간·업종모형·유동성','비교 가능한 3년 실적','영업이익·CFO·FCF 양수','순차입금/EBITDA 3배 이하','예상 EPS 성장·30일 수정·분석가 수·편차','예상 PER 5~60배 sanity check','한국기업은 DART 핵심 실적 대조','최근 6시간 중요뉴스·공시 이벤트 확인'],'weights':{'사업·재무 질':35,'성장':25,'가격':25,'관측 위험':15},'target_price_weight':'애널리스트 목표가 차이는 100점 중 최대 4점만 반영','labels':{'우선 추천':'85점 이상·탈락조건/경고 없음','추천':'75점 이상·탈락조건/경고 없음','관심':'경고가 있거나 65~74.9점','제외':'탈락조건 존재'},'note':'점수는 기대수익률·상승확률이 아닙니다. 같은 입력으로 후보 우선순위를 일관되게 비교하기 위한 규칙입니다.'}}
     Path('stock-recommendations.json').write_text(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     Path('stock-recommendations-summary.json').write_text(json.dumps({k:out[k] for k in ('version','generated_at','source_generated_at','counts','top_recommendations','method')},ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     print(counts);print([(x['symbol'],x['name'],x['grade'],x['score']) for x in top])
