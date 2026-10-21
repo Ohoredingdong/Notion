@@ -80,15 +80,11 @@
       '<button type="button" class="compartment-toggle toggle-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '" aria-expanded="false" aria-controls="inside-' + key + '" aria-label="' + c.label + ' 문 열기">' + A.icon(c.icon) + '<span class="toggle-label">' + c.label + ' 열기</span><small>0</small></button>'
     ).join('');
     scene.innerHTML = '<div class="kitchen-scene"><div class="scene-top"><div class="scene-label">' + A.icon('fridge') + '<strong>나의 냉장고</strong><small class="muted" data-kitchen-count>0개</small></div>' +
-      '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false" aria-controls="umfKitchenArrangeHelp"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
+      '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
       '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
       '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
-      '<div class="drag-note kitchen-arrange-tools" hidden><p id="umfKitchenArrangeHelp">정리 모드에서 재료를 끌어 원하는 자리에 놓으세요. 재료를 고른 뒤 선반의 빈 자리를 눌러도 돼요. 방향키로 조금씩, Shift와 함께 누르면 더 크게 옮겨요. Escape로 이동을 취소해요.</p>' +
-      '<div class="kitchen-layer-controls" role="group" aria-label="선택한 재료의 앞뒤 순서"><strong class="kitchen-selected-material">옮길 재료를 골라주세요</strong><button type="button" class="btn btn-small btn-line" data-action="layer-front" disabled>앞에 놓기</button><button type="button" class="btn btn-small btn-line" data-action="layer-back" disabled>뒤에 놓기</button></div>' +
-      '<div class="kitchen-zone-controls" role="group" aria-label="선택한 재료를 옮길 보관 위치">' +
-      Object.entries(zones).map(([zone, label]) => '<button type="button" class="btn btn-small btn-line" data-action="move-zone" data-zone="' + zone + '">' + label + '</button>').join('') +
-      '</div><p class="tiny">위치를 옮겨도 수량과 소비기한은 바뀌지 않아요.</p></div>' +
+
       '<section class="kitchen-pantry" aria-label="실온 양념 선반" hidden>' + shelfMarkup('pantry') + '</section>' +
       '<div class="kitchen-inventory-link"><button type="button" class="btn btn-ghost" data-action="navigate" data-page="inventory">전체 재고 보기 ' + A.icon('chevron') + '</button><button type="button" class="btn btn-ghost" data-action="add-food">' + A.icon('plus') + '재료 넣기</button></div>' +
       '<p class="tiny kitchen-live" id="umfKitchenLive" role="status" aria-live="polite" aria-atomic="true"></p>';
@@ -125,8 +121,9 @@
     button.classList.toggle('exhausted', status.empty); button.classList.toggle('selected', movingId === item.id);
     button.disabled = !initialized || moveBusy || !openZone(zone, doors);
     button.draggable = !button.disabled && (!organizing || htmlDrag?.id === item.id);
-    if (organizing) { button.setAttribute('aria-pressed', String(movingId === item.id)); button.setAttribute('aria-describedby', 'umfKitchenArrangeHelp'); }
-    else { button.removeAttribute('aria-pressed'); button.removeAttribute('aria-describedby'); }
+    if (organizing) button.setAttribute('aria-pressed', String(movingId === item.id));
+    else button.removeAttribute('aria-pressed');
+    button.removeAttribute('aria-describedby');
     return button;
   }
   function renderScene() {
@@ -179,12 +176,6 @@
     const moving = items.find(item => item.id === movingId);
     scene.querySelector('.organize-banner').hidden = !organizing;
     text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
-    scene.querySelector('.kitchen-arrange-tools').hidden = !organizing;
-    text(scene, '.kitchen-selected-material', moving ? moving.name + ' 선택됨' : '옮길 재료를 골라주세요');
-    for (const button of scene.querySelectorAll('.kitchen-layer-controls button')) {
-      button.disabled = !initialized || !moving || moveBusy || !!pointerSession || !openZone(placements.get(movingId) || 'middle', doors);
-      button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + (button.dataset.action === 'layer-front' ? '앞에 놓기' : '뒤에 놓기'));
-    }
     scene.querySelector('.kitchen-pantry').hidden = !organizing && !items.some(item => placements.get(item.id) === 'pantry');
     for (const button of scene.querySelectorAll('.kitchen-zone-controls [data-zone]')) {
       button.disabled = !initialized || !movingId || moveBusy || !openZone(button.dataset.zone, doors);
