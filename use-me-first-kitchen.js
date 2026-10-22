@@ -49,8 +49,36 @@
   let initialized = false, organizing = false, movingId = null, draggedId = null, moveBusy = false, organizeBusy = false;
   let interaction = 0, destroyed = false, lastHeroName = null, localError = '';
   let pointerSession = null, htmlDrag = null, suppressClickUntil = 0, ghostSequence = 0;
+  let seasoningPointerSession = null;
+  const SEASONING_LAYOUT_KEY = 'umf-seasoning-layout-v2';
   const doorBusy = { freezer: false, fridge: false };
   const unit = value => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  function readSeasoningLayout() {
+    try {
+      const parsed = JSON.parse(window.localStorage?.getItem(SEASONING_LAYOUT_KEY) || '{}');
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+      return Object.fromEntries(Object.entries(parsed).filter(([name, p]) =>
+        typeof name === 'string' && p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)
+      ).map(([name, p]) => [name, { x: clamp(p.x, .07, .93), y: clamp(p.y, .25, .75), z: p.z }]));
+    } catch (_) { return {}; }
+  }
+  let seasoningLayout = readSeasoningLayout();
+  function writeSeasoningLayout() {
+    try { window.localStorage?.setItem(SEASONING_LAYOUT_KEY, JSON.stringify(seasoningLayout)); return true; }
+    catch (_) { return false; }
+  }
+  function defaultSeasoningPosition(index) {
+    const columns = 6, col = index % columns, row = Math.floor(index / columns) % 2;
+    return { x: .08 + (col / (columns - 1)) * .84, y: row ? .70 : .31, z: index + 1 };
+  }
+  function seasoningPosition(name, index) { return seasoningLayout[name] || defaultSeasoningPosition(index); }
+  function placeSeasoning(button, position) {
+    button.style.left = position.x * 100 + '%';
+    button.style.top = position.y * 100 + '%';
+    button.style.zIndex = String(Math.max(1, position.z || 1));
+    button.dataset.x = String(position.x); button.dataset.y = String(position.y); button.dataset.z = String(position.z || 1);
+  }
   function defaultPosition(id, index) {
     const row = Math.floor(index % 9 / 3), column = index % 3;
     const seed = [...String(id)].reduce((value, letter) => (value * 31 + letter.charCodeAt(0)) >>> 0, 17);
@@ -169,13 +197,21 @@
   }
   function renderSeasoningShelf() {
     const rack = scene.querySelector('.seasoning-rack-items');
-    if (!rack) return;
+    if (!rack || seasoningPointerSession?.dragging) return;
     const state = S.getState();
     const names = [...new Set((state.season || []).map(name => String(name).trim()).filter(Boolean))];
+    const active = new Set(names);
+    let changed = false;
+    for (const saved of Object.keys(seasoningLayout)) if (!active.has(saved)) { delete seasoningLayout[saved]; changed = true; }
+    if (changed) writeSeasoningLayout();
     rack.innerHTML = names.length ? names.map((name, index) =>
-      '<button type="button" class="seasoning-mini" data-action="manage-seasonings" title="' + esc(name) + '" aria-label="' + esc(name) + ' 양념 관리" style="--season-index:' + index + '">' +
-      A.foodArt(seasoningFoodId(name)) + '<span>' + esc(name) + '</span></button>'
+      '<button type="button" class="seasoning-mini" data-action="manage-seasonings" data-seasoning-name="' + esc(name) + '" title="' + esc(name) + ' · 끌어서 옮기기" aria-label="' + esc(name) + ' 양념. 끌어서 위치 이동, 누르면 양념 관리">' +
+      (A.seasoningArt?.(name, 'food-art') || A.foodArt(seasoningFoodId(name))) + '<span>' + esc(name) + '</span></button>'
     ).join('') : '<button type="button" class="seasoning-empty" data-action="add-seasoning">양념을 체크하거나 추가해 주세요 <span aria-hidden="true">＋</span></button>';
+    names.forEach((name, index) => {
+      const button = [...rack.querySelectorAll('.seasoning-mini')].find(node => node.dataset.seasoningName === name);
+      if (button) placeSeasoning(button, seasoningPosition(name, index));
+    });
   }
   function renderScene() {
     const items = S.getState().items, state = K.getState(), doors = state.doors, focused = document.activeElement;
@@ -489,8 +525,45 @@
     if (suppress) suppressClickUntil = Date.now() + 500;
     try { if (active.button.hasPointerCapture?.(active.pointerId)) active.button.releasePointerCapture(active.pointerId); } catch (_) { /* The browser may already have released it. */ }
   }
+  function onSeasoningPointerDown(event) {
+    const button = event.target.closest('.seasoning-mini');
+    if (!button || button.disabled || seasoningPointerSession || event.isPrimary === false || (event.button ?? 0) !== 0) return false;
+    const rack = button.closest('.seasoning-rack-items'), name = button.dataset.seasoningName;
+    if (!rack || !name) return false;
+    const rect = button.getBoundingClientRect();
+    seasoningPointerSession = {
+      name, button, rack, pointerId: event.pointerId ?? 1,
+      startX: event.clientX, startY: event.clientY, dragging: false,
+      start: { ...seasoningPosition(name, [...rack.querySelectorAll('.seasoning-mini')].indexOf(button)) },
+      anchor: { x: rect.width ? (event.clientX - rect.left) / rect.width : .5, y: rect.height ? (event.clientY - rect.top) / rect.height : .5 }
+    };
+    try { button.setPointerCapture?.(seasoningPointerSession.pointerId); } catch (_) {}
+    return true;
+  }
+  function seasoningPoint(active, event) {
+    const rect = active.rack.getBoundingClientRect(), size = active.button.getBoundingClientRect();
+    const rawX = rect.width ? (event.clientX - rect.left) / rect.width : .5;
+    const rawY = rect.height ? (event.clientY - rect.top) / rect.height : .5;
+    return { x: clamp(rawX, .07, .93), y: clamp(rawY, .25, .75), z: Math.max(1, ...Object.values(seasoningLayout).map(p => Number(p.z) || 0)) + 1 };
+  }
+  function finishSeasoningPointer(event, cancel = false) {
+    const active = seasoningPointerSession;
+    if (!active || (event && (event.pointerId ?? 1) !== active.pointerId)) return false;
+    seasoningPointerSession = null;
+    active.button.classList.remove('is-dragging');
+    if (cancel) placeSeasoning(active.button, active.start);
+    else if (active.dragging) {
+      const next = seasoningPoint(active, event);
+      seasoningLayout[active.name] = next; writeSeasoningLayout(); placeSeasoning(active.button, next);
+      suppressClickUntil = Date.now() + 450;
+      announce(active.name + ' 양념 위치를 옮겼어요.');
+    }
+    try { if (active.button.hasPointerCapture?.(active.pointerId)) active.button.releasePointerCapture(active.pointerId); } catch (_) {}
+    return true;
+  }
   function onPointerDown(event) {
     suppressClickUntil = 0;
+    if (onSeasoningPointerDown(event)) return;
     const button = event.target.closest('.fridge-food');
     if (!button || !organizing || !initialized || moveBusy || pointerSession || button.disabled || event.isPrimary === false || (event.button ?? 0) !== 0) return;
     const item = S.getState().items.find(value => value.id === button.dataset.lot);
@@ -505,6 +578,15 @@
     try { button.setPointerCapture?.(pointerSession.pointerId); } catch (_) { /* Window listeners provide an uncaptured fallback. */ }
   }
   function onPointerMove(event) {
+    if (seasoningPointerSession) {
+      const active = seasoningPointerSession;
+      if ((event.pointerId ?? 1) !== active.pointerId) return;
+      if (!active.dragging && Math.hypot(event.clientX - active.startX, event.clientY - active.startY) < 5) return;
+      event.preventDefault();
+      active.dragging = true; active.button.classList.add('is-dragging');
+      const next = seasoningPoint(active, event); placeSeasoning(active.button, next);
+      return;
+    }
     const active = pointerSession; if (!active || (event.pointerId ?? 1) !== active.pointerId) return;
     if (handledPointerMoves.has(event)) return; handledPointerMoves.add(event);
     if (placementFingerprint(active.id) !== active.fingerprint || !openZone(active.sourceZone)) { cleanupPointer(); interaction++; renderScene(); return; }
@@ -520,6 +602,7 @@
     active.ghost.classList.toggle('is-outside', !canvas); clearHighlights(); canvas?.classList.add('is-over');
   }
   function onPointerUp(event) {
+    if (seasoningPointerSession) { finishSeasoningPointer(event, false); return; }
     const active = pointerSession; if (!active || (event.pointerId ?? 1) !== active.pointerId) return;
     event.preventDefault();
     const canvas = active.dragging ? canvasAtPoint(event) : null;
@@ -532,11 +615,18 @@
     else { renderScene(); announce('선반 밖에 놓아 이동을 취소했어요.'); }
   }
   function onPointerCancel(event) {
+    if (seasoningPointerSession) { finishSeasoningPointer(event, true); return; }
     if (!pointerSession || (event.pointerId ?? 1) !== pointerSession.pointerId) return;
     cleanupPointer(); interaction++; renderScene(); announce('재료 이동을 취소했어요.');
   }
-  function onWindowKeyDown(event) { if (event.key === 'Escape' && (pointerSession || (moveBusy && organizing))) { cleanupPointer(); clearDrag(); interaction++; movingId = null; renderScene(); announce('재료 이동을 취소했어요.'); event.preventDefault(); } }
-  function abortGesture() { if (pointerSession || draggedId) { cleanupPointer(); clearDrag(); interaction++; renderScene(); announce('재료 이동을 취소했어요.'); } }
+  function onWindowKeyDown(event) {
+    if (event.key === 'Escape' && seasoningPointerSession) { finishSeasoningPointer(null, true); announce('양념 이동을 취소했어요.'); event.preventDefault(); return; }
+    if (event.key === 'Escape' && (pointerSession || (moveBusy && organizing))) { cleanupPointer(); clearDrag(); interaction++; movingId = null; renderScene(); announce('재료 이동을 취소했어요.'); event.preventDefault(); }
+  }
+  function abortGesture() {
+    if (seasoningPointerSession) finishSeasoningPointer(null, true);
+    if (pointerSession || draggedId) { cleanupPointer(); clearDrag(); interaction++; renderScene(); announce('재료 이동을 취소했어요.'); }
+  }
   function onVisibilityChange() { if (document.hidden) abortGesture(); }
   function dragTarget(event) { const target = event.target.closest('.shelf-canvas[data-zone],.shelf[data-zone],.kitchen-zone-controls [data-zone]'); return target && scene.contains(target) ? target : null; }
   function onDragStart(event) {
