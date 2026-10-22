@@ -688,3 +688,25 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
   .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:64px;height:64px}
   .kitchen-app .seasoning-mini>span{max-width:65px;font-size:8px}
 }
+
+
+/* Cozy miniature seasoning presentation — object-first, labels secondary. */
+.kitchen-app .seasoning-rack-board{min-height:172px}
+.kitchen-app .seasoning-mini{width:82px;height:94px}
+.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:76px;height:76px;overflow:visible}
+.kitchen-app .seasoning-mini>span{
+  opacity:0;transform:translate(-50%,4px);transition:opacity .14s ease,transform .14s ease;
+  background:#fffaf0f4;border:1px solid #e4d8c2;box-shadow:0 2px 5px #6e583815;
+}
+.kitchen-app .seasoning-mini:hover>span,
+.kitchen-app .seasoning-mini:focus-visible>span,
+.kitchen-app .seasoning-mini.is-dragging>span{
+  opacity:1;transform:translate(-50%,0);
+}
+.kitchen-app .seasoning-mini:hover .seasoning-art,
+.kitchen-app .seasoning-mini:focus-visible .seasoning-art{filter:drop-shadow(0 5px 4px #6c563625)}
+@media(max-width:760px){
+  .kitchen-app .seasoning-rack-board{min-height:160px}
+  .kitchen-app .seasoning-mini{width:72px;height:86px}
+  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:68px;height:68px}
+}
