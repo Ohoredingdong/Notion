@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-22T17:37:12.613960+09:00
+- 계산일: 2026-10-23T03:01:21.020336+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.7배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 45.3배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.1배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.3배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 43.5배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.2배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.6배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 35.2배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 357.8배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 354.8배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [(증시타임) 이번 한국은행 동결이 금리 인상 사이클 종료 의미하지 않아 - SBS Biz](https://news.google.com/rss/articles/CBMiWEFVX3lxTE9xdXhvRGl2MUg0bGYtSm1fMmNlRmVDTGVhZk13bmw4QzE1aENLTHVneUVLUTAza2x0U3pJbmY1SkpsVjNYdDBaXzd6bUtoVjhkWkJwZEUxSXjSAVhBVV95cUxPcXV4b0RpdjFINGxmLUptXzJjZUZlQ0xlYWZNd25sOEMxNWhDS0x1Z3lFS1EwM2tsdFN6SW5mNUpKbFYzWHQwWl83em1LaFY4ZFpCcGRFMUl4?oc=5)
-- [(젠슨황 생태계 흔들) ④연쇄 충격 시나리오...한국에 집중되는 AI 리스크 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE55VEVfSlNkdURsbk1HbzljeERwSkFHOXNsZXVMTFY4TElUalYtRXZqMlJiT3d5ajNxemRnRC1SZ04xb0hSaDJ2cDI1QkFvX3ZjNVpoMGFDR0pzN2Ey?oc=5)
+- [(이슈앤피플) 한국은행 기준금리 동결…신현송 총재 발언의 의미는? - 매일경제 마켓](https://news.google.com/rss/articles/CBMiUkFVX3lxTFBPaVlGcjZfUlBESnYxelFndUgybDRWQkpQeW40eHBwNTlYMHh4TnJUY1J2S19kZElIeGd1ajlQcWQ5VHhROXJvX1NXdWFEa1l4Qmc?oc=5)
+- [“금리 인하만 기다릴 때 아니다…돈의 방향 따라 AI 다음 주도주 찾아야” - 월간중앙](https://news.google.com/rss/articles/CBMibkFVX3lxTE9NUmw4QWo4Q3JzX3Q3cGVRQ01TUXRkb2piMmN4NmRuV3NQRTBCVzZTTVdkQml1RnYxOTA0VE1XNF9SZWV3R2NaQllWeGpVd2FiRllidUIzVkxQcVpQd0ZQRjFrSlNDRkloNTFvZmln?oc=5)
 - [최고 격전지인 HBM은 한국이 주도 - 조선일보](https://news.google.com/rss/articles/CBMigwFBVV95cUxNc3ptVV9jWXd1Zng5MzNPeVdNaXpuaGFiTk0wRHA2dVd0YTlkcVQ4d3Y3VXdjMUQ4ejBldzdSQ21hdFhvems3T1paRmdUS1B4MTQ0WXRCQzBGZXp6dEUyUDMtOXNkWWNIeDlRZHVpWFNHSFVxMFR6XzlmcVQzQW1XR0NSQQ?oc=5)
-- [(HBM 주도권 전쟁) "너무 비싸 못 쓰겠다"…빅테크, '금값' HBM에 대체재 찾고 공정 일원화 - CBC뉴스](https://news.google.com/rss/articles/CBMiaEFVX3lxTE40Wmh3ZU50cjdka3JCak1wOFNuUC1oUFA5aGxFY0pWSnplWmJTSVc4T1ByUDEyOTYxcG9qYWExT3drem1LY2M3bTl6cUl1c0xFMEZVZVQtZ2w1eklzaGU1T04tNTdGMnRG?oc=5)
+- [공정 바꾸고 대체품까지…'금값' AI메모리에 빅테크 대응 몸부림 - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTFBWcHZfMFRmYW84X1JrY2MzQU5FbGF1Y1RhZU5INEhLb1FYV0x5b21Kd1J1RGFVZnRzU1pudUNVX3RWeGM5ZmhIeldpRkFRY0VQS0JLdERnVEtzWEdtZVNjR9IBYEFVX3lxTFBWcHZfMFRmYW84X1JrY2MzQU5FbGF1Y1RhZU5INEhLb1FYV0x5b21Kd1J1RGFVZnRzU1pudUNVX3RWeGM5ZmhIeldpRkFRY0VQS0JLdERnVEtzWEdtZVNjRw?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
