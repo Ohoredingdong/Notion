@@ -4,7 +4,7 @@
   const store=window.UMFStore, domain=window.UMFDomain;
   if(!store||!domain)return;
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const BASE_S=['소금','후추','식용유','간장','설탕','식초','참기름','고춧가루','고추장','된장','다진마늘','케첩'];
+  const BASE_S=['소금','후추','식용유','간장','진간장','국간장','설탕','식초','참기름','들기름','고춧가루','고추장','된장','쌈장','다진마늘','굴소스','맛술','액젓','멸치액젓','참치액','올리고당','물엿','케첩','마요네즈'];
   const BASE_P=['밥/즉석밥','김','참치캔','면/라면','식빵','김가루'];
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uniq=a=>[...new Set(a)];
