@@ -85,44 +85,85 @@ function dishArt(recipe, cls='') { return miniature(own(dishes,recipe?.id)?dishe
 let seasoningSequence=0;
 function seasoningArt(name, cls='') {
  const key=String(name??'').normalize('NFKC').trim(), id='umf-season-'+(++seasoningSequence);
- const svg=(body)=>'<svg class="'+safeClass(cls)+' seasoning-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><filter id="'+id+'s" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2.2" stdDeviation="1.5" flood-color="#5d4935" flood-opacity=".22"/></filter><linearGradient id="'+id+'g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#6e5a45" stop-opacity=".14"/></linearGradient></defs><g filter="url(#'+id+'s)">'+body+'</g></svg>';
- const bottle=(fill,cap='#6e8062',liquid=fill)=>svg(
-   '<path d="M25 9h14v9c0 2 2 4 4 6v27c0 4-3 7-7 7H28c-4 0-7-3-7-7V24c2-2 4-4 4-6Z" fill="'+fill+'" stroke="#8e806c" stroke-width="1.2"/>'+
-   '<path d="M25 9h14v8H25z" rx="2" fill="'+cap+'" stroke="#756c5f" stroke-width="1.1"/>'+
-   '<path d="M24 30h16v20H24z" rx="5" fill="'+liquid+'" opacity=".72"/><path d="M26 13h11M27 24c3-2 7-2 10 0" stroke="#fff" stroke-opacity=".58" stroke-linecap="round"/>'
+ const svg=(body)=>'<svg class="'+safeClass(cls)+' seasoning-art" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><defs>'+
+   '<filter id="'+id+'s" x="-35%" y="-35%" width="170%" height="190%"><feDropShadow dx="0" dy="3.2" stdDeviation="2.1" flood-color="#594732" flood-opacity=".25"/></filter>'+
+   '<linearGradient id="'+id+'glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".84"/><stop offset=".22" stop-color="#fff" stop-opacity=".22"/><stop offset=".58" stop-color="#d7c7b2" stop-opacity=".08"/><stop offset="1" stop-color="#5f4a36" stop-opacity=".20"/></linearGradient>'+
+   '<linearGradient id="'+id+'cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset=".58" stop-color="#f2eadc"/><stop offset="1" stop-color="#d8cbb8"/></linearGradient>'+
+   '<linearGradient id="'+id+'metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#756b60"/><stop offset=".2" stop-color="#e9e4dc"/><stop offset=".5" stop-color="#a79d92"/><stop offset=".8" stop-color="#eee9e0"/><stop offset="1" stop-color="#6d655c"/></linearGradient>'+
+   '<linearGradient id="'+id+'pot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8eee0"/><stop offset=".45" stop-color="#c79b72"/><stop offset="1" stop-color="#8e6748"/></linearGradient>'+
+   '</defs><ellipse cx="36" cy="63" rx="19" ry="4.5" fill="#6d5840" opacity=".14"/><g filter="url(#'+id+'s)">'+body+'</g></svg>';
+
+ const label=(band='#9a7b55') =>
+   '<rect x="25" y="35" width="22" height="13" rx="4" fill="#fffaf0" stroke="#d9cbb7" stroke-width=".8"/>'+
+   '<rect x="27.5" y="38" width="17" height="2.4" rx="1.2" fill="'+band+'" opacity=".8"/>'+
+   '<rect x="29" y="43" width="14" height="1.7" rx=".8" fill="#c8b99f" opacity=".9"/>';
+
+ const glassBottle=(liquid='#5a3824',cap='#3f3b35',band='#9a7b55',shape='round')=>{
+   const body = shape==='square'
+     ? '<path d="M25 19h22l4 7v27c0 5-3.5 8-8.5 8h-13c-5 0-8.5-3-8.5-8V26Z" fill="'+liquid+'" stroke="#6c5947" stroke-width="1.1"/>'
+     : '<path d="M29 17h14v6c0 2.2 1.6 4.1 4.1 6.6 2.1 2.1 3.4 5 3.4 8v15c0 5.4-4 8.5-9 8.5h-11c-5 0-9-3.1-9-8.5v-15c0-3 1.3-5.9 3.4-8 2.5-2.5 4.1-4.4 4.1-6.6Z" fill="'+liquid+'" stroke="#6c5947" stroke-width="1.1"/>';
+   return svg(
+     body+
+     '<path d="M29 17h14v-6H29Z" fill="'+cap+'" stroke="#5c5147" stroke-width="1"/>'+
+     '<rect x="28" y="9" width="16" height="4" rx="2" fill="url(#'+id+'metal)" opacity=".7"/>'+
+     '<path d="M28 25c3-2.2 13-2.2 16 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.4" stroke-linecap="round"/>'+
+     '<path d="M27 29c-2 7-2 18-.5 24" stroke="#fff" stroke-opacity=".36" stroke-width="2.2" stroke-linecap="round"/>'+
+     label(band)
+   );
+ };
+
+ const oilBottle=(liquid='#c27d24',cap='#778862',band='#a58a52')=>svg(
+   '<path d="M30 14h12v8c0 2 1.2 3.8 3 5.8 2.4 2.6 3.5 5.7 3.5 9.3v17c0 4.8-3.3 7.4-7.4 7.4H30.9c-4.1 0-7.4-2.6-7.4-7.4v-17c0-3.6 1.1-6.7 3.5-9.3 1.8-2 3-3.8 3-5.8Z" fill="'+liquid+'" stroke="#9a6f3e" stroke-width="1.05"/>'+
+   '<path d="M30 14h12V8H30Z" fill="'+cap+'" stroke="#596450" stroke-width="1"/>'+
+   '<ellipse cx="36" cy="9" rx="6" ry="2.2" fill="#b3be8f"/>'+
+   '<path d="M27.5 29c2.2-2.5 14.8-2.5 17 0" stroke="#fff" stroke-opacity=".55" stroke-width="1.3"/>'+
+   '<path d="M27 33c-1.4 7-1.5 15-.7 20" stroke="#fff" stroke-opacity=".42" stroke-width="2" stroke-linecap="round"/>'+
+   label(band)
  );
- const jar=(fill,lid='#d9c7a8')=>svg(
-   '<ellipse cx="32" cy="18" rx="18" ry="6" fill="'+lid+'" stroke="#8f7b60" stroke-width="1.2"/>'+
-   '<path d="M15 18h34l-3 32c-.4 5-4 8-9 8H27c-5 0-8.6-3-9-8Z" fill="'+fill+'" stroke="#8f7b60" stroke-width="1.2"/>'+
-   '<ellipse cx="32" cy="22" rx="14" ry="4" fill="#fff" opacity=".2"/><path d="M20 32c7 3 17 3 24 0" stroke="#fff" stroke-opacity=".38" stroke-linecap="round"/>'
+
+ const pasteTub=(paste='#9a5f38',lid='#c9b99c',band='#9a7b55')=>svg(
+   '<path d="M18 26h36l-2.4 26.5c-.5 5.5-4.7 8.5-10.2 8.5H30.6c-5.5 0-9.7-3-10.2-8.5Z" fill="url(#'+id+'glass)" stroke="#a89478" stroke-width="1.1"/>'+
+   '<path d="M21 32h30l-1.7 18.5c-.3 3.4-3 5.4-6.4 5.4H29.1c-3.4 0-6.1-2-6.4-5.4Z" fill="'+paste+'" opacity=".93"/>'+
+   '<ellipse cx="36" cy="27" rx="19.5" ry="6.7" fill="'+lid+'" stroke="#8f7a5c" stroke-width="1.1"/>'+
+   '<ellipse cx="36" cy="25.5" rx="16.5" ry="4.5" fill="#fff" opacity=".22"/>'+
+   '<path d="M23 38c6 2.3 20 2.3 26 0" stroke="#fff" stroke-opacity=".26" stroke-linecap="round"/>'+
+   label(band)
  );
- const powder=(fill,lid='#d9c7a8')=>svg(
-   '<rect x="17" y="13" width="30" height="10" rx="4" fill="'+lid+'" stroke="#84745f" stroke-width="1.2"/>'+
-   '<path d="M19 22h26l-2 31c-.2 3-2.7 5-5.7 5H26.7c-3 0-5.5-2-5.7-5Z" fill="#f7f0e4" stroke="#9c8c74" stroke-width="1.2"/>'+
-   '<path d="M22 35h20v17H22z" rx="4" fill="'+fill+'" opacity=".9"/><path d="M23 27h18" stroke="#fff" stroke-opacity=".7"/>'
+
+ const spiceJar=(powder='#ece4d6',lid='#c5b9a6',band='#8d7657',dark=false)=>svg(
+   '<path d="M23 22h26v31.5c0 5-3.2 7.5-7.8 7.5H30.8c-4.6 0-7.8-2.5-7.8-7.5Z" fill="url(#'+id+'glass)" stroke="#a99a86" stroke-width="1.05"/>'+
+   '<path d="M25.5 39h21v16H25.5Z" rx="3" fill="'+powder+'" opacity=".96"/>'+
+   '<rect x="21.5" y="15" width="29" height="9" rx="4.5" fill="'+lid+'" stroke="#887b6d" stroke-width="1"/>'+
+   '<path d="M25 28c2.5-1.4 19.5-1.4 22 0" stroke="#fff" stroke-opacity=".65" stroke-linecap="round"/>'+
+   label(band)
  );
- const squeeze=(fill,cap='#f1e3c8')=>svg(
-   '<path d="M27 8h10l2 7-2 4v4c5 4 8 12 8 22 0 9-5 14-13 14s-13-5-13-14c0-10 3-18 8-22v-4l-2-4Z" fill="'+fill+'" stroke="#8a745e" stroke-width="1.2"/>'+
-   '<path d="M26 8h12v8H26z" rx="2" fill="'+cap+'" stroke="#8a745e" stroke-width="1.1"/><path d="M25 31c5-3 9-3 14 0" stroke="#fff" stroke-opacity=".5"/>'
+
+ const squeeze=(fill='#d85642',cap='#efe4cf',band='#a77654')=>svg(
+   '<path d="M30 11h12l1.5 6-2 4v4c6.2 4.3 9 12.6 9 23.2 0 8.4-5.2 13-14.5 13s-14.5-4.6-14.5-13c0-10.6 2.8-18.9 9-23.2v-4l-2-4Z" fill="'+fill+'" stroke="#8f7866" stroke-width="1.05"/>'+
+   '<path d="M29 10h14v8H29Z" rx="2" fill="'+cap+'" stroke="#9f8c75" stroke-width="1"/>'+
+   '<path d="M27 32c4-2.5 14-2.5 18 0" stroke="#fff" stroke-opacity=".48" stroke-width="1.4" stroke-linecap="round"/>'+
+   label(band)
  );
- if (/된장/.test(key)) return jar('#a87946','#cfc1a2');
- if (/쌈장/.test(key)) return jar('#8b6741','#7e966a');
- if (/고추장/.test(key)) return jar('#a43e2c','#c7563e');
- if (/고춧가루/.test(key)) return powder('#bd452f','#cdbb9d');
- if (/후추/.test(key)) return powder('#66584d','#39332e');
- if (/설탕/.test(key)) return powder('#f1eadf','#d7c4a5');
- if (/소금/.test(key)) return powder('#f7f7ef','#c7b89d');
- if (/참기름/.test(key)) return bottle('#b87828','#c49a43','#9e5e18');
- if (/들기름/.test(key)) return bottle('#b7833b','#70825d','#a96f27');
- if (/식초/.test(key)) return bottle('#f3df9e','#d9c59b','#e8d17b');
- if (/액젓|참치액/.test(key)) return bottle('#a9682d','#79916b','#8f5522');
- if (/맛술/.test(key)) return bottle('#d7aa5e','#bca27a','#c78f42');
- if (/굴소스/.test(key)) return bottle('#514034','#e2a446','#33261f');
- if (/간장/.test(key)) return bottle('#4b372e','#796b55','#35251e');
- if (/올리고당|물엿/.test(key)) return squeeze('#e8c777','#f0e5c9');
- if (/케첩/.test(key)) return squeeze('#c94f3e','#f2e6d1');
- if (/마요네즈/.test(key)) return squeeze('#f4ead0','#d9b348');
- if (/다진마늘|마늘/.test(key)) return jar('#e5d29f','#b8c19a');
+
+ if (/된장/.test(key)) return pasteTub('#a96f3f','#d4c09d','#7f603f');
+ if (/쌈장/.test(key)) return pasteTub('#875538','#95a776','#687d55');
+ if (/고추장/.test(key)) return pasteTub('#b9432e','#c94d38','#9e3628');
+ if (/고춧가루/.test(key)) return spiceJar('#bb402c','#ccb998','#af3d2f');
+ if (/후추/.test(key)) return spiceJar('#514840','#302d2a','#6f6358',true);
+ if (/설탕/.test(key)) return spiceJar('#f4eee5','#d8c8ad','#b49973');
+ if (/소금/.test(key)) return spiceJar('#fbfaf4','#d0c0a5','#91a4a5');
+ if (/참기름/.test(key)) return oilBottle('#ad681f','#8fa06e','#a8732f');
+ if (/들기름/.test(key)) return oilBottle('#9a6b31','#6f8561','#7c6239');
+ if (/식용유|올리브유/.test(key)) return oilBottle('#c99b31','#789363','#9c823c');
+ if (/식초/.test(key)) return glassBottle('#d9b657','#cfc3ad','#a88b62');
+ if (/액젓|참치액/.test(key)) return glassBottle('#9d5c2a','#738568','#8c6b48');
+ if (/맛술/.test(key)) return glassBottle('#c78f50','#b8a183','#9b7858');
+ if (/굴소스/.test(key)) return glassBottle('#3e3028','#d3a249','#795938','square');
+ if (/간장/.test(key)) return glassBottle('#392a24','#3e3934','#6f5b49','square');
+ if (/올리고당|물엿/.test(key)) return squeeze('#d7b65b','#eee5d1','#c69f4d');
+ if (/케첩/.test(key)) return squeeze('#c94535','#efe4d4','#b23a2c');
+ if (/마요네즈/.test(key)) return squeeze('#eee1bd','#d8b342','#9d8b63');
+ if (/다진마늘|마늘/.test(key)) return pasteTub('#e7d3a0','#aab88b','#7f8e67');
  return miniature(foodIdForName(key),'food-art '+safeClass(cls));
 }
 window.UMFKitchenArt=Object.freeze({icon,foodArt,dishArt,seasoningArt,foodIdForName,asset:ATLAS});
