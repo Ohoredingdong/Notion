@@ -84,86 +84,84 @@ function dishArt(recipe, cls='') { return miniature(own(dishes,recipe?.id)?dishe
 
 let seasoningSequence=0;
 function seasoningArt(name, cls='') {
- const key=String(name??'').normalize('NFKC').trim(), id='umf-season-'+(++seasoningSequence);
- const svg=(body)=>'<svg class="'+safeClass(cls)+' seasoning-art" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><defs>'+
-   '<filter id="'+id+'s" x="-35%" y="-35%" width="170%" height="190%"><feDropShadow dx="0" dy="3.2" stdDeviation="2.1" flood-color="#594732" flood-opacity=".25"/></filter>'+
-   '<linearGradient id="'+id+'glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".84"/><stop offset=".22" stop-color="#fff" stop-opacity=".22"/><stop offset=".58" stop-color="#d7c7b2" stop-opacity=".08"/><stop offset="1" stop-color="#5f4a36" stop-opacity=".20"/></linearGradient>'+
-   '<linearGradient id="'+id+'cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset=".58" stop-color="#f2eadc"/><stop offset="1" stop-color="#d8cbb8"/></linearGradient>'+
-   '<linearGradient id="'+id+'metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#756b60"/><stop offset=".2" stop-color="#e9e4dc"/><stop offset=".5" stop-color="#a79d92"/><stop offset=".8" stop-color="#eee9e0"/><stop offset="1" stop-color="#6d655c"/></linearGradient>'+
-   '<linearGradient id="'+id+'pot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8eee0"/><stop offset=".45" stop-color="#c79b72"/><stop offset="1" stop-color="#8e6748"/></linearGradient>'+
-   '</defs><ellipse cx="36" cy="63" rx="19" ry="4.5" fill="#6d5840" opacity=".14"/><g filter="url(#'+id+'s)">'+body+'</g></svg>';
+ const key=String(name??'').normalize('NFKC').trim();
+ const textSafe=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const short=textSafe(key.length>5?key.slice(0,5):key);
+ const id='umf-season-'+(++seasoningSequence);
+ const svg=(body)=>'<svg class="'+safeClass(cls)+' seasoning-art" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><defs>'+
+   '<filter id="'+id+'shadow" x="-40%" y="-40%" width="180%" height="200%"><feDropShadow dx="0" dy="4.2" stdDeviation="3" flood-color="#5f4d3b" flood-opacity=".22"/></filter>'+
+   '<linearGradient id="'+id+'cream" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset=".48" stop-color="#f2eadc"/><stop offset="1" stop-color="#d9cbb8"/></linearGradient>'+
+   '<linearGradient id="'+id+'glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".88"/><stop offset=".2" stop-color="#fff" stop-opacity=".28"/><stop offset=".6" stop-color="#d4c4af" stop-opacity=".08"/><stop offset="1" stop-color="#604b38" stop-opacity=".2"/></linearGradient>'+
+   '<linearGradient id="'+id+'metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6e675f"/><stop offset=".22" stop-color="#eee9e1"/><stop offset=".5" stop-color="#aaa198"/><stop offset=".8" stop-color="#f6f1e9"/><stop offset="1" stop-color="#655e57"/></linearGradient>'+
+   '<radialGradient id="'+id+'shine" cx=".32" cy=".18" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="#fff" stop-opacity=".15"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>'+
+   '</defs><ellipse cx="40" cy="69" rx="22" ry="5.5" fill="#6b563f" opacity=".12"/><g filter="url(#'+id+'shadow)">'+body+'</g></svg>';
 
- const label=(band='#9a7b55') =>
-   '<rect x="25" y="35" width="22" height="13" rx="4" fill="#fffaf0" stroke="#d9cbb7" stroke-width=".8"/>'+
-   '<rect x="27.5" y="38" width="17" height="2.4" rx="1.2" fill="'+band+'" opacity=".8"/>'+
-   '<rect x="29" y="43" width="14" height="1.7" rx=".8" fill="#c8b99f" opacity=".9"/>';
+ const sticker=(label,bg='#fff8ec',ink='#6d5a44',y=42,w=28)=>
+   '<g><rect x="'+(40-w/2)+'" y="'+y+'" width="'+w+'" height="14" rx="5" fill="'+bg+'" opacity=".96"/>'+
+   '<text x="40" y="'+(y+9.6)+'" text-anchor="middle" font-size="7.2" font-family="Apple SD Gothic Neo,Malgun Gothic,sans-serif" font-weight="700" fill="'+ink+'">'+label+'</text></g>';
 
- const glassBottle=(liquid='#5a3824',cap='#3f3b35',band='#9a7b55',shape='round')=>{
-   const body = shape==='square'
-     ? '<path d="M25 19h22l4 7v27c0 5-3.5 8-8.5 8h-13c-5 0-8.5-3-8.5-8V26Z" fill="'+liquid+'" stroke="#6c5947" stroke-width="1.1"/>'
-     : '<path d="M29 17h14v6c0 2.2 1.6 4.1 4.1 6.6 2.1 2.1 3.4 5 3.4 8v15c0 5.4-4 8.5-9 8.5h-11c-5 0-9-3.1-9-8.5v-15c0-3 1.3-5.9 3.4-8 2.5-2.5 4.1-4.4 4.1-6.6Z" fill="'+liquid+'" stroke="#6c5947" stroke-width="1.1"/>';
-   return svg(
-     body+
-     '<path d="M29 17h14v-6H29Z" fill="'+cap+'" stroke="#5c5147" stroke-width="1"/>'+
-     '<rect x="28" y="9" width="16" height="4" rx="2" fill="url(#'+id+'metal)" opacity=".7"/>'+
-     '<path d="M28 25c3-2.2 13-2.2 16 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.4" stroke-linecap="round"/>'+
-     '<path d="M27 29c-2 7-2 18-.5 24" stroke="#fff" stroke-opacity=".36" stroke-width="2.2" stroke-linecap="round"/>'+
-     label(band)
-   );
- };
-
- const oilBottle=(liquid='#c27d24',cap='#778862',band='#a58a52')=>svg(
-   '<path d="M30 14h12v8c0 2 1.2 3.8 3 5.8 2.4 2.6 3.5 5.7 3.5 9.3v17c0 4.8-3.3 7.4-7.4 7.4H30.9c-4.1 0-7.4-2.6-7.4-7.4v-17c0-3.6 1.1-6.7 3.5-9.3 1.8-2 3-3.8 3-5.8Z" fill="'+liquid+'" stroke="#9a6f3e" stroke-width="1.05"/>'+
-   '<path d="M30 14h12V8H30Z" fill="'+cap+'" stroke="#596450" stroke-width="1"/>'+
-   '<ellipse cx="36" cy="9" rx="6" ry="2.2" fill="#b3be8f"/>'+
-   '<path d="M27.5 29c2.2-2.5 14.8-2.5 17 0" stroke="#fff" stroke-opacity=".55" stroke-width="1.3"/>'+
-   '<path d="M27 33c-1.4 7-1.5 15-.7 20" stroke="#fff" stroke-opacity=".42" stroke-width="2" stroke-linecap="round"/>'+
-   label(band)
+ const cozyTub=(body='#e8dece',lid='#b8c1a0',accent='#9f6b3f',label=short)=>svg(
+   '<path d="M19 28c0-5 4-8 9-8h24c5 0 9 3 9 8l-2.8 29c-.6 6-4.7 10-10.7 10h-15c-6 0-10.1-4-10.7-10Z" fill="url(#'+id+'cream)"/>'+
+   '<ellipse cx="40" cy="28" rx="21" ry="7.5" fill="'+lid+'"/>'+
+   '<ellipse cx="40" cy="27" rx="18" ry="5.3" fill="url(#'+id+'shine)" opacity=".7"/>'+
+   '<path d="M24 36c7-3 25-3 32 0v12c-8 3-24 3-32 0Z" fill="'+accent+'" opacity=".88"/>'+
+   '<path d="M24 36c7-3 25-3 32 0" stroke="#fff" stroke-opacity=".28" stroke-width="1.5" stroke-linecap="round"/>'+
+   sticker(label)
  );
 
- const pasteTub=(paste='#9a5f38',lid='#c9b99c',band='#9a7b55')=>svg(
-   '<path d="M18 26h36l-2.4 26.5c-.5 5.5-4.7 8.5-10.2 8.5H30.6c-5.5 0-9.7-3-10.2-8.5Z" fill="url(#'+id+'glass)" stroke="#a89478" stroke-width="1.1"/>'+
-   '<path d="M21 32h30l-1.7 18.5c-.3 3.4-3 5.4-6.4 5.4H29.1c-3.4 0-6.1-2-6.4-5.4Z" fill="'+paste+'" opacity=".93"/>'+
-   '<ellipse cx="36" cy="27" rx="19.5" ry="6.7" fill="'+lid+'" stroke="#8f7a5c" stroke-width="1.1"/>'+
-   '<ellipse cx="36" cy="25.5" rx="16.5" ry="4.5" fill="#fff" opacity=".22"/>'+
-   '<path d="M23 38c6 2.3 20 2.3 26 0" stroke="#fff" stroke-opacity=".26" stroke-linecap="round"/>'+
-   label(band)
+ const roundBottle=(liquid='#5a3824',cap='#6f7f62',label=short,labelInk='#6d5a44')=>svg(
+   '<path d="M32 14h16v8c0 2 1.1 3.5 3.4 5.8 3 3 4.6 7 4.6 11v18c0 7-4.8 11-11.5 11h-9c-6.7 0-11.5-4-11.5-11V39c0-4 1.6-8 4.6-11 2.3-2.3 3.4-3.8 3.4-5.8Z" fill="'+liquid+'"/>'+
+   '<rect x="31" y="9" width="18" height="9" rx="4" fill="'+cap+'"/>'+
+   '<ellipse cx="40" cy="14" rx="7.5" ry="2.8" fill="#fff" opacity=".22"/>'+
+   '<path d="M29 31c3.5-3 18.5-3 22 0" stroke="#fff" stroke-opacity=".35" stroke-width="1.8" stroke-linecap="round"/>'+
+   '<path d="M29 36c-2 8-2 17-.7 24" stroke="#fff" stroke-opacity=".28" stroke-width="2.4" stroke-linecap="round"/>'+
+   sticker(label,'#fff8ec',labelInk,43,26)
  );
 
- const spiceJar=(powder='#ece4d6',lid='#c5b9a6',band='#8d7657',dark=false)=>svg(
-   '<path d="M23 22h26v31.5c0 5-3.2 7.5-7.8 7.5H30.8c-4.6 0-7.8-2.5-7.8-7.5Z" fill="url(#'+id+'glass)" stroke="#a99a86" stroke-width="1.05"/>'+
-   '<path d="M25.5 39h21v16H25.5Z" rx="3" fill="'+powder+'" opacity=".96"/>'+
-   '<rect x="21.5" y="15" width="29" height="9" rx="4.5" fill="'+lid+'" stroke="#887b6d" stroke-width="1"/>'+
-   '<path d="M25 28c2.5-1.4 19.5-1.4 22 0" stroke="#fff" stroke-opacity=".65" stroke-linecap="round"/>'+
-   label(band)
+ const oilBottle=(liquid='#bd7a25',cap='#84956d',label=short)=>svg(
+   '<path d="M33 11h14v10c0 2.2 1.1 3.7 3 5.9 2.8 2.9 4.1 6.7 4.1 11v19.5c0 6.7-4.4 10.5-10.3 10.5h-7.6c-5.9 0-10.3-3.8-10.3-10.5V38c0-4.3 1.3-8.1 4.1-11 1.9-2.2 3-3.7 3-5.9Z" fill="'+liquid+'"/>'+
+   '<rect x="32" y="8" width="16" height="7" rx="3" fill="'+cap+'"/>'+
+   '<ellipse cx="40" cy="12" rx="7" ry="2.4" fill="#fff" opacity=".3"/>'+
+   '<path d="M30 31c3-2.6 17-2.6 20 0" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round"/>'+
+   '<path d="M30 36c-1.5 8-1.4 15-.7 21" stroke="#fff" stroke-opacity=".35" stroke-width="2.1" stroke-linecap="round"/>'+
+   sticker(label,'#fff8ec','#6f5a3f',43,25)
  );
 
- const squeeze=(fill='#d85642',cap='#efe4cf',band='#a77654')=>svg(
-   '<path d="M30 11h12l1.5 6-2 4v4c6.2 4.3 9 12.6 9 23.2 0 8.4-5.2 13-14.5 13s-14.5-4.6-14.5-13c0-10.6 2.8-18.9 9-23.2v-4l-2-4Z" fill="'+fill+'" stroke="#8f7866" stroke-width="1.05"/>'+
-   '<path d="M29 10h14v8H29Z" rx="2" fill="'+cap+'" stroke="#9f8c75" stroke-width="1"/>'+
-   '<path d="M27 32c4-2.5 14-2.5 18 0" stroke="#fff" stroke-opacity=".48" stroke-width="1.4" stroke-linecap="round"/>'+
-   label(band)
+ const spiceJar=(powder='#f5f1e9',cap='#c9baa2',label=short,labelInk='#6f5d47')=>svg(
+   '<rect x="23" y="22" width="34" height="42" rx="10" fill="url(#'+id+'glass)"/>'+
+   '<rect x="26" y="38" width="28" height="20" rx="7" fill="'+powder+'" opacity=".95"/>'+
+   '<rect x="21" y="15" width="38" height="12" rx="6" fill="'+cap+'"/>'+
+   '<rect x="25" y="18" width="30" height="3" rx="1.5" fill="#fff" opacity=".24"/>'+
+   '<path d="M27 30c5-2 21-2 26 0" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>'+
+   sticker(label,'#fff9ee',labelInk,43,26)
  );
 
- if (/된장/.test(key)) return pasteTub('#a96f3f','#d4c09d','#7f603f');
- if (/쌈장/.test(key)) return pasteTub('#875538','#95a776','#687d55');
- if (/고추장/.test(key)) return pasteTub('#b9432e','#c94d38','#9e3628');
- if (/고춧가루/.test(key)) return spiceJar('#bb402c','#ccb998','#af3d2f');
- if (/후추/.test(key)) return spiceJar('#514840','#302d2a','#6f6358',true);
- if (/설탕/.test(key)) return spiceJar('#f4eee5','#d8c8ad','#b49973');
- if (/소금/.test(key)) return spiceJar('#fbfaf4','#d0c0a5','#91a4a5');
- if (/참기름/.test(key)) return oilBottle('#ad681f','#8fa06e','#a8732f');
- if (/들기름/.test(key)) return oilBottle('#9a6b31','#6f8561','#7c6239');
- if (/식용유|올리브유/.test(key)) return oilBottle('#c99b31','#789363','#9c823c');
- if (/식초/.test(key)) return glassBottle('#d9b657','#cfc3ad','#a88b62');
- if (/액젓|참치액/.test(key)) return glassBottle('#9d5c2a','#738568','#8c6b48');
- if (/맛술/.test(key)) return glassBottle('#c78f50','#b8a183','#9b7858');
- if (/굴소스/.test(key)) return glassBottle('#3e3028','#d3a249','#795938','square');
- if (/간장/.test(key)) return glassBottle('#392a24','#3e3934','#6f5b49','square');
- if (/올리고당|물엿/.test(key)) return squeeze('#d7b65b','#eee5d1','#c69f4d');
- if (/케첩/.test(key)) return squeeze('#c94535','#efe4d4','#b23a2c');
- if (/마요네즈/.test(key)) return squeeze('#eee1bd','#d8b342','#9d8b63');
- if (/다진마늘|마늘/.test(key)) return pasteTub('#e7d3a0','#aab88b','#7f8e67');
+ const squeeze=(fill='#d75743',cap='#eee1cc',label=short,labelInk='#6f5d47')=>svg(
+   '<path d="M34 10h12l2 7-2 4v5c6 5 9 14 9 25 0 10-5.8 16-15 16s-15-6-15-16c0-11 3-20 9-25v-5l-2-4Z" fill="'+fill+'"/>'+
+   '<rect x="32" y="9" width="16" height="10" rx="4" fill="'+cap+'"/>'+
+   '<path d="M31 34c4-3 14-3 18 0" stroke="#fff" stroke-opacity=".35" stroke-width="1.8" stroke-linecap="round"/>'+
+   sticker(label,'#fff9ef',labelInk,45,25)
+ );
+
+ if (/된장/.test(key)) return cozyTub('#eee4d5','#b8c5a0','#a16c3e',short);
+ if (/쌈장/.test(key)) return cozyTub('#eee4d5','#94a779','#7f5238',short);
+ if (/고추장/.test(key)) return cozyTub('#eee3d4','#c96855','#ad3f2f',short);
+ if (/다진마늘|마늘/.test(key)) return cozyTub('#f0e7d9','#aebc92','#dfca93',short);
+ if (/고춧가루/.test(key)) return spiceJar('#b93f2d','#c8b69a',short,'#9b3d31');
+ if (/후추/.test(key)) return spiceJar('#4b443f','#2f2d2a',short,'#514942');
+ if (/설탕/.test(key)) return spiceJar('#f3ede3','#d9c8ad',short);
+ if (/소금/.test(key)) return spiceJar('#fcfbf4','#c9b99f',short,'#718082');
+ if (/참기름/.test(key)) return oilBottle('#b16a20','#8a9a6e',short);
+ if (/들기름/.test(key)) return oilBottle('#9c6d32','#70855f',short);
+ if (/식용유|올리브유/.test(key)) return oilBottle('#c79b2f','#7c9367',short);
+ if (/식초/.test(key)) return roundBottle('#d8b855','#d5c8b4',short);
+ if (/액젓|참치액/.test(key)) return roundBottle('#9a5c2b','#77896c',short);
+ if (/맛술/.test(key)) return roundBottle('#c68f51','#bba487',short);
+ if (/굴소스/.test(key)) return roundBottle('#3f3027','#d4a248',short,'#6b4c34');
+ if (/간장/.test(key)) return roundBottle('#3a2a24','#403a35',short,'#5e4b3c');
+ if (/올리고당|물엿/.test(key)) return squeeze('#d5b65d','#efe5d2',short,'#8e7041');
+ if (/케첩/.test(key)) return squeeze('#c94737','#f0e3d2',short,'#a44235');
+ if (/마요네즈/.test(key)) return squeeze('#eee1bd','#d8b342',short,'#8d7853');
  return miniature(foodIdForName(key),'food-art '+safeClass(cls));
 }
 window.UMFKitchenArt=Object.freeze({icon,foodArt,dishArt,seasoningArt,foodIdForName,asset:ATLAS});
