@@ -624,3 +624,32 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
   .kitchen-app .display-row-copy small,.kitchen-app .display-badge{font-size:6px}
   .kitchen-app .display-meta{font-size:5.5px}
 }
+
+
+/* Draggable Korean seasoning shelf. */
+.kitchen-app .seasoning-rack-board{min-height:148px}
+.kitchen-app .seasoning-rack-items{
+  position:absolute;inset:0;display:block;min-height:0;padding:0;overflow:hidden;touch-action:none;
+}
+.kitchen-app .seasoning-mini{
+  position:absolute;left:50%;top:50%;display:grid;place-items:center;width:68px;height:82px;
+  padding:0 2px 15px;margin:0!important;transform:translate(-50%,-50%)!important;
+  border:0;background:transparent;color:#6b5d49;cursor:grab;touch-action:none;user-select:none;
+  transition:filter .14s ease,opacity .14s ease;
+}
+.kitchen-app .seasoning-mini:hover{transform:translate(-50%,-50%)!important;filter:drop-shadow(0 5px 4px #66553628);z-index:30!important}
+.kitchen-app .seasoning-mini.is-dragging{cursor:grabbing;filter:drop-shadow(0 10px 7px #58442f42);z-index:80!important}
+.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{
+  width:61px;height:61px;max-width:none;overflow:visible;pointer-events:none;
+}
+.kitchen-app .seasoning-mini>span{
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);max-width:67px;padding:2px 5px;
+  border:1px solid #e1d3b8;border-radius:5px;background:#fffaf0f2;color:#725f45;
+  font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
+}
+.kitchen-app .seasoning-empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:3}
+@media(max-width:760px){
+  .kitchen-app .seasoning-rack-board{min-height:138px}
+  .kitchen-app .seasoning-mini{width:62px;height:76px}
+  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:55px;height:55px}
+}
