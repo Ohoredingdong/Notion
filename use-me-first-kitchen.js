@@ -50,7 +50,7 @@
   let interaction = 0, destroyed = false, lastHeroName = null, localError = '';
   let pointerSession = null, htmlDrag = null, suppressClickUntil = 0, ghostSequence = 0;
   let seasoningPointerSession = null;
-  const SEASONING_LAYOUT_KEY = 'umf-seasoning-layout-v2';
+  const SEASONING_LAYOUT_KEY = 'umf-seasoning-layout-v3';
   const doorBusy = { freezer: false, fridge: false };
   const unit = value => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -69,8 +69,10 @@
     catch (_) { return false; }
   }
   function defaultSeasoningPosition(index) {
-    const columns = 6, col = index % columns, row = Math.floor(index / columns) % 2;
-    return { x: .08 + (col / (columns - 1)) * .84, y: row ? .70 : .31, z: index + 1 };
+    const columns = 5, col = index % columns, row = Math.floor(index / columns) % 2;
+    const x = .09 + (col / (columns - 1)) * .82 + (row ? .025 : 0);
+    const y = row ? .71 : .34;
+    return { x: clamp(x, .08, .92), y, z: index + 1 };
   }
   function seasoningPosition(name, index) { return seasoningLayout[name] || defaultSeasoningPosition(index); }
   function placeSeasoning(button, position) {
