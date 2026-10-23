@@ -103,3 +103,7 @@ python scripts/test_fridge_presentations_browser.py --root "$PWD" --output /tmp/
 | 합계 | 브라우저 140개 사례 통과. 단일 HTML은 별도 CSS/JS/이미지 요청 0. 새 기능 수치와 사진 입력은 가상 자료로 점검했으며 실제 OCR/카메라/공식 영양 자료 검증이 아님 |
 
 새 생활 입력만 수행할 때 기존 재료·위치 원문이 정확히 같음을 검사했다. 사진 수동 검수 창에서 명시적으로 저장한 경우에만 재료가 추가됨을 별도로 확인했다. 읽기 불가 iframe은 화면이 표시돼도 저장 실패 안내를 유지한다. 다른 프로젝트의 Python 전체 회귀와 외부 연동은 이번 변경에서 새로 실행하지 않았다.
+
+## 브랜치와 PR
+
+구현 커밋 `89075d55`와 검토 자료를 `feat/kitchen-life-redesign`에 커밋하고 원격으로 push했다. `gh pr create --draft --base main --head feat/kitchen-life-redesign --body-file ...`는 `Post "https://api.github.com/graphql": Forbidden`으로 실패했다. PR이 생성되었다고 보고하지 않는다. [GitHub에서 변경 비교·PR 준비](https://github.com/Ohoredingdong/Notion/compare/main...feat/kitchen-life-redesign?expand=1)로 검토할 수 있다. 앞선 기능 브랜치의 커밋도 포함하므로 최신 재디자인만 보려면 기준 `2a8b8ae`와 비교한다. main push·병합·GitHub Pages 배포는 하지 않았다.
