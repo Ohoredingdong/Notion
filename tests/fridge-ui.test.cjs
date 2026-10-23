@@ -18,6 +18,7 @@ const seedTime = nativeDate.parse('2026-10-20T12:00:00Z');
 async function boot(options = {}) {
   const { window: dom } = parseHTML(html);
   const document = dom.document;
+  if (options.presentation) document.body.dataset.kitchenMode = options.presentation;
   const memory = options.memory || new Map();
   for (const [key, value] of Object.entries(options.seed || {})) memory.set(key, JSON.stringify(value));
   const errors = [], requests = [], observers = [], timers = new Map();
@@ -52,6 +53,7 @@ async function boot(options = {}) {
   } };
   const w = {
     navigator, document, localStorage: storage, crypto: webcrypto, CustomEvent: dom.CustomEvent, PointerEvent: TestPointerEvent,
+    location: { pathname: '/use-me-first.html', search: options.search || '', hash: '' },
     confirm: () => true,
     addEventListener: dom.addEventListener.bind(dom),
     removeEventListener: dom.removeEventListener.bind(dom),
@@ -87,7 +89,7 @@ async function boot(options = {}) {
     CustomEvent: dom.CustomEvent, Event: dom.Event, PointerEvent: TestPointerEvent, Node: dom.Node,
     setTimeout(callback, ms) { timers.set(++sequence, { callback, ms }); return sequence; },
     clearTimeout(id) { timers.delete(id); },
-    AbortController, TextEncoder, TextDecoder,
+    AbortController, TextEncoder, TextDecoder, URL, URLSearchParams,
     async fetch(url, init = {}) { requests.push({ url, method: init.method || 'GET' }); throw new Error('Test network disabled'); }
   };
   const context = vm.createContext(sandbox);
@@ -126,6 +128,72 @@ async function readyRice(t, options) {
   await app.toggle('#sg', '식용유'); await app.toggle('#sg', '간장'); await app.toggle('#pg', '밥/즉석밥');
   await app.selectRecipe('계란 볶음밥'); return app;
 }
+
+test('app and widget modes keep the exact same inventory, door and seasoning records', async t => {
+  const app = await boot(); t.after(() => app.close());
+  const before = new Map(app.memory);
+  assert.equal(app.w.UMFKitchenPresentation.getMode(), 'app');
+  await app.click('[data-kitchen-mode-switch]');
+  assert.equal(app.document.body.dataset.kitchenMode, 'widget');
+  assert.equal(app.$('[data-kitchen-mode-switch]').textContent, '앱 보기');
+  await app.click('[data-kitchen-mode-switch]');
+  assert.equal(app.w.UMFKitchenPresentation.getMode(), 'app');
+  assert.deepEqual(app.memory, before);
+  assert.equal(app.w.UMFKitchenPresentation.setMode('unknown'), false);
+});
+
+test('a fuller widget shelf grows its unsaved layout while keeping saved coordinates and source bytes intact', async t => {
+  const state = { version: 5, revision: 4, updatedAt: seedTime,
+    items: ['계란','우유','두부','양파','당근','감자'].map((name, i) => ({ id: 'lot'+i, name, quantity: '1개', expiry: '2099-01-01' })),
+    season: [], pantry: [], customSeason: [], customPantry: [], meals: [], favorites: [] };
+  const view = { version: 2, doors: { fridge: true, freezer: false }, placements: {}, positions: { lot0: { x: .2, y: .7, z: 8 } } };
+  const app = await boot({ presentation: 'widget', seed: { [STATE]: state, 'use-me-first-kitchen-view-v1': view } }); t.after(() => app.close());
+  assert.equal(app.$('#umfKitchenScene').style.getPropertyValue('--widget-fridge-rows'), '2');
+  assert.equal(app.$('.fridge-food[data-lot="lot0"]').dataset.x, '0.2');
+  assert.equal(app.$('.fridge-food[data-lot="lot0"]').dataset.y, '0.7');
+  assert.equal(app.memory.get(STATE), JSON.stringify(state));
+  assert.equal(app.memory.get('use-me-first-kitchen-view-v1'), JSON.stringify(view));
+  const visible = [...app.document.querySelectorAll('.fridge-food')].map(button => ({ id: button.dataset.lot, x: Number(button.dataset.x), y: Number(button.dataset.y) }));
+  await app.w.UMFKitchen.arrangeItem('lot1');
+  await app.click('[data-action="layer-front"]');
+  for (const position of visible) {
+    const saved = app.w.UMFKitchenState.positionFor(position.id);
+    assert.equal(saved.x, position.x); assert.equal(saved.y, position.y);
+  }
+});
+
+test('the widget entry default and explicit view parameter select a presentation without changing stock', async t => {
+  for (const [presentation, search, expected] of [['widget', '', 'widget'], ['app', '?view=widget', 'widget'], ['widget', '?view=app', 'app']]) {
+    const app = await boot({ presentation, search }); t.after(() => app.close());
+    assert.equal(app.w.UMFKitchenPresentation.getMode(), expected);
+    assert.equal(app.w.UMFStore.getState().items.length, 0);
+  }
+});
+
+test('widget sections reach the original stock and seasoning forms and all four main pages', async t => {
+  const app = await boot({ presentation: 'widget' }); t.after(() => app.close());
+  await app.click('[data-kitchen-widget-add]');
+  assert.ok(app.$('#mb').classList.contains('on')); await app.click('#cancel');
+  await app.click('[data-kitchen-widget-section="seasoning"]');
+  assert.equal(app.document.body.dataset.kitchenWidgetSection, 'seasoning');
+  await app.click('[data-kitchen-widget-section="inventory"]');
+  assert.equal(app.document.body.dataset.kitchenWidgetSection, 'inventory');
+  for (const page of ['recipes', 'diary', 'shopping', 'home']) {
+    await app.click('.nav-btn[data-kitchen-page="' + page + '"]');
+    assert.equal(app.w.UMFKitchenNav.getPage(), page);
+  }
+  assert.equal(app.document.body.dataset.kitchenWidgetSection, 'fridge');
+});
+
+test('separate app and widget entry files load identical versioned feature scripts and styles', () => {
+  const widgetHTML = fs.readFileSync(path.join(root, 'use-me-first-widget.html'), 'utf8');
+  const widget = parseHTML(widgetHTML).document, app = parseHTML(html).document;
+  assert.equal(widget.body.dataset.kitchenMode, 'widget'); assert.equal(app.body.dataset.kitchenMode, 'app');
+  for (const selector of ['script[src]', 'link[rel="stylesheet"]']) {
+    const refs = doc => [...doc.querySelectorAll(selector)].map(node => node.getAttribute('src') || node.getAttribute('href'));
+    assert.deepEqual(refs(widget), refs(app));
+  }
+});
 
 test('seasoning shelf edits dates, cancels safely, retains old stock and reopens after reload', async t => {
   const app = await boot(); t.after(() => app.close());

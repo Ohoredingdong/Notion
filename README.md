@@ -11,7 +11,7 @@
 | 투자 레이더 | [열기](https://ohoredingdong.github.io/Notion/stock-value-radar.html) | 최신 기능 유지 · 공식 공시 미검증/기간 차이는 경고 유지 |
 | 주식 판단 연습 | [열기](https://ohoredingdong.github.io/Notion/stock-paper-investing.html) | 훈련 진행·기록 보존 확인 |
 | 부동산 판단 연습 | [열기](https://ohoredingdong.github.io/Notion/property-paper-investing.html) | 훈련 진행·기록 보존 확인 |
-| 냉장고 & 레시피 | [열기](https://ohoredingdong.github.io/Notion/use-me-first.html) | 화면 반복 갱신·레시피 버튼·사진·채소 점수·동기화 실패 수정 |
+| 냉장고 & 레시피 | [앱](https://ohoredingdong.github.io/Notion/use-me-first.html) · [위젯](https://ohoredingdong.github.io/Notion/use-me-first-widget.html) | 같은 기능·디자인, 위젯은 작은 임베드에 맞춘 배치. 새 위젯 주소는 변경 병합·배포 후 사용 |
 | 우리의 식탁 | [열기](https://ohoredingdong.github.io/Notion/our-food-budget.html) | 입력·새로고침 후 기록 보존 확인 |
 | 우리의 돈 | [열기](https://ohoredingdong.github.io/Notion/our-money-savings.html) | 금액 조정·새로고침 후 기록 보존 확인 |
 | Work Today | [열기](https://ohoredingdong.github.io/Notion/work-today-v6.html) | 연결 실패 때 기존 코드·기록 보존하도록 수정 |

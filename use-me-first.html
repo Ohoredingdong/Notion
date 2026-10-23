@@ -8,6 +8,7 @@
 <title>한끼의 부엌 — 냉장고 & 레시피</title>
 <link rel="stylesheet" href="use-me-first-final.css?v=20261020-miniature2">
 <link rel="stylesheet" href="use-me-first-kitchen.css?v=20261023-seasonexpiry1">
+<link rel="stylesheet" href="use-me-first-widget.css?v=20261023-twoview1">
 <script defer src="use-me-first-domain.js?v=20261023-seasonexpiry1"></script>
 <script defer src="use-me-first-store.js?v=20261023-seasonexpiry1"></script>
 <script defer src="use-me-first-kitchen-art.js?v=20261023-seasonexpiry1"></script>
@@ -18,9 +19,10 @@
 <script defer src="use-me-first-sync-icon-guard.js?v=20261020-miniature2"></script>
 <script defer src="use-me-first-kitchen-state.js?v=20261023-fourdoor1"></script>
 <script defer src="use-me-first-kitchen-nav.js?v=20261020-miniature2"></script>
-<script defer src="use-me-first-kitchen.js?v=20261023-seasonexpiry1"></script>
+<script defer src="use-me-first-kitchen.js?v=20261023-twoview1"></script>
+<script defer src="use-me-first-presentation.js?v=20261023-twoview1"></script>
 </head>
-<body class="kitchen-app" data-widget-layout="wide" data-widget-key="냉장고 & 레시피">
+<body class="kitchen-app" data-kitchen-mode="app" data-widget-layout="wide" data-widget-key="냉장고 & 레시피">
 <a class="skip-link" href="#main">본문으로 이동</a>
 <aside class="sidebar" aria-label="주 메뉴">
 <button type="button" class="logo-mark" data-kitchen-page="home" aria-label="한끼의 부엌 홈"><span data-kitchen-icon="fridge" aria-hidden="true"></span></button>
@@ -33,6 +35,7 @@
 <header class="header">
 <a class="brand" href="#home" data-kitchen-page="home"><h2>한끼의 부엌</h2><span class="eyebrow">MY LITTLE KITCHEN</span></a>
 <div class="header-meta"><div class="date-pill"><span data-kitchen-icon="sun" aria-hidden="true"></span><div><span id="umfDateMain">오늘</span><span class="umf-sr-only" id="umfDateSub">내 냉장고에서 시작해요</span></div></div>
+<button type="button" class="kitchen-widget-add" data-kitchen-widget-add>재료 ＋</button><button type="button" class="kitchen-mode-switch" data-kitchen-mode-switch>위젯 보기</button>
 <details class="kitchen-settings" id="umfKitchenSettings"><summary class="icon-btn" aria-label="화면과 동기화 설정"><span data-kitchen-icon="settings" aria-hidden="true"></span></summary><div class="kitchen-settings-popover"><strong>화면과 동기화</strong><div id="umfKitchenTools"></div><p>크기 · 테마 · 크기 잠금 · 화면 초기화 · 동기화</p><small>화면 초기화는 재료와 식사 기록을 지우지 않아요.</small></div></details>
 </div>
 </header>
@@ -40,6 +43,7 @@
 <div id="umfKitchenError" class="umf-notice bad" role="alert" hidden></div>
 <main id="main" tabindex="-1">
 <section class="kitchen-page" id="umfHomePage" data-kitchen-view="home" aria-labelledby="umfHomeTitle">
+<div class="kitchen-widget-sections" role="group" aria-label="냉장고 위젯 화면"><button type="button" data-kitchen-widget-section="fridge" aria-pressed="true">냉장고</button><button type="button" data-kitchen-widget-section="seasoning" aria-pressed="false">양념</button><button type="button" data-kitchen-widget-section="inventory" aria-pressed="false">재고 목록</button></div>
 <div class="intro"><div><div class="eyebrow">A LITTLE KITCHEN, A GOOD DAY</div><h1 id="umfHomeTitle" tabindex="-1">작은 부엌, 든든한 하루.</h1><p class="sub">냉장고를 열고, 우리 집 재료로 오늘의 한 끼를 골라요.</p></div><button class="btn btn-soft" id="umfTopAdd" type="button"><span data-kitchen-icon="plus" aria-hidden="true"></span>재료 넣기</button></div>
 <div class="home-grid"><section class="kitchen-play" aria-label="냉장고 정리"><div id="umfKitchenScene"></div><div class="kitchen-under"><button type="button" class="btn btn-sage" data-kitchen-page="recipes"><span data-kitchen-icon="recipes" aria-hidden="true"></span>오늘 뭐 먹지?<span data-kitchen-icon="arrow" aria-hidden="true"></span></button><p>냉장고 속 재료부터 살펴보고<br>우리에게 맞는 한 끼를 골라요.</p></div></section><section id="umfKitchenHero" class="panel today-panel" aria-label="오늘의 추천 메뉴"></section></div>
 <section class="umf-summary-strip kitchen-summary" aria-label="우리 부엌 요약"><button type="button" class="summary-cell" data-kitchen-page="inventory"><span class="summary-label">먼저 살펴볼 재료</span><span class="summary-value" id="umfSoonCount">0개</span><span class="summary-caption">2일 안에 소비기한이 와요 <span aria-hidden="true">↗</span></span></button><button type="button" class="summary-cell" data-kitchen-page="recipes"><span class="summary-label">우리 재료로 만들 메뉴</span><span class="summary-value" id="umfPossibleCount">0개</span><span class="summary-caption">필요한 재료 종류를 갖췄어요 <span aria-hidden="true">↗</span></span></button><button type="button" class="summary-cell" data-kitchen-page="shopping"><span class="summary-label" id="umfMissingCountLabel">선택 메뉴의 부족한 재료</span><span class="summary-value" id="umfMissingCount">0개</span><span class="summary-caption">장보기 전에 확인해요 <span aria-hidden="true">↗</span></span></button></section>

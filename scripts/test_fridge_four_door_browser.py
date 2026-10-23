@@ -177,6 +177,7 @@ def main():
                     seed(page, ITEMS, legacy)
                     try:
                         page.goto(origin + "/use-me-first.html", wait_until="networkidle")
+                        page.wait_for_load_state("domcontentloaded")
                         page.evaluate("UMFKitchen.ready")
                         original = page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE))
                         expect(page.locator(".fridge-door")).to_have_count(4)

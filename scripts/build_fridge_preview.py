@@ -26,7 +26,7 @@ class TagAttributes(HTMLParser):
         self.attrs = dict(attrs)
 
 
-def build(root):
+def build(root, presentation="app", inline_assets=True):
     root = root.resolve()
     entry = root / "use-me-first.html"
     scripts = []
@@ -94,7 +94,11 @@ def build(root):
         scripts.append('<script data-source="' + escape(reference, quote=True) + '">\n' + js + "\n</script>")
         return ""
 
-    html = entry.read_text(encoding="utf-8")
+    if presentation not in ("app", "widget"):
+        raise ValueError("Unknown kitchen presentation")
+    html = entry.read_text(encoding="utf-8").replace('data-kitchen-mode="app"', f'data-kitchen-mode="{presentation}"')
+    if not inline_assets:
+        return html.replace('<head>', '<head>\n<!-- Generated from use-me-first.html by scripts/build_fridge_preview.py; edit the shared source. -->')
     html = re.sub(r"<link\b[^>]*>", inline_link, html, flags=re.I)
     html = re.sub(r"<script\b[^>]*>\s*</script\s*>", collect_script, html, flags=re.I)
     if not scripts or html.count("</body>") != 1:
@@ -109,16 +113,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--presentation", choices=("app", "widget"), default="app")
+    parser.add_argument("--modular", action="store_true", help="Generate the shared-source widget entry, without embedding assets")
     args = parser.parse_args()
     output = args.output.resolve()
     root = args.root.resolve()
     # Never replace the deployed entry or any of its original assets with an export.
-    if output == root or (output.is_relative_to(root) and output.parts[len(root.parts):][0] != "previews"):
+    widget_entry = args.modular and args.presentation == "widget" and output == root / "use-me-first-widget.html"
+    if args.modular and not widget_entry:
+        raise SystemExit("--modular is only for --presentation widget --output use-me-first-widget.html in the repository root.")
+    if not widget_entry and (output == root or (output.is_relative_to(root) and output.parts[len(root.parts):][0] != "previews")):
         raise SystemExit("Use an output outside the checkout or under previews/.")
-    content = build(root)
+    content = build(root, args.presentation, inline_assets=not args.modular)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(content, encoding="utf-8")
-    print(f"Standalone preview: {output} ({output.stat().st_size:,} bytes)")
+    print(f"{'Modular entry' if args.modular else 'Standalone preview'}: {output} ({output.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

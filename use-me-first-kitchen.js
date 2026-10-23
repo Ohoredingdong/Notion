@@ -87,7 +87,11 @@
     button.style.zIndex = String(Math.max(1, position.z || 1));
     button.dataset.x = String(position.x); button.dataset.y = String(position.y); button.dataset.z = String(position.z || 1);
   }
-  function defaultPosition(id, index) {
+  function defaultPosition(id, index, count = 4) {
+    if (document.body.dataset.kitchenMode === 'widget') {
+      const columns = Math.min(4, Math.max(1, count)), rows = Math.max(1, Math.ceil(count / columns));
+      return { x: columns > 1 ? (index % columns) / (columns - 1) : .5, y: rows > 1 ? Math.floor(index / columns) / (rows - 1) : .5, z: 0 };
+    }
     const row = Math.floor(index % 9 / 3), column = index % 3;
     const seed = [...String(id)].reduce((value, letter) => (value * 31 + letter.charCodeAt(0)) >>> 0, 17);
     const offset = index < 9 ? 0 : ((seed % 11) - 5) * .006;
@@ -231,6 +235,8 @@
     const items = S.getState().items, state = K.getState(), doors = K.getDoorPanels(), focused = document.activeElement;
     const focusedInside = scene.contains(focused) ? focused.closest('.fridge-inside') : null;
     const placements = new Map(items.map(item => [item.id, own(state.placements, item.id) ? state.placements[item.id] : 'middle']));
+    const widgetRows = Math.max(1, ...Object.keys(zones).filter(zone => zone !== 'pantry').map(zone => Math.ceil(items.filter(item => placements.get(item.id) === zone).length / 4)));
+    scene.style.setProperty('--widget-fridge-rows', String(widgetRows));
     if (pointerSession && (!items.some(item => item.id === pointerSession.id) || !openZone(pointerSession.sourceZone, doors) || placementFingerprint(pointerSession.id) !== pointerSession.fingerprint)) {
       cleanupPointer(); interaction++; announce('재료 상태가 바뀌어 이동을 취소했어요. 다시 골라주세요.');
     }
@@ -259,7 +265,7 @@
       if (!shelf) continue;
       const more = shelf.querySelector('.shelf-more'), label = shelf.querySelector('span.shelf-name'), target = shelf.querySelector('.shelf-target');
       const canvas = shelf.querySelector('.shelf-canvas');
-      const layout = lots.map((item, index) => ({ item, index, position: own(state.positions || {}, item.id) ? state.positions[item.id] : defaultPosition(item.id, index) }));
+      const layout = lots.map((item, index) => ({ item, index, position: own(state.positions || {}, item.id) ? state.positions[item.id] : defaultPosition(item.id, index, lots.length) }));
       const layers = new Map([...layout].sort((a, b) => a.position.z - b.position.z || a.index - b.index).map((entry, index) => [entry.item.id, index + 1]));
       const wanted = layout.map(({ item, position }) => { const button = foodButton(item, zone, doors); displayedPositions.set(item.id, { ...position }); placeButton(button, position, layers.get(item.id)); return button; });
       for (const button of canvas.querySelectorAll('.fridge-food')) if (!wanted.includes(button)) button.remove();
@@ -403,7 +409,8 @@
     if (!item) { movingId = null; announce('먼저 옮길 재료를 골라주세요.'); renderScene(); return; }
     const token = interaction, focused = document.activeElement, ownedFocus = scene.contains(document.activeElement);
     const fingerprint = placementFingerprint(id);
-    const previousZone = zoneFor(item), fallback = previousZone === zone ? positionFor(id) : defaultPosition(id, S.getState().items.filter(value => zoneFor(value) === zone).length);
+    const previousZone = zoneFor(item), peers = S.getState().items.filter(value => zoneFor(value) === zone).length;
+    const fallback = previousZone === zone ? positionFor(id) : defaultPosition(id, peers, peers + 1);
     const position = requestedPosition || fallback;
     const guard = () => !destroyed && token === interaction && openZone(previousZone) && openZone(zone) && placementFingerprint(id) === fingerprint;
     moveBusy = true; renderScene();
@@ -434,7 +441,7 @@
         if (!missing.length) return;
         lots.forEach((value, index) => {
           if (own(draft.positions, value.id)) return;
-          const position = defaultPosition(value.id, index);
+          const position = defaultPosition(value.id, index, lots.length);
           Object.defineProperty(draft.positions, value.id, { value: { x: position.x, y: position.y, z: 0 }, writable: true, enumerable: true, configurable: true });
         });
         // Defaults were behind saved positions. Preserve that whole order while
@@ -499,6 +506,7 @@
     const target = event.target.closest('.fridge-door[role="button"]');
     if (target && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) target.click(); }
   }
+  function onPresentationChange() { abortGesture(); render(); }
   function onNavigation(event) {
     interaction++; cleanupPointer(); clearDrag();
     if (event.detail?.page !== 'home') { organizing = false; movingId = null; draggedId = null; renderScene(); }
@@ -684,14 +692,14 @@
   window.addEventListener('umf:selectionchange', renderHero); window.addEventListener('umf:daychange', render); window.addEventListener('umf:kitchenerror', renderError);
   window.addEventListener('umf:navigation', onNavigation);
   window.addEventListener('pointermove', onPointerMove); window.addEventListener('pointerup', onPointerUp); window.addEventListener('pointercancel', onPointerCancel); window.addEventListener('keydown', onWindowKeyDown);
-  window.addEventListener('blur', abortGesture); window.addEventListener('resize', abortGesture); document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('blur', abortGesture); window.addEventListener('resize', abortGesture); window.addEventListener('umf:presentationchange', onPresentationChange); document.addEventListener('visibilitychange', onVisibilityChange);
   // Presentation changes must never rewrite inventory dates or quantities.
   const ready = Promise.all([S.ready, K.ready]).then(() => { initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
   window.UMFKitchen = {
     ready, render, navigate, arrangeItem, foodIdFor, itemStatus, zones, positionFor,
     geometry: Object.freeze({ normalizedPoint, defaultPosition }),
     getOrganizing: () => organizing, getMovingId: () => movingId,
-    destroy() { destroyed = true; cleanupPointer(false); clearDrag(); offStore?.(); offKitchen?.(); for (const [event, handler] of Object.entries(handlers)) scene.removeEventListener(event, handler); hero?.removeEventListener('click', onHeroClick); window.removeEventListener('umf:selectionchange', renderHero); window.removeEventListener('umf:daychange', render); window.removeEventListener('umf:kitchenerror', renderError); window.removeEventListener('umf:navigation', onNavigation); window.removeEventListener('pointermove', onPointerMove); window.removeEventListener('pointerup', onPointerUp); window.removeEventListener('pointercancel', onPointerCancel); window.removeEventListener('keydown', onWindowKeyDown); window.removeEventListener('blur', abortGesture); window.removeEventListener('resize', abortGesture); document.removeEventListener('visibilitychange', onVisibilityChange); }
+    destroy() { destroyed = true; cleanupPointer(false); clearDrag(); offStore?.(); offKitchen?.(); for (const [event, handler] of Object.entries(handlers)) scene.removeEventListener(event, handler); hero?.removeEventListener('click', onHeroClick); window.removeEventListener('umf:selectionchange', renderHero); window.removeEventListener('umf:daychange', render); window.removeEventListener('umf:kitchenerror', renderError); window.removeEventListener('umf:navigation', onNavigation); window.removeEventListener('pointermove', onPointerMove); window.removeEventListener('pointerup', onPointerUp); window.removeEventListener('pointercancel', onPointerCancel); window.removeEventListener('keydown', onWindowKeyDown); window.removeEventListener('blur', abortGesture); window.removeEventListener('resize', abortGesture); window.removeEventListener('umf:presentationchange', onPresentationChange); document.removeEventListener('visibilitychange', onVisibilityChange); }
   };
   render();
 })();

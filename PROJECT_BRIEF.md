@@ -25,6 +25,8 @@
 
 **후속 양념 요청:** 양념에도 유통·소비기한을 설정하고 같은 레퍼런스에 맞춰 용기·선반 디자인을 고친다. 이름별 날짜 입력·경과 양념 추천 제외·새 미니어처와 원본 보관을 추가한 구현 및 검증은 [양념 변경 기록](docs/SEASONING_EXPIRY_AND_DESIGN.md)을 따른다. 기존 이름별 보유 배열은 유지하며, 같은 양념 여러 용기의 개별 잔량·기한 관리는 별도 과제다.
 
+**앱·위젯 각각 제공:** 두 버전의 기능과 디자인을 같게 유지한다. 기존 `use-me-first.html`은 웹앱, 생성 파일 `use-me-first-widget.html`은 작은 임베드 진입점이다. 원본 HTML과 기능 코드를 공유하며 위젯 파일을 따로 수정하지 않는다. 두 단일 파일 미리보기·생성 명령·저장 공유의 확인 범위는 [앱과 위젯 기록](docs/APP_AND_WIDGET.md)에 있다.
+
 진입 파일은 `use-me-first.html`이다. 도메인 매칭은 `use-me-first-domain.js`, 저장·동기화는 `use-me-first-store.js`, 재료 입력은 `use-me-first-core-final.js`, 레시피는 `use-me-first-recipe-grid-final.js`, 식사 기록은 `use-me-first-ui-final.js`가 담당한다. 냉장고 UI·위치·화면 전환·미니어처는 각각 `use-me-first-kitchen.js`, `use-me-first-kitchen-state.js`, `use-me-first-kitchen-nav.js`, `use-me-first-kitchen-art.js`에 있다. CSS는 `use-me-first-final.css`, `use-me-first-kitchen.css`다. 서버 함수는 `supabase/functions/use-me-first-sync/index.ts`에 있다.
 
 배포 경로: <https://ohoredingdong.github.io/Notion/use-me-first.html>. 별도 사이트 <https://hankki-cozy-kitchen.wldms3053.chatgpt.site/>와 이 코드의 동일성은 미확인이다. 외부 사이트의 소스·배포 식별자도 저장소에서 확인하지 못했다.
