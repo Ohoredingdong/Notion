@@ -8,6 +8,18 @@ python scripts/build_miniature_kitchen_preview.py
 
 소스는 `designs/miniature-kitchen/`이며 `scene.html`은 생성용 템플릿이다. 단일 HTML 두 개와 비교 페이지를 생성한 뒤 검토한다. 새 디자인의 범위·자료·검증은 [미니어처 부엌 기록](../docs/MINIATURE_KITCHEN_DESIGN.md)을 따른다.
 
+HTML 파일 링크가 채팅의 소스 보기로 열리는 문제가 보고되었다. 일반 브라우저에서의 실행 성공을 채팅 내 실행 성공으로 보고하지 않는다. 화면 이미지나 ZIP 전달도 사용자가 요청한 조작 가능한 미리보기의 완료 기준이 아니다.
+
+파일 크기를 줄여 전달 방식을 점검하려면 아래 경량판을 생성한다. HTML에 CSS·JavaScript를 포함하고, 그림만 공개된 동일 저장소의 **고정 커밋** URL로 읽는다. 따라서 인터넷 연결이 필요하다. 기본 생성 방식과 기존 단일 파일 시안은 그대로 유지한다.
+
+```bash
+python scripts/build_miniature_kitchen_preview.py \
+  --asset-revision 99c234ab9852e6fe5fe569d93f7d36777a9ed511 \
+  --output-dir /workspace/artifacts/kitchen-live-preview
+```
+
+앱·위젯은 각각 약 54KB, 비교판은 약 132KB다. 채팅용 `sandbox:` 파일 링크로 전달을 시도했으며, **사용자 화면에서의 실행 여부는 확인 대기 중**이다. 경량화나 링크 형식 변경이 소스 보기를 해결했다고 단정하지 않는다.
+
 [앱](use-me-first.html)과 [위젯](use-me-first-widget.html)은 같은 냉장고의 CSS·JavaScript·이미지를 포함한 생성 파일이다. 기능·디자인은 공유하고 기본 배치만 다르다. HTML만 전달되는 미리보기 환경에서도 별도 자산 경로가 필요 없다. 직접 수정하지 않고 저장소 루트에서 다시 생성한다.
 
 ```bash
