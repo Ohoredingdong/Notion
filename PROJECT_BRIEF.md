@@ -21,6 +21,8 @@
 
 ## A. 냉장고 및 레시피 — 한끼의 부엌
 
+**인수인계 이후 확정된 디자인 요청:** 사용자가 2026-10-23에 제공한 미니어처 주방 이미지의 따뜻한 크림·도자기·나무 무드를 따른다. 냉장고는 흰색 4도어이며 **위 왼쪽·오른쪽은 냉장, 아래 왼쪽·오른쪽은 냉동**, 네 문 모두 독립적으로 열린다. 위쪽 양 문에는 임박 재료·추천 메뉴 디스플레이를 둔다. 이 결정은 이전의 장식용 하단 가로 서랍 제안을 대체한다. 아래 구현 비교표는 최초 조사 커밋 기준의 기록이며, 후속 구현·전후 화면·검증은 [4도어 변경 기록](docs/COZY_FOUR_DOOR_KITCHEN.md)에서 확인한다.
+
 진입 파일은 `use-me-first.html`이다. 도메인 매칭은 `use-me-first-domain.js`, 저장·동기화는 `use-me-first-store.js`, 재료 입력은 `use-me-first-core-final.js`, 레시피는 `use-me-first-recipe-grid-final.js`, 식사 기록은 `use-me-first-ui-final.js`가 담당한다. 냉장고 UI·위치·화면 전환·미니어처는 각각 `use-me-first-kitchen.js`, `use-me-first-kitchen-state.js`, `use-me-first-kitchen-nav.js`, `use-me-first-kitchen-art.js`에 있다. CSS는 `use-me-first-final.css`, `use-me-first-kitchen.css`다. 서버 함수는 `supabase/functions/use-me-first-sync/index.ts`에 있다.
 
 배포 경로: <https://ohoredingdong.github.io/Notion/use-me-first.html>. 별도 사이트 <https://hankki-cozy-kitchen.wldms3053.chatgpt.site/>와 이 코드의 동일성은 미확인이다. 외부 사이트의 소스·배포 식별자도 저장소에서 확인하지 못했다.

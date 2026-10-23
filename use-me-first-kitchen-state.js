@@ -12,8 +12,11 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   'use strict';
   const KEY = 'use-me-first-kitchen-view-v1';
-  const ZONES = Object.freeze(['top', 'middle', 'bottom', 'freezer-top', 'freezer-middle', 'freezer-bottom', 'pantry']);
+  // Existing zone IDs and coordinates retain their meaning in the left panels.
+  const ZONES = Object.freeze(['top', 'middle', 'bottom', 'freezer-top', 'freezer-middle', 'freezer-bottom', 'pantry',
+    'fridge-right-top', 'fridge-right-middle', 'fridge-right-bottom', 'freezer-right-top', 'freezer-right-middle', 'freezer-right-bottom']);
   const compartments = ['freezer', 'fridge'];
+  const PANELS = Object.freeze(['fridge', 'fridge-right', 'freezer', 'freezer-right']);
   const blank = () => ({ version: 2, doors: { freezer: false, fridge: false }, placements: {}, positions: {} });
   const clone = value => JSON.parse(JSON.stringify(value));
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -23,17 +26,26 @@
   const validPosition = value => object(value) && Object.keys(value).length === 3 && ['x', 'y', 'z'].every(key => owns(value, key)) &&
     unit(value.x) && unit(value.y) && Number.isSafeInteger(value.z) && value.z > 0;
   const setOwn = (value, key, content) => Object.defineProperty(value, key, { value: content, writable: true, enumerable: true, configurable: true });
+  const panelsFor = value => value.panels ? { ...value.panels } : {
+    fridge: value.doors.fridge, 'fridge-right': value.doors.fridge,
+    freezer: value.doors.freezer, 'freezer-right': value.doors.freezer
+  };
+  const validPanels = value => object(value) && Object.keys(value).length === PANELS.length &&
+    PANELS.every(key => owns(value, key) && typeof value[key] === 'boolean');
   function valid(value, allowLegacy = true) {
     if (!object(value) || !['version', 'doors', 'placements'].every(key => owns(value, key)) ||
       !object(value.doors) || Object.keys(value.doors).length !== 2 || !compartments.every(key => owns(value.doors, key) && typeof value.doors[key] === 'boolean') ||
       !object(value.placements) || !Object.entries(value.placements).every(([id, zone]) => validId(id) && ZONES.includes(zone))) return false;
     if (allowLegacy && value.version === 1) return Object.keys(value).length === 3;
-    return value.version === 2 && Object.keys(value).length === 4 && owns(value, 'positions') && object(value.positions) &&
+    // The four-door extension is optional. Reading v1/v2 never writes or moves a lot.
+    const fields = Object.keys(value);
+    return value.version === 2 && (fields.length === 4 || fields.length === 5 && owns(value, 'panels') && validPanels(value.panels)) && owns(value, 'positions') && object(value.positions) &&
       Object.entries(value.positions).every(([id, position]) => validId(id) && validPosition(position));
   }
   const canonical = value => ({
     version: 2, doors: { freezer: value.doors.freezer, fridge: value.doors.fridge }, placements: Object.fromEntries(Object.entries(value.placements)),
-    positions: Object.fromEntries(Object.entries(value.version === 1 ? {} : value.positions).map(([id, p]) => [id, { x: p.x, y: p.y, z: p.z }]))
+    positions: Object.fromEntries(Object.entries(value.version === 1 ? {} : value.positions).map(([id, p]) => [id, { x: p.x, y: p.y, z: p.z }])),
+    ...(owns(value, 'panels') ? { panels: { ...value.panels } } : {})
   });
   const ordered = positions => Object.entries(positions).sort((a, b) => a[1].z - b[1].z);
   function frontLayer(positions) {
@@ -154,14 +166,32 @@
     }
     function toggleDoor(compartment) {
       if (!compartments.includes(compartment)) return Promise.resolve(fail('열거나 닫을 냉장고 문을 확인해 주세요.'));
-      return updateAsync(draft => { draft.doors[compartment] = !draft.doors[compartment]; });
+      return updateAsync(draft => {
+        const open = !draft.doors[compartment]; draft.doors[compartment] = open;
+        if (draft.panels) { draft.panels[compartment] = open; draft.panels[compartment + '-right'] = open; }
+      });
+    }
+    function getDoorPanels() { return panelsFor(getState()); }
+    function togglePanel(panel) {
+      if (!PANELS.includes(panel)) return Promise.resolve(fail('열거나 닫을 냉장고 문을 확인해 주세요.'));
+      return updateAsync(draft => {
+        draft.panels = panelsFor(draft); draft.panels[panel] = !draft.panels[panel];
+        // Keep the legacy aggregate flags available to existing callers.
+        draft.doors.fridge = draft.panels.fridge || draft.panels['fridge-right'];
+        draft.doors.freezer = draft.panels.freezer || draft.panels['freezer-right'];
+      });
     }
     function setDoors(changes) {
       if (!object(changes) || !Object.entries(changes).every(([key, value]) => compartments.includes(key) && typeof value === 'boolean')) {
         return Promise.resolve(fail('냉장고 문 설정을 확인해 주세요.'));
       }
       const captured = { ...changes };
-      return updateAsync(draft => { Object.assign(draft.doors, captured); });
+      return updateAsync(draft => {
+        Object.assign(draft.doors, captured);
+        if (draft.panels) for (const [key, open] of Object.entries(captured)) {
+          draft.panels[key] = open; draft.panels[key + '-right'] = open;
+        }
+      });
     }
     function onStorage(event) {
       if ((event.key !== KEY && event.key !== null) || (event.storageArea && event.storageArea !== storage)) return;
@@ -171,12 +201,12 @@
     }
     target?.addEventListener?.('storage', onStorage);
     return {
-      ready, getState, updateAsync, zoneFor, positionFor, setZone, setPosition, changeLayer, toggleDoor, setDoors,
+      ready, getState, getDoorPanels, updateAsync, zoneFor, positionFor, setZone, setPosition, changeLayer, toggleDoor, togglePanel, setDoors,
       subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
       get error() { return error; }, get blocked() { return blocked; },
       get concurrency() { return locks ? 'web-locks' : 'best-effort'; },
       destroy() { target?.removeEventListener?.('storage', onStorage); listeners.clear(); }
     };
   }
-  return { KEY, ZONES, blank, createKitchenState };
+  return { KEY, ZONES, PANELS, blank, createKitchenState };
 });

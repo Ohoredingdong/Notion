@@ -1,0 +1,222 @@
+"""Exercise the four-door kitchen with isolated local data in real Chromium.
+
+No personal sync calls or production writes. Artifacts are outside the checkout.
+The fixed clock keeps expiry labels and screenshots reproducible.
+"""
+import argparse
+import functools
+import http.server
+import json
+import threading
+import traceback
+from pathlib import Path
+from urllib.parse import urlparse
+
+from playwright.sync_api import expect, sync_playwright
+
+
+STATE = "use-me-first-state-v5"
+VIEW = "use-me-first-kitchen-view-v1"
+PANELS = ("fridge", "fridge-right", "freezer", "freezer-right")
+ITEMS = [
+    {"id": "egg", "name": "계란", "quantity": "2개", "expiry": "2026-10-23"},
+    {"id": "milk", "name": "우유", "quantity": "500ml", "expiry": "2026-10-24"},
+    {"id": "tofu", "name": "두부", "quantity": "150g", "expiry": "2026-10-26"},
+    {"id": "onion", "name": "양파", "quantity": "1개", "expiry": "2026-11-01"},
+]
+
+
+class QuietHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *_args):
+        pass
+
+
+def seed(page, items, view):
+    inventory = {"version": 5, "revision": 7, "updatedAt": 1792728000000,
+                 "items": items, "season": ["간장", "된장", "고추장", "식용유", "소금", "후추"],
+                 "pantry": ["밥/즉석밥"], "customSeason": [], "customPantry": [],
+                 "meals": [], "favorites": []}
+    # An unconditional init script would reset data on reload and fake persistence.
+    page.add_init_script("""(() => {
+        if (sessionStorage.getItem('four-door-fixture')) return;
+        const values = %s;
+        for (const [key, value] of Object.entries(values)) localStorage.setItem(key, JSON.stringify(value));
+        sessionStorage.setItem('four-door-fixture', 'loaded');
+    })();""" % json.dumps({STATE: inventory, VIEW: view}, ensure_ascii=False))
+
+
+def drag(page, source, target, touch):
+    source.scroll_into_view_if_needed()
+    start, end = source.bounding_box(), target.bounding_box()
+    assert start and end, "Both the ingredient and destination must be rendered"
+    x, y = start["x"] + start["width"] / 2, start["y"] + start["height"] / 2
+    tx, ty = end["x"] + end["width"] * .72, end["y"] + end["height"] * .55
+    if touch:
+        session = page.context.new_cdp_session(page)
+        try:
+            session.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 1}]})
+            for step in range(1, 13):
+                session.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [
+                    {"x": x + (tx - x) * step / 12, "y": y + (ty - y) * step / 12, "id": 1}]})
+            session.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+        finally:
+            session.detach()
+    else:
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(tx, ty, steps=12)
+        page.mouse.up()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--output", type=Path, default=Path("/tmp/fridge-four-door-browser"))
+    parser.add_argument("--browser-executable")
+    parser.add_argument("--widths", nargs="+", type=int, default=[1120, 390, 320])
+    args = parser.parse_args()
+    root, output = args.root.resolve(), args.output.resolve()
+    if output.is_relative_to(root):
+        raise SystemExit("Use an artifact directory outside the checkout.")
+    output.mkdir(parents=True, exist_ok=True)
+    results = {"scope": "Local Chromium, fixed clock, synthetic storage; no production or personal sync", "cases": [], "errors": []}
+
+    def passed(name):
+        results["cases"].append(name)
+        print("PASS " + name, flush=True)
+
+    handler = functools.partial(QuietHandler, directory=str(root))
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    origin = "http://127.0.0.1:" + str(server.server_port)
+    try:
+        with sync_playwright() as playwright:
+            launch = {"headless": True, "args": ["--no-sandbox"]}
+            if args.browser_executable:
+                launch["executable_path"] = args.browser_executable
+            browser = playwright.chromium.launch(**launch)
+            try:
+                for width in args.widths:
+                    context = browser.new_context(viewport={"width": width, "height": 844},
+                                                  has_touch=width < 760, timezone_id="Asia/Seoul", reduced_motion="reduce")
+                    page = context.new_page()
+                    page.set_default_timeout(8000)
+                    errors, external_writes, images = [], [], set()
+                    page.on("pageerror", lambda error: errors.append(str(error)))
+                    page.on("response", lambda response: images.add(Path(urlparse(response.url).path).name)
+                            if response.ok and response.request.resource_type == "image" else None)
+
+                    def route(request):
+                        if request.request.url.startswith(origin + "/"):
+                            request.continue_()
+                        else:
+                            if request.request.method != "GET":
+                                external_writes.append(urlparse(request.request.url).hostname)
+                            request.abort()
+
+                    page.route("**/*", route)
+                    page.clock.set_fixed_time("2026-10-23T03:00:00Z")
+                    legacy = {"version": 2, "doors": {"fridge": False, "freezer": False},
+                              "placements": {"milk": "top"}, "positions": {"milk": {"x": .2, "y": .7, "z": 1}}}
+                    seed(page, ITEMS, legacy)
+                    try:
+                        page.goto(origin + "/use-me-first.html", wait_until="networkidle")
+                        page.evaluate("UMFKitchen.ready")
+                        original = page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE))
+                        expect(page.locator(".fridge-door")).to_have_count(4)
+                        expect(page.locator(".four-door .panel-fresh.fridge-door")).to_have_count(2)
+                        expect(page.locator(".four-door .panel-frozen.fridge-door")).to_have_count(2)
+                        expect(page.locator(".door-display")).to_have_count(2)
+                        expect(page.locator("[data-door-expiry]")).to_contain_text("오늘")
+                        expect(page.locator("[data-door-expiry]")).to_contain_text("내일")
+                        expect(page.locator("[data-door-expiry]")).to_contain_text("150g")
+                        passed(f"{width}px white four-door structure, two live displays and expiry quantities")
+                        page.locator(".kitchen-scene").screenshot(path=str(output / f"fridge-{width}.png"))
+
+                        for key in PANELS:
+                            page.locator('.fridge-door[data-compartment="' + key + '"]').click()
+                            for other in PANELS:
+                                assert page.locator("#inside-" + other).evaluate("n => n.hasAttribute('inert')") == (other != key)
+                            page.locator('.compartment-toggle[data-compartment="' + key + '"]').click()
+                        passed(f"{width}px each upper and lower door opens and closes independently")
+
+                        page.locator('.compartment-toggle[data-compartment="freezer-right"]').click()
+                        page.reload(wait_until="networkidle")
+                        expect(page.locator('.compartment-toggle[data-compartment="freezer-right"]')).to_have_attribute("aria-expanded", "true")
+                        expect(page.locator('.compartment-toggle[data-compartment="freezer"]')).to_have_attribute("aria-expanded", "false")
+                        assert page.evaluate("UMFKitchenState.getState().positions.milk") == legacy["positions"]["milk"]
+                        passed(f"{width}px independent doors persist and legacy lot coordinates survive reload")
+
+                        page.locator('[data-action="organize"]').click()
+                        for zone in ("fridge-right-middle", "freezer-middle", "freezer-right-bottom"):
+                            drag(page, page.locator('.fridge-food[data-lot="egg"]'), page.locator('.shelf-canvas[data-zone="' + zone + '"]'), width < 760)
+                            try:
+                                page.wait_for_function("zone => UMFKitchenState.zoneFor('egg') === zone", arg=zone)
+                            except Exception as error:
+                                actual = page.evaluate("UMFKitchenState.zoneFor('egg')")
+                                raise AssertionError(f"Drag to {zone} left egg in {actual}") from error
+                        saved = page.evaluate("UMFKitchenState.getState().positions.egg")
+                        page.reload(wait_until="networkidle")
+                        assert page.evaluate("UMFKitchenState.zoneFor('egg')") == "freezer-right-bottom"
+                        assert page.evaluate("UMFKitchenState.getState().positions.egg") == saved
+                        assert page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE)) == original
+                        passed(f"{width}px {'touch' if width < 760 else 'mouse'} drag across refrigerated and both frozen panels persists without inventory edits")
+
+                        seasoning = page.locator('.seasoning-mini[data-seasoning-name="간장"]')
+                        drag(page, seasoning, page.locator(".seasoning-rack-items"), width < 760)
+                        page.wait_for_function("JSON.parse(localStorage.getItem('umf-seasoning-layout-v3') || '{}')['간장']")
+                        saved_seasoning = page.evaluate("localStorage.getItem('umf-seasoning-layout-v3')")
+                        page.reload(wait_until="networkidle")
+                        assert page.evaluate("localStorage.getItem('umf-seasoning-layout-v3')") == saved_seasoning
+                        passed(f"{width}px Korean seasoning drag and position persist")
+
+                        page.locator('.nav-btn[data-kitchen-page="recipes"]').click()
+                        rice = page.locator('.umf-menu-card[data-name="계란 볶음밥"]')
+                        expect(rice.locator('.umf-recipe-board [data-miniature="egg-rice"]')).to_be_visible()
+                        rice.locator(".umf-menu-select").click()
+                        expect(page.locator("#umfRecipeDetail")).to_be_visible()
+                        expect(page.locator("#umfRecipeDetail")).to_contain_text("만드는 순서")
+                        rice.locator(".umf-fav").click()
+                        page.wait_for_function("UMFStore.getState().favorites.includes('계란 볶음밥')")
+                        page.locator("#umfLogBtn").click()
+                        expect(page.locator("#umfDiaryPage")).to_be_visible()
+                        expect(page.locator("#umfMealList")).to_contain_text("계란 볶음밥")
+                        page.reload(wait_until="networkidle")
+                        assert page.evaluate("UMFStore.getState().items") == ITEMS
+                        assert page.evaluate("UMFStore.getState().favorites.includes('계란 볶음밥')")
+                        assert page.evaluate("UMFStore.getState().meals.length") == 1
+                        passed(f"{width}px miniature recipe selection, instructions, favorite and meal record retain existing storage")
+
+                        page.locator('.nav-btn[data-kitchen-page="recipes"]').click()
+                        page.locator("#umfRecipeSearch").fill("없는메뉴")
+                        expect(page.locator("#umfRecipeEmpty")).to_be_visible()
+                        expect(page.locator("#umfLogBtn")).to_be_disabled()
+                        page.locator("#umfRecipeSearch").fill("")
+                        dimensions = page.evaluate("({viewport:innerWidth, scroll:document.documentElement.scrollWidth})")
+                        assert dimensions["scroll"] <= dimensions["viewport"] + 1, dimensions
+                        assert not errors, errors
+                        assert not external_writes, external_writes
+                        assert {"food-miniatures-v2.webp", "kitchen-scene.webp"} <= images, images
+                        page.screenshot(path=str(output / f"recipes-{width}.png"), full_page=True)
+                        passed(f"{width}px search/empty state, layout, miniature assets and no runtime errors or external writes")
+                    except Exception as error:
+                        results["errors"].append(f"{width}px: {type(error).__name__}: {error}")
+                        traceback.print_exc()
+                        page.screenshot(path=str(output / f"failure-{width}.png"), full_page=True)
+                    finally:
+                        context.close()
+            finally:
+                browser.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+    results["passed"] = not results["errors"]
+    results["passed_cases"] = len(results["cases"])
+    (output / "results.json").write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n")
+    print(json.dumps(results, ensure_ascii=False, indent=2))
+    return 0 if results["passed"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

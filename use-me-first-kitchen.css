@@ -424,8 +424,8 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 @media(max-width:760px){.kitchen-app .kitchen-scene{height:626px}.kitchen-app .fridge-stage{width:min(398px,86%);height:428px;top:98px}.kitchen-app .fridge-inside{padding:41px 7px 9px}.kitchen-app .today-dish .miniature-art{height:150px}.kitchen-app .today-dish{padding:10px 4px}.kitchen-app .shelf-canvas .fridge-food{width:62px;height:64px}.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:60px;height:60px}.kitchen-app .kitchen-layer-controls .btn{min-height:44px}}
 @media(max-width:390px){.kitchen-app .fridge-stage{width:88%;height:424px}.kitchen-app .fridge-inside{padding-left:5px;padding-right:5px}.kitchen-app .shelf-canvas .fridge-food{width:54px;height:58px}.kitchen-app .shelf-canvas .fridge-food .food-art,.kitchen-app .compartment-freezer .shelf-canvas .fridge-food .food-art{width:53px;height:54px}.kitchen-app .shelf-canvas .fridge-food .quantity-mini{font-size:7px;max-width:56px}.kitchen-app .shelf-name{font-size:8px}.kitchen-app .shelf-name.shelf-target{font-size:8px;padding:3px}.kitchen-app .shelf-more{font-size:7px;padding:3px}.kitchen-app .umf-art-ingredient .miniature-art{width:100%;max-width:70px;height:70px}.kitchen-app .today-dish .miniature-art{height:126px}}
 
-/* The refrigerator itself is the organizer UI; keep the legacy helper panel out of view. */
-.kitchen-app .kitchen-arrange-tools{display:none!important}
+/* Accessible alternatives to dragging remain available in organize mode. */
+.kitchen-app .kitchen-arrange-tools[hidden]{display:none}
 
 
 /* Visible seasoning shelf: checked seasonings become miniature jars and bottles. */
@@ -482,148 +482,179 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 }
 
 
-/* 2026-10-21: warm greige French-door smart fridge with simplified split displays. */
-.kitchen-app .kitchen-scene{height:748px}
-.kitchen-app .fridge-stage{width:min(500px,88%);height:548px;top:88px}
-.kitchen-app .fridge-stage:after{left:-24px;right:-24px;bottom:-10px;height:28px;background:#6d625137;filter:blur(10px)}
-.kitchen-app .fridge-body{
-  top:0;left:0;right:0;bottom:34%;height:auto;padding:12px 10px 14px;grid-template-columns:1fr 1fr;gap:6px;
-  border-radius:24px 24px 8px 8px;
-  background:
-    repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,rgba(89,82,73,.025) 1px 2px),
-    linear-gradient(105deg,#bdb6aa 0%,#e6dfd3 8%,#d7d0c4 50%,#c2baad 92%,#a9a196 100%);
-  box-shadow:inset 0 0 0 1px #9e978d,inset 0 2px 3px #fff8,5px 8px 18px #6e62542b;
+/* Four working doors: refrigerated above, frozen below. Warm white enamel,
+   ceramic displays and a wooden counter echo the miniature kitchen references. */
+.kitchen-app .home-grid{align-items:start}
+.kitchen-app .kitchen-scene{height:792px;background-color:#f2e6d7;border-color:#ddcdb8}
+.kitchen-app .fridge-stage.four-door{width:min(432px,86%);height:560px;top:86px;perspective:1200px}
+.kitchen-app .four-door:after{left:-20px;right:-20px;bottom:-13px;height:30px;background:#7b624637;filter:blur(10px)}
+.kitchen-app .four-door .fridge-body{
+  inset:0;height:auto;padding:9px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:minmax(0,1.5fr) minmax(0,1fr);gap:8px;border-radius:23px;
+  background:linear-gradient(100deg,#d9d5cc,#fffdf8 9%,#e8e5dd 91%,#c8c1b5);
+  box-shadow:inset 0 0 0 1px #c7bfae,inset 0 2px 4px #fff,5px 9px 18px #715a3b2a;
 }
-.kitchen-app .fridge-body:after{left:calc(50% - 2px);bottom:12px;background:linear-gradient(90deg,#a7a097,#ece7df 48%,#908a82)}
-.kitchen-app .door-freezer{left:0;width:50%;border-radius:24px 5px 7px 8px}
-.kitchen-app .door-fridge{left:50%;right:0;border-radius:5px 24px 8px 7px}
-.kitchen-app .fridge-door{top:0;bottom:34%}
-.kitchen-app .door-front{
-  background:
-    repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,rgba(76,70,65,.025) 1px 2px),
-    linear-gradient(104deg,#ded7cc 0%,#c9c1b6 22%,#d8d1c6 62%,#b8b0a5 100%);
-  border:1px solid #aaa298;
-  box-shadow:inset 1px 2px 2px #fff9,inset -2px -2px 4px #8f877d3c,2px 5px 10px #6f62562a;
+.kitchen-app .four-door .fridge-body:after{left:calc(50% - 3px);top:9px;bottom:9px;width:6px;background:linear-gradient(90deg,#d0cabd,#fffdf6 50%,#bcb5a6)}
+.kitchen-app .four-door .fridge-inside{height:auto;min-height:0;border-radius:13px;padding:36px 7px 8px;background:linear-gradient(100deg,#e1e6d8,#fbfcf0 17%,#f0f4e4 85%,#d6decb);box-shadow:inset 0 4px 9px #6c7d5b20}
+.kitchen-app .four-door .panel-frozen.fridge-inside{background:linear-gradient(100deg,#d7e5e1,#f4faf6 18%,#e8f2ee 84%,#c9ded7)}
+.kitchen-app .four-door .compartment-head{top:12px;left:8px;right:6px;color:#5b6c4d;grid-template-columns:13px minmax(0,1fr);column-gap:3px}
+.kitchen-app .four-door .compartment-head strong{font-size:10px;line-height:1.4;letter-spacing:0;font-weight:600}
+.kitchen-app .four-door .compartment-head small{font-size:8px;color:#6a785e}
+.kitchen-app .four-door .panel-frozen .compartment-head{color:#4c726a}
+.kitchen-app .four-door .shelf{min-height:0;padding:17px 0 8px}
+.kitchen-app .four-door .shelf+.shelf{margin-top:4px}
+.kitchen-app .four-door .shelf-canvas{min-height:54px}
+.kitchen-app .four-door .shelf-empty{font-size:9px;inset:10px 0 5px;color:#74806b}
+.kitchen-app .four-door .panel-frozen .shelf{padding:13px 0 6px}
+.kitchen-app .four-door .panel-frozen .shelf-canvas{min-height:34px}
+.kitchen-app .four-door .panel-frozen .shelf:after{height:5px;background:linear-gradient(#fffefa,#d9e9e1 66%,#a6c5b8)}
+.kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food{width:43px;height:41px}
+.kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food .food-art{width:41px;height:39px}
+.kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food .quantity-mini{font-size:7px;min-height:12px;padding:1px 3px}
+.kitchen-app .four-door .fridge-door{bottom:auto;top:0;height:calc(60% - 4px);width:calc(50% - 3px);transition:transform .7s cubic-bezier(.24,.65,.22,1);border-radius:20px 4px 4px 4px}
+.kitchen-app .four-door .fridge-door.panel-left{left:0;right:auto;transform-origin:left center}
+.kitchen-app .four-door .fridge-door.panel-right{left:auto;right:0;transform-origin:right center;border-radius:4px 20px 4px 4px}
+.kitchen-app .four-door .fridge-door.panel-frozen{top:calc(60% + 4px);bottom:0;height:auto;border-radius:4px 4px 4px 18px}
+.kitchen-app .four-door .fridge-door.panel-frozen.panel-right{border-radius:4px 4px 18px 4px}
+.kitchen-app .four-door .door-front,.kitchen-app .four-door .door-fridge .door-front,.kitchen-app .four-door .door-freezer .door-front{
+  border:1px solid #cfc8bc;background:linear-gradient(110deg,#fffefa 0%,#fffefc 24%,#fbf9f3 65%,#eae5dc 100%);
+  box-shadow:inset 2px 2px 4px #fff,inset -2px -3px 5px #c3b8a740,2px 4px 7px #6e574422;
 }
-.kitchen-app .door-freezer .door-front{
-  border-right:1px solid #8e887f;
-  box-shadow:inset 2px 2px 3px #fff8,inset -2px -2px 4px #887f763d,2px 5px 10px #6f625624;
+.kitchen-app .four-door .panel-right .door-front{background:linear-gradient(100deg,#f2eee6,#fffefa 14%,#fcfaf5 74%,#e8e1d6)}
+.kitchen-app .four-door .door-back{padding:30px 10px 10px;background:linear-gradient(90deg,#e6e8d9,#f9f8e9);box-shadow:inset 0 0 0 6px #e1e3d2,inset 0 0 0 8px #c7ceba}
+.kitchen-app .four-door .panel-frozen .door-back{background:linear-gradient(90deg,#dcebe4,#f4faf5);box-shadow:inset 0 0 0 6px #d5e4da,inset 0 0 0 8px #b8d0c2}
+.kitchen-app .four-door .door-back span{height:42px;margin-top:17px;border-color:#cbd3bb;background:linear-gradient(#fff9,#dce5cf)}
+.kitchen-app .four-door .panel-frozen .door-back span{height:26px;margin-top:12px}
+.kitchen-app .four-door .fridge-door.is-open.panel-left{transform:rotateY(-103deg);pointer-events:none}
+.kitchen-app .four-door .fridge-door.is-open.panel-right{transform:rotateY(103deg);pointer-events:none}
+.kitchen-app .four-door .door-handle{
+  top:auto;bottom:30px;width:8px;height:108px;left:auto;right:7px;border-radius:8px;
+  background:linear-gradient(90deg,#b4aa98,#fff8e9 37%,#ded4c2 66%,#a79b88);box-shadow:2px 2px 3px #76624638,inset 1px 1px 1px #fff;
 }
-.kitchen-app .door-fridge .door-front{
-  border-left:1px solid #bdb5aa;
-  background:
-    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,rgba(76,70,65,.022) 1px 2px),
-    linear-gradient(100deg,#c6beb3 0%,#ddd6cb 16%,#d4cdc2 66%,#b7afa4 100%);
+.kitchen-app .four-door .panel-right .door-handle{left:7px;right:auto;box-shadow:-2px 2px 3px #76624638,inset 1px 1px 1px #fff}
+.kitchen-app .four-door .panel-frozen .door-handle{top:19px;bottom:auto;left:19%;right:19%;width:auto;height:8px;background:linear-gradient(#b7aa95,#fffaeb 40%,#d4c7b1 70%,#a29279)}
+.kitchen-app .four-door .door-type{position:absolute;bottom:14px;left:12px;right:12px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:9px;color:#6e7964;letter-spacing:.2px}
+.kitchen-app .four-door .door-type .icon{width:12px;height:12px}
+.kitchen-app .four-door .panel-frozen .door-type{top:48px;bottom:auto;color:#557f73}
+.kitchen-app .four-door .fridge-brand{left:12px;right:12px;bottom:21px;font-size:8px;color:#8e8370;letter-spacing:1px;opacity:.75}
+.kitchen-app .four-door .panel-fresh .fridge-brand{display:none}
+.kitchen-app .four-door .fridge-feet{left:30px;right:30px;bottom:-7px;z-index:1}
+.kitchen-app .four-door .door-display{
+  position:absolute;top:25px;bottom:48px;left:11px;right:22px;padding:11px 8px 19px;border:1px solid #c4baaa;border-radius:12px;
+  color:#51493c;background:linear-gradient(155deg,#fffdf7,#f1eddf);box-shadow:inset 0 0 0 3px #e4ded0,0 3px 6px #74654b20;
+  overflow:hidden;pointer-events:none;text-align:left;
 }
-.kitchen-app .door-handle{
-  top:112px;width:10px;height:168px;
-  background:linear-gradient(90deg,#817b74,#ebe6df 38%,#bbb5ae 64%,#7d7770);
-  box-shadow:3px 2px 4px #635b5240,inset 1px 1px 1px #fff9;
-}
-.kitchen-app .door-freezer .door-handle{right:7px}
-.kitchen-app .door-fridge .door-handle{left:7px}
-.kitchen-app .fridge-brand{left:auto;right:18px;bottom:15px;font-size:7px;letter-spacing:1px;color:#746f68;opacity:.72}
-
-/* Two display panels: left = expiring ingredients, right = recommended recipes. */
-.kitchen-app .door-display{
-  position:absolute;top:42px;bottom:43px;z-index:2;padding:12px 10px;border-radius:13px;
-  background:linear-gradient(180deg,#fbf8f1 0%,#f4efe5 100%);
-  border:1px solid #6f6b64;
-  box-shadow:inset 0 0 0 3px #d7d0c5,0 3px 8px #5f554825;
-  color:#4d463d;overflow:hidden;pointer-events:none;text-align:left;
-}
-.kitchen-app .door-freezer .door-display{left:13px;right:24px}
-.kitchen-app .door-fridge .door-display{left:24px;right:13px}
-.kitchen-app .door-display-head{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;padding:0 1px 8px;border-bottom:1px solid #e1d8c9}
-.kitchen-app .door-display-head strong{font-family:'Gowun Batang',serif;font-size:13px;line-height:1.35;color:#3f3932;white-space:nowrap}
-.kitchen-app .door-display-head small{font-size:7px;color:#948673;white-space:nowrap}
+.kitchen-app .four-door .panel-right .door-display{left:22px;right:11px;background:linear-gradient(155deg,#fffdf7,#f2eddf)}
+.kitchen-app .door-display-head{display:flex;align-items:baseline;justify-content:space-between;gap:4px;padding:0 0 7px;border-bottom:1px solid #dcd4c3}
+.kitchen-app .door-display-head strong{font:700 12px/1.4 'Gowun Batang','Batang',serif;color:#4c473b;white-space:nowrap}
+.kitchen-app .door-display-head small{font-size:7px;color:#756b59;white-space:nowrap}
 .kitchen-app .door-display-content{display:flex;flex-direction:column;gap:6px;padding-top:8px;min-height:0}
-.kitchen-app .display-row{
-  display:flex;align-items:center;gap:7px;min-width:0;padding:6px 7px;border-radius:9px;
-  background:#fffdf8;border:1px solid #ece3d6;box-shadow:0 2px 4px #76624b0a;
+.kitchen-app .display-row{display:flex;align-items:center;gap:5px;min-width:0;padding:6px 5px;border-radius:8px;background:#fffdf8;border:1px solid #e7dfcf;box-shadow:0 2px 3px #7d67420a}
+.kitchen-app .display-row-copy{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;line-height:1.3}
+.kitchen-app .display-row-copy b{font-size:10px;font-weight:700;color:#4c4438;word-break:keep-all;overflow-wrap:anywhere}
+.kitchen-app .display-row-copy small{font-size:8px;color:#716551;margin-top:3px}
+.kitchen-app .display-food-art{display:grid;place-items:center;flex:0 0 27px;width:27px;height:30px}
+.kitchen-app .display-food-art .food-art{width:27px;height:30px;filter:drop-shadow(0 2px 1px #6d5b431a)}
+.kitchen-app .display-badge{flex:0 0 auto;padding:3px 4px;border-radius:5px;background:#e7eddf;color:#4c6742;font-size:8px;font-style:normal;white-space:nowrap}
+.kitchen-app .display-badge.d0{background:#f6e0d4;color:#995332}
+.kitchen-app .display-badge.d1{background:#f4e9c9;color:#7e6228}
+.kitchen-app .display-recipe-row{gap:5px;padding:7px 5px}
+.kitchen-app .display-recipe-art{display:grid;place-items:center;flex:0 0 34px;width:34px;height:39px;border-radius:7px;background:#f0e5ce}
+.kitchen-app .display-recipe-art .dish-art{width:37px;height:37px;max-width:none}
+.kitchen-app .display-meta{margin-top:4px;font-size:7px;color:#76674f}
+.kitchen-app .display-empty{display:grid;place-items:center;min-height:110px;padding:10px 3px;text-align:center;font-size:10px;line-height:1.7;color:#776e5c;word-break:keep-all}
+.kitchen-app .display-footnote{position:absolute;bottom:9px;left:6px;right:6px;text-align:center;font-size:7px;color:#8c806b}
+.kitchen-app .fridge-controls{bottom:48px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(432px,86%);max-width:none}
+.kitchen-app .compartment-toggle{min-height:42px;width:100%;font-size:10px;gap:5px;padding:8px 6px;background:#fffdf4;color:#6c6049;white-space:normal;border-color:#e1d4bd}
+.kitchen-app .compartment-toggle .toggle-label{min-width:0}
+.kitchen-app .compartment-toggle small{color:#776f5d}
+.kitchen-app .compartment-toggle.is-open{background:#eaf0e2;color:#526b43;border-color:#b8c9a1}
+.kitchen-app .toggle-freezer.is-open,.kitchen-app .toggle-freezer-right.is-open{background:#e4eeea;color:#416e62;border-color:#aac8bc}
+.kitchen-app .scene-hint{font-size:10px;color:#6f614b;background:#fffaf0f2;padding:6px 9px}
+.kitchen-app .kitchen-arrange-tools{margin-top:12px;background:#fffaf0;border:1px solid #dcd0b8;border-radius:15px}
+.kitchen-app .kitchen-arrange-tools[hidden]{display:none}
+.kitchen-app .kitchen-zone-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+.kitchen-app .kitchen-zone-controls .btn{font-size:11px;text-align:left;justify-content:flex-start;min-height:44px;padding:8px}
+.kitchen-app .kitchen-pantry{margin:12px 0;padding:10px 12px;border:1px solid #e7ddcb;border-radius:12px;background:#fcf7ec;font-size:12px}
+.kitchen-app .kitchen-pantry:not([open]){margin-bottom:8px}
+/* Little recipe worktops: a ceramic meal on a wooden board, with the actual
+   recipe ingredients beneath. All existing selection/favorite controls remain. */
+.kitchen-app .umf-menu-card{min-height:0;border-radius:21px;border-color:#e2d3bc;background:#fffdf6;box-shadow:0 5px 16px #7b614c0b}
+.kitchen-app .umf-menu-photo.umf-cozy-table{
+  height:240px;min-height:240px;padding:28px 15px 10px;justify-content:flex-end;gap:6px;isolation:isolate;
+  background:radial-gradient(ellipse at 30% 15%,#fffdf2c9,transparent 70%),linear-gradient(0deg,#e8d6bc 1px,transparent 1px) 0 0/100% 47px,#f2e4cc;
 }
-.kitchen-app .display-row-copy{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;line-height:1.2}
-.kitchen-app .display-row-copy b{font-size:9px;font-weight:700;color:#493f35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kitchen-app .display-row-copy small{font-size:7px;color:#8e806f;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kitchen-app .display-food-art{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px}
-.kitchen-app .display-food-art .food-art{width:30px;height:30px;filter:drop-shadow(0 2px 1px #6d5b431a)}
-.kitchen-app .display-badge{
-  flex:0 0 auto;padding:3px 5px;border-radius:6px;background:#e9eedf;color:#657750;
-  font-size:7px;font-style:normal;white-space:nowrap
-}
-.kitchen-app .display-badge.d0{background:#f8e4d8;color:#b56547}
-.kitchen-app .display-badge.d1{background:#f5ecd5;color:#9c7a37}
-.kitchen-app .display-recipe-row{padding:7px 6px;gap:7px}
-.kitchen-app .display-recipe-art{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:7px;overflow:hidden;background:#eee4d2}
-.kitchen-app .display-recipe-art .dish-art{width:48px;height:48px;max-width:none;filter:none}
-.kitchen-app .display-meta{margin-top:4px;font-size:6.5px;color:#8d7c66;white-space:nowrap}
-.kitchen-app .display-empty{display:grid;place-items:center;min-height:130px;padding:12px;text-align:center;font-size:8px;line-height:1.6;color:#8c806f}
-
-/* Decorative lower drawers to match the new refrigerator silhouette. */
-.kitchen-app .fridge-lower{
-  position:absolute;left:0;right:0;bottom:0;height:32.7%;z-index:7;display:grid;grid-template-rows:1fr 1fr;gap:6px;
-}
-.kitchen-app .fridge-drawer{
-  position:relative;border:1px solid #9f978e;border-radius:6px 6px 9px 9px;
-  background:
-    repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,rgba(74,68,63,.025) 1px 2px),
-    linear-gradient(104deg,#d9d2c7 0%,#c4bcb1 24%,#d5cec3 65%,#b3aba0 100%);
-  box-shadow:inset 1px 2px 2px #fff8,inset -2px -2px 4px #81797036,3px 5px 9px #6f625622;
-}
-.kitchen-app .fridge-drawer i{
-  position:absolute;left:15%;right:15%;top:17px;height:9px;border-radius:7px;
-  background:linear-gradient(#7b756f,#eee9e2 42%,#a39d96 64%,#6f6963);
-  box-shadow:0 2px 3px #5e564e42,inset 0 1px 1px #fff9;
-}
-.kitchen-app .fridge-feet{left:32px;right:32px;bottom:-7px;z-index:8}
-
-/* Make the product silhouette calmer: old decorative magnets/notes no longer participate. */
-.kitchen-app .ice-magnet,.kitchen-app .freezer-scribble,.kitchen-app .door-flower,.kitchen-app .magnet-carrot,.kitchen-app .door-note,.kitchen-app .door-compartment-label{display:none!important}
-
+.kitchen-app .umf-cozy-table:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#d0bb9124 1px,transparent 1px) 0 0/56px 100%;box-shadow:inset 0 1px 1px #fff,inset 0 -10px 24px #d6c39e45}
+.kitchen-app .umf-recipe-servings{position:absolute;top:12px;left:13px;border-radius:5px;background:#fff9e9;color:#766247;box-shadow:0 2px 3px #8b6a3920;padding:3px 7px;font-size:9px;line-height:1.5}
+.kitchen-app .umf-recipe-board{position:relative;display:grid;place-items:center;width:85%;max-width:225px;height:138px;border-radius:39% 40% 36% 37%/21% 20% 22% 20%;background:repeating-linear-gradient(0deg,#aa784a0c 0 1px,transparent 1px 7px),linear-gradient(110deg,#dfbd87,#efcf98 45%,#d7af72);border:1px solid #c8a36b;box-shadow:inset 0 2px 3px #fff5,0 5px 0 #c6a476,0 9px 12px #79603b26;transform:rotate(-4deg)}
+.kitchen-app .umf-recipe-board .dish-art,.kitchen-app .umf-recipe-board .food-art{width:105%;max-width:210px;height:140px;transform:rotate(4deg);filter:drop-shadow(0 5px 3px #6652342b);pointer-events:none}
+.kitchen-app .umf-cozy-table .umf-ingredient-scene{position:relative;align-items:end;gap:8px;min-height:54px;margin-top:0}
+.kitchen-app .umf-cozy-table .umf-art-ingredient{max-width:57px;gap:0}
+.kitchen-app .umf-cozy-table .umf-art-ingredient .miniature-art{height:43px;max-width:48px}
+.kitchen-app .umf-cozy-table .umf-art-label{padding:1px 4px;font-size:8px;line-height:1.3;color:#6b5a40;background:#fff9e7d9;border-radius:4px}
+.kitchen-app .umf-menu-body{padding:17px 17px 48px}
+.kitchen-app .umf-menu-name{font-size:18px;color:#554936}
+.kitchen-app .umf-menu-desc{color:#796b55}
+.kitchen-app .today-dish{background:radial-gradient(ellipse,#f0dfbf,#fbf3e2 65%,transparent 70%)}
 @media(max-width:1150px){
-  .kitchen-app .fridge-stage{width:min(470px,88%);height:530px}
-  .kitchen-app .door-display{top:40px;bottom:40px;padding:10px 8px}
-  .kitchen-app .door-display-head strong{font-size:12px}
-  .kitchen-app .display-row{padding:5px 6px}
+  .kitchen-app .four-door .door-display-head small{display:none}
 }
 @media(max-width:760px){
-  .kitchen-app .kitchen-scene{height:700px}
-  .kitchen-app .fridge-stage{width:min(440px,90%);height:505px;top:92px}
-  .kitchen-app .door-handle{top:106px;height:154px}
-  .kitchen-app .door-display{top:38px;bottom:38px;border-radius:11px;padding:9px 7px}
-  .kitchen-app .door-freezer .door-display{left:9px;right:21px}
-  .kitchen-app .door-fridge .door-display{left:21px;right:9px}
-  .kitchen-app .door-display-head strong{font-size:11px}
-  .kitchen-app .door-display-head small{display:none}
-  .kitchen-app .display-row{gap:5px;padding:5px}
-  .kitchen-app .display-food-art{flex-basis:27px;width:27px;height:27px}
-  .kitchen-app .display-food-art .food-art{width:27px;height:27px}
-  .kitchen-app .display-recipe-art{flex-basis:37px;width:37px;height:37px}
-  .kitchen-app .display-recipe-art .dish-art{width:42px;height:42px}
-  .kitchen-app .display-row-copy b{font-size:8px}
-  .kitchen-app .display-row-copy small,.kitchen-app .display-badge{font-size:6.5px}
-  .kitchen-app .display-meta{font-size:6px}
-  .kitchen-app .fridge-drawer i{top:14px;height:8px}
+  .kitchen-app .kitchen-scene{height:772px}
+  .kitchen-app .fridge-stage.four-door{width:88%;height:540px;top:85px}
+  .kitchen-app .fridge-controls{width:88%;bottom:44px}
+  .kitchen-app .compartment-toggle{min-height:44px;font-size:10px}
+  .kitchen-app .scene-footer{bottom:7px}
+  .kitchen-app .four-door .door-display{top:24px;bottom:43px;left:8px;right:17px;padding:9px 6px 18px}
+  .kitchen-app .four-door .panel-right .door-display{left:17px;right:8px}
+  .kitchen-app .display-row{gap:3px;padding:5px 3px}
+  .kitchen-app .display-row-copy b{font-size:9px}
+  .kitchen-app .display-row-copy small{font-size:8px}
+  .kitchen-app .display-food-art,.kitchen-app .display-food-art .food-art{width:23px;height:25px;flex-basis:23px}
+  .kitchen-app .display-recipe-art{flex-basis:27px;width:27px;height:32px}
+  .kitchen-app .display-recipe-art .dish-art{width:30px;height:30px}
+  .kitchen-app .display-badge{font-size:7px;padding:3px}
+  .kitchen-app .display-meta{font-size:7px;line-height:1.4}
+  .kitchen-app .four-door .door-display-head strong{font-size:11px}
+  .kitchen-app .four-door .fridge-inside{padding:35px 5px 7px}
+  .kitchen-app .four-door .compartment-head strong{font-size:8px}
+  .kitchen-app .four-door .compartment-head{left:6px;grid-template-columns:10px minmax(0,1fr)}
+  .kitchen-app .four-door .compartment-head .icon{width:10px;height:10px}
+  .kitchen-app .four-door .shelf-canvas{min-height:50px}
+  .kitchen-app .four-door .panel-frozen .shelf-canvas{min-height:31px}
+  .kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food{width:38px;height:38px}
+  .kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food .food-art{width:36px;height:36px}
+  .kitchen-app .umf-menu-photo.umf-cozy-table{height:222px;min-height:222px;padding-left:9px;padding-right:9px}
+  .kitchen-app .umf-recipe-board{height:122px;width:92%}
+  .kitchen-app .umf-recipe-board .dish-art{height:123px}
+  .kitchen-app .umf-menu-name{font-size:16px}
 }
 @media(max-width:390px){
-  .kitchen-app .kitchen-scene{height:670px}
-  .kitchen-app .fridge-stage{width:92%;height:480px;top:90px}
-  .kitchen-app .door-handle{top:101px;height:145px;width:8px}
-  .kitchen-app .door-display{top:34px;bottom:36px;padding:8px 6px}
-  .kitchen-app .door-freezer .door-display{left:7px;right:18px}
-  .kitchen-app .door-fridge .door-display{left:18px;right:7px}
-  .kitchen-app .door-display-head{padding-bottom:6px}
-  .kitchen-app .door-display-head strong{font-size:10px}
-  .kitchen-app .door-display-content{gap:4px;padding-top:6px}
-  .kitchen-app .display-row{gap:4px;padding:4px;border-radius:7px}
-  .kitchen-app .display-food-art{flex-basis:24px;width:24px;height:24px}
-  .kitchen-app .display-food-art .food-art{width:24px;height:24px}
-  .kitchen-app .display-recipe-art{flex-basis:33px;width:33px;height:33px}
-  .kitchen-app .display-recipe-art .dish-art{width:37px;height:37px}
-  .kitchen-app .display-row-copy b{font-size:7.5px}
-  .kitchen-app .display-row-copy small,.kitchen-app .display-badge{font-size:6px}
-  .kitchen-app .display-meta{font-size:5.5px}
+  .kitchen-app .fridge-stage.four-door{width:90%;height:520px}
+  .kitchen-app .kitchen-scene{height:752px}
+  .kitchen-app .fridge-controls{width:90%}
+  .kitchen-app .compartment-toggle{gap:3px;font-size:10px;padding:6px 3px}
+  .kitchen-app .compartment-toggle>.icon{width:12px;height:12px}
+  .kitchen-app .four-door .door-display{left:6px;right:14px;padding:9px 4px 16px}
+  .kitchen-app .four-door .panel-right .door-display{left:14px;right:6px}
+  .kitchen-app .four-door .door-handle{right:5px;width:6px;height:91px}
+  .kitchen-app .four-door .panel-right .door-handle{left:5px;right:auto}
+  .kitchen-app .four-door .panel-frozen .door-handle{left:17%;right:17%;width:auto;height:7px}
+  .kitchen-app .display-food-art,.kitchen-app .display-food-art .food-art{width:20px;height:22px;flex-basis:20px}
+  .kitchen-app .display-recipe-art{width:24px;height:29px;flex-basis:24px}
+  .kitchen-app .display-recipe-art .dish-art{width:27px;height:27px}
+  .kitchen-app .display-row-copy b{font-size:8px}
+  .kitchen-app .display-row-copy small{font-size:7px}
+  .kitchen-app .display-meta{font-size:6px}
+  .kitchen-app .umf-menu-photo.umf-cozy-table{height:230px;min-height:230px}
 }
+@media(max-width:360px){
+  /* Three default lots still have exposed centers in the narrow half-shelves.
+     Deliberately saved overlaps keep their coordinates and layer controls. */
+  .kitchen-app .four-door .panel-fresh .shelf-canvas .fridge-food{width:44px;height:48px}
+  .kitchen-app .four-door .panel-fresh .shelf-canvas .fridge-food .food-art{width:42px;height:45px}
+}
+@media(prefers-reduced-motion:reduce){.kitchen-app .four-door .fridge-door{transition:none}}
 
 
 /* Draggable Korean seasoning shelf. */

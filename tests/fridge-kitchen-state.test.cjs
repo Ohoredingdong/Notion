@@ -194,6 +194,62 @@ test('malformed v2 positions block saves and preserve the original record', asyn
   }
 });
 
+test('four-door preferences preserve legacy bytes and placements until a panel is actually toggled', async () => {
+  for (const version of [1, 2]) {
+    const original = { version, doors: { freezer: true, fridge: false }, placements: { oldLot: 'freezer-middle' },
+      ...(version === 2 ? { positions: { oldLot: { x: .2, y: .8, z: 3 } } } : {}) };
+    const raw = '  ' + JSON.stringify(original) + '\n';
+    const storage = memory({ [KEY]: raw }), kitchen = createKitchenState({ storage });
+    assert.equal(await kitchen.ready, true);
+    assert.deepEqual(kitchen.getDoorPanels(), { fridge: false, 'fridge-right': false, freezer: true, 'freezer-right': true });
+    assert.equal(storage.getItem(KEY), raw);
+    assert.equal(await kitchen.togglePanel('fridge-right'), true);
+    assert.deepEqual(kitchen.getDoorPanels(), { fridge: false, 'fridge-right': true, freezer: true, 'freezer-right': true });
+    assert.deepEqual(kitchen.getState().placements, original.placements);
+    assert.deepEqual(kitchen.getState().positions, original.positions || {});
+    assert.deepEqual(createKitchenState({ storage }).getState(), kitchen.getState());
+  }
+});
+
+test('four physical panels persist independently and legacy group controls still operate both panels', async () => {
+  const storage = memory(), kitchen = createKitchenState({ storage });
+  for (const panel of ['fridge', 'fridge-right', 'freezer', 'freezer-right']) {
+    assert.equal(await kitchen.togglePanel(panel), true);
+    assert.equal(kitchen.getDoorPanels()[panel], true);
+  }
+  await kitchen.togglePanel('fridge');
+  assert.equal(kitchen.getDoorPanels().fridge, false);
+  assert.equal(kitchen.getDoorPanels()['fridge-right'], true);
+  const returned = kitchen.getDoorPanels(); returned['freezer-right'] = false;
+  assert.equal(kitchen.getDoorPanels()['freezer-right'], true);
+  await kitchen.setDoors({ fridge: false });
+  assert.deepEqual(kitchen.getDoorPanels(), { fridge: false, 'fridge-right': false, freezer: true, 'freezer-right': true });
+  await kitchen.toggleDoor('fridge');
+  assert.deepEqual(kitchen.getDoorPanels(), { fridge: true, 'fridge-right': true, freezer: true, 'freezer-right': true });
+  const before = storage.getItem(KEY);
+  assert.equal(await kitchen.togglePanel('unknown'), false);
+  assert.equal(storage.getItem(KEY), before);
+});
+
+test('invalid four-panel extensions block saves without overwriting the original view record', async () => {
+  for (const panels of [null, [], {}, { fridge: true }, { fridge: true, 'fridge-right': true, freezer: false, 'freezer-right': 1 },
+    { fridge: false, 'fridge-right': false, freezer: false, 'freezer-right': false, extra: true }]) {
+    const raw = JSON.stringify({ ...blank(), panels }), storage = memory({ [KEY]: raw }), kitchen = createKitchenState({ storage });
+    assert.equal(await kitchen.ready, false);
+    assert.equal(await kitchen.togglePanel('fridge-right'), false);
+    assert.equal(storage.getItem(KEY), raw);
+  }
+});
+
+test('concurrent panel and right-freezer position changes retain both edits under Web Locks', { skip: !nativeLocks }, async () => {
+  const storage = memory(), a = createKitchenState({ storage, locks: nativeLocks }), b = createKitchenState({ storage, locks: nativeLocks });
+  assert.deepEqual(await Promise.all([a.togglePanel('fridge-right'), b.togglePanel('freezer-right'), a.setPosition('lot', 'freezer-right-bottom', { x: .75, y: .4 })]), [true, true, true]);
+  const reopened = createKitchenState({ storage });
+  assert.deepEqual(reopened.getDoorPanels(), { fridge: false, 'fridge-right': true, freezer: false, 'freezer-right': true });
+  assert.equal(reopened.zoneFor('lot'), 'freezer-right-bottom');
+  assert.deepEqual(reopened.positionFor('lot'), { x: .75, y: .4, z: 1 });
+});
+
 test('failed position storage never commits half a move or emits a successful change', async () => {
   const storage = memory(), state = createKitchenState({ storage }); await state.setPosition('lot', 'top', { x: 0.2, y: 0.3 });
   const before = storage.getItem(KEY), updates = []; state.subscribe(value => updates.push(value)); storage.fail = true;

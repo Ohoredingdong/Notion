@@ -261,12 +261,12 @@ test('shortage plus routes seasonings and pantry into the correct confirmation d
 test('custom seasoning and pantry controls work and quantities remain unrelated to those sets', async t => {
   const app = await boot(); t.after(() => app.close()); await app.click('#seasonTab');
   assert.equal(app.$('#seasonTab').getAttribute('aria-selected'), 'true'); assert.equal(app.$('#season').classList.contains('on'), true);
-  await app.click('#addSeason'); app.fill('#customName', '굴소스'); await app.click('#customSave');
+  await app.click('#addSeason'); app.fill('#customName', '유자청'); await app.click('#customSave');
   await app.click('#addPantry'); app.fill('#customName', '오트밀'); await app.click('#customSave');
-  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('굴소스'), true); assert.equal(st.customPantry.includes('오트밀'), true);
-  assert.equal(st.season.includes('굴소스'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
-  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '굴소스 항목 삭제'); await app.click(remove);
-  assert.equal(app.w.UMFStore.getState().season.includes('굴소스'), false);
+  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('유자청'), true); assert.equal(st.customPantry.includes('오트밀'), true);
+  assert.equal(st.season.includes('유자청'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
+  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '유자청 항목 삭제'); await app.click(remove);
+  assert.equal(app.w.UMFStore.getState().season.includes('유자청'), false);
 });
 
 test('filters and search clear hidden selection and disable unavailable actions', async t => {
@@ -944,4 +944,75 @@ test('kitchen preserves v5 records and sync settings without adding sample food,
   assert.equal(app.w.UMFStore.getState().meals[0].day, '2026-10-19');
   assert.equal(app.w.UMFStore.getState().meals[0].name, '어제 메뉴');
   assert.equal(JSON.parse(memory.get(KITCHEN_VIEW)).placements['legacy-tofu'], 'freezer-top');
+});
+
+test('four physical doors open independently and closed upper and lower panels remain inert', async t => {
+  const app = await boot(); t.after(() => app.close());
+  const panels = ['fridge', 'fridge-right', 'freezer', 'freezer-right'];
+  assert.equal(app.document.querySelectorAll('#umfKitchenScene .fridge-door').length, 4);
+  assert.equal(app.document.querySelectorAll('#umfKitchenScene .door-display').length, 2);
+  for (const selected of panels) {
+    await app.click('.fridge-door[data-compartment="' + selected + '"]');
+    for (const key of panels) {
+      assert.equal(app.$('#inside-' + key).hasAttribute('inert'), key !== selected);
+      assert.equal(app.$('.compartment-toggle[data-compartment="' + key + '"]').getAttribute('aria-expanded'), String(key === selected));
+    }
+    await app.click('.compartment-toggle[data-compartment="' + selected + '"]');
+    assert.ok(panels.every(key => app.$('#inside-' + key).hasAttribute('inert')));
+  }
+});
+
+test('right-hand refrigerated and frozen placements retain exact inventory and reopen after reload', async t => {
+  const id = 'four-door-lot';
+  const memory = new Map([[STATE, JSON.stringify(existingFridge([kitchenItem(id, '두부', '150g')]))]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  const original = memory.get(STATE);
+  await app.click('[data-action="organize"]');
+  await app.click(shelfItem(app, id));
+  for (const zone of ['fridge-right-middle', 'freezer-bottom', 'freezer-right-bottom']) {
+    await app.click('.kitchen-zone-controls [data-zone="' + zone + '"]');
+    assert.equal(app.w.UMFKitchenState.zoneFor(id), zone);
+    assert.equal(shelfItem(app, id).closest('.shelf').dataset.zone, zone);
+  }
+  await app.click('.compartment-toggle[data-compartment="freezer"]');
+  assert.equal(shelfItem(app, id).disabled, false, 'Closing the left freezer must not disable a right-freezer lot');
+  assert.equal(memory.get(STATE), original);
+  app.close();
+  const reopened = await boot({ memory }); t.after(() => reopened.close());
+  assert.equal(reopened.w.UMFKitchenState.zoneFor(id), 'freezer-right-bottom');
+  assert.equal(reopened.$('#inside-freezer-right').hasAttribute('inert'), false);
+  assert.equal(reopened.$('#inside-freezer').hasAttribute('inert'), true);
+  assert.equal(shelfItem(reopened, id).querySelector('.quantity-mini').textContent, '150g');
+  assert.equal(memory.get(STATE), original);
+});
+
+test('redesigned kitchen never refreshes expired inventory even when names and quantities match an old demo', async t => {
+  const items = [['애호박', '1개'], ['우유', '900ml'], ['두부', '300g'], ['계란', '10개'], ['양파', '3개'], ['요거트', '1개']]
+    .map(([name, quantity], i) => kitchenItem('real-lot-' + i, name, quantity, '2020-01-01'));
+  const original = JSON.stringify(existingFridge(items));
+  const memory = new Map([[STATE, original]]);
+  const app = await boot({ memory }); t.after(() => app.close());
+  assert.equal(memory.get(STATE), original);
+  assert.equal(memory.has('umf-demo-expiry-balance-v1'), false);
+  await app.click('.compartment-toggle[data-compartment="freezer-right"]');
+  await app.click('[data-action="organize"]');
+  assert.equal(memory.get(STATE), original);
+  app.close();
+  const reloaded = await boot({ memory }); t.after(() => reloaded.close());
+  assert.equal(memory.get(STATE), original);
+  assert.ok(reloaded.w.UMFStore.getState().items.every(item => item.expiry === '2020-01-01'));
+});
+
+test('cozy recipe worktops render every miniature meal and retain recipe selection and favorite actions', async t => {
+  const app = await boot(); t.after(() => app.close());
+  for (const recipe of app.w.UMFRecipes.catalog) {
+    const card = app.card(recipe.name), dish = card.querySelector('.umf-recipe-board [data-miniature]');
+    assert.ok(dish, recipe.name + ' has a miniature meal');
+    assert.notEqual(dish.dataset.miniature, 'ingredient', recipe.name + ' must not use a generic fallback');
+  }
+  await app.click('.nav-btn[data-kitchen-page="recipes"]');
+  await app.selectRecipe('두부 스테이크');
+  assert.equal(app.w.UMFRecipes.getSelected().recipe.name, '두부 스테이크');
+  await app.click(app.card('두부 스테이크').querySelector('.umf-fav'));
+  assert.ok(app.w.UMFStore.getState().favorites.includes('두부 스테이크'));
 });

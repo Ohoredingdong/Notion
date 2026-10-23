@@ -9,12 +9,16 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const objectPhrase = name => { const word = String(name), last = word.charCodeAt(word.length - 1); return word + (last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 ? '을' : '를'); };
   const zones = Object.freeze({
-    top: '냉장실 · 윗칸', middle: '냉장실 · 채소칸', bottom: '냉장실 · 밀폐 보관칸',
-    'freezer-top': '냉동실 · 윗칸', 'freezer-middle': '냉동실 · 가운데 칸', 'freezer-bottom': '냉동실 · 아랫칸', pantry: '실온 · 양념 선반'
+    top: '냉장실 왼쪽 · 윗칸', middle: '냉장실 왼쪽 · 채소칸', bottom: '냉장실 왼쪽 · 밀폐 보관칸',
+    'fridge-right-top': '냉장실 오른쪽 · 윗칸', 'fridge-right-middle': '냉장실 오른쪽 · 가운데 칸', 'fridge-right-bottom': '냉장실 오른쪽 · 아랫칸',
+    'freezer-top': '냉동실 왼쪽 · 윗칸', 'freezer-middle': '냉동실 왼쪽 · 가운데 칸', 'freezer-bottom': '냉동실 왼쪽 · 아랫칸',
+    'freezer-right-top': '냉동실 오른쪽 · 윗칸', 'freezer-right-middle': '냉동실 오른쪽 · 가운데 칸', 'freezer-right-bottom': '냉동실 오른쪽 · 아랫칸', pantry: '실온 · 양념 선반'
   });
   const compartments = {
-    freezer: { label: '냉동실', icon: 'snowflake', english: 'FROZEN', zones: ['freezer-top', 'freezer-middle', 'freezer-bottom'] },
-    fridge: { label: '냉장실', icon: 'leaf', english: 'FRESH', zones: ['top', 'middle', 'bottom'] }
+    fridge: { label: '위 왼쪽 냉장실', shortLabel: '냉장 왼쪽', icon: 'leaf', side: 'left', type: 'fresh', zones: ['top', 'middle', 'bottom'] },
+    'fridge-right': { label: '위 오른쪽 냉장실', shortLabel: '냉장 오른쪽', icon: 'leaf', side: 'right', type: 'fresh', zones: ['fridge-right-top', 'fridge-right-middle', 'fridge-right-bottom'] },
+    freezer: { label: '아래 왼쪽 냉동실', shortLabel: '냉동 왼쪽', icon: 'snowflake', side: 'left', type: 'frozen', zones: ['freezer-top', 'freezer-middle', 'freezer-bottom'] },
+    'freezer-right': { label: '아래 오른쪽 냉동실', shortLabel: '냉동 오른쪽', icon: 'snowflake', side: 'right', type: 'frozen', zones: ['freezer-right-top', 'freezer-right-middle', 'freezer-right-bottom'] }
   };
   const foods = Object.freeze({
     '계란': 'egg', '우유': 'milk', '두부': 'tofu', '닭가슴살': 'chicken', '닭고기': 'chicken', '양파': 'onion',
@@ -40,7 +44,8 @@
     if (/된장/.test(key)) return 'soy';
     return A.foodIdForName?.(key) || 'ingredient';
   };
-  const compartmentFor = zone => zone === 'pantry' ? 'pantry' : zone.startsWith('freezer-') ? 'freezer' : 'fridge';
+  const compartmentFor = zone => zone === 'pantry' ? 'pantry' : zone.startsWith('freezer-right-') ? 'freezer-right'
+    : zone.startsWith('freezer-') ? 'freezer' : zone.startsWith('fridge-right-') ? 'fridge-right' : 'fridge';
   const zoneFor = item => { const value = K.zoneFor(item); return own(zones, value) ? value : 'middle'; };
   const text = (parent, selector, value) => { const node = parent?.querySelector(selector); if (node && node.textContent !== String(value)) node.textContent = value; };
   const itemButtons = new Map();
@@ -51,7 +56,7 @@
   let pointerSession = null, htmlDrag = null, suppressClickUntil = 0, ghostSequence = 0;
   let seasoningPointerSession = null;
   const SEASONING_LAYOUT_KEY = 'umf-seasoning-layout-v3';
-  const doorBusy = { freezer: false, fridge: false };
+  const doorBusy = Object.fromEntries(Object.keys(compartments).map(key => [key, false]));
   const unit = value => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   function readSeasoningLayout() {
@@ -111,8 +116,9 @@
       '<div class="shelf-canvas" data-zone="' + zone + '" aria-label="' + zones[zone] + ' 재료 배치"><span class="shelf-empty">차곡차곡 담아주세요</span></div></div>';
   }
   function doorDisplayMarkup(key) {
-    if (key === 'freezer') return '<section class="door-display door-display-expiry" aria-label="유통기한 임박 재료"><div class="door-display-head"><strong>유통기한 임박</strong><small>3일 이내</small></div><div class="door-display-content" data-door-expiry></div></section>';
-    return '<section class="door-display door-display-recipes" aria-label="추천 레시피"><div class="door-display-head"><strong>추천 레시피</strong><small>우리 재료 기준</small></div><div class="door-display-content" data-door-recipes></div></section>';
+    if (key === 'fridge') return '<section class="door-display door-display-expiry" aria-label="유통기한 임박 재료"><div class="door-display-head"><strong>먼저 먹어요</strong><small>3일 이내</small></div><div class="door-display-content" data-door-expiry></div><span class="display-footnote">우리 집 재료 메모</span></section>';
+    if (key === 'fridge-right') return '<section class="door-display door-display-recipes" aria-label="추천 레시피"><div class="door-display-head"><strong>오늘의 메뉴</strong><small>우리 재료 기준</small></div><div class="door-display-content" data-door-recipes></div><span class="display-footnote">작은 부엌의 한 끼</span></section>';
+    return '';
   }
   function renderDoorDisplays() {
     const state = S.getState();
@@ -139,24 +145,25 @@
   }
   function mountScene() {
     const inside = Object.entries(compartments).map(([key, c]) =>
-      '<section class="fridge-inside compartment-' + key + '" id="inside-' + key + '" data-compartment="' + key + '" aria-label="' + c.label + ' 안쪽" aria-hidden="true" tabindex="-1" inert>' +
+      '<section class="fridge-inside compartment-' + key + ' panel-' + c.type + ' panel-' + c.side + '" id="inside-' + key + '" data-compartment="' + key + '" aria-label="' + c.label + ' 안쪽" aria-hidden="true" tabindex="-1" inert>' +
       '<i class="fridge-light" aria-hidden="true"></i><div class="compartment-head">' + A.icon(c.icon) + '<strong>' + c.label + '</strong><small>0개</small></div>' + c.zones.map(shelfMarkup).join('') + '</section>'
     ).join('');
     const doors = Object.entries(compartments).map(([key, c]) =>
-      '<div class="fridge-door door-' + key + '" role="button" tabindex="0" aria-label="' + c.label + ' 문 열기" aria-expanded="false" aria-controls="inside-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '">' +
-      '<div class="door-front">' + doorDisplayMarkup(key) + '<i class="door-handle" aria-hidden="true"></i><span class="fridge-brand">little kitchen</span></div>' +
+      '<div class="fridge-door door-' + key + ' panel-' + c.type + ' panel-' + c.side + '" role="button" tabindex="0" aria-label="' + c.label + ' 문 열기" aria-expanded="false" aria-controls="inside-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '">' +
+      '<div class="door-front">' + doorDisplayMarkup(key) + '<i class="door-handle" aria-hidden="true"></i><span class="door-type">' + A.icon(c.icon) + (c.type === 'fresh' ? '냉장' : '냉동') + '</span><span class="fridge-brand">little kitchen</span></div>' +
       '<div class="door-back" aria-hidden="true"><span></span><span></span><span></span></div></div>'
     ).join('');
     const controls = Object.entries(compartments).map(([key, c]) =>
-      '<button type="button" class="compartment-toggle toggle-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '" aria-expanded="false" aria-controls="inside-' + key + '" aria-label="' + c.label + ' 문 열기">' + A.icon(c.icon) + '<span class="toggle-label">' + c.label + ' 열기</span><small>0</small></button>'
+      '<button type="button" class="compartment-toggle toggle-' + key + '" data-action="toggle-fridge" data-compartment="' + key + '" aria-expanded="false" aria-controls="inside-' + key + '" aria-label="' + c.label + ' 문 열기">' + A.icon(c.icon) + '<span class="toggle-label">' + c.shortLabel + ' 열기</span><small>0</small></button>'
     ).join('');
     scene.innerHTML = '<div class="kitchen-scene"><div class="scene-top"><div class="scene-label">' + A.icon('fridge') + '<strong>나의 냉장고</strong><small class="muted" data-kitchen-count>0개</small></div>' +
       '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
       '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
-      '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '<div class="fridge-lower" aria-hidden="true"><div class="fridge-drawer fridge-drawer-one"><i></i></div><div class="fridge-drawer fridge-drawer-two"><i></i></div></div></div>' +
+      '<div class="fridge-stage four-door"><div class="fridge-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
-
+      '<section class="kitchen-arrange-tools panel" aria-label="재료 자리 정리" hidden><p class="kitchen-selected-material"></p><div class="kitchen-layer-controls"><span>겹친 재료의 앞뒤</span><button type="button" class="btn btn-line" data-action="layer-front">맨 앞으로</button><button type="button" class="btn btn-line" data-action="layer-back">맨 뒤로</button></div><details><summary>칸을 골라 옮기기</summary><div class="kitchen-zone-controls">' + Object.entries(zones).map(([zone, label]) => '<button type="button" class="btn btn-line" data-action="move-zone" data-zone="' + zone + '">' + esc(label) + '</button>').join('') + '</div></details></section>' +
       '<section class="seasoning-rack" aria-label="양념 선반"><div class="seasoning-rack-head"><div><strong>양념 선반</strong><small>체크한 양념이 여기 보여요</small></div><button type="button" class="btn btn-small btn-line" data-action="add-seasoning">양념 ＋</button></div><div class="seasoning-rack-board"><div class="seasoning-rack-items"></div></div></section>' +
+      '<details class="kitchen-pantry"><summary>실온 보관 재료</summary>' + shelfMarkup('pantry') + '</details>' +
       '<div class="kitchen-inventory-link"><button type="button" class="btn btn-ghost" data-action="navigate" data-page="inventory">전체 재고 보기 ' + A.icon('chevron') + '</button><button type="button" class="btn btn-ghost" data-action="add-food">' + A.icon('plus') + '재료 넣기</button></div>' +
       '<p class="tiny kitchen-live" id="umfKitchenLive" role="status" aria-live="polite" aria-atomic="true"></p>';
   }
@@ -171,7 +178,7 @@
     const expiry = d === null ? '기한 미입력' : d < 0 ? '소비기한 ' + Math.abs(d) + '일 지남' : d === 0 ? '오늘까지' : d + '일 남음';
     return { d, empty, quantity: quantity || '수량 미입력', label: (empty ? '소진 · ' : '') + expiry };
   }
-  function openZone(zone, doors = K.getState().doors) { const compartment = compartmentFor(zone); return compartment === 'pantry' || !!doors[compartment]; }
+  function openZone(zone, doors = K.getDoorPanels()) { const compartment = compartmentFor(zone); return compartment === 'pantry' || !!doors[compartment]; }
   function foodButton(item, zone, doors) {
     let button = itemButtons.get(item.id);
     if (!button) {
@@ -216,27 +223,29 @@
     });
   }
   function renderScene() {
-    const items = S.getState().items, state = K.getState(), doors = state.doors, focused = document.activeElement;
+    const items = S.getState().items, state = K.getState(), doors = K.getDoorPanels(), focused = document.activeElement;
     const focusedInside = scene.contains(focused) ? focused.closest('.fridge-inside') : null;
     const placements = new Map(items.map(item => [item.id, own(state.placements, item.id) ? state.placements[item.id] : 'middle']));
     if (pointerSession && (!items.some(item => item.id === pointerSession.id) || !openZone(pointerSession.sourceZone, doors) || placementFingerprint(pointerSession.id) !== pointerSession.fingerprint)) {
       cleanupPointer(); interaction++; announce('재료 상태가 바뀌어 이동을 취소했어요. 다시 골라주세요.');
     }
     if (movingId && (!placements.has(movingId) || !openZone(placements.get(movingId), doors))) { movingId = null; interaction++; }
-    const anyOpen = doors.freezer || doors.fridge;
+    const anyOpen = Object.values(doors).some(Boolean);
     const stage = scene.querySelector('.fridge-stage');
-    stage.classList.toggle('open', !!anyOpen); stage.classList.toggle('freezer-open', !!doors.freezer); stage.classList.toggle('fridge-open', !!doors.fridge);
+    stage.classList.toggle('open', anyOpen);
+    for (const key of Object.keys(compartments)) stage.classList.toggle(key + '-open', doors[key]);
     text(scene, '[data-kitchen-count]', items.filter(item => placements.get(item.id) !== 'pantry').length + '개');
     for (const [key, compartment] of Object.entries(compartments)) {
       const inside = scene.querySelector('#inside-' + key), count = items.filter(item => compartmentFor(placements.get(item.id)) === key).length;
       inside.toggleAttribute('inert', !doors[key]); inside.setAttribute('aria-hidden', String(!doors[key]));
       text(inside, '.compartment-head small', count + '개');
       for (const control of scene.querySelectorAll('[data-action="toggle-fridge"][data-compartment="' + key + '"]')) {
+        control.classList.toggle('is-open', !!doors[key]);
         control.setAttribute('aria-expanded', String(!!doors[key])); control.setAttribute('aria-label', compartment.label + ' 문 ' + (doors[key] ? '닫기' : '열기'));
         const busy = !initialized || doorBusy[key] || organizeBusy || moveBusy;
         control.setAttribute('aria-disabled', String(busy));
         if (control.classList.contains('fridge-door')) control.tabIndex = doors[key] || busy ? -1 : 0;
-        else { control.disabled = busy; control.classList.toggle('is-open', !!doors[key]); text(control, '.toggle-label', compartment.label + ' ' + (doors[key] ? '닫기' : '열기')); text(control, 'small', count); }
+        else { control.disabled = busy; text(control, '.toggle-label', compartment.shortLabel + ' ' + (doors[key] ? '닫기' : '열기')); text(control, 'small', count); }
       }
     }
     displayedPositions.clear();
@@ -264,6 +273,9 @@
     text(organize, '.organize-label', organizing ? '정리 마치기' : '자리 정리');
     if (organize.dataset.mode !== String(organizing)) { organize.dataset.mode = String(organizing); organize.querySelector('.organize-icon').innerHTML = A.icon(organizing ? 'check' : 'sparkles'); }
     const moving = items.find(item => item.id === movingId);
+    scene.querySelector('.kitchen-arrange-tools').hidden = !organizing;
+    text(scene, '.kitchen-selected-material', moving ? moving.name + ' · 원하는 자리에 놓아주세요' : '옮길 재료를 먼저 골라주세요');
+    for (const button of scene.querySelectorAll('.kitchen-layer-controls button')) button.disabled = !moving || moveBusy;
     scene.querySelector('.organize-banner').hidden = !organizing;
     text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
     renderSeasoningShelf();
@@ -271,7 +283,7 @@
       button.disabled = !initialized || !movingId || moveBusy || !openZone(button.dataset.zone, doors);
       button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + zones[button.dataset.zone] + '으로 옮기기');
     }
-    const hint = organizing ? '겹쳐 놓을 수 있어요 · 앞뒤 순서도 바꿔보세요' : anyOpen ? '재료를 누르면 수량과 기한을 볼 수 있어요' : '왼쪽은 냉동실, 오른쪽은 냉장실이에요';
+    const hint = organizing ? '끌어서 옮기거나, 재료를 고른 뒤 원하는 자리를 눌러주세요' : anyOpen ? '재료를 누르면 수량과 기한을 볼 수 있어요' : '위 두 칸은 냉장 · 아래 두 칸은 냉동';
     const hintNode = scene.querySelector('.scene-hint');
     if (hintNode.dataset.message !== hint) { hintNode.dataset.message = hint; hintNode.innerHTML = A.icon(anyOpen ? 'leaf' : 'heart') + esc(hint); }
     renderDoorDisplays();
@@ -327,7 +339,7 @@
     if (!initialized || !own(compartments, key) || doorBusy[key] || organizeBusy || moveBusy) return;
     doorBusy[key] = true; renderScene();
     try {
-      if (await K.toggleDoor(key)) { localError = ''; announce(compartments[key].label + ' 문을 ' + (K.getState().doors[key] ? '열었어요.' : '닫았어요.')); }
+      if (await K.togglePanel(key)) { localError = ''; announce(compartments[key].label + ' 문을 ' + (K.getDoorPanels()[key] ? '열었어요.' : '닫았어요.')); }
       else localError = K.error || '문 상태를 저장하지 못했어요. 다시 시도해 주세요.';
     } catch (_) { localError = '문 상태를 저장하지 못했어요. 다시 시도해 주세요.'; }
     finally { doorBusy[key] = false; render(); }
@@ -341,7 +353,12 @@
       if (await K.setDoors({ freezer: true, fridge: true })) { localError = ''; if (token === interaction) { organizing = true; movingId = null; announce('옮길 재료를 누른 뒤, 옮길 칸을 골라주세요.'); } }
       else localError = K.error || '문 상태를 저장하지 못해 정리를 시작하지 못했어요.';
     } catch (_) { localError = '자리 정리를 시작하지 못했어요. 다시 시도해 주세요.'; }
-    finally { organizeBusy = false; render(); }
+    finally {
+      organizeBusy = false; render();
+      // Keep both lower compartments above the fixed mobile navigation while
+      // arranging; otherwise a valid touch drop can hit the navigation instead.
+      if (organizing && token === interaction) scene.querySelector('.fridge-stage')?.scrollIntoView?.({ block: 'center', inline: 'nearest', behavior: 'instant' });
+    }
   }
   async function arrangeItem(id) {
     if (!initialized || moveBusy || organizeBusy || !S.getState().items.some(item => item.id === id)) return false;
@@ -357,8 +374,8 @@
     finally {
       organizeBusy = false; render();
       if (selected) {
-        const target = scene.querySelector('.kitchen-zone-controls button:not(:disabled)');
-        target?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }); target?.focus();
+        scene.querySelector('.fridge-stage')?.scrollIntoView?.({ block: 'center', inline: 'nearest', behavior: 'instant' });
+        itemButtons.get(id)?.focus({ preventScroll: true });
       }
     }
   }
@@ -655,50 +672,6 @@
     }
   }
 
-  async function refreshLegacyDemoExpiries() {
-    let storage;
-    try { storage = window.localStorage; } catch (_) { return false; }
-    const migrationKey = 'umf-demo-expiry-balance-v1';
-    try { if (storage?.getItem(migrationKey) === 'done') return false; } catch (_) { return false; }
-
-    const state = S.getState();
-    const specs = [
-      { test: /애호박|주키니/, qty: /1\s*개/i, days: 3 },
-      { test: /우유/, qty: /900\s*ml/i, days: 2 },
-      { test: /두부/, qty: /300\s*g/i, days: -1 },
-      { test: /계란|달걀/, qty: /10\s*개/i, days: 7 },
-      { test: /양파/, qty: /3\s*개/i, days: -2 },
-      { test: /요거트|요구르트|요거트컵/, qty: /1\s*개/i, days: 5 }
-    ];
-    const matches = [];
-    for (const item of state.items) {
-      const spec = specs.find(value => value.test.test(item.name) && value.qty.test(String(item.quantity || '')));
-      if (spec) matches.push({ item, spec });
-    }
-    const expired = matches.filter(({ item }) => {
-      const left = D.daysLeft(item.expiry);
-      return left !== null && left < 0;
-    }).length;
-    // This signature belongs to the old visual demo set. Do not touch normal user data.
-    if (matches.length < 5 || expired < 4) return false;
-
-    const dateAt = days => {
-      const d = new Date();
-      d.setHours(12, 0, 0, 0);
-      d.setDate(d.getDate() + days);
-      return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-    };
-    const byId = new Map(matches.map(({ item, spec }) => [item.id, dateAt(spec.days)]));
-    const ok = await S.updateAsync(draft => {
-      for (const item of draft.items) if (byId.has(item.id)) item.expiry = byId.get(item.id);
-    }, { origin: 'demo-expiry-balance' });
-    if (ok) {
-      try { storage?.setItem(migrationKey, 'done'); } catch (_) { /* optional marker */ }
-      return true;
-    }
-    return false;
-  }
-
   mountScene(); mountHero();
   const handlers = { click: onSceneClick, keydown: onKeyDown, pointerdown: onPointerDown, pointermove: onPointerMove, pointerup: onPointerUp, pointercancel: onPointerCancel, lostpointercapture: onPointerCancel, dragstart: onDragStart, dragover: onDragOver, dragleave: onDragLeave, dragend: clearDrag, drop: onDrop };
   for (const [event, handler] of Object.entries(handlers)) scene.addEventListener(event, handler);
@@ -708,7 +681,8 @@
   window.addEventListener('umf:navigation', onNavigation);
   window.addEventListener('pointermove', onPointerMove); window.addEventListener('pointerup', onPointerUp); window.addEventListener('pointercancel', onPointerCancel); window.addEventListener('keydown', onWindowKeyDown);
   window.addEventListener('blur', abortGesture); window.addEventListener('resize', abortGesture); document.addEventListener('visibilitychange', onVisibilityChange);
-  const ready = Promise.all([S.ready, K.ready]).then(async () => { await refreshLegacyDemoExpiries(); initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
+  // Presentation changes must never rewrite inventory dates or quantities.
+  const ready = Promise.all([S.ready, K.ready]).then(() => { initialized = true; render(); return true; }).catch(() => { localError = '부엌의 저장 상태를 읽지 못했어요.'; renderError(); return false; });
   window.UMFKitchen = {
     ready, render, navigate, arrangeItem, foodIdFor, itemStatus, zones, positionFor,
     geometry: Object.freeze({ normalizedPoint, defaultPosition }),
