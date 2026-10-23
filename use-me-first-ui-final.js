@@ -16,7 +16,7 @@
 
   function renderBalance(){
     const state=S.getState();
-    const pool=[...new Set([...state.items.filter(x=>D.usable(x)).map(x=>D.canonical(x.name)),...state.season.map(D.canonical),...state.pantry.map(D.canonical)])];
+    const pool=[...new Set([...state.items.filter(x=>D.usable(x)).map(x=>D.canonical(x.name)),...D.seasoningStock(state).filter(x=>D.usable(x)).map(x=>D.canonical(x.name)),...state.pantry.map(D.canonical)])];
     const counts={};
     for(const [key,names] of Object.entries(groups))counts[key]=pool.filter(n=>names.map(D.canonical).includes(n)).length;
     const largest=Math.max(1,...Object.values(counts));
@@ -56,7 +56,7 @@
     if($('#umfMissingCountLabel'))$('#umfMissingCountLabel').textContent=all?'전체 메뉴의 부족한 재료':'선택 메뉴의 부족한 재료';
   }
   function renderSummary(){
-    const items=S.getState().items,valid=items.filter(x=>D.usable(x));
+    const state=S.getState(),items=state.items.concat(D.seasoningStock(state)),valid=items.filter(x=>D.usable(x));
     const soon=valid.filter(x=>{const n=D.daysLeft(x.expiry);return n!==null&&n>=0&&n<=2;}).length;
     if($('#umfSoonCount'))$('#umfSoonCount').textContent=soon+'개';
     if($('#umfPossibleCount'))$('#umfPossibleCount').textContent=R.getRanked().filter(x=>x.available).length+'개';

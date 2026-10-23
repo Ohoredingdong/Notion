@@ -19,7 +19,8 @@
     QUANTITIES: 'use-me-first-quantities-v1', MEALS: 'use-me-first-meal-log-v1',
     FAVORITES: 'use-me-first-favorites-v1', SYNC: 'use-me-first-sync-code-v1',
     SYNC_META: 'use-me-first-sync-meta-v2', RECOVERY: 'use-me-first-before-sync-v5',
-    RECOVERY_ARCHIVE: 'use-me-first-preserved-before-recovery-v5'
+    RECOVERY_ARCHIVE: 'use-me-first-preserved-before-recovery-v5',
+    SEASONING_RECOVERY: 'use-me-first-before-seasoning-expiry-v1'
   });
   const fields = ['items', 'season', 'pantry', 'customSeason', 'customPantry', 'meals', 'favorites'];
   const blank = () => ({ items: [], season: [], pantry: [], customSeason: [], customPantry: [], meals: [], favorites: [] });
@@ -28,12 +29,19 @@
   const strings = value => [...new Set((Array.isArray(value) ? value : []).filter(x => typeof x === 'string').map(x => clean(x)).filter(Boolean))];
   const dayOf = ts => { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   const stableId = value => { let h = 2166136261; for (let i = 0; i < value.length; i++) h = Math.imul(h ^ value.charCodeAt(i), 16777619); return 'legacy-' + (h >>> 0).toString(36); };
-  const signature = state => JSON.stringify(fields.map(key => state[key]));
+  const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+  const validExpiry = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= '0001-01-01' &&
+    Number.isFinite(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
+  const validSeasoningExpiry = value => !own(value, 'seasoningExpiry') || (value.seasoningExpiry && typeof value.seasoningExpiry === 'object' &&
+    !Array.isArray(value.seasoningExpiry) && Object.entries(value.seasoningExpiry).every(([name, expiry]) => name === clean(name) && name && validExpiry(expiry)));
+  // Preserve old snapshot tokens exactly until the optional field actually exists.
+  const signature = state => JSON.stringify(fields.map(key => state[key]).concat(own(state, 'seasoningExpiry') ? [state.seasoningExpiry] : []));
 
   function normalizeState(source) {
     const state = blank(), used = new Set();
     if (!source || typeof source !== 'object') return state;
     for (const key of ['season', 'pantry', 'customSeason', 'customPantry', 'favorites']) state[key] = strings(source[key]);
+    if (own(source, 'seasoningExpiry') && validSeasoningExpiry(source)) state.seasoningExpiry = { ...source.seasoningExpiry };
     state.items = (Array.isArray(source.items) ? source.items : []).filter(x => x && typeof x === 'object' && clean(x.name)).map((x, i) => {
       let id = clean(x.id) || stableId(`${x.name}|${x.expiry || ''}|${i}`);
       while (used.has(id)) id += '-duplicate';
@@ -51,7 +59,7 @@
   }
 
   function isEnvelope(value) {
-    return value && typeof value === 'object' && value.version === 5 && fields.every(k => Array.isArray(value[k])) &&
+    return value && typeof value === 'object' && value.version === 5 && fields.every(k => Array.isArray(value[k])) && validSeasoningExpiry(value) &&
       value.items.every(x => x && typeof x === 'object' && typeof x.id === 'string' && x.id && typeof x.name === 'string' && x.name.trim() && typeof x.expiry === 'string' && typeof x.quantity === 'string') &&
       ['season', 'pantry', 'customSeason', 'customPantry', 'favorites'].every(k => value[k].every(x => typeof x === 'string')) &&
       value.meals.every(x => x && typeof x.id === 'string' && x.id && typeof x.name === 'string' && x.name.trim() && typeof x.ts === 'number' && Number.isFinite(x.ts) && x.ts > 0 && !Number.isNaN(new Date(x.ts).getTime()) && typeof x.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.day));
@@ -120,13 +128,27 @@
       if (opts.expected != null && opts.expected !== before) return fail('다른 변경이 먼저 저장됐어요. 최신 내용을 확인한 뒤 다시 시도해 주세요.');
       const candidate = clone(state);
       try { const result = mutator(candidate); if (result && typeof result.then === 'function') throw new Error('Async mutator'); } catch (_) { return fail('변경을 적용하지 못했어요. 입력 내용을 확인해 주세요.'); }
+      if (!validSeasoningExpiry(candidate)) return fail('양념 기한을 올바른 날짜로 입력해 주세요. 기존 기록은 유지됩니다.');
       const next = normalizeState(candidate);
       if (signature(next) === before) return true;
       const envelope = { version: 5, revision: revision + 1, updatedAt: Date.now(), ...next };
+      if (own(next, 'seasoningExpiry') && !own(state, 'seasoningExpiry')) {
+        try {
+          if (rawRead(keys.SEASONING_RECOVERY) === null) {
+            const original = rawRead(keys.STATE);
+            if (original !== null && !writeAux(keys.SEASONING_RECOVERY, original)) return false;
+          }
+        } catch (_) { return fail('기존 양념 기록을 보관하지 못해 저장을 중단했어요. 저장 권한을 확인해 주세요.'); }
+      }
       if (!writeAux(keys.STATE, JSON.stringify(envelope))) return false;
       state = next; revision++; error = ''; seenPersisted = true; notify(opts.origin || 'local'); return true;
     }
-    function replace(next, opts = {}) { return update(draft => { const value = normalizeState(next); for (const field of fields) draft[field] = value[field]; }, opts); }
+    function replace(next, opts = {}) { return update(draft => {
+      if (!validSeasoningExpiry(next)) throw new Error('Invalid seasoning expiry');
+      const value = normalizeState(next); for (const field of fields) draft[field] = value[field];
+      if (own(value, 'seasoningExpiry')) draft.seasoningExpiry = value.seasoningExpiry;
+      else delete draft.seasoningExpiry;
+    }, opts); }
     function getState() { readCurrent(); return clone(state); }
     function snapshot() { return signature(getState()); }
     function validatedState() {
@@ -189,6 +211,7 @@
 
   function remoteState(payload, local = blank()) {
     if (!payload || typeof payload !== 'object' || !Array.isArray(payload.items) || ![undefined, 1, 2].includes(payload.version)) throw new Error('Invalid remote payload');
+    if (!validSeasoningExpiry(payload)) throw new Error('Invalid remote seasoning expiry');
     for (const field of ['season', 'pantry', 'customSeason', 'customPantry']) if (!Array.isArray(payload[field]) || !payload[field].every(x => typeof x === 'string' && x.trim())) throw new Error('Invalid remote fields');
     if (!payload.items.every(x => x && typeof x === 'object' && typeof x.name === 'string' && x.name.trim())) throw new Error('Invalid remote item');
     if (payload.version === 2 && !isEnvelope({ ...payload, version: 5 })) throw new Error('Invalid remote v2 data');
@@ -200,7 +223,11 @@
       if (match) claimed.add(match.id);
       return { ...x, id: x.id || match?.id, quantity: match?.quantity || '' };
     });
-    return normalizeState({ ...payload, items, meals: old ? local.meals : payload.meals, favorites: old ? local.favorites : payload.favorites });
+    const next = { ...payload, items, meals: old ? local.meals : payload.meals, favorites: old ? local.favorites : payload.favorites };
+    // An older client cannot express a date deletion. Only an explicit map from
+    // a supporting client (including {}) replaces known local seasoning dates.
+    if (!own(payload, 'seasoningExpiry') && own(local, 'seasoningExpiry')) next.seasoningExpiry = local.seasoningExpiry;
+    return normalizeState(next);
   }
   const pack = state => ({ version: 2, ...clone(state) });
   const remoteSignature = payload => signature(remoteState(payload));
@@ -216,7 +243,7 @@
     const tell = (text, state) => { status = { text, state, busy }; onStatus({ ...status }); };
     const setBusy = value => { busy = value; onStatus({ ...status, busy }); };
     const same = (a, b) => signature(a) === signature(b);
-    const populated = s => fields.some(k => s[k].length > 0);
+    const populated = s => fields.some(k => s[k].length > 0) || Object.keys(s.seasoningExpiry || {}).length > 0;
     const note = () => tell('기기에 새 변경이 있어요 · 동기화에서 보관할 내용을 선택해 주세요', 'conflict');
     function checkedState() { const local = store.validatedState(); if (!local || store.blocked) throw new Error('storage-blocked'); return local; }
     function connectionChanged() {

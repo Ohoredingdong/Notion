@@ -9,6 +9,8 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uniq=a=>[...new Set(a)];
   let showAll=true,editingId=null,editingOriginal=null,previousFocus=null,modalVersion=0,savingItem=false,savingCustom=false;
+  let editingSeason=null,seasonOriginal='';
+  const seasonDate=(s,name)=>Object.prototype.hasOwnProperty.call(s.seasoningExpiry||{},name)?s.seasoningExpiry[name]:'';
   function icon(n){
     const art=window.UMFKitchenArt;
     if(art?.foodArt&&art?.foodIdForName)return art.foodArt(art.foodIdForName(n));
@@ -62,6 +64,14 @@
       const button=document.createElement('button');button.type='button';button.className='tog'+(selected.includes(name)?' on':'');
       button.textContent=(selected.includes(name)?'✓ ':'')+name;button.setAttribute('aria-pressed',String(selected.includes(name)));
       button.onclick=()=>store.updateAsync(s=>{s[field]=s[field].includes(name)?s[field].filter(x=>x!==name):[...s[field],name]});wrap.appendChild(button);
+      if(field==='season'&&selected.includes(name)){
+        const expiry=seasonDate(store.getState(),name),days=domain.daysLeft(expiry);
+        const dateButton=document.createElement('button');dateButton.type='button';dateButton.className='umf-season-expiry';
+        dateButton.dataset.seasoningName=name;dateButton.dataset.expired=String(days!==null&&days<0);
+        dateButton.textContent=days===null?'기한 설정':days<0?'기한 경과':days===0?'오늘까지':expiry.replaceAll('-','.');
+        dateButton.setAttribute('aria-label',name+' 유통·소비기한 '+(expiry||'미입력')+' 수정');
+        dateButton.onclick=()=>openSeasoning(name);wrap.appendChild(dateButton);
+      }
       if(custom.includes(name)){
         const remove=document.createElement('button');remove.type='button';remove.className='umf-custom-remove';remove.textContent='×';remove.setAttribute('aria-label',name+' 항목 삭제');
         remove.onclick=()=>store.updateAsync(s=>{s[customField]=s[customField].filter(x=>x!==name);s[field]=s[field].filter(x=>x!==name)});wrap.appendChild(remove);
@@ -110,22 +120,48 @@
     }finally{savingItem=false;if($('#save'))$('#save').disabled=false;}
   }
   function openCustom(type,name=''){
+    editingSeason=null;seasonOriginal='';
     if($('#customType'))$('#customType').value=type;if($('#customName'))$('#customName').value=name;
+    if($('#customName'))$('#customName').readOnly=false;
+    if($('#customExpiryField'))$('#customExpiryField').hidden=type!=='season';
+    if($('#customExpiry'))$('#customExpiry').value=type==='season'?seasonDate(store.getState(),name):'';
     if($('#customTitle'))$('#customTitle').textContent=type==='season'?'기본 양념 보유 등록':'상비 재료 보유 등록';
     if($('#customSave'))$('#customSave').textContent='보유한 재료로 체크';
     const error=$('#umfCustomError');if(error){error.textContent='';error.hidden=true;}
     openModal('#customModal','#customName');
   }
+  function openSeasoning(name){
+    const state=store.getState();if(!state.season.includes(name))return;
+    openCustom('season',name);editingSeason=name;seasonOriginal=seasonDate(state,name);
+    $('#customName').readOnly=true;$('#customTitle').textContent=name+' 관리';$('#customSave').textContent='기한 저장';
+    $('#customExpiry')?.focus();
+  }
+  function customError(message){const error=$('#umfCustomError');if(error){error.textContent=message;error.hidden=!message;}}
   async function saveCustom(){
     if(savingCustom)return;
     const type=$('#customType')?.value==='pantry'?'pantry':'season',name=$('#customName')?.value.normalize('NFKC').trim()||'';
     if(!name||name.length>60){const error=$('#umfCustomError');if(error){error.textContent='이름을 1~60자로 입력해 주세요.';error.hidden=false;}else $('#customName')?.focus();return;}
+    const expiry=type==='season'?$('#customExpiry')?.value||'':'';
+    if(type==='season'&&($('#customExpiry')?.validity?.valid===false||(expiry&&domain.daysLeft(expiry)===null))){customError('유통·소비기한을 올바른 날짜로 입력해 주세요.');return;}
     const base=type==='season'?BASE_S:BASE_P,key=type==='season'?'customSeason':'customPantry';
-    const opened=modalVersion;savingCustom=true;if($('#customSave'))$('#customSave').disabled=true;
+    const edit=editingSeason,original=edit?seasonOriginal:seasonDate(store.getState(),name),opened=modalVersion;
+    let conflict=false,missing=false;savingCustom=true;if($('#customSave'))$('#customSave').disabled=true;
     try{
-      if(await store.updateAsync(s=>{if(!base.includes(name)&&!s[key].includes(name))s[key].push(name);if(!s[type].includes(name))s[type].push(name);})){
-        if(opened===modalVersion)closeModal('#customModal');
-      }
+      const ok=await store.updateAsync(s=>{
+        if(type==='season'){
+          if(edit&&!s.season.includes(edit)){missing=true;return;}
+          if(seasonDate(s,name)!==original){conflict=true;return;}
+          if(expiry)s.seasoningExpiry={...(s.seasoningExpiry||{}),[name]:expiry};
+          else if(edit&&s.seasoningExpiry)delete s.seasoningExpiry[name];
+        }
+        if(!base.includes(name)&&!s[key].includes(name))s[key].push(name);
+        if(!s[type].includes(name))s[type].push(name);
+      });
+      if(opened!==modalVersion)return;
+      if(missing){customError('다른 화면에서 보유 해제된 양념이에요. 최신 내용을 확인해 주세요.');return;}
+      if(conflict){customError('다른 화면에서 기한이 바뀌었어요. 창을 닫고 최신 내용을 확인해 주세요.');return;}
+      if(!ok){customError(store.error||'저장하지 못했어요. 다시 확인해 주세요.');return;}
+      closeModal('#customModal');
     }finally{savingCustom=false;if($('#customSave'))$('#customSave').disabled=false;}
   }
   const sync=store.createSyncEngine({
@@ -151,7 +187,8 @@
   $('#close')?.addEventListener('click',()=>closeModal('#mb'));$('#cancel')?.addEventListener('click',()=>closeModal('#mb'));$('#save')?.addEventListener('click',saveItem);
   for(const selector of ['#name','#umfQty','#expiry'])$(selector)?.addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();saveItem();}});
   $('#addSeason')?.addEventListener('click',()=>openCustom('season'));$('#addPantry')?.addEventListener('click',()=>openCustom('pantry'));
-  $('#customClose')?.addEventListener('click',()=>closeModal('#customModal'));$('#customCancel')?.addEventListener('click',()=>closeModal('#customModal'));$('#customSave')?.addEventListener('click',saveCustom);$('#customName')?.addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();saveCustom();}});
+  $('#customClose')?.addEventListener('click',()=>closeModal('#customModal'));$('#customCancel')?.addEventListener('click',()=>closeModal('#customModal'));$('#customSave')?.addEventListener('click',saveCustom);
+  for(const selector of ['#customName','#customExpiry'])$(selector)?.addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();saveCustom();}});
   $('#syncBtn')?.addEventListener('click',openSync);$('#syncClose')?.addEventListener('click',()=>closeModal('#syncModal'));
   $('#syncCreate')?.addEventListener('click',()=>syncAction(()=>sync.create()));$('#syncConnect')?.addEventListener('click',()=>syncAction(()=>sync.connect($('#syncCode')?.value)));
   $('#syncUpload')?.addEventListener('click',()=>syncAction(()=>sync.upload()));$('#syncReload')?.addEventListener('click',()=>syncAction(()=>sync.reload()));$('#syncRestore')?.addEventListener('click',()=>syncAction(()=>sync.restore()));
@@ -170,6 +207,6 @@
   store.subscribe(render);window.addEventListener('umf:storageerror',storageStatus);
   window.addEventListener('online',()=>sync.retry());window.addEventListener('storage',e=>{if(e.key===store.keys.SYNC||e.key===null)sync.connectionChanged();});
   window.addEventListener('umf:daychange',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
-  window.UMFCore={openAdd,openEdit,icon,render,sync};
+  window.UMFCore={openAdd,openEdit,openSeasoning,icon,render,sync};
   render();sync.initialize();
 })();

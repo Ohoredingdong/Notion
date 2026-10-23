@@ -65,7 +65,7 @@
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
       return Object.fromEntries(Object.entries(parsed).filter(([name, p]) =>
         typeof name === 'string' && p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)
-      ).map(([name, p]) => [name, { x: clamp(p.x, .07, .93), y: clamp(p.y, .25, .75), z: p.z }]));
+      ).map(([name, p]) => [name, { x: clamp(p.x, .07, .93), y: clamp(p.y, .06, .94), z: p.z }]));
     } catch (_) { return {}; }
   }
   let seasoningLayout = readSeasoningLayout();
@@ -74,9 +74,10 @@
     catch (_) { return false; }
   }
   function defaultSeasoningPosition(index) {
-    const columns = 5, col = index % columns, row = Math.floor(index / columns) % 2;
-    const x = .09 + (col / (columns - 1)) * .82 + (row ? .025 : 0);
-    const y = row ? .71 : .34;
+    const columns = 4, col = index % columns, row = Math.floor(index / columns);
+    const rows = Math.max(1, Math.ceil(S.getState().season.length / columns));
+    const x = .14 + (col / (columns - 1)) * .72;
+    const y = clamp((row + .5) / rows, .06, .94);
     return { x: clamp(x, .08, .92), y, z: index + 1 };
   }
   function seasoningPosition(name, index) { return seasoningLayout[name] || defaultSeasoningPosition(index); }
@@ -124,13 +125,13 @@
     const state = S.getState();
     const expiryNode = scene.querySelector('[data-door-expiry]');
     if (expiryNode) {
-      const upcoming = state.items.map(item => ({ item, status: itemStatus(item) }))
+      const upcoming = state.items.map(item => ({ item, status: itemStatus(item) })).concat(D.seasoningStock(state).map(item => ({ item, status: itemStatus(item), seasoning: true })))
         .filter(entry => !entry.status.empty && entry.status.d !== null && entry.status.d >= 0 && entry.status.d <= 3)
         .sort((a, b) => a.status.d - b.status.d || a.item.name.localeCompare(b.item.name, 'ko'))
         .slice(0, 3);
-      expiryNode.innerHTML = upcoming.length ? upcoming.map(({ item, status }) => {
+      expiryNode.innerHTML = upcoming.length ? upcoming.map(({ item, status, seasoning }) => {
         const badge = status.d === 0 ? '오늘' : status.d === 1 ? '내일' : status.d + '일';
-        return '<div class="display-row display-food-row"><span class="display-food-art">' + A.foodArt(foodIdFor(item.name)) + '</span><span class="display-row-copy"><b>' + esc(item.name) + '</b><small>' + esc(status.quantity) + '</small></span><em class="display-badge d' + status.d + '">' + badge + '</em></div>';
+        return '<div class="display-row display-food-row"><span class="display-food-art">' + (seasoning ? A.seasoningArt(item.name) : A.foodArt(foodIdFor(item.name))) + '</span><span class="display-row-copy"><b>' + esc(item.name) + '</b><small>' + esc(seasoning ? '양념' : status.quantity) + '</small></span><em class="display-badge d' + status.d + '">' + badge + '</em></div>';
       }).join('') : '<div class="display-empty">3일 안에 임박한 재료가 없어요.</div>';
     }
     const recipeNode = scene.querySelector('[data-door-recipes]');
@@ -162,7 +163,7 @@
       '<div class="fridge-stage four-door"><div class="fridge-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '</div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
       '<section class="kitchen-arrange-tools panel" aria-label="재료 자리 정리" hidden><p class="kitchen-selected-material"></p><div class="kitchen-layer-controls"><span>겹친 재료의 앞뒤</span><button type="button" class="btn btn-line" data-action="layer-front">맨 앞으로</button><button type="button" class="btn btn-line" data-action="layer-back">맨 뒤로</button></div><details><summary>칸을 골라 옮기기</summary><div class="kitchen-zone-controls">' + Object.entries(zones).map(([zone, label]) => '<button type="button" class="btn btn-line" data-action="move-zone" data-zone="' + zone + '">' + esc(label) + '</button>').join('') + '</div></details></section>' +
-      '<section class="seasoning-rack" aria-label="양념 선반"><div class="seasoning-rack-head"><div><strong>양념 선반</strong><small>체크한 양념이 여기 보여요</small></div><button type="button" class="btn btn-small btn-line" data-action="add-seasoning">양념 ＋</button></div><div class="seasoning-rack-board"><div class="seasoning-rack-items"></div></div></section>' +
+      '<section class="seasoning-rack" aria-label="양념 선반"><div class="seasoning-rack-head"><div><strong>우리 집 양념장</strong><small>양념을 눌러 기한을 관리해요</small></div><button type="button" class="btn btn-small btn-line" data-action="add-seasoning">양념 추가</button></div><div class="seasoning-rack-board"><div class="seasoning-rack-items"></div></div><p class="seasoning-rack-note">끌어서 자리를 옮기고, 눌러 유통·소비기한을 설정해요.</p></section>' +
       '<details class="kitchen-pantry"><summary>실온 보관 재료</summary>' + shelfMarkup('pantry') + '</details>' +
       '<div class="kitchen-inventory-link"><button type="button" class="btn btn-ghost" data-action="navigate" data-page="inventory">전체 재고 보기 ' + A.icon('chevron') + '</button><button type="button" class="btn btn-ghost" data-action="add-food">' + A.icon('plus') + '재료 넣기</button></div>' +
       '<p class="tiny kitchen-live" id="umfKitchenLive" role="status" aria-live="polite" aria-atomic="true"></p>';
@@ -213,10 +214,14 @@
     let changed = false;
     for (const saved of Object.keys(seasoningLayout)) if (!active.has(saved)) { delete seasoningLayout[saved]; changed = true; }
     if (changed) writeSeasoningLayout();
-    rack.innerHTML = names.length ? names.map((name, index) =>
-      '<button type="button" class="seasoning-mini" data-action="manage-seasonings" data-seasoning-name="' + esc(name) + '" title="' + esc(name) + ' · 끌어서 옮기기" aria-label="' + esc(name) + ' 양념. 끌어서 위치 이동, 누르면 양념 관리">' +
-      (A.seasoningArt?.(name, 'food-art') || A.foodArt(seasoningFoodId(name))) + '<span>' + esc(name) + '</span></button>'
-    ).join('') : '<button type="button" class="seasoning-empty" data-action="add-seasoning">양념을 체크하거나 추가해 주세요 <span aria-hidden="true">＋</span></button>';
+    rack.closest('.seasoning-rack-board').style.setProperty('--seasoning-rows', Math.max(1, Math.ceil(names.length / 4)));
+    rack.innerHTML = names.length ? names.map(name => {
+      const expiry = own(state.seasoningExpiry || {}, name) ? state.seasoningExpiry[name] : '', days = D.daysLeft(expiry);
+      const label = days === null ? '기한 설정' : days < 0 ? '기한 경과' : days === 0 ? '오늘까지' : days === 1 ? '내일까지' : days + '일 남음';
+      const kind = days === null ? 'unknown' : days < 0 ? 'expired' : days <= 3 ? 'soon' : 'safe';
+      return '<button type="button" class="seasoning-mini" data-action="manage-seasonings" data-seasoning-name="' + esc(name) + '" data-expiry-status="' + kind + '" title="' + esc(name + ' · ' + (expiry || '기한 미입력')) + '" aria-label="' + esc(name + ' 양념, ' + label) + '. 누르면 유통·소비기한 수정, 끌어서 위치 이동">' +
+        (A.seasoningArt?.(name, 'food-art') || A.foodArt(seasoningFoodId(name))) + '<span class="seasoning-name">' + esc(name) + '</span><small class="seasoning-expiry">' + esc(label) + '</small></button>';
+    }).join('') : '<button type="button" class="seasoning-empty" data-action="add-seasoning">양념을 추가해 주세요 <span aria-hidden="true">＋</span></button>';
     names.forEach((name, index) => {
       const button = [...rack.querySelectorAll('.seasoning-mini')].find(node => node.dataset.seasoningName === name);
       if (button) placeSeasoning(button, seasoningPosition(name, index));
@@ -459,8 +464,7 @@
     else if (target.dataset.action === 'fridge-food') selectItem(target.dataset.lot);
     else if (target.dataset.action === 'add-seasoning') document.querySelector('#addSeason')?.click();
     else if (target.dataset.action === 'manage-seasonings') {
-      document.querySelector('#seasonTab')?.click();
-      document.querySelector('#umfKitchenInventory')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      window.UMFCore?.openSeasoning(target.dataset.seasoningName);
     }
     else if (target.dataset.action === 'move-zone' && organizing) moveItem(movingId, target.dataset.zone);
     else if (target.dataset.action === 'layer-front') changeLayer('front');
@@ -563,7 +567,7 @@
     const rect = active.rack.getBoundingClientRect(), size = active.button.getBoundingClientRect();
     const rawX = rect.width ? (event.clientX - rect.left) / rect.width : .5;
     const rawY = rect.height ? (event.clientY - rect.top) / rect.height : .5;
-    return { x: clamp(rawX, .07, .93), y: clamp(rawY, .25, .75), z: Math.max(1, ...Object.values(seasoningLayout).map(p => Number(p.z) || 0)) + 1 };
+    return { x: clamp(rawX, .07, .93), y: clamp(rawY, .06, .94), z: Math.max(1, ...Object.values(seasoningLayout).map(p => Number(p.z) || 0)) + 1 };
   }
   function finishSeasoningPointer(event, cancel = false) {
     const active = seasoningPointerSession;

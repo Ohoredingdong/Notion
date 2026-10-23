@@ -9,6 +9,34 @@ const item = (name, expiry = '2026-10-25', quantity = '2개', id = name) => ({ i
 const rice = { name: '계란 볶음밥', f: ['계란', '양파'], s: ['식용유', '간장'], p: ['밥/즉석밥'] };
 const stock = (items = []) => ({ items, season: ['식용유', '간장'], pantry: ['밥/즉석밥'] });
 
+test('expired checked seasoning is excluded and reported as expired without changing possession', () => {
+  const state = { ...stock([item('계란'), item('양파')]), seasoningExpiry: { 간장: '2026-10-19' } };
+  const original = JSON.stringify(state), result = D.evaluate(rice, state, NOW);
+  assert.equal(result.available, false);
+  assert.deepEqual(result.missing, [{ name: '간장', kind: 'season', reason: 'expired' }]);
+  assert.equal(JSON.stringify(state), original);
+});
+
+test('seasoning dates include today, unknown dates and usable aliases without reviving expired jars', () => {
+  const state = { ...stock([item('계란'), item('양파')]), season: ['식용유', '간장', '진간장'],
+    seasoningExpiry: { 간장: '2026-10-19', 진간장: '2026-10-20' } };
+  assert.equal(D.evaluate(rice, state, NOW).available, true);
+  assert.equal(D.evaluate(rice, state, NOW).expiryUnknown, true, 'Undated oil is still unverified');
+  state.seasoningExpiry.식용유 = '2026-11-01';
+  assert.equal(D.evaluate(rice, state, NOW).expiryUnknown, false);
+  assert.equal(D.evaluate(rice, state, NOW).urgentCount, 1);
+  state.season = ['식용유', '간장'];
+  assert.equal(D.evaluate(rice, state, NOW).available, false);
+  delete state.seasoningExpiry.간장;
+  assert.equal(D.evaluate(rice, state, NOW).available, true);
+});
+
+test('unchecked seasoning and inherited object names never supply a saved date or recipe stock', () => {
+  const state = { items: [], season: ['__proto__', '소금'], seasoningExpiry: { 소금: '2026-10-19', 간장: '2030-01-01' } };
+  assert.deepEqual(D.seasoningStock(state), [{ name: '__proto__', expiry: '', quantity: '' }, { name: '소금', expiry: '2026-10-19', quantity: '' }]);
+  assert.equal(D.evaluate({ s: ['간장'] }, state, NOW).available, false);
+});
+
 test('normalizes NFKC and whitespace without interpreting HTML', () => {
   assert.equal(D.normalizeName('  닭\n 가슴살  '), '닭 가슴살');
   assert.equal(D.normalizeName('３００ｇ'), '300g');

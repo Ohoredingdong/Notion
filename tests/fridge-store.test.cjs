@@ -40,6 +40,71 @@ function engine(store, api, options = {}) {
   return createSyncEngine({ store, fetch: api.fetch, url: 'https://unit.invalid/sync', crypto: webcrypto, confirm: () => true, delay: 1, timeout: 500, ...options });
 }
 const nativeLocks = globalThis.navigator?.locks || require('node:worker_threads').locks;
+
+test('seasoning dates are optional, preserve the original v5 bytes and survive unrelated edits and reload', async () => {
+  const original = JSON.stringify({ version: 5, revision: 12, updatedAt: 1700000000000, ...blank(),
+    items: [item('계란', '2개')], season: ['간장'], pantry: ['밥/즉석밥'], favorites: ['계란 볶음밥'] });
+  const storage = memory({ [keys.STATE]: original }), store = createStore({ storage });
+  await store.ready;
+  assert.equal(storage.getItem(keys.STATE), original);
+  assert.equal(Object.hasOwn(store.getState(), 'seasoningExpiry'), false);
+  assert.equal(await store.updateAsync(() => {}), true);
+  assert.equal(storage.getItem(keys.STATE), original);
+  assert.equal(await store.updateAsync(s => { s.seasoningExpiry = { 간장: '2030-03-01' }; }), true);
+  assert.equal(storage.getItem(keys.SEASONING_RECOVERY), original);
+  await store.updateAsync(s => { s.favorites.push('두부 스테이크'); });
+  const reopened = createStore({ storage }); await reopened.ready;
+  assert.deepEqual(reopened.getState().seasoningExpiry, { 간장: '2030-03-01' });
+  assert.deepEqual(reopened.getState().items, [item('계란', '2개')]);
+  await reopened.updateAsync(s => { delete s.seasoningExpiry.간장; });
+  assert.deepEqual(reopened.getState().seasoningExpiry, {});
+  assert.equal(storage.getItem(keys.SEASONING_RECOVERY), original);
+});
+
+test('invalid seasoning date records and a failed original backup never overwrite stored inventory', async () => {
+  for (const seasoningExpiry of [null, [], false, { 간장: 12 }, { 간장: '2026-02-30' }, { 간장: '0000-01-01' }, { '': '2030-01-01' }]) {
+    const original = JSON.stringify({ version: 5, ...blank(), season: ['간장'], seasoningExpiry });
+    const storage = memory({ [keys.STATE]: original }), store = createStore({ storage });
+    assert.equal(store.blocked, true);
+    assert.equal(await store.updateAsync(s => s.season.push('소금')), false);
+    assert.equal(storage.getItem(keys.STATE), original);
+    assert.throws(() => remoteState({ version: 2, ...blank(), seasoningExpiry }));
+  }
+  const storage = memory(), store = createStore({ storage }); await store.ready;
+  const original = storage.getItem(keys.STATE), write = storage.setItem.bind(storage);
+  storage.setItem = (key, value) => { if (key === keys.SEASONING_RECOVERY) throw Error('QuotaExceeded'); write(key, value); };
+  assert.equal(await store.updateAsync(s => { s.seasoningExpiry = { 소금: '2030-01-01' }; }), false);
+  assert.equal(storage.getItem(keys.STATE), original);
+  assert.equal(Object.hasOwn(store.getState(), 'seasoningExpiry'), false);
+});
+
+test('seasoning dates round-trip through sync while an older remote cannot erase known dates', async () => {
+  const local = { ...blank(), season: ['간장'], seasoningExpiry: { 간장: '2030-01-01' } };
+  assert.deepEqual(remoteState(payload(local)).seasoningExpiry, local.seasoningExpiry);
+  assert.deepEqual(remoteState(payload(blank()), local).seasoningExpiry, local.seasoningExpiry);
+  assert.deepEqual(remoteState({ ...payload(local), seasoningExpiry: {} }, local).seasoningExpiry, {});
+  const storage = memory({ [keys.SYNC]: code }), store = createStore({ storage });
+  await store.replaceAsync(local);
+  const api = server(payload(blank())), sync = engine(store, api);
+  assert.equal(await sync.upload(), true);
+  assert.deepEqual(api.remote.seasoningExpiry, local.seasoningExpiry);
+  await store.updateAsync(s => { delete s.seasoningExpiry.간장; });
+  assert.equal(await sync.upload(), true);
+  assert.deepEqual(api.remote.seasoningExpiry, {});
+  sync.destroy();
+});
+
+test('concurrent seasoning date edits retain both names and an own __proto__ key safely', { skip: !nativeLocks }, async () => {
+  const storage = memory(), one = createStore({ storage, locks: nativeLocks }), two = createStore({ storage, locks: nativeLocks });
+  assert.deepEqual(await Promise.all([
+    one.updateAsync(s => { s.seasoningExpiry = { ...(s.seasoningExpiry || {}), 간장: '2030-01-01' }; }),
+    two.updateAsync(s => { s.seasoningExpiry = { ...(s.seasoningExpiry || {}), ['__proto__']: '2030-02-01' }; })
+  ]), [true, true]);
+  assert.equal(one.getState().seasoningExpiry.간장, '2030-01-01');
+  assert.equal(Object.hasOwn(one.getState().seasoningExpiry, '__proto__'), true);
+  assert.equal(one.getState().seasoningExpiry.__proto__, '2030-02-01');
+  assert.equal({}.polluted, undefined);
+});
 async function holdStateLock() {
   const entered = deferred(), release = deferred();
   const done = nativeLocks.request(keys.STATE + ':transaction', { mode: 'exclusive' }, () => { entered.resolve(); return release.promise; });
@@ -486,4 +551,15 @@ test('the Edge Function rejects malformed v2 payloads and timestamp types before
   }
   for (const expected_updated_at of [42, {}, 'not-a-date']) assert.equal((await edge.request('PUT', { payload: payload(blank()), expected_updated_at })).status, 400);
   assert.equal(edge.records.size, 0);
+});
+
+test('the Edge Function keeps seasoning dates in GET/PUT and rejects invalid optional dates', async () => {
+  const edge = edgeFunction(), value = { ...payload(blank()), season: ['간장'], seasoningExpiry: { 간장: '2030-02-01' } };
+  assert.equal((await edge.request('PUT', { payload: value, expected_updated_at: null })).status, 200);
+  const response = await (await edge.request()).json();
+  assert.deepEqual(response.payload.seasoningExpiry, value.seasoningExpiry);
+  for (const dates of [[], null, { 간장: 17 }, { 간장: '2026-02-30' }]) {
+    assert.equal((await edge.request('PUT', { payload: { ...value, seasoningExpiry: dates }, expected_updated_at: response.updated_at })).status, 400);
+  }
+  assert.deepEqual((await (await edge.request()).json()).payload.seasoningExpiry, value.seasoningExpiry);
 });

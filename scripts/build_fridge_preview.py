@@ -83,10 +83,12 @@ def build(root):
         path = local_path(reference)
         js = path.read_text(encoding="utf-8")
         if path.name == "use-me-first-kitchen-art.js":
-            needle = "const ATLAS = './assets/food-miniatures-v2.webp';"
-            if js.count(needle) != 1:
-                raise ValueError("The miniature atlas reference changed; update this exporter")
-            js = js.replace(needle, "const ATLAS = '" + data_uri("assets/food-miniatures-v2.webp") + "';")
+            for name, asset in (("ATLAS", "assets/food-miniatures-v2.webp"),
+                                ("SEASONING_ATLAS", "assets/seasoning-miniatures-v1.png")):
+                needle = f"const {name} = './{asset}';"
+                if js.count(needle) != 1:
+                    raise ValueError("The miniature atlas reference changed; update this exporter")
+                js = js.replace(needle, f"const {name} = '{data_uri(asset)}';")
         # An inline script must not accidentally close its own HTML element.
         js = re.sub(r"</script", r"<\\/script", js, flags=re.I)
         scripts.append('<script data-source="' + escape(reference, quote=True) + '">\n' + js + "\n</script>")

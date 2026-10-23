@@ -126,6 +126,68 @@ async function readyRice(t, options) {
   await app.toggle('#sg', '식용유'); await app.toggle('#sg', '간장'); await app.toggle('#pg', '밥/즉석밥');
   await app.selectRecipe('계란 볶음밥'); return app;
 }
+
+test('seasoning shelf edits dates, cancels safely, retains old stock and reopens after reload', async t => {
+  const app = await boot(); t.after(() => app.close());
+  await app.toggle('#sg', '간장');
+  const original = app.memory.get(STATE), old = JSON.parse(original);
+  await app.click('.seasoning-mini[data-seasoning-name="간장"]');
+  assert.equal(app.$('#customName').readOnly, true);
+  assert.equal(app.$('#customExpiryField').hidden, false);
+  app.fill('#customExpiry', '2026-10-22'); await app.click('#customCancel');
+  assert.equal(app.memory.get(STATE), original);
+  await app.click('.seasoning-mini[data-seasoning-name="간장"]');
+  app.fill('#customExpiry', '2026-10-22'); await app.click('#customSave');
+  assert.equal(app.memory.get('use-me-first-before-seasoning-expiry-v1'), original);
+  assert.equal(app.w.UMFStore.getState().seasoningExpiry.간장, '2026-10-22');
+  for (const field of ['items', 'season', 'pantry', 'customSeason', 'customPantry', 'meals', 'favorites']) assert.deepEqual(JSON.parse(app.memory.get(STATE))[field], old[field]);
+  const reopened = await boot({ memory: app.memory }); t.after(() => reopened.close());
+  await reopened.click('.seasoning-mini[data-seasoning-name="간장"]');
+  assert.equal(reopened.$('#customExpiry').value, '2026-10-22');
+  await reopened.click('#customCancel');
+  assert.match(reopened.$('.seasoning-mini[data-seasoning-name="간장"]').textContent, /2일 남음/);
+});
+
+test('expired seasoning changes recipe and shopping status and clearing its date keeps ownership', async t => {
+  const app = await readyRice(t);
+  await app.click('.nav-btn[data-kitchen-page="home"]');
+  await app.click('.seasoning-mini[data-seasoning-name="간장"]');
+  app.fill('#customExpiry', '2026-10-19'); await app.click('#customSave');
+  assert.equal(app.$('.seasoning-mini[data-seasoning-name="간장"]').dataset.expiryStatus, 'expired');
+  const rice = app.w.UMFRecipes.getRanked().find(x => x.recipe.name === '계란 볶음밥');
+  assert.equal(rice.available, false); assert.equal(rice.missing.find(x => x.name === '간장').reason, 'expired');
+  assert.match(app.$('#umfSelectionChips').textContent, /간장 · 기한 경과/);
+  await app.click('.seasoning-mini[data-seasoning-name="간장"]');
+  app.fill('#customExpiry', ''); await app.click('#customSave');
+  assert.ok(app.w.UMFStore.getState().season.includes('간장'));
+  assert.equal(Object.hasOwn(app.w.UMFStore.getState().seasoningExpiry, '간장'), false);
+  assert.equal(app.w.UMFRecipes.getRanked().find(x => x.recipe.name === '계란 볶음밥').available, true);
+});
+
+test('seasoning additions accept dates while toggles and pantry additions preserve their existing meaning', async t => {
+  const app = await boot(); t.after(() => app.close());
+  await app.click('#addSeason'); app.fill('#customName', '유자청'); app.fill('#customExpiry', '2026-11-01'); await app.click('#customSave');
+  assert.ok(app.w.UMFStore.getState().customSeason.includes('유자청'));
+  await app.toggle('#sg', '유자청'); await app.toggle('#sg', '유자청');
+  assert.equal(app.w.UMFStore.getState().seasoningExpiry.유자청, '2026-11-01');
+  await app.click('#addPantry'); assert.equal(app.$('#customExpiryField').hidden, true);
+  assert.equal(app.$('#customName').readOnly, false); app.fill('#customName', '오트밀'); await app.click('#customSave');
+  assert.ok(app.w.UMFStore.getState().pantry.includes('오트밀'));
+  assert.equal(Object.hasOwn(app.w.UMFStore.getState().seasoningExpiry, '오트밀'), false);
+  assert.ok(app.$('.seasoning-mini[data-seasoning-name="유자청"] [data-seasoning-art="jar"]'));
+});
+
+test('seasoning date dialogs reject malformed dates and concurrent changes without overwriting either record', async t => {
+  const app = await boot(); t.after(() => app.close()); await app.toggle('#sg', '간장');
+  await app.click('.seasoning-mini[data-seasoning-name="간장"]'); app.fill('#customExpiry', '2026-02-30');
+  const original = app.memory.get(STATE); await app.click('#customSave');
+  assert.equal(app.memory.get(STATE), original); assert.equal(app.$('#umfCustomError').hidden, false);
+  app.fill('#customExpiry', '2026-11-01');
+  await app.w.UMFStore.updateAsync(s => { s.seasoningExpiry = { 간장: '2026-12-01' }; });
+  await app.click('#customSave'); assert.match(app.$('#umfCustomError').textContent, /다른 화면/);
+  assert.equal(app.w.UMFStore.getState().seasoningExpiry.간장, '2026-12-01');
+  await app.click('#customCancel');
+});
 async function whileStoreLocked(action, key = STATE) {
   let release, acquired;
   const gate = new Promise(resolve => { release = resolve; });

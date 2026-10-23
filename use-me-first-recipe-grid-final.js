@@ -152,7 +152,13 @@
         return `<span class="umf-selection-chip${d != null && d <= 2 ? ' urgent' : ''}">${esc(item.name)}${esc(quantity + expiry)}</span>`;
       });
       const usedCanon = new Set(current.usedItems.map((item) => D.canonical(item.name)));
-      checked.forEach((n) => { if (!usedCanon.has(D.canonical(n))) owned.push(`<span class="umf-selection-chip checked">${esc(n)} · 보유 체크</span>`); });
+      checked.forEach((n) => {
+        if (usedCanon.has(D.canonical(n))) return;
+        const seasoning = D.seasoningStock(st).find(item => item.name === n);
+        const d = seasoning ? D.daysLeft(seasoning.expiry) : null;
+        const label = !seasoning ? '보유 체크' : d === null ? '기한 미입력' : d < 0 ? '기한 경과' : d === 0 ? '오늘까지' : `D-${d}`;
+        owned.push(`<span class="umf-selection-chip checked${d !== null && d <= 2 ? ' urgent' : ''}">${esc(n)} · ${esc(label)}</span>`);
+      });
       chips.innerHTML = owned.length ? owned.join('') : '<span class="umf-selection-chip">등록된 재료가 아직 없어요</span>';
     }
     if (detail) {

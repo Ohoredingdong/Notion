@@ -136,7 +136,9 @@
   function evaluate(recipe, state, now) {
     state = state && typeof state === 'object' ? state : {};
     var items = Array.isArray(state.items) ? state.items : [];
-    var checked = new Set(asArray(state.season).concat(asArray(state.pantry)).map(canonical).filter(Boolean));
+    var seasons = seasoningStock(state, now);
+    var checked = new Set(seasons.filter(function (item) { return usable(item, now); }).map(function (item) { return canonical(item.name); })
+      .concat(asArray(state.pantry).map(canonical)).filter(Boolean));
     var missing = [], usedItems = [], used = new Set(), matchedCount = 0;
     var expiryUnknown = false, quantityUnknown = false, urgentCount = 0;
     requirements(recipe).forEach(function (required) {
@@ -155,8 +157,14 @@
         // Checked stock confirms possession; it does not promise recipe portions.
         matchedCount += 1;
         quantityUnknown = true;
+        var seasoning = seasons.find(function (stock) { return canonical(stock.name) === required.key && usable(stock, now); });
+        if (seasoning) {
+          var seasoningLeft = daysLeft(seasoning.expiry, now);
+          if (seasoningLeft === null) expiryUnknown = true;
+          if (seasoningLeft !== null && seasoningLeft >= 0 && seasoningLeft <= 2) urgentCount += 1;
+        }
       } else {
-        missing.push({ name: required.name, kind: required.kind, reason: missingReason(items, required.key, now) });
+        missing.push({ name: required.name, kind: required.kind, reason: missingReason(items.concat(seasons), required.key, now) });
       }
     });
     return {
@@ -168,6 +176,13 @@
       expiryUnknown: expiryUnknown,
       quantityUnknown: quantityUnknown
     };
+  }
+
+  function seasoningStock(state) {
+    var dates = state && state.seasoningExpiry && typeof state.seasoningExpiry === 'object' ? state.seasoningExpiry : {};
+    return asArray(state && state.season).filter(function (name) { return typeof name === 'string'; }).map(function (name) {
+      return { name: name, expiry: Object.prototype.hasOwnProperty.call(dates, name) ? dates[name] : '', quantity: '' };
+    });
   }
 
   function rankRecipes(recipes, state, now) {
@@ -191,6 +206,7 @@
     parseQuantity: parseQuantity,
     usable: usable,
     matchIngredient: matchIngredient,
+    seasoningStock: seasoningStock,
     evaluate: evaluate,
     rankRecipes: rankRecipes
   });

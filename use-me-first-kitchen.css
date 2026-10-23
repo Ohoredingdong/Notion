@@ -428,60 +428,6 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 .kitchen-app .kitchen-arrange-tools[hidden]{display:none}
 
 
-/* Visible seasoning shelf: checked seasonings become miniature jars and bottles. */
-.kitchen-app .seasoning-rack{
-  margin-top:18px;padding:14px 16px 16px;border:1px solid #ddd1b9;border-radius:18px;
-  background:linear-gradient(180deg,#fbf5e8 0%,#f5ecd9 100%);
-  box-shadow:inset 0 1px 0 #fff8,0 7px 18px #7d684416;
-}
-.kitchen-app .seasoning-rack-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
-.kitchen-app .seasoning-rack-head>div{display:flex;align-items:baseline;gap:9px;min-width:0}
-.kitchen-app .seasoning-rack-head strong{font-family:'Gowun Batang',serif;font-size:15px;color:#6f604b;white-space:nowrap}
-.kitchen-app .seasoning-rack-head small{font-size:10px;color:#9b8b72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kitchen-app .seasoning-rack-head .btn{min-height:34px;padding:6px 10px;font-size:10px;flex-shrink:0}
-.kitchen-app .seasoning-rack-board{
-  position:relative;min-height:118px;border-radius:12px 12px 8px 8px;
-  background:linear-gradient(180deg,#f7f2df 0%,#eef0d8 72%,#e3dfc2 73%,#d0c6a7 79%,#ede4ca 80%);
-  border:1px solid #ded5ba;box-shadow:inset 0 5px 12px #8f8b6320;
-  overflow:hidden;
-}
-.kitchen-app .seasoning-rack-board:after{
-  content:'';position:absolute;left:8px;right:8px;bottom:15px;height:9px;border-radius:4px;
-  background:linear-gradient(#fff8de,#d4c7a7 68%,#b9a984);box-shadow:0 4px 5px #6e5d4128;pointer-events:none;z-index:1;
-}
-.kitchen-app .seasoning-rack-items{
-  position:relative;z-index:2;display:flex;align-items:flex-end;min-height:116px;padding:15px 18px 25px;
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#c7b99a transparent;
-}
-.kitchen-app .seasoning-mini{
-  position:relative;display:flex;flex:0 0 66px;height:82px;align-items:center;justify-content:flex-end;flex-direction:column;
-  padding:0 2px 14px;margin-left:-8px;border:0;background:transparent;color:#6b5d49;cursor:pointer;z-index:2;
-  transition:transform .16s ease,filter .16s ease;
-}
-.kitchen-app .seasoning-mini:first-child{margin-left:0}
-.kitchen-app .seasoning-mini:nth-child(3n+1){transform:rotate(-2deg)}
-.kitchen-app .seasoning-mini:nth-child(3n+2){transform:translateY(-2px) rotate(1deg)}
-.kitchen-app .seasoning-mini:nth-child(3n){transform:rotate(2deg)}
-.kitchen-app .seasoning-mini:hover{transform:translateY(-5px) scale(1.04);z-index:5}
-.kitchen-app .seasoning-mini .food-art{width:61px;height:61px;max-width:none;filter:drop-shadow(0 4px 3px #6655362b)}
-.kitchen-app .seasoning-mini>span{
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);max-width:64px;padding:2px 5px;border:1px solid #e1d3b8;border-radius:5px;
-  background:#fffaf0ed;color:#725f45;font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.kitchen-app .seasoning-empty{
-  margin:auto;min-height:62px;padding:10px 14px;border:1px dashed #c9b993;border-radius:11px;background:#fffaf0a8;
-  color:#8b795e;font-size:11px;
-}
-@media(max-width:760px){
-  .kitchen-app .seasoning-rack{margin-top:14px;padding:12px}
-  .kitchen-app .seasoning-rack-head small{display:none}
-  .kitchen-app .seasoning-rack-board{min-height:108px}
-  .kitchen-app .seasoning-rack-items{min-height:106px;padding:12px 13px 23px}
-  .kitchen-app .seasoning-mini{flex-basis:59px;height:75px;margin-left:-9px}
-  .kitchen-app .seasoning-mini .food-art{width:55px;height:55px}
-}
-
-
 /* Four working doors: refrigerated above, frozen below. Warm white enamel,
    ceramic displays and a wooden counter echo the miniature kitchen references. */
 .kitchen-app .home-grid{align-items:start}
@@ -657,87 +603,46 @@ html[data-widget-theme="dark"] .kitchen-app .sidebar{background:#30342aed;border
 @media(prefers-reduced-motion:reduce){.kitchen-app .four-door .fridge-door{transition:none}}
 
 
-/* Draggable Korean seasoning shelf. */
-.kitchen-app .seasoning-rack-board{min-height:148px}
-.kitchen-app .seasoning-rack-items{
-  position:absolute;inset:0;display:block;min-height:0;padding:0;overflow:hidden;touch-action:none;
-}
-.kitchen-app .seasoning-mini{
-  position:absolute;left:50%;top:50%;display:grid;place-items:center;width:68px;height:82px;
-  padding:0 2px 15px;margin:0!important;transform:translate(-50%,-50%)!important;
-  border:0;background:transparent;color:#6b5d49;cursor:grab;touch-action:none;user-select:none;
-  transition:filter .14s ease,opacity .14s ease;
-}
-.kitchen-app .seasoning-mini:hover{transform:translate(-50%,-50%)!important;filter:drop-shadow(0 5px 4px #66553628);z-index:30!important}
-.kitchen-app .seasoning-mini.is-dragging{cursor:grabbing;filter:drop-shadow(0 10px 7px #58442f42);z-index:80!important}
-.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{
-  width:61px;height:61px;max-width:none;overflow:visible;pointer-events:none;
-}
-.kitchen-app .seasoning-mini>span{
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);max-width:67px;padding:2px 5px;
-  border:1px solid #e1d3b8;border-radius:5px;background:#fffaf0f2;color:#725f45;
-  font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
-}
-.kitchen-app .seasoning-empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:3}
-@media(max-width:760px){
-  .kitchen-app .seasoning-rack-board{min-height:138px}
-  .kitchen-app .seasoning-mini{width:62px;height:76px}
-  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:55px;height:55px}
-}
-
-
-/* Seasoning miniature polish: larger tactile objects, softer name tags, denser shelf. */
-.kitchen-app .seasoning-rack{
-  background:linear-gradient(180deg,#faf4e7 0%,#f1ead7 100%);
-  border-color:#d8cbae;box-shadow:inset 0 1px 0 #fff,0 8px 22px #725b3d12;
-}
+/* Reference-inspired miniature ceramics and glass on a warm wooden shelf. */
+.kitchen-app .seasoning-rack{margin-top:18px;padding:16px;border:1px solid #e0d5c4;border-radius:20px;background:#faf6ed;box-shadow:0 6px 18px #725b3d0c}
+.kitchen-app .seasoning-rack-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.kitchen-app .seasoning-rack-head>div{min-width:0;display:grid;gap:4px}
+.kitchen-app .seasoning-rack-head strong{font-family:'Gowun Batang',serif;font-size:17px;color:#594b3c}
+.kitchen-app .seasoning-rack-head small{font-size:11px;color:#796c5b}
+.kitchen-app .seasoning-rack-head .btn{min-height:44px;padding:8px 12px;font-size:12px;flex-shrink:0}
 .kitchen-app .seasoning-rack-board{
-  min-height:166px;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,0) 25%),
-    linear-gradient(180deg,#f5f0dd 0%,#eef0d8 76%,#d8cfb2 77%,#c9b995 83%,#ece2c8 84%);
-  box-shadow:inset 0 8px 16px #8b805c1b;
+  --seasoning-rows:1;--seasoning-row-height:112px;position:relative;height:calc(var(--seasoning-rows)*var(--seasoning-row-height) + 24px);
+  border:1px solid #e4d8c6;border-radius:14px;overflow:hidden;
+  background:repeating-linear-gradient(0deg,#ead8bc 0 2px,transparent 2px 64px),repeating-linear-gradient(90deg,transparent 0 95px,#e6dfd2 95px 97px),linear-gradient(#fffdf7,#f2ecde);
+  box-shadow:inset 0 5px 12px #8f775016;
 }
-.kitchen-app .seasoning-rack-board:after{
-  left:7px;right:7px;bottom:16px;height:11px;
-  background:linear-gradient(#fff9e3 0%,#e4d9bb 42%,#c9b895 72%,#a89572 100%);
-  box-shadow:0 5px 5px #66523826,inset 0 1px 0 #fff9;
-}
-.kitchen-app .seasoning-mini{width:80px;height:91px;padding-bottom:15px}
-.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{
-  width:72px;height:72px;filter:none;
-}
-.kitchen-app .seasoning-mini>span{
-  bottom:1px;max-width:73px;padding:2px 6px;border:0;border-radius:5px;
-  background:#fff9eddf;box-shadow:0 1px 3px #735c3d16;color:#6b5942;
-  font-size:8.5px;font-weight:500;
-}
-.kitchen-app .seasoning-mini.is-dragging>span{opacity:.72}
+.kitchen-app .seasoning-rack-board:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,transparent 0 calc(var(--seasoning-row-height) - 28px),#e9d0ab calc(var(--seasoning-row-height) - 28px) calc(var(--seasoning-row-height) - 24px),#c19a6d calc(var(--seasoning-row-height) - 24px) calc(var(--seasoning-row-height) - 21px),#f1dec2 calc(var(--seasoning-row-height) - 21px) calc(var(--seasoning-row-height) - 17px),transparent calc(var(--seasoning-row-height) - 17px) var(--seasoning-row-height))}
+.kitchen-app .seasoning-rack-items{position:absolute;inset:0 12px;z-index:2;touch-action:none}
+.kitchen-app .seasoning-mini{position:absolute;display:grid;grid-template-rows:72px 16px 18px;justify-items:center;align-items:center;width:80px;height:106px;padding:0;margin:0;border:0;background:transparent;color:#584737;transform:translate(-50%,-50%);cursor:grab;touch-action:none;user-select:none}
+.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:72px;height:72px;max-width:none;pointer-events:none;overflow:hidden;filter:drop-shadow(0 3px 2px #69513516)}
+.kitchen-app .seasoning-name{max-width:80px;font-size:12px;line-height:16px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.kitchen-app .seasoning-expiry{max-width:80px;padding:1px 5px;border-radius:5px;background:#fffdf8;color:#776958;font-size:10px;line-height:16px;white-space:nowrap;pointer-events:none}
+.kitchen-app .seasoning-mini[data-expiry-status="soon"] .seasoning-expiry{background:#fff0ca;color:#765018}
+.kitchen-app .seasoning-mini[data-expiry-status="expired"] .seasoning-expiry{background:#fbe3db;color:#973e30}
+.kitchen-app .seasoning-mini[data-expiry-status="safe"] .seasoning-expiry{background:#e8eee1;color:#526849}
+.kitchen-app .seasoning-mini:hover,.kitchen-app .seasoning-mini:focus-visible{filter:drop-shadow(0 4px 3px #69513523);z-index:30!important}
+.kitchen-app .seasoning-mini.is-dragging{cursor:grabbing;filter:drop-shadow(0 10px 7px #58442f42);z-index:80!important}
+.kitchen-app .seasoning-mini:focus-visible{outline:2px solid #8b9e7f;outline-offset:3px;border-radius:9px}
+.kitchen-app .seasoning-rack-note{margin:10px 0 0;font-size:11px;line-height:1.6;color:#796b58}
+.kitchen-app .seasoning-empty{position:absolute;inset:25% 6%;min-height:52px;padding:12px;border:1px dashed #c9b993;border-radius:11px;background:#fffcf6;color:#75634c;font-size:12px}
+.kitchen-app #sg .umf-toggle-wrap{display:grid;align-content:start;gap:3px}
+.kitchen-app .umf-season-expiry{min-height:44px;width:100%;padding:5px;border:1px solid #e4d9c7;border-radius:8px;background:#fffcf6;color:#716047;font-size:11px}
+.kitchen-app .umf-season-expiry[data-expired="true"]{color:#973e30;background:#fcece5;border-color:#edc5b6}
+.kitchen-app #sg .umf-custom-remove{bottom:auto;height:36px}
 @media(max-width:760px){
-  .kitchen-app .seasoning-rack-board{min-height:154px}
-  .kitchen-app .seasoning-mini{width:70px;height:83px}
-  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:64px;height:64px}
-  .kitchen-app .seasoning-mini>span{max-width:65px;font-size:8px}
-}
-
-
-/* Cozy miniature seasoning presentation — object-first, labels secondary. */
-.kitchen-app .seasoning-rack-board{min-height:172px}
-.kitchen-app .seasoning-mini{width:82px;height:94px}
-.kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:76px;height:76px;overflow:visible}
-.kitchen-app .seasoning-mini>span{
-  opacity:0;transform:translate(-50%,4px);transition:opacity .14s ease,transform .14s ease;
-  background:#fffaf0f4;border:1px solid #e4d8c2;box-shadow:0 2px 5px #6e583815;
-}
-.kitchen-app .seasoning-mini:hover>span,
-.kitchen-app .seasoning-mini:focus-visible>span,
-.kitchen-app .seasoning-mini.is-dragging>span{
-  opacity:1;transform:translate(-50%,0);
-}
-.kitchen-app .seasoning-mini:hover .seasoning-art,
-.kitchen-app .seasoning-mini:focus-visible .seasoning-art{filter:drop-shadow(0 5px 4px #6c563625)}
-@media(max-width:760px){
-  .kitchen-app .seasoning-rack-board{min-height:160px}
-  .kitchen-app .seasoning-mini{width:72px;height:86px}
-  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:68px;height:68px}
+  .kitchen-app .seasoning-rack{margin-top:14px;padding:12px}
+  .kitchen-app .seasoning-rack-head strong{font-size:16px}
+  .kitchen-app .seasoning-rack-head small{font-size:10px}
+  .kitchen-app .seasoning-rack-head .btn{font-size:11px;padding:7px 9px}
+  .kitchen-app .seasoning-rack-board{--seasoning-row-height:100px}
+  .kitchen-app .seasoning-rack-items{inset:0 9px}
+  .kitchen-app .seasoning-mini{width:62px;height:94px;grid-template-rows:60px 16px 18px}
+  .kitchen-app .seasoning-mini .seasoning-art,.kitchen-app .seasoning-mini .food-art{width:60px;height:60px}
+  .kitchen-app .seasoning-name{max-width:62px;font-size:11px}
+  .kitchen-app .seasoning-expiry{max-width:62px;font-size:9px}
 }

@@ -218,6 +218,7 @@ def main():
                         assert page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE)) == original
                         passed(f"{width}px {'touch' if width < 760 else 'mouse'} drag across refrigerated and both frozen panels persists without inventory edits")
 
+                        page.locator('.seasoning-rack').evaluate("node => node.scrollIntoView({block:'center',behavior:'instant'})")
                         seasoning = page.locator('.seasoning-mini[data-seasoning-name="간장"]')
                         drag(page, seasoning, page.locator(".seasoning-rack-items"), width < 760)
                         page.wait_for_function("JSON.parse(localStorage.getItem('umf-seasoning-layout-v3') || '{}')['간장']")
@@ -225,6 +226,56 @@ def main():
                         page.reload(wait_until="networkidle")
                         assert page.evaluate("localStorage.getItem('umf-seasoning-layout-v3')") == saved_seasoning
                         passed(f"{width}px Korean seasoning drag and position persist")
+
+                        before_dates = page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE))
+                        before_view = page.evaluate("localStorage.getItem(%s)" % json.dumps(VIEW))
+                        page.locator('.seasoning-rack').evaluate("node => node.scrollIntoView({block:'center',behavior:'instant'})")
+                        seasoning.click()
+                        expect(page.locator("#customExpiry")).to_be_visible()
+                        expect(page.locator("#customName")).to_have_attribute("readonly", "")
+                        page.locator("#customExpiry").fill("2026-10-22")
+                        page.locator("#customCancel").click()
+                        assert page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE)) == before_dates
+                        seasoning.click()
+                        page.locator("#customExpiry").fill("2026-10-22")
+                        page.locator("#customSave").click()
+                        page.wait_for_function("UMFStore.getState().seasoningExpiry?.['간장'] === '2026-10-22'")
+                        page.reload(wait_until="networkidle")
+                        expect(seasoning).to_have_attribute("data-expiry-status", "expired")
+                        assert page.evaluate("UMFRecipes.getRanked().find(x => x.recipe.name==='계란 볶음밥').missing.some(x => x.name==='간장' && x.reason==='expired')")
+                        page.evaluate("UMFRecipes.select('계란 볶음밥')")
+                        expect(page.locator("#umfSelectionChips")).to_contain_text("간장 · 기한 경과")
+                        assert page.evaluate("localStorage.getItem('use-me-first-before-seasoning-expiry-v1')") == before_dates
+                        assert page.evaluate("localStorage.getItem(%s)" % json.dumps(VIEW)) == before_view
+                        assert page.evaluate("localStorage.getItem('umf-seasoning-layout-v3')") == saved_seasoning
+                        passed(f"{width}px seasoning expiry editing and cancel, reload, recipe exclusion and original-data backup")
+
+                        page.locator('.seasoning-rack').evaluate("node => node.scrollIntoView({block:'center',behavior:'instant'})")
+                        seasoning.click()
+                        page.locator("#customExpiry").fill("1899-12-31")
+                        invalid_before = page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE))
+                        page.locator("#customSave").click()
+                        expect(page.locator("#umfCustomError")).to_be_visible()
+                        assert page.evaluate("localStorage.getItem(%s)" % json.dumps(STATE)) == invalid_before
+                        page.locator("#customExpiry").fill("")
+                        page.locator("#customSave").click()
+                        expect(seasoning).to_have_attribute("data-expiry-status", "unknown")
+                        assert page.evaluate("UMFStore.getState().season.includes('간장')")
+                        assert page.evaluate("UMFRecipes.getRanked().find(x => x.recipe.name==='계란 볶음밥').available")
+                        passed(f"{width}px invalid date does not write and clearing a date retains seasoning ownership")
+
+                        page.locator('[data-action="add-seasoning"]').first.click()
+                        page.locator("#customName").fill("유자청")
+                        page.locator("#customExpiry").fill("2026-11-01")
+                        page.locator("#customSave").click()
+                        page.wait_for_function("UMFStore.getState().seasoningExpiry?.['유자청'] === '2026-11-01'")
+                        expect(page.locator('.seasoning-mini[data-seasoning-name="유자청"] [data-seasoning-art="jar"]')).to_be_visible()
+                        page.locator("#seasonTab").click()
+                        expect(page.locator('.umf-season-expiry[data-seasoning-name="간장"]')).to_be_visible()
+                        page.locator("#addPantry").click()
+                        expect(page.locator("#customExpiryField")).to_be_hidden()
+                        page.locator("#customCancel").click()
+                        passed(f"{width}px dated custom seasoning, visible grid editor and unchanged pantry entry")
 
                         page.locator('.nav-btn[data-kitchen-page="recipes"]').click()
                         rice = page.locator('.umf-menu-card[data-name="계란 볶음밥"]')
@@ -258,15 +309,15 @@ def main():
                                 const atlas = document.querySelector('svg.miniature-art image').getAttribute('href');
                                 const background = getComputedStyle(document.querySelector('.kitchen-scene')).backgroundImage;
                                 const scene = background.slice(5, -2);
-                                return Promise.all([atlas, scene].map(async src => {
-                                    if (!src.startsWith('data:image/webp;base64,')) throw Error('Image was not embedded');
+                                return Promise.all([atlas, scene, UMFKitchenArt.seasoningAsset].map(async src => {
+                                    if (!src.startsWith('data:image/')) throw Error('Image was not embedded');
                                     const image = new Image(); image.src = src; await image.decode();
                                     return image.naturalWidth;
                                 }));
                             }""")
-                            assert sizes[0] == 1254 and sizes[1] > 0, sizes
+                            assert sizes[0] == 1254 and sizes[1] > 0 and sizes[2] == 1448, sizes
                         else:
-                            assert {"food-miniatures-v2.webp", "kitchen-scene.webp"} <= images, images
+                            assert {"food-miniatures-v2.webp", "kitchen-scene.webp", "seasoning-miniatures-v1.png"} <= images, images
                         page.screenshot(path=str(output / f"recipes-{width}.png"), full_page=True)
                         passed(f"{width}px search/empty state, layout, miniature assets and no runtime errors or external writes")
                     except Exception as error:

@@ -13,6 +13,13 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const stringArray = (value: unknown) => Array.isArray(value) && value.every(x => typeof x === "string" && x.trim());
 function validPayload(payload: any) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload) || ![undefined, 1, 2].includes(payload.version)) return false;
+  if (Object.prototype.hasOwnProperty.call(payload, "seasoningExpiry")) {
+    const dates = payload.seasoningExpiry;
+    if (!dates || typeof dates !== "object" || Array.isArray(dates) || !Object.entries(dates).every(([name, expiry]) =>
+      name && name === name.normalize("NFKC").trim().slice(0, 120) && typeof expiry === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(expiry) && expiry >= "0001-01-01" && Number.isFinite(Date.parse(expiry + "T00:00:00Z")) &&
+      new Date(expiry + "T00:00:00Z").toISOString().slice(0, 10) === expiry)) return false;
+  }
   if (!["season", "pantry", "customSeason", "customPantry"].every(k => stringArray(payload[k]))) return false;
   if (!Array.isArray(payload.items) || !payload.items.every((x: any) => x && typeof x === "object" && typeof x.name === "string" && x.name.trim())) return false;
   if (payload.version !== 2) return true;
