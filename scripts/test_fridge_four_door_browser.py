@@ -68,18 +68,71 @@ def drag(page, source, target, touch):
         page.mouse.up()
 
 
+def check_srcdoc(browser, root, output, passed):
+    """Exercise the export in the iframe setting that broke detached markup."""
+    html = (root / "use-me-first.html").read_text(encoding="utf-8")
+    for allow_storage in (True, False):
+        context = browser.new_context(viewport={"width": 931, "height": 900})
+        try:
+            page = context.new_page()
+            errors, unexpected_requests = [], []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            origin = "http://standalone-fridge.invalid/"
+            sandbox = "allow-scripts allow-same-origin" if allow_storage else "allow-scripts"
+
+            def route(request):
+                if request.request.url == origin:
+                    request.fulfill(content_type="text/html", body=
+                                    '<iframe id="preview" sandbox="' + sandbox +
+                                    '" style="width:390px;height:844px;border:0"></iframe>')
+                else:
+                    unexpected_requests.append(request.request.url)
+                    request.abort()
+
+            page.route("**/*", route)
+            page.goto(origin)
+            page.locator("#preview").evaluate("(node, html) => node.srcdoc = html", html)
+            frame = page.frame_locator("#preview")
+            expect(frame.locator(".fridge-door")).to_have_count(4)
+            if allow_storage:
+                frame.locator('.compartment-toggle[data-compartment="freezer-right"]').click()
+                expect(frame.locator('.compartment-toggle[data-compartment="freezer-right"]')).to_have_attribute("aria-expanded", "true")
+                frame.locator("#umfTopAdd").click()
+                frame.locator("#name").fill("미리보기 확인 재료")
+                frame.locator("#umfQty").fill("1개")
+                frame.locator("#save").click()
+                expect(frame.locator("#list")).to_contain_text("미리보기 확인 재료")
+                frame.locator("body").evaluate("() => location.reload()")
+                expect(frame.locator("#list")).to_contain_text("미리보기 확인 재료")
+                expect(frame.locator('.compartment-toggle[data-compartment="freezer-right"]')).to_have_attribute("aria-expanded", "true")
+                label = "srcdoc iframe opens a freezer, adds inventory and retains both after iframe reload"
+            else:
+                expect(frame.locator("#umfStorageStatus")).to_be_visible()
+                expect(frame.locator("#umfStorageStatus")).to_contain_text("저장")
+                label = "opaque srcdoc iframe renders the kitchen and honestly reports denied storage"
+            assert not errors, errors
+            assert not unexpected_requests, unexpected_requests
+            page.locator("#preview").screenshot(path=str(output / ("iframe-storage.png" if allow_storage else "iframe-denied-storage.png")))
+            passed(label)
+        finally:
+            context.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path, default=Path("/tmp/fridge-four-door-browser"))
     parser.add_argument("--browser-executable")
     parser.add_argument("--widths", nargs="+", type=int, default=[1120, 390, 320])
+    parser.add_argument("--standalone", action="store_true",
+                        help="Require a self-contained export with no asset or external requests")
     args = parser.parse_args()
     root, output = args.root.resolve(), args.output.resolve()
     if output.is_relative_to(root):
         raise SystemExit("Use an artifact directory outside the checkout.")
     output.mkdir(parents=True, exist_ok=True)
-    results = {"scope": "Local Chromium, fixed clock, synthetic storage; no production or personal sync", "cases": [], "errors": []}
+    results = {"scope": "Local Chromium, fixed clock, synthetic storage; no production or personal sync",
+               "standalone": args.standalone, "cases": [], "errors": []}
 
     def passed(name):
         results["cases"].append(name)
@@ -102,12 +155,14 @@ def main():
                                                   has_touch=width < 760, timezone_id="Asia/Seoul", reduced_motion="reduce")
                     page = context.new_page()
                     page.set_default_timeout(8000)
-                    errors, external_writes, images = [], [], set()
+                    errors, external_writes, images, asset_requests = [], [], set(), []
                     page.on("pageerror", lambda error: errors.append(str(error)))
                     page.on("response", lambda response: images.add(Path(urlparse(response.url).path).name)
                             if response.ok and response.request.resource_type == "image" else None)
 
                     def route(request):
+                        if request.request.resource_type != "document":
+                            asset_requests.append(request.request.url)
                         if request.request.url.startswith(origin + "/"):
                             request.continue_()
                         else:
@@ -197,7 +252,21 @@ def main():
                         assert dimensions["scroll"] <= dimensions["viewport"] + 1, dimensions
                         assert not errors, errors
                         assert not external_writes, external_writes
-                        assert {"food-miniatures-v2.webp", "kitchen-scene.webp"} <= images, images
+                        if args.standalone:
+                            assert not asset_requests, "Standalone preview requested other files: " + repr(asset_requests)
+                            sizes = page.evaluate("""async () => {
+                                const atlas = document.querySelector('svg.miniature-art image').getAttribute('href');
+                                const background = getComputedStyle(document.querySelector('.kitchen-scene')).backgroundImage;
+                                const scene = background.slice(5, -2);
+                                return Promise.all([atlas, scene].map(async src => {
+                                    if (!src.startsWith('data:image/webp;base64,')) throw Error('Image was not embedded');
+                                    const image = new Image(); image.src = src; await image.decode();
+                                    return image.naturalWidth;
+                                }));
+                            }""")
+                            assert sizes[0] == 1254 and sizes[1] > 0, sizes
+                        else:
+                            assert {"food-miniatures-v2.webp", "kitchen-scene.webp"} <= images, images
                         page.screenshot(path=str(output / f"recipes-{width}.png"), full_page=True)
                         passed(f"{width}px search/empty state, layout, miniature assets and no runtime errors or external writes")
                     except Exception as error:
@@ -206,6 +275,12 @@ def main():
                         page.screenshot(path=str(output / f"failure-{width}.png"), full_page=True)
                     finally:
                         context.close()
+                if args.standalone:
+                    try:
+                        check_srcdoc(browser, root, output, passed)
+                    except Exception as error:
+                        results["errors"].append(f"srcdoc: {type(error).__name__}: {error}")
+                        traceback.print_exc()
             finally:
                 browser.close()
     finally:

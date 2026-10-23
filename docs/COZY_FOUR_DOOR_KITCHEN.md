@@ -2,6 +2,8 @@
 
 사용자가 2026-10-23에 제공한 따뜻한 미니어처 주방 이미지와 새 구획 요청을 반영한 변경이다. 기준 브랜치는 `docs/project-handoff-20261023`, 구현 브랜치는 `feat/cozy-four-door-kitchen`이다. 기존 공개 URL `use-me-first.html`과 저장 키를 유지하며, 이 변경만으로 main 병합이나 공개 배포를 하지 않는다.
 
+HTML만 전달되는 미리보기에는 CSS·이미지·동작을 포함한 [단일 파일](../previews/use-me-first.html)을 사용한다. 자산 누락 재현과 iframe 검증 결과는 [별도 기록](STANDALONE_KITCHEN_PREVIEW.md)에 있다.
+
 ## 화면과 조작
 
 - 흰색 에나멜과 크림색 디스플레이, 우드·타일·미니어처 식재료의 기존 무드를 이어간다.
