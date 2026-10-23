@@ -40,6 +40,8 @@
 - 제공하는 `previews/use-me-first.html`이 검사한 단일 파일과 바이트 단위로 같은지 확인했다. 생성 파일의 크기는 3,617,005바이트다.
 - 실제 채팅 호스트·Notion·실기기 Safari·개인 동기화·공개 배포는 검증하지 않았다. main 병합·배포는 수행하지 않았다.
 
+제출 상태: [작업 브랜치](https://github.com/Ohoredingdong/Notion/tree/feat/seasoning-expiry-and-miniatures)에 push했다. `feat/cozy-four-door-kitchen`을 base로 draft PR 생성을 시도했으나 GitHub GraphQL API가 HTTP 403 `Forbidden`을 반환해 PR은 생성되지 않았다.
+
 재현은 저장소 루트에서 실행한다. 클라우드에서는 먼저 `/workspace/.notion-cloud/activate.sh`를 source한다.
 
 ```bash
