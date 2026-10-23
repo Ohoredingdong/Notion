@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf7f0">
+<title>한끼의 부엌 · 미니어처 시안</title>
+<!-- Source template. Generate the two self-contained previews with the builder. -->
+<link rel="stylesheet" href="designs/miniature-kitchen/scene.css">
+<script defer src="use-me-first-kitchen-art.js"></script>
+<script defer src="designs/miniature-kitchen/scene.js"></script>
+</head>
+<body data-mode="app" data-camera="fridge">
+<a class="skip" href="#kitchen">부엌으로 이동</a>
+<main class="shell">
+  <header class="masthead">
+    <div class="brand"><span class="brand-icon" data-icon="fridge" aria-hidden="true"></span><div><h1>한끼의 부엌</h1><p>나의 작은 부엌</p></div></div>
+    <div class="header-actions"><span class="prototype-label">디자인·조작 시안</span></div>
+  </header>
+  <nav class="camera-tabs" aria-label="부엌에서 볼 곳">
+    <button type="button" data-camera="fridge" aria-pressed="true">냉장고</button><button type="button" data-camera="seasoning" aria-pressed="false">양념 선반</button><button type="button" data-camera="counter" aria-pressed="false">조리대</button>
+  </nav>
+  <section class="room" id="kitchen" aria-label="직접 만지고 꾸미는 미니어처 부엌" tabindex="-1">
+    <div class="room-caption"><span class="morning-dot" aria-hidden="true"></span><span id="roomMessage">냉장고 문을 열어, 우리 집 재료를 살펴봐요.</span></div>
+    <div class="fridge-stage" aria-label="위 두 칸 냉장 · 아래 두 칸 냉동">
+      <div class="cabinet" id="cabinet" aria-hidden="true"></div>
+      <div class="fridge-interiors" id="fridgeInteriors"></div>
+      <div class="fridge-doors" id="fridgeDoors"></div>
+    </div>
+    <div class="seasoning-zone drop-zone" data-zone="seasoning" aria-label="양념 선반"></div>
+    <div class="counter-zone drop-zone" data-zone="counter" aria-label="조리대"></div>
+    <div class="door-controls" role="group" aria-label="네 문 개폐"></div>
+    <div class="scene-note" id="sceneNote">재료를 누르면 살펴볼 수 있어요</div>
+  </section>
+  <div class="decoration-tools" id="decorationTools" hidden><span>소품을 끌어 배치해요</span><button type="button" id="propList">놓아둔 소품 보기</button></div>
+  <div class="worktop-actions" role="group" aria-label="부엌에서 하기">
+    <button type="button" class="action primary" id="addFood"><span data-icon="plus" aria-hidden="true"></span>재료 담기</button>
+    <button type="button" class="action" id="recipes"><span data-icon="recipes" aria-hidden="true"></span>오늘 뭐 먹지?</button>
+    <button type="button" class="action" id="decorate" aria-pressed="false"><span data-icon="sparkles" aria-hidden="true"></span><span>꾸미기</span></button>
+  </div>
+  <div class="design-note"><span>예시 재료로 조작해 보는 시안 · 새로고침하면 처음으로 돌아가요.</span><button type="button" id="help">조작 방법</button></div>
+  <div class="live-message" id="liveMessage" role="status" aria-live="polite"></div>
+</main>
+<dialog class="tray" id="tray" aria-labelledby="trayTitle">
+  <header class="tray-head"><div><span id="trayEyebrow">MY LITTLE KITCHEN</span><h2 id="trayTitle"></h2></div><button type="button" id="closeTray" aria-label="닫기">×</button></header>
+  <div id="trayContent"></div>
+</dialog>
+</body>
+</html>
