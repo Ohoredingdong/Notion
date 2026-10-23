@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-23T17:29:24.997771+09:00
+- 계산일: 2026-10-24T02:52:39.504774+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.0배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 43.3배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.7배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.3배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 43.2배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.5배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.9배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.8배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 346.8배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 345.2배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [“금리 인하만 기다릴 때 아니다…돈의 방향 따라 AI 다음 주도주 찾아야” - 월간중앙](https://news.google.com/rss/articles/CBMibkFVX3lxTE9NUmw4QWo4Q3JzX3Q3cGVRQ01TUXRkb2piMmN4NmRuV3NQRTBCVzZTTVdkQml1RnYxOTA0VE1XNF9SZWV3R2NaQllWeGpVd2FiRllidUIzVkxQcVpQd0ZQRjFrSlNDRkloNTFvZmln?oc=5)
-- [WTI & 엔화가치 '급등' 속...달러 '절하', 금값·은값·구리 '추락' - 초이스경제](https://news.google.com/rss/articles/CBMic0FVX3lxTE03RkZ4TTh4b0lOMEd3T0x6X2hzMU52NE40WkM4M2I3WEp5a1hXTG1wVXVONDUtdk9fQ3VaZm8zell2VjRIMERoOTJoSnBXSjJFV1BrYVE2bUNlVExNaEtxRlN1NUg3ZFhlVTBmbFVXWXgydmPSAXNBVV95cUxNN0ZGeE04eG9JTjBHd09Mel9oczFOdjRONFpDODNiN1hKeWtYV0xtcFV1TjQ1LXZPX0N1WmZvM3pZdlY0SDBEaDkyaEpwV0oyRVdQa2FRNm1DZVRMTWhLcUZTdTVIN2RYZVUwZmxVV1l4MnZj?oc=5)
+- [美 금리 결정에 구글·아마존·삼전닉스 실적까지...코스피 운명가를 슈퍼위크(다음주 변수 미리보기) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE1iV0cxOEYyZGZMc2lmZU5DOUJqQ3FDajBoZWw3d0I1UWhTTzVMOTFoSFZTaDRkbEc2UkJTTEp4VThxaFhpU1U1dnVUNVU5UkVVS1hZWU1CR3FKdw?oc=5)
+- [美 안전자산 선호에 국고채 금리 일제히 하락…10년물 4.097% - 청년일보](https://news.google.com/rss/articles/CBMiakFVX3lxTE1vZlFaaHJvc3RrZHRuVzFVbUlJYUZlTzltZGRBcXN0dHYtV2VPejg1X1FnZExXb0dlQUp1Z0xMY2NZWTFIWldGeXRJNXZZc0J6dHZXcGgtX0RSQy1XQmh1T0hzWm55TUwyRHc?oc=5)
 - [젠슨 황 “2029년 메모리 공급과잉 없을 것”…반도체 슈퍼사이클 논란에 반박 - 매일경제](https://news.google.com/rss/articles/CBMiTkFVX3lxTE12YnR4MUdPR2tGSmhPVlhWdlB4WWtJSDV2RTN5a1VEQjhQMHMycmRpM0w2cmgydnQ1WnRScFhER05Xa3FUWUFsaE9lS2NIUQ?oc=5)
-- [젠슨 황 "메모리는 많을수록 좋다"···2029년 공급과잉론에 선 그어 - 스마트비즈](https://news.google.com/rss/articles/CBMibEFVX3lxTE16Y3U3NklZRXpjb3F5RjFEdGVMcVpXODFFaU5jT20wNGtfU0NnT1QxUEdoWnB6OU84YWx6eEpKR29mTERBLWVmemlOYkJuY0JZUUJITklxVWNtTXRkdEhrQzZQWFAyNndZOWFXeQ?oc=5)
+- [“2029년 메모리 공급과잉 없다”…젠슨 황, 삼성전자·SK하이닉스 구세주 될까 - 경북매일](https://news.google.com/rss/articles/CBMiWkFVX3lxTE9SdWFzYzV3MnZBN01FT1BfdnlyZGNhUDhlOW5aZVJDaC1hNVNiRDBvSDFZNGVfZWpPVC1aT2xzZnNVdDB3Qmc4UTR4Xy1hUm1DRGxSOEk1RGptQQ?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
