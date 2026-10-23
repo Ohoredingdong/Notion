@@ -68,6 +68,23 @@ def main():
                     assert not page.evaluate('document.documentElement.scrollWidth>innerWidth')
                     assert len(requests)==1 and not external
                     assert not page.evaluate('__storageAccess')
+                    if (mode,width)==('app',1120):
+                        # A running UI can still show missing or proxy-blurred art.
+                        # Decode the actual inline images while all asset requests are blocked.
+                        images=page.evaluate('''async () => {
+                            const sources=new Set([...document.querySelectorAll('svg image')].map(n=>n.getAttribute('href')));
+                            const background=getComputedStyle(document.querySelector('.room')).backgroundImage;
+                            if(!background.startsWith('url("data:image/'))throw new Error('Room background is not embedded');
+                            sources.add(background.slice(5,-2));
+                            return Promise.all([...sources].map(async source=>{
+                                if(!source?.startsWith('data:image/'))throw new Error('External or missing preview image');
+                                const image=new Image();image.src=source;await image.decode();
+                                return [image.naturalWidth,image.naturalHeight];
+                            }));
+                        }''')
+                        assert sorted(images)==[[1254,1254],[1286,1223],[1448,1086],[1536,1024],[1536,1024]],images
+                        assert len(requests)==1 and not external
+                        passed('art: all five embedded originals decode at full resolution with image network requests blocked')
                     if mode=='widget' or width<=760:
                         stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box()
                         assert stage['y']+stage['height'] <= controls['y']+1, (stage,controls)

@@ -9,11 +9,9 @@ from pathlib import Path
 import re
 
 
-def build(root, mode, asset_revision=None):
+def build(root, mode):
     if mode not in ('app', 'widget'):
         raise ValueError('Unknown presentation')
-    if asset_revision is not None and not re.fullmatch(r'[0-9a-f]{40}', asset_revision):
-        raise ValueError('Asset revision must be a full lowercase Git commit SHA')
     root = root.resolve()
 
     def local(reference):
@@ -28,9 +26,7 @@ def build(root, mode, asset_revision=None):
         mime = mimetypes.guess_type(path.name)[0]
         if not mime or not mime.startswith('image/'):
             raise ValueError('Expected an image')
-        if asset_revision is not None:
-            return ('https://raw.githubusercontent.com/Ohoredingdong/Notion/'
-                    +asset_revision+'/'+path.relative_to(root).as_posix())
+        # Chat previews must not depend on external image access or proxy thumbnails.
         return 'data:'+mime+';base64,'+base64.b64encode(path.read_bytes()).decode('ascii')
 
     scripts = []
@@ -95,14 +91,13 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path(__file__).resolve().parents[1])
     parser.add_argument('--output-dir',type=Path)
-    parser.add_argument('--asset-revision',help='Use image URLs pinned to this full Git commit instead of embedding images')
     args=parser.parse_args()
     root=args.root.resolve()
     output=(args.output_dir or root/'previews').resolve()
     if output.is_relative_to(root) and not output.is_relative_to(root/'previews'):
         raise SystemExit('Only previews/ or a folder outside the checkout is allowed.')
     output.mkdir(parents=True,exist_ok=True)
-    pages={mode:build(root,mode,args.asset_revision) for mode in ('app','widget')}
+    pages={mode:build(root,mode) for mode in ('app','widget')}
     for mode,content in pages.items():
         path=output/f'miniature-kitchen-{mode}.html';path.write_text(content);print(f'{path.name}: {path.stat().st_size:,} bytes')
     path=output/'miniature-kitchen-board.html';path.write_text(board(pages['app'],pages['widget']));print(f'{path.name}: {path.stat().st_size:,} bytes')

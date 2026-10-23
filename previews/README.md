@@ -10,15 +10,14 @@ python scripts/build_miniature_kitchen_preview.py
 
 HTML 파일 링크가 채팅의 소스 보기로 열리는 문제가 보고되었다. 일반 브라우저에서의 실행 성공을 채팅 내 실행 성공으로 보고하지 않는다. 화면 이미지나 ZIP 전달도 사용자가 요청한 조작 가능한 미리보기의 완료 기준이 아니다.
 
-파일 크기를 줄여 전달 방식을 점검하려면 아래 경량판을 생성한다. HTML에 CSS·JavaScript를 포함하고, 그림만 공개된 동일 저장소의 **고정 커밋** URL로 읽는다. 따라서 인터넷 연결이 필요하다. 기본 생성 방식과 기존 단일 파일 시안은 그대로 유지한다.
+채팅에는 이미지까지 모두 포함한 단일 HTML을 `sandbox:` 파일 링크로 전달한다. 외부 이미지 URL을 사용했던 경량판은 사용자 화면에서 그림이 깨진 것으로 확인돼 폐기했고, 해당 생성 옵션도 제거했다. 원본 그림은 변환·축소하지 않는다.
 
 ```bash
 python scripts/build_miniature_kitchen_preview.py \
-  --asset-revision 99c234ab9852e6fe5fe569d93f7d36777a9ed511 \
-  --output-dir /workspace/artifacts/kitchen-live-preview
+  --output-dir /workspace/artifacts/kitchen-embedded-preview
 ```
 
-앱·위젯은 각각 약 54KB, 비교판은 약 132KB다. 채팅용 `sandbox:` 파일 링크로 전달을 시도했으며, **사용자 화면에서의 실행 여부는 확인 대기 중**이다. 경량화나 링크 형식 변경이 소스 보기를 해결했다고 단정하지 않는다.
+앱·위젯은 각각 약 9.35MB다. 외부 자산 요청을 차단한 브라우저에서 그림 5개가 원본 해상도로 디코딩되는 것과 기존 조작 29개를 확인했다. 수정본의 사용자 화면 확인은 별도로 구분하며, 자세한 증거는 [미니어처 부엌 기록](../docs/MINIATURE_KITCHEN_DESIGN.md)을 따른다.
 
 [앱](use-me-first.html)과 [위젯](use-me-first-widget.html)은 같은 냉장고의 CSS·JavaScript·이미지를 포함한 생성 파일이다. 기능·디자인은 공유하고 기본 배치만 다르다. HTML만 전달되는 미리보기 환경에서도 별도 자산 경로가 필요 없다. 직접 수정하지 않고 저장소 루트에서 다시 생성한다.
 
