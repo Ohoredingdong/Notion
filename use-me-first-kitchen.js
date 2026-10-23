@@ -27,10 +27,6 @@
     '애호박': 'zucchini', '식용유': 'oil', '올리브유': 'oil', '간장': 'soy', '참치캔': 'tuna', '참치': 'tuna',
     '마늘': 'garlic', '다진마늘': 'garlic', '소금': 'salt'
   });
-  const recipeCalories = Object.freeze({
-    '계란 볶음밥': 450, '두부 된장국': 320, '닭가슴살 샐러드': 330, '애호박 계란전': 280,
-    '요거트 계란 샐러드': 260, '두부 스테이크': 310, '버섯 두부볶음': 290, '토마토 치즈 오믈렛': 360
-  });
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const foodIdFor = name => { const key = D.canonical(name); return A.foodIdForName?.(name) || (own(foods, key) ? foods[key] : 'ingredient'); };
   const seasoningFoodId = name => {
@@ -89,7 +85,7 @@
   }
   function defaultPosition(id, index, count = 4) {
     if (document.body.dataset.kitchenMode === 'widget') {
-      const columns = Math.min(4, Math.max(1, count)), rows = Math.max(1, Math.ceil(count / columns));
+      const columns = Math.min(2, Math.max(1, count)), rows = Math.max(1, Math.ceil(count / columns));
       return { x: columns > 1 ? (index % columns) / (columns - 1) : .5, y: rows > 1 ? Math.floor(index / columns) / (rows - 1) : .5, z: 0 };
     }
     const row = Math.floor(index % 9 / 3), column = index % 3;
@@ -144,7 +140,7 @@
       recipeNode.innerHTML = ranked.length ? ranked.map(entry => {
         const recipe = entry.recipe, missing = entry.missing?.length || 0;
         const status = entry.available ? '바로 가능' : '재료 ' + missing + '개 부족';
-        return '<div class="display-row display-recipe-row"><span class="display-recipe-art">' + A.dishArt({ id: recipe.name }) + '</span><span class="display-row-copy"><b>' + esc(recipe.name) + '</b><small>' + esc(status) + '</small><span class="display-meta">' + esc(recipe.time) + ' · 약 ' + (recipeCalories[recipe.name] || '—') + ' kcal</span></span></div>';
+        return '<div class="display-row display-recipe-row"><span class="display-recipe-art">' + A.dishArt({ id: recipe.name }) + '</span><span class="display-row-copy"><b>' + esc(recipe.name) + '</b><small>' + esc(status) + '</small><span class="display-meta">' + esc(recipe.time) + ' · 영양·원가 미연결</span></span></div>';
       }).join('') : '<div class="display-empty">추천할 메뉴를 준비 중이에요.</div>';
     }
   }
@@ -235,7 +231,7 @@
     const items = S.getState().items, state = K.getState(), doors = K.getDoorPanels(), focused = document.activeElement;
     const focusedInside = scene.contains(focused) ? focused.closest('.fridge-inside') : null;
     const placements = new Map(items.map(item => [item.id, own(state.placements, item.id) ? state.placements[item.id] : 'middle']));
-    const widgetRows = Math.max(1, ...Object.keys(zones).filter(zone => zone !== 'pantry').map(zone => Math.ceil(items.filter(item => placements.get(item.id) === zone).length / 4)));
+    const widgetRows = Math.max(1, ...Object.keys(zones).filter(zone => zone !== 'pantry').map(zone => Math.ceil(items.filter(item => placements.get(item.id) === zone).length / 2)));
     scene.style.setProperty('--widget-fridge-rows', String(widgetRows));
     if (pointerSession && (!items.some(item => item.id === pointerSession.id) || !openZone(pointerSession.sourceZone, doors) || placementFingerprint(pointerSession.id) !== pointerSession.fingerprint)) {
       cleanupPointer(); interaction++; announce('재료 상태가 바뀌어 이동을 취소했어요. 다시 골라주세요.');
@@ -549,7 +545,25 @@
     Object.assign(ghost.style, { position: 'fixed', width: rect.width + 'px', height: rect.height + 'px', maxWidth: 'none', minWidth: '0', transform: 'none', margin: '0', pointerEvents: 'none', zIndex: '2147483647', transition: 'none', opacity: '1' });
     document.body.appendChild(ghost); return ghost;
   }
+  let edgeFrame = null, edgePoint = null;
+  function edgeScroll() {
+    edgeFrame = null;
+    if (!pointerSession?.dragging || !edgePoint) return;
+    const height = window.innerHeight, rect = scene.getBoundingClientRect();
+    const amount = edgePoint.clientY > height - 64 && rect.bottom > height - 70 ? 14 : edgePoint.clientY < 100 && rect.top < 70 ? -14 : 0;
+    if (!amount || edgePoint.clientX < 0 || edgePoint.clientX > window.innerWidth || edgePoint.clientY < 0 || edgePoint.clientY > height) return;
+    const previous = window.scrollY;
+    window.scrollBy({top:amount,behavior:'instant'});
+    clearHighlights();canvasAtPoint(edgePoint)?.classList.add('is-over');
+    if (window.scrollY !== previous) edgeFrame = window.requestAnimationFrame(edgeScroll);
+  }
+  function trackEdgeScroll(event) {
+    edgePoint = {clientX:event.clientX,clientY:event.clientY};
+    if (edgeFrame === null && typeof window.requestAnimationFrame === 'function' && typeof window.scrollBy === 'function') edgeFrame = window.requestAnimationFrame(edgeScroll);
+  }
   function cleanupPointer(suppress = true) {
+    if (edgeFrame !== null) window.cancelAnimationFrame?.(edgeFrame);
+    edgeFrame = null; edgePoint = null;
     const active = pointerSession; if (!active) return;
     pointerSession = null;
     active.ghost?.remove(); active.button.classList.remove('is-drag-source'); clearHighlights();
@@ -631,6 +645,7 @@
     const size = sizeOf(active.button), canvas = canvasAtPoint(event);
     active.ghost.style.left = event.clientX - size.width * active.anchor.x + 'px'; active.ghost.style.top = event.clientY - size.height * active.anchor.y + 'px';
     active.ghost.classList.toggle('is-outside', !canvas); clearHighlights(); canvas?.classList.add('is-over');
+    trackEdgeScroll(event);
   }
   function onPointerUp(event) {
     if (seasoningPointerSession) { finishSeasoningPointer(event, false); return; }

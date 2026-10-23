@@ -27,6 +27,8 @@
 
 **앱·위젯 각각 제공:** 두 버전의 기능과 디자인을 같게 유지한다. 기존 `use-me-first.html`은 웹앱, 생성 파일 `use-me-first-widget.html`은 작은 임베드 진입점이다. 원본 HTML과 기능 코드를 공유하며 위젯 파일을 따로 수정하지 않는다. 두 단일 파일 미리보기·생성 명령·저장 공유의 확인 범위는 [앱과 위젯 기록](docs/APP_AND_WIDGET.md)에 있다.
 
+**최신 확장 요청 — 앱·위젯 모두 재디자인:** 사용자가 위젯 축소를 지적하고 두 화면의 재디자인을 명시적으로 요청했다. 따라서 최초의 ‘디자인 변경 금지’는 이 요청 범위에서 새 시안 작성까지 허용된 것으로 해석한다. 따뜻한 미니어처 부엌·흰색 4도어·양쪽 디스플레이는 이어가되, 작은 글씨로 일괄 축소하지 않고 큰 재료·읽을 수 있는 글씨와 스크롤을 사용한다. 꾸미기·키우기·성장·보상·선택권·목표가 필요하며 커뮤니티와 수익화는 보류한다. 제품 사진 1장+기한 사진 1장으로 재료·기한·아이콘 자동 생성, 최초 냉장고 전체 사진 인식과 수동 수정, 식비, 레시피별 영양·예산, 개인별 하루 권장 영양소·성분·식사 건강정보, 영양제, 월별 식사·비용·영양 비율이 새 목표다. **자동화 완료를 뜻하지 않는다.** 이번 1차 구현, 미연결 기능, 데이터 경계와 이후 완료 기준은 [생활형 부엌 재디자인](docs/KITCHEN_LIFE_REDESIGN.md)에 구분한다. 성장 대상은 허브, 기록 대상은 1인으로 우선 제안했으며 사용자 확정 답변은 아직 없다.
+
 진입 파일은 `use-me-first.html`이다. 도메인 매칭은 `use-me-first-domain.js`, 저장·동기화는 `use-me-first-store.js`, 재료 입력은 `use-me-first-core-final.js`, 레시피는 `use-me-first-recipe-grid-final.js`, 식사 기록은 `use-me-first-ui-final.js`가 담당한다. 냉장고 UI·위치·화면 전환·미니어처는 각각 `use-me-first-kitchen.js`, `use-me-first-kitchen-state.js`, `use-me-first-kitchen-nav.js`, `use-me-first-kitchen-art.js`에 있다. CSS는 `use-me-first-final.css`, `use-me-first-kitchen.css`다. 서버 함수는 `supabase/functions/use-me-first-sync/index.ts`에 있다.
 
 배포 경로: <https://ohoredingdong.github.io/Notion/use-me-first.html>. 별도 사이트 <https://hankki-cozy-kitchen.wldms3053.chatgpt.site/>와 이 코드의 동일성은 미확인이다. 외부 사이트의 소스·배포 식별자도 저장소에서 확인하지 못했다.

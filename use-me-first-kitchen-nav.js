@@ -2,8 +2,8 @@
 (() => {
   'use strict';
   const $ = selector => document.querySelector(selector);
-  const views = ['home', 'recipes', 'diary', 'shopping'];
-  const titles = {home:'umfHomeTitle',recipes:'umfRecipesTitle',diary:'umfDiaryTitle',shopping:'umfShoppingTitle'};
+  const views = ['home', 'recipes', 'diary', 'shopping', 'garden', 'photos', 'nutrition', 'budget', 'monthly'];
+  const titles = {home:'umfHomeTitle',recipes:'umfRecipesTitle',diary:'umfDiaryTitle',shopping:'umfShoppingTitle', ...Object.fromEntries(['garden','photos','nutrition','budget','monthly'].map(name=>[name,'life-'+name+'-title']))};
   const zones = {top:'냉장실 · 윗칸',middle:'냉장실 · 채소칸',bottom:'냉장실 · 밀폐 보관칸','freezer-top':'냉동실 · 윗칸','freezer-middle':'냉동실 · 가운데 칸','freezer-bottom':'냉동실 · 아랫칸',pantry:'실온 · 양념 선반'};
   let current = 'home';
   function focusTarget(element, scroll) {

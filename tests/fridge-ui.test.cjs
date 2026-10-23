@@ -148,7 +148,7 @@ test('a fuller widget shelf grows its unsaved layout while keeping saved coordin
     season: [], pantry: [], customSeason: [], customPantry: [], meals: [], favorites: [] };
   const view = { version: 2, doors: { fridge: true, freezer: false }, placements: {}, positions: { lot0: { x: .2, y: .7, z: 8 } } };
   const app = await boot({ presentation: 'widget', seed: { [STATE]: state, 'use-me-first-kitchen-view-v1': view } }); t.after(() => app.close());
-  assert.equal(app.$('#umfKitchenScene').style.getPropertyValue('--widget-fridge-rows'), '2');
+  assert.equal(app.$('#umfKitchenScene').style.getPropertyValue('--widget-fridge-rows'), '3');
   assert.equal(app.$('.fridge-food[data-lot="lot0"]').dataset.x, '0.2');
   assert.equal(app.$('.fridge-food[data-lot="lot0"]').dataset.y, '0.7');
   assert.equal(app.memory.get(STATE), JSON.stringify(state));
@@ -559,7 +559,7 @@ function assertKitchenPage(app, page) {
   const visible = [...app.document.querySelectorAll('[data-kitchen-view]')].filter(node => !node.hidden);
   assert.deepEqual(visible.map(node => node.dataset.kitchenView), [page], 'Exactly one application page is visible');
   assert.equal(app.w.UMFKitchenNav.getPage(), page);
-  const active = [...app.document.querySelectorAll('.nav-btn[data-kitchen-page][aria-current="page"]')];
+  const active = [...app.document.querySelectorAll('.nav-btn[data-kitchen-page][aria-current="page"],.life-tools [data-kitchen-page][aria-current="page"]')];
   assert.deepEqual(active.map(node => node.dataset.kitchenPage), [page], 'The active navigation item matches the visible page');
 }
 function shelfItem(app, id) {
@@ -624,17 +624,22 @@ async function kitchenKey(app, target, key, options = {}) {
   target.dispatchEvent(event); await app.flush(); return event;
 }
 
-test('kitchen navigation shows one of four pages and inventory opens the complete real stock list', async t => {
+test('kitchen navigation shows one of nine pages and inventory opens the complete real stock list', async t => {
   const items = ['계란', '양파', '당근', '감자', '우유', '두부', '대파', '버섯'].map((name, index) => kitchenItem('route-' + index, name));
   const app = await boot({ seed: { [STATE]: existingFridge(items) } }); t.after(() => app.close());
   const ids = [...app.document.querySelectorAll('[id]')].map(node => node.id);
   assert.equal(new Set(ids).size, ids.length, 'Generated scene elements also have unique IDs');
-  assert.equal(app.document.querySelectorAll('[data-kitchen-view]').length, 4);
+  assert.equal(app.document.querySelectorAll('[data-kitchen-view]').length, 9);
   assertKitchenPage(app, 'home');
   for (const page of ['recipes', 'diary', 'shopping', 'home']) {
     await app.click('.nav-btn[data-kitchen-page="' + page + '"]');
     assertKitchenPage(app, page);
   }
+  for (const page of ['garden','photos','budget','nutrition','monthly']) {
+    await app.click('.life-tools [data-kitchen-page="' + page + '"]');
+    assertKitchenPage(app, page);
+  }
+  app.w.UMFKitchenNav.go('home');
   await app.click('#all');
   assert.equal(app.document.querySelectorAll('#list .row').length, 6);
   await app.click('#seasonTab');

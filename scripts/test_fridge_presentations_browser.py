@@ -64,7 +64,10 @@ def main():
                         expect(page.locator('body')).to_have_attribute('data-kitchen-mode', 'widget')
                         expect(page.locator('.fridge-door')).to_have_count(4)
                         expect(page.locator('.door-display')).to_have_count(2)
-                        assert page.locator('.kitchen-scene').bounding_box()['height'] < 500
+                        assert page.locator('.kitchen-scene').bounding_box()['height'] >= 800
+                        assert page.locator('.fridge-food').first.bounding_box()['width'] >= 44
+                        assert page.locator('.fridge-food').first.bounding_box()['height'] >= 44
+                        assert page.locator('.display-row-copy b').first.evaluate('e => parseFloat(getComputedStyle(e).fontSize)') >= 12
                         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
                         assert page.evaluate('localStorage.getItem(%s)' % json.dumps(STATE)) == original
                         page.screenshot(path=str(output / f'widget-{width}.png'), full_page=True)

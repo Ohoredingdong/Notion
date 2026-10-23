@@ -9,4 +9,4 @@ python scripts/build_fridge_preview.py --presentation widget --output previews/u
 
 배포 진입점과 수정할 원본은 루트의 `use-me-first.html` 및 이 파일이 참조하는 CSS·JavaScript다. 이 미리보기에 사용자 기록·동기화 코드를 넣지 않는다. 기록은 실행한 브라우저의 해당 출처에 저장되며, 다른 출처의 기존 데이터를 자동으로 가져오지 않는다. 저장이 제한된 iframe에서는 기존 앱의 저장 불가 안내가 표시된다.
 
-두 버전의 구성·검증은 [앱과 위젯 기록](../docs/APP_AND_WIDGET.md)을 확인한다. 최초 누락 자산 문제는 [검토 기록](../docs/STANDALONE_KITCHEN_PREVIEW.md)에 있다.
+두 버전의 최신 디자인·생활 기능·미연결 범위·검증은 [생활형 부엌 재디자인](../docs/KITCHEN_LIFE_REDESIGN.md)을 확인한다. 처음 분리한 구조는 [앱과 위젯 기록](../docs/APP_AND_WIDGET.md), 최초 누락 자산 문제는 [검토 기록](../docs/STANDALONE_KITCHEN_PREVIEW.md)에 있다.

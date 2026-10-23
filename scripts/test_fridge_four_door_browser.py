@@ -47,6 +47,7 @@ def seed(page, items, view):
 
 def drag(page, source, target, touch):
     source.scroll_into_view_if_needed()
+    source.evaluate("e => e.scrollIntoView({block:'center',behavior:'instant'})")
     start, end = source.bounding_box(), target.bounding_box()
     assert start and end, "Both the ingredient and destination must be rendered"
     x, y = start["x"] + start["width"] / 2, start["y"] + start["height"] / 2
@@ -55,6 +56,17 @@ def drag(page, source, target, touch):
         session = page.context.new_cdp_session(page)
         try:
             session.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y, "id": 1}]})
+            height = page.viewport_size['height']
+            if ty < 105 or ty > height - 80:
+                edge = 35 if ty < 105 else height - 25
+                session.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": tx, "y": edge, "id": 1}]})
+                page.wait_for_function("e => { const r=e.getBoundingClientRect();return r.y+r.height*.55>110 && r.y+r.height*.55<innerHeight-85; }", arg=target.element_handle())
+                # Leave the edge before measuring: the application keeps scrolling
+                # while a held finger remains there, just as on a physical screen.
+                session.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": tx, "y": height/2, "id": 1}]})
+                end = target.bounding_box()
+                tx, ty = end['x']+end['width']*.72, end['y']+end['height']*.55
+                x, y = tx, height/2
             for step in range(1, 13):
                 session.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [
                     {"x": x + (tx - x) * step / 12, "y": y + (ty - y) * step / 12, "id": 1}]})
@@ -306,10 +318,11 @@ def main():
                         assert not external_writes, external_writes
                         if args.standalone:
                             assert not asset_requests, "Standalone preview requested other files: " + repr(asset_requests)
-                            sizes = page.evaluate("""async () => {
+                            sizes = page.evaluate(r"""async () => {
                                 const atlas = document.querySelector('svg.miniature-art image').getAttribute('href');
                                 const background = getComputedStyle(document.querySelector('.kitchen-scene')).backgroundImage;
-                                const scene = background.slice(5, -2);
+                                const scene = background.match(/url\("([^"]+)"\)/)?.[1];
+                                if (!scene) throw Error('Kitchen scene background is missing');
                                 return Promise.all([atlas, scene, UMFKitchenArt.seasoningAsset].map(async src => {
                                     if (!src.startsWith('data:image/')) throw Error('Image was not embedded');
                                     const image = new Image(); image.src = src; await image.decode();

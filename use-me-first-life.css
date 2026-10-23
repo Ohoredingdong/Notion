@@ -1,0 +1,195 @@
+/* Cozy life redesign: legible objects and vertical space in both presentations. */
+:root{--life-accent:#667c51;--life-soft:#eaf0e1;--life-wall:#f1e8d9}
+body[data-life-theme="sage"]{--life-accent:#466957;--life-soft:#e1ece4;--life-wall:#e5eadd}
+body[data-life-theme="rose"]{--life-accent:#8e615b;--life-soft:#f3e6df;--life-wall:#f2e2d7}
+body.kitchen-app{color:#50483e;--green:var(--life-accent);--green-soft:var(--life-soft);--ink:#50483e;--sub:#716653;--muted:#716653}
+.kitchen-app .page-shell{max-width:1500px;padding-left:126px;padding-right:34px}
+.kitchen-app .header{height:88px;margin-bottom:18px}
+.kitchen-app .brand h2{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:23px;letter-spacing:-1px}
+.kitchen-app .sidebar{background:#f6f1e8;border-right-color:#e3d9ca}
+.kitchen-app .nav-btn{color:#716653}
+.kitchen-app .nav-btn.active{background:var(--life-soft);color:var(--life-accent);box-shadow:none}
+.kitchen-app .intro h1{font-size:30px;letter-spacing:-1px}
+.life-tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}
+.life-tools button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 17px;border-radius:30px;background:#fffcf6;border:1px solid #e2d7c7;color:#665a47;font-size:13px;white-space:nowrap}
+.life-tools button:hover,.life-tools button.active{background:var(--life-soft);border-color:#aab694;color:var(--life-accent)}
+.life-tools button:first-child{background:#ede4d4;border-color:#ddcdb6}
+.life-status{padding:12px 16px;border:1px solid #bcc9ad;background:#edf3e6;border-radius:12px;margin-bottom:14px;font-size:14px}
+.life-status.bad{background:#fae9e2;border-color:#dba28e;color:#813c2b}
+.life-status button{font:inherit;text-decoration:underline;min-height:40px;margin-left:6px}
+.life-status[hidden],.life-photo-grid[hidden],.life-photo img[hidden]{display:none}
+.life-today{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 25px;margin-bottom:22px;border:1px solid #d9dec9;border-radius:23px;background:linear-gradient(110deg,#f2f2e6,#faf9ef);position:relative;overflow:hidden}
+.life-today-copy{display:flex;align-items:flex-start;flex-direction:column;gap:5px}
+.life-kicker{font:600 10px/1.7 'Apple SD Gothic Neo',sans-serif;letter-spacing:2px;color:#756c58}
+.life-today-copy>strong{font-size:18px;letter-spacing:-.4px;color:#46563a}
+.life-today-copy>span:not(.life-kicker){font-size:13px;color:#5d664f}
+.life-text-button{font-size:13px;min-height:40px;color:#48623b;text-decoration:underline;text-underline-offset:4px}
+.life-today-growth{display:flex;align-items:center;gap:10px;flex:0 0 235px}
+.life-plant{width:110px;height:110px;filter:drop-shadow(0 5px 4px #6f583214);flex-shrink:0}
+.life-today-growth>div{display:flex;flex-direction:column;gap:4px;width:100px}
+.life-today-growth strong{font-size:25px;letter-spacing:-1px;color:#526740}
+.life-today-growth small{font-size:12px;color:#646d57;white-space:nowrap}
+.life-progress{height:7px;border-radius:5px;overflow:hidden;background:#dfe5cf;margin-top:5px}
+.life-progress i{display:block;height:100%;background:#879967;border-radius:5px}
+.kitchen-app .home-grid{grid-template-columns:minmax(0,1.4fr) minmax(270px,1fr);gap:22px}
+.kitchen-app .today-panel{border-radius:24px;background:#fffdf7;border-color:#e1d7c5;height:auto;align-self:start}
+.kitchen-app .today-panel .btn-sage,.life-page .btn-sage{background:var(--life-accent);color:white}
+.kitchen-app .kitchen-scene{height:850px;border-radius:25px;background-color:var(--life-wall);background-image:linear-gradient(#fff8,#fff0),url('./assets/kitchen-scene.webp');border-color:#dfd0bb}
+.kitchen-app .fridge-stage.four-door{width:min(470px,88%);height:620px;top:85px}
+.kitchen-app .four-door .fridge-body{background:linear-gradient(100deg,#e3ded4,#fffefa 9%,#f5f2e9 91%,#cfc8bc)}
+.kitchen-app .four-door .fridge-door{background:linear-gradient(110deg,#fffefa,#f6f3eb 80%,#e4dfd4)}
+.kitchen-app .fridge-controls{bottom:38px;width:min(470px,88%)}
+.kitchen-app .compartment-toggle{font-size:12px;min-height:44px;padding:8px 6px}
+.kitchen-app .door-display-head strong{font-size:13px}
+.kitchen-app .display-row-copy b{font-size:12px}
+.kitchen-app .display-row-copy small{font-size:11px;line-height:1.4}
+.kitchen-app .display-meta{font-size:10px;line-height:1.5}
+.kitchen-app .display-badge{font-size:10px}
+.kitchen-app .four-door .door-display{padding-left:8px;padding-right:8px}
+.kitchen-app .four-door .display-empty{font-size:13px}
+.kitchen-app .four-door .compartment-head strong{font-size:11px;line-height:1.4}
+.kitchen-app .four-door .shelf-name{font-size:10px;color:#626d55}
+.kitchen-app .four-door .shelf-name.shelf-target{font-size:10px;min-height:30px}
+.kitchen-app .four-door .shelf-canvas .fridge-food,.kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food{width:48px;height:50px;min-width:44px;min-height:44px;max-width:none}
+.kitchen-app .four-door .shelf-canvas .fridge-food .food-art,.kitchen-app .four-door .panel-frozen .shelf-canvas .fridge-food .food-art{width:47px;height:47px}
+.kitchen-app .four-door .quantity-mini{font-size:10px;color:#534b3c;background:#fffdf7;padding:1px 3px}
+.kitchen-app .scene-label{font-size:12px;color:#5e533e;background:#fffcf5}
+.kitchen-app .scene-top .btn{font-size:12px;min-height:44px;background:#fffcf5}
+.kitchen-app .four-door .door-type{font-size:11px}
+.kitchen-app .kitchen-pantry{font-size:14px}
+.kitchen-app .seasoning-name{font-size:12px}
+.kitchen-app .seasoning-expiry{font-size:11px}
+.kitchen-app .kitchen-summary{margin:22px 0}
+.life-page{padding-bottom:30px}
+.life-local-note{font-size:12px;color:#746650;margin:-8px 0 20px;line-height:1.8}
+.kitchen-app .skip-link:not(:focus){clip-path:inset(50%);width:1px;height:1px;padding:0;overflow:hidden;white-space:nowrap}
+.life-page-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:24px 0}
+.life-page-heading p{font-size:14px;color:#746753;margin-top:8px}
+.life-page-heading h1{font-size:29px}
+.life-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.life-card{background:#fffdf7;border:1px solid #e3d8c8;border-radius:22px;padding:24px;margin-bottom:20px;min-width:0}
+.life-card h2,.life-day-heading h2{font-size:20px;margin-bottom:14px}
+.life-card p{line-height:1.8}
+.life-section-title{margin-top:30px}
+.life-page form{display:flex;flex-direction:column;gap:14px}
+.life-page label,.life-month-control label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:#655842;min-width:0}
+.kitchen-app .life-page input,.kitchen-app .life-page select{width:100%;min-width:0;max-width:100%;min-height:46px;font:400 14px/1.5 'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#514938;border:1px solid #d6c9b5;background:#fffdf9;border-radius:12px;box-sizing:border-box}
+.life-page .life-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.life-form>.btn{grid-column:1/-1}
+.life-note{font-size:12px;color:#746650;line-height:1.8;margin:12px 0}
+.life-connection{font-size:14px;color:#75512d;background:#f8edd6;padding:14px 16px;border-radius:12px;margin:16px 0;line-height:1.8}
+.life-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:20px}
+.life-metric{display:flex;flex-direction:column;gap:9px;border:1px solid #e3d8c8;border-radius:19px;padding:20px;background:#fffdf7;min-width:0}
+.life-metric>span{font-size:13px;color:#6e604c}.life-metric>strong{font-size:25px;letter-spacing:-1px;line-height:1.4;overflow-wrap:anywhere}.life-metric>small{font-size:12px;color:#776950;line-height:1.6}
+.life-day-heading,.life-month-control{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.life-month-control input{min-height:46px;border:1px solid #d7c9b6;border-radius:10px;padding:10px;background:#fffdf6;color:#5b4e3b;font:inherit;max-width:100%}
+.life-row{display:flex;align-items:center;gap:10px;padding:16px 0;border-bottom:1px solid #eee5d7;min-width:0}
+.life-row:last-child{border:0}.life-row>div{flex:1;min-width:0}.life-row strong{display:block;font-size:14px;overflow-wrap:anywhere}.life-row small{display:block;font-size:12px;color:#766750;margin-top:5px;overflow-wrap:anywhere}
+.life-row .btn{font-size:12px;padding:9px;flex-shrink:0}.life-row .btn[aria-pressed="true"]{background:#e5eedb;color:#3d6230;border-color:#99ae82}
+.life-delete{font-size:12px;color:#96513d;min-width:40px;min-height:44px;text-decoration:underline;flex-shrink:0}
+.life-empty{padding:24px 8px;font-size:14px;color:#7d6d55;line-height:1.9}
+.life-segment{display:flex;gap:5px;border:1px solid #e2d6c4;border-radius:14px;padding:4px;background:#f1eadf}
+.life-segment button{flex:1;min-height:44px;border-radius:10px;font-size:13px;padding:8px}.life-segment button[aria-pressed="true"]{background:#fffdf7;box-shadow:0 2px 6px #715c3212;color:#536b41}
+.life-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.life-photo{position:relative;align-items:center;justify-content:center;text-align:center;min-height:240px;padding:22px;border:1px dashed #bcaa90;border-radius:18px;background:linear-gradient(145deg,#faf6eb,#eee5d5);overflow:hidden}
+.life-photo input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.life-photo:focus-within{outline:3px solid #8c9e72;outline-offset:3px}.life-photo strong{font-size:16px}.life-photo .life-note{margin:0}
+.life-photo-number{font-family:serif;font-size:35px;font-weight:400;color:#9c896c}
+.life-photo img{position:relative;max-width:100%;max-height:260px;object-fit:contain;border-radius:12px}
+.garden-card{text-align:center;background:linear-gradient(#fcf8ee,#f1e9d9);overflow:hidden}
+.life-garden-stage{position:relative;height:290px;display:grid;place-items:center;border-radius:18px;margin:20px 0 28px;background:linear-gradient(#d9cbb94d 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,#d9cbb94d 1px,transparent 1px) 0 0/48px 48px,var(--life-wall);isolation:isolate}
+.life-plant.large{width:245px;height:245px;position:relative;z-index:1}
+.life-garden-shelf{position:absolute;height:17px;left:12%;right:12%;bottom:30px;border-radius:5px;background:linear-gradient(#e7c9a2,#b78c60);box-shadow:0 7px 0 #a6825f,0 15px 13px #7d624e26}
+.life-reward-pill{display:inline-block;background:#e5ecd7;color:#4a6639;border-radius:20px;padding:9px 18px;font-size:14px;font-weight:700}
+#lifeClaim{margin-top:18px}#lifeClaimButton{width:100%;font-size:14px;min-height:48px}
+.life-theme-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.life-theme{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 5px;border:1px solid #dbcfbc;border-radius:14px;background:#fffdf7;min-height:120px}
+.life-theme[aria-pressed="true"]{border:2px solid var(--life-accent);background:var(--life-soft)}.life-theme strong{font-size:12px}.life-theme small{font-size:11px}
+.life-swatch{width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px #0001}.life-swatch.oat{background:#eee0c6}.life-swatch.sage{background:#b4c7ac}.life-swatch.rose{background:#dfbab1}
+.life-ratio-row{display:grid;grid-template-columns:75px 1fr 40px;align-items:center;gap:10px;margin:23px 0;font-size:13px}.life-ratio-row>div{height:12px;background:#f0eadf;border-radius:10px;overflow:hidden}.life-ratio-row i{display:block;height:100%;border-radius:10px;background:#b5a078}.life-ratio-row i.protein{background:#8ea573}.life-ratio-row i.fat{background:#d0a15c}
+#lifeMonthNotes p{font-size:14px;margin-bottom:16px}
+@media(max-width:1050px){.kitchen-app .home-grid{grid-template-columns:minmax(0,1fr)}.kitchen-app .today-panel{max-width:none}.kitchen-app .kitchen-scene{height:850px}}
+@media(max-width:760px){
+ .kitchen-app .page-shell{padding:0 16px 100px}.kitchen-app .header{height:76px;margin-bottom:15px}.kitchen-app .brand h2{font-size:21px}
+ .life-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:20px}.life-tools button{padding:8px 3px;font-size:12px;border-radius:12px}
+ .kitchen-app .intro h1{font-size:25px}.kitchen-app .intro .sub{font-size:13px}.kitchen-app .intro{gap:10px;align-items:flex-start}.kitchen-app #umfTopAdd{min-width:74px;padding:10px;font-size:12px}
+ .life-today{padding:15px;gap:8px;align-items:flex-start}.life-today-copy>strong{font-size:15px}.life-today-copy>span:not(.life-kicker){font-size:12px}.life-today-growth{flex:0 0 82px;flex-direction:column;gap:0}.life-today-growth .life-plant{width:88px;height:88px;margin-top:-10px}.life-today-growth>div{width:82px}.life-today-growth strong{font-size:20px}.life-today-growth small{font-size:10px}.life-today-growth .life-progress{display:none}
+ .kitchen-app .fridge-stage.four-door{width:92%;height:600px}.kitchen-app .kitchen-scene{height:830px}.kitchen-app .fridge-controls{width:92%}
+ .life-columns{grid-template-columns:minmax(0,1fr);gap:0}.life-card{padding:18px;border-radius:19px}.life-page-heading{align-items:flex-start;gap:10px}.life-page-heading h1{font-size:25px}.life-page-heading p{font-size:13px}.life-page-heading>.btn{font-size:12px;padding:8px;min-width:76px}.life-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.life-metric{padding:16px 13px}.life-metric>strong{font-size:22px}.life-photo{min-height:195px;padding:14px}.life-photo strong{font-size:14px}.life-photo-grid{gap:10px}.life-month-control{align-items:end}.life-month-control>.btn{font-size:12px;max-width:135px;padding:10px}.life-theme-choices{gap:6px}
+}
+/* Widget: a comfortable, scrollable kitchen, without miniature text scaling. */
+body.kitchen-app[data-kitchen-mode="widget"]{max-width:720px}
+html[data-kitchen-mode="widget"] .widget-control-shell{max-width:720px!important}
+.kitchen-app[data-kitchen-mode="widget"] .w.umf-wide-layout.page-shell{padding:0 14px 24px!important}
+.kitchen-app[data-kitchen-mode="widget"] .header{height:66px;margin-bottom:10px}
+.kitchen-app[data-kitchen-mode="widget"] .brand h2{font-size:20px}
+.kitchen-app[data-kitchen-mode="widget"] .nav-btn{font-size:12px;gap:5px}
+.kitchen-app[data-kitchen-mode="widget"] .life-tools{display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:5px}
+.kitchen-app[data-kitchen-mode="widget"] .life-tools button{flex:0 0 auto;min-height:44px;padding:7px 13px;font-size:13px;border-radius:12px}
+.kitchen-app[data-kitchen-mode="widget"] #umfHomePage:not([hidden]){display:flex;flex-direction:column}
+.kitchen-app[data-kitchen-mode="widget"] #umfHomePage>.kitchen-widget-sections{order:0}
+.kitchen-app[data-kitchen-mode="widget"] #umfHomePage>.home-grid{order:1}
+.kitchen-app[data-kitchen-mode="widget"] #umfHomePage>.life-today{order:2}
+.kitchen-app[data-kitchen-mode="widget"] #umfHomePage>.kitchen-inventory-grid{order:3}
+.kitchen-app[data-kitchen-mode="widget"] .life-today{padding:15px;gap:8px;margin-top:12px;margin-bottom:15px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-copy>strong{font-size:15px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth{flex:0 0 82px;flex-direction:column;gap:0}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth .life-plant{width:88px;height:88px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth>div{width:82px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth strong{font-size:20px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth small{font-size:10px}
+.kitchen-app[data-kitchen-mode="widget"] .life-today-growth .life-progress{display:none}
+.kitchen-app[data-kitchen-mode="widget"] .kitchen-scene{height:calc(800px + (var(--widget-fridge-rows,1) - 1)*300px);border-radius:22px}
+.kitchen-app[data-kitchen-mode="widget"] .fridge-stage.four-door{width:min(490px,94%);height:calc(580px + (var(--widget-fridge-rows,1) - 1)*300px);top:78px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .fridge-body{padding:8px;gap:8px;border-radius:22px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .fridge-inside{padding:36px 6px 7px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .compartment-head{top:9px;left:6px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .compartment-head strong{font-size:11px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf{padding:15px 0 8px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf+.shelf{margin-top:5px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf-name{font-size:10px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf-name.shelf-target{font-size:10px;min-height:30px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf-canvas .fridge-food,.kitchen-app[data-kitchen-mode="widget"] .four-door .panel-frozen .shelf-canvas .fridge-food{width:48px;height:50px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .shelf-canvas .fridge-food .food-art,.kitchen-app[data-kitchen-mode="widget"] .four-door .panel-frozen .shelf-canvas .fridge-food .food-art{width:47px;height:47px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .quantity-mini{font-size:10px;min-height:13px;padding:1px 3px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .door-display{top:25px;bottom:48px;left:9px;right:18px;padding:10px 6px 20px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .panel-right .door-display{left:18px;right:9px}
+.kitchen-app[data-kitchen-mode="widget"] .door-display-head{margin-bottom:5px;padding-bottom:7px}
+.kitchen-app[data-kitchen-mode="widget"] .door-display-head strong{font-size:13px}
+.kitchen-app[data-kitchen-mode="widget"] .display-row{padding:6px 4px;gap:4px}
+.kitchen-app[data-kitchen-mode="widget"] .display-row-copy b{font-size:12px}
+.kitchen-app[data-kitchen-mode="widget"] .display-row-copy small{font-size:11px}
+.kitchen-app[data-kitchen-mode="widget"] .display-meta{font-size:10px}
+.kitchen-app[data-kitchen-mode="widget"] .display-empty{font-size:13px;padding:12px 4px}
+.kitchen-app[data-kitchen-mode="widget"] .display-footnote{font-size:9px;bottom:8px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .door-handle{height:110px;width:7px;right:5px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .panel-right .door-handle{left:5px}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .panel-frozen .door-handle{height:7px;width:auto;left:18%;right:18%}
+.kitchen-app[data-kitchen-mode="widget"] .four-door .door-type{font-size:11px;bottom:17px}
+.kitchen-app[data-kitchen-mode="widget"] .fridge-controls{bottom:26px;width:min(490px,94%);gap:8px}
+.kitchen-app[data-kitchen-mode="widget"] .compartment-toggle{min-height:48px;font-size:12px;padding:8px 4px}
+.kitchen-app[data-kitchen-mode="widget"] .scene-top{top:14px;left:12px;right:12px}
+.kitchen-app[data-kitchen-mode="widget"] .scene-label{font-size:12px}
+.kitchen-app[data-kitchen-mode="widget"] .scene-top .btn{font-size:12px;min-height:44px;padding:8px}
+.kitchen-app[data-kitchen-mode="widget"] .kitchen-widget-sections button{min-height:44px;font-size:13px}
+.kitchen-app[data-kitchen-mode="widget"] .life-columns{grid-template-columns:minmax(0,1fr)}
+@media(max-width:360px){
+ .kitchen-app .brand h2,.kitchen-app[data-kitchen-mode="widget"] .brand h2{font-size:18px}.kitchen-app[data-kitchen-mode="widget"] .header-meta{gap:3px}.kitchen-app[data-kitchen-mode="widget"] .kitchen-mode-switch{font-size:11px;padding:6px}.kitchen-app[data-kitchen-mode="widget"] .kitchen-widget-add{font-size:12px;padding:6px}
+ .kitchen-app .display-food-art,.kitchen-app .display-recipe-art{display:none}.kitchen-app .display-row{gap:2px}.kitchen-app .display-badge{padding:3px 2px}
+ .life-page .life-form{grid-template-columns:minmax(0,1fr)}.life-theme strong{font-size:11px}.life-theme small{font-size:10px}
+ .life-today-copy>strong{font-size:14px}.life-today-copy>span:not(.life-kicker){font-size:12px}.life-page-heading h1{font-size:23px}
+ .kitchen-app .header-meta .date-pill{display:none}
+}
+/* Retain the existing dark-mode choice as well as the default bright kitchen. */
+html[data-widget-theme="dark"] body.kitchen-app{--ink:#eee7d8;--sub:#c1b6a0;--muted:#b7ad98}
+html[data-widget-theme="dark"] .kitchen-app .today-panel{background:var(--surface);border-color:var(--line)}
+html[data-widget-theme="dark"] .life-card,html[data-widget-theme="dark"] .life-metric{background:#2c3028;border-color:#555749;color:#eee7d8}
+html[data-widget-theme="dark"] .life-page-heading p,html[data-widget-theme="dark"] .life-local-note,html[data-widget-theme="dark"] .life-note,html[data-widget-theme="dark"] .life-metric>span,html[data-widget-theme="dark"] .life-metric>small,html[data-widget-theme="dark"] .life-row small,html[data-widget-theme="dark"] .life-kicker,html[data-widget-theme="dark"] .life-empty{color:#c8bea9}
+html[data-widget-theme="dark"] .life-page label,html[data-widget-theme="dark"] .life-month-control label{color:#e1d6c2}
+html[data-widget-theme="dark"] .life-theme{background:#383d31;border-color:#6f745f;color:#eee7d8}
+html[data-widget-theme="dark"] .life-theme[aria-pressed="true"]{background:#41503a;border-color:#b8cca0}
+html[data-widget-theme="dark"] .life-row{border-color:#565b4c}
+html[data-widget-theme="dark"] .life-delete{color:#edb8a6}
+html[data-widget-theme="dark"] .life-photo{background:#393d32;border-color:#99977d}
+html[data-widget-theme="dark"] .life-photo-number{color:#c8bea9}
+html[data-widget-theme="dark"] .life-today .life-kicker{color:#756c58}
