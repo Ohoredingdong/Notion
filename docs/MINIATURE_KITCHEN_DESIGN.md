@@ -76,3 +76,7 @@ python scripts/test_miniature_kitchen_browser.py --output /tmp/miniature-kitchen
 [두 화면 비교](miniature-kitchen/comparison-board.png), [네 문을 열고 소품을 배치한 모습](miniature-kitchen/app-1120-decor.png), [두 디스플레이가 보이는 닫힌 위젯](miniature-kitchen/widget-390-closed.png).
 
 주요 기존 앱 소스와 이전 미리보기 7개가 기준 커밋과 바이트 단위로 같음을 확인했고, 변경 경로는 새 디자인/검증/미리보기 및 인수인계 문서뿐이다. 기존 앱 전체 회귀는 수정하지 않은 코드에 대해 이번에 반복 실행하지 않았다. 새 결과는 기능 완성·디자인 최종 승인·실제 Notion/Safari 검증을 뜻하지 않는다.
+
+## 브랜치와 PR 상태
+
+시안과 증거를 `54876b09`로 커밋하고 `design/miniature-kitchen-scene`에 push했다. 독립 변경만 검토하도록 `feat/kitchen-life-redesign`을 기준으로 draft PR 생성을 시도했지만 `Post "https://api.github.com/graphql": Forbidden`으로 실패했다. [브랜치 간 변경 비교·PR 준비](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-life-redesign...design/miniature-kitchen-scene?expand=1)는 가능하며, PR이 이미 생성되었다고 보고하지 않는다. main 병합·Pages 배포는 하지 않았다.
