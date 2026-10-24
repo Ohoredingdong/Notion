@@ -84,13 +84,39 @@ def main():
                         }''')
                         assert sorted(images)==[[1254,1254],[1286,1223],[1448,1086],[1536,1024],[1536,1024]],images
                         assert len(requests)==1 and not external
-                        passed('art: all five embedded originals decode at full resolution with image network requests blocked')
+                        passed('art: all five embedded images decode at full resolution with image network requests blocked')
                     if mode=='widget' or width<=760:
                         stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box()
                         assert stage['y']+stage['height'] <= controls['y']+1, (stage,controls)
                     assert page.locator('[data-item="milk"]').bounding_box()['width']>=44
                     page.screenshot(path=str(output/f'{label}.png'),full_page=True)
                     passed(label+': complete four-door scene, legible controls, no overflow, asset requests or storage access')
+
+                    if (mode,width)==('app',1120):
+                        def check_palette(selector,count):
+                            coverage=page.evaluate('''async selector => {
+                                const images=new Map(),coverage=[];
+                                for(const svg of document.querySelectorAll(selector)){
+                                    const source=svg.querySelector('image').getAttribute('href');
+                                    if(!images.has(source)){const image=new Image();image.src=source;await image.decode();images.set(source,image);}
+                                    const box=svg.viewBox.baseVal,canvas=document.createElement('canvas');
+                                    canvas.width=box.width;canvas.height=box.height;
+                                    const context=canvas.getContext('2d');
+                                    context.drawImage(images.get(source),box.x,box.y,box.width,box.height,0,0,box.width,box.height);
+                                    const pixels=context.getImageData(0,0,canvas.width,canvas.height).data;
+                                    let visible=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>16)visible++;
+                                    coverage.push(visible/(canvas.width*canvas.height));
+                                }
+                                return coverage;
+                            }''',selector)
+                            assert len(coverage)==count and all(value>.01 for value in coverage),coverage
+
+                        page.locator('#addFood').click();check_palette('#trayContent .palette svg',8);page.locator('#closeTray').click()
+                        passed('art: all eight food choices contain visible ingredient pixels')
+                        page.locator('#recipes').click();check_palette('#trayContent .recipe-sheet svg',2);page.locator('#closeTray').click()
+                        passed('art: both recipe choices contain visible food pixels')
+                        page.locator('#decorate').click();check_palette('#trayContent .palette svg',4);page.locator('#closeTray').click();page.locator('#decorate').click()
+                        passed('art: all four decoration choices contain visible prop pixels')
 
                     for key in initial['doors']:
                         control=page.locator(f'[data-toggle="{key}"]');before=snapshot()['doors'][key]

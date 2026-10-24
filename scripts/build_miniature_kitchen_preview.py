@@ -7,9 +7,49 @@ from html import escape
 import mimetypes
 from pathlib import Path
 import re
+import shutil
+import subprocess
 
 
-def build(root, mode):
+# The compact build keeps every food/seasoning used by this isolated prototype.
+# Unused atlas cells are omitted; source images and published apps stay untouched.
+COMPACT_SPRITES = {
+    'assets/food-miniatures-v2.webp': ('sprites', (1254,1254),
+        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','egg-rice','tofu-soup','ingredient')),
+    'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
+        ('soy','salt','gochujang','doenjang','jar')),
+}
+
+
+def sprite_boxes(source, name, keys):
+    match=re.search(r'const '+re.escape(name)+r'\s*=\s*Object\.freeze\(\{(.*?)\}\);',source,re.S)
+    if not match:
+        raise ValueError('Atlas map changed: '+name)
+    boxes={key:tuple(map(int,values.split(','))) for key,values in
+           re.findall(r"['\"]?([\w-]+)['\"]?\s*:\s*\[([\d,\s]+)\]",match[1])}
+    if not all(key in boxes and len(boxes[key])==4 for key in keys):
+        raise ValueError('Compact atlas cells changed: '+name)
+    return tuple(boxes[key] for key in keys)
+
+
+@lru_cache(maxsize=8)
+def web_image(path, size, boxes):
+    encoder=shutil.which('magick')
+    if not encoder:
+        raise RuntimeError('--compact requires ImageMagick (magick); the default build needs only Python')
+    command=[encoder,'-limit','thread','2']
+    if boxes:
+        command+=['-size',f'{size[0]}x{size[1]}','xc:none']
+        for x,y,width,height in boxes:
+            command+=['(',str(path),'-crop',f'{width}x{height}+{x}+{y}','+repage',')',
+                      '-geometry',f'+{x}+{y}','-composite']
+    else:
+        command+=[str(path)]
+    command+=['-define','webp:method=6','-define','webp:alpha-quality=100','-quality','82','webp:-']
+    return subprocess.run(command,check=True,capture_output=True).stdout
+
+
+def build(root, mode, compact=False):
     if mode not in ('app', 'widget'):
         raise ValueError('Unknown presentation')
     root = root.resolve()
@@ -27,7 +67,15 @@ def build(root, mode):
         if not mime or not mime.startswith('image/'):
             raise ValueError('Expected an image')
         # Chat previews must not depend on external image access or proxy thumbnails.
-        return 'data:'+mime+';base64,'+base64.b64encode(path.read_bytes()).decode('ascii')
+        data=path.read_bytes()
+        if compact:
+            size,boxes=None,()
+            if reference in COMPACT_SPRITES:
+                name,size,keys=COMPACT_SPRITES[reference]
+                boxes=sprite_boxes(local('use-me-first-kitchen-art.js').read_text(),name,keys)
+            data=web_image(path,size,boxes)
+            mime='image/webp'
+        return 'data:'+mime+';base64,'+base64.b64encode(data).decode('ascii')
 
     scripts = []
     html = local('designs/miniature-kitchen/scene.html').read_text()
@@ -91,13 +139,16 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path(__file__).resolve().parents[1])
     parser.add_argument('--output-dir',type=Path)
+    parser.add_argument('--compact',action='store_true',help='Embed web-encoded images and only the prototype atlas cells (requires ImageMagick)')
     args=parser.parse_args()
     root=args.root.resolve()
     output=(args.output_dir or root/'previews').resolve()
     if output.is_relative_to(root) and not output.is_relative_to(root/'previews'):
         raise SystemExit('Only previews/ or a folder outside the checkout is allowed.')
     output.mkdir(parents=True,exist_ok=True)
-    pages={mode:build(root,mode) for mode in ('app','widget')}
+    pages={mode:build(root,mode,args.compact) for mode in ('app','widget')}
+    if args.compact and any(len(page.encode('utf-8'))>1048576 for page in pages.values()):
+        raise SystemExit('Compact preview exceeds the chosen 1 MiB delivery budget; no files were written.')
     for mode,content in pages.items():
         path=output/f'miniature-kitchen-{mode}.html';path.write_text(content);print(f'{path.name}: {path.stat().st_size:,} bytes')
     path=output/'miniature-kitchen-board.html';path.write_text(board(pages['app'],pages['widget']));print(f'{path.name}: {path.stat().st_size:,} bytes')

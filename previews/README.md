@@ -10,14 +10,16 @@ python scripts/build_miniature_kitchen_preview.py
 
 HTML 파일 링크가 채팅의 소스 보기로 열리는 문제가 보고되었다. 일반 브라우저에서의 실행 성공을 채팅 내 실행 성공으로 보고하지 않는다. 화면 이미지나 ZIP 전달도 사용자가 요청한 조작 가능한 미리보기의 완료 기준이 아니다.
 
-채팅에는 이미지까지 모두 포함한 단일 HTML을 `sandbox:` 파일 링크로 전달한다. 외부 이미지 URL을 사용했던 경량판은 사용자 화면에서 그림이 깨진 것으로 확인돼 폐기했고, 해당 생성 옵션도 제거했다. 원본 그림은 변환·축소하지 않는다.
+채팅에는 이미지까지 모두 포함한 단일 HTML을 `sandbox:` 파일 링크로 전달한다. 외부 이미지 URL을 사용했던 경량판은 사용자 화면에서 그림이 깨졌다. 원본 이미지를 내장한 9.35MB 파일도 사용자가 표시되지 않는다고 보고했으므로 완료로 취급하지 않는다. 구체적인 클라이언트 용량 제한은 확인되지 않았다.
 
 ```bash
-python scripts/build_miniature_kitchen_preview.py \
-  --output-dir /workspace/artifacts/kitchen-embedded-preview
+python scripts/build_miniature_kitchen_preview.py --compact \
+  --output-dir /workspace/artifacts/kitchen-compact-preview
 ```
 
-앱·위젯은 각각 약 9.35MB다. 외부 자산 요청을 차단한 브라우저에서 그림 5개가 원본 해상도로 디코딩되는 것과 기존 조작 29개를 확인했다. 수정본의 사용자 화면 확인은 별도로 구분하며, 자세한 증거는 [미니어처 부엌 기록](../docs/MINIATURE_KITCHEN_DESIGN.md)을 따른다.
+`--compact`는 ImageMagick의 `magick`이 필요하다. 원본 파일을 보존하고, 미리보기 그림을 WebP 품질 82·알파 품질 100으로 인코딩한다. 해상도와 현재 선택 가능한 재료·양념·요리·소품을 유지하며 사용하지 않는 아틀라스 칸만 제외한다. 앱·위젯 각각 약 936KB이며, 1MiB를 넘으면 생성에 실패하도록 자체 전달 예산을 정했다. 이것은 확인된 클라이언트 제한값을 뜻하지 않는다. 기본 명령은 계속 원본 이미지를 포함한 기존 결과를 생성한다.
+
+외부 자산 요청을 차단한 브라우저에서 전체 조작·그림 디코딩·선택 화면의 실제 그림 픽셀을 검사한 33개 점검을 통과했다. **채팅 표시 성공은 사용자 응답 확인 전까지 미완료**다. 자세한 증거는 [미니어처 부엌 기록](../docs/MINIATURE_KITCHEN_DESIGN.md)을 따른다.
 
 [앱](use-me-first.html)과 [위젯](use-me-first-widget.html)은 같은 냉장고의 CSS·JavaScript·이미지를 포함한 생성 파일이다. 기능·디자인은 공유하고 기본 배치만 다르다. HTML만 전달되는 미리보기 환경에서도 별도 자산 경로가 필요 없다. 직접 수정하지 않고 저장소 루트에서 다시 생성한다.
 
