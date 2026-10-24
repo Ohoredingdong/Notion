@@ -1,6 +1,6 @@
 {
   "version": "decision-v7.1",
-  "generated_at": "2026-10-24T01:10:45.221628+00:00",
+  "generated_at": "2026-10-24T08:06:23.383525+00:00",
   "max_age_hours": 18,
   "rules": {
     "volume_ratio": 1.5,
@@ -19,11 +19,11 @@
       "name": "Apple",
       "market": "US",
       "sector": "소비자 기술",
-      "collected_at": "2026-10-24T01:10:19.364523+00:00",
-      "status": "incomplete",
+      "collected_at": "2026-10-24T08:05:57.268293+00:00",
+      "status": "current",
       "currency": "USD",
-      "price": 348.22000122,
-      "price_session": "2026-10-22",
+      "price": 347.73001099,
+      "price_session": "2026-10-23",
       "expected_session": {
         "date": "2026-10-23",
         "closed_at": "2026-10-23T20:00:00+00:00",
@@ -33,21 +33,21 @@
       },
       "technical": {
         "status": "ok",
-        "date": "2026-10-22",
-        "close": 348.22000122,
-        "volume": 46898900.0,
-        "avg_volume20": 36925860.0,
-        "volume_ratio": 1.27008281,
-        "ma20": 338.5730011,
-        "ma60": 325.63616689,
-        "atr14": 6.08357457,
-        "prior_high20": 348.1499939,
-        "return20_pct": 3.66158231,
-        "relative20_pp": 4.08129747,
+        "date": "2026-10-23",
+        "close": 347.73001099,
+        "volume": 39496500.0,
+        "avg_volume20": 38034150.0,
+        "volume_ratio": 1.03844834,
+        "ma20": 338.90600128,
+        "ma60": 325.87450053,
+        "atr14": 6.1850041,
+        "prior_high20": 348.35998535,
+        "return20_pct": 1.95267937,
+        "relative20_pp": 3.4280155,
         "support10": 330.70001221,
-        "resistance_1y": 348.1499939,
-        "support_loss_pct": 5.03129888,
-        "reward_risk": null,
+        "resistance_1y": 348.35998535,
+        "support_loss_pct": 4.89747742,
+        "reward_risk": 0.03699204,
         "recent_split": false,
         "note": "기술적 지표만 계산. 지지·저항은 매도 체결가격 보장/확률/적정가치가 아님. 상대성과는 배당 미포함 가격수익률."
       },
@@ -81,7 +81,7 @@
           "90daysAgo": 9.7111
         },
         "eps_growth_next_fy_pct": 8.43061357,
-        "next_fy_pe": 36.41154617,
+        "next_fy_pe": 36.36031045,
         "analysts": 40.0,
         "spread": 0.22690556,
         "currency": "USD",
@@ -95,8 +95,8 @@
         "mean": 328.35025,
         "high": 405.0,
         "analysts": 39.0,
-        "median_gap_pct": -3.79645086,
-        "low_gap_pct": -38.25742368,
+        "median_gap_pct": -3.66088936,
+        "low_gap_pct": -38.17042153,
         "spread": 0.56716418,
         "review_price_ceiling": 279.16666667,
         "note": "애널리스트 목표가 분포. 적정가치/손실 최저선/신뢰구간이 아님. 검토가격은 목표가 중앙값까지 20% 여유를 요구한다는 명시적 정책 가정.",
@@ -156,30 +156,34 @@
         "status": "current",
         "matched": [],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": null,
         "period": "2025-09-30",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전."
       },
       "short": {
-        "state": "data_wait",
-        "label": "판단 보류 · 완료 시세 부족",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
-          "거래소 완료 세션과 수집 일봉이 일치해야 함"
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인",
+          "과거 지지·저항 기준 손익비 2배/지지 이탈폭 8% 이내 조건 미충족"
         ],
         "change_conditions": [
-          "다음 수집에서 완료 일봉·거래량을 확보"
+          "종가가 직전 20일 고점 348.36 이상인지",
+          "거래량 20일 평균 대비 1.5배 이상 + 시장대비 상대강도 양수",
+          "10일 저점 330.70 이탈 시 기술적 가설 재검토"
         ],
-        "horizon": "5~20거래일"
+        "horizon": "5~20거래일",
+        "event_causality_verified": false,
+        "rule_note": "명시적 기술적 선별 규칙. 뉴스 효과·성공확률·체결 가능성을 검증한 전략이 아님."
       },
       "long": {
         "state": "data_wait",
         "label": "매수 판단 보류 · 핵심 근거 부족",
         "reasons": [
-          "완료 시세 기준 불일치",
           "과거 매출·EPS·FCF 공식 대조 미완료",
           "다음 회계연도 예상 EPS의 30일 변화 -0.19%",
-          "목표가 중앙값과 완료 종가 차이 -3.8% (기대수익률 아님)",
+          "목표가 중앙값과 완료 종가 차이 -3.7% (기대수익률 아님)",
           "순차입금/EBITDA 0.13배 (제공처 집계; 만기구조는 별도)"
         ],
         "change_conditions": [
@@ -230,7 +234,7 @@
       ],
       "event_source": {
         "url": "https://www.apple.com/newsroom/rss-feed.rss",
-        "checked_at": "2026-10-24T01:10:45.406368+00:00",
+        "checked_at": "2026-10-24T08:06:23.495111+00:00",
         "status": "ok"
       }
     },
@@ -239,11 +243,11 @@
       "name": "Microsoft",
       "market": "US",
       "sector": "클라우드·SW",
-      "collected_at": "2026-10-24T01:10:22.161017+00:00",
-      "status": "incomplete",
+      "collected_at": "2026-10-24T08:06:00.274298+00:00",
+      "status": "current",
       "currency": "USD",
-      "price": 521.08001709,
-      "price_session": "2026-10-22",
+      "price": 524.51000977,
+      "price_session": "2026-10-23",
       "expected_session": {
         "date": "2026-10-23",
         "closed_at": "2026-10-23T20:00:00+00:00",
@@ -253,21 +257,21 @@
       },
       "technical": {
         "status": "ok",
-        "date": "2026-10-22",
-        "close": 521.08001709,
-        "volume": 21266600.0,
-        "avg_volume20": 21191390.0,
-        "volume_ratio": 1.00354908,
-        "ma20": 526.28500366,
-        "ma60": 504.66066691,
-        "atr14": 11.38000052,
+        "date": "2026-10-23",
+        "close": 524.51000977,
+        "volume": 13671500.0,
+        "avg_volume20": 21421840.0,
+        "volume_ratio": 0.63820381,
+        "ma20": 526.702005,
+        "ma60": 505.88416697,
+        "atr14": 11.04071917,
         "prior_high20": 551.15002441,
-        "return20_pct": 4.64925286,
-        "relative20_pp": 5.06896801,
-        "support10": 518.78997803,
+        "return20_pct": 1.61575201,
+        "relative20_pp": 3.09108814,
+        "support10": 520.29998779,
         "resistance_1y": 553.7199707,
-        "support_loss_pct": 0.43947935,
-        "reward_risk": 14.25301173,
+        "support_loss_pct": 0.80265808,
+        "reward_risk": 6.93819679,
         "recent_split": false,
         "note": "기술적 지표만 계산. 지지·저항은 매도 체결가격 보장/확률/적정가치가 아님. 상대성과는 배당 미포함 가격수익률."
       },
@@ -301,7 +305,7 @@
           "90daysAgo": 22.61032
         },
         "eps_growth_next_fy_pct": 19.95064817,
-        "next_fy_pe": 21.98423526,
+        "next_fy_pe": 22.12894579,
         "analysts": 33.0,
         "spread": 0.1674933,
         "currency": "USD",
@@ -315,8 +319,8 @@
         "mean": 601.7281,
         "high": 870.0,
         "analysts": 53.0,
-        "median_gap_pct": 15.14546333,
-        "low_gap_pct": -15.55999356,
+        "median_gap_pct": 14.39247847,
+        "low_gap_pct": -16.11218245,
         "spread": 0.71666667,
         "review_price_ceiling": 500.0,
         "note": "애널리스트 목표가 분포. 적정가치/손실 최저선/신뢰구간이 아님. 검토가격은 목표가 중앙값까지 20% 여유를 요구한다는 명시적 정책 가정.",
@@ -385,32 +389,36 @@
           "fcf"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q4/press-release-webcast",
         "period": "2026-06-30",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "기업 공식 실적발표 GAAP (최종 감사보고서 아님)",
-        "source_fetched_at": "2026-10-23T18:01:49.825172+00:00",
+        "source_fetched_at": "2026-10-24T08:05:10.705062+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
-        "state": "data_wait",
-        "label": "판단 보류 · 완료 시세 부족",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
-          "거래소 완료 세션과 수집 일봉이 일치해야 함"
+          "종가가 20일 평균 아래: 가격 추세 약세",
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인"
         ],
         "change_conditions": [
-          "다음 수집에서 완료 일봉·거래량을 확보"
+          "종가가 직전 20일 고점 551.15 이상인지",
+          "거래량 20일 평균 대비 1.5배 이상 + 시장대비 상대강도 양수",
+          "10일 저점 520.30 이탈 시 기술적 가설 재검토"
         ],
-        "horizon": "5~20거래일"
+        "horizon": "5~20거래일",
+        "event_causality_verified": false,
+        "rule_note": "명시적 기술적 선별 규칙. 뉴스 효과·성공확률·체결 가능성을 검증한 전략이 아님."
       },
       "long": {
-        "state": "data_wait",
-        "label": "매수 판단 보류 · 핵심 근거 부족",
+        "state": "price_wait",
+        "label": "가격 대기 · 목표가 대비 여유 부족",
         "reasons": [
-          "완료 시세 기준 불일치",
           "다음 회계연도 예상 EPS의 30일 변화 +0.11%",
-          "목표가 중앙값과 완료 종가 차이 +15.1% (기대수익률 아님)",
+          "목표가 중앙값과 완료 종가 차이 +14.4% (기대수익률 아님)",
           "순차입금/EBITDA 0.27배 (제공처 집계; 만기구조는 별도)"
         ],
         "change_conditions": [
@@ -446,7 +454,7 @@
       "official_events": [],
       "event_source": {
         "url": "https://news.microsoft.com/feed/",
-        "checked_at": "2026-10-24T01:10:45.618204+00:00",
+        "checked_at": "2026-10-24T08:06:23.642106+00:00",
         "status": "ok"
       }
     },
@@ -455,11 +463,11 @@
       "name": "NVIDIA",
       "market": "US",
       "sector": "AI 반도체",
-      "collected_at": "2026-10-24T01:10:24.917688+00:00",
-      "status": "incomplete",
+      "collected_at": "2026-10-24T08:06:03.217714+00:00",
+      "status": "current",
       "currency": "USD",
-      "price": 212.21000671,
-      "price_session": "2026-10-22",
+      "price": 210.96000671,
+      "price_session": "2026-10-23",
       "expected_session": {
         "date": "2026-10-23",
         "closed_at": "2026-10-23T20:00:00+00:00",
@@ -469,18 +477,18 @@
       },
       "technical": {
         "status": "ok",
-        "date": "2026-10-22",
-        "close": 212.21000671,
-        "volume": 125407600.0,
-        "avg_volume20": 103395710.0,
-        "volume_ratio": 1.21288978,
-        "ma20": 226.24700165,
-        "ma60": 221.23583399,
-        "atr14": 6.15499987,
+        "date": "2026-10-23",
+        "close": 210.96000671,
+        "volume": 79987200.0,
+        "avg_volume20": 105792595.0,
+        "volume_ratio": 0.7560756,
+        "ma20": 225.54150162,
+        "ma60": 221.50116755,
+        "atr14": 5.97785732,
         "prior_high20": 243.36999512,
-        "return20_pct": -5.50805727,
-        "relative20_pp": -5.08834211,
-        "support10": 212.77000427,
+        "return20_pct": -6.26916077,
+        "relative20_pp": -4.79382464,
+        "support10": 211.25999451,
         "resistance_1y": 243.36999512,
         "support_loss_pct": null,
         "reward_risk": null,
@@ -517,7 +525,7 @@
           "90daysAgo": 12.81483
         },
         "eps_growth_next_fy_pct": 70.89650166,
-        "next_fy_pe": 13.33429723,
+        "next_fy_pe": 13.255753,
         "analysts": 52.0,
         "spread": 0.3705811,
         "currency": "USD",
@@ -531,8 +539,8 @@
         "mean": 328.95346,
         "high": 515.0,
         "analysts": 58.0,
-        "median_gap_pct": 48.43786345,
-        "low_gap_pct": -15.17836374,
+        "median_gap_pct": 49.31740139,
+        "low_gap_pct": -14.67577063,
         "spread": 1.06349206,
         "review_price_ceiling": 262.5,
         "note": "애널리스트 목표가 분포. 적정가치/손실 최저선/신뢰구간이 아님. 검토가격은 목표가 중앙값까지 20% 여유를 요구한다는 명시적 정책 가정.",
@@ -592,33 +600,39 @@
         "status": "current",
         "matched": [],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026/",
         "period": "2026-01-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "기업 공식 실적발표 GAAP (최종 감사보고서 아님)",
-        "source_fetched_at": "2026-10-23T18:01:50.903643+00:00",
+        "source_fetched_at": "2026-10-24T08:05:11.597904+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
-        "state": "data_wait",
-        "label": "판단 보류 · 완료 시세 부족",
+        "state": "avoid_entry",
+        "label": "신규 진입 보류 · 추세 약세",
         "reasons": [
-          "거래소 완료 세션과 수집 일봉이 일치해야 함"
+          "종가가 20일 평균 아래: 가격 추세 약세",
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인",
+          "최근 20거래일 시장 대비 강세 미확인",
+          "과거 지지·저항 기준 손익비 2배/지지 이탈폭 8% 이내 조건 미충족"
         ],
         "change_conditions": [
-          "다음 수집에서 완료 일봉·거래량을 확보"
+          "종가가 직전 20일 고점 243.37 이상인지",
+          "거래량 20일 평균 대비 1.5배 이상 + 시장대비 상대강도 양수",
+          "10일 저점 211.26 이탈 시 기술적 가설 재검토"
         ],
-        "horizon": "5~20거래일"
+        "horizon": "5~20거래일",
+        "event_causality_verified": false,
+        "rule_note": "명시적 기술적 선별 규칙. 뉴스 효과·성공확률·체결 가능성을 검증한 전략이 아님."
       },
       "long": {
         "state": "data_wait",
         "label": "매수 판단 보류 · 핵심 근거 부족",
         "reasons": [
-          "완료 시세 기준 불일치",
           "과거 매출·EPS·FCF 공식 대조 미완료",
           "다음 회계연도 예상 EPS의 30일 변화 +1.48%",
-          "목표가 중앙값과 완료 종가 차이 +48.4% (기대수익률 아님)",
+          "목표가 중앙값과 완료 종가 차이 +49.3% (기대수익률 아님)",
           "순차입금/EBITDA -0.12배 (제공처 집계; 만기구조는 별도)",
           "EPS 또는 목표가 상·하단 차이가 정책 허용폭보다 큼"
         ],
@@ -670,7 +684,7 @@
       ],
       "event_source": {
         "url": "https://nvidianews.nvidia.com/releases.xml",
-        "checked_at": "2026-10-24T01:10:45.871244+00:00",
+        "checked_at": "2026-10-24T08:06:23.913082+00:00",
         "status": "ok"
       }
     },
@@ -679,11 +693,11 @@
       "name": "Amazon",
       "market": "US",
       "sector": "커머스·클라우드",
-      "collected_at": "2026-10-24T01:10:27.716212+00:00",
-      "status": "incomplete",
+      "collected_at": "2026-10-24T08:06:06.072182+00:00",
+      "status": "current",
       "currency": "USD",
-      "price": 250.38000488,
-      "price_session": "2026-10-22",
+      "price": 248.0,
+      "price_session": "2026-10-23",
       "expected_session": {
         "date": "2026-10-23",
         "closed_at": "2026-10-23T20:00:00+00:00",
@@ -693,21 +707,21 @@
       },
       "technical": {
         "status": "ok",
-        "date": "2026-10-22",
-        "close": 250.38000488,
-        "volume": 48814000.0,
-        "avg_volume20": 35464125.0,
-        "volume_ratio": 1.37643323,
-        "ma20": 254.51349945,
-        "ma60": 258.41766637,
-        "atr14": 7.11499786,
+        "date": "2026-10-23",
+        "close": 248.0,
+        "volume": 25518200.0,
+        "avg_volume20": 36252820.0,
+        "volume_ratio": 0.70389559,
+        "ma20": 254.42999954,
+        "ma60": 258.6259997,
+        "atr14": 7.08499799,
         "prior_high20": 265.33999634,
-        "return20_pct": 0.40099446,
-        "relative20_pp": 0.82070961,
-        "support10": 248.6000061,
+        "return20_pct": -0.6688822,
+        "relative20_pp": 0.80645393,
+        "support10": 248.0,
         "resistance_1y": 287.20001221,
-        "support_loss_pct": 0.7109189,
-        "reward_risk": 20.68541156,
+        "support_loss_pct": null,
+        "reward_risk": null,
         "recent_split": false,
         "note": "기술적 지표만 계산. 지지·저항은 매도 체결가격 보장/확률/적정가치가 아님. 상대성과는 배당 미포함 가격수익률."
       },
@@ -741,7 +755,7 @@
           "90daysAgo": 10.00867
         },
         "eps_growth_next_fy_pct": -18.17375887,
-        "next_fy_pe": 23.71220375,
+        "next_fy_pe": 23.48680572,
         "analysts": 54.0,
         "spread": 0.59791914,
         "currency": "USD",
@@ -755,8 +769,8 @@
         "mean": 331.71967,
         "high": 405.0,
         "analysts": 58.0,
-        "median_gap_pct": 31.59996548,
-        "low_gap_pct": -8.13962956,
+        "median_gap_pct": 32.86290323,
+        "low_gap_pct": -7.25806452,
         "spread": 0.53110774,
         "review_price_ceiling": 274.58333333,
         "note": "애널리스트 목표가 분포. 적정가치/손실 최저선/신뢰구간이 아님. 검토가격은 목표가 중앙값까지 20% 여유를 요구한다는 명시적 정책 가정.",
@@ -823,32 +837,37 @@
           "fcf"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/default.aspx",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "기업 공식 실적발표 GAAP (최종 감사보고서 아님)",
-        "source_fetched_at": "2026-10-23T18:01:52.061584+00:00",
+        "source_fetched_at": "2026-10-24T08:05:12.730694+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
-        "state": "data_wait",
-        "label": "판단 보류 · 완료 시세 부족",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
-          "거래소 완료 세션과 수집 일봉이 일치해야 함"
+          "종가가 20일 평균 아래: 가격 추세 약세",
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인",
+          "과거 지지·저항 기준 손익비 2배/지지 이탈폭 8% 이내 조건 미충족"
         ],
         "change_conditions": [
-          "다음 수집에서 완료 일봉·거래량을 확보"
+          "종가가 직전 20일 고점 265.34 이상인지",
+          "거래량 20일 평균 대비 1.5배 이상 + 시장대비 상대강도 양수",
+          "10일 저점 248.00 이탈 시 기술적 가설 재검토"
         ],
-        "horizon": "5~20거래일"
+        "horizon": "5~20거래일",
+        "event_causality_verified": false,
+        "rule_note": "명시적 기술적 선별 규칙. 뉴스 효과·성공확률·체결 가능성을 검증한 전략이 아님."
       },
       "long": {
-        "state": "data_wait",
-        "label": "매수 판단 보류 · 핵심 근거 부족",
+        "state": "risk_review",
+        "label": "비중 확대 보류 · 전망/부채 점검",
         "reasons": [
-          "완료 시세 기준 불일치",
           "다음 회계연도 예상 EPS의 30일 변화 +0.60%",
-          "목표가 중앙값과 완료 종가 차이 +31.6% (기대수익률 아님)",
+          "목표가 중앙값과 완료 종가 차이 +32.9% (기대수익률 아님)",
           "순차입금/EBITDA 0.76배 (제공처 집계; 만기구조는 별도)",
           "EPS 또는 목표가 상·하단 차이가 정책 허용폭보다 큼"
         ],
@@ -888,11 +907,11 @@
       "name": "Tesla",
       "market": "US",
       "sector": "자동차·에너지",
-      "collected_at": "2026-10-24T01:10:30.712244+00:00",
-      "status": "incomplete",
+      "collected_at": "2026-10-24T08:06:08.950137+00:00",
+      "status": "current",
       "currency": "USD",
-      "price": 374.57998657,
-      "price_session": "2026-10-22",
+      "price": 372.22000122,
+      "price_session": "2026-10-23",
       "expected_session": {
         "date": "2026-10-23",
         "closed_at": "2026-10-23T20:00:00+00:00",
@@ -902,21 +921,21 @@
       },
       "technical": {
         "status": "ok",
-        "date": "2026-10-22",
-        "close": 374.57998657,
-        "volume": 51610900.0,
-        "avg_volume20": 35545925.0,
-        "volume_ratio": 1.45194984,
-        "ma20": 369.86149902,
-        "ma60": 356.44166463,
-        "atr14": 12.03214373,
-        "prior_high20": 388.83999634,
-        "return20_pct": -0.8890342,
-        "relative20_pp": -0.46931904,
+        "date": "2026-10-23",
+        "close": 372.22000122,
+        "volume": 34689700.0,
+        "avg_volume20": 36818185.0,
+        "volume_ratio": 0.9421893,
+        "ma20": 369.86699982,
+        "ma60": 357.49783122,
+        "atr14": 11.70143127,
+        "prior_high20": 388.85998535,
+        "return20_pct": 0.02956542,
+        "relative20_pp": 1.50490155,
         "support10": 349.32998657,
         "resistance_1y": 498.82998657,
-        "support_loss_pct": 6.74088336,
-        "reward_risk": 4.92079208,
+        "support_loss_pct": 6.14959287,
+        "reward_risk": 5.53123217,
         "recent_split": false,
         "note": "기술적 지표만 계산. 지지·저항은 매도 체결가격 보장/확률/적정가치가 아님. 상대성과는 배당 미포함 가격수익률."
       },
@@ -950,7 +969,7 @@
           "90daysAgo": 2.21965
         },
         "eps_growth_next_fy_pct": 22.49985848,
-        "next_fy_pe": 173.09931171,
+        "next_fy_pe": 172.00872531,
         "analysts": 33.0,
         "spread": 1.43255883,
         "currency": "USD",
@@ -964,8 +983,8 @@
         "mean": 407.22104,
         "high": 600.0,
         "analysts": 39.0,
-        "median_gap_pct": 13.46041306,
-        "low_gap_pct": -65.79902702,
+        "median_gap_pct": 14.17978577,
+        "low_gap_pct": -65.58218269,
         "spread": 1.11032941,
         "review_price_ceiling": 354.16666667,
         "note": "애널리스트 목표가 분포. 적정가치/손실 최저선/신뢰구간이 아님. 검토가격은 목표가 중앙값까지 20% 여유를 요구한다는 명시적 정책 가정.",
@@ -1023,30 +1042,33 @@
         "status": "current",
         "matched": [],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": null,
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전."
       },
       "short": {
-        "state": "data_wait",
-        "label": "판단 보류 · 완료 시세 부족",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
-          "거래소 완료 세션과 수집 일봉이 일치해야 함"
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인"
         ],
         "change_conditions": [
-          "다음 수집에서 완료 일봉·거래량을 확보"
+          "종가가 직전 20일 고점 388.86 이상인지",
+          "거래량 20일 평균 대비 1.5배 이상 + 시장대비 상대강도 양수",
+          "10일 저점 349.33 이탈 시 기술적 가설 재검토"
         ],
-        "horizon": "5~20거래일"
+        "horizon": "5~20거래일",
+        "event_causality_verified": false,
+        "rule_note": "명시적 기술적 선별 규칙. 뉴스 효과·성공확률·체결 가능성을 검증한 전략이 아님."
       },
       "long": {
         "state": "data_wait",
         "label": "매수 판단 보류 · 핵심 근거 부족",
         "reasons": [
-          "완료 시세 기준 불일치",
           "과거 매출·EPS·FCF 공식 대조 미완료",
           "다음 회계연도 예상 EPS의 30일 변화 -1.51%",
-          "목표가 중앙값과 완료 종가 차이 +13.5% (기대수익률 아님)",
+          "목표가 중앙값과 완료 종가 차이 +14.2% (기대수익률 아님)",
           "순차입금/EBITDA -3.65배 (제공처 집계; 만기구조는 별도)",
           "EPS 또는 목표가 상·하단 차이가 정책 허용폭보다 큼"
         ],
@@ -1086,7 +1108,7 @@
       "name": "삼성전자",
       "market": "KR",
       "sector": "반도체·전자",
-      "collected_at": "2026-10-24T01:10:33.561108+00:00",
+      "collected_at": "2026-10-24T08:06:11.838896+00:00",
       "status": "current",
       "currency": "KRW",
       "price": 215500.0,
@@ -1110,7 +1132,7 @@
         "atr14": 13339.28571429,
         "prior_high20": 285500.0,
         "return20_pct": -21.35036496,
-        "relative20_pp": null,
+        "relative20_pp": -0.55301054,
         "support10": 204500.0,
         "resistance_1y": 374500.0,
         "support_loss_pct": 5.10440835,
@@ -1227,12 +1249,12 @@
           "operating_margin"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "OpenDART 사업보고서 연결 XBRL",
-        "source_fetched_at": "2026-10-23T18:02:01.352552+00:00",
+        "source_fetched_at": "2026-10-24T08:05:15.350164+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
@@ -1310,7 +1332,7 @@
       ],
       "event_source": {
         "url": "https://news.samsung.com/global/feed",
-        "checked_at": "2026-10-24T01:10:46.302923+00:00",
+        "checked_at": "2026-10-24T08:06:24.157656+00:00",
         "status": "ok"
       }
     },
@@ -1319,7 +1341,7 @@
       "name": "SK하이닉스",
       "market": "KR",
       "sector": "메모리 반도체",
-      "collected_at": "2026-10-24T01:10:36.537297+00:00",
+      "collected_at": "2026-10-24T08:06:14.720313+00:00",
       "status": "current",
       "currency": "KRW",
       "price": 1277000.0,
@@ -1343,7 +1365,7 @@
         "atr14": 94214.28571429,
         "prior_high20": 1935000.0,
         "return20_pct": -31.63811563,
-        "relative20_pp": null,
+        "relative20_pp": -10.84076121,
         "support10": 1183000.0,
         "resistance_1y": 2987000.0,
         "support_loss_pct": 7.36100235,
@@ -1460,12 +1482,12 @@
           "operating_margin"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "OpenDART 사업보고서 연결 XBRL",
-        "source_fetched_at": "2026-10-23T18:02:09.272962+00:00",
+        "source_fetched_at": "2026-10-24T08:05:16.649389+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
@@ -1544,7 +1566,7 @@
       ],
       "event_source": {
         "url": "https://news.skhynix.com/feed/",
-        "checked_at": "2026-10-24T01:10:47.040688+00:00",
+        "checked_at": "2026-10-24T08:06:24.884125+00:00",
         "status": "ok"
       }
     },
@@ -1553,7 +1575,7 @@
       "name": "NAVER",
       "market": "KR",
       "sector": "플랫폼",
-      "collected_at": "2026-10-24T01:10:39.317763+00:00",
+      "collected_at": "2026-10-24T08:06:17.611467+00:00",
       "status": "current",
       "currency": "KRW",
       "price": 173600.0,
@@ -1577,7 +1599,7 @@
         "atr14": 5639.28571429,
         "prior_high20": 203500.0,
         "return20_pct": -12.27892875,
-        "relative20_pp": null,
+        "relative20_pp": 8.51842567,
         "support10": 171100.0,
         "resistance_1y": 304000.0,
         "support_loss_pct": 1.44009217,
@@ -1694,21 +1716,20 @@
           "operating_margin"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "OpenDART 사업보고서 연결 XBRL",
-        "source_fetched_at": "2026-10-23T18:02:17.366309+00:00",
+        "source_fetched_at": "2026-10-24T08:05:17.902697+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
-        "state": "avoid_entry",
-        "label": "신규 진입 보류 · 추세 약세",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
           "종가가 20일 평균 아래: 가격 추세 약세",
-          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인",
-          "최근 20거래일 시장 대비 강세 미확인"
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인"
         ],
         "change_conditions": [
           "종가가 직전 20일 고점 203,500.00 이상인지",
@@ -1765,7 +1786,7 @@
       "name": "삼성바이오로직스",
       "market": "KR",
       "sector": "바이오 위탁생산",
-      "collected_at": "2026-10-24T01:10:42.211011+00:00",
+      "collected_at": "2026-10-24T08:06:20.487944+00:00",
       "status": "current",
       "currency": "KRW",
       "price": 1466000.0,
@@ -1789,7 +1810,7 @@
         "atr14": 75714.28571429,
         "prior_high20": 1449000.0,
         "return20_pct": 4.56490728,
-        "relative20_pp": null,
+        "relative20_pp": 25.3622617,
         "support10": 1150000.0,
         "resistance_1y": 1987000.0,
         "support_loss_pct": 21.55525239,
@@ -1905,19 +1926,18 @@
           "operating_margin"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "OpenDART 사업보고서 연결 XBRL",
-        "source_fetched_at": "2026-10-23T18:02:23.391626+00:00",
+        "source_fetched_at": "2026-10-24T08:05:18.999129+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
         "state": "watch",
         "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
-          "최근 20거래일 시장 대비 강세 미확인",
           "과거 지지·저항 기준 손익비 2배/지지 이탈폭 8% 이내 조건 미충족"
         ],
         "change_conditions": [
@@ -1974,7 +1994,7 @@
       "name": "현대자동차",
       "market": "KR",
       "sector": "자동차",
-      "collected_at": "2026-10-24T01:10:45.221170+00:00",
+      "collected_at": "2026-10-24T08:06:23.383015+00:00",
       "status": "current",
       "currency": "KRW",
       "price": 295500.0,
@@ -1998,7 +2018,7 @@
         "atr14": 15642.85714286,
         "prior_high20": 370000.0,
         "return20_pct": -17.68802228,
-        "relative20_pp": null,
+        "relative20_pp": 3.10933214,
         "support10": 289000.0,
         "resistance_1y": 783000.0,
         "support_loss_pct": 2.19966159,
@@ -2115,21 +2135,20 @@
           "operating_margin"
         ],
         "issues": [],
-        "checked_at": "2026-10-23T18:02:33.710693+00:00",
+        "checked_at": "2026-10-24T08:05:20.288944+00:00",
         "source_url": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json",
         "period": "2025-12-31",
         "note": "과거 실적의 원문 대조만 해당. 미래 EPS와 목표가는 별도 검증 전.",
         "document_type": "OpenDART 사업보고서 연결 XBRL",
-        "source_fetched_at": "2026-10-23T18:02:33.706697+00:00",
+        "source_fetched_at": "2026-10-24T08:05:20.285826+00:00",
         "source_note": "발표자료/주총참고서류/감사보고서 종류를 구분하세요. URL 확보만으로 검증된 항목을 추가하지 않습니다."
       },
       "short": {
-        "state": "avoid_entry",
-        "label": "신규 진입 보류 · 추세 약세",
+        "state": "watch",
+        "label": "관망 · 추세/수급 조건 대기",
         "reasons": [
           "종가가 20일 평균 아래: 가격 추세 약세",
-          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인",
-          "최근 20거래일 시장 대비 강세 미확인"
+          "거래량이 직전 20일 평균의 1.5배에 미달하거나 미확인"
         ],
         "change_conditions": [
           "종가가 직전 20일 고점 370,000.00 이상인지",
@@ -2184,7 +2203,7 @@
   ],
   "counts": {
     "tracked": 10,
-    "current_price": 5,
+    "current_price": 10,
     "forecasts": 10,
     "targets": 10,
     "news_links": 0,
@@ -2202,5 +2221,5 @@
     "별도 훈련/모의투자 위젯 변경 없음"
   ],
   "dart_event_error": "File is not a zip file",
-  "events_checked_at": "2026-10-24T01:12:35.999593+00:00"
+  "events_checked_at": "2026-10-24T08:06:30.006557+00:00"
 }
