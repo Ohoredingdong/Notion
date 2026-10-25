@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-25T01:37:54.713520+09:00
+- 계산일: 2026-10-25T17:25:09.005531+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [(10월 넷째 주 세계경제동향 브리핑) 한미 금리 내려도 증시는 약세…유가 급등에 물가 부담 재부상 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTFB4Wm9BeHFiZWxhSzhQNE1LbFJtWEg3bWhudkotTkhvTzM3V29EYVhTR2ZvMWt6d0VvWmhCbHhRMjNFQTdITlNoMkRuclM5MWlSMGtrYVJCN2pOdTQ4ZVJ5S0VyOVZROUVNTFJISjZiVQ?oc=5)
-- [5%대가 뉴노멀 된 미국 국채금리, 한국도 위태위태 - 네이버페이 머니스토리](https://news.google.com/rss/articles/CBMiUkFVX3lxTE1vTC1zeUI4aEVTV3VrZVRYSTF1QnlDOUdyUEFBMGxzUm9uNU9qWFlQQnQ5cVY3aEVRcm1jaDZmNG1oSmtRVkFYRExVUEl6X2hBbGc?oc=5)
-- [삼성전자·SK하이닉스 주가 왜 급등락하나…AI 반도체 호황 속 5가지 변수 - 톱스타뉴스](https://news.google.com/rss/articles/CBMickFVX3lxTE9LMDk5V3FBaU1XcjlrMEtwUXVKcEl5VWZKQ0FsXzZsNWJfdDNGVXRUbFVSMnVYTE5pNmlKWFlYV1FPVWd2ZU1tVmw0ZjEtQ0U5c0tFQjhDMXpDQmEyTC1sc1Rid2JYMzA3MW84NEZQQ1k3Zw?oc=5)
-- [(AI 자본전쟁⑤) 돈줄 막히면 엔비디아·HBM도 흔들리나 - 미디어펜](https://news.google.com/rss/articles/CBMiVEFVX3lxTFB4X2JzdUhmaVYxaWdZdHFzQXNaS1ZiZ0Rya1BZX3dleTQ0VUJ5dFpwQ1c0ZFA5S1NvSkRQWFZiXzVfR3FuWkxEdkdOZnc1VEU1eVo5bw?oc=5)
+- [(외환-주간) 5주 연속 내린 달러-원, FOMC·경제지표 '시험대' / - 연합인포맥스](https://news.google.com/rss/articles/CBMidEFVX3lxTFBhbmdSc0JVZ2xtMmloMWNxX3NUTF9SRkdkbF9FNnotbHVIU1pUUEk4NzRHUzZOMWxOaU1CZWFtNmxLMGFSSnRGWVJDUUJLN2IweEVYYTlITlN3NkhTMFg5aC1tekFtVE5XbzZXSVNIOUlKODls?oc=5)
+- [이번주 국내 증시 미국 FOMC·물가·AI실적에 요동치나, 반도체 반등할지 주목 - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTE5BLXN5ajlzeWhjY3NUTGxVWHRfMEJMQl9NM1RQOXFvYnI4ZmI5MW84QTBMbnViTnJpcUhSeWtoVXVyYmpQd3YwQ3hlYXI2V2N1bkktWEpsTlRxMVlmUXdxQW92Um4zb2trVDVvYkZLdzM1U3M?oc=5)
+- [삼성전자·SK하이닉스, 3분기 영업익 185조 육박…호실적 뒤엔 투자 부담 - 중앙일보](https://news.google.com/rss/articles/CBMiVkFVX3lxTE40b2RTa0FoalFwaURBaHR2bWh5YTNKSzFWRGVlcFJaSUxHemxvUjVSV1RxWVlEX2h0d2JuUl83OVIzbVdLTTh1dFd5bjM1LTJlNEVqamx3?oc=5)
+- [(오늘의 경제뉴스) 삼성전자 17% 하락할 때 하이닉스 34% 급락…세 가지 악재 - 뉴스버스](https://news.google.com/rss/articles/CBMiakFVX3lxTE8weFBUU0JDV0NwdlhpWG5zdWtmc3hKcEVaV3hzcHV1dVEzSnY4NTk3ekxsbmNtOW5UX242TjM2T2R1WlFXWXlfdVA2MXV5aXM3bDB1LUVHMVBNR2hOYmZ0VUFBWXEwYXpKalE?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
