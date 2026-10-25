@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-25T17:25:09.005531+09:00
+- 계산일: 2026-10-26T02:06:50.407910+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -35,8 +35,8 @@
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
 - [(외환-주간) 5주 연속 내린 달러-원, FOMC·경제지표 '시험대' / - 연합인포맥스](https://news.google.com/rss/articles/CBMidEFVX3lxTFBhbmdSc0JVZ2xtMmloMWNxX3NUTF9SRkdkbF9FNnotbHVIU1pUUEk4NzRHUzZOMWxOaU1CZWFtNmxLMGFSSnRGWVJDUUJLN2IweEVYYTlITlN3NkhTMFg5aC1tekFtVE5XbzZXSVNIOUlKODls?oc=5)
-- [이번주 국내 증시 미국 FOMC·물가·AI실적에 요동치나, 반도체 반등할지 주목 - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTE5BLXN5ajlzeWhjY3NUTGxVWHRfMEJMQl9NM1RQOXFvYnI4ZmI5MW84QTBMbnViTnJpcUhSeWtoVXVyYmpQd3YwQ3hlYXI2V2N1bkktWEpsTlRxMVlmUXdxQW92Um4zb2trVDVvYkZLdzM1U3M?oc=5)
-- [삼성전자·SK하이닉스, 3분기 영업익 185조 육박…호실적 뒤엔 투자 부담 - 중앙일보](https://news.google.com/rss/articles/CBMiVkFVX3lxTE40b2RTa0FoalFwaURBaHR2bWh5YTNKSzFWRGVlcFJaSUxHemxvUjVSV1RxWVlEX2h0d2JuUl83OVIzbVdLTTh1dFd5bjM1LTJlNEVqamx3?oc=5)
+- [높아진 금리, 주식 투자자 대응은? - 한겨레](https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1VODR1LUNpQXE1eTdxQ3NOTHFReUdOSExVc3pGRFpzZ1I0ajMxNHY4Y2JObkNmU1U5YUI5WnJSTTE3clBKUVR2TDhuS0IwblNrQ1o5NXNWYmVLQ0ZDb2N3QXp3MzFmajA?oc=5)
+- [‘삼전닉스’ 3분기 영업익 185조 육박…호실적 뒤엔 투자비 고민 - 중앙일보](https://news.google.com/rss/articles/CBMiVkFVX3lxTE40b2RTa0FoalFwaURBaHR2bWh5YTNKSzFWRGVlcFJaSUxHemxvUjVSV1RxWVlEX2h0d2JuUl83OVIzbVdLTTh1dFd5bjM1LTJlNEVqamx3?oc=5)
 - [(오늘의 경제뉴스) 삼성전자 17% 하락할 때 하이닉스 34% 급락…세 가지 악재 - 뉴스버스](https://news.google.com/rss/articles/CBMiakFVX3lxTE8weFBUU0JDV0NwdlhpWG5zdWtmc3hKcEVaV3hzcHV1dVEzSnY4NTk3ekxsbmNtOW5UX242TjM2T2R1WlFXWXlfdVA2MXV5aXM3bDB1LUVHMVBNR2hOYmZ0VUFBWXEwYXpKalE?oc=5)
 
 ## 계산과 검증 한계
