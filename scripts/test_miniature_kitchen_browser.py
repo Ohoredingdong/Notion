@@ -31,9 +31,11 @@ def main():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(executable_path=args.browser_executable,args=['--no-sandbox'])
-            for mode,width in [('app',1120),('app',390),('app',320),('widget',640),('widget',390),('widget',320)]:
-                context=browser.new_context(viewport={'width':width,'height':1000 if width>760 else 900},has_touch=True,reduced_motion='reduce',timezone_id='Asia/Seoul')
-                page=context.new_page();page.set_default_timeout(10000);errors=[];requests=[];external=[];label=f'{mode}-{width}'
+            layouts=[('app',1120,1000),('app',649,900),('app',390,900),('app',320,900),
+                     ('widget',649,900),('widget',649,660),('widget',640,900),('widget',390,900),('widget',320,900)]
+            for mode,width,height in layouts:
+                context=browser.new_context(viewport={'width':width,'height':height},has_touch=True,reduced_motion='reduce',timezone_id='Asia/Seoul')
+                page=context.new_page();page.set_default_timeout(10000);errors=[];requests=[];external=[];label=f'{mode}-{width}'+('-short' if height==660 else '')
                 page.on('pageerror',lambda e:errors.append(str(e)))
 
                 def route(r):
@@ -86,8 +88,12 @@ def main():
                         assert len(requests)==1 and not external
                         passed('art: all five embedded images decode at full resolution with image network requests blocked')
                     if mode=='widget' or width<=760:
-                        stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box()
+                        stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box();room=page.locator('.room').bounding_box()
                         assert stage['y']+stage['height'] <= controls['y']+1, (stage,controls)
+                        assert controls['y']>=room['y']+room['height'],(room,controls)
+                        assert 14<=room['y']+room['height']-stage['y']-stage['height']<=24,(room,stage)
+                        assert stage['width']/room['width']>=.60,(room,stage)
+                        if width>=560:assert stage['width']>=400,stage
                     assert page.locator('[data-item="milk"]').bounding_box()['width']>=44
                     page.screenshot(path=str(output/f'{label}.png'),full_page=True)
                     passed(label+': complete four-door scene, legible controls, no overflow, asset requests or storage access')
@@ -125,6 +131,17 @@ def main():
                         for other,value in initial['doors'].items():
                             if other!=key:assert snapshot()['doors'][other] is value
                         control.click();assert snapshot()['doors']==initial['doors']
+                    if mode=='widget' or width<=760:
+                        for key,value in initial['doors'].items():
+                            if not value:page.locator(f'[data-toggle="{key}"]').click()
+                        page.evaluate('scrollTo(0,0)');room=page.locator('.room').bounding_box()
+                        for door in page.locator('.door').all():
+                            bounds=door.bounding_box()
+                            assert bounds['x']>=room['x'] and bounds['x']+bounds['width']<=room['x']+room['width'],(room,bounds)
+                            assert bounds['y']>=room['y'] and bounds['y']+bounds['height']<=room['y']+room['height'],(room,bounds)
+                        for key,value in initial['doors'].items():
+                            if not value:page.locator(f'[data-toggle="{key}"]').click()
+                        page.evaluate('scrollTo(0,0)')
                     page.locator('[data-toggle="freshLeft"]').click()
                     expect(page.locator('[data-zone="freshLeft"]')).to_be_hidden()
                     assert page.locator('[data-zone="freshLeft"]').evaluate('e=>e.inert')
@@ -151,6 +168,11 @@ def main():
                     drag(page,page.locator('[data-item="fish"]'),page.locator('[data-zone="frozenRight"]'),width<=760)
                     assert item('fish')['zone']=='frozenRight'
                     passed(label+': real mouse/touch movement crosses open refrigerated and frozen panels and rejects a closed destination')
+
+                    if height==660:
+                        drag(page,page.locator('[data-item="milk"]'),page.locator('[data-zone="frozenLeft"]'),True)
+                        assert item('milk')['zone']=='frozenLeft'
+                        passed(label+': held touch scrolls the large fridge to reach the freezer')
 
                     page.locator('[data-item="milk"]').click();expect(page.locator('#tray')).to_be_visible()
                     page.locator('#ingredientForm [name="quantity"]').fill('250ml')
