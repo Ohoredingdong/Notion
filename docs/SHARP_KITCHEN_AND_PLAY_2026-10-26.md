@@ -36,7 +36,7 @@
 - [기존 장면·문·드래그·양념·저장 회귀](miniature-kitchen/sharp-core-results.json): **111개 통과·실패0**, 앱·위젯18개 화면 조건. 별도 시안 키만 허용하고 기존 키 원본을 보존한다. 13단계 크기 변경에서도 중앙 정렬과 입력 상태를 검사한다.
 - [영양·도감·보상·저장 브라우저 검사](miniature-kitchen/sharp-journal-results.json): **13개 통과·실패0**. DPR2에서 실제 픽셀 정렬·변형 없는 LCD, 마우스/터치 문 조작, 영양 합계·미입력·목표·취소복구, 중복 보상 방지, 소품 선택·부착, 내보내기/정상·비정상 복원, 앱/위젯 같은 출처 읽기, 오래된 창의 저장 중단, opaque/손상/용량 오류를 확인한다. 새 아틀라스는 내부에 보이는 픽셀이 있고 이웃 그림이 영역 밖으로 새지 않는지 검사한다.
 - [일반 애니메이션 확인](miniature-kitchen/sharp-normal-motion-results.json): 390/320px의 네 문 터치 닫기 **8회**, 상부 디스플레이 **4회**에서 회전 중 숨김과 종료 뒤 표시를 확인했다.
-- [단위 검사](miniature-kitchen/sharp-node-results.txt): **7개 통과**. 기존 레시피와의 일치, 미입력/0 구분·날짜별 집계·초과율·취소복구·보상 비용·직전 상태 보존과 형식 검증.
+- [단위 검사](miniature-kitchen/sharp-node-results.txt): **8개 통과**. 기존 레시피와의 일치, 미입력/0 구분·날짜별 집계·초과율·취소복구·보상 비용·직전 상태 보존과 형식 검증과 백업 ID의 마크업 차단.
 - [전후 화면 수치](miniature-kitchen/sharp-lcd-comparison.json): 같은 기록·닫힌 문·시각 `2026-10-26T03:00:00Z`, Asia/Seoul. 1120/649/390/320px과 DPR1/2, 10개 첫 화면·디스플레이 캡처. 작은 표시창의 내용이 잘리지 않는지 확인한다.
 - JavaScript 구문 검사, `git diff --check` 및 기본/작은 내장형 HTML의 UI 코드 일치를 확인한다.
 
@@ -46,7 +46,7 @@
 
 ## 전달과 유지보수
 
-채팅 파일은 `/workspace/artifacts/kitchen-sharp-play/miniature-kitchen-app.html`, `miniature-kitchen-widget.html`이다. 작은 내장형은 앱 919,590바이트·위젯 919,593바이트이며 채팅에는 이 파일만 전달한다. 이미지·CSS·JS 외부 요청은 없다. 마그넷 생성 원본은 `/workspace/generated_images/exec-631881ac-2057-4133-99bc-0ebfc495402f.png`를 보존하고 복사해 사용했다. 기본 `previews/`는 원본 그림 내장형으로 더 크다.
+채팅 파일은 `/workspace/artifacts/kitchen-sharp-play/miniature-kitchen-app.html`, `miniature-kitchen-widget.html`이다. 작은 내장형은 앱 919,641바이트·위젯 919,644바이트이며 채팅에는 이 파일만 전달한다. 이미지·CSS·JS 외부 요청은 없다. 마그넷 생성 원본은 `/workspace/generated_images/exec-631881ac-2057-4133-99bc-0ebfc495402f.png`를 보존하고 복사해 사용했다. 기본 `previews/`는 원본 그림 내장형으로 더 크다.
 
 새 파일 `catalog.js`는 기존8개 레시피의 복사본이며 단위 검사로 원본과의 일치를 확인한다. `recipe-1`~`recipe-8`은 저장되는 ID이므로 목록을 재정렬해도 이름과 ID 대응을 임의로 바꾸지 않는다. `play-model.js`는 DOM/저장소 없는 계산·검증, `play-ui.js`는 전용 키와 화면 연결을 담당한다. `scene.js`는 냉장고 장면과 재료 조작을 유지한다. 마그넷은 명시적 SVG 클립으로 분리해 넓은 카드에서도 이웃 그림이 노출되지 않게 한다.
 

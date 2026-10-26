@@ -81,6 +81,7 @@ def main():
       page.goto(origin+'/miniature-kitchen-app.html',wait_until='networkidle');page.wait_for_function('window.KitchenJournal');page.locator('[data-door="freshLeft"]').click();assert page.evaluate('KitchenJournal.status')==('blocked' if scenario=='corrupt' else 'temporary')
       if scenario=='corrupt':assert page.evaluate(f'localStorage.getItem("{KEY}")')=='KEEP CORRUPT ORIGINAL'
       page.locator('#openJournal').click();page.locator('[data-journal="backup"]').click();before=page.evaluate('MiniKitchen.exportWorld()');page.locator('#importForm textarea').fill('{"version":1,"world":{},"play":{}}');page.locator('#importForm [type="submit"]').click();assert page.evaluate('MiniKitchen.exportWorld()')==before
+      bad=json.loads(page.locator('#journalExport').input_value());bad['world']['items'][0]['id']='bad" onfocus=alert(1) x="';page.locator('#importForm textarea').fill(json.dumps(bad));page.locator('#importForm [type="submit"]').click();assert page.evaluate('MiniKitchen.exportWorld()')==before
      passed(scenario+': clear fallback status, valid export and preservation on unavailable, corrupt or failing storage')
     except Exception as e:result['errors'].append(scenario+': '+str(e));traceback.print_exc()
     finally:ctx.close()

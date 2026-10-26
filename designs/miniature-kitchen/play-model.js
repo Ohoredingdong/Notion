@@ -24,7 +24,7 @@ function validWorld(w){
  const zones=['freshLeft','freshRight','frozenLeft','frozenRight','seasoning','counter'];
  if(!w||!Number.isInteger(w.serial)||w.serial<20||w.serial>1e7||!Number.isInteger(w.layer)||w.layer<1||w.layer>1e7||!w.doors||!zones.slice(0,4).every(k=>typeof w.doors[k]==='boolean')||!Array.isArray(w.items)||w.items.length>2000||!unique(w.items.map(i=>i?.id)))return false;
  if(w.items.filter(i=>i?.kind==='meal').length!==1||!w.items.some(i=>i?.kind==='meal'&&i.id==='meal'))return false;
- return w.items.every(i=>i&&text(i.id)&&text(i.name)&&['food','seasoning','meal','decor'].includes(i.kind)&&zones.includes(i.zone)&&['x','y'].every(k=>typeof i[k]==='number'&&Number.isFinite(i[k])&&i[k]>=0&&i[k]<=1)&&Number.isInteger(i.z)&&i.z>=1&&i.z<=1e7&&(i.kind!=='decor'||['utensils','flowers','cup','cookies'].includes(i.art))&&(['food','seasoning'].includes(i.kind)?typeof i.quantity==='string'&&i.quantity.length<=80&&typeof i.expiry==='string'&&(i.expiry===''||day(i.expiry)):true));
+ return w.items.every(i=>i&&text(i.id)&&/^[A-Za-z0-9_-]+$/.test(i.id)&&text(i.name)&&['food','seasoning','meal','decor'].includes(i.kind)&&zones.includes(i.zone)&&['x','y'].every(k=>typeof i[k]==='number'&&Number.isFinite(i[k])&&i[k]>=0&&i[k]<=1)&&Number.isInteger(i.z)&&i.z>=1&&i.z<=1e7&&(i.kind!=='decor'||['utensils','flowers','cup','cookies'].includes(i.art))&&(['food','seasoning'].includes(i.kind)?typeof i.quantity==='string'&&i.quantity.length<=80&&typeof i.expiry==='string'&&(i.expiry===''||day(i.expiry)):true));
 }
 function create(ids,saved){
  const allowed=new Set(ids);if(saved&&!valid(saved,ids))throw new Error('기록 형식을 확인할 수 없어요.');
