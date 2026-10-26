@@ -33,11 +33,11 @@ def check_resize(browser, origin, output):
     page=context.new_page();metrics=[]
     try:
         page.goto(origin+'/miniature-kitchen-app.html',wait_until='networkidle')
-        page.wait_for_function('window.MiniKitchen')
+        page.wait_for_function('window.MiniKitchen && window.KitchenJournal')
         page.locator('[data-item="milk"]').click()
         page.locator('[name="quantity"]').fill('250ml')
         page.locator('#ingredientForm [type="submit"]').click()
-        for key in ['freshRight','frozenLeft','frozenRight']:page.locator(f'[data-toggle="{key}"]').click()
+        for key in ['freshRight','frozenLeft','frozenRight']:page.locator(f'[data-door="{key}"]').click()
         expected=page.evaluate('MiniKitchen.getSnapshot()')
         for width in [1120,961,960,896,800,761,760,649,560,559,390,320,1120]:
             page.set_viewport_size({'width':width,'height':660})
@@ -46,7 +46,7 @@ def check_resize(browser, origin, output):
             page.evaluate('scrollTo(0,0)')
             current=page.evaluate('''() => {
                 const bounds=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right}};
-                return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,fridge:bounds('.fridge-stage'),controls:bounds('.door-controls'),
+                return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,fridge:bounds('.fridge-stage'),controls:bounds('.kitchen-progress'),
                     doors:[...document.querySelectorAll('.door')].map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})};
             }''')
             assert_room_placement(page)
@@ -109,7 +109,7 @@ def main():
                     window.__storageAccess=[];
                     window.__originals=()=>keys.map(key=>get.call(localStorage,key));
                     for(const method of ['getItem','setItem','removeItem','clear']){
-                      const original=Storage.prototype[method];Storage.prototype[method]=function(...args){__storageAccess.push(method);return original.apply(this,args);};
+                      const original=Storage.prototype[method];Storage.prototype[method]=function(...args){__storageAccess.push({method,key:args[0]});return original.apply(this,args);};
                     }
                 })();''')
                 snapshot=lambda:page.evaluate('MiniKitchen.getSnapshot()')
@@ -120,13 +120,13 @@ def main():
                     page.locator(f'.camera-tabs [data-camera="{name}"]').click()
 
                 try:
-                    page.goto(origin+f'/miniature-kitchen-{mode}.html',wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen')
+                    page.goto(origin+f'/miniature-kitchen-{mode}.html',wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen && window.KitchenJournal')
                     original=page.evaluate('__originals()');initial=snapshot()
                     assert initial['mode']==mode
-                    expect(page.locator('.door')).to_have_count(4);expect(page.locator('.display')).to_have_count(2)
+                    expect(page.locator('.door')).to_have_count(4);expect(page.locator('.fridge-lcd')).to_have_count(2)
                     assert not page.evaluate('document.documentElement.scrollWidth>innerWidth')
                     assert len(requests)==1 and not external
-                    assert not page.evaluate('__storageAccess')
+                    assert not page.evaluate("__storageAccess.some(e=>e.key!=='miniature-kitchen-preview-v1'||!['getItem','setItem'].includes(e.method))")
                     if (mode,width)==('app',1120):
                         # A running UI can still show missing or proxy-blurred art.
                         # Decode the actual inline images while all asset requests are blocked.
@@ -141,11 +141,11 @@ def main():
                                 return [image.naturalWidth,image.naturalHeight];
                             }));
                         }''')
-                        assert sorted(images)==[[1254,1254],[1286,1223],[1448,1086],[1536,1024],[1536,1024]],images
+                        assert sorted(images)==[[643,612],[1254,1254],[1448,1086],[1536,1024],[1536,1024]],images
                         assert len(requests)==1 and not external
-                        passed('art: all five embedded images decode at full resolution with image network requests blocked')
+                        passed('art: all five embedded images decode at their configured render resolution with image network requests blocked')
                     # Fit the actual first viewport, not merely an oversized room.
-                    stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box();room=page.locator('.room').bounding_box()
+                    stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.kitchen-progress').bounding_box();room=page.locator('.room').bounding_box()
                     assert stage['y']>=0 and stage['y']+stage['height']<=height,(stage,height)
                     assert controls['y']>=room['y']+room['height'],(room,controls)
                     assert controls['y']+controls['height']<=height,(controls,height)
@@ -156,7 +156,7 @@ def main():
                     assert max(scales)-min(scales)<.001,scales
                     assert page.locator('[data-item="milk"]').bounding_box()['width']>=43.99
                     page.screenshot(path=str(output/f'{label}.png'),full_page=True)
-                    passed(label+': complete four-door scene, legible controls, no overflow, asset requests or storage access')
+                    passed(label+': complete four-door scene, legible controls, no overflow, asset requests or production storage access')
 
                     if (mode,width)==('app',1120):
                         def check_palette(selector,count):
@@ -168,7 +168,8 @@ def main():
                                     const box=svg.viewBox.baseVal,canvas=document.createElement('canvas');
                                     canvas.width=box.width;canvas.height=box.height;
                                     const context=canvas.getContext('2d');
-                                    context.drawImage(images.get(source),box.x,box.y,box.width,box.height,0,0,box.width,box.height);
+                                    const image=images.get(source),node=svg.querySelector('image'),sx=image.naturalWidth/Number(node.getAttribute('width')),sy=image.naturalHeight/Number(node.getAttribute('height'));
+                                    context.drawImage(image,box.x*sx,box.y*sy,box.width*sx,box.height*sy,0,0,box.width,box.height);
                                     const pixels=context.getImageData(0,0,canvas.width,canvas.height).data;
                                     let visible=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>16)visible++;
                                     coverage.push(visible/(canvas.width*canvas.height));
@@ -179,14 +180,14 @@ def main():
 
                         page.locator('#addFood').click();check_palette('#trayContent .palette svg',8);page.locator('#closeTray').click()
                         passed('art: all eight food choices contain visible ingredient pixels')
-                        page.locator('#recipes').click();check_palette('#trayContent .recipe-sheet svg',2);page.locator('#closeTray').click()
-                        passed('art: both recipe choices contain visible food pixels')
+                        page.locator('#recipes').click();check_palette('#trayContent .recipe-sheet svg',8);page.locator('#closeTray').click()
+                        passed('art: all eight existing recipe choices contain visible food pixels')
                         page.locator('#decorate').click();check_palette('#trayContent .palette svg',4);page.locator('#closeTray').click();page.locator('#decorate').click()
                         passed('art: all four decoration choices contain visible prop pixels')
 
                     camera('fridge')
                     for key in initial['doors']:
-                        control=page.locator(f'[data-toggle="{key}"]');before=snapshot()['doors'][key]
+                        control=page.locator(f'[data-door="{key}"]');before=snapshot()['doors'][key]
                         control.click();expect(control).to_have_attribute('aria-expanded',str(not before).lower())
                         assert snapshot()['doors'][key] is not before
                         for other,value in initial['doors'].items():
@@ -194,7 +195,7 @@ def main():
                         control.click();assert snapshot()['doors']==initial['doors']
                     # All modes must retain four fully visible open doors.
                     for key,value in initial['doors'].items():
-                        if not value:page.locator(f'[data-toggle="{key}"]').click()
+                        if not value:page.locator(f'[data-door="{key}"]').click()
                     page.evaluate('scrollTo(0,0)');room=page.locator('.room').bounding_box()
                     for door in page.locator('.door').all():
                         bounds=door.bounding_box()
@@ -202,35 +203,35 @@ def main():
                         assert bounds['y']>=room['y'] and bounds['y']+bounds['height']<=room['y']+room['height'],(room,bounds)
                         assert bounds['y']>=0 and bounds['y']+bounds['height']<=height,(height,bounds)
                     for key,value in initial['doors'].items():
-                        if not value:page.locator(f'[data-toggle="{key}"]').click()
+                        if not value:page.locator(f'[data-door="{key}"]').click()
                     page.evaluate('scrollTo(0,0)')
-                    page.locator('[data-toggle="freshLeft"]').click()
+                    page.locator('[data-door="freshLeft"]').click()
                     expect(page.locator('[data-zone="freshLeft"]')).to_be_hidden()
                     assert page.locator('[data-zone="freshLeft"]').evaluate('e=>e.inert')
-                    expect(page.locator('[data-door="freshLeft"] .display')).to_contain_text('6개')
-                    assert page.locator('[data-door="freshLeft"] .display').evaluate('''e=>{
+                    expect(page.locator('[data-lcd="freshLeft"]')).to_contain_text('6개')
+                    assert page.locator('[data-lcd="freshLeft"]').evaluate('''e=>{
                         const display=e.getBoundingClientRect();
-                        return [...e.querySelectorAll('.display-row small:last-child')].every(n=>n.getBoundingClientRect().bottom<=display.bottom-1);
+                        return [...e.querySelectorAll('.lcd-row small')].every(n=>n.getBoundingClientRect().bottom<=display.bottom-1);
                     }'''), 'An expiry date is clipped by the display'
                     page.screenshot(path=str(output/f'{label}-closed.png'),full_page=True)
-                    page.locator('[data-toggle="freshLeft"]').click()
+                    page.locator('[data-door="freshLeft"]').click()
                     passed(label+': all four doors toggle independently; closed contents are hidden and inert; expiry display uses example quantities')
 
                     if width==320:
                         # Responsive rendering and all four doors run at 320px.
                         # Full interaction flows below run at 390px and desktop.
                         assert not errors and not external
-                        assert page.evaluate('__originals()')==original and not page.evaluate('__storageAccess')
+                        assert page.evaluate('__originals()')==original and not page.evaluate("__storageAccess.some(e=>e.key!=='miniature-kitchen-preview-v1'||!['getItem','setItem'].includes(e.method))")
                         continue
 
                     milk=page.locator('[data-item="milk"]');before=item('milk')
                     # A closed destination is a visible real door, never forced open.
                     drag(page,milk,page.locator('[data-door="freshRight"]'),width<=760)
                     assert item('milk')==before
-                    page.locator('[data-toggle="freshRight"]').click()
+                    page.locator('[data-door="freshRight"]').click()
                     drag(page,milk,page.locator('[data-zone="freshRight"]'),width<=760)
                     assert item('milk')['zone']=='freshRight'
-                    for key in ['frozenLeft','frozenRight']:page.locator(f'[data-toggle="{key}"]').click()
+                    for key in ['frozenLeft','frozenRight']:page.locator(f'[data-door="{key}"]').click()
                     drag(page,page.locator('[data-item="fish"]'),page.locator('[data-zone="frozenRight"]'),width<=760)
                     assert item('fish')['zone']=='frozenRight'
                     passed(label+': real mouse/touch movement crosses open refrigerated and frozen panels and rejects a closed destination')
@@ -270,13 +271,15 @@ def main():
                     page.locator('#addFood').click();page.locator('[data-add-food="당근"]').click();assert any(r['name']=='당근' for r in snapshot()['items'])
                     page.locator('#recipes').click();page.locator('[data-recipe="두부 된장국"]').click();assert item('meal')['name']=='두부 된장국'
                     camera('counter');page.screenshot(path=str(output/f'{label}-counter.png'),full_page=True)
-                    assert page.evaluate('__originals()')==original and not page.evaluate('__storageAccess')
+                    assert page.evaluate('__originals()')==original and not page.evaluate("__storageAccess.some(e=>e.key!=='miniature-kitchen-preview-v1'||!['getItem','setItem'].includes(e.method))")
                     ids=page.locator('[id]').evaluate_all('(nodes)=>nodes.map(n=>n.id)');assert len(ids)==len(set(ids))
                     assert not errors and not external
-                    page.reload(wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen')
-                    assert snapshot()==initial
-                    assert page.evaluate('__originals()')==original and not page.evaluate('__storageAccess')
-                    passed(label+': example food/meal changes reset on reload; real records are neither read nor written; no runtime errors')
+                    saved_world=page.evaluate('MiniKitchen.exportWorld()');saved_play=page.evaluate('KitchenJournal.getSnapshot()')
+                    page.reload(wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen && window.KitchenJournal')
+                    assert page.evaluate('MiniKitchen.exportWorld()')==saved_world
+                    assert page.evaluate('KitchenJournal.getSnapshot()')==saved_play
+                    assert page.evaluate('__originals()')==original and not page.evaluate("__storageAccess.some(e=>e.key!=='miniature-kitchen-preview-v1'||!['getItem','setItem'].includes(e.method))")
+                    passed(label+': preview inventory/door/collection changes survive reload; production records are neither read nor written; no runtime errors')
                 except Exception as e:
                     result['errors'].append(f'{label}: {type(e).__name__}: {e}');traceback.print_exc();page.screenshot(path=str(output/f'failure-{label}.png'),full_page=True)
                 finally:context.close()
@@ -290,8 +293,8 @@ def main():
             try:
                 page.goto(origin+'/miniature-kitchen-board.html',wait_until='networkidle')
                 app=page.frame_locator('iframe').nth(0);widget=page.frame_locator('iframe').nth(1)
-                app.locator('[data-toggle="freshRight"]').click();widget.locator('[data-toggle="frozenRight"]').click()
-                expect(app.locator('[data-toggle="freshRight"]')).to_have_attribute('aria-expanded','true');expect(widget.locator('[data-toggle="frozenRight"]')).to_have_attribute('aria-expanded','true')
+                app.locator('[data-door="freshRight"]').click();widget.locator('[data-door="frozenRight"]').click()
+                expect(app.locator('[data-door="freshRight"]')).to_have_attribute('aria-expanded','true');expect(widget.locator('[data-door="frozenRight"]')).to_have_attribute('aria-expanded','true')
                 assert not errors,errors
                 assert len(board_requests)==1,board_requests
                 page.screenshot(path=str(output/'comparison-board.png'),full_page=True)

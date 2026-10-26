@@ -15,7 +15,7 @@ import subprocess
 # Unused atlas cells are omitted; source images and published apps stay untouched.
 COMPACT_SPRITES = {
     'assets/food-miniatures-v2.webp': ('sprites', (1254,1254),
-        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','egg-rice','tofu-soup','ingredient')),
+        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','egg-rice','tofu-soup','chicken-salad','zucchini-fritters','egg-salad','tofu-steak','mushroom-tofu','omelette','ingredient')),
     'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
         ('soy','salt','gochujang','doenjang','jar')),
 }
@@ -45,7 +45,10 @@ def web_image(path, size, boxes):
                       '-geometry',f'+{x}+{y}','-composite']
     else:
         command+=[str(path)]
-    command+=['-define','webp:method=6','-define','webp:alpha-quality=100','-quality','82','webp:-']
+    if path.name=='magnets.png':command+=['-resize','627x627']
+    if path.name=='decor-atlas.png':command+=['-resize','643x612']
+    quality='94' if path.name=='fridge-atlas.png' else '76' if path.name=='room-centered.png' else '82'
+    command+=['-define','webp:method=6','-define','webp:alpha-quality=100','-quality',quality,'webp:-']
     return subprocess.run(command,check=True,capture_output=True).stdout
 
 
@@ -98,6 +101,7 @@ def build(root, mode, compact=False):
         script = path.read_text()
         replacements = {
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
+            'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
             'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-atlas.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
         }
         for key, asset in replacements.get(path.name, []):
@@ -112,7 +116,7 @@ def build(root, mode, compact=False):
     html = re.sub(r'<script defer src="([^"]+)"></script>', js, html)
     html = html.replace('data-mode="app"',f'data-mode="{mode}"')
     html = html.replace('<!-- Source template. Generate the two self-contained previews with the builder. -->',
-                        '<!-- Generated isolated visual prototype. Example data only; no application storage. -->')
+                        '<!-- Generated miniature preview. Separate preview storage only; production data untouched. -->')
     return html.replace('</body>','\n'.join(scripts)+'\n</body>')
 
 

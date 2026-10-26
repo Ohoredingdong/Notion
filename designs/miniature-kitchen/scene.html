@@ -8,7 +8,10 @@
 <!-- Source template. Generate the two self-contained previews with the builder. -->
 <link rel="stylesheet" href="designs/miniature-kitchen/scene.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
+<script defer src="designs/miniature-kitchen/catalog.js"></script>
+<script defer src="designs/miniature-kitchen/play-model.js"></script>
 <script defer src="designs/miniature-kitchen/scene.js"></script>
+<script defer src="designs/miniature-kitchen/play-ui.js"></script>
 </head>
 <body data-mode="app" data-camera="fridge">
 <a class="skip" href="#kitchen">부엌으로 이동</a>
@@ -32,9 +35,10 @@
     <div class="seasoning-zone drop-zone" data-zone="seasoning" aria-label="양념 선반"></div>
     <div class="counter-zone drop-zone" data-zone="counter" aria-label="조리대"></div>
     </div>
+    <div class="fridge-displays" id="fridgeDisplays" role="group" aria-label="냉장고 디스플레이"></div>
     <div class="scene-note" id="sceneNote">재료를 누르면 살펴볼 수 있어요</div>
   </section>
-  <div class="door-controls" role="group" aria-label="네 문 개폐"></div>
+  <div class="kitchen-progress" id="kitchenProgress"><span>문을 한 번 더 누르면 닫혀요</span><button type="button" id="openJournal">식사·영양과 도감</button></div>
   </div>
   <div class="decoration-tools" id="decorationTools" hidden><span>소품을 끌어 배치해요</span><button type="button" id="propList">놓아둔 소품 보기</button></div>
   <div class="worktop-actions" role="group" aria-label="부엌에서 하기">
@@ -42,7 +46,7 @@
     <button type="button" class="action" id="recipes"><span data-icon="recipes" aria-hidden="true"></span>오늘 뭐 먹지?</button>
     <button type="button" class="action" id="decorate" aria-pressed="false"><span data-icon="sparkles" aria-hidden="true"></span><span>꾸미기</span></button>
   </div>
-  <div class="design-note"><span>예시 재료로 조작해 보는 시안 · 새로고침하면 처음으로 돌아가요.</span><button type="button" id="help">조작 방법</button></div>
+  <div class="design-note"><span>이 시안의 기록 · 저장 상태를 확인하고 있어요.</span><button type="button" id="help">조작 방법</button></div>
   <div class="live-message" id="liveMessage" role="status" aria-live="polite"></div>
 </main>
 <dialog class="tray" id="tray" aria-labelledby="trayTitle">
