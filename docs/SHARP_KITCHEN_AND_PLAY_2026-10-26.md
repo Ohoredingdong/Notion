@@ -57,3 +57,5 @@ node --test tests/kitchen-play.test.cjs
 python scripts/test_miniature_kitchen_browser.py --root /tmp/kitchen-play --output /tmp/kitchen-core-check
 python scripts/test_kitchen_journal_browser.py --root /tmp/kitchen-play --output /tmp/kitchen-play-check
 ```
+
+수정은 원격 `feat/kitchen-play-and-sharp-displays`에 올렸다(`9480de44`, `722b636d`). 기본 브랜치를 `design/centered-kitchen`으로 지정한 draft PR을 시도했으나 GitHub GraphQL API가 `Forbidden`으로 차단해 생성하지 못했다. [변경 비교](https://github.com/Ohoredingdong/Notion/compare/design/centered-kitchen...feat/kitchen-play-and-sharp-displays?expand=1)에서 검토할 수 있다. main에 병합·배포하지 않았다.
