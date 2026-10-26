@@ -53,3 +53,5 @@ python scripts/test_miniature_kitchen_browser.py --root /tmp/kitchen-preview --o
 채팅용 파일은 `/workspace/artifacts/kitchen-layout-fixed/miniature-kitchen-app.html`, `miniature-kitchen-widget.html`이다. 외부 자산 요청 없이 동작하는 작은 내장형 HTML을 사용한다. 기존 네 전달 경로도 같은 최종 파일로 갱신했다. 저장소의 `previews/`는 원본 그림 내장형으로 다시 생성했다.
 
 수정 범위는 공통 시안 HTML/CSS/JS, 생성된 미리보기, 해당 브라우저 검사와 인수인계 문서다. `use-me-first.html` 등 실제 서비스 소스·저장 키·GitHub Pages URL은 변경하지 않았고 main에 병합하거나 배포하지 않았다.
+
+수정 커밋 `ca208ee8`은 원격 `fix/miniature-kitchen-viewport`에 올렸다. 기본 브랜치를 `design/miniature-kitchen-scene`으로 지정한 draft PR 생성을 시도했으나 GitHub GraphQL API가 `Forbidden`으로 차단해 PR은 생성하지 못했다. [브랜치 간 변경 비교](https://github.com/Ohoredingdong/Notion/compare/design/miniature-kitchen-scene...fix/miniature-kitchen-viewport?expand=1)로 검토할 수 있다.
