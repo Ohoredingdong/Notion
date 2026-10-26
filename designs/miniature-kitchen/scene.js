@@ -47,17 +47,22 @@
     const shell=$('.shell'),view=$('.kitchen-view'),room=$('.room');
     const available=Math.min(innerWidth-28,mode==='widget'?692:1452);
     const top=$('.masthead').offsetHeight+$('.camera-tabs').offsetHeight+12;
+    // Frame the installed fridge, not the unused foreground floor. Its apparent
+    // size stays the same while the appliance fits the actual tile bay behind it.
+    const camera=document.body.dataset.camera;
+    const frame=camera==='fridge'?{height:880,top:64,width:700,center:322.5}:
+      {height:1024,top:0,width:820,center:camera==='seasoning'?1080:1010};
     // Ease the extra room into the four-button row without a size jump at 560px.
     const controls=104-50*clamp((innerWidth-560)/160,0,1);
-    const scale=Math.max(.2,Math.min(.8,available/820,Math.max(280,innerHeight-top-controls-24)/1024));
+    const scale=Math.max(.2,Math.min(819.2/frame.height,available/frame.width,Math.max(280,innerHeight-top-controls-24)/frame.height));
     shell.style.setProperty('--scene-scale',String(scale));
-    shell.style.setProperty('--scene-height',scale*1024+'px');
+    shell.style.setProperty('--scene-height',scale*frame.height+'px');
+    shell.style.setProperty('--scene-y',-scale*frame.top+'px');
     shell.style.setProperty('--scene-max-width',scale*1536+28+'px');
-    shell.style.setProperty('--object',Math.max(110,44/scale)+'px');
+    shell.style.setProperty('--object',Math.max(94,44/scale)+'px');
     shell.style.setProperty('--seasoning',Math.max(140,44/scale)+'px');
     view.classList.toggle('is-compact',compact());
-    const center={fridge:395,seasoning:1080,counter:1010}[document.body.dataset.camera]||395;
-    const x=clamp(room.clientWidth/2-center*scale,Math.min(0,room.clientWidth-1536*scale),0);
+    const x=clamp(room.clientWidth/2-frame.center*scale,Math.min(0,room.clientWidth-1536*scale),0);
     shell.style.setProperty('--scene-x',x+'px');
   }
   function setCamera(camera) {
@@ -104,7 +109,7 @@
   function closeTray(){$('#tray').close();if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});}
   function showAdd(){openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${A.foodArt(A.foodIdForName(name))}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
   function showDecor() {
-    decorating=true;if(compact())setCamera('counter');render();openTray('마음에 드는 소품을 놓아봐요',`<p class="tray-note">소품을 골라 조리대에 놓고 자유롭게 옮겨요. 소품을 누르면 앞뒤 순서와 배치를 바꿀 수 있어요.</p><div class="palette">${Object.entries(props).map(([key,p])=>`<button type="button" data-add-prop="${key}">${decorArt(key)}<strong>${p.name}</strong><small>${items.some(r=>r.art===key)?'이미 놓았어요 · 하나 더 놓기':'조리대에 놓기'}</small></button>`).join('')}</div><h3 class="placed-title">놓아둔 소품</h3><p class="tray-note">뒤에 가려진 소품도 여기서 고를 수 있어요.</p><div class="placed-props">${items.filter(r=>r.kind==='decor').map(r=>`<button type="button" data-select-prop="${r.id}">${art(r)}<span>${esc(r.name)}<br>선택해서 배치 바꾸기</span></button>`).join('')}</div><div class="tray-actions"><button type="button" class="small-action primary" data-close>부엌에서 옮겨보기</button></div>`);
+    decorating=true;setCamera('counter');render();openTray('마음에 드는 소품을 놓아봐요',`<p class="tray-note">소품을 골라 조리대에 놓고 자유롭게 옮겨요. 소품을 누르면 앞뒤 순서와 배치를 바꿀 수 있어요.</p><div class="palette">${Object.entries(props).map(([key,p])=>`<button type="button" data-add-prop="${key}">${decorArt(key)}<strong>${p.name}</strong><small>${items.some(r=>r.art===key)?'이미 놓았어요 · 하나 더 놓기':'조리대에 놓기'}</small></button>`).join('')}</div><h3 class="placed-title">놓아둔 소품</h3><p class="tray-note">뒤에 가려진 소품도 여기서 고를 수 있어요.</p><div class="placed-props">${items.filter(r=>r.kind==='decor').map(r=>`<button type="button" data-select-prop="${r.id}">${art(r)}<span>${esc(r.name)}<br>선택해서 배치 바꾸기</span></button>`).join('')}</div><div class="tray-actions"><button type="button" class="small-action primary" data-close>부엌에서 옮겨보기</button></div>`);
   }
   function showRecipes(){openTray('오늘은 어떤 한 끼가 좋을까요?',`<p class="tray-note">조리대에 놓을 요리 카드를 골라봐요. 화면 구성용 예시이며 실제 추천·영양·비용 계산은 연결 전이에요.</p><div class="recipe-sheet">${['계란 볶음밥','두부 된장국'].map(name=>`<button type="button" class="recipe-option" data-recipe="${name}" aria-pressed="${items.find(r=>r.kind==='meal').name===name}">${A.dishArt({id:name})}<strong>${name}</strong><small>${name==='계란 볶음밥'?'계란 · 밥 · 양파':'두부 · 된장 · 대파'}</small></button>`).join('')}</div>`,'TODAY’S LITTLE MEAL');}
   function showItem(item) {
@@ -155,7 +160,7 @@
     if(button.dataset.selectProp){const item=items.find(r=>r.id===button.dataset.selectProp&&r.kind==='decor');if(item)showItem(item);}
     if(button.id==='closeTray'||button.hasAttribute('data-close'))closeTray();
     if(button.dataset.addFood){const id='added'+(++serial),name=button.dataset.addFood;items.push({id,kind:'food',name,quantity:'1개',expiry:date(3),zone:'freshLeft',x:.5,y:.63,z:++layer});doors.freshLeft=true;setCamera('fridge');selected=id;render();closeTray();announce(name+'을 시안 냉장고에 담았어요.');}
-    if(button.dataset.addProp){const key=button.dataset.addProp;items.push({id:'decor'+(++serial),kind:'decor',art:key,name:props[key].name,zone:'counter',x:.56,y:.98,z:++layer});if(compact())setCamera('counter');render();closeTray();announce(props[key].name+'을 놓았어요. 끌어 원하는 자리에 놓아보세요.');}
+    if(button.dataset.addProp){const key=button.dataset.addProp;items.push({id:'decor'+(++serial),kind:'decor',art:key,name:props[key].name,zone:'counter',x:.56,y:.98,z:++layer});setCamera('counter');render();closeTray();announce(props[key].name+'을 놓았어요. 끌어 원하는 자리에 놓아보세요.');}
     if(button.dataset.layer)moveLayer(button.dataset.id,button.dataset.layer);if(button.dataset.remove){const index=items.findIndex(r=>r.id===button.dataset.remove&&r.kind==='decor');if(index>=0){items.splice(index,1);selected=null;render();closeTray();announce('소품을 치웠어요.');}}
     if(button.dataset.recipe){items.find(r=>r.kind==='meal').name=button.dataset.recipe;setCamera('counter');render();closeTray();announce('조리대에 '+button.dataset.recipe+'을 놓았어요.');}
     if(button.id==='help')openTray('작은 부엌을 만져봐요',`<ul class="help-list"><li>냉장고 문이나 아래의 네 문 버튼으로 열고 닫아요.</li><li>재료·양념병은 누르면 수량·기한을 살펴보고, 끌어서 옮길 수 있어요.</li><li>다른 칸으로 옮길 때는 그 문을 먼저 열어주세요.</li><li>‘꾸미기’에서 소품을 놓고 끌어 배치해요.</li><li>재료와 소품은 겹쳐 놓을 수 있고, 방향키로도 움직여요.</li><li>작은 화면은 냉장고·양념 선반·조리대를 골라 크게 봐요.</li></ul><p class="tray-note">이 화면은 디자인·조작 시안이에요. 모든 재료는 예시이며 기존 앱 기록과 연결하지 않아요. 새로고침하면 처음으로 돌아가요. 사진 인식·식비·영양·보상 기능을 구현 완료한 화면은 아니에요.</p>`);

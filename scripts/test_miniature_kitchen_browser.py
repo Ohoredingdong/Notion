@@ -12,6 +12,21 @@ from playwright.sync_api import expect, sync_playwright
 from test_fridge_four_door_browser import QuietHandler, drag
 
 
+def assert_room_placement(page):
+    # Landmarks read from room.png, independent of CSS/viewport coordinates:
+    # the empty tile bay ends at x555; the adjoining cabinet meets the floor at y905.
+    world=page.locator('.scene-world').bounding_box()
+    fridge=page.locator('.fridge-stage').bounding_box()
+    scale=world['width']/1536
+    left=(fridge['x']-world['x'])/scale
+    right=(fridge['x']+fridge['width']-world['x'])/scale
+    # Atlas alpha >90% ends at y987 in the 994px crop; ignore transparent padding.
+    feet=(fridge['y']+fridge['height']*987/994-world['y'])/scale
+    assert left>=75,('Fridge intrudes on the left wall trim',left)
+    assert right<=552,('Closed fridge occupies the countertop',right)
+    assert abs(feet-905)<=3,('Fridge stands in front of the cabinet floor line',feet)
+
+
 def check_resize(browser, origin, output):
     """A panel resize must preserve edits and avoid a sudden change in scene scale."""
     context=browser.new_context(viewport={'width':649,'height':660},reduced_motion='reduce')
@@ -34,6 +49,7 @@ def check_resize(browser, origin, output):
                 return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,fridge:bounds('.fridge-stage'),controls:bounds('.door-controls'),
                     doors:[...document.querySelectorAll('.door')].map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})};
             }''')
+            assert_room_placement(page)
             assert not current['overflow'],current
             assert current['controls']['bottom']<=660,current
             assert all(r['x']>=0 and r['y']>=0 and r['right']<=width and r['bottom']<=660 for r in current['doors']),current
@@ -101,7 +117,7 @@ def main():
                 def item(key):return next(r for r in snapshot()['items'] if r['id']==key)
 
                 def camera(name):
-                    if page.locator('.kitchen-view').evaluate("e=>e.classList.contains('is-compact')"):page.locator(f'.camera-tabs [data-camera="{name}"]').click()
+                    page.locator(f'.camera-tabs [data-camera="{name}"]').click()
 
                 try:
                     page.goto(origin+f'/miniature-kitchen-{mode}.html',wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen')
@@ -133,6 +149,7 @@ def main():
                     assert stage['y']>=0 and stage['y']+stage['height']<=height,(stage,height)
                     assert controls['y']>=room['y']+room['height'],(room,controls)
                     assert controls['y']+controls['height']<=height,(controls,height)
+                    assert_room_placement(page)
                     assert stage['height']>=min(300,height*.45),stage
                     assert page.evaluate("getComputedStyle(document.querySelector('.fridge-doors')).transformStyle")=='preserve-3d'
                     scales=page.evaluate("""() => ['.scene-world','.fridge-stage','.item.meal'].map(s=>{const e=document.querySelector(s);return e.getBoundingClientRect().width/e.offsetWidth})""")
@@ -167,6 +184,7 @@ def main():
                         page.locator('#decorate').click();check_palette('#trayContent .palette svg',4);page.locator('#closeTray').click();page.locator('#decorate').click()
                         passed('art: all four decoration choices contain visible prop pixels')
 
+                    camera('fridge')
                     for key in initial['doors']:
                         control=page.locator(f'[data-toggle="{key}"]');before=snapshot()['doors'][key]
                         control.click();expect(control).to_have_attribute('aria-expanded',str(not before).lower())

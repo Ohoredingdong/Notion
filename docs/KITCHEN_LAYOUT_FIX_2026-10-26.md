@@ -55,3 +55,5 @@ python scripts/test_miniature_kitchen_browser.py --root /tmp/kitchen-preview --o
 수정 범위는 공통 시안 HTML/CSS/JS, 생성된 미리보기, 해당 브라우저 검사와 인수인계 문서다. `use-me-first.html` 등 실제 서비스 소스·저장 키·GitHub Pages URL은 변경하지 않았고 main에 병합하거나 배포하지 않았다.
 
 수정 커밋 `ca208ee8`은 원격 `fix/miniature-kitchen-viewport`에 올렸다. 기본 브랜치를 `design/miniature-kitchen-scene`으로 지정한 draft PR 생성을 시도했으나 GitHub GraphQL API가 `Forbidden`으로 차단해 PR은 생성하지 못했다. [브랜치 간 변경 비교](https://github.com/Ohoredingdong/Notion/compare/design/miniature-kitchen-scene...fix/miniature-kitchen-viewport?expand=1)로 검토할 수 있다.
+
+후속 사용자 피드백에서 이 수정의 위치도 배경과 맞지 않는다고 지적받았다. [최신 배경 정합 수정](KITCHEN_BACKGROUND_ALIGNMENT_2026-10-26.md)은 실제 설치 공간과 발의 투명 여백까지 반영한다. 위 기능 검사 통과를 배경 정합이나 디자인 승인으로 해석하지 않는다.
