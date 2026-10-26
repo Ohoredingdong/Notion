@@ -34,6 +34,7 @@ def check_resize(browser, origin, output):
     try:
         page.goto(origin+'/miniature-kitchen-app.html',wait_until='networkidle')
         page.wait_for_function('window.MiniKitchen && window.KitchenJournal')
+        if not page.evaluate('MiniKitchen.getSnapshot().doors.freshLeft'):page.locator('[data-door="freshLeft"]').click()
         page.locator('[data-item="milk"]').click()
         page.locator('[name="quantity"]').fill('250ml')
         page.locator('#ingredientForm [type="submit"]').click()
@@ -154,7 +155,11 @@ def main():
                     assert page.evaluate("getComputedStyle(document.querySelector('.fridge-doors')).transformStyle")=='preserve-3d'
                     scales=page.evaluate("""() => ['.scene-world','.fridge-stage','.item.meal'].map(s=>{const e=document.querySelector(s);return e.getBoundingClientRect().width/e.offsetWidth})""")
                     assert max(scales)-min(scales)<.001,scales
+                    # New previews start closed to show both LCDs. Open the
+                    # compartment to measure its real ingredient hit target.
+                    if not initial['doors']['freshLeft']:page.locator('[data-door="freshLeft"]').click()
                     assert page.locator('[data-item="milk"]').bounding_box()['width']>=43.99
+                    if not initial['doors']['freshLeft']:page.locator('[data-door="freshLeft"]').click()
                     page.screenshot(path=str(output/f'{label}.png'),full_page=True)
                     passed(label+': complete four-door scene, legible controls, no overflow, asset requests or production storage access')
 
@@ -205,7 +210,7 @@ def main():
                     for key,value in initial['doors'].items():
                         if not value:page.locator(f'[data-door="{key}"]').click()
                     page.evaluate('scrollTo(0,0)')
-                    page.locator('[data-door="freshLeft"]').click()
+                    if snapshot()['doors']['freshLeft']:page.locator('[data-door="freshLeft"]').click()
                     expect(page.locator('[data-zone="freshLeft"]')).to_be_hidden()
                     assert page.locator('[data-zone="freshLeft"]').evaluate('e=>e.inert')
                     expect(page.locator('[data-lcd="freshLeft"]')).to_contain_text('6개')

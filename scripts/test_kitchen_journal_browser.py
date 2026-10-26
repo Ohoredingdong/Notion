@@ -26,7 +26,7 @@ def main():
      page.goto(f'{origin}/miniature-kitchen-{mode}.html',wait_until='networkidle');page.wait_for_function('window.KitchenJournal');original=page.evaluate('__original()')
      assert page.evaluate('KitchenJournal.status')=='saved'
      assert page.locator('.door-controls').count()==0
-     page.locator('[data-door="freshLeft"]').click()
+     if page.locator('[data-door="freshLeft"]').get_attribute('aria-expanded')=='true':page.locator('[data-door="freshLeft"]').click()
      expect(page.locator('[data-lcd="freshLeft"]')).to_be_visible()
      info=page.locator('[data-lcd="freshLeft"]').evaluate("""e=>{const chain=[];for(let n=e;n;n=n.parentElement)chain.push({transform:getComputedStyle(n).transform,filter:getComputedStyle(n).filter});return {chain,font:parseFloat(getComputedStyle(e.querySelector('.lcd-row b')).fontSize),bounds:[e.getBoundingClientRect().x,e.getBoundingClientRect().y,e.getBoundingClientRect().width,e.getBoundingClientRect().height]}}""")
      assert all(x['transform']=='none' and x['filter']=='none' for x in info['chain']),info
