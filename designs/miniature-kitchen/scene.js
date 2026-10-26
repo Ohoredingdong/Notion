@@ -40,14 +40,32 @@
     return A.foodArt(A.foodIdForName(item.name));
   }
   function announce(message){$('#liveMessage').textContent=message;}
-  function compact(){return mode==='widget'||window.innerWidth<=760;}
-  function syncLayout(){$('.kitchen-view').classList.toggle('is-compact',compact());}
+  function compact(){return mode==='widget'||$('.shell').clientWidth<960;}
+  function syncLayout(){
+    // One 1536 × 1024 room: furniture, food and backdrop share its scale.
+    // Reserve the header/tabs and a small floor margin in the FIRST viewport.
+    const shell=$('.shell'),view=$('.kitchen-view'),room=$('.room');
+    const available=Math.min(innerWidth-28,mode==='widget'?692:1452);
+    const top=$('.masthead').offsetHeight+$('.camera-tabs').offsetHeight+12;
+    // Ease the extra room into the four-button row without a size jump at 560px.
+    const controls=104-50*clamp((innerWidth-560)/160,0,1);
+    const scale=Math.max(.2,Math.min(.8,available/820,Math.max(280,innerHeight-top-controls-24)/1024));
+    shell.style.setProperty('--scene-scale',String(scale));
+    shell.style.setProperty('--scene-height',scale*1024+'px');
+    shell.style.setProperty('--scene-max-width',scale*1536+28+'px');
+    shell.style.setProperty('--object',Math.max(110,44/scale)+'px');
+    shell.style.setProperty('--seasoning',Math.max(140,44/scale)+'px');
+    view.classList.toggle('is-compact',compact());
+    const center={fridge:395,seasoning:1080,counter:1010}[document.body.dataset.camera]||395;
+    const x=clamp(room.clientWidth/2-center*scale,Math.min(0,room.clientWidth-1536*scale),0);
+    shell.style.setProperty('--scene-x',x+'px');
+  }
   function setCamera(camera) {
     cleanup();document.body.dataset.camera=camera;
     for(const b of document.querySelectorAll('.camera-tabs button'))b.setAttribute('aria-pressed',String(b.dataset.camera===camera));
     $('#roomMessage').textContent={fridge:'냉장고 문을 열어, 우리 집 재료를 살펴봐요.',seasoning:'작은 양념병을 옮겨, 나만의 선반을 정리해요.',counter:'오늘의 한 끼와 좋아하는 소품을 놓아봐요.'}[camera];
     $('#sceneNote').textContent=camera==='seasoning'?'양념병을 누르면 수량·기한을 살펴볼 수 있어요.':decorating?'소품을 끌어 놓고, 누르면 앞뒤 순서도 바꿀 수 있어요.':'음식과 소품을 눌러 살펴봐요.';
-    constrainItems();
+    syncLayout();constrainItems();
   }
   function display(key) {
     if(key==='freshLeft') {

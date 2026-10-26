@@ -12,6 +12,47 @@ from playwright.sync_api import expect, sync_playwright
 from test_fridge_four_door_browser import QuietHandler, drag
 
 
+def check_resize(browser, origin, output):
+    """A panel resize must preserve edits and avoid a sudden change in scene scale."""
+    context=browser.new_context(viewport={'width':649,'height':660},reduced_motion='reduce')
+    page=context.new_page();metrics=[]
+    try:
+        page.goto(origin+'/miniature-kitchen-app.html',wait_until='networkidle')
+        page.wait_for_function('window.MiniKitchen')
+        page.locator('[data-item="milk"]').click()
+        page.locator('[name="quantity"]').fill('250ml')
+        page.locator('#ingredientForm [type="submit"]').click()
+        for key in ['freshRight','frozenLeft','frozenRight']:page.locator(f'[data-toggle="{key}"]').click()
+        expected=page.evaluate('MiniKitchen.getSnapshot()')
+        for width in [1120,961,960,896,800,761,760,649,560,559,390,320,1120]:
+            page.set_viewport_size({'width':width,'height':660})
+            page.wait_for_function('innerWidth === '+str(width))
+            page.evaluate('() => new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+            page.evaluate('scrollTo(0,0)')
+            current=page.evaluate('''() => {
+                const bounds=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right}};
+                return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,fridge:bounds('.fridge-stage'),controls:bounds('.door-controls'),
+                    doors:[...document.querySelectorAll('.door')].map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})};
+            }''')
+            assert not current['overflow'],current
+            assert current['controls']['bottom']<=660,current
+            assert all(r['x']>=0 and r['y']>=0 and r['right']<=width and r['bottom']<=660 for r in current['doors']),current
+            state=page.evaluate('MiniKitchen.getSnapshot()')
+            assert state['doors']==expected['doors']
+            for before,after in zip(expected['items'],state['items']):
+                assert {k:v for k,v in before.items() if k not in ('x','y')}=={k:v for k,v in after.items() if k not in ('x','y')}
+            if metrics and abs(width-metrics[-1]['width'])==1:
+                assert abs(current['fridge']['width']-metrics[-1]['fridge']['width'])<2,(metrics[-1],current)
+                assert abs(current['fridge']['height']-metrics[-1]['fridge']['height'])<3,(metrics[-1],current)
+            metrics.append(current)
+        stage=page.locator('.fridge-stage');before=page.locator('.door').first.bounding_box()
+        stage.evaluate("e=>e.style.perspective='none'")
+        after=page.locator('.door').first.bounding_box()
+        assert abs(before['width']-after['width'])>5,(before,after)
+        (output/'resize-results.json').write_text(json.dumps({'viewports':metrics,'perspective_changes_projection':True,'edited_quantity_and_door_states_preserved':True},ensure_ascii=False,indent=2)+'\n')
+    finally:context.close()
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path.cwd()/'previews')
@@ -31,8 +72,8 @@ def main():
     try:
         with sync_playwright() as p:
             browser=p.chromium.launch(executable_path=args.browser_executable,args=['--no-sandbox'])
-            layouts=[('app',1120,1000),('app',649,900),('app',390,900),('app',320,900),
-                     ('widget',649,900),('widget',649,660),('widget',640,900),('widget',390,900),('widget',320,900)]
+            layouts=[('app',1120,1000),('app',649,900),('app',649,660),('app',760,660),('app',761,660),('app',800,660),('app',896,660),('app',960,660),('app',961,660),('app',390,900),('app',320,900),
+                     ('widget',649,900),('widget',649,660),('widget',640,900),('widget',390,900),('widget',390,660),('widget',320,900),('widget',320,660)]
             for mode,width,height in layouts:
                 context=browser.new_context(viewport={'width':width,'height':height},has_touch=True,reduced_motion='reduce',timezone_id='Asia/Seoul')
                 page=context.new_page();page.set_default_timeout(10000);errors=[];requests=[];external=[];label=f'{mode}-{width}'+('-short' if height==660 else '')
@@ -60,7 +101,7 @@ def main():
                 def item(key):return next(r for r in snapshot()['items'] if r['id']==key)
 
                 def camera(name):
-                    if mode=='widget' or width<=760:page.locator(f'.camera-tabs [data-camera="{name}"]').click()
+                    if page.locator('.kitchen-view').evaluate("e=>e.classList.contains('is-compact')"):page.locator(f'.camera-tabs [data-camera="{name}"]').click()
 
                 try:
                     page.goto(origin+f'/miniature-kitchen-{mode}.html',wait_until='networkidle');page.wait_for_load_state('domcontentloaded');page.wait_for_function('window.MiniKitchen')
@@ -75,7 +116,7 @@ def main():
                         # Decode the actual inline images while all asset requests are blocked.
                         images=page.evaluate('''async () => {
                             const sources=new Set([...document.querySelectorAll('svg image')].map(n=>n.getAttribute('href')));
-                            const background=getComputedStyle(document.querySelector('.room')).backgroundImage;
+                            const background=getComputedStyle(document.querySelector('.scene-world')).backgroundImage;
                             if(!background.startsWith('url("data:image/'))throw new Error('Room background is not embedded');
                             sources.add(background.slice(5,-2));
                             return Promise.all([...sources].map(async source=>{
@@ -87,14 +128,16 @@ def main():
                         assert sorted(images)==[[1254,1254],[1286,1223],[1448,1086],[1536,1024],[1536,1024]],images
                         assert len(requests)==1 and not external
                         passed('art: all five embedded images decode at full resolution with image network requests blocked')
-                    if mode=='widget' or width<=760:
-                        stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box();room=page.locator('.room').bounding_box()
-                        assert stage['y']+stage['height'] <= controls['y']+1, (stage,controls)
-                        assert controls['y']>=room['y']+room['height'],(room,controls)
-                        assert 14<=room['y']+room['height']-stage['y']-stage['height']<=24,(room,stage)
-                        assert stage['width']/room['width']>=.60,(room,stage)
-                        if width>=560:assert stage['width']>=400,stage
-                    assert page.locator('[data-item="milk"]').bounding_box()['width']>=44
+                    # Fit the actual first viewport, not merely an oversized room.
+                    stage=page.locator('.fridge-stage').bounding_box();controls=page.locator('.door-controls').bounding_box();room=page.locator('.room').bounding_box()
+                    assert stage['y']>=0 and stage['y']+stage['height']<=height,(stage,height)
+                    assert controls['y']>=room['y']+room['height'],(room,controls)
+                    assert controls['y']+controls['height']<=height,(controls,height)
+                    assert stage['height']>=min(300,height*.45),stage
+                    assert page.evaluate("getComputedStyle(document.querySelector('.fridge-doors')).transformStyle")=='preserve-3d'
+                    scales=page.evaluate("""() => ['.scene-world','.fridge-stage','.item.meal'].map(s=>{const e=document.querySelector(s);return e.getBoundingClientRect().width/e.offsetWidth})""")
+                    assert max(scales)-min(scales)<.001,scales
+                    assert page.locator('[data-item="milk"]').bounding_box()['width']>=43.99
                     page.screenshot(path=str(output/f'{label}.png'),full_page=True)
                     passed(label+': complete four-door scene, legible controls, no overflow, asset requests or storage access')
 
@@ -131,21 +174,26 @@ def main():
                         for other,value in initial['doors'].items():
                             if other!=key:assert snapshot()['doors'][other] is value
                         control.click();assert snapshot()['doors']==initial['doors']
-                    if mode=='widget' or width<=760:
-                        for key,value in initial['doors'].items():
-                            if not value:page.locator(f'[data-toggle="{key}"]').click()
-                        page.evaluate('scrollTo(0,0)');room=page.locator('.room').bounding_box()
-                        for door in page.locator('.door').all():
-                            bounds=door.bounding_box()
-                            assert bounds['x']>=room['x'] and bounds['x']+bounds['width']<=room['x']+room['width'],(room,bounds)
-                            assert bounds['y']>=room['y'] and bounds['y']+bounds['height']<=room['y']+room['height'],(room,bounds)
-                        for key,value in initial['doors'].items():
-                            if not value:page.locator(f'[data-toggle="{key}"]').click()
-                        page.evaluate('scrollTo(0,0)')
+                    # All modes must retain four fully visible open doors.
+                    for key,value in initial['doors'].items():
+                        if not value:page.locator(f'[data-toggle="{key}"]').click()
+                    page.evaluate('scrollTo(0,0)');room=page.locator('.room').bounding_box()
+                    for door in page.locator('.door').all():
+                        bounds=door.bounding_box()
+                        assert bounds['x']>=room['x'] and bounds['x']+bounds['width']<=room['x']+room['width'],(room,bounds)
+                        assert bounds['y']>=room['y'] and bounds['y']+bounds['height']<=room['y']+room['height'],(room,bounds)
+                        assert bounds['y']>=0 and bounds['y']+bounds['height']<=height,(height,bounds)
+                    for key,value in initial['doors'].items():
+                        if not value:page.locator(f'[data-toggle="{key}"]').click()
+                    page.evaluate('scrollTo(0,0)')
                     page.locator('[data-toggle="freshLeft"]').click()
                     expect(page.locator('[data-zone="freshLeft"]')).to_be_hidden()
                     assert page.locator('[data-zone="freshLeft"]').evaluate('e=>e.inert')
                     expect(page.locator('[data-door="freshLeft"] .display')).to_contain_text('6개')
+                    assert page.locator('[data-door="freshLeft"] .display').evaluate('''e=>{
+                        const display=e.getBoundingClientRect();
+                        return [...e.querySelectorAll('.display-row small:last-child')].every(n=>n.getBoundingClientRect().bottom<=display.bottom-1);
+                    }'''), 'An expiry date is clipped by the display'
                     page.screenshot(path=str(output/f'{label}-closed.png'),full_page=True)
                     page.locator('[data-toggle="freshLeft"]').click()
                     passed(label+': all four doors toggle independently; closed contents are hidden and inert; expiry display uses example quantities')
@@ -172,7 +220,7 @@ def main():
                     if height==660:
                         drag(page,page.locator('[data-item="milk"]'),page.locator('[data-zone="frozenLeft"]'),True)
                         assert item('milk')['zone']=='frozenLeft'
-                        passed(label+': held touch scrolls the large fridge to reach the freezer')
+                        passed(label+': touch reaches the freezer within the fitted scene')
 
                     page.locator('[data-item="milk"]').click();expect(page.locator('#tray')).to_be_visible()
                     page.locator('#ingredientForm [name="quantity"]').fill('250ml')
@@ -215,6 +263,11 @@ def main():
                     result['errors'].append(f'{label}: {type(e).__name__}: {e}');traceback.print_exc();page.screenshot(path=str(output/f'failure-{label}.png'),full_page=True)
                 finally:context.close()
 
+            try:
+                check_resize(browser,origin,output)
+                passed('resize: first viewport, open doors, saved example edits and continuous size at 559/560, 760/761 and 960/961; perspective affects doors')
+            except Exception as e:
+                result['errors'].append('resize: '+str(e));traceback.print_exc()
             context=browser.new_context(viewport={'width':1740,'height':1080});page=context.new_page();errors=[];board_requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:board_requests.append(r.url))
             try:
                 page.goto(origin+'/miniature-kitchen-board.html',wait_until='networkidle')
