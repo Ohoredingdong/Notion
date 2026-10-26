@@ -13,18 +13,18 @@ from test_fridge_four_door_browser import QuietHandler, drag
 
 
 def assert_room_placement(page):
-    # Landmarks read from room.png, independent of CSS/viewport coordinates:
-    # the empty tile bay ends at x555; the adjoining cabinet meets the floor at y905.
+    # New centered backdrop: counters stop before x450 and start after x1068;
+    # their visible toe-kicks meet the floor at y856. Atlas feet end at y987/994.
     world=page.locator('.scene-world').bounding_box()
     fridge=page.locator('.fridge-stage').bounding_box()
+    room=page.locator('.room').bounding_box()
     scale=world['width']/1536
     left=(fridge['x']-world['x'])/scale
     right=(fridge['x']+fridge['width']-world['x'])/scale
-    # Atlas alpha >90% ends at y987 in the 994px crop; ignore transparent padding.
     feet=(fridge['y']+fridge['height']*987/994-world['y'])/scale
-    assert left>=75,('Fridge intrudes on the left wall trim',left)
-    assert right<=552,('Closed fridge occupies the countertop',right)
-    assert abs(feet-905)<=3,('Fridge stands in front of the cabinet floor line',feet)
+    assert left>=450 and right<=1050,('Fridge overlaps either counter',left,right)
+    assert abs(feet-856)<=3,('Visible feet do not align with cabinet base',feet)
+    assert abs(fridge['x']+fridge['width']/2-room['x']-room['width']/2)<=1,('Fridge is not centered',room,fridge)
 
 
 def check_resize(browser, origin, output):

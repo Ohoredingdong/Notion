@@ -50,17 +50,20 @@
     // Frame the installed fridge, not the unused foreground floor. Its apparent
     // size stays the same while the appliance fits the actual tile bay behind it.
     const camera=document.body.dataset.camera;
-    const frame=camera==='fridge'?{height:880,top:64,width:700,center:322.5}:
-      {height:1024,top:0,width:820,center:camera==='seasoning'?1080:1010};
+    const frame={
+      fridge:{height:880,top:16,width:700,center:768,maxWidth:1536},
+      seasoning:{height:640,top:80,width:600,center:300,maxWidth:600},
+      counter:{height:640,top:304,width:600,center:1236,maxWidth:600}
+    }[camera];
     // Ease the extra room into the four-button row without a size jump at 560px.
     const controls=104-50*clamp((innerWidth-560)/160,0,1);
     const scale=Math.max(.2,Math.min(819.2/frame.height,available/frame.width,Math.max(280,innerHeight-top-controls-24)/frame.height));
     shell.style.setProperty('--scene-scale',String(scale));
     shell.style.setProperty('--scene-height',scale*frame.height+'px');
     shell.style.setProperty('--scene-y',-scale*frame.top+'px');
-    shell.style.setProperty('--scene-max-width',scale*1536+28+'px');
+    shell.style.setProperty('--scene-max-width',scale*frame.maxWidth+28+'px');
     shell.style.setProperty('--object',Math.max(94,44/scale)+'px');
-    shell.style.setProperty('--seasoning',Math.max(140,44/scale)+'px');
+    shell.style.setProperty('--seasoning',Math.max(100,44/scale)+'px');
     view.classList.toggle('is-compact',compact());
     const x=clamp(room.clientWidth/2-frame.center*scale,Math.min(0,room.clientWidth-1536*scale),0);
     shell.style.setProperty('--scene-x',x+'px');
