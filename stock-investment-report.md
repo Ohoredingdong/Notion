@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-27T04:19:39.860371+09:00
+- 계산일: 2026-10-27T17:55:28.850204+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.6배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.7배 | warning |
 | NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.1배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.0배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.1배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.6배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.7배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 365.3배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 362.6배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [미국보다 나은 한국 경제성장, 원화 강세 모멘텀 지속 - KB Think](https://news.google.com/rss/articles/CBMiYkFVX3lxTE5NRVZCNlRsOHR0RWtTVF91RTBaR0NUY0tCNnhxQzVIZ1ZmV25tRnlQYlhTQmpCVjFGVzZTQWpBY29hM1laR1hwVEdUNHRUdl9ucjU3SEJVcm5HTWFUUEdsb1Rn?oc=5)
-- [폭락장에 피눈물 흘리는데…'9천피' 대반전 시나리오 떴다 (분석+) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE9IQWtkcHBBdDFOTmlfVGdqbmdQdzNON1RWeTdxVVJmLXlFRlZkMFc0SnMwY05Zc1ZQSWs2aVYxc1lxRW9RaHVQZlNDMVFVTmMtNGtDaTV0dlFGdw?oc=5)
-- [삼성·SK, 내년 2분기 HBM4 8단 양산 출하...엔비디아향 공급 - 지디넷코리아](https://news.google.com/rss/articles/CBMiVkFVX3lxTE50U2g0aW54WkhLakl3Z1lYN3EtN1k0MWR0RU11dnpMQm0xTXN2Vm9xcEZyWjRpd3ozbUhnc2d2Z3RuZ0FGRTFvblFNUGk0d0wzZ1RJN3pR?oc=5)
-- [삼전·닉스 증설에 반도체 소부장 주목…"후공정 장비 수혜 기대" - 뉴시스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE5mWURlX1FONWg2T204amFfZHRoREN4OHpVQUNhclhPOWtYMFlNYU1qdjN0RmdOUXB1cGZXLTBYa3pITWViQ2I5Sl9lWTgyNTh0WGhWNGhPZTJITzlUZU5wONIBeEFVX3lxTE1sUWMyQm5valZvbEdEYWwwZWw0Z3V5TnhoSm9OQnBHUDVQZnU0VHlKUjNmV29uT3h5S3hyMGZRVlhYNGZRR2hMSnBRWDJRRU9GbXVkY1NsU0JZUFJScHhnd3FZNVh2T1NiRDZRRlRBTWxoRm0zd1BELQ?oc=5)
+- [10월 FOMC ‘숨 고르기’ 전망, 12월 관건 - 스트레이트뉴스](https://news.google.com/rss/articles/CBMid0FVX3lxTE9vLVp4Z3R0TnlpU3FmTmg1MnRWTkFkaVRHRlpaM1Fwano3ZndpYmFCa3dINnlIemdVMW5FOG5FelBScEg2aVNWalFzd1p2WnZnTlctTjU1bS1LMXMxOUptUUh0SUxaZDRuVUVlV1ZBNDlOaTZqN3VB0gF3QVVfeXFMT28tWnhndHROeWlTcWZOaDUydFZOQWRpVEdGWlozUXBqejdmd2liYUJrd0g2eUh6Z1UxbkU4bkV6UFJwSDZpU1ZqUXN3WnZadmdOVy1ONTVtLUsxczE5Sm1RSHRJTFpkNG5VRWVXVkE0OU5pNmo3dUE?oc=5)
+- [美 국채 금리 5% 넘었는데 증시는 왜 버티나… BofA 금리 총괄 "성장 견조, 금융 여건 위축 없어" - 조선일보](https://news.google.com/rss/articles/CBMiiwFBVV95cUxQWTZXRDF3cHZzUkx3c1czWXR1MVZKcFBKdkhLQ251WVA4NV9Fa0Q3dXhJOFNhQXBkNG9mM1Rual9pb24yWERiaVdyWFFzZ1F3TG1qSGgyUklNam5kYzczS0llTDdWejluWkVIVFUyUm9adGZmcjlrM1k4RURQNzJkWWNfd254bGhrZlhz?oc=5)
+- [(앤스로픽, 상장) 엔스로픽 메모리 '직거래'…삼성·하이닉스 가격 협상력 ↑ - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTFB2YVlLZUxIaXlobzJoWFlZWEFBZmpnMTdySHl5NGZuTWtUVGdaTm81bl9OVjdqQVNYM1ZMUzVRNzUzcEVUQlhrYi1YZUhjeXM1MW1XMkdjQ2VNWTRn?oc=5)
+- [박현주 "반도체 고점론, 틀릴 수도…AI 혁명 이제 10~20%" / - 연합인포맥스](https://news.google.com/rss/articles/CBMidEFVX3lxTE9FbnNQNGVSWUYwN3N5WVV3N3hBaGRjNHNIRTBQTWNCZmotUHBOSzdMUzhsaE80bzNsMXFJcVE2XzVPdDJTdzRXdkJOc2pfQ1pFQVFObjlMZFNJbWlsN2ZTd2xzcUF5a1FxeC1yeTVhLVFRV1BV?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
