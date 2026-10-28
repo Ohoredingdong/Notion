@@ -1,0 +1,106 @@
+name: Stock Entry Plan
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_stock_entry_plan.py'
+      - 'scripts/evaluate_stock_entry_outcomes.py'
+      - 'scripts/test_stock_entry_plan.py'
+      - 'assets/stock-recommendations.js'
+      - 'tests/stock-entry-*.cjs'
+      - '.github/workflows/stock-entry-plan.yml'
+      - 'stock-research-review-records.json'
+  workflow_run:
+    workflows: ['Stock Strict Green Review', 'Stock Recommendations', 'Practical investment recommendations']
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '47 7,21 * * 1-5'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: stock-entry-plan
+  cancel-in-progress: false
+jobs:
+  validate-publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install observation dependencies
+        run: pip install yfinance pandas requests beautifulsoup4
+      - name: Test fail-closed entry policy
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_entry_plan.py' -v
+          node --check assets/stock-recommendations.js
+          node tests/stock-entry-ui.test.cjs
+      - name: Build point-in-time plans and observation report
+        run: |
+          python scripts/build_stock_entry_plan.py
+          python scripts/evaluate_stock_entry_outcomes.py
+      - name: Browser regression
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          python -m http.server 8765 >/tmp/entry-http.log 2>&1 &
+          node tests/stock-entry-browser.cjs
+      - name: Publish without overwriting concurrent source updates
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_entry_plan.py'
+            python scripts/build_stock_entry_plan.py
+            python scripts/evaluate_stock_entry_outcomes.py
+            git add stock-entry-plan.json stock-entry-plan-summary.json stock-entry-ledger.jsonl stock-entry-outcomes.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'research: publish preregistered fail-closed entry plans'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
+      - name: Request Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify public code and exact snapshot
+        run: |
+          python - <<'PY'
+          import hashlib,json,time,urllib.request
+          from pathlib import Path
+          base='https://ohoredingdong.github.io/Notion/'
+          expected=json.loads(Path('stock-entry-plan-summary.json').read_text())
+          js=hashlib.sha256(Path('assets/stock-recommendations.js').read_bytes()).hexdigest()
+          for attempt in range(12):
+              try:
+                  def get(path):
+                      return urllib.request.urlopen(base+path+'?entry-check='+str(time.time_ns()),timeout=20).read()
+                  actual=json.loads(get('stock-entry-plan-summary.json'))
+                  assert actual['version']==expected['version']
+                  assert actual['source_sha256']==expected['source_sha256']
+                  assert hashlib.sha256(get('assets/stock-recommendations.js')).hexdigest()==js
+                  print('PUBLIC_CODE_AND_SOURCE_SNAPSHOT_VERIFIED',actual['generated_at'])
+                  break
+              except Exception as exc:
+                  if attempt==11: raise RuntimeError('Public deployment not verified: '+type(exc).__name__)
+                  time.sleep(10)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-entry-diagnostics
+          retention-days: 7
+          path: |
+            entry-*.png
+            stock-entry-plan-summary.json
+            stock-entry-outcomes.json
