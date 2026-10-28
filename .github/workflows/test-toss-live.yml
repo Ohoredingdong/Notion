@@ -34,5 +34,11 @@ jobs:
           assert '"POST /api/v1/orders"' not in worker
           assert '"GET /api/v1/accounts"' not in worker
           assert 'TOSS_CLIENT_SECRET' not in Path('toss-live-radar.html').read_text()
+          import re
+          html=Path('toss-live-radar.html').read_text()
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',html,re.S)
+          assert len(scripts)==1
+          Path('/tmp/toss-live-ui.js').write_text(scripts[0])
           print('Public frontend contains no broker secrets; live connection disabled by default')
           PY
+          node --check /tmp/toss-live-ui.js
