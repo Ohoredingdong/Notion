@@ -27,10 +27,10 @@ p=root/'assets/stock-radar-v9.js';s=p.read_text();a="function brief(){const root
 s=replace_once(s,a,b);p.write_text(s)
 p=root/'assets/stock-radar-v8.html';s=p.read_text();code=(root/'assets/stock-investment-cases.js').read_text();digest=hashlib.sha256(code.encode()).hexdigest()[:12]
 rec=(root/'assets/stock-recommendations.js').read_text();rec_digest=hashlib.sha256(rec.encode()).hexdigest()[:12]
-s=re.sub(r'<script src="\\./assets/stock-recommendations\\.js[^\\"]*" defer></script>\\s*','',s)
-rec_anchor=re.search(r'<script src="\\./assets/stock-investment-cases\\.js',s)
+s=re.sub(r'<script src="\./assets/stock-recommendations\.js[^"]*" defer></script>\s*','',s)
+rec_anchor=re.search(r'<script src="\./assets/stock-investment-cases\.js',s)
 if not rec_anchor:raise RuntimeError('Investment cases JS tag not found')
-s=s[:rec_anchor.start()]+'<script src="./assets/stock-recommendations.js?v='+rec_digest+'" defer></script>\\n'+s[rec_anchor.start():]
+s=s[:rec_anchor.start()]+'<script src="./assets/stock-recommendations.js?v='+rec_digest+'" defer></script>\n'+s[rec_anchor.start():]
 s=re.sub(r'<script src="\./assets/stock-investment-cases\.js[^\"]*" defer></script>\s*','',s);anchor=re.search(r'<script src="\./assets/stock-radar-v8\.js',s)
 if not anchor:raise RuntimeError('Main JS tag not found')
 s=s[:anchor.start()]+'<script src="./assets/stock-investment-cases.js?v='+digest+'" defer></script>\n'+s[anchor.start():]
