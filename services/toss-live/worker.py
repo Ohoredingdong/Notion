@@ -118,7 +118,7 @@ class LiveApp:
             try:
                 token=await self.broker.access_token()
                 async with self.session.ws_connect(WS,headers={"Authorization":"Bearer "+token},
-                           heartbeat=None,receive_timeout=220,timeout=ClientTimeout(total=18)) as ws:
+                           heartbeat=None,receive_timeout=220) as ws:
                     self.connected=False
                     self.source_state="subscribing"
                     await ws.send_str(json.dumps(self.declared,ensure_ascii=False))
@@ -151,6 +151,10 @@ class LiveApp:
                         keep.cancel()
                         await asyncio.gather(keep,return_exceptions=True)
             except Exception as exc:
+                # Another consumer may have issued a token; Toss permits one active
+                # token per client. Force a fresh token only on a rejected handshake.
+                if getattr(exc, "status", None) == 401:
+                    self.broker.token = None
                 LOG.warning("WebSocket unavailable: %s",type(exc).__name__)
                 self.source_state="ws_disconnected"
             self.connected=False
