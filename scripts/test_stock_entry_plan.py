@@ -15,7 +15,7 @@ def fixture():
     c={'symbol':'TEST_ONLY','name':'Synthetic test fixture','market':'KR','currency':'KRW','price':100,
        'source_integrity':{'fetched_at':STAMP},
        'technical':{'price_session':'2026-10-28','expected_session':'2026-10-28',
-                    'above_sma20':True,'above_sma50':True,'distance_sma20':2,'rsi14':55,'avg_turnover20':2e9},
+                    'date':'2026-10-28','close':100,'ma20':99,'ma60':95,'atr14':2,'support10':96,'prior_high20':102,'volume_ratio':1.1,'relative20_pp':3,'avg_turnover20':2e9},
        'estimates':{'next_year':{'eps_avg':10,'eps_30d':10,'fiscal_end':'2027-12-31'}}}
     r={'version':'strict-green-1.0','green_eligible':True,'source_generated_at':STAMP,
        'reviewed_at':STAMP,'valid_until':(NOW+dt.timedelta(hours=3)).isoformat(),
@@ -67,9 +67,9 @@ class EntryTests(unittest.TestCase):
     def test_intraday_bar(self): self.assertFalse(result(lambda c,k,r,s:c['source_integrity'].update(fetched_at='2026-10-28T02:00:00+00:00'))['entry_conditions_met'])
     def test_next_fy_unknown(self): self.assertFalse(result(lambda c,k,r,s:c['estimates']['next_year'].pop('fiscal_end'))['entry_conditions_met'])
     def test_single_target_not_value(self): self.assertFalse(result(lambda c,k,r,s:r.update(valuation={'target_median':120}))['entry_conditions_met'])
-    def test_trend_wait(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(above_sma50=False))['entry_conditions_met'])
-    def test_overextended(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(distance_sma20=8))['entry_conditions_met'])
-    def test_rsi_overheated(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(rsi14=80))['entry_conditions_met'])
+    def test_trend_wait(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(ma60=110))['entry_conditions_met'])
+    def test_overextended(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(ma20=90))['entry_conditions_met'])
+    def test_missing_atr(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(atr14=None))['entry_conditions_met'])
     def test_liquidity_missing(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].pop('avg_turnover20'))['entry_conditions_met'])
     def test_revision_cut(self): self.assertFalse(result(lambda c,k,r,s:c['estimates']['next_year'].update(eps_30d=12))['entry_conditions_met'])
     def test_split(self): self.assertFalse(result(lambda c,k,r,s:c['technical'].update(split_events=['test']))['entry_conditions_met'])
@@ -79,7 +79,7 @@ class EntryTests(unittest.TestCase):
     def test_future_session(self): self.assertFalse(completed_bar('2026-10-29','KR',STAMP,NOW))
     def test_us_dst(self):
         self.assertFalse(completed_bar('2026-10-27','US','2026-10-27T19:59:00Z',NOW))
-        self.assertTrue(completed_bar('2026-10-27','US','2026-10-27T20:01:00Z',NOW))
+        self.assertTrue(completed_bar('2026-10-27','US','2026-10-27T20:31:00Z',NOW))
     def test_naive_timestamp_rejected(self): self.assertFalse(fresh('2026-10-28T07:00:00',18,NOW))
     def test_bool_is_not_number(self): self.assertIsNone(number(True))
     def test_scenarios_do_not_invent_probability(self):
@@ -122,3 +122,30 @@ class OutcomeTests(unittest.TestCase):
     def test_missing_benchmark_not_success(self):
         f,r,c,b,m=self.fixture()
         self.assertEqual(f(r,c,b,[],NOW+dt.timedelta(days=1))[0]['status'],'benchmark_missing')
+
+class ActualSchemaTests(unittest.TestCase):
+    def test_real_collection_field(self):
+        def change(c,k,r,s): c['collected_at']=STAMP;c.pop('source_integrity')
+        self.assertTrue(result(change)['entry_conditions_met'])
+    def test_next_fy_inferred_is_labelled_not_confirmed(self):
+        def change(c,k,r,s):
+            c.pop('estimates');c['forecasts']={'next_fy':{'avg':10},'next_fy_end_inferred':'2027-12-31','eps_revision30_pct':0}
+        x=result(change);self.assertEqual(x['forecast_period_basis'],'inferred_next_fy_not_exact_close_date')
+    def test_old_expected_date_cannot_make_old_quote_current(self):
+        def change(c,k,r,s):
+            c['price_session']='2026-10-27';c['expected_session']={'date':'2026-10-27'};r['input_price_session']='2026-10-27'
+        self.assertIn('price_session_mismatch',result(change)['data_blocks'])
+    def test_technical_close_must_match(self):
+        self.assertIn('technical_price_mismatch',result(lambda c,k,r,s:c['technical'].update(close=99))['data_blocks'])
+    def test_earnings_event_wait(self):
+        self.assertIn('earnings_event_near',result(lambda c,k,r,s:c.update(earnings_calendar={'Earnings Date':['2026-10-29']}))['timing_blocks'])
+    def test_calendar_weekend(self):
+        from stock_entry_inputs import clock
+        sat=dt.datetime(2026,10,31,8,tzinfo=dt.timezone.utc)
+        self.assertEqual(clock('KR',sat)['date'],'2026-10-30')
+    def test_calendar_unknown_market(self):
+        from stock_entry_inputs import clock
+        self.assertIsNone(clock('UNKNOWN',NOW)['date'])
+    def test_early_rebound_not_green(self):
+        x=result(lambda c,k,r,s:c['technical'].update(ma60=110))
+        self.assertEqual(x['tech']['setup'],'early_rebound_watch');self.assertFalse(x['entry_conditions_met'])

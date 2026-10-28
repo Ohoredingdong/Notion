@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const {viewState}=require('../assets/stock-recommendations.js');
 const now=Date.parse('2026-10-28T08:00:00Z'), stamp='2026-10-28T07:00:00Z';
-const plan={version:'entry-plan-1.0',source_generated_at:stamp};
+const plan={version:'entry-plan-1.1',source_generated_at:stamp};
 const row={state:'paper_candidate',plan:{valid_until:'2026-10-28T10:00:00Z'}};
 assert.equal(viewState(row,plan,stamp,now),'paper_candidate');
 assert.equal(viewState(row,plan,null,now),'data_wait');

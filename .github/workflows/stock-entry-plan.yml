@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/build_stock_entry_plan.py'
+      - 'scripts/stock_entry_inputs.py'
       - 'scripts/evaluate_stock_entry_outcomes.py'
       - 'scripts/test_stock_entry_plan.py'
       - 'assets/stock-recommendations.js'
@@ -12,11 +13,11 @@ on:
       - '.github/workflows/stock-entry-plan.yml'
       - 'stock-research-review-records.json'
   workflow_run:
-    workflows: ['Stock Strict Green Review', 'Stock Recommendations', 'Practical investment recommendations']
+    workflows: ['Strict Green Review', 'Stock Three-Year Reading', 'Stock Recommendations']
     types: [completed]
     branches: [main]
   schedule:
-    - cron: '47 7,21 * * 1-5'
+    - cron: '37 8,23 * * *'
 permissions:
   contents: write
   pages: write
@@ -37,7 +38,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install observation dependencies
-        run: pip install yfinance pandas requests beautifulsoup4
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' requests beautifulsoup4
       - name: Test fail-closed entry policy
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_entry_plan.py' -v
@@ -49,7 +50,7 @@ jobs:
           python scripts/evaluate_stock_entry_outcomes.py
       - name: Browser regression
         run: |
-          npm ci
+          npm install --no-save --package-lock=false @playwright/test
           npx playwright install --with-deps chromium
           python -m http.server 8765 >/tmp/entry-http.log 2>&1 &
           node tests/stock-entry-browser.cjs
@@ -104,3 +105,7 @@ jobs:
             entry-*.png
             stock-entry-plan-summary.json
             stock-entry-outcomes.json
+            stock-entry-plan.json
+            stock-green-review.json
+            scripts/build_stock_entry_plan.py
+            scripts/stock_entry_inputs.py

@@ -7,12 +7,13 @@ import math
 from pathlib import Path
 from urllib.parse import urlparse, unquote
 from zoneinfo import ZoneInfo
+from stock_entry_inputs import fields as actual_fields, completed as completed_bar, technical
 
-VERSION = 'entry-plan-1.0'
+VERSION = 'entry-plan-1.1'
 IDS = ('inputs','official','cash_quality','working_capital','earnings_quality','debt','business','valuation','macro','governance','forecast','liquidity')
 UTC = dt.timezone.utc
 RULES = {'max_source_hours':18, 'max_review_days':30, 'max_extension20_pct':5,
-         'max_next_session_gap_pct':2, 'rsi_min':40, 'rsi_max':70,
+         'max_next_session_gap_pct':2, 'moving_averages':[20,60], 'breakout_volume_ratio':1.5,
          'min_revision30_pct':-3, 'execution_mode':'paper_only',
          'thresholds_are_policy_not_probabilities':True}
 
@@ -36,38 +37,8 @@ def fresh(x, hours, now):
 def mapping(items):
     return {str(v['symbol']):v for v in items if isinstance(v,dict) and v.get('symbol') is not None}
 
-def fields(c, raw):
-    t=c.get('technical') or {}; f=c.get('forecasts') or {}; es=c.get('estimates') or {}
-    ny=es.get('next_year') or {}; nf=f.get('next_fy') or {}
-    session=c.get('price_session') or t.get('price_session')
-    expected=c.get('expected_session') or t.get('expected_session') or (raw.get('market_sessions') or {}).get(c.get('market'))
-    if isinstance(expected,dict): expected=expected.get('date')
-    eps=number(ny.get('eps_avg',nf.get('avg')))
-    fy=ny.get('fiscal_end') or nf.get('fiscal_end') or f.get('next_fy_end_provider')
-    revision=number(f.get('eps_revision30_pct'))
-    if revision is None:
-        old=number(ny.get('eps_30d'))
-        if eps is not None and old is not None and old>0: revision=(eps/old-1)*100
-    integrity=c.get('source_integrity') or {}
-    collected=integrity.get('fetched_at') or (integrity.get('price') or {}).get('fetched_at')
-    return {'price':number(c.get('price')), 'price_session':session, 'expected_session':expected,
-            'forecast_eps':eps, 'forecast_fiscal_end':fy, 'revision30_pct':revision,
-            'collected_at':collected, 'source_generated_at':raw.get('generated_at')}
-
-def completed_bar(session, market, collected_at, now):
-    """Conservative regular-session close; never infers the next holiday/session."""
-    settings={'KR':('Asia/Seoul',15,30),'US':('America/New_York',16,0)}
-    if market not in settings or not session: return False
-    try:
-        tz,h,m=settings[market]
-        d=dt.date.fromisoformat(session)
-        close=dt.datetime.combine(d,dt.time(h,m),ZoneInfo(tz)).astimezone(UTC)
-        collected=stamp(collected_at)
-        return collected is not None and close <= collected <= now and close <= now
-    except (ValueError,TypeError): return False
-
 def strict_errors(c, case, review, raw, now, revalidated):
-    f=fields(c,raw); errors=[]
+    f=actual_fields(c,raw,now); errors=[]
     embedded=case.get('green_review') or {}
     if review.get('green_eligible') is not True or embedded.get('green_eligible') is not True:
         errors.append('strict_not_approved')
@@ -88,7 +59,7 @@ def strict_errors(c, case, review, raw, now, revalidated):
     return errors
 
 def evaluate(c, case, review, raw, now=None, revalidated=False):
-    now=now or dt.datetime.now(UTC); f=fields(c,raw); t=c.get('technical') or {}
+    now=now or dt.datetime.now(UTC); f=actual_fields(c,raw,now); t=c.get('technical') or {}
     data=[]
     if not fresh(raw.get('generated_at'),18,now): data.append('source_expired_or_future')
     if f['price'] is None or f['price']<=0: data.append('price_missing')
@@ -96,14 +67,13 @@ def evaluate(c, case, review, raw, now=None, revalidated=False):
     if not fresh(f['collected_at'],18,now): data.append('actual_collection_unverified_or_stale')
     if not completed_bar(f['price_session'],c.get('market'),f['collected_at'],now): data.append('unconfirmed_session_close')
     if f['forecast_eps'] is None or f['forecast_eps']<=0 or not f['forecast_fiscal_end']: data.append('forecast_basis_missing')
+    if t.get('date')!=f['price_session'] or number(t.get('close'))!=f['price']:
+        data.append('technical_price_mismatch')
     if t.get('latest_bar_matches_session') is False or c.get('status')=='stale': data.append('stale_price')
     strict=strict_errors(c,case,review,raw,now,revalidated)
-    timing=[]
-    distance=number(t.get('distance_sma20')); rsi=number(t.get('rsi14'))
+    signal=technical(c,f['price'],now);timing=list(signal['blocks'])
+    distance=signal['distance_sma20']
     turnover=number(t.get('avg_turnover20',(c.get('liquidity') or {}).get('avg_turnover20')))
-    if t.get('above_sma20') is not True or t.get('above_sma50') is not True: timing.append('trend_confirmation_wait')
-    if distance is None or not 0<=distance<=5: timing.append('extension20_wait')
-    if rsi is None or not 40<=rsi<=70: timing.append('rsi_wait')
     if turnover is None or turnover < (1e9 if c.get('market')=='KR' else 5e6): timing.append('liquidity_wait')
     if f['revision30_pct'] is None or f['revision30_pct'] < -3: timing.append('eps_revision_wait')
     if t.get('split_events') or t.get('recent_split'): timing.append('corporate_action_review')
@@ -111,7 +81,7 @@ def evaluate(c, case, review, raw, now=None, revalidated=False):
     cap=number(valuation.get('reference_price'))
     if cap is None or cap<=0: strict.append('independent_value_missing')
     price=f['price']; sma20=price/(1+distance/100) if price and distance is not None and distance>-100 else None
-    ceiling=min(price*1.02,sma20*1.05,cap) if not data and not strict and sma20 and cap else None
+    ceiling=min(price*1.02,sma20*1.05,price+.5*signal['atr14'],cap) if not data and not strict and sma20 and cap and signal['atr14'] else None
     if ceiling is not None and ceiling<price: timing.append('price_above_entry_ceiling')
     eligible=not data and not strict and not timing
     state='data_wait' if data else 'diligence_wait' if strict else 'timing_wait' if timing else 'paper_candidate'
@@ -121,16 +91,18 @@ def evaluate(c, case, review, raw, now=None, revalidated=False):
             'timing_blocks':sorted(set(timing)), 'entry_conditions_met':eligible,
             'live_recommendation':False, 'execution_mode':'paper_only',
             'strict_passed':not strict, 'document_revalidated':revalidated,
-            'plan':{'valid_until':min(now+dt.timedelta(hours=18),(stamp(raw.get('generated_at')) or now)+dt.timedelta(hours=18)).isoformat(),
+            'plan':{'valid_until':min(now+dt.timedelta(hours=18),(stamp(raw.get('generated_at')) or now)+dt.timedelta(hours=18), stamp(review.get('valid_until')) or now,stamp(f['session_clock'].get('recheck_at')) or now).isoformat(),
                     'horizon':'다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님',
                     'entry_ceiling':ceiling, 'trend_invalidation_close':sma20 if eligible else None,
                     'next_session_max_gap_pct':2,
                     'execution_conditions':['장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인','기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음','새 공시·정정·전망 변경 또는 만료 시 계획 취소'],
                     'not_an_order':True, 'invalidation_is_not_guaranteed_loss_limit':True},
-            'tech':{'rsi14':rsi,'distance_sma20':distance,'turnover20':turnover},
+            'tech':{**signal,'turnover20':turnover},
+            'fundamental_fingerprint':review.get('fundamental_fingerprint'),
             'sources':c.get('source') or c.get('sources') or {}}
 
 def provider_symbol(c):
+    if isinstance(c.get('source_symbol'),str) and c['source_symbol']: return c['source_symbol']
     source=c.get('source') or c.get('sources') or {}
     for url in source.values():
         if not isinstance(url,str): continue
@@ -191,7 +163,7 @@ def build(root=Path('.'),now=None):
             result['entry_conditions_met']=False; result['plan']['entry_ceiling']=None
         result['research_score']=rank.get(symbol,{}).get('score')
         rows.append(result)
-    rows.sort(key=lambda v:(v['entry_conditions_met'],v['strict_passed'],number(v['research_score']) or -1),reverse=True)
+    rows.sort(key=lambda v:(not v['data_blocks'],v['entry_conditions_met'],v['strict_passed'],v['tech']['setup'] in ('breakout_confirmed','pullback_confirmed'),number(v['research_score']) or -1),reverse=True)
     payload={'version':VERSION,'generated_at':now.isoformat(),'source_generated_at':raw.get('generated_at'),
              'source_sha256':sha,'rules':RULES,'snapshot_aligned':synced,
              'counts':{s:sum(v['state']==s for v in rows) for s in ('data_wait','diligence_wait','timing_wait','paper_candidate')},
@@ -208,7 +180,7 @@ def build(root=Path('.'),now=None):
     if not any(v.get('id')==key for v in old):
         item={'id':key,'recorded_at':now.isoformat(),'source_generated_at':raw.get('generated_at'),
               'scope':'후속 관찰; 실제 체결·전략 수익률 아님','policy':RULES,
-              'companies':[{k:r[k] for k in ('symbol','provider_symbol','market','price','price_session','state','entry_conditions_met')} for r in rows],
+              'companies':[{k:r[k] for k in ('symbol','provider_symbol','market','price','price_session','expected_session','forecast_eps','forecast_fiscal_end','forecast_period_basis','collected_at','fundamental_fingerprint','state','entry_conditions_met','data_blocks','diligence_blocks','timing_blocks','tech','plan')} for r in rows],
               'market':payload['market']}
         with ledger.open('a') as file: file.write(json.dumps(item,ensure_ascii=False,allow_nan=False)+'\n')
     print(json.dumps({'version':VERSION,'snapshot_aligned':synced,'counts':payload['counts'],'live_recommendations':0},ensure_ascii=False))
