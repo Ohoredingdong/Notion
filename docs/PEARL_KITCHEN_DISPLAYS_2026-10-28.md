@@ -26,3 +26,14 @@ python scripts/build_kitchen_mobile_preview.py
 ```
 
 작은 내장형은 앱 931,765바이트·위젯 931,768바이트, 공개 확인용은 954,978바이트·954,987바이트다. 외부 그림 요청은 없다.
+
+## 공개 확인 주소와 검토 상태
+
+화면 파일이 포함된 커밋은 `3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17`이다. 아래 PNG 세 개와 앱·위젯 HTML 원본의 HTTP 200 및 로컬 바이트 일치를 확인했다. [공개 파일 검사](miniature-kitchen/pearl-public-results.json)는 HTML 원본 접근과 렌더러 실행을 구분한다. 외부 HTML 렌더러는 이 환경에서 연결 403으로 실행 미확인이다.
+
+- [표시창 상세](https://raw.githubusercontent.com/Ohoredingdong/Notion/3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17/docs/miniature-kitchen/pearl-detail.png) · [전체 모습](https://raw.githubusercontent.com/Ohoredingdong/Notion/3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17/docs/miniature-kitchen/pearl-fridge.png) · [휴대폰 크기](https://raw.githubusercontent.com/Ohoredingdong/Notion/3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17/docs/miniature-kitchen/pearl-phone.png)
+- [앱 미리보기](https://raw.githack.com/Ohoredingdong/Notion/3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17/previews/mobile/app.html) · [위젯 미리보기](https://raw.githack.com/Ohoredingdong/Notion/3b9f6a81322851a1a86f7ad2267c76fc8c8a3a17/previews/mobile/widget.html)
+
+GitHack 안내가 나타나면 `Open the page`를 누른다. 이는 외부 렌더러의 문서 확인 단계이며 앱 오류로 해석하지 않는다.
+
+작업 브랜치 `feat/kitchen-play-and-sharp-displays`에 push했다. `design/centered-kitchen`을 기준으로 PR 생성을 시도했지만 `Post "https://api.github.com/graphql": Forbidden`으로 차단되어 PR은 생성하지 못했다. [브랜치 비교](https://github.com/Ohoredingdong/Notion/compare/design/centered-kitchen...feat/kitchen-play-and-sharp-displays?expand=1)에서 검토할 수 있다. main 반영·병합·Pages 배포는 하지 않았다.
