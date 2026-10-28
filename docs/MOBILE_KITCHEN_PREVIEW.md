@@ -29,3 +29,12 @@ https://raw.githack.com/Ohoredingdong/Notion/<commit>/previews/mobile/widget.htm
 ```
 
 main·기존 GitHub Pages 배포는 변경하지 않는다. 공개 미리보기 파일과 빌드 코드를 기존 작업 브랜치에서 검토한다. 외부 주소의 확인 상태와 고정 링크는 공개 업로드 후 이 문서에 기록한다.
+
+## 공개 업로드 결과
+
+파일이 포함된 커밋은 `3ff0c81701c711d00fa04e4799d51378ecbb826d`다. 인증 없는 Raw GitHub 요청으로 앱·위젯 원본과 [휴대폰 화면 이미지](https://raw.githubusercontent.com/Ohoredingdong/Notion/3ff0c81701c711d00fa04e4799d51378ecbb826d/docs/miniature-kitchen/mobile-app.png)의 HTTP 200 및 로컬 파일과의 바이트 일치를 확인했다. 이미지는 `image/png`로 응답한다. [공개 접근 확인 기록](miniature-kitchen/mobile-public-results.json)을 따른다.
+
+- [휴대폰용 앱 실행 주소](https://raw.githack.com/Ohoredingdong/Notion/3ff0c81701c711d00fa04e4799d51378ecbb826d/previews/mobile/app.html)
+- [휴대폰용 위젯 실행 주소](https://raw.githack.com/Ohoredingdong/Notion/3ff0c81701c711d00fa04e4799d51378ecbb826d/previews/mobile/widget.html)
+
+이 두 HTML 렌더러 주소는 현재 클라우드의 연결 차단으로 **응답·실행 미확인**이다. 공개 원본의 HTTP 200과 로컬 모바일 검사만으로 해당 주소가 실제 휴대폰에서 열렸다고 보고하지 않는다. 화면 이미지는 확인용 보조 자료이며 대화형 앱 실행을 대체하지 않는다.
