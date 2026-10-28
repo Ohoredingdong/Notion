@@ -107,35 +107,43 @@ body .shell .fridge-stage{filter:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
 .fridge-lcd{
  position:absolute;container-type:inline-size;overflow:hidden;padding:0;
- border:1px solid #b9c2b2;border-radius:8px;
- background:#f3f6ee;box-shadow:inset 0 1px 3px #4d5d4226,0 1px 0 #fff9;
- color:#33412f;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
+ border:1px solid #bdbfb2;border-radius:7px;
+ background:#fafbf5;box-shadow:inset 0 1px 3px #58634a29,0 1px 0 #fff9;
+ color:#354030;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
 }
-.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:7px;padding:clamp(5px,7cqw,10px);background:linear-gradient(#fbfcf6aa,#f3f6ee00 48%)}
+.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:6px;background:linear-gradient(#fffdf8a8,#fafbf500 48%)}
 .lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0}
-.lcd-title{font-size:clamp(11px,10cqw,12px);font-weight:500;line-height:1.3;letter-spacing:-.3px;white-space:nowrap;color:#5a6c50}
-.lcd-led,.lcd-extra{display:none}
+.lcd-title{font-size:11px;font-weight:500;line-height:1.3;letter-spacing:-.3px;white-space:nowrap;color:#626b55}
 .lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0}
-.lcd-row{min-width:0;display:flex;align-items:center;gap:7px;padding:5px 0;border:0;border-bottom:1px solid #dce3d5;background:none}
+.lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #e0e4d7;background:none}
 .lcd-row:last-child{border-bottom:0}
-.lcd-food{width:28px;height:33px;flex-shrink:0;display:block}
+.lcd-food{width:22px;height:26px;flex-shrink:0;display:block}
 .lcd-food .food-art{width:100%;height:100%;filter:none}
 .lcd-item-copy{min-width:0;flex:1}
-.lcd-row b{display:block;font-size:clamp(11px,10cqw,12px);font-weight:600;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lcd-item-meta{display:flex;align-items:center;gap:5px;min-width:0;margin-top:4px;font-size:clamp(9px,8cqw,10px)}
-.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.4;color:#4e6840}
+.lcd-row b{display:block;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lcd-item-meta{display:flex;align-items:center;gap:4px;min-width:0;margin-top:1px;font-size:clamp(10px,9cqw,11px);line-height:1.2}
+.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.2;color:#4e6840}
 .lcd-deadline:before{content:'';width:3px;height:3px;border-radius:50%;background:currentColor;flex-shrink:0}
 [data-expiry-tone="today"] .lcd-deadline{color:#936017}
 [data-expiry-tone="tomorrow"] .lcd-deadline{color:#796528}
 [data-expiry-tone="overdue"] .lcd-deadline{color:#a33d31;font-weight:650}
 .lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#62705b}
 .lcd-empty{align-self:center;text-align:center;color:#5f6e57;font-size:11px;line-height:1.65;word-break:keep-all}
-.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;padding-top:7px;border-top:1px solid #dce3d5;font-size:clamp(9px,8cqw,10px);line-height:1.2;color:#5d6c55;flex-shrink:0;white-space:nowrap}
+.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;padding-top:4px;border-top:1px solid #e0e4d7;font-size:10px;line-height:1.2;color:#626b55;flex-shrink:0;white-space:nowrap}
 .lcd-level{color:#5d6c55}
-.lcd-dish{display:grid;place-items:center;flex:1;min-height:0;overflow:hidden}
-.lcd-dish .dish-art{display:block;width:95%;height:95%;min-height:0;max-height:120px;filter:none}
-.lcd-recipe{display:block;flex-shrink:0;font-size:clamp(11px,11cqw,13px);font-weight:600;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.3px}
-@container(max-width:100px){.lcd-screen{gap:5px;padding:6px}.lcd-food,.lcd-level{display:none}.lcd-row{padding:4px 0}.lcd-item-meta{gap:5px;margin-top:3px}.lcd-footer{padding-top:6px}}
+.lcd-menu{display:flex;align-items:center;gap:5px;flex:1;min-height:0}
+.lcd-dish{display:grid;place-items:center;flex:0 0 42px;height:42px;overflow:hidden}
+.lcd-dish .dish-art{display:block;width:100%;height:100%;filter:none}
+.lcd-recipe{display:block;min-width:0;flex:1;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.3px}
+.fridge-lcd[data-lcd-layout="compact"] .lcd-menu{flex-direction:column;justify-content:center;gap:3px}
+.fridge-lcd[data-lcd-layout="compact"] .lcd-dish{flex:1 1 30px;width:38px;min-height:20px;max-height:34px}
+.fridge-lcd[data-lcd-layout="compact"] .lcd-recipe{flex:0 0 auto;width:100%;text-align:center}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-dish{display:none}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-recipe{align-self:center}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-row b{font-size:11px}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-item-meta{flex-direction:column;align-items:flex-start;gap:1px}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-empty{line-height:1.35}
+@container(max-width:100px){.lcd-screen{padding:4px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
 @media(max-width:360px){.kitchen-progress{font-size:11px;gap:4px;padding:5px 7px}.kitchen-progress button{font-size:11px;padding:4px 6px}}
@@ -699,19 +707,27 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
     const near=items.filter(r=>r.kind==='food'&&r.expiry&&dayNumber(r.expiry)-today<=3).sort((a,b)=>a.expiry.localeCompare(b.expiry));
     root.innerHTML=['freshLeft','freshRight'].map(key=>{
       const p=panels[key],left=key==='freshLeft',meal=items.find(r=>r.kind==='meal'),hidden=doors[key]||closing.has(key);
-      const width=panels.freshRight.w*.82*stage.width;
-      const tight=width<100,height=p.h*(tight?.74:.66)*stage.height;
-      const x=stage.x-room.x+(p.x+p.w*(left?.02:.16))*stage.width;
-      const y=stage.y-room.y+(p.y+p.h*(tight?.10:.16))*stage.height;
-      const visible=near.slice(0,height>=185?3:2),overdue=near.some(r=>dayNumber(r.expiry)<today);
+      // Fit inside the door's flat surface, leaving the curved edge and handle
+      // clear. Keep text at native size rather than scaling a tall dashboard.
+      const width=panels.freshRight.w*.70*stage.width,doorHeight=p.h*stage.height;
+      const height=Math.min(doorHeight*.66,Math.max(116,Math.min(160,doorHeight*.46)));
+      const layout=height<108?'summary':width<100?'compact':'standard';
+      const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
+      // The original atlas already has recessed screens at y188..394. Center
+      // the live screen over that recess so it never peeks out below the UI.
+      const center=layout==='summary'?.49:.518;
+      const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
+      const visible=near.slice(0,layout==='summary'?1:height>=148?3:2),overdue=near.some(r=>dayNumber(r.expiry)<today);
       const recipe=window.KitchenCatalog.find(r=>r.name===meal.name);
+      const title=layout==='summary'?(left?'기한':'메뉴'):left?(overdue?'기한 확인':'먼저 먹기'):'오늘 메뉴';
+      const empty=layout==='summary'?'임박 재료<br>없어요':'3일 이내<br>임박 재료 없어요';
       const rows=visible.map(r=>{
         const days=dayNumber(r.expiry)-today,tone=days<0?'overdue':days===0?'today':days===1?'tomorrow':'soon';
         const label=days<0?'지남':days===0?'오늘':days===1?'내일':days+'일 내';
         return `<div class="lcd-row" data-expiry-tone="${tone}"><span class="lcd-food">${art(r)}</span><div class="lcd-item-copy"><b title="${esc(r.name)}">${esc(r.name)}</b><div class="lcd-item-meta"><small class="lcd-deadline" title="${esc(r.expiry)}${days<0?' · 기한 지남':''}">${label}</small><span class="lcd-quantity" title="${esc(r.quantity)}">${esc(r.quantity)}</span></div></div></div>`;
       }).join('');
-      const content=left?`<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">3일 이내<br>임박 재료 없어요</p>'}</div><div class="lcd-footer"><span>${overdue?'지난 기한 확인':near.length?'3일 내 '+near.length+'종':'보관 '+items.filter(r=>r.kind==='food').length+'종'}</span>${near.length>visible.length?`<span class="lcd-extra">외 ${near.length-visible.length}종</span>`:''}</div>`:`<div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b><div class="lcd-footer"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div>`;
-      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" aria-label="${left?'임박 재료':'선택한 메뉴'} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${left?(overdue?'기한 확인':'먼저 먹기'):'오늘 메뉴'}</strong><i class="lcd-led" aria-hidden="true"></i></div>${content}</div></section>`;
+      const content=left?`<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer"><span>${overdue?'지난 기한':near.length?'임박 '+near.length+'종':'보관 '+items.filter(r=>r.kind==='food').length+'종'}</span></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div>`;
+      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${left?'임박 재료':'선택한 메뉴'} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong></div>${content}</div></section>`;
     }).join('');window.dispatchEvent(new Event('mini-kitchen:layout'));
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
