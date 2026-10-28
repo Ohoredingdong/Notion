@@ -38,3 +38,5 @@ main·기존 GitHub Pages 배포는 변경하지 않는다. 공개 미리보기 
 - [휴대폰용 위젯 실행 주소](https://raw.githack.com/Ohoredingdong/Notion/3ff0c81701c711d00fa04e4799d51378ecbb826d/previews/mobile/widget.html)
 
 이 두 HTML 렌더러 주소는 현재 클라우드의 연결 차단으로 **응답·실행 미확인**이다. 공개 원본의 HTTP 200과 로컬 모바일 검사만으로 해당 주소가 실제 휴대폰에서 열렸다고 보고하지 않는다. 화면 이미지는 확인용 보조 자료이며 대화형 앱 실행을 대체하지 않는다.
+
+사용자 실제 화면에서 GitHack의 `One more step` 안내를 확인했다. [공식 설명](https://github.com/neoascetic/rawgithack/blob/master/web/index.html#L204)에 따르면 HTML을 일반 브라우저로 열 때 표시되며, `Open the page`를 눌러 진행하면 같은 저장소의 확인은 24시간 유지된다. HTTP 다운로드 성공만으로 브라우저의 첫 진입 화면까지 검증했다고 보고하지 않는다. 최신 디자인의 공개 파일 주소는 해당 변경 문서에 따로 고정한다.
