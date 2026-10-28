@@ -22,6 +22,8 @@
 
 검사 범위는 모바일 크기·터치, 좁거나 짧은 화면과 중간 크기, 8종 요리명, 기본 수량, 양념 기한, 빈 상태, 중복 기록·대체 이름·경과 항목의 계산, 문·드래그·저장과 대비다. 실제 iPhone/Safari·Notion 또는 사용자 디자인 승인으로 보고하지 않는다. 이전 검사 템플릿의 넓은 날짜 선택자가 새 분포 막대까지 함께 선택하는 문제는 재료 행으로 범위를 좁힌 뒤 기존 경과 문구 단언을 유지해 확인했다.
 
+최종 실행은 장면 회귀 **111개**, 식사·도감·저장 회귀 **13개**, 집중 검사 **12개 묶음**, 휴대폰 크기·터치 **6개 조건**이 통과했다. 집중 검사는 중간 크기 2개를 추가한 실제 11개 화면 조건을 순회하며, 결과에 해당 크기 목록을 보관한다. 대비는 기본/경과 양념 상태의 실제 글자색과 배경색으로 계산했고 최저 약 **4.69:1**이다. 원본/작은 내장형의 UI 코드 일치와 JavaScript 구문, `git diff --check`도 통과했다.
+
 ```bash
 source /workspace/.notion-cloud/activate.sh
 python scripts/build_miniature_kitchen_preview.py
@@ -31,3 +33,12 @@ python scripts/build_kitchen_mobile_preview.py
 작은 내장형은 앱 930,454바이트·위젯 930,457바이트, 휴대폰 확인용은 953,566바이트·953,575바이트다. 외부 이미지 요청은 없다. 공개 확인용 프레임의 임시 저장 범위는 [모바일 전달 문서](MOBILE_KITCHEN_PREVIEW.md)와 같다.
 
 기존 작업 브랜치에서 검토하며 main·GitHub Pages는 변경하지 않는다. GitHub PR API 차단 상태와 GitHack의 `Open the page` 확인 안내는 그대로다. 새 공개 링크의 파일 접근과 렌더러의 실제 실행 확인은 구분한다.
+
+## 고정된 공개 확인 주소
+
+파일이 포함된 커밋은 `4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4`다. [상세 구성](https://raw.githubusercontent.com/Ohoredingdong/Notion/4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4/docs/miniature-kitchen/ivory-detail.png)·[전체 구도](https://raw.githubusercontent.com/Ohoredingdong/Notion/4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4/docs/miniature-kitchen/ivory-fridge.png)·[휴대폰 크기](https://raw.githubusercontent.com/Ohoredingdong/Notion/4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4/docs/miniature-kitchen/ivory-phone.png)와 공개 HTML 원본의 HTTP 200 및 로컬 바이트 일치를 확인했다. [공개 접근 기록](miniature-kitchen/ivory-public-results.json)을 따른다.
+
+- [앱 미리보기](https://raw.githack.com/Ohoredingdong/Notion/4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4/previews/mobile/app.html)
+- [위젯 미리보기](https://raw.githack.com/Ohoredingdong/Notion/4f264d66dfbdfa8b4f9bf0e3ce01ae216d75bca4/previews/mobile/widget.html)
+
+외부 HTML 렌더러 실행은 이 환경의 접속 차단으로 미확인이다. 안내 화면이 나타나면 서비스의 `Open the page`로 진행한다.
