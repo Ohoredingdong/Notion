@@ -84,30 +84,46 @@
     // Calendar-day comparison avoids DST and midnight timezone rounding.
     const dayNumber=value=>{const [y,m,d]=value.split('-').map(Number);return Date.UTC(y,m-1,d)/86400000;};
     const today=dayNumber(date());
-    const near=items.filter(r=>r.kind==='food'&&r.expiry&&dayNumber(r.expiry)-today<=3).sort((a,b)=>a.expiry.localeCompare(b.expiry));
+    const near=items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&r.expiry&&dayNumber(r.expiry)-today<=3).sort((a,b)=>a.expiry.localeCompare(b.expiry));
+    const counts={overdue:0,today:0,tomorrow:0,soon:0};
+    for(const item of near){const days=dayNumber(item.expiry)-today;counts[days<0?'overdue':days===0?'today':days===1?'tomorrow':'soon']++;}
+    const distribution=Object.entries(counts).filter(([,count])=>count).map(([tone,count])=>`<i data-expiry-tone="${tone}" style="flex:${count}"></i>`).join('');
+    const distributionLabel=`기한 경과 ${counts.overdue}건, 오늘 ${counts.today}건, 내일 ${counts.tomorrow}건, 2~3일 이내 ${counts.soon}건`;
+    const cleanName=name=>String(name).normalize('NFKC').replace(/\s+/g,'').toLowerCase();
+    const names=new Set(items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&(!r.expiry||dayNumber(r.expiry)>=today)).map(r=>cleanName(r.name)));
     root.innerHTML=['freshLeft','freshRight'].map(key=>{
       const p=panels[key],left=key==='freshLeft',meal=items.find(r=>r.kind==='meal'),hidden=doors[key]||closing.has(key);
       // Fit inside the door's flat surface, leaving the curved edge and handle
       // clear. Keep text at native size rather than scaling a tall dashboard.
       const width=panels.freshRight.w*.70*stage.width,doorHeight=p.h*stage.height;
-      const height=Math.min(doorHeight*.66,Math.max(116,Math.min(160,doorHeight*.46)));
-      const layout=height<108?'summary':width<100?'compact':'standard';
+      const height=Math.min(doorHeight*.72,Math.max(126,Math.min(176,doorHeight*.51)));
+      const layout=height<116?'summary':width<100||height<158?'compact':'standard';
       const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
       // The original atlas already has recessed screens at y188..394. Center
       // the live screen over that recess so it never peeks out below the UI.
-      const center=layout==='summary'?.49:.518;
+      const center=layout==='summary'?.47:layout==='compact'?.49:.518;
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
-      const visible=near.slice(0,layout==='summary'?1:height>=148?3:2),overdue=near.some(r=>dayNumber(r.expiry)<today);
+      const visible=near.slice(0,layout==='summary'?1:layout==='standard'?3:2),overdue=counts.overdue>0;
       const recipe=window.KitchenCatalog.find(r=>r.name===meal.name);
       const title=left?'유통기한 임박':'오늘의 추천메뉴';
       const empty=layout==='summary'?'임박 재료<br>없어요':'3일 이내<br>임박 재료 없어요';
+      // This is a count of registered ingredient names, not a quantity check
+      // or a claim that the whole recipe can be cooked with the current stock.
+      const required=recipe?[...new Set([...recipe.f,...recipe.s,...recipe.p])]:[];
+      const missing=required.filter(name=>!names.has(cleanName(name))&&!name.split('/').some(alias=>names.has(cleanName(alias))));
+      const registered=required.length-missing.length,ratio=required.length?100*registered/required.length:0;
+      const counters=`<dl class="lcd-counters" aria-label="기한별 재료·양념 기록"><div data-expiry-tone="today"><dt>오늘</dt><dd>${counts.today}</dd></div><div data-expiry-tone="tomorrow"><dt>내일</dt><dd>${counts.tomorrow}</dd></div><div data-expiry-tone="soon"><dt>2~3일</dt><dd>${counts.soon}</dd></div></dl>`;
+      const total=counts.overdue?`경과 ${counts.overdue}`:`${near.length}건`;
+      const totalBadge=left?`<span class="lcd-total ${overdue?'is-overdue':''}" aria-label="관리 기록 총 ${near.length}건, 기한 경과 ${counts.overdue}건">${total}</span>`:'';
       const rows=visible.map(r=>{
         const days=dayNumber(r.expiry)-today,tone=days<0?'overdue':days===0?'today':days===1?'tomorrow':'soon';
         const label=days<0?'지남':days===0?'오늘':days===1?'내일':days+'일 내';
         return `<div class="lcd-row" data-expiry-tone="${tone}"><span class="lcd-food">${art(r)}</span><div class="lcd-item-copy"><b title="${esc(r.name)}">${esc(r.name)}</b><div class="lcd-item-meta"><small class="lcd-deadline" title="${esc(r.expiry)}${days<0?' · 기한 지남':''}">${label}</small><span class="lcd-quantity" title="${esc(r.quantity)}">${esc(r.quantity)}</span></div></div></div>`;
       }).join('');
-      const content=left?`<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer"><span>${overdue?'지난 기한':near.length?'임박 '+near.length+'종':'보관 '+items.filter(r=>r.kind==='food').length+'종'}</span></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div>`;
-      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong></div>${content}</div></section>`;
+      const stock=recipe?`<div class="lcd-stock" title="기록된 재료 이름 중 일치하는 종류 수 · 기한 경과 항목 제외 · 수량 미검증"><div class="lcd-stock-label"><span>재료<span class="lcd-stock-word"> 기록</span></span><b>${registered}/${required.length}</b></div><div class="lcd-stock-track" role="meter" aria-label="기록된 재료 종류 · 이름 기준, 수량 미검증" aria-valuemin="0" aria-valuemax="${required.length||1}" aria-valuenow="${registered}"><i style="width:${ratio}%"></i></div></div>`:'<div class="lcd-stock"><span>재료 미입력</span></div>';
+      const missingNote=recipe?`<p class="lcd-missing" title="${esc(missing.join(' · '))}"><span>${missing.length?'미등록 재료':'재료 이름 기록됨'}</span>${missing.length?`<b>${esc(missing.slice(0,2).join(' · '))}${missing.length>2?' 외 '+(missing.length-2):''}</b>`:'<b>수량은 확인해 주세요</b>'}</p>`:'';
+      const content=left?`${counters}<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer lcd-expiry-footer"><span>${overdue?'경과 '+counts.overdue+'건':near.length?'임박 '+near.length+'건':'보관 '+items.filter(r=>r.kind==='food'||r.kind==='seasoning').length+'건'}</span><div class="lcd-expiry-track" role="img" aria-label="${distributionLabel}">${distribution}</div></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer lcd-recipe-facts"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div>${stock}${missingNote}`;
+      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong>${totalBadge}</div>${content}</div></section>`;
     }).join('');window.dispatchEvent(new Event('mini-kitchen:layout'));
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);

@@ -110,47 +110,78 @@ body .shell .fridge-stage{filter:none}
 .fridge-displays{position:absolute;inset:0;z-index:7;pointer-events:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
 .fridge-lcd{
- position:absolute;container-type:inline-size;overflow:hidden;padding:3px;
- border:1px solid #5c636a;border-radius:4px;
- background:linear-gradient(140deg,#343b43,#090c10 38%,#242b33);
- box-shadow:inset 0 1px 0 #e6edf42b,inset 0 0 0 1px #090c10,0 1px 2px #1c222b42;
- color:#f0f3f7;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
+ position:absolute;container-type:inline-size;overflow:hidden;padding:2px;
+ border:1px solid #b7c1bf;border-radius:5px;
+ background:linear-gradient(140deg,#fffefb,#dce3e1 48%,#f7f9f5);
+ box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #ffffff9c,0 1px 2px #44524924;
+ color:#303e36;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
 }
-.fridge-lcd:after{content:&#x27;&#x27;;position:absolute;inset:1px;border-radius:3px;pointer-events:none;background:linear-gradient(118deg,#ffffff0e,transparent 38%,transparent 78%,#b6cce005);box-shadow:inset 0 0 0 1px #d9e4f00d}
-.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:5px;border-radius:1px;background:linear-gradient(145deg,#252d37,#151b23 65%,#19202a);box-shadow:inset 0 1px 2px #0006}
+.fridge-lcd:after{content:&#x27;&#x27;;position:absolute;inset:1px;border:1px solid #ffffffa6;border-radius:4px;pointer-events:none}
+.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:4px;border-radius:2px;background:linear-gradient(145deg,#fffefa,#f3f7f4);box-shadow:inset 0 1px 2px #778c7e18}
 .lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0}
-.lcd-title{font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#c4cedb}
+.lcd-title{font-size:11px;font-weight:600;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#53665b}
+.lcd-total{flex-shrink:0;padding:1px 3px;border-radius:4px;background:#eaf0e9;color:#4e6751;font-size:9px;line-height:1.2}
+.lcd-total.is-overdue{background:#f5e4df;color:#984837}
+.lcd-counters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin:0;flex-shrink:0}
+.lcd-counters&gt;div{display:flex;flex-direction:column;align-items:center;min-width:0;padding:1px 2px;border:1px solid #e6e8de;border-radius:4px;background:var(--expiry-wash,#edf2e9)}
+.lcd-counters dt{font-size:9px;line-height:1.1;white-space:nowrap;color:#60695c}
+.lcd-counters dd{margin:0;font-size:11px;line-height:1.1;font-weight:650;color:var(--expiry,#4e7251)}
+.fridge-lcd [data-expiry-tone=&quot;today&quot;]{--expiry:#8b581e;--expiry-wash:#f5ecd9}
+.fridge-lcd [data-expiry-tone=&quot;tomorrow&quot;]{--expiry:#7c642b;--expiry-wash:#f3efdf}
+.fridge-lcd [data-expiry-tone=&quot;soon&quot;]{--expiry:#48734d;--expiry-wash:#edf3e9}
+.fridge-lcd [data-expiry-tone=&quot;overdue&quot;]{--expiry:#a04636;--expiry-wash:#f6e6e0}
 .lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0}
-.lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #ffffff16;background:none}
+.lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #e2e8df;background:none}
 .lcd-row:last-child{border-bottom:0}
 .lcd-food{width:22px;height:26px;flex-shrink:0;display:block}
 .lcd-food .food-art{width:100%;height:100%;filter:none}
 .lcd-item-copy{min-width:0;flex:1}
 .lcd-row b{display:block;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lcd-item-meta{display:flex;align-items:center;gap:4px;min-width:0;margin-top:1px;font-size:clamp(10px,9cqw,11px);line-height:1.2}
-.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.2;color:#bbd9b2}
+.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.2;color:var(--expiry,#48734d)}
 .lcd-deadline:before{content:&#x27;&#x27;;width:3px;height:3px;border-radius:50%;background:currentColor;flex-shrink:0}
-[data-expiry-tone=&quot;today&quot;] .lcd-deadline{color:#f4c682}
-[data-expiry-tone=&quot;tomorrow&quot;] .lcd-deadline{color:#e3d2ab}
-[data-expiry-tone=&quot;overdue&quot;] .lcd-deadline{color:#ffaaa1;font-weight:650}
-.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c4ccd6}
-.lcd-empty{align-self:center;text-align:center;color:#c4ccd6;font-size:11px;line-height:1.65;word-break:keep-all}
-.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;padding-top:4px;border-top:1px solid #ffffff16;font-size:10px;line-height:1.2;color:#b8c3d0;flex-shrink:0;white-space:nowrap}
-.lcd-level{color:#b8c3d0}
+[data-expiry-tone=&quot;overdue&quot;] .lcd-deadline{font-weight:650}
+.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a675d}
+.lcd-empty{align-self:center;text-align:center;color:#5d6c60;font-size:11px;line-height:1.4;word-break:keep-all}
+.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;font-size:10px;line-height:1.2;color:#59695e;flex-shrink:0;white-space:nowrap}
+.lcd-expiry-footer{flex-direction:column;align-items:stretch;gap:3px}
+.lcd-expiry-footer&gt;span{display:none}
+.lcd-expiry-track{display:flex;gap:2px;height:3px;overflow:hidden;border-radius:4px;background:#e3eae3}
+.lcd-expiry-track i{display:block;min-width:0;background:var(--expiry,#7a9570);border-radius:3px}
+.lcd-recipe-facts{justify-content:flex-start;gap:4px}
+.lcd-recipe-facts&gt;span{padding:2px 4px;border:1px solid #e2e8e2;border-radius:4px;background:#edf2ee;font-size:9px;color:#52645a}
+.lcd-level{color:#52645a}
 .lcd-menu{display:flex;align-items:center;gap:5px;flex:1;min-height:0}
-.lcd-dish{display:grid;place-items:center;flex:0 0 42px;height:42px;padding:2px;overflow:hidden;border-radius:4px;background:#ffffff06;box-shadow:inset 0 0 0 1px #ffffff0b}
+.lcd-dish{display:grid;place-items:center;flex:0 0 42px;height:42px;padding:2px;overflow:hidden;border-radius:5px;background:#f4f5ec;box-shadow:inset 0 0 0 1px #e6e9dc}
 .lcd-dish .dish-art{display:block;width:100%;height:100%;filter:none}
 .lcd-recipe{display:block;min-width:0;flex:1;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.3px}
-.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-menu{flex-direction:column;justify-content:center;gap:3px}
-.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-dish{flex:1 1 30px;width:38px;min-height:20px;max-height:34px}
+.lcd-stock{flex-shrink:0;font-size:10px;line-height:1.2;color:#56685d}
+.lcd-stock-label{display:flex;justify-content:space-between;gap:3px;min-width:0;white-space:nowrap}
+.lcd-stock-label b{font-size:10px;font-weight:600;color:#44664a}
+.lcd-stock-track{height:3px;margin-top:3px;overflow:hidden;border-radius:4px;background:#e3ebe3}
+.lcd-stock-track i{display:block;height:100%;border-radius:4px;background:#6e9473}
+.lcd-missing{margin:0;padding-top:3px;border-top:1px solid #e2e8df;font-size:9px;line-height:1.3;color:#687164;overflow-wrap:anywhere}
+.lcd-missing span{display:block}
+.lcd-missing b{display:block;font-size:10px;font-weight:500;color:#53644f}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-menu{flex-direction:column;justify-content:center;gap:1px}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-dish{flex:1 1 20px;width:32px;min-height:20px;max-height:24px}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe{flex:0 0 auto;width:100%;text-align:center}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-counters,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-counters,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-total,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-total,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-missing,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-missing,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-stock-word,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-stock-word,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-level,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-level{display:none}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-expiry-footer&gt;span,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-expiry-footer&gt;span{display:block}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-screen,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-screen{gap:1px}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe-facts&gt;span,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe-facts&gt;span{padding:0;border:0;background:none;font-size:10px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-dish{display:none}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;],.fridge-lcd[data-lcd-layout=&quot;summary&quot;]{padding:1px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{align-self:center;font-size:11px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-row b{font-size:11px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-item-meta{flex-direction:column;align-items:flex-start;gap:1px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.2}
-@container(max-width:100px){.lcd-screen{padding:3px;gap:2px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-stock-track{height:2px;margin-top:1px}
+@container(max-width:100px){.lcd-screen{padding:3px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:1px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
 @media(max-width:360px){.kitchen-progress{font-size:11px;gap:4px;padding:5px 7px}.kitchen-progress button{font-size:11px;padding:4px 6px}}
@@ -711,30 +742,46 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
     // Calendar-day comparison avoids DST and midnight timezone rounding.
     const dayNumber=value=&gt;{const [y,m,d]=value.split(&#x27;-&#x27;).map(Number);return Date.UTC(y,m-1,d)/86400000;};
     const today=dayNumber(date());
-    const near=items.filter(r=&gt;r.kind===&#x27;food&#x27;&amp;&amp;r.expiry&amp;&amp;dayNumber(r.expiry)-today&lt;=3).sort((a,b)=&gt;a.expiry.localeCompare(b.expiry));
+    const near=items.filter(r=&gt;(r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;)&amp;&amp;r.expiry&amp;&amp;dayNumber(r.expiry)-today&lt;=3).sort((a,b)=&gt;a.expiry.localeCompare(b.expiry));
+    const counts={overdue:0,today:0,tomorrow:0,soon:0};
+    for(const item of near){const days=dayNumber(item.expiry)-today;counts[days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;]++;}
+    const distribution=Object.entries(counts).filter(([,count])=&gt;count).map(([tone,count])=&gt;`&lt;i data-expiry-tone=&quot;${tone}&quot; style=&quot;flex:${count}&quot;&gt;&lt;/i&gt;`).join(&#x27;&#x27;);
+    const distributionLabel=`기한 경과 ${counts.overdue}건, 오늘 ${counts.today}건, 내일 ${counts.tomorrow}건, 2~3일 이내 ${counts.soon}건`;
+    const cleanName=name=&gt;String(name).normalize(&#x27;NFKC&#x27;).replace(/\s+/g,&#x27;&#x27;).toLowerCase();
+    const names=new Set(items.filter(r=&gt;(r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;)&amp;&amp;(!r.expiry||dayNumber(r.expiry)&gt;=today)).map(r=&gt;cleanName(r.name)));
     root.innerHTML=[&#x27;freshLeft&#x27;,&#x27;freshRight&#x27;].map(key=&gt;{
       const p=panels[key],left=key===&#x27;freshLeft&#x27;,meal=items.find(r=&gt;r.kind===&#x27;meal&#x27;),hidden=doors[key]||closing.has(key);
       // Fit inside the door&#x27;s flat surface, leaving the curved edge and handle
       // clear. Keep text at native size rather than scaling a tall dashboard.
       const width=panels.freshRight.w*.70*stage.width,doorHeight=p.h*stage.height;
-      const height=Math.min(doorHeight*.66,Math.max(116,Math.min(160,doorHeight*.46)));
-      const layout=height&lt;108?&#x27;summary&#x27;:width&lt;100?&#x27;compact&#x27;:&#x27;standard&#x27;;
+      const height=Math.min(doorHeight*.72,Math.max(126,Math.min(176,doorHeight*.51)));
+      const layout=height&lt;116?&#x27;summary&#x27;:width&lt;100||height&lt;158?&#x27;compact&#x27;:&#x27;standard&#x27;;
       const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
       // The original atlas already has recessed screens at y188..394. Center
       // the live screen over that recess so it never peeks out below the UI.
-      const center=layout===&#x27;summary&#x27;?.49:.518;
+      const center=layout===&#x27;summary&#x27;?.47:layout===&#x27;compact&#x27;?.49:.518;
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
-      const visible=near.slice(0,layout===&#x27;summary&#x27;?1:height&gt;=148?3:2),overdue=near.some(r=&gt;dayNumber(r.expiry)&lt;today);
+      const visible=near.slice(0,layout===&#x27;summary&#x27;?1:layout===&#x27;standard&#x27;?3:2),overdue=counts.overdue&gt;0;
       const recipe=window.KitchenCatalog.find(r=&gt;r.name===meal.name);
       const title=left?&#x27;유통기한 임박&#x27;:&#x27;오늘의 추천메뉴&#x27;;
       const empty=layout===&#x27;summary&#x27;?&#x27;임박 재료&lt;br&gt;없어요&#x27;:&#x27;3일 이내&lt;br&gt;임박 재료 없어요&#x27;;
+      // This is a count of registered ingredient names, not a quantity check
+      // or a claim that the whole recipe can be cooked with the current stock.
+      const required=recipe?[...new Set([...recipe.f,...recipe.s,...recipe.p])]:[];
+      const missing=required.filter(name=&gt;!names.has(cleanName(name))&amp;&amp;!name.split(&#x27;/&#x27;).some(alias=&gt;names.has(cleanName(alias))));
+      const registered=required.length-missing.length,ratio=required.length?100*registered/required.length:0;
+      const counters=`&lt;dl class=&quot;lcd-counters&quot; aria-label=&quot;기한별 재료·양념 기록&quot;&gt;&lt;div data-expiry-tone=&quot;today&quot;&gt;&lt;dt&gt;오늘&lt;/dt&gt;&lt;dd&gt;${counts.today}&lt;/dd&gt;&lt;/div&gt;&lt;div data-expiry-tone=&quot;tomorrow&quot;&gt;&lt;dt&gt;내일&lt;/dt&gt;&lt;dd&gt;${counts.tomorrow}&lt;/dd&gt;&lt;/div&gt;&lt;div data-expiry-tone=&quot;soon&quot;&gt;&lt;dt&gt;2~3일&lt;/dt&gt;&lt;dd&gt;${counts.soon}&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;`;
+      const total=counts.overdue?`경과 ${counts.overdue}`:`${near.length}건`;
+      const totalBadge=left?`&lt;span class=&quot;lcd-total ${overdue?&#x27;is-overdue&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;관리 기록 총 ${near.length}건, 기한 경과 ${counts.overdue}건&quot;&gt;${total}&lt;/span&gt;`:&#x27;&#x27;;
       const rows=visible.map(r=&gt;{
         const days=dayNumber(r.expiry)-today,tone=days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;;
         const label=days&lt;0?&#x27;지남&#x27;:days===0?&#x27;오늘&#x27;:days===1?&#x27;내일&#x27;:days+&#x27;일 내&#x27;;
         return `&lt;div class=&quot;lcd-row&quot; data-expiry-tone=&quot;${tone}&quot;&gt;&lt;span class=&quot;lcd-food&quot;&gt;${art(r)}&lt;/span&gt;&lt;div class=&quot;lcd-item-copy&quot;&gt;&lt;b title=&quot;${esc(r.name)}&quot;&gt;${esc(r.name)}&lt;/b&gt;&lt;div class=&quot;lcd-item-meta&quot;&gt;&lt;small class=&quot;lcd-deadline&quot; title=&quot;${esc(r.expiry)}${days&lt;0?&#x27; · 기한 지남&#x27;:&#x27;&#x27;}&quot;&gt;${label}&lt;/small&gt;&lt;span class=&quot;lcd-quantity&quot; title=&quot;${esc(r.quantity)}&quot;&gt;${esc(r.quantity)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
       }).join(&#x27;&#x27;);
-      const content=left?`&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;지난 기한&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;종&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;).length+&#x27;종&#x27;}&lt;/span&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;`;
-      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
+      const stock=recipe?`&lt;div class=&quot;lcd-stock&quot; title=&quot;기록된 재료 이름 중 일치하는 종류 수 · 기한 경과 항목 제외 · 수량 미검증&quot;&gt;&lt;div class=&quot;lcd-stock-label&quot;&gt;&lt;span&gt;재료&lt;span class=&quot;lcd-stock-word&quot;&gt; 기록&lt;/span&gt;&lt;/span&gt;&lt;b&gt;${registered}/${required.length}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-stock-track&quot; role=&quot;meter&quot; aria-label=&quot;기록된 재료 종류 · 이름 기준, 수량 미검증&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;${required.length||1}&quot; aria-valuenow=&quot;${registered}&quot;&gt;&lt;i style=&quot;width:${ratio}%&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&lt;div class=&quot;lcd-stock&quot;&gt;&lt;span&gt;재료 미입력&lt;/span&gt;&lt;/div&gt;&#x27;;
+      const missingNote=recipe?`&lt;p class=&quot;lcd-missing&quot; title=&quot;${esc(missing.join(&#x27; · &#x27;))}&quot;&gt;&lt;span&gt;${missing.length?&#x27;미등록 재료&#x27;:&#x27;재료 이름 기록됨&#x27;}&lt;/span&gt;${missing.length?`&lt;b&gt;${esc(missing.slice(0,2).join(&#x27; · &#x27;))}${missing.length&gt;2?&#x27; 외 &#x27;+(missing.length-2):&#x27;&#x27;}&lt;/b&gt;`:&#x27;&lt;b&gt;수량은 확인해 주세요&lt;/b&gt;&#x27;}&lt;/p&gt;`:&#x27;&#x27;;
+      const content=left?`${counters}&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer lcd-expiry-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;경과 &#x27;+counts.overdue+&#x27;건&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;건&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;).length+&#x27;건&#x27;}&lt;/span&gt;&lt;div class=&quot;lcd-expiry-track&quot; role=&quot;img&quot; aria-label=&quot;${distributionLabel}&quot;&gt;${distribution}&lt;/div&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer lcd-recipe-facts&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;${stock}${missingNote}`;
+      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;${totalBadge}&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
@@ -1026,47 +1073,78 @@ body .shell .fridge-stage{filter:none}
 .fridge-displays{position:absolute;inset:0;z-index:7;pointer-events:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
 .fridge-lcd{
- position:absolute;container-type:inline-size;overflow:hidden;padding:3px;
- border:1px solid #5c636a;border-radius:4px;
- background:linear-gradient(140deg,#343b43,#090c10 38%,#242b33);
- box-shadow:inset 0 1px 0 #e6edf42b,inset 0 0 0 1px #090c10,0 1px 2px #1c222b42;
- color:#f0f3f7;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
+ position:absolute;container-type:inline-size;overflow:hidden;padding:2px;
+ border:1px solid #b7c1bf;border-radius:5px;
+ background:linear-gradient(140deg,#fffefb,#dce3e1 48%,#f7f9f5);
+ box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #ffffff9c,0 1px 2px #44524924;
+ color:#303e36;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
 }
-.fridge-lcd:after{content:&#x27;&#x27;;position:absolute;inset:1px;border-radius:3px;pointer-events:none;background:linear-gradient(118deg,#ffffff0e,transparent 38%,transparent 78%,#b6cce005);box-shadow:inset 0 0 0 1px #d9e4f00d}
-.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:5px;border-radius:1px;background:linear-gradient(145deg,#252d37,#151b23 65%,#19202a);box-shadow:inset 0 1px 2px #0006}
+.fridge-lcd:after{content:&#x27;&#x27;;position:absolute;inset:1px;border:1px solid #ffffffa6;border-radius:4px;pointer-events:none}
+.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:4px;border-radius:2px;background:linear-gradient(145deg,#fffefa,#f3f7f4);box-shadow:inset 0 1px 2px #778c7e18}
 .lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0}
-.lcd-title{font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#c4cedb}
+.lcd-title{font-size:11px;font-weight:600;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#53665b}
+.lcd-total{flex-shrink:0;padding:1px 3px;border-radius:4px;background:#eaf0e9;color:#4e6751;font-size:9px;line-height:1.2}
+.lcd-total.is-overdue{background:#f5e4df;color:#984837}
+.lcd-counters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin:0;flex-shrink:0}
+.lcd-counters&gt;div{display:flex;flex-direction:column;align-items:center;min-width:0;padding:1px 2px;border:1px solid #e6e8de;border-radius:4px;background:var(--expiry-wash,#edf2e9)}
+.lcd-counters dt{font-size:9px;line-height:1.1;white-space:nowrap;color:#60695c}
+.lcd-counters dd{margin:0;font-size:11px;line-height:1.1;font-weight:650;color:var(--expiry,#4e7251)}
+.fridge-lcd [data-expiry-tone=&quot;today&quot;]{--expiry:#8b581e;--expiry-wash:#f5ecd9}
+.fridge-lcd [data-expiry-tone=&quot;tomorrow&quot;]{--expiry:#7c642b;--expiry-wash:#f3efdf}
+.fridge-lcd [data-expiry-tone=&quot;soon&quot;]{--expiry:#48734d;--expiry-wash:#edf3e9}
+.fridge-lcd [data-expiry-tone=&quot;overdue&quot;]{--expiry:#a04636;--expiry-wash:#f6e6e0}
 .lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0}
-.lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #ffffff16;background:none}
+.lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #e2e8df;background:none}
 .lcd-row:last-child{border-bottom:0}
 .lcd-food{width:22px;height:26px;flex-shrink:0;display:block}
 .lcd-food .food-art{width:100%;height:100%;filter:none}
 .lcd-item-copy{min-width:0;flex:1}
 .lcd-row b{display:block;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lcd-item-meta{display:flex;align-items:center;gap:4px;min-width:0;margin-top:1px;font-size:clamp(10px,9cqw,11px);line-height:1.2}
-.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.2;color:#bbd9b2}
+.lcd-deadline{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:inherit;font-weight:500;line-height:1.2;color:var(--expiry,#48734d)}
 .lcd-deadline:before{content:&#x27;&#x27;;width:3px;height:3px;border-radius:50%;background:currentColor;flex-shrink:0}
-[data-expiry-tone=&quot;today&quot;] .lcd-deadline{color:#f4c682}
-[data-expiry-tone=&quot;tomorrow&quot;] .lcd-deadline{color:#e3d2ab}
-[data-expiry-tone=&quot;overdue&quot;] .lcd-deadline{color:#ffaaa1;font-weight:650}
-.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c4ccd6}
-.lcd-empty{align-self:center;text-align:center;color:#c4ccd6;font-size:11px;line-height:1.65;word-break:keep-all}
-.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;padding-top:4px;border-top:1px solid #ffffff16;font-size:10px;line-height:1.2;color:#b8c3d0;flex-shrink:0;white-space:nowrap}
-.lcd-level{color:#b8c3d0}
+[data-expiry-tone=&quot;overdue&quot;] .lcd-deadline{font-weight:650}
+.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a675d}
+.lcd-empty{align-self:center;text-align:center;color:#5d6c60;font-size:11px;line-height:1.4;word-break:keep-all}
+.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;font-size:10px;line-height:1.2;color:#59695e;flex-shrink:0;white-space:nowrap}
+.lcd-expiry-footer{flex-direction:column;align-items:stretch;gap:3px}
+.lcd-expiry-footer&gt;span{display:none}
+.lcd-expiry-track{display:flex;gap:2px;height:3px;overflow:hidden;border-radius:4px;background:#e3eae3}
+.lcd-expiry-track i{display:block;min-width:0;background:var(--expiry,#7a9570);border-radius:3px}
+.lcd-recipe-facts{justify-content:flex-start;gap:4px}
+.lcd-recipe-facts&gt;span{padding:2px 4px;border:1px solid #e2e8e2;border-radius:4px;background:#edf2ee;font-size:9px;color:#52645a}
+.lcd-level{color:#52645a}
 .lcd-menu{display:flex;align-items:center;gap:5px;flex:1;min-height:0}
-.lcd-dish{display:grid;place-items:center;flex:0 0 42px;height:42px;padding:2px;overflow:hidden;border-radius:4px;background:#ffffff06;box-shadow:inset 0 0 0 1px #ffffff0b}
+.lcd-dish{display:grid;place-items:center;flex:0 0 42px;height:42px;padding:2px;overflow:hidden;border-radius:5px;background:#f4f5ec;box-shadow:inset 0 0 0 1px #e6e9dc}
 .lcd-dish .dish-art{display:block;width:100%;height:100%;filter:none}
 .lcd-recipe{display:block;min-width:0;flex:1;font-size:clamp(12px,12cqw,14px);font-weight:600;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.3px}
-.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-menu{flex-direction:column;justify-content:center;gap:3px}
-.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-dish{flex:1 1 30px;width:38px;min-height:20px;max-height:34px}
+.lcd-stock{flex-shrink:0;font-size:10px;line-height:1.2;color:#56685d}
+.lcd-stock-label{display:flex;justify-content:space-between;gap:3px;min-width:0;white-space:nowrap}
+.lcd-stock-label b{font-size:10px;font-weight:600;color:#44664a}
+.lcd-stock-track{height:3px;margin-top:3px;overflow:hidden;border-radius:4px;background:#e3ebe3}
+.lcd-stock-track i{display:block;height:100%;border-radius:4px;background:#6e9473}
+.lcd-missing{margin:0;padding-top:3px;border-top:1px solid #e2e8df;font-size:9px;line-height:1.3;color:#687164;overflow-wrap:anywhere}
+.lcd-missing span{display:block}
+.lcd-missing b{display:block;font-size:10px;font-weight:500;color:#53644f}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-menu{flex-direction:column;justify-content:center;gap:1px}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-dish{flex:1 1 20px;width:32px;min-height:20px;max-height:24px}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe{flex:0 0 auto;width:100%;text-align:center}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-counters,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-counters,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-total,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-total,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-missing,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-missing,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-stock-word,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-stock-word,
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-level,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-level{display:none}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-expiry-footer&gt;span,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-expiry-footer&gt;span{display:block}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-screen,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-screen{gap:1px}
+.fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe-facts&gt;span,.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe-facts&gt;span{padding:0;border:0;background:none;font-size:10px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-dish{display:none}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;],.fridge-lcd[data-lcd-layout=&quot;summary&quot;]{padding:1px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{align-self:center;font-size:11px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-row b{font-size:11px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-item-meta{flex-direction:column;align-items:flex-start;gap:1px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.2}
-@container(max-width:100px){.lcd-screen{padding:3px;gap:2px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-stock-track{height:2px;margin-top:1px}
+@container(max-width:100px){.lcd-screen{padding:3px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:1px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
 @media(max-width:360px){.kitchen-progress{font-size:11px;gap:4px;padding:5px 7px}.kitchen-progress button{font-size:11px;padding:4px 6px}}
@@ -1627,30 +1705,46 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
     // Calendar-day comparison avoids DST and midnight timezone rounding.
     const dayNumber=value=&gt;{const [y,m,d]=value.split(&#x27;-&#x27;).map(Number);return Date.UTC(y,m-1,d)/86400000;};
     const today=dayNumber(date());
-    const near=items.filter(r=&gt;r.kind===&#x27;food&#x27;&amp;&amp;r.expiry&amp;&amp;dayNumber(r.expiry)-today&lt;=3).sort((a,b)=&gt;a.expiry.localeCompare(b.expiry));
+    const near=items.filter(r=&gt;(r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;)&amp;&amp;r.expiry&amp;&amp;dayNumber(r.expiry)-today&lt;=3).sort((a,b)=&gt;a.expiry.localeCompare(b.expiry));
+    const counts={overdue:0,today:0,tomorrow:0,soon:0};
+    for(const item of near){const days=dayNumber(item.expiry)-today;counts[days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;]++;}
+    const distribution=Object.entries(counts).filter(([,count])=&gt;count).map(([tone,count])=&gt;`&lt;i data-expiry-tone=&quot;${tone}&quot; style=&quot;flex:${count}&quot;&gt;&lt;/i&gt;`).join(&#x27;&#x27;);
+    const distributionLabel=`기한 경과 ${counts.overdue}건, 오늘 ${counts.today}건, 내일 ${counts.tomorrow}건, 2~3일 이내 ${counts.soon}건`;
+    const cleanName=name=&gt;String(name).normalize(&#x27;NFKC&#x27;).replace(/\s+/g,&#x27;&#x27;).toLowerCase();
+    const names=new Set(items.filter(r=&gt;(r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;)&amp;&amp;(!r.expiry||dayNumber(r.expiry)&gt;=today)).map(r=&gt;cleanName(r.name)));
     root.innerHTML=[&#x27;freshLeft&#x27;,&#x27;freshRight&#x27;].map(key=&gt;{
       const p=panels[key],left=key===&#x27;freshLeft&#x27;,meal=items.find(r=&gt;r.kind===&#x27;meal&#x27;),hidden=doors[key]||closing.has(key);
       // Fit inside the door&#x27;s flat surface, leaving the curved edge and handle
       // clear. Keep text at native size rather than scaling a tall dashboard.
       const width=panels.freshRight.w*.70*stage.width,doorHeight=p.h*stage.height;
-      const height=Math.min(doorHeight*.66,Math.max(116,Math.min(160,doorHeight*.46)));
-      const layout=height&lt;108?&#x27;summary&#x27;:width&lt;100?&#x27;compact&#x27;:&#x27;standard&#x27;;
+      const height=Math.min(doorHeight*.72,Math.max(126,Math.min(176,doorHeight*.51)));
+      const layout=height&lt;116?&#x27;summary&#x27;:width&lt;100||height&lt;158?&#x27;compact&#x27;:&#x27;standard&#x27;;
       const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
       // The original atlas already has recessed screens at y188..394. Center
       // the live screen over that recess so it never peeks out below the UI.
-      const center=layout===&#x27;summary&#x27;?.49:.518;
+      const center=layout===&#x27;summary&#x27;?.47:layout===&#x27;compact&#x27;?.49:.518;
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
-      const visible=near.slice(0,layout===&#x27;summary&#x27;?1:height&gt;=148?3:2),overdue=near.some(r=&gt;dayNumber(r.expiry)&lt;today);
+      const visible=near.slice(0,layout===&#x27;summary&#x27;?1:layout===&#x27;standard&#x27;?3:2),overdue=counts.overdue&gt;0;
       const recipe=window.KitchenCatalog.find(r=&gt;r.name===meal.name);
       const title=left?&#x27;유통기한 임박&#x27;:&#x27;오늘의 추천메뉴&#x27;;
       const empty=layout===&#x27;summary&#x27;?&#x27;임박 재료&lt;br&gt;없어요&#x27;:&#x27;3일 이내&lt;br&gt;임박 재료 없어요&#x27;;
+      // This is a count of registered ingredient names, not a quantity check
+      // or a claim that the whole recipe can be cooked with the current stock.
+      const required=recipe?[...new Set([...recipe.f,...recipe.s,...recipe.p])]:[];
+      const missing=required.filter(name=&gt;!names.has(cleanName(name))&amp;&amp;!name.split(&#x27;/&#x27;).some(alias=&gt;names.has(cleanName(alias))));
+      const registered=required.length-missing.length,ratio=required.length?100*registered/required.length:0;
+      const counters=`&lt;dl class=&quot;lcd-counters&quot; aria-label=&quot;기한별 재료·양념 기록&quot;&gt;&lt;div data-expiry-tone=&quot;today&quot;&gt;&lt;dt&gt;오늘&lt;/dt&gt;&lt;dd&gt;${counts.today}&lt;/dd&gt;&lt;/div&gt;&lt;div data-expiry-tone=&quot;tomorrow&quot;&gt;&lt;dt&gt;내일&lt;/dt&gt;&lt;dd&gt;${counts.tomorrow}&lt;/dd&gt;&lt;/div&gt;&lt;div data-expiry-tone=&quot;soon&quot;&gt;&lt;dt&gt;2~3일&lt;/dt&gt;&lt;dd&gt;${counts.soon}&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;`;
+      const total=counts.overdue?`경과 ${counts.overdue}`:`${near.length}건`;
+      const totalBadge=left?`&lt;span class=&quot;lcd-total ${overdue?&#x27;is-overdue&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;관리 기록 총 ${near.length}건, 기한 경과 ${counts.overdue}건&quot;&gt;${total}&lt;/span&gt;`:&#x27;&#x27;;
       const rows=visible.map(r=&gt;{
         const days=dayNumber(r.expiry)-today,tone=days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;;
         const label=days&lt;0?&#x27;지남&#x27;:days===0?&#x27;오늘&#x27;:days===1?&#x27;내일&#x27;:days+&#x27;일 내&#x27;;
         return `&lt;div class=&quot;lcd-row&quot; data-expiry-tone=&quot;${tone}&quot;&gt;&lt;span class=&quot;lcd-food&quot;&gt;${art(r)}&lt;/span&gt;&lt;div class=&quot;lcd-item-copy&quot;&gt;&lt;b title=&quot;${esc(r.name)}&quot;&gt;${esc(r.name)}&lt;/b&gt;&lt;div class=&quot;lcd-item-meta&quot;&gt;&lt;small class=&quot;lcd-deadline&quot; title=&quot;${esc(r.expiry)}${days&lt;0?&#x27; · 기한 지남&#x27;:&#x27;&#x27;}&quot;&gt;${label}&lt;/small&gt;&lt;span class=&quot;lcd-quantity&quot; title=&quot;${esc(r.quantity)}&quot;&gt;${esc(r.quantity)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
       }).join(&#x27;&#x27;);
-      const content=left?`&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;지난 기한&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;종&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;).length+&#x27;종&#x27;}&lt;/span&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;`;
-      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
+      const stock=recipe?`&lt;div class=&quot;lcd-stock&quot; title=&quot;기록된 재료 이름 중 일치하는 종류 수 · 기한 경과 항목 제외 · 수량 미검증&quot;&gt;&lt;div class=&quot;lcd-stock-label&quot;&gt;&lt;span&gt;재료&lt;span class=&quot;lcd-stock-word&quot;&gt; 기록&lt;/span&gt;&lt;/span&gt;&lt;b&gt;${registered}/${required.length}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-stock-track&quot; role=&quot;meter&quot; aria-label=&quot;기록된 재료 종류 · 이름 기준, 수량 미검증&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;${required.length||1}&quot; aria-valuenow=&quot;${registered}&quot;&gt;&lt;i style=&quot;width:${ratio}%&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&lt;div class=&quot;lcd-stock&quot;&gt;&lt;span&gt;재료 미입력&lt;/span&gt;&lt;/div&gt;&#x27;;
+      const missingNote=recipe?`&lt;p class=&quot;lcd-missing&quot; title=&quot;${esc(missing.join(&#x27; · &#x27;))}&quot;&gt;&lt;span&gt;${missing.length?&#x27;미등록 재료&#x27;:&#x27;재료 이름 기록됨&#x27;}&lt;/span&gt;${missing.length?`&lt;b&gt;${esc(missing.slice(0,2).join(&#x27; · &#x27;))}${missing.length&gt;2?&#x27; 외 &#x27;+(missing.length-2):&#x27;&#x27;}&lt;/b&gt;`:&#x27;&lt;b&gt;수량은 확인해 주세요&lt;/b&gt;&#x27;}&lt;/p&gt;`:&#x27;&#x27;;
+      const content=left?`${counters}&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer lcd-expiry-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;경과 &#x27;+counts.overdue+&#x27;건&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;건&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;||r.kind===&#x27;seasoning&#x27;).length+&#x27;건&#x27;}&lt;/span&gt;&lt;div class=&quot;lcd-expiry-track&quot; role=&quot;img&quot; aria-label=&quot;${distributionLabel}&quot;&gt;${distribution}&lt;/div&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer lcd-recipe-facts&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;${stock}${missingNote}`;
+      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;${totalBadge}&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
