@@ -1,0 +1,34 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>투자 레이더 · 토스 실시간 감시</title><style>
+*{box-sizing:border-box}body{margin:0;font:14px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:#253247;background:#f5f7fb}.wrap{max-width:950px;margin:auto;padding:24px 16px}h1{font-size:26px;margin:12px 0}h2{font-size:17px}.sub{font-size:12px;color:#66758d}.box{background:white;border:1px solid #dce5ef;border-radius:17px;padding:18px;margin:14px 0}.note{background:#f2f5fa;padding:12px;border-radius:9px}.flex{display:flex;gap:12px;flex-wrap:wrap}.num{background:#f4f7fc;padding:10px;border-radius:10px;flex:1;min-width:120px}.num strong{display:block;font-size:22px}input{width:100%;padding:10px;border:1px solid #c8d4e4;border-radius:9px;font:inherit;margin:5px 0 10px}label{font-weight:700;font-size:12px}button{padding:10px 20px;background:#3166a5;color:white;border:0;border-radius:10px;cursor:pointer}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{border:1px solid #e1e7f0;padding:12px;border-radius:12px}.alert{padding:10px;border-bottom:1px solid #edf0f4}.price{font-weight:800;font-size:20px}a{color:#35649e}@media(max-width:650px){.cards{grid-template-columns:1fr}.wrap{padding:15px 10px}}
+</style></head><body><main class="wrap">
+<a href="./stock-value-radar.html">‹ 기존 투자 레이더</a><h1>토스증권 실시간 감시</h1><p class="sub">공식 실시간 체결 · 국내/미국 · 감시용 · 실제 매수 승인과 분리</p>
+<section class="box"><h2>인증·실행 상태</h2><p id="status" class="note">계좌 소유자의 API 키 발급 및 고정 IP 서버 설정 전입니다. 연결되지 않은 시세를 생성하지 않습니다.</p>
+<div class="flex"><div class="num">감시 대상<strong id="n">—</strong></div><div class="num">90초 내 유효시세<strong id="fresh">—</strong></div><div class="num">자동 매매<strong>꺼짐</strong></div></div>
+<label for="url">읽기 전용 HTTPS 서버 주소</label><input id="url" placeholder="https://your-radar.example.com" autocomplete="off" spellcheck="false">
+<label for="pass">별도의 조회 전용 토큰 (토스 API 키가 아닙니다)</label><input id="pass" type="password" autocomplete="off" spellcheck="false"><button id="go">조회 연결</button>
+<p class="sub">토스 API client_secret은 이 페이지나 채팅창에 넣지 마세요. 조회 토큰은 브라우저에 저장되지 않습니다.</p></section>
+<section class="box"><h2>실시간 가격 관찰</h2><p class="sub">변화율은 감시 프로그램 시작 이후입니다. 전일 대비 등락률로 표시하지 않습니다.</p><div id="quotes" class="cards"><p>연결 전입니다.</p></div></section>
+<section class="box"><h2>조건부 관찰 알림</h2><p class="sub">주가 움직임 감지일 뿐, 매수 추천·수익 확률·초록색 실사 승인이 아닙니다.</p><div id="alerts">아직 알림이 없습니다.</div></section>
+<section class="box"><h2>연결 방법</h2><p><a target="_blank" rel="noopener" href="https://p.tossinvest.com/ko/open-api">토스증권 Open API</a>에서 발급 → WTS의 허용 IP에 고정 IP 서버 등록 → 비밀정보를 서버 환경변수에 보관 → 실시간 프로그램 실행 → 이 화면에 조회 전용 주소 연결.</p><p class="note">GitHub Pages는 상시 감시 서버가 아닙니다. 시세 API 키는 브라우저에 넣지 않으며, 프로그램에는 매매 주문 기능이 없습니다.</p></section>
+</main><script>(function(){"use strict";
+var u=document.getElementById('url'),p=document.getElementById('pass'),status=document.getElementById('status'),clock=null;
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function fmt(v){return typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ko-KR',{maximumFractionDigits:2}):'—'}
+function date(v){var d=new Date(v);return isNaN(+d)?'미확인':d.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false})}
+async function refresh(){
+ try{
+  var base=u.value.trim().replace(/\/+$/,'');
+  if(!/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(base)||!p.value)throw Error('HTTPS 서버 주소와 조회 토큰 필요');
+  var r=await fetch(base+'/api/status',{cache:'no-store',headers:{Authorization:'Bearer '+p.value}});
+  if(!r.ok)throw Error('인증 실패: HTTP '+r.status);
+  var x=await r.json();
+  status.textContent=x.connected?'공식 Toss 실시간 WebSocket 연결됨':'실시간 WS 미연결 · '+String(x.status||'');
+  document.getElementById('n').textContent=fmt((x.ws_topics||0)+(x.rest_fallback_symbols||0));
+  document.getElementById('fresh').textContent=fmt(x.active_fresh_quotes);
+  document.getElementById('quotes').innerHTML=(x.quotes||[]).slice(0,40).map(function(q){return '<article class="card"><strong>'+esc(q.name)+' · '+esc(q.symbol)+'</strong><div class="price">'+fmt(q.price)+' '+esc(q.currency)+'</div><div class="sub">감시 시작 후 '+fmt(q.change_since_watch_start_pct)+'% · '+esc(date(q.timestamp))+'</div></article>'}).join('')||'최근 90초 이내 유효 시세 없음';
+  document.getElementById('alerts').innerHTML=(x.alerts||[]).slice(0,20).map(function(a){return '<div class="alert"><b>'+esc(a.name)+' · '+esc(a.symbol)+'</b><div class="sub">'+esc((a.reasons||[]).join(' · '))+'</div><div class="sub">'+esc(date(a.timestamp))+' · 관찰 전용</div></div>'}).join('')||'아직 관찰 알림이 없습니다.';
+ }catch(err){status.textContent='연결을 확인하지 못했습니다. 고정 IP 서버 상태와 조회 토큰을 확인하세요.';document.getElementById('fresh').textContent='—';document.getElementById('quotes').textContent='유효한 실시간 시세 없음';}
+}
+document.getElementById('go').onclick=function(){if(clock)clearInterval(clock);refresh();clock=setInterval(refresh,10000)};
+fetch('./toss-live-config.json',{cache:'no-store'}).then(function(x){return x.json()}).then(function(c){if(c.enabled&&/^https:\/\//.test(c.api_base||''))u.value=c.api_base}).catch(function(){});
+})();</script></body></html>

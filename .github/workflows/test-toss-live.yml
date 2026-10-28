@@ -1,0 +1,38 @@
+name: Test Toss Read-Only Live Adapter
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'services/toss-live/**'
+      - 'toss-live-radar.html'
+      - 'toss-live-config.json'
+      - '.github/workflows/test-toss-live.yml'
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install read-only dependencies
+        run: pip install -r services/toss-live/requirements.txt
+      - name: Test read-only adapter with synthetic frames
+        run: |
+          python -m unittest discover -s services/toss-live -p 'test_*.py' -v
+          python -m py_compile services/toss-live/core.py services/toss-live/worker.py
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          c=json.loads(Path('toss-live-config.json').read_text())
+          assert c['enabled'] is False and c['api_base'] is None
+          worker=Path('services/toss-live/worker.py').read_text()
+          assert '"POST /api/v1/orders"' not in worker
+          assert '"GET /api/v1/accounts"' not in worker
+          assert 'TOSS_CLIENT_SECRET' not in Path('toss-live-radar.html').read_text()
+          print('Public frontend contains no broker secrets; live connection disabled by default')
+          PY
