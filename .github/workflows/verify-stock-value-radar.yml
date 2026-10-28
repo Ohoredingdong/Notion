@@ -48,12 +48,13 @@ jobs:
           from pathlib import Path
           import re
           html=Path("stock-value-radar.html").read_text()
-          scripts=re.findall(r"<script[^>]*>(.*?)</script>",html,re.S)
-          assert len(scripts)>=2
-          for n,script in enumerate(scripts):Path(f"/tmp/stock-radar-{n}.js").write_text(script)
-          for element in ["systemBanner","healthDetails","candidateCards","researchDetails","historySummary"]:
+          srcs=re.findall(r'<script\s+src="([^"]+)"',html)
+          for asset in ("stock-radar-v8.js","stock-radar-v9.js","stock-green-review.js","stock-recommendations.js","stock-investment-cases.js"):
+            assert any(asset in src for src in srcs), asset
+          for element in ("todayBrief","view-discover","view-detail","view-system","cards","companySelect","marketGroupsBar","liveStatus"):
             assert 'id="'+element+'"' in html,element
-          print("HTML UI sections PASS")
+          assert 'href="./toss-live-radar.html"' in html
+          print("Current radar UI anchors, scripts and Toss watch link PASS")
           PY
-          for f in /tmp/stock-radar-*.js; do node --check "$f"; done
+          for f in assets/stock-radar-v8.js assets/stock-radar-v9.js assets/stock-green-review.js assets/stock-recommendations.js assets/stock-investment-cases.js; do node --check "$f"; done
           echo "JavaScript syntax PASS"
