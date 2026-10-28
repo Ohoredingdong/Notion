@@ -99,7 +99,7 @@
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
       const visible=near.slice(0,layout==='summary'?1:height>=148?3:2),overdue=near.some(r=>dayNumber(r.expiry)<today);
       const recipe=window.KitchenCatalog.find(r=>r.name===meal.name);
-      const title=layout==='summary'?(left?'기한':'메뉴'):left?(overdue?'기한 확인':'먼저 먹기'):'오늘 메뉴';
+      const title=left?'유통기한 임박':'오늘의 추천메뉴';
       const empty=layout==='summary'?'임박 재료<br>없어요':'3일 이내<br>임박 재료 없어요';
       const rows=visible.map(r=>{
         const days=dayNumber(r.expiry)-today,tone=days<0?'overdue':days===0?'today':days===1?'tomorrow':'soon';
@@ -107,7 +107,7 @@
         return `<div class="lcd-row" data-expiry-tone="${tone}"><span class="lcd-food">${art(r)}</span><div class="lcd-item-copy"><b title="${esc(r.name)}">${esc(r.name)}</b><div class="lcd-item-meta"><small class="lcd-deadline" title="${esc(r.expiry)}${days<0?' · 기한 지남':''}">${label}</small><span class="lcd-quantity" title="${esc(r.quantity)}">${esc(r.quantity)}</span></div></div></div>`;
       }).join('');
       const content=left?`<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer"><span>${overdue?'지난 기한':near.length?'임박 '+near.length+'종':'보관 '+items.filter(r=>r.kind==='food').length+'종'}</span></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div>`;
-      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${left?'임박 재료':'선택한 메뉴'} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong></div>${content}</div></section>`;
+      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong></div>${content}</div></section>`;
     }).join('');window.dispatchEvent(new Event('mini-kitchen:layout'));
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);

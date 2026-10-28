@@ -117,7 +117,7 @@ body .shell .fridge-stage{filter:none}
 }
 .lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:6px;background:linear-gradient(#fffdf8a8,#fafbf500 48%)}
 .lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0}
-.lcd-title{font-size:11px;font-weight:500;line-height:1.3;letter-spacing:-.3px;white-space:nowrap;color:#626b55}
+.lcd-title{font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#626b55}
 .lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0}
 .lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #e0e4d7;background:none}
 .lcd-row:last-child{border-bottom:0}
@@ -144,10 +144,11 @@ body .shell .fridge-stage{filter:none}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe{flex:0 0 auto;width:100%;text-align:center}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-dish{display:none}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{align-self:center}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{font-size:11px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-row b{font-size:11px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-item-meta{flex-direction:column;align-items:flex-start;gap:1px}
-.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.35}
-@container(max-width:100px){.lcd-screen{padding:4px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.2}
+@container(max-width:100px){.lcd-screen{padding:3px;gap:2px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
 @media(max-width:360px){.kitchen-progress{font-size:11px;gap:4px;padding:5px 7px}.kitchen-progress button{font-size:11px;padding:4px 6px}}
@@ -723,7 +724,7 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
       const visible=near.slice(0,layout===&#x27;summary&#x27;?1:height&gt;=148?3:2),overdue=near.some(r=&gt;dayNumber(r.expiry)&lt;today);
       const recipe=window.KitchenCatalog.find(r=&gt;r.name===meal.name);
-      const title=layout===&#x27;summary&#x27;?(left?&#x27;기한&#x27;:&#x27;메뉴&#x27;):left?(overdue?&#x27;기한 확인&#x27;:&#x27;먼저 먹기&#x27;):&#x27;오늘 메뉴&#x27;;
+      const title=left?&#x27;유통기한 임박&#x27;:&#x27;오늘의 추천메뉴&#x27;;
       const empty=layout===&#x27;summary&#x27;?&#x27;임박 재료&lt;br&gt;없어요&#x27;:&#x27;3일 이내&lt;br&gt;임박 재료 없어요&#x27;;
       const rows=visible.map(r=&gt;{
         const days=dayNumber(r.expiry)-today,tone=days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;;
@@ -731,7 +732,7 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
         return `&lt;div class=&quot;lcd-row&quot; data-expiry-tone=&quot;${tone}&quot;&gt;&lt;span class=&quot;lcd-food&quot;&gt;${art(r)}&lt;/span&gt;&lt;div class=&quot;lcd-item-copy&quot;&gt;&lt;b title=&quot;${esc(r.name)}&quot;&gt;${esc(r.name)}&lt;/b&gt;&lt;div class=&quot;lcd-item-meta&quot;&gt;&lt;small class=&quot;lcd-deadline&quot; title=&quot;${esc(r.expiry)}${days&lt;0?&#x27; · 기한 지남&#x27;:&#x27;&#x27;}&quot;&gt;${label}&lt;/small&gt;&lt;span class=&quot;lcd-quantity&quot; title=&quot;${esc(r.quantity)}&quot;&gt;${esc(r.quantity)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
       }).join(&#x27;&#x27;);
       const content=left?`&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;지난 기한&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;종&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;).length+&#x27;종&#x27;}&lt;/span&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;`;
-      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${left?&#x27;임박 재료&#x27;:&#x27;선택한 메뉴&#x27;} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
+      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
@@ -1030,7 +1031,7 @@ body .shell .fridge-stage{filter:none}
 }
 .lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:6px;background:linear-gradient(#fffdf8a8,#fafbf500 48%)}
 .lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0}
-.lcd-title{font-size:11px;font-weight:500;line-height:1.3;letter-spacing:-.3px;white-space:nowrap;color:#626b55}
+.lcd-title{font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#626b55}
 .lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0}
 .lcd-row{min-width:0;display:flex;align-items:center;gap:5px;padding:0;border:0;border-bottom:1px solid #e0e4d7;background:none}
 .lcd-row:last-child{border-bottom:0}
@@ -1057,10 +1058,11 @@ body .shell .fridge-stage{filter:none}
 .fridge-lcd[data-lcd-layout=&quot;compact&quot;] .lcd-recipe{flex:0 0 auto;width:100%;text-align:center}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-dish{display:none}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{align-self:center}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-recipe{font-size:11px;line-height:1.2}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-row b{font-size:11px}
 .fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-item-meta{flex-direction:column;align-items:flex-start;gap:1px}
-.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.35}
-@container(max-width:100px){.lcd-screen{padding:4px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
+.fridge-lcd[data-lcd-layout=&quot;summary&quot;] .lcd-empty{line-height:1.2}
+@container(max-width:100px){.lcd-screen{padding:3px;gap:2px}.lcd-food,.lcd-level,.lcd-deadline:before{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:3px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
 @media(max-width:360px){.kitchen-progress{font-size:11px;gap:4px;padding:5px 7px}.kitchen-progress button{font-size:11px;padding:4px 6px}}
@@ -1636,7 +1638,7 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
       const visible=near.slice(0,layout===&#x27;summary&#x27;?1:height&gt;=148?3:2),overdue=near.some(r=&gt;dayNumber(r.expiry)&lt;today);
       const recipe=window.KitchenCatalog.find(r=&gt;r.name===meal.name);
-      const title=layout===&#x27;summary&#x27;?(left?&#x27;기한&#x27;:&#x27;메뉴&#x27;):left?(overdue?&#x27;기한 확인&#x27;:&#x27;먼저 먹기&#x27;):&#x27;오늘 메뉴&#x27;;
+      const title=left?&#x27;유통기한 임박&#x27;:&#x27;오늘의 추천메뉴&#x27;;
       const empty=layout===&#x27;summary&#x27;?&#x27;임박 재료&lt;br&gt;없어요&#x27;:&#x27;3일 이내&lt;br&gt;임박 재료 없어요&#x27;;
       const rows=visible.map(r=&gt;{
         const days=dayNumber(r.expiry)-today,tone=days&lt;0?&#x27;overdue&#x27;:days===0?&#x27;today&#x27;:days===1?&#x27;tomorrow&#x27;:&#x27;soon&#x27;;
@@ -1644,7 +1646,7 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
         return `&lt;div class=&quot;lcd-row&quot; data-expiry-tone=&quot;${tone}&quot;&gt;&lt;span class=&quot;lcd-food&quot;&gt;${art(r)}&lt;/span&gt;&lt;div class=&quot;lcd-item-copy&quot;&gt;&lt;b title=&quot;${esc(r.name)}&quot;&gt;${esc(r.name)}&lt;/b&gt;&lt;div class=&quot;lcd-item-meta&quot;&gt;&lt;small class=&quot;lcd-deadline&quot; title=&quot;${esc(r.expiry)}${days&lt;0?&#x27; · 기한 지남&#x27;:&#x27;&#x27;}&quot;&gt;${label}&lt;/small&gt;&lt;span class=&quot;lcd-quantity&quot; title=&quot;${esc(r.quantity)}&quot;&gt;${esc(r.quantity)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
       }).join(&#x27;&#x27;);
       const content=left?`&lt;div class=&quot;lcd-list&quot; style=&quot;--lcd-rows:${visible.length||1}&quot;&gt;${rows||&#x27;&lt;p class=&quot;lcd-empty&quot;&gt;&#x27;+empty+&#x27;&lt;/p&gt;&#x27;}&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${overdue?&#x27;지난 기한&#x27;:near.length?&#x27;임박 &#x27;+near.length+&#x27;종&#x27;:&#x27;보관 &#x27;+items.filter(r=&gt;r.kind===&#x27;food&#x27;).length+&#x27;종&#x27;}&lt;/span&gt;&lt;/div&gt;`:`&lt;div class=&quot;lcd-menu&quot;&gt;&lt;div class=&quot;lcd-dish&quot;&gt;${A.dishArt({id:meal.name})}&lt;/div&gt;&lt;b class=&quot;lcd-recipe&quot;&gt;${esc(meal.name)}&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;lcd-footer&quot;&gt;&lt;span&gt;${esc(recipe?.time||&#x27;시간 미입력&#x27;)}&lt;/span&gt;&lt;span class=&quot;lcd-level&quot;&gt;${esc(recipe?.level||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;`;
-      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${left?&#x27;임박 재료&#x27;:&#x27;선택한 메뉴&#x27;} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
+      return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);

@@ -39,3 +39,11 @@ git diff --check
 작은 내장형은 `/workspace/artifacts/kitchen-fitted-displays/`의 앱 924,016바이트·위젯 924,019바이트다. 외부 이미지·CSS·JavaScript 요청이 없으며 원본 그림 내장형 `previews/`도 재생성했다. 앞서 전달한 10개 폴더의 HTML 미리보기도 같은 버전으로 갱신했다. 기존 배포 앱과 사용자 데이터는 수정하지 않았다. 전용 시안 키 `miniature-kitchen-preview-v1`의 형식과 기존 문 상태 복원을 유지한다.
 
 기존 작업 브랜치에 반영하며 main·GitHub Pages는 변경하지 않는다. PR은 앞선 작업에서 GitHub API가 `Forbidden`으로 차단한 상태다.
+
+## 후속 제목 지정
+
+사용자가 왼쪽은 **유통기한 임박**, 오른쪽은 **오늘의 추천메뉴**로 지정했다. 앱·위젯과 짧은 화면의 제목을 모두 같은 문구로 바꾸고, 좁은 표시창에서는 단어 사이에서 두 줄로 표시한다. 경과 기한은 기존 붉은 표시와 하단 문구로 계속 구분한다. 추천 계산이나 메뉴 선택 로직은 이번 문구 수정에서 변경하지 않는다.
+
+[지정한 제목 적용 화면](miniature-kitchen/fitted-titles.png). 제목·짧은 화면의 내용 잘림·8종 메뉴명·수량·터치 개폐를 확인한 집중 검사 10개 묶음이 통과했다. 같은 상태의 8쌍 캡처에서 본체와 표시창의 위치·크기는 그대로다. 앞선 111개/13개 회귀 결과와 이번 집중 검사 결과는 [검증 기록](miniature-kitchen/fitted-display-validation.json)의 `title_update`로 구분한다.
+
+최신 작은 내장형은 `/workspace/artifacts/kitchen-display-titles/`이며 앱 924,037바이트·위젯 924,040바이트다. 이전에 전달한 HTML 미리보기 11개 폴더에도 반영했다.
