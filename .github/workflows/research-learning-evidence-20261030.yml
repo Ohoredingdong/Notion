@@ -21,6 +21,12 @@ jobs:
         run: |
           python scripts/audit_stock_forecast_independent.py --self-test
           python scripts/audit_stock_learning_evidence.py --self-test
+      - name: Regression-test unchanged forecast and bounded controller
+        run: |
+          pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py'
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot
+          python scripts/stock_forecast_sources.py
       - name: Verify frozen actual learning history read-only
         run: |
           python scripts/audit_stock_forecast_independent.py --cutoff 2026-10-29T17:40:00Z
