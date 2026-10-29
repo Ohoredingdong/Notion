@@ -31,8 +31,10 @@ class OutcomeSourceTimeTests(unittest.TestCase):
             'delivery_verified_at': '2026-10-29T13:37:00Z'}
         return prediction, publication, outcome
 
-    def evaluated(self, **changes):
+    def evaluated(self, omit_source=False, **changes):
         p, d, o = self.fixture()
+        if omit_source:
+            o.pop('source_checked_at')
         return audit([p], [{**o, **changes}], [d], ts('2026-10-29T15:00:00Z'))
 
     def test_valid_source_checked_between_target_end_and_outcome_evaluation(self):
@@ -53,9 +55,7 @@ class OutcomeSourceTimeTests(unittest.TestCase):
                             for e in result['errors']))
 
     def test_absent_legacy_source_checked_time_not_backfilled(self):
-        _, _, o = self.fixture()
-        o.pop('source_checked_at')
-        result = self.evaluated(**o)
+        result = self.evaluated(omit_source=True)
         self.assertEqual(result['status'], 'ledger_arithmetic_consistent')
         self.assertEqual(result['scored'], 1)
 
