@@ -1,31 +1,39 @@
-# Prospective price direction — direction-forecast-1.0
+# 사전 방향 예측 구현 · direction-forecast-1.0
 
-This is an implemented statistical forecasting pipeline, not a declaration that its predictions are profitable. The original strict-green-1.0 controls, document approvals, authenticated OpenDART and trade permissions are unchanged. No order API is used. Initial coverage is four market indices and eight existing watched companies; it is not a recommendation list.
+문서만 저장한 상태가 아니라 실제 과거 가격으로 학습·생성·배포하는 예측 파이프라인입니다. 다만 적중률 개선이나 투자 수익성이 입증되었다는 뜻은 아닙니다. 기존 strict-green-1.0, 회사별 문서 승인, 인증된 OpenDART, 거래 권한은 변경하지 않았고 주문 API를 사용하지 않습니다.
 
-## Targets and timing
+## 실제 구현 범위
 
-Daily: the next regular session's open-to-close direction, issued BEFORE that session's open. An intraday run must not relabel yesterday's close-to-today movement as a new daily forecast.
+코스피·코스닥·S&P 500·나스닥과 삼성전자·SK하이닉스·NAVER·HPSP·Apple·Microsoft·NVIDIA·ON의 12개 대상을 일별/장중 두 방식으로 계산합니다. 이는 매수 추천 목록이 아닙니다.
 
-Intraday policy revision `provider-latency-30m-v1`: completed 5-minute bars, a fixed **30-minute gap from the last observed bar end**, then a fixed **30-minute open-to-close target** inside the same regular session. Training labels and prospective issuance use exactly the same gap. This replaces the original 5-minute gap because the initial real collection returned roughly 15-minute-delayed Korean data. The change is an operational latency correction, not a claim of improved returns. Exact target start/end and input age are stored. A forecast is rejected if its target already started or if the session cannot accommodate it. This is not necessarily 'the next 30 minutes from now'.
+일별 모델은 다음 정규장 시가→종가 방향을 개장 전에 예측합니다. 이미 시작된 오늘 장을 어제 데이터로 뒤늦게 예측한 것처럼 발행하지 않습니다.
 
-No fake future bars, no unfinished daily close, no overnight extrapolation, no retroactive issue date. The new model only forecasts periods after its implementation; it did not predict earlier moves on the implementation date.
+장중 모델의 정책 revision은 `provider-latency-30m-v1`입니다. 마지막 확정 5분봉 종료 이후 30분의 간격을 두고, 그 뒤 30분 구간의 시가→종가를 예측합니다. 실제 제공처 자료가 약 15분 늦게 들어와 초기 5분 간격을 수정했습니다. 학습 타깃과 실제 발행 타깃에 같은 간격을 적용합니다. ‘지금부터 30분’과 다를 수 있으므로 카드의 시작·종료 시각을 확인해야 합니다. 이미 시작된 타깃·시간외 구간·미완성 봉·만료 입력은 보류합니다.
 
-Collection uses Yahoo history through yfinance until the authorized real-time provider/server is actually connected. KOSPI uses a strict raw-chart parser through the same Yahoo client to avoid a provider-library live-row array mismatch. Unequal OHLC arrays and duplicate timestamps are rejected, not truncated to force agreement. This is the same unofficial provider, not independent verification. Historical prices can be retrospectively adjusted; evaluation is NOT a point-in-time-vintage backtest.
+현재는 Yahoo/yfinance의 지연 가능한 비공식 단일출처 가격과 GitHub 정기 실행입니다. 토스 실시간 인증·상시 서버가 연결되었다고 표시하지 않습니다. 원자료를 새로 생성했다고 실제 시세 관측시각이 새로워지지는 않습니다.
 
-## Model and validation
+## 모델과 평가
 
-A regularized three-class logistic model uses lagged returns, volatility, moving-average distance, candle range/body and past high/low drawdown. It does not pretend to consume missing investor flows, orderbook, events, volume signals or company forecasts. The separate Toss watch engine was not changed by this addition. Price-return bands are preset research policy, not guaranteed losses or optimized entry recommendations.
+가격 수익률, 변동성, 이동평균 이격, 봉 범위와 몸통, 과거 고점 대비 하락·저점 대비 반등을 쓰는 정규화 로지스틱 3분류 모델입니다. 없는 이벤트·기관 수급·거래량·호가 신호를 넣은 척하지 않습니다. 별도의 토스 감시기 고점 추적 로직은 이번 추가에서 수정하지 않았습니다.
 
-Sessions are split chronologically 60/20/20 into train, probability-temperature calibration and test. Labels crossing boundaries are purged. Scaling uses training observations only. The model remains frozen on the training part; it is not quietly refit on its test data. Non-overlapping test windows are used for accuracy, multiclass Brier/log loss and comparison with a smoothed training class-frequency baseline. Session bootstrap diagnostics do not control all multiple testing or establish live alpha. Research probabilities may be displayed even when the baseline is not beaten, but the lack of verified edge is explicitly marked. A high estimate is not investment success probability or strict-green approval.
+시간순 거래일을 학습 60%·확률 보정 20%·검증 20%로 분리하며, 경계를 넘어가는 결과 구간은 제거합니다. 스케일러와 모델은 학습 구간에만 맞추고 확률 보정도 검증 구간과 분리합니다. 검증에는 서로 겹치지 않는 타깃을 사용합니다. 방향 일치율, 브라이어/로그 오차, 단순 빈도 기준모델과의 차이, 거래일 단위 재표본 진단을 표시합니다. 여러 모델을 비교하는 데 따른 우연한 성과를 완전히 통제한 결과가 아니며 실거래 검증도 아닙니다.
 
-## Prospective ledger and public timing
+과거 검증에서 기준모델 우위 근거가 부족하면 그 사실을 표시합니다. 출력 확률은 모델이 추정한 세 방향의 분포이며 투자 성공확률·매수 승인·수익 보장이 아닙니다. 확률값을 현재의 점수나 목표가에서 임의로 만들지 않습니다.
 
-The append-only forecast ledger freezes issued_at, actual retrieval time, observed bar boundary, future target window, model hash, source-run ID, input features/hash, fixed class band and complete original probabilities. Duplicate IDs retain the original timestamp. After the interval closes, actual target open and close are compared with the previously frozen definition. Missing prices and invalid timing cannot count as success.
+## 수집기 재검수
 
-A separate delivery ledger records the first verified public HTTP response of the exact snapshot and JavaScript. This is proof of public availability, NOT human push-notification acknowledgement. Publicly late forecasts are excluded from the timely-forward summary. Research price observations are not executable trade returns. Initial forward baseline comparison and sufficient future performance history remain pending. Different model revisions must not be interpreted as independent market events.
+초기 실행의 한국 지수 배열 길이 오류는 거래일 달력 초기화를 여러 스레드에서 동시에 실행할 때 재현됐습니다. `stock_forecast_sources.py`에서 한국·미국 달력을 잠금 안에서 먼저 초기화해 공유하도록 수정했습니다. KOSPI 전용 raw-chart 우회 코드는 최종 버전에서 제거하고 모든 대상에 기존 yfinance history 경로를 사용합니다.
 
-## Operational boundaries
+5분봉 응답에 임시 현재가처럼 비정규 시각의 행이 섞이면 삭제합니다. 예를 들어 13:50:10을 13:50으로 반올림해 정상 봉으로 만들어내지 않습니다. UTC 정보 누락과 중복 봉도 거부합니다. 수집 실패는 가상 가격으로 대체하지 않습니다.
 
-GitHub schedules run at 17/47 past the hour in configured KR/US windows and can be delayed. The browser refreshes each minute; only the exact displayed target period is valid. Missing or stale data yields no_call. This is not a persistent minute-stream processor. Existing authenticated OpenDART is unaffected; disabled Toss configuration is not silently enabled.
+## 실제 사전 기록
 
-Model unit tests cover leakage, purging, future targets, session guards, unfinished bars, missing candles, duplicate ledger entries, calibration separation and later scoring. UI tests check invalid probabilities and temporal contracts. Synthetic fixtures exist only in test files; production has no synthetic-data fallback. Desktop/mobile browser checks use actual generated JSON. Exact public JSON, JavaScript hash and main radar integration are checked separately from repository publication.
+발행시각·실제 수신시각·관측 봉 종료·미래 타깃·모델 및 입력 해시·입력 피처·고정 판정 폭·원래 확률을 append-only 기록에 저장합니다. 같은 ID를 다시 생성해도 최초 발행시각을 바꾸지 않습니다. 결과 구간이 끝나야 실제 시가·종가와 대조합니다. 공개 사이트에서 정확히 같은 JSON과 코드가 확인된 시각은 별도 기록하며, 타깃 시작 후 공개된 예측을 적시 전달된 예측으로 집계하지 않습니다.
+
+공개 HTTP 확인은 사용자의 푸시 알림 수신을 뜻하지 않습니다. 가격 관찰 성과는 실제 체결·비용을 반영한 수익률도 아닙니다. 미래 검증 표본, 미래 기준모델 비교, 모델 변경 시 동일 사건 중복 집계 방지에 대한 추가 검증이 필요합니다. 과거 데이터는 현재 다시 내려받은 자료이므로 당시 제공된 원본 버전을 그대로 사용한 검증이라고 주장하지 않습니다.
+
+## 실행과 테스트
+
+설정된 한국·미국 시간대에 매시 17분·47분 예약으로 실행하며 지연될 수 있습니다. 화면 새로고침과 실제 수집 주기는 다릅니다. 자동 매매나 실시간 스트림 연결은 활성화하지 않습니다.
+
+모델 불변조건 26개, 화면 시각·확률 조건 9개, 거래일 달력 32회 동시 초기화와 분봉 경계 검사, 실제 JSON의 데스크톱·모바일 브라우저 검사를 포함합니다. 공개 JSON·JavaScript 해시·기존 레이더 삽입까지 별도 확인합니다. 테스트에만 합성 입력을 사용하며, 실제 예측 생성에는 합성 시세를 쓰지 않습니다.
