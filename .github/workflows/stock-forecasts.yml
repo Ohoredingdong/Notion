@@ -7,6 +7,7 @@ on:
       - 'scripts/stock_forecast_model.py'
       - 'scripts/stock_forecast_sources.py'
       - 'scripts/stock_forecast_learning.py'
+      - 'scripts/stock_forecast_directions.py'
       - 'scripts/run_stock_forecasts.py'
       - 'scripts/publish_stock_forecasts.py'
       - 'scripts/verify_stock_forecast_public.py'
@@ -41,29 +42,31 @@ jobs:
           python-version: '3.12'
       - name: Install model and session readers
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2' 'playwright==1.56.0'
-      - name: Test future targets, delayed feedback and rollback guards
+      - name: Test future targets, delayed feedback and directional promotion guards
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
-          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions -v
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
           node --check assets/stock-forecast-learning.js
+          node --check assets/stock-forecast-directions.js
           node scripts/test_stock_forecast_ui.cjs
-      - name: Evaluate frozen calls, learn known answers, then predict future targets
+      - name: Evaluate frozen calls, train direction-balanced shadows and learn known answers
         run: python scripts/run_stock_forecasts.py
-      - name: Test actual forecast and learning screens
+      - name: Test actual forecast and directional quality screens
         run: |
           python -m playwright install --with-deps chromium
           python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
           python scripts/test_stock_forecast_browser.py
           python scripts/test_stock_forecast_learning_browser.py
+          python scripts/test_stock_forecast_directions_browser.py
       - name: Publish forecast and learning state atomically
         run: python scripts/publish_stock_forecasts.py
       - name: Request public build
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
-      - name: Verify exact public predictions, learning report and code
+      - name: Verify exact public predictions, directional report and code
         run: python scripts/verify_stock_forecast_public.py
       - name: Preserve public availability timestamps
         run: python scripts/publish_stock_forecasts.py
@@ -80,4 +83,5 @@ jobs:
             scripts/stock_forecast_model.py
             scripts/stock_forecast_sources.py
             scripts/stock_forecast_learning.py
+            scripts/stock_forecast_directions.py
             scripts/run_stock_forecasts.py

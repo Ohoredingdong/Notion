@@ -15,6 +15,7 @@ import pandas as pd
 from stock_forecast_model import (VERSION, POLICY, normalise_history, fit_model,
                                   make_prediction, score_prediction, stamp, digest)
 import stock_forecast_learning as learning
+import stock_forecast_directions as directions
 UTC = timezone.utc
 DEFAULT = [
     ('^KS11', '코스피', 'KR'), ('^KQ11', '코스닥', 'KR'),
@@ -75,7 +76,13 @@ def process(spec, mode):
     try:
         bars, received = collect(spec, mode)
         fitted = fit_model(bars, mode)
+        try:
+            specialist_suite = directions.fit(bars, mode, fitted)
+        except Exception as exc:
+            specialist_suite = {'version': directions.VERSION, 'status': 'unavailable',
+                                'error_type': type(exc).__name__, 'candidates': {}}
         record = make_prediction(bars, fitted, symbol, market, mode, received)
+        record['directional_specialists'] = specialist_suite
         record['frozen_baseline_probabilities'] = learning.pdict(fitted['baseline'])
         record.update(name=name, source_url='https://finance.yahoo.com/quote/'+symbol,
                       collector='yfinance', provider_is_official_exchange=False,
@@ -147,7 +154,7 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
     learning.append_unique(root/'stock-forecast-outcomes.jsonl', fresh)
     outcomes = list(prior_outcomes.values())
     pairs, _ = learning.joined(old_records, outcomes, deliveries, now)
-    events = learning.select_variant(state, pairs, now)
+    events = directions.select_variants(state, pairs, now)
     events += learning.learn(state, pairs, now)
     ready, attempts = [], []
     first_by_event = {}
@@ -164,6 +171,7 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
                      'reason':'publication_window_missed'}
             else:
                 r = learning.augment(r, state, datetime.now(UTC))
+                r = directions.apply_variant(r, state)
         ready.append(label_validation(r))
         attempt={'version':learning.VERSION, 'run_id':run_id, 'symbol':r['symbol'],
                  'mode':r['mode'], 'checked_at':now.isoformat(), 'status':r['status'],
@@ -181,6 +189,13 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
     write(root/learning.STATE_FILE, state)
     evaluation = learning.report(list(frozen.values()), outcomes, deliveries,
                                   list(attempts_by_id.values()), state, events, datetime.now(UTC))
+    evaluation['directional_research'] = directions.report(
+        list(frozen.values()), outcomes, deliveries, ready, state, datetime.now(UTC))
+    evaluation['directional_research'].update(
+        current_uncertain_predictions=sum(bool((r.get('directional_signal') or {}).get('uncertain')) for r in ready),
+        successful_candidate_suites=sum((r.get('directional_specialists') or {}).get('status')=='shadow_only' for r in ready),
+        candidate_suite_errors=[{'symbol':r['symbol'],'mode':r['mode'],'type':r['directional_specialists'].get('error_type')}
+                                for r in ready if (r.get('directional_specialists') or {}).get('status')=='unavailable'])
     write(root/learning.REPORT_FILE, evaluation)
     for path in [ledger, root/'stock-forecast-outcomes.jsonl', root/'stock-forecast-deliveries.jsonl']:
         path.touch(exist_ok=True)
@@ -201,13 +216,16 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
                   'adaptive_groups':evaluation['learning']['adaptive_groups'],'report':learning.REPORT_FILE},
               'disclosures':['실제 과거 OHLC로 학습한 모델 추정치',
                   '공개 확인된 과거 예측을 채점한 뒤 새 예측에만 학습 반영',
+                  '상승·하락별 포착률·정밀도와 기존 모델을 같은 미래 구간에서 비교',
                   '100% 적중·수익 보장 아님; strict-green 변경 없음',
                   '지연·누락·미래 타깃 종료 전에는 채점하지 않음'],
               'schedule_note':'정기 실행은 지연 가능. 실시간 연결과 사용자 푸시 수신은 미확인.'}
     write(root/'stock-direction-forecast.json',artifact)
     print(json.dumps({'counts':artifact['counts'],'scored':performance['samples'],
                       'correct':performance['correct'],'training_updates':state['training_updates'],
-                      'promotions':evaluation['learning']['promotions']},ensure_ascii=False),flush=True)
+                      'promotions':evaluation['learning']['promotions'],
+                      'directional_suites':evaluation['directional_research']['successful_candidate_suites'],
+                      'directional_errors':evaluation['directional_research']['candidate_suite_errors']},ensure_ascii=False),flush=True)
     return artifact
 
 

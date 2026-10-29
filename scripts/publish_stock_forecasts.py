@@ -10,7 +10,8 @@ FILES=['stock-direction-forecast.json','stock-forecast-ledger.jsonl',
        'stock-forecast-outcomes.jsonl','stock-forecast-deliveries.jsonl',
        STATE_FILE,REPORT_FILE,ATTEMPTS_FILE,EVENTS_FILE]
 TAGS=['<script src="./assets/stock-forecast.js?v=direction-forecast-1.0" defer></script>',
-      '<script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>']
+      '<script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>',
+      '<script src="./assets/stock-forecast-directions.js?v=direction-specialists-1.0" defer></script>']
 HTML=['stock-value-radar.html','assets/stock-radar-v8.html','stock-forecast.html']
 
 def git(root,*args,check=True):
