@@ -19,6 +19,12 @@ jobs:
           python-version: '3.12'
       - name: Independent audit self-tests and timestamp counterexample
         run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Install existing forecast regression dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Existing prospective, direction, learning and bounded controller regressions
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_directions test_stock_autopilot -v
       - name: Reread pinned records without any edits or publication
         run: |
           python scripts/audit_stock_forecast_independent.py --output /tmp/research-timing-audit.json
