@@ -1,7 +1,7 @@
 {
   "version": "direction-forecast-1.0",
-  "generated_at": "2026-10-29T06:57:02.115897+00:00",
-  "source_run_id": "40832214666",
+  "generated_at": "2026-10-29T07:16:03.127188+00:00",
+  "source_run_id": "40834227328",
   "policy": {
     "daily_floor_pct": 0.3,
     "intraday_floor_pct": 0.15,
@@ -23,8 +23,8 @@
   "refresh_mode": "scheduled_best_effort_not_realtime",
   "coverage": 12,
   "counts": {
-    "research_prediction": 11,
-    "no_call": 13
+    "research_prediction": 12,
+    "no_call": 12
   },
   "records": [
     {
@@ -684,15 +684,134 @@
     },
     {
       "symbol": "^KS11",
-      "name": "코스피",
       "market": "KR",
       "mode": "daily",
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
-      "reason": "YFRateLimitError: Too Many Requests. Rate limited. Try after a while.",
-      "issued_at": "2026-10-29T06:56:43.120473+00:00",
-      "recommendation": false
+      "version": "direction-forecast-1.0",
+      "issued_at": "2026-10-29T06:45:01.700336+00:00",
+      "received_at": "2026-10-29T06:44:46.507688+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "6e404a09ab820bdb38e24d1c808b6b37eea32560052d789b4e971ed7ea846a8c",
+      "trained_through": "2024-11-05T06:30:00+00:00",
+      "calibrated_through": "2025-11-03T06:30:00+00:00",
+      "training_samples": 719,
+      "calibration_samples": 239,
+      "validation": {
+        "test_samples": 240,
+        "test_sessions": 240,
+        "accuracy": 0.375,
+        "baseline_accuracy": 0.3875,
+        "brier_loss": 0.6855701042151369,
+        "baseline_brier_loss": 0.6659102651657575,
+        "log_loss": 1.1417637159177283,
+        "baseline_log_loss": 1.0982014059452347,
+        "brier_improvement": -0.01965983904937951,
+        "session_bootstrap_95pct_interval": [
+          -0.06023088136707426,
+          0.01661610924987482
+        ],
+        "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
+        "calibration_ece": 0.16867353586755926,
+        "test_start": "2025-11-04T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
+        "above_baseline_in_this_holdout": false,
+        "validation_status": "no_reliable_edge",
+        "live_success_rate": null,
+        "live_validated": false,
+        "confusion_matrix": [
+          [
+            6,
+            61,
+            4
+          ],
+          [
+            10,
+            78,
+            5
+          ],
+          [
+            6,
+            64,
+            6
+          ]
+        ]
+      },
+      "recommendation": false,
+      "strict_green_override": false,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.25844935116795364,
+        "flat": 0.49904416862499806,
+        "up": 0.2425064802070483
+      },
+      "direction": "flat",
+      "delivery_verified": false,
+      "source_type": "provider_historical_prices",
+      "policy_revision": "provider-latency-30m-v1",
+      "input_age_seconds": 887.648498,
+      "lead_minutes_from_observation": null,
+      "history_is_point_in_time_vintage": false,
+      "limitations": [
+        "가격 기반 연구 모델",
+        "이벤트·수급·호가 미포함",
+        "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
+        "실사 통과·상승수익 보장 아님"
+      ],
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.1321128493570258,
+      "origin_reference_price": 5929.97998046875,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.013714891415316677,
+        "r3": 0.08419641163328939,
+        "r6": 0.03387924300344136,
+        "r12": -0.017458824340350843,
+        "r20": -0.13693146369957432,
+        "vol20": 0.03234608141020074,
+        "ma5": 0.03669058318395657,
+        "ma20": -0.02807712210191704,
+        "range": 0.04758699731460874,
+        "body": -0.014498428054833187,
+        "drawdown20": -0.15823167781714398,
+        "rebound20": 0.11760315762534668
+      },
+      "input_sha256": "d017f604badc32a15f6c47f82a7d71144282f1c14ee42eb4248ba90bc1ae6af8",
+      "id": "22a4ab96bc34260799415bf2cf62b5e31e9a0e604215bbd619081bdc552996bf",
+      "frozen_baseline_probabilities": {
+        "down": 0.32132963988919666,
+        "flat": 0.41274238227146814,
+        "up": 0.2659279778393352
+      },
+      "name": "코스피",
+      "source_url": "https://finance.yahoo.com/quote/^KS11",
+      "collector": "yfinance",
+      "provider_is_official_exchange": false,
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "3ca130707a18f879252c11ac1bf55e1cf967082bbc799798e85cce806ab67bc4",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.25844935116795364,
+          "flat": 0.49904416862499806,
+          "up": 0.2425064802070483
+        },
+        "challenger_probabilities": {
+          "down": 0.25844935116795364,
+          "flat": 0.49904416862499806,
+          "up": 0.24250648020704832
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "AAPL",
@@ -1323,11 +1442,11 @@
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:52.804875+00:00",
-      "received_at": "2026-10-29T06:56:51.391162+00:00",
+      "issued_at": "2026-10-29T07:15:57.735194+00:00",
+      "received_at": "2026-10-29T07:15:56.763221+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "9956933fec0faa038ac5b91a1615c0c463b27401e036a6490cbef0492388df5c",
+      "model_sha256": "47b7b487aababc95851e483ecf61d91481a130c17bc5d145b2ad9b6a1048e558",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2140,
@@ -1335,19 +1454,19 @@
       "validation": {
         "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.4152542372881356,
-        "baseline_accuracy": 0.3220338983050847,
-        "brier_loss": 0.6565826394643673,
-        "baseline_brier_loss": 0.6801063725494773,
-        "log_loss": 1.089080528013732,
-        "baseline_log_loss": 1.1175309469133805,
-        "brier_improvement": 0.023523733085109966,
+        "accuracy": 0.4067796610169492,
+        "baseline_accuracy": 0.3135593220338983,
+        "brier_loss": 0.6622270606060165,
+        "baseline_brier_loss": 0.681912181333802,
+        "log_loss": 1.0972281049339971,
+        "baseline_log_loss": 1.1201089840001819,
+        "brier_improvement": 0.019685120727785273,
         "session_bootstrap_95pct_interval": [
-          -0.008991472517936904,
-          0.06061375502207621
+          -0.01449998135657172,
+          0.05651783111639486
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.0575494582183361,
+        "calibration_ece": 0.0870445978411411,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1357,18 +1476,18 @@
         "confusion_matrix": [
           [
             15,
-            19,
+            20,
             7
           ],
           [
-            7,
-            29,
+            8,
+            27,
             2
           ],
           [
-            11,
+            10,
             23,
-            5
+            6
           ]
         ]
       },
@@ -1380,7 +1499,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3412.804875,
+      "input_age_seconds": 4557.735194,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1392,28 +1511,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.29398040130657954,
-        "flat": 0.41763882407839475,
-        "up": 0.28838077461502565
+        "down": 0.29444703686420903,
+        "flat": 0.4167055529631358,
+        "up": 0.28884741017265514
       },
       "name": "SK하이닉스",
       "source_url": "https://finance.yahoo.com/quote/000660.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "acf734a49448a9f6fa35ec1c3372a755fd6743b83d3953d3e35de21a6d1afb58"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "f74727e3aae5cbd63d73c894948309d1cfe125966f854bf22cae6c1cff7bb578"
     },
     {
       "symbol": "005930.KS",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:51.310729+00:00",
-      "received_at": "2026-10-29T06:56:49.704877+00:00",
+      "issued_at": "2026-10-29T07:15:56.671094+00:00",
+      "received_at": "2026-10-29T07:15:55.848107+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "b17127a76fb439ce4b1b6b4c44433b7c0bc4f4378e9c1e5fc693d701b9c302d1",
+      "model_sha256": "cf11f4c7e113d2c444f1e39775112c66387c47add41759896f7410480165fb21",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2140,
@@ -1421,19 +1540,19 @@
       "validation": {
         "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.3983050847457627,
+        "accuracy": 0.3728813559322034,
         "baseline_accuracy": 0.423728813559322,
-        "brier_loss": 0.6416008542816312,
-        "baseline_brier_loss": 0.6570437247338337,
-        "log_loss": 1.06289920715175,
-        "baseline_log_loss": 1.0854930805580416,
-        "brier_improvement": 0.015442870452202401,
+        "brier_loss": 0.640472835797222,
+        "baseline_brier_loss": 0.6579746781167027,
+        "log_loss": 1.060755611832547,
+        "baseline_log_loss": 1.0871318678707151,
+        "brier_improvement": 0.01750184231948047,
         "session_bootstrap_95pct_interval": [
-          -0.02293003464842089,
-          0.05583102056295176
+          -0.014859903754868625,
+          0.05033872430788076
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08953514310843169,
+        "calibration_ece": 0.11193154576422731,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1442,19 +1561,19 @@
         "live_validated": false,
         "confusion_matrix": [
           [
-            3,
-            24,
-            9
+            2,
+            27,
+            8
           ],
           [
             1,
-            39,
-            10
+            38,
+            11
           ],
           [
             3,
             24,
-            5
+            4
           ]
         ]
       },
@@ -1466,7 +1585,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3411.310729,
+      "input_age_seconds": 4556.671094,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1478,28 +1597,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.2594493700419972,
-        "flat": 0.4400373308446104,
-        "up": 0.3005132991133924
+        "down": 0.25758282781147923,
+        "flat": 0.44283714419038733,
+        "up": 0.29958002799813344
       },
       "name": "삼성전자",
       "source_url": "https://finance.yahoo.com/quote/005930.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "e26d1915e0a2aa596ad5648139e705afe44afdb02e474ac1e0e2ddc104eb1382"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "d6adf6a881c4e8de1368a92ebe64aa7bdc5d24927b22edddc6a8a3f34bdc3488"
     },
     {
       "symbol": "035420.KS",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:55.493367+00:00",
-      "received_at": "2026-10-29T06:56:52.862485+00:00",
+      "issued_at": "2026-10-29T07:15:58.483049+00:00",
+      "received_at": "2026-10-29T07:15:57.600081+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "be40f1925dd6e48e8e9d325e266d460daf0c9ecaa663cf3fa9bfcaa545647336",
+      "model_sha256": "f6d1596e8b0f4368d5ffbe881dbabf61908a2cc163a90ef0fed876a15e2bfc39",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2140,
@@ -1507,19 +1626,19 @@
       "validation": {
         "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.4915254237288136,
+        "accuracy": 0.5084745762711864,
         "baseline_accuracy": 0.5169491525423728,
-        "brier_loss": 0.5978361017166317,
-        "baseline_brier_loss": 0.6156633144715067,
-        "log_loss": 1.0133058720727242,
-        "baseline_log_loss": 1.024498443135176,
-        "brier_improvement": 0.017827212754874706,
+        "brier_loss": 0.5981472118953677,
+        "baseline_brier_loss": 0.6162016225817052,
+        "log_loss": 1.0184365459810352,
+        "baseline_log_loss": 1.025518796558374,
+        "brier_improvement": 0.018054410686337296,
         "session_bootstrap_95pct_interval": [
-          -0.026153949569569405,
-          0.05828652859215182
+          -0.027328537452241418,
+          0.06256142694717222
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07847915353602948,
+        "calibration_ece": 0.07453199743064083,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1528,18 +1647,18 @@
         "live_validated": false,
         "confusion_matrix": [
           [
-            7,
-            27,
-            7
-          ],
-          [
-            5,
-            51,
+            8,
+            28,
             5
           ],
           [
-            2,
-            14,
+            5,
+            52,
+            4
+          ],
+          [
+            1,
+            15,
             0
           ]
         ]
@@ -1552,7 +1671,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3415.493367,
+      "input_age_seconds": 4558.483049,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1564,28 +1683,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.27718152123191786,
+        "down": 0.2757816145590294,
         "flat": 0.4666355576294914,
-        "up": 0.25618292113859076
+        "up": 0.25758282781147923
       },
       "name": "NAVER",
       "source_url": "https://finance.yahoo.com/quote/035420.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "09239d27dc3d94e836106cb23d2b574d1ab09c7825ae4ffe72d00ead787b034f"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "6fc95a6fdb629e71d713559f5dca551029077ad9ff96b7aa54db314b881b2dbc"
     },
     {
       "symbol": "403870.KQ",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:55.447349+00:00",
-      "received_at": "2026-10-29T06:56:54.209172+00:00",
+      "issued_at": "2026-10-29T07:15:59.465708+00:00",
+      "received_at": "2026-10-29T07:15:58.581690+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "049f3b85a49dde4f5ea3422d31ad3d5f9916d93cce5ba8851eabbf2a97273174",
+      "model_sha256": "73b8649298415f8bac8bbf897f0dcad2d0992eb8668373e360eaacb3bdc7ec40",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2140,
@@ -1595,17 +1714,17 @@
         "test_sessions": 12,
         "accuracy": 0.423728813559322,
         "baseline_accuracy": 0.4322033898305085,
-        "brier_loss": 0.6118933246311775,
+        "brier_loss": 0.6126380790882575,
         "baseline_brier_loss": 0.6572368494161628,
-        "log_loss": 1.0228591003112453,
+        "log_loss": 1.0238003805815332,
         "baseline_log_loss": 1.0868704617351963,
-        "brier_improvement": 0.04534352478498508,
+        "brier_improvement": 0.044598770327905234,
         "session_bootstrap_95pct_interval": [
-          0.016490590478888727,
-          0.08120571772112828
+          0.015526006142930676,
+          0.08001164703969514
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08302686300750979,
+        "calibration_ece": 0.08298506189877693,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1638,7 +1757,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3415.447349,
+      "input_age_seconds": 4559.465708,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1658,20 +1777,20 @@
       "source_url": "https://finance.yahoo.com/quote/403870.KQ",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "f6bf5afa6d4418968493e3e22528d56bb3da7da9a6a3a747925092bb13bf5440"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "0cac91682e909686a11e35e0f5ad93a533f85cc358c31bd373ce0540a95878a4"
     },
     {
       "symbol": "^KQ11",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:46.378681+00:00",
-      "received_at": "2026-10-29T06:56:44.800457+00:00",
+      "issued_at": "2026-10-29T07:15:53.826738+00:00",
+      "received_at": "2026-10-29T07:15:53.018363+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "cfffe0c7e99a5699b4e512386b458938e7a27e28c65c3f8134e4c1f7685b7505",
+      "model_sha256": "7a3d53eea3cf54291e8918f739b3c044eee562bcea8859f80fa058b98381828e",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2140,
@@ -1681,17 +1800,17 @@
         "test_sessions": 12,
         "accuracy": 0.5083333333333333,
         "baseline_accuracy": 0.48333333333333334,
-        "brier_loss": 0.6124793750514603,
+        "brier_loss": 0.6124819449474763,
         "baseline_brier_loss": 0.6357103330561391,
-        "log_loss": 1.0213569672450833,
+        "log_loss": 1.021393113297296,
         "baseline_log_loss": 1.054878735035612,
-        "brier_improvement": 0.02323095800467885,
+        "brier_improvement": 0.023228388108662863,
         "session_bootstrap_95pct_interval": [
-          -0.008915797044355809,
-          0.05074424303932109
+          -0.008974449761821346,
+          0.05077762016170331
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.0533224170651603,
+        "calibration_ece": 0.053321450614045,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1724,7 +1843,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3406.378681,
+      "input_age_seconds": 4553.826738,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1744,20 +1863,20 @@
       "source_url": "https://finance.yahoo.com/quote/^KQ11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "da59daef352cc8bc68aeac8499ca6fc909ca3cf81767e8f464a1d928af726ff9"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "2d0fe314e866207c9e1ee90d61bd4ea7e977d6e8b77491d7b40b9aea57229167"
     },
     {
       "symbol": "^KS11",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:45.949421+00:00",
-      "received_at": "2026-10-29T06:56:43.329691+00:00",
+      "issued_at": "2026-10-29T07:15:52.969253+00:00",
+      "received_at": "2026-10-29T07:15:52.094774+00:00",
       "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
-      "model_sha256": "f24501546502986475be46b49f51baf2c731e338a7f1ce43e459612fa41b49f1",
+      "model_sha256": "543a72e86e6e28e49e2ef66729ed24357cd6480bbe6f524a0c05602ce6e532a9",
       "trained_through": "2026-09-21T06:00:00+00:00",
       "calibrated_through": "2026-10-13T06:00:00+00:00",
       "training_samples": 2115,
@@ -1767,17 +1886,17 @@
         "test_sessions": 12,
         "accuracy": 0.35,
         "baseline_accuracy": 0.3333333333333333,
-        "brier_loss": 0.6798712876632692,
+        "brier_loss": 0.6799322670210312,
         "baseline_brier_loss": 0.6896364940645451,
-        "log_loss": 1.118952342059057,
+        "log_loss": 1.1190269037814298,
         "baseline_log_loss": 1.1315506639883561,
-        "brier_improvement": 0.009765206401275801,
+        "brier_improvement": 0.009704227043514068,
         "session_bootstrap_95pct_interval": [
-          -0.03221545010474831,
-          0.054353114350541146
+          -0.03230788413142712,
+          0.05437414052369794
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.14107616093121797,
+        "calibration_ece": 0.1411540042220455,
         "test_start": "2026-10-14T00:05:00+00:00",
         "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1810,7 +1929,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 3405.949421,
+      "input_age_seconds": 4552.969253,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1830,20 +1949,20 @@
       "source_url": "https://finance.yahoo.com/quote/^KS11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "81d45a1d2869356deec3a9769ab2db51e6dcae5f11472632104134ca808b87b7"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "d6caf4275d64d87d8f077a798c5b439eeada8ea91be46618d7c30af7bc0a43c4"
     },
     {
       "symbol": "AAPL",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:57.226936+00:00",
-      "received_at": "2026-10-29T06:56:55.980948+00:00",
+      "issued_at": "2026-10-29T07:16:00.414034+00:00",
+      "received_at": "2026-10-29T07:15:59.440397+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "1ebd6cc1ac2499f9e880f01e4d24cad1a4ed8f7a2cbc7310db2bbff3cf22ed8e",
+      "model_sha256": "224e5bb2ffd3f82d50b009b6df974d5cfe228977bcc11d224d951918ce1fbe65",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2356,
@@ -1853,17 +1972,17 @@
         "test_sessions": 12,
         "accuracy": 0.5227272727272727,
         "baseline_accuracy": 0.5378787878787878,
-        "brier_loss": 0.6145612905366394,
-        "baseline_brier_loss": 0.6064379399482163,
-        "log_loss": 1.0266519582498548,
-        "baseline_log_loss": 1.0159477188369683,
-        "brier_improvement": -0.008123350588423135,
+        "brier_loss": 0.611593630963417,
+        "baseline_brier_loss": 0.6062261490924744,
+        "log_loss": 1.0227431582652997,
+        "baseline_log_loss": 1.015421475873997,
+        "brier_improvement": -0.005367481870942404,
         "session_bootstrap_95pct_interval": [
-          -0.03172415659285907,
-          0.016980507964334198
+          -0.025550834403065506,
+          0.0186053447243904
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07157681592532278,
+        "calibration_ece": 0.0598329098727448,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1882,8 +2001,8 @@
             2
           ],
           [
-            2,
-            24,
+            1,
+            25,
             0
           ]
         ]
@@ -1896,7 +2015,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39417.226936,
+      "input_age_seconds": 40560.414034,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1908,28 +2027,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.20983467571004663,
-        "flat": 0.5540483255616787,
-        "up": 0.23611699872827469
+        "down": 0.21068249258160238,
+        "flat": 0.5553200508690123,
+        "up": 0.23399745654938534
       },
       "name": "Apple",
       "source_url": "https://finance.yahoo.com/quote/AAPL",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "7f8d47576777785bb5033f49be0ac810cd9918bec0f31b2d0980a54b769beff2"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "c98925194638d1c7e4b84e29a2684f03fb0da7a0aac6e45fcf539765a33ea7d9"
     },
     {
       "symbol": "MSFT",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:58.904742+00:00",
-      "received_at": "2026-10-29T06:56:57.609449+00:00",
+      "issued_at": "2026-10-29T07:16:01.495445+00:00",
+      "received_at": "2026-10-29T07:16:00.538101+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "19873975410837fcb0adb1b9829f8b3a7fee6dedde8257acee6c0eeda09f5d1b",
+      "model_sha256": "1835666bdea3271a96e98b999cbcd205a6d5a69f046428dc344b25cdae1c16e9",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2356,
@@ -1937,19 +2056,19 @@
       "validation": {
         "test_samples": 132,
         "test_sessions": 12,
-        "accuracy": 0.5833333333333334,
+        "accuracy": 0.5681818181818182,
         "baseline_accuracy": 0.6060606060606061,
-        "brier_loss": 0.5739378850385524,
-        "baseline_brier_loss": 0.5591963187886623,
-        "log_loss": 0.9755005322817343,
-        "baseline_log_loss": 0.9493154387450793,
-        "brier_improvement": -0.014741566249890202,
+        "brier_loss": 0.5735116697097561,
+        "baseline_brier_loss": 0.559250244633454,
+        "log_loss": 0.9744470685442753,
+        "baseline_log_loss": 0.949380386755822,
+        "brier_improvement": -0.014261425076302065,
         "session_bootstrap_95pct_interval": [
-          -0.03150826631262164,
-          0.001011653274298362
+          -0.03128899619574674,
+          0.0015045549818555853
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08890413939323412,
+        "calibration_ece": 0.07747116257727256,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -1963,9 +2082,9 @@
             3
           ],
           [
-            2,
-            76,
-            2
+            3,
+            74,
+            3
           ],
           [
             1,
@@ -1982,7 +2101,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39418.904742,
+      "input_age_seconds": 40561.495445,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1994,28 +2113,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.20983467571004663,
-        "flat": 0.5557439593047901,
+        "down": 0.2102585841458245,
+        "flat": 0.5553200508690123,
         "up": 0.2344213649851632
       },
       "name": "Microsoft",
       "source_url": "https://finance.yahoo.com/quote/MSFT",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "4edafbb094efa23b9f42c1360fe8e4fa4306946b32020e00e9b791c3fccb9179"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "89049ed3fc9e9b1b7326c1fc6a12bdfffedc9e68edc7326cf73a0ef23ebb10a6"
     },
     {
       "symbol": "NVDA",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:57:00.994015+00:00",
-      "received_at": "2026-10-29T06:56:59.378239+00:00",
+      "issued_at": "2026-10-29T07:16:02.435157+00:00",
+      "received_at": "2026-10-29T07:16:01.583103+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "4d34014e8e43855578bb097b48d4128d6880297785b5d0f0a8b356c932e8895b",
+      "model_sha256": "0ab0248ad44ada999758b86a064e77697c0937d6e717990a771805acaa4d3528",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2356,
@@ -2023,19 +2142,19 @@
       "validation": {
         "test_samples": 132,
         "test_sessions": 12,
-        "accuracy": 0.5303030303030303,
-        "baseline_accuracy": 0.5378787878787878,
-        "brier_loss": 0.5915543431260016,
-        "baseline_brier_loss": 0.6027127057790607,
-        "log_loss": 0.9929315834393064,
-        "baseline_log_loss": 1.0078831735202818,
-        "brier_improvement": 0.011158362653058952,
+        "accuracy": 0.5227272727272727,
+        "baseline_accuracy": 0.5454545454545454,
+        "brier_loss": 0.5897786783879728,
+        "baseline_brier_loss": 0.5980874550869129,
+        "log_loss": 0.9891165549447702,
+        "baseline_log_loss": 1.0012224224398123,
+        "brier_improvement": 0.008308776698940038,
         "session_bootstrap_95pct_interval": [
-          -0.03720868406881326,
-          0.057446935822543746
+          -0.03808022741825385,
+          0.052596342132584
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.03418164250790832,
+        "calibration_ece": 0.05920826649222693,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -2044,18 +2163,18 @@
         "live_validated": false,
         "confusion_matrix": [
           [
-            4,
+            3,
             30,
-            0
-          ],
-          [
-            5,
-            65,
             1
           ],
           [
+            7,
+            65,
+            0
+          ],
+          [
             3,
-            23,
+            22,
             1
           ]
         ]
@@ -2068,7 +2187,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39420.994015,
+      "input_age_seconds": 40562.435157,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2080,28 +2199,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.258160237388724,
-        "flat": 0.5273420941076727,
-        "up": 0.21449766850360322
+        "down": 0.25943196269605767,
+        "flat": 0.5252225519287834,
+        "up": 0.21534548537515896
       },
       "name": "NVIDIA",
       "source_url": "https://finance.yahoo.com/quote/NVDA",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "b97ce1894fd960668bf2ca3fe665c5bf644e6b90879c6df601211b32ef69f2b0"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "3ba4af9258e83594f7faf9317c4e22ed6fe893aafa26a112c89cd0b2bf818d1f"
     },
     {
       "symbol": "ON",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:57:02.060490+00:00",
-      "received_at": "2026-10-29T06:57:01.064561+00:00",
+      "issued_at": "2026-10-29T07:16:03.083051+00:00",
+      "received_at": "2026-10-29T07:16:02.526745+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "de1993dec17db4f6436ec2d1e71ecc9ac41083b3c1ba6a4980d7cab784d03ec0",
+      "model_sha256": "5cd615576d0517b996bdb0d04097f3f8878f8ff91c9e54aca72128742c04a0f6",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2356,
@@ -2111,17 +2230,17 @@
         "test_sessions": 12,
         "accuracy": 0.3712121212121212,
         "baseline_accuracy": 0.36363636363636365,
-        "brier_loss": 0.651364241935442,
-        "baseline_brier_loss": 0.6744715219563109,
-        "log_loss": 1.0785898684364137,
-        "baseline_log_loss": 1.1092583162509126,
-        "brier_improvement": 0.023107280020869113,
+        "brier_loss": 0.65112348461911,
+        "baseline_brier_loss": 0.6746701049824512,
+        "log_loss": 1.0781222998868416,
+        "baseline_log_loss": 1.109527146561959,
+        "brier_improvement": 0.023546620363341264,
         "session_bootstrap_95pct_interval": [
-          -0.0047398685359586,
-          0.04739322744522332
+          -0.004758395396358747,
+          0.04841664956944119
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07260481556757041,
+        "calibration_ece": 0.0638121135627898,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -2130,14 +2249,14 @@
         "live_validated": false,
         "confusion_matrix": [
           [
-            3,
+            2,
             31,
-            6
+            7
           ],
           [
-            5,
-            36,
-            7
+            3,
+            37,
+            8
           ],
           [
             3,
@@ -2154,7 +2273,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39422.06049,
+      "input_age_seconds": 40563.083051,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2166,28 +2285,28 @@
       "reason": "insufficient_regular_session_time",
       "target": null,
       "frozen_baseline_probabilities": {
-        "down": 0.281475201356507,
-        "flat": 0.44128868164476476,
-        "up": 0.2772361169987283
+        "down": 0.2810512929207291,
+        "flat": 0.4421364985163205,
+        "up": 0.2768122085629504
       },
       "name": "ON Semiconductor",
       "source_url": "https://finance.yahoo.com/quote/ON",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "a62af0b348389b4536b84032d4afb5674388c42c6dad040de7e04deb54d5a976"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "e7a1fd2c8a55b33835ed5b1cd802bc43c5c36ea1013e94f77e056bda41cdd3c2"
     },
     {
       "symbol": "^GSPC",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:47.985644+00:00",
-      "received_at": "2026-10-29T06:56:46.445687+00:00",
+      "issued_at": "2026-10-29T07:15:54.822636+00:00",
+      "received_at": "2026-10-29T07:15:53.901621+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "6fa2691e4ce14a3c9cb29555a07a7bdd081288c1e27b3b42e5a0245e897dc3ca",
+      "model_sha256": "e63724214422fa3ebe99a46b14119df092976ef83bc1d034c1f681e703fdd711",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2343,
@@ -2197,17 +2316,17 @@
         "test_sessions": 12,
         "accuracy": 0.7803030303030303,
         "baseline_accuracy": 0.7803030303030303,
-        "brier_loss": 0.34857627647913514,
+        "brier_loss": 0.34863066762578043,
         "baseline_brier_loss": 0.38518218666013354,
-        "log_loss": 0.6342875032657442,
+        "log_loss": 0.6343281316471839,
         "baseline_log_loss": 0.7298357547094722,
-        "brier_improvement": 0.036605910180998374,
+        "brier_improvement": 0.036551519034353094,
         "session_bootstrap_95pct_interval": [
-          0.00554376336044418,
-          0.07048813924096452
+          0.005500061820675546,
+          0.07037918787583103
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08410432988998616,
+        "calibration_ece": 0.08408235452467122,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -2240,7 +2359,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39407.985644,
+      "input_age_seconds": 40554.822636,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2260,20 +2379,20 @@
       "source_url": "https://finance.yahoo.com/quote/^GSPC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "2ce27157d91439f36f6a67984294f571e284d9db0490a9f2cb33671b79a8888d"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "1004f916738d5ccab23378559641c830d27e69427031561c72e12a42de5be1e8"
     },
     {
       "symbol": "^IXIC",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T06:56:50.922281+00:00",
-      "received_at": "2026-10-29T06:56:48.054651+00:00",
+      "issued_at": "2026-10-29T07:15:55.797730+00:00",
+      "received_at": "2026-10-29T07:15:54.873572+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "8457a111439457ba032f834acce552ca6e0beaa366993e03a9b0a1ffb8805782",
+      "model_sha256": "a75f2d46b452df4ef529768814a85254cd7e757aeb5279aac2015cd42955c429",
       "trained_through": "2026-09-24T20:00:00+00:00",
       "calibrated_through": "2026-10-12T20:00:00+00:00",
       "training_samples": 2356,
@@ -2283,17 +2402,17 @@
         "test_sessions": 12,
         "accuracy": 0.6590909090909091,
         "baseline_accuracy": 0.6590909090909091,
-        "brier_loss": 0.49583246637679873,
+        "brier_loss": 0.4957929922498134,
         "baseline_brier_loss": 0.5307429373384243,
-        "log_loss": 0.8692090757312373,
+        "log_loss": 0.8691692064586486,
         "baseline_log_loss": 0.9191099964288555,
-        "brier_improvement": 0.034910470961625535,
+        "brier_improvement": 0.03494994508861098,
         "session_bootstrap_95pct_interval": [
-          -0.001947656775819517,
-          0.07134251238811293
+          -0.0019122115805593211,
+          0.07137174106889733
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07191978500470168,
+        "calibration_ece": 0.07285161429982931,
         "test_start": "2026-10-13T13:35:00+00:00",
         "test_end": "2026-10-28T19:35:00+00:00",
         "above_baseline_in_this_holdout": false,
@@ -2326,7 +2445,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 39410.922281,
+      "input_age_seconds": 40555.79773,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2346,9 +2465,9 @@
       "source_url": "https://finance.yahoo.com/quote/^IXIC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40832214666",
-      "source_commit": "7f030a18b7efe89af7459f8913f88d7c46550bb1",
-      "history_sha256": "3bd0e181616ea7d2a1293759cdc43b1c33bd09cf48feb510281b770afc96664c"
+      "source_run_id": "40834227328",
+      "source_commit": "32562189f50e62c148c60b4e315ee8f587879e82",
+      "history_sha256": "6834cf2e55feac06848cda306a1aba9324a258a6a5d789265363210f74a12958"
     }
   ],
   "forward_evaluation": {
