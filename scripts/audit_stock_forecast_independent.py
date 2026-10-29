@@ -70,8 +70,25 @@ def audit(records, outcomes, deliveries, cutoff):
     for d in deliveries:
         if d.get('status') != 'public_verified':
             continue
-        seen = ts(d['verified_at'])
+        # Public verification cannot predate the snapshot nor prove a forecast
+        # that did not yet exist when that snapshot was generated.
+        try:
+            seen = ts(d['verified_at'])
+            snapshot = ts(d['snapshot_generated_at'])
+        except (KeyError, ValueError, TypeError):
+            errors.append({'id': d.get('verification_id'), 'error': 'invalid_public_snapshot_timestamp'})
+            continue
+        if snapshot > seen:
+            errors.append({'id': d.get('verification_id'), 'error': 'snapshot_generated_after_verification'})
+            continue
         for rid in d.get('prediction_ids', []):
+            forecast = by_id.get(rid)
+            if forecast is None:
+                errors.append({'id': rid, 'error': 'public_snapshot_unknown_prediction_id'})
+                continue
+            if ts(forecast['issued_at']) > snapshot:
+                errors.append({'id': rid, 'error': 'prediction_issued_after_public_snapshot'})
+                continue
             if rid not in public or seen < public[rid]:
                 public[rid] = seen
     actuals = {}
@@ -177,7 +194,8 @@ class SelfTests(unittest.TestCase):
              'target': base['target'], 'evaluated_at': '2026-10-29T14:31:00Z', 'target_open': 100.,
              'target_close': 99., 'return_pct': -1., 'actual': 'down', 'predicted': 'flat',
              'correct': False, 'brier_loss': 1.04}
-        d = {'status': 'public_verified', 'verified_at': '2026-10-29T13:37:00Z', 'prediction_ids': ['test-only']}
+        d = {'status': 'public_verified', 'snapshot_generated_at': '2026-10-29T13:36:30Z',
+             'verified_at': '2026-10-29T13:37:00Z', 'prediction_ids': ['test-only']}
         now = ts('2026-10-29T15:00:00Z')
         good = audit([base], [o], [d], now)
         self.assertEqual(good['scored'], 1); self.assertEqual(good['correct'], 0)
