@@ -25,3 +25,15 @@ Candidate experiment count: 1. No optimization to observed outcomes. No promotio
 ## Acceptance status
 
 Direction/after-cost timing/untouched holdout/human receipt: **unproven** regardless of this engineering test. Notify user only if the separate timing-utility acceptance contract is fully met; this integrity patch is not a completion notice.
+
+## Executed results (2026-10-29)
+
+- **Counterexample reproduced before the fix:** on branch commit `0687872c562cd5ede12e4416ac4cdf6ce3950f8c`, [GitHub Actions failure 40881522849](https://github.com/Ohoredingdong/Notion/actions/runs/40881522849) shows `test_snapshot_created_before_forecast_cannot_be_claimed_as_public` failed with `AssertionError: 1 != 0`. A forecast issued after snapshot generation was incorrectly accepted as publicly available.
+- **Minimal patch:** `scripts/audit_stock_forecast_independent.py` checks both `snapshot_generated_at <= verified_at` and each included forecast's `issued_at <= snapshot_generated_at`. Any invalid or missing timestamp is an explicit integrity error; do not count it as a timely public forecast. Historical rows are untouched. Previous ordinary synthetic public fixture now includes a coherent snapshot-generation timestamp.
+- **Regression and independent recomputation passed:** at commit `d031584d563909c122b4d5e1323659c4d523d72e`, [GitHub Actions success 40881748652](https://github.com/Ohoredingdong/Notion/actions/runs/40881748652) ran the new three-case chronology counterexample, auditor self-tests, existing forecast/model/learning/autopilot test suites, and a fresh independent read of the pinned ledger/outcomes/deliveries. The original six eligible calls, three correct, arithmetic consistency, lack of exchange-candle validation and lack of human notification receipt remained unchanged.
+- The temporary branch-only CI workflow was deleted after its successful run; it does not change main scheduling or credentials.
+- **Outcome:** evidence-integrity bug fixed in research branch only. This is **not** a new or improved prediction result, an executable quote source, or proof of cost-after-entry timing value. No model promotion, revision to strict-green, or live orders.
+
+## Follow-up gates
+
+Review diff and merge audit-only code/doc without mixing UI or source refresh. Main audit can run with the guard; separately track time-stamped source candles, human receipt and fixed-cost prospective execution validation. Never count today's historical 6 cases as new forward evidence.
