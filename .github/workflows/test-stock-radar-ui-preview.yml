@@ -1,18 +1,19 @@
-name: Verify Investment Desk UI Preview
+name: Verify Comparison Desk UI Preview
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'design/investment-desk-20261029']
+    branches: [main, 'design/comparison-desk-20261030']
     paths:
       - 'stock-radar-ui-preview.html'
       - 'assets/stock-radar-desk*'
+      - 'assets/stock-radar-compare.css'
       - 'scripts/install_stock_radar_desk_preview.py'
-      - 'scripts/test_stock_radar_desk_preview.py'
+      - 'scripts/test_stock_radar_compare_preview.py'
       - '.github/workflows/test-stock-radar-ui-preview.yml'
 permissions:
   contents: write
 concurrency:
-  group: radar-desk-preview-${{ github.ref }}
+  group: radar-compare-preview-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   preview:
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build isolated design preview
+      - name: Build isolated comparison preview
         run: |
           python scripts/install_stock_radar_desk_preview.py
           node --check /tmp/radar-desk-preview.js
@@ -37,21 +38,21 @@ jobs:
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Verify desktop, tablet and mobile flows
+      - name: Verify simultaneous comparison, motion, storage and all existing routes
         run: |
           python -m http.server 8768 >/tmp/desk-http.log 2>&1 &
-          python scripts/test_stock_radar_desk_preview.py
+          python scripts/test_stock_radar_compare_preview.py
       - name: Save generated preview on design branch only
-        if: github.ref_name == 'design/investment-desk-20261029'
+        if: github.ref_name == 'design/comparison-desk-20261030'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add stock-radar-ui-preview.html
           if ! git diff --cached --quiet; then
-            git commit -m 'design: generate tested content-first investment desk preview'
-            git push origin HEAD:design/investment-desk-20261029
+            git commit -m 'design: generate tested side-by-side comparison desk'
+            git push origin HEAD:design/comparison-desk-20261030
           fi
-      - name: Verify exact public preview
+      - name: Verify exact public preview and interactions
         if: github.ref_name == 'main'
         run: |
           git diff --exit-code -- stock-radar-ui-preview.html
@@ -61,23 +62,23 @@ jobs:
           expected=hashlib.sha256(Path('stock-radar-ui-preview.html').read_bytes()).hexdigest()
           for i in range(24):
               try:
-                  req=urllib.request.Request('https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html?desk='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
+                  req=urllib.request.Request('https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html?compare='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
                   with urllib.request.urlopen(req,timeout=15) as r:
                       assert r.status==200
                       actual=r.read()
                   assert hashlib.sha256(actual).hexdigest()==expected
-                  print('PUBLIC_DESK_HTML_EXACTLY_VERIFIED',expected)
+                  print('PUBLIC_COMPARISON_DESK_HTML_VERIFIED',expected)
                   break
               except Exception:
                   if i==23:raise
                   time.sleep(5)
           PY
-          python scripts/test_stock_radar_desk_preview.py --url 'https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html'
+          python scripts/test_stock_radar_compare_preview.py --url 'https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: investment-desk-preview-evidence
+          name: comparison-desk-preview-evidence
           retention-days: 7
           path: |
-            desk-preview-evidence/
+            compare-preview-evidence/
             stock-radar-ui-preview.html
