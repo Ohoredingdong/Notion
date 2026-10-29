@@ -180,6 +180,13 @@ class Tests(unittest.TestCase):
         r,o,d,e,s,t=synthetic()
         self.assertEqual(examine(r,o,[],e,s,t)['status'], 'integrity_errors')
 
+    def test_terminal_weight_hash_forgery_rejected(self):
+        # Research-only negative fixture: valid-looking hash differs from the saved state.
+        # Prior independent gate accepts this, demonstrating the coverage gap.
+        r,o,d,e,s,t=synthetic()
+        forged=[{**e[0], 'weights_after':'c'*64}]
+        self.assertEqual(examine(r,o,d,forged,s,t)['status'], 'integrity_errors')
+
     def test_future_learning_rejected(self):
         r,o,d,e,s,t=synthetic()
         self.assertEqual(examine(r,o,d,[{**e[0],'learned_at':'2026-10-29T15:01:00Z'}],s,t)['status'], 'integrity_errors')
