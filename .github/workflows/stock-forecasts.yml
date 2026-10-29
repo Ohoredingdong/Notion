@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/stock_forecast_model.py'
+      - 'scripts/stock_forecast_sources.py'
       - 'scripts/run_stock_forecasts.py'
       - 'scripts/publish_stock_forecasts.py'
       - 'scripts/verify_stock_forecast_public.py'
@@ -41,6 +42,7 @@ jobs:
       - name: Test future targets and leakage guards
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
           node scripts/test_stock_forecast_ui.cjs
       - name: Train real historical candles and freeze future predictions
@@ -70,4 +72,5 @@ jobs:
             stock-forecast-*.jsonl
             forecast-*.png
             scripts/stock_forecast_model.py
+            scripts/stock_forecast_sources.py
             scripts/run_stock_forecasts.py
