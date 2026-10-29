@@ -1,72 +1,82 @@
-"""Yahoo source adapter, including a strict raw-chart parser for index OHLC.
-This is the SAME unofficial provider, not an independent-source cross-check.
+"""Real Yahoo OHLC, protected session initialization and strict bar boundaries.
+Same unofficial provider, not an independent-source cross-check.
 """
-from urllib.parse import quote
+from datetime import datetime, timezone
+import threading
 import pandas as pd
 
+_CALENDAR_LOCK = threading.Lock()
+_PREPARED_YEAR = None
 
-def parse_chart(payload):
-    chart = payload.get('chart') or {}
-    if chart.get('error'):
-        raise ValueError('provider_chart_error')
-    results = chart.get('result') or []
-    if len(results) != 1:
-        raise ValueError('provider_chart_result_count')
-    result = results[0]
-    times = result.get('timestamp') or []
-    quotes = (result.get('indicators') or {}).get('quote') or []
-    if not times or len(quotes) != 1:
-        raise ValueError('provider_chart_ohlc_missing')
-    values = quotes[0]
-    if any(len(values.get(k) or []) != len(times) for k in ('open', 'high', 'low', 'close')):
-        raise ValueError('provider_chart_array_length_mismatch')
-    index = pd.to_datetime(times, unit='s', utc=True)
-    if index.duplicated().any():
-        raise ValueError('provider_chart_duplicate_timestamp')
-    frame = pd.DataFrame({k.capitalize(): values[k] for k in ('open', 'high', 'low', 'close')}, index=index)
-    frame = frame.dropna(subset=['Open', 'High', 'Low', 'Close']).sort_index()
-    if frame.empty:
-        raise ValueError('provider_chart_no_complete_ohlc')
-    return frame
+
+def prepare_sessions(year=None):
+    """XKRX holiday construction mutates pandas objects: never initialize in parallel.
+
+The actual length/boolean-mask failure was reproduced with concurrent calendar
+construction. Warm the model's cached KR/US calendars BEFORE any worker uses them.
+"""
+    global _PREPARED_YEAR
+    year = year or datetime.now(timezone.utc).year
+    with _CALENDAR_LOCK:
+        if _PREPARED_YEAR != year:
+            from stock_forecast_model import calendar
+            for market in ('KR', 'US'):
+                calendar(market, year)
+            _PREPARED_YEAR = year
+
+
+def regular_grid(frame, mode):
+    if mode == 'daily':
+        return frame
+    if not isinstance(frame.index, pd.DatetimeIndex) or frame.index.tz is None:
+        raise ValueError('intraday_timezone_missing')
+    # Some provider responses append a live point such as 13:50:10. This is not
+    # a completed 5m candle. Drop it; never round its timestamp or invent OHLC.
+    idx = frame.index
+    aligned = (idx.minute % 5 == 0) & (idx.second == 0) & (idx.microsecond == 0) & (idx.nanosecond == 0)
+    output = frame.loc[aligned].copy()
+    if output.index.duplicated().any():
+        raise ValueError('duplicate_bar_timestamp')
+    if output.empty:
+        raise ValueError('no_grid_aligned_five_minute_candles')
+    return output
 
 
 def history(symbol, mode):
+    prepare_sessions()
     import yfinance as yf
-    ticker = yf.Ticker(symbol)
-    if symbol == '^KS11':
-        # Avoid the provider-library index/live-row merge bug. Never truncate
-        # unequal arrays to force alignment; reject them in parse_chart instead.
-        payload = ticker._data.get_raw_json(
-            'https://query1.finance.yahoo.com/v8/finance/chart/'+quote(symbol, safe=''),
-            params={'range': '5y' if mode == 'daily' else '60d',
-                    'interval': '1d' if mode == 'daily' else '5m',
-                    'includePrePost': 'false'}, timeout=18)
-        return parse_chart(payload)
-    return ticker.history(period='5y' if mode == 'daily' else '60d',
-                          interval='1d' if mode == 'daily' else '5m',
-                          auto_adjust=False, actions=True, prepost=False,
-                          timeout=18, raise_errors=True)
+    frame = yf.Ticker(symbol).history(period='5y' if mode == 'daily' else '60d',
+                                    interval='1d' if mode == 'daily' else '5m',
+                                    auto_adjust=False, actions=True, prepost=False,
+                                    timeout=18, raise_errors=True)
+    return regular_grid(frame, mode)
 
 
 def self_test():
-    import copy
-    p = {'chart': {'result': [{'timestamp': [1793232000, 1793232300],
-         'indicators': {'quote': [{'open': [100, 101], 'high': [102, 103],
-                                  'low': [99, 100], 'close': [101, 102]}]}}]}}
-    frame = parse_chart(p)
-    assert len(frame) == 2 and str(frame.index.tz) == 'UTC'
-    for changed in ('duplicate', 'length', 'error'):
-        q = copy.deepcopy(p)
-        if changed == 'duplicate': q['chart']['result'][0]['timestamp'][1] = q['chart']['result'][0]['timestamp'][0]
-        if changed == 'length': q['chart']['result'][0]['indicators']['quote'][0]['close'].pop()
-        if changed == 'error': q['chart']['error'] = {'code': 'test'}
-        try:
-            parse_chart(q)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError(changed+' must reject')
-    print('Raw index parser: valid OHLC, UTC, duplicate, unequal array and error guards passed')
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(lambda _: prepare_sessions(2026), range(32)))
+    from stock_forecast_model import calendar
+    assert str(calendar('KR', 2026).date_to_session('2026-10-28', direction='none'))[:10] == '2026-10-28'
+    index = pd.to_datetime(['2026-10-29T00:00:00Z', '2026-10-29T00:05:00Z', '2026-10-29T00:05:10Z'])
+    frame = pd.DataFrame({'Open': [100, 101, 102], 'High': [102, 103, 104],
+                          'Low': [99, 100, 101], 'Close': [101, 102, 103]}, index=index)
+    clean = regular_grid(frame, 'intraday')
+    assert len(clean) == 2 and clean.index[-1] == index[1]
+    assert regular_grid(frame, 'daily') is frame
+    try:
+        regular_grid(frame.set_axis(index.tz_localize(None)), 'intraday')
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('timezone must be explicit')
+    try:
+        regular_grid(pd.concat([frame.iloc[:1], frame.iloc[:1]]), 'intraday')
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('duplicate bars must be rejected')
+    print('Source guards passed: 32 concurrent initializations; off-grid, UTC and duplicate checks')
 
 if __name__ == '__main__':
     self_test()
