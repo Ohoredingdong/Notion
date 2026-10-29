@@ -61,7 +61,33 @@ def main():
                 # Programmatic activation isolates the animation/paint regression
                 # from the separately recorded opaque-frame touch-delivery issue.
                 click = lambda key: door(key).evaluate('e=>e.click()')
+                # Give every compartment an identifiable high-layer item. It
+                # must remain physically behind its door at the first opening
+                # frame, then become visible and interactive after the reveal.
+                frame.evaluate("""()=>{const w=MiniKitchen.exportWorld();for(const zone of ['freshLeft','freshRight','frozenLeft','frozenRight'])w.items.push({id:'probe-'+zone,kind:'food',name:'당근',quantity:'1개',expiry:'2026-12-31',zone,x:.5,y:.65,z:++w.layer});MiniKitchen.restoreWorld(w)}""")
                 before = frame.evaluate('MiniKitchen.exportWorld()')
+                opening = []
+                if motion == 'no-preference':
+                    sentinel = frame.add_style_tag(content='#fridgeInteriors .item[data-item^="probe-"]{background:#ff00ff;border-radius:0}')
+                    for key in ('freshLeft','freshRight','frozenLeft','frozenRight'):
+                        click(key)
+                        door(key).evaluate("""e=>{const a=e.getAnimations().find(a=>a.transitionProperty==='transform');if(!a)throw new Error('No opening transition');a.pause();a.currentTime=0;}""")
+                        sample = frame.evaluate("""key=>{const item=document.querySelector('[data-item="probe-'+key+'"]'),r=item.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {hitDoor:hit?.closest('[data-door]')?.dataset.door||null,hitItem:hit?.closest('[data-item]')?.dataset.item||null}}""",key)
+                        png = frame.locator('.fridge-stage').screenshot()
+                        (out/f'{label}-{key}-opening-zero.png').write_bytes(png)
+                        rgb = subprocess.run(['magick','-limit','thread','1','png:-','-depth','8','rgb:-'],input=png,capture_output=True,check=True).stdout
+                        visible = sum(r>245 and g<10 and b>245 for r,g,b in zip(rgb[0::3],rgb[1::3],rgb[2::3]))
+                        assert sample['hitDoor']==key and sample['hitItem'] is None and visible==0,(label,key,'Food visible before door opens',sample,visible)
+                        door(key).evaluate("e=>e.getAnimations().forEach(a=>a.play())")
+                        frame.wait_for_function("k=>document.querySelector('[data-door=\"'+k+'\"]').getAnimations().every(a=>a.playState==='finished')",arg=key)
+                        hit = frame.evaluate("""key=>{const r=document.querySelector('[data-item="probe-'+key+'"] ').getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('[data-item]')?.dataset.item}""",key)
+                        assert hit=='probe-'+key,(label,key,'Revealed food is not interactive',hit)
+                        click(key);frame.wait_for_function('k=>!MiniKitchen.isDoorClosing(k)',arg=key)
+                        opening.append({'door':key,'first_frame_food_pixels':visible,'closed_face_intercepts_input':True,'food_interactive_after_reveal':True})
+                    sentinel.evaluate('e=>e.remove()')
+                expect(frame.locator('.door-label')).to_have_count(0)
+                assert all('냉장' in door(k).get_attribute('aria-label') for k in ('freshLeft','freshRight'))
+                assert all('냉동' in door(k).get_attribute('aria-label') for k in ('frozenLeft','frozenRight'))
                 for key in ('freshLeft','freshRight'): click(key)
                 frame.wait_for_function("document.querySelectorAll('.door').length===4 && [...document.querySelectorAll('.door')].every(e=>e.getAnimations().every(a=>a.playState==='finished'))")
                 moving = []
@@ -110,7 +136,7 @@ def main():
                 assert stable(before)==stable(after), 'Inventory, dates, quantities or final door state changed'
                 assert not errors, errors
                 page.screenshot(path=str(out/f'{label}-settled.png'))
-                result['cases'].append({'label':label,'moving_paint':moving,'native_text_restored':True,'rapid_reversal_and_missing_event_recovery':motion=='no-preference','inventory_preserved':True,'errors':errors})
+                result['cases'].append({'label':label,'opening_occlusion':opening,'visible_door_labels_removed':True,'moving_paint':moving,'native_text_restored':True,'rapid_reversal_and_missing_event_recovery':motion=='no-preference','inventory_preserved':True,'errors':errors})
                 print('PASS',label,flush=True)
                 ctx.close()
             browser.close()
