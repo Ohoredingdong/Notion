@@ -38,6 +38,28 @@ def validate(r):
         raise ValueError('invalid_probabilities')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
+    # Independently validate frozen research-only challengers as evidence,
+    # without promoting them or rescoring any historical outcome.
+    specialists = r.get('directional_specialists')
+    if specialists is not None:
+        if not isinstance(specialists, dict):
+            raise ValueError('invalid_shadow_candidate_structure')
+        candidates = specialists.get('candidates', {})
+        if not isinstance(candidates, dict):
+            raise ValueError('invalid_shadow_candidate_structure')
+        for candidate_name, candidate in candidates.items():
+            if not isinstance(candidate_name, str) or not isinstance(candidate, dict):
+                raise ValueError('invalid_shadow_candidate_structure')
+            distribution = candidate.get('probabilities')
+            if not isinstance(distribution, dict):
+                raise ValueError('invalid_shadow_candidate_structure')
+            cp = [finite(distribution[k]) for k in CLASSES]
+            if any(x < 0 or x > 1 for x in cp) or abs(sum(cp)-1) > 1e-6:
+                raise ValueError('invalid_shadow_probabilities')
+            direction = candidate.get('direction')
+            if direction not in CLASSES or abs(cp[CLASSES.index(direction)]-max(cp)) > 1e-12:
+                raise ValueError('shadow_direction_not_maximum_probability')
+
     if not (ts(r['observed_until']) <= ts(r['received_at']) <= ts(r['issued_at']) <
             ts(r['target']['start']) < ts(r['target']['end'])):
         raise ValueError('nonprospective_timing')
@@ -259,6 +281,40 @@ class SelfTests(unittest.TestCase):
         self.assertEqual(bad['scored'], 1)
         self.assertEqual(bad['status'], 'integrity_errors')
         self.assertTrue(any(e.get('id') == second['id'] for e in bad['errors']))
+
+    def test_shadow_candidate_probability_corruption_must_be_reported(self):
+        # Synthetic-only red/green test. No real predictions or outcomes are changed.
+        record = {'id': 'synthetic-shadow', 'symbol': 'TEST', 'market': 'US',
+                  'mode': 'intraday', 'status': 'research_prediction',
+                  'observed_until': '2026-10-29T13:30:00Z',
+                  'received_at': '2026-10-29T13:31:00Z',
+                  'issued_at': '2026-10-29T13:36:00Z',
+                  'target': {'start': '2026-10-29T14:00:00Z',
+                             'end': '2026-10-29T14:30:00Z'},
+                  'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                  'direction': 'flat', 'neutral_band_pct': .3}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        good = {**record, 'directional_specialists': {
+            'status': 'shadow_only',
+            'candidates': {'movement_then_direction': {
+                'probabilities': {'down': .5, 'flat': .2, 'up': .3},
+                'direction': 'down'}}}}
+        self.assertEqual(audit([good], [], [], cutoff)['status'],
+                         'ledger_arithmetic_consistent')
+        bad_probability = {**good, 'directional_specialists': {
+            'status': 'shadow_only',
+            'candidates': {'movement_then_direction': {
+                'probabilities': {'down': 1.1, 'flat': -.1, 'up': 0.0},
+                'direction': 'down'}}}}
+        self.assertEqual(audit([bad_probability], [], [], cutoff)['status'],
+                         'integrity_errors')
+        bad_direction = {**good, 'directional_specialists': {
+            'status': 'shadow_only',
+            'candidates': {'movement_then_direction': {
+                'probabilities': {'down': .5, 'flat': .2, 'up': .3},
+                'direction': 'up'}}}}
+        self.assertEqual(audit([bad_direction], [], [], cutoff)['status'],
+                         'integrity_errors')
 
     def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
         # Deliberately inconsistent synthetic publication, not a market observation.
