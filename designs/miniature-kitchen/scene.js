@@ -77,7 +77,7 @@
     $('#sceneNote').textContent=camera==='seasoning'?'양념병을 누르면 수량·기한을 살펴볼 수 있어요.':decorating?'소품을 끌어 놓고, 누르면 앞뒤 순서도 바꿀 수 있어요.':'음식과 소품을 눌러 살펴봐요.';
     syncLayout();constrainItems();
   }
-  function renderDisplays() {
+  function renderDisplays(expanded=false) {
     const root=$('#fridgeDisplays');if(!root)return;
     const stage=$('.fridge-stage').getBoundingClientRect(),room=$('.room').getBoundingClientRect();
     root.hidden=document.body.dataset.camera!=='fridge';
@@ -91,17 +91,19 @@
     const distributionLabel=`기한 경과 ${counts.overdue}건, 오늘 ${counts.today}건, 내일 ${counts.tomorrow}건, 2~3일 이내 ${counts.soon}건`;
     const cleanName=name=>String(name).normalize('NFKC').replace(/\s+/g,'').toLowerCase();
     const names=new Set(items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&(!r.expiry||dayNumber(r.expiry)>=today)).map(r=>cleanName(r.name)));
-    root.innerHTML=['freshLeft','freshRight'].map(key=>{
-      const p=panels[key],left=key==='freshLeft',meal=items.find(r=>r.kind==='meal'),hidden=doors[key]||closing.has(key);
+    const markup=['freshLeft','freshRight'].map(key=>{
+      const p=panels[key],left=key==='freshLeft',meal=items.find(r=>r.kind==='meal'),hidden=!expanded&&(doors[key]||closing.has(key));
       // Fit inside the door's flat surface, leaving the curved edge and handle
       // clear. Keep text at native size rather than scaling a tall dashboard.
       const width=panels.freshRight.w*.70*stage.width,doorHeight=p.h*stage.height;
-      const height=Math.min(doorHeight*.72,Math.max(126,Math.min(176,doorHeight*.51)));
-      const layout=height<116?'summary':width<100||height<158?'compact':'standard';
+      // Match the approved tall-glass concept. The room, appliance, handles and
+      // hit targets keep their existing coordinates; only the live inset grows.
+      const height=doorHeight*.72;
+      const layout=expanded?'standard':height<128||width<62?'summary':width<100||height<210?'compact':'standard';
       const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
       // The original atlas already has recessed screens at y188..394. Center
       // the live screen over that recess so it never peeks out below the UI.
-      const center=layout==='summary'?.47:layout==='compact'?.49:.518;
+      const center=.48;
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
       const visible=near.slice(0,layout==='summary'?1:layout==='standard'?3:2),overdue=counts.overdue>0;
       const recipe=window.KitchenCatalog.find(r=>r.name===meal.name);
@@ -124,7 +126,9 @@
       const missingNote=recipe?`<p class="lcd-missing" title="${esc(missing.join(' · '))}"><span>${missing.length?'미등록 재료':'이름 기록됨'}</span>${missing.length?`<b>${esc(missing.slice(0,2).join(' · '))}${missing.length>2?' 외 '+(missing.length-2):''}</b>`:'<b>수량 확인 필요</b>'}</p>`:'';
       const content=left?`${counters}<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer lcd-expiry-footer"><span>${overdue?'경과 '+counts.overdue+'건':near.length?'임박 '+near.length+'건':'보관 '+items.filter(r=>r.kind==='food'||r.kind==='seasoning').length+'건'}</span><div class="lcd-expiry-track" role="img" aria-label="${distributionLabel}">${distribution}</div></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer lcd-recipe-facts"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div><div class="lcd-recipe-detail">${stock}${missingNote}</div>`;
       return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong>${totalBadge}</div>${content}</div></section>`;
-    }).join('');window.dispatchEvent(new Event('mini-kitchen:layout'));
+    }).join('');
+    if(expanded)return markup;
+    root.innerHTML=markup;window.dispatchEvent(new Event('mini-kitchen:layout'));
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
   for(const [key,p] of Object.entries(panels)) {
@@ -202,6 +206,7 @@
     const button=event.target.closest('button');if(!button)return;if(button.dataset.door)toggle(button.dataset.door);if(button.dataset.camera)setCamera(button.dataset.camera);
     if(button.id==='addFood')showAdd();if(button.id==='recipes')showRecipes();if(button.id==='decorate'){if(decorating){decorating=false;selected=null;render();announce('소품 배치를 마쳤어요.');}else showDecor();}
     if(button.id==='propList')showDecor();
+    if(button.id==='expandDisplays')openTray('냉장고 디스플레이',`<div class="display-inspector">${renderDisplays(true)}</div><p class="tray-note">현재 기록의 확대 화면이에요. 기한별 숫자는 재료·양념 기록 건수이며, 재료 기록률은 이름 기준으로 수량의 충분함을 확인한 값은 아니에요.</p>`,'OUR KITCHEN');
     if(button.dataset.selectProp){const item=items.find(r=>r.id===button.dataset.selectProp&&r.kind==='decor');if(item)showItem(item);}
     if(button.id==='closeTray'||button.hasAttribute('data-close'))closeTray();
     if(button.dataset.addFood){const id='added'+(++serial),name=button.dataset.addFood;items.push({id,kind:'food',name,quantity:'1개',expiry:date(3),zone:'freshLeft',x:.5,y:.63,z:++layer});doors.freshLeft=true;setCamera('fridge');selected=id;render();closeTray();announce(name+'을 시안 냉장고에 담았어요.');}
@@ -211,6 +216,7 @@
     if(button.id==='help')openTray('작은 부엌을 만져봐요',`<ul class="help-list"><li>냉장고 문을 누르면 열리고, 열린 문을 다시 누르면 닫혀요.</li><li>재료·양념병은 누르면 수량·기한을 살펴보고, 끌어서 옮길 수 있어요.</li><li>다른 칸으로 옮길 때는 그 문을 먼저 열어주세요.</li><li>‘꾸미기’에서 소품을 놓고 끌어 배치해요.</li><li>재료와 소품은 겹쳐 놓을 수 있고, 방향키로도 움직여요.</li><li>작은 화면은 냉장고·양념 선반·조리대를 골라 크게 봐요.</li></ul><p class="tray-note">기존 앱과 분리된 시안이에요. 저장 가능한 브라우저에서는 재료·식사·꾸밈 기록을 보관해요. 임시 세션에서는 식사·영양과 도감의 백업 탭을 이용해 주세요. 영양은 직접 입력한 값으로 계산하며 사진 인식·자동 영양 추정·기존 앱 동기화는 연결 전이에요.</p>`);
   });
   $('#tray').addEventListener('click',event=>{if(event.target!==$('#tray'))return;const r=$('#tray').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeTray();});
+  $('#tray').addEventListener('close',()=>{if($('#trayContent .display-inspector'))$('#trayContent').replaceChildren();});
   for(const node of document.querySelectorAll('[data-icon]'))node.innerHTML=A.icon(node.dataset.icon);
   document.title='한끼의 부엌 · '+(mode==='widget'?'위젯':'앱')+' 미니어처 시안';syncLayout();render();
   window.MiniKitchen=Object.freeze({

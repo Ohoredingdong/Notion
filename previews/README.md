@@ -1,6 +1,6 @@
 # 한끼의 부엌 앱·위젯 미리보기
 
-최신 선택은 **직접 만지고 꾸미는 입체적인 미니어처 부엌**이다. [앱·위젯 나란히 보기](miniature-kitchen-board.html), [앱 시안](miniature-kitchen-app.html), [위젯 시안](miniature-kitchen-widget.html)에서 확인한다. 이 세 파일은 독립 디자인·조작 시안으로 예시 재료만 사용하며 기존 앱 기록에 접근하지 않는다. 새로고침하면 초기화된다. 아래 기존 미리보기는 사용자가 거절한 생활형 시안의 구현 이력으로 보존한다.
+현재 화면은 사용자가 선택한 [이미지 시안 01의 세로형 유리 표시창·밝은 크림/오크 배경](../docs/APPROVED_KITCHEN_CONCEPT_2026-10-29.md)을 반영한다. 휴대폰에서는 상단 **표시창 크게 보기**로 상세 구성을 읽는다. [앱·위젯 나란히 보기](miniature-kitchen-board.html), [앱 시안](miniature-kitchen-app.html), [위젯 시안](miniature-kitchen-widget.html)에서 확인한다. 이 세 파일은 독립 디자인·조작 시안으로 예시 재료만 사용하며 기존 앱 기록에 접근하지 않는다. 저장 가능한 출처에서는 전용 시안 키로 기록을 보관하며 공개 미리보기 프레임은 임시 저장·JSON 백업을 사용한다. 아래 기존 미리보기는 사용자가 거절한 생활형 시안의 구현 이력으로 보존한다.
 
 ```bash
 python scripts/build_miniature_kitchen_preview.py

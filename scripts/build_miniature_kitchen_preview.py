@@ -47,7 +47,7 @@ def web_image(path, size, boxes):
         command+=[str(path)]
     if path.name=='magnets.png':command+=['-resize','627x627']
     if path.name=='decor-atlas.png':command+=['-resize','643x612']
-    quality='94' if path.name=='fridge-atlas.png' else '76' if path.name=='room-centered.png' else '82'
+    quality='94' if path.name=='fridge-atlas.png' else '76' if path.name in ('room-centered.png','room-concept.png') else '82'
     command+=['-define','webp:method=6','-define','webp:alpha-quality=100','-quality',quality,'webp:-']
     return subprocess.run(command,check=True,capture_output=True).stdout
 
