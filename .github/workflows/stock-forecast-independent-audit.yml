@@ -1,0 +1,55 @@
+name: Independent Forecast Evidence Audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audit_stock_forecast_independent.py'
+      - '.github/workflows/stock-forecast-independent-audit.yml'
+  schedule:
+    - cron: '33 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: stock-independent-forecast-evidence
+  cancel-in-progress: false
+jobs:
+  independent-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test audit independently of model code
+        run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Recompute frozen calls, public timing and stored outcome arithmetic
+        run: python scripts/audit_stock_forecast_independent.py
+      - name: Summarize evidence without declaring trading readiness
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          path=Path('stock-forecast-independent-audit.json')
+          if not path.exists():
+              raise SystemExit('No completed audit output; do not report success')
+          r=json.loads(path.read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('# Independent forecast evidence audit\n\n')
+              out.write(f"Stored-price audit: {r['status']}. Correct {r['correct']} / {r['scored']}.\n\n")
+              out.write('No model training, no orders, no source-data edits. Exchange candles and human notification receipt have NOT been independently verified.\n\n')
+              out.write('|Direction|Actual|Hits|Missed|False calls|\n|---|---:|---:|---:|---:|\n')
+              for direction, v in r['directions'].items():
+                  out.write(f"|{direction}|{v['actual']}|{v['hits']}|{v['missed']}|{v['false_calls']}|\n")
+              out.write('\nA workflow success means audit execution succeeded, not that the model predicts well. Repeated testing does not prove perfect future accuracy.\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: independent-forecast-evidence
+          retention-days: 30
+          path: stock-forecast-independent-audit.json
