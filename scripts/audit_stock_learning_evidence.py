@@ -80,6 +80,44 @@ def examine(records, outcomes, deliveries, events, state, cutoff):
                     raise ValueError('learning_weight_fingerprint_invalid')
         except (KeyError, TypeError, ValueError, AttributeError) as exc:
             errors.append({'index': index, 'id': ident, 'error': str(exc)})
+    # The SHA-shaped event strings must reconcile with the persisted weight
+    # vectors and with earlier updates in the same append-only event stream.
+    per_group = {}
+    for event in learning_rows:
+        name = event.get('group')
+        if isinstance(name, str):
+            per_group.setdefault(name, []).append(event)
+    try:
+        saved_groups = state['groups']
+        if not isinstance(saved_groups, dict):
+            raise ValueError('learning_groups_not_dictionary')
+        for name in per_group:
+            if name not in saved_groups:
+                errors.append({'index': None, 'id': name,
+                               'error': 'learning_event_group_missing_from_saved_state'})
+        for name, saved in saved_groups.items():
+            try:
+                if not isinstance(saved, dict):
+                    raise ValueError('learning_saved_group_not_dictionary')
+                history = per_group.get(name, [])
+                if type(saved.get('learned')) is not int or saved['learned'] != len(history):
+                    raise ValueError('learning_group_count_disagrees_with_event_history')
+                if not history:
+                    continue  # Do not invent an older update for an inactive group.
+                for prior, following in zip(history, history[1:]):
+                    if prior['weights_after'] != following['weights_before']:
+                        raise ValueError('learning_weight_hash_chain_broken')
+                    if ts(prior['learned_at']) > ts(following['learned_at']):
+                        raise ValueError('learning_weight_event_order_reversed')
+                if digest(saved['weights']) != history[-1]['weights_after']:
+                    raise ValueError('learning_terminal_weights_do_not_match_saved_state')
+                last_record = by_id[history[-1]['prediction_id']]
+                if saved.get('last_train_end') != last_record['target']['end']:
+                    raise ValueError('learning_last_target_mismatch')
+            except (KeyError, ValueError, TypeError, AttributeError) as exc:
+                errors.append({'index': None, 'id': name, 'error': str(exc)})
+    except (KeyError, ValueError, TypeError) as exc:
+        errors.append({'index': None, 'id': 'learning-groups', 'error': str(exc)})
     try:
         trained = state['trained_events']
         if not isinstance(trained, list) or len(trained) != len(set(trained)):
@@ -128,13 +166,18 @@ def synthetic():
     d = {'status':'public_verified','snapshot_generated_at':'2026-10-29T13:36:10Z',
          'verified_at':'2026-10-29T13:36:15Z','prediction_ids':[r['id']]}
     k = forecast_key(r)
+    before = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+    after = [[0.05, 0.0], [-0.05, 0.0], [0.0, 0.0]]
+    group_name = 'TEST|intraday|legacy'
     e = {'kind':'learn_after_score','prediction_id':r['id'],
          'event_key':k,'available_at':o['evaluated_at'],
-         'learned_at':'2026-10-29T14:36:00Z','group':'TEST|intraday|legacy',
-         'actual':'down','weights_before':'a'*64,'weights_after':'b'*64,
+         'learned_at':'2026-10-29T14:36:00Z','group':group_name,
+         'actual':'down','weights_before':digest(before),'weights_after':digest(after),
          'not_rescored':True,'id':digest({'version':VERSION,'trained_event':k})}
     state = {'trained_events':[k],'training_updates':1,
-             'last_outcome_available_at':o['evaluated_at']}
+             'last_outcome_available_at':o['evaluated_at'],
+             'groups':{group_name:{'weights':after,'learned':1,
+                                   'last_train_end':r['target']['end']}}}
     return [r], [o], [d], [e], state, ts('2026-10-29T15:00:00Z')
 
 
@@ -179,6 +222,71 @@ class Tests(unittest.TestCase):
     def test_missing_publication_rejected(self):
         r,o,d,e,s,t=synthetic()
         self.assertEqual(examine(r,o,[],e,s,t)['status'], 'integrity_errors')
+
+    def test_terminal_weight_hash_forgery_rejected(self):
+        # Research-only negative fixture: valid-looking hash differs from the saved state.
+        # Prior independent gate accepts this, demonstrating the coverage gap.
+        r,o,d,e,s,t=synthetic()
+        forged=[{**e[0], 'weights_after':'c'*64}]
+        self.assertEqual(examine(r,o,d,forged,s,t)['status'], 'integrity_errors')
+
+    def test_saved_learning_count_forgery_rejected(self):
+        r,o,d,e,s,t=synthetic()
+        name=e[0]['group']
+        s['groups'][name]['learned']=2
+        self.assertEqual(examine(r,o,d,e,s,t)['status'], 'integrity_errors')
+
+    def test_terminal_saved_weights_tamper_rejected(self):
+        r,o,d,e,s,t=synthetic()
+        name=e[0]['group']
+        s['groups'][name]['weights'][0][0] += 0.01
+        self.assertEqual(examine(r,o,d,e,s,t)['status'], 'integrity_errors')
+
+    def test_two_updates_link_with_saved_terminal_weights(self):
+        # Both events are prospective and the second begins after the first
+        # target ends. A changed but SHA-shaped intermediate hash must fail.
+        r,o,d,e,s,_=synthetic()
+        next_r={**r[0], 'id':'synthetic-next',
+                'observed_until':'2026-10-29T14:30:00Z',
+                'received_at':'2026-10-29T14:32:00Z',
+                'issued_at':'2026-10-29T14:38:00Z',
+                'target':{'start':'2026-10-29T15:00:00Z',
+                          'end':'2026-10-29T15:30:00Z'}}
+        next_o={**o[0], 'id':next_r['id'], 'target':next_r['target'],
+                'evaluated_at':'2026-10-29T15:35:00Z'}
+        next_delivery={**d[0],
+                       'snapshot_generated_at':'2026-10-29T14:39:00Z',
+                       'verified_at':'2026-10-29T14:40:00Z',
+                       'prediction_ids':[next_r['id']]}
+        key2=forecast_key(next_r)
+        next_weights=[[0.06,0.0],[-0.06,0.0],[0.0,0.0]]
+        next_event={**e[0], 'prediction_id':next_r['id'],
+                    'event_key':key2,
+                    'available_at':next_o['evaluated_at'],
+                    'learned_at':'2026-10-29T15:36:00Z',
+                    'weights_before':e[0]['weights_after'],
+                    'weights_after':digest(next_weights),
+                    'id':digest({'version':VERSION,'trained_event':key2})}
+        name=e[0]['group']
+        s['groups'][name].update(weights=next_weights,learned=2,
+                                 last_train_end=next_r['target']['end'])
+        s['trained_events']=sorted([e[0]['event_key'],key2])
+        s['training_updates']=2
+        s['last_outcome_available_at']=next_o['evaluated_at']
+        inputs=(r+[next_r],o+[next_o],d+[next_delivery])
+        cutoff=ts('2026-10-29T16:00:00Z')
+        self.assertEqual(examine(*inputs,e+[next_event],s,cutoff)['status'],
+                         'learning_evidence_consistent')
+        forged={**next_event,'weights_before':'f'*64}
+        bad=examine(*inputs,e+[forged],s,cutoff)
+        self.assertEqual(bad['status'],'integrity_errors')
+        self.assertIn('learning_weight_hash_chain_broken',
+                      [x['error'] for x in bad['errors']])
+
+    def test_unknown_learning_group_is_not_accepted(self):
+        r,o,d,e,s,t=synthetic()
+        s['groups']={}
+        self.assertEqual(examine(r,o,d,e,s,t)['status'], 'integrity_errors')
 
     def test_future_learning_rejected(self):
         r,o,d,e,s,t=synthetic()
