@@ -150,6 +150,39 @@ def verify_stage(root,stage,cutoff):
     summary=read(stage,'stock-forecast-learning.json',{}).get('overall',{})
     if summary.get('samples')!=check['scored'] or summary.get('correct')!=check['correct']:
         raise ValueError('model_summary_disagrees_with_independent_audit')
+    # A report with correct totals can still falsely claim it caught upward
+    # or downward movements. Bind displayed metrics to independently audited
+    # prepublication rows; do not re-score or modify any frozen prediction.
+    if check['scored']:
+        import math
+        classes=('down','flat','up')
+        rows=check['rows']
+        expected_confusion=[
+            [sum(r['actual']==actual and r['predicted']==predicted for r in rows)
+             for predicted in classes] for actual in classes]
+        expected_recall={name:check['directions'][name]['recall'] for name in classes}
+        expected_balanced=(sum(expected_recall.values())/len(classes)
+                           if all(v is not None for v in expected_recall.values()) else None)
+        expected_brier=sum(r['brier_loss'] for r in rows)/check['scored']
+        def close_number(actual, expected):
+            return (isinstance(actual,(int,float)) and not isinstance(actual,bool)
+                    and math.isfinite(actual) and abs(actual-expected)<=1e-8)
+        got_recall=summary.get('recall')
+        if (not close_number(summary.get('accuracy'), check['correct']/check['scored'])
+                or not close_number(summary.get('brier_loss'), expected_brier)
+                or summary.get('confusion_matrix')!=expected_confusion
+                or not isinstance(got_recall,dict) or set(got_recall)!=set(classes)):
+            raise ValueError('staged_score_summary_mismatch')
+        if (expected_balanced is None and summary.get('balanced_accuracy') is not None
+                or expected_balanced is not None and not close_number(
+                    summary.get('balanced_accuracy'), expected_balanced)):
+            raise ValueError('staged_score_summary_mismatch')
+        for name in classes:
+            expected=expected_recall[name]
+            actual=got_recall[name]
+            if (expected is None and actual is not None
+                    or expected is not None and not close_number(actual,expected)):
+                raise ValueError('staged_score_summary_mismatch')
     return check
 
 def run(root=Path('.'),pipeline=None,clock=now):
