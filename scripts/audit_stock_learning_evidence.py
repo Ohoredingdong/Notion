@@ -143,9 +143,11 @@ class Tests(unittest.TestCase):
         r,o,d,e,s,t = synthetic()
         self.assertEqual(audit(r,o,d,t)['status'], 'ledger_arithmetic_consistent')
         self.assertEqual(audit(r,o,d,t)['scored'], 1)
-        # The old three-stream audit has no learning-event argument; it cannot
-        # reject replayed learning history on its own.
-        self.assertEqual(audit(r,o,d,t)['status'], audit(r,o,d,t)['status'])
+        # Corrupt the independent learning stream while keeping the old three
+        # input streams identical. Baseline still passes; new gate rejects replay.
+        duplicate=e+e
+        self.assertEqual(audit(r,o,d,t)['status'], 'ledger_arithmetic_consistent')
+        self.assertEqual(examine(r,o,d,duplicate,s,t)['status'], 'integrity_errors')
 
     def test_reference_passes(self):
         self.assertEqual(examine(*synthetic())['status'], 'learning_evidence_consistent')
