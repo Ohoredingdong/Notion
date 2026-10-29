@@ -1,0 +1,31 @@
+name: Verify public kitchen click preview
+on:
+  push:
+    branches: [delivery/verify-kitchen-click-20261029]
+    paths:
+      - '.github/workflows/verify-kitchen-click-preview.yml'
+      - 'scripts/verify_kitchen_click_preview.py'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-click-preview-verification
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Check actual public HTTPS app and widget
+        run: python scripts/verify_kitchen_click_preview.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-public-preview-browser
+          path: /tmp/kitchen-click-preview/
+          retention-days: 3
