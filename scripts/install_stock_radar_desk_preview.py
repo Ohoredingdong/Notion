@@ -4,9 +4,8 @@ import re
 ROOT=Path(__file__).resolve().parents[1]
 p=ROOT/'stock-radar-ui-preview.html'
 s=p.read_text()
-css=(ROOT/'assets/stock-radar-desk.css').read_text()
+css=(ROOT/'assets/stock-radar-desk.css').read_text()+'\n'+(ROOT/'assets/stock-radar-desk-legibility.css').read_text()
 js=(ROOT/'assets/stock-radar-desk-home.js').read_text()
-# Idempotent generated slots; strict anchors stop accidental production edits.
 start='/* DESK_HOME_START */';end='/* DESK_HOME_END */'
 if start in s:
     a=s.index(start); b=s.index(end,a)+len(end);s=s[:a]+start+'\n'+js+'\n'+end+s[b:]
@@ -26,7 +25,7 @@ a=s.find('// Stylized geographic silhouettes')
 if a>=0:
     b=s.index("window.addEventListener('popstate'",a)
     s=s[:a]+s[b:]
-# Keep existing localStorage key, watch list and all non-home screens untouched.
+# Existing localStorage is deliberately retained; never touch live account data.
 s=s.replace("['forecast','예측','globe']","['forecast','예측','chart']")
 s=s.replace("${icon('globe')}","${icon('chart')}")
 s=s.replace('투자 레이더 · Globe UI','투자 레이더 · Investment Desk')
