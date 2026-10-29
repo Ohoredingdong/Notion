@@ -21,3 +21,14 @@
 기본·경과 상태와 세 화면 구성의 실제 글자색/불투명 바탕색으로 계산한 대비는 최소 약 5.36:1이다. [검증 기록](miniature-kitchen/ios-display-validation.json)에 범위를 보관한다. JavaScript·저장 모델이 바뀌지 않았으므로 전체 장면·식사 회귀를 새로 실행한 것으로 보고하지 않는다.
 
 작은 내장형은 앱 931,491바이트·위젯 931,494바이트, 공개 확인용은 954,718바이트·954,727바이트다. 공개 프레임의 임시 저장과 `Open the page` 안내는 [모바일 전달 문서](MOBILE_KITCHEN_PREVIEW.md)를 따른다. 기존 앱·main·GitHub Pages에는 반영하지 않는다.
+
+## 공개 검토
+
+화면이 포함된 커밋은 `fdca2d982bf44bb99e206b473b8f4b79756ceecb`다. 아래 PNG 세 개와 HTML 원본 두 개의 공개 HTTP 200·로컬 바이트 일치를 [공개 파일 기록](miniature-kitchen/ios-public-results.json)으로 확인했다. 외부 HTML 렌더러는 이 환경의 연결 403으로 실제 실행 미확인이다.
+
+- [표시창 상세](https://raw.githubusercontent.com/Ohoredingdong/Notion/fdca2d982bf44bb99e206b473b8f4b79756ceecb/docs/miniature-kitchen/ios-detail.png) · [전체 모습](https://raw.githubusercontent.com/Ohoredingdong/Notion/fdca2d982bf44bb99e206b473b8f4b79756ceecb/docs/miniature-kitchen/ios-fridge.png) · [휴대폰 크기](https://raw.githubusercontent.com/Ohoredingdong/Notion/fdca2d982bf44bb99e206b473b8f4b79756ceecb/docs/miniature-kitchen/ios-phone.png)
+- [앱 미리보기](https://raw.githack.com/Ohoredingdong/Notion/fdca2d982bf44bb99e206b473b8f4b79756ceecb/previews/mobile/app.html) · [위젯 미리보기](https://raw.githack.com/Ohoredingdong/Notion/fdca2d982bf44bb99e206b473b8f4b79756ceecb/previews/mobile/widget.html)
+
+GitHack 안내가 나타나면 `Open the page`를 누른다. 사용자에게 실제 휴대폰에서 확인됐다고 보고하지 않는다.
+
+`feat/kitchen-play-and-sharp-displays`에 push했다. `design/centered-kitchen`을 기준으로 PR 생성을 시도했지만 `Post "https://api.github.com/graphql": Forbidden`으로 차단됐다. PR·병합·Pages 배포는 완료하지 못했으며 [브랜치 비교](https://github.com/Ohoredingdong/Notion/compare/design/centered-kitchen...feat/kitchen-play-and-sharp-displays?expand=1)에서 검토할 수 있다.
