@@ -1,0 +1,41 @@
+name: Research forecast frozen online binding
+on:
+  push:
+    branches: ['research/timing-online-issuance-binding-20261030']
+    paths:
+      - 'scripts/audit_stock_forecast_independent.py'
+      - '.github/workflows/research-forecast-online-binding.yml'
+permissions:
+  contents: read
+jobs:
+  independent-research-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic immutable online issuance binding test
+        run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Recompute saved outcome chronology and probability arithmetic without changes
+        run: python scripts/audit_stock_forecast_independent.py
+      - name: Independently verify actual learning event and stored weight lineage
+        run: |
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py
+      - name: Confirm performance not certified and original files unmodified
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('stock-forecast-independent-audit.json').read_text())
+          l=json.loads(Path('stock-forecast-learning-evidence.json').read_text())
+          assert a['status']=='ledger_arithmetic_consistent'
+          assert l['status']=='learning_evidence_consistent'
+          assert a['scored']==12 and a['correct']==6,(a['scored'],a['correct'])
+          assert l['learning_event_rows']==12 and l['learning_updates_recorded']==12
+          assert not a['proven_predictive_edge'] and not a['human_push_delivery_verified']
+          assert not l['post_cost_usefulness_verified']
+          print('RESEARCH_AUDIT_ONLY_GREEN_EXISTING_LATEST_12_OF_6_SCORED')
+          PY
