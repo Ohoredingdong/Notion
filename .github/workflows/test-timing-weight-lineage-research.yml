@@ -1,0 +1,31 @@
+name: Research-only Weight Lineage Gate
+on:
+  push:
+    branches: ['research/timing-learning-weight-lineage-20261030']
+    paths:
+      - 'scripts/audit_stock_learning_evidence.py'
+      - '.github/workflows/test-timing-weight-lineage-research.yml'
+      - 'docs/experiments/timing-weight-lineage-20261030.md'
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reproduce or reject frozen negative control
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_learning_evidence.py --self-test
+      - name: Audit unchanged immutable source history
+        run: |
+          python scripts/audit_stock_forecast_independent.py --output /tmp/forecast-audit.json
+          python scripts/audit_stock_learning_evidence.py --output /tmp/learning-audit.json
+      - name: Guard against modifying frozen data or approval code
+        run: |
+          git fetch origin main
+          test -z "$(git diff --name-only origin/main HEAD -- stock-forecast-ledger.jsonl stock-forecast-outcomes.jsonl stock-forecast-learning-state.json stock-forecast-learning-events.jsonl stock-forecast-deliveries.jsonl stock-forecast-autopilot.json stock-direction-forecast.json scripts/stock_forecast_learning.py scripts/stock_forecast_model.py scripts/stock_forecast_autopilot.py scripts/stock_strict_green.py)"
