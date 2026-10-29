@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-29T18:53:46.017765+09:00
+- 계산일: 2026-10-30T04:00:31.300496+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.6배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.0배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.1배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.1배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 43.7배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.8배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 35.5배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.6배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 374.3배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 375.8배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -35,8 +35,8 @@
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
 - [(기획) 미국 금리 동결 한국 증시에 호재로 작용하나 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5ia0ZsVmxwLTNBMEtiTDhnQTJJOTQ3VnFXZkczZ2tjQy1BNENVNjlSaDRiTVpmYXZpZEx1T3dpZmxzM1BYVl9Ea1g4aXFXc2Z2NFlIeEs0Y3VTeVZsQi1wR0lkTjM?oc=5)
-- [연준 '매파적 금리동결'..장중 미국증시 '혼조', 오라클·반도체ETF '활짝' - 초이스경제](https://news.google.com/rss/articles/CBMic0FVX3lxTE5MMFpMQ3F5Vm54NDVWVGdjYUpzMDJ5a2c4TDlIcFc1ckJHTzd6Q0ZvMlNjY1NhZm9FYWNlTlIxVjRjbkpwOFhoMVY0cmFMREdpRHNEMVNSaThEMmJmTUY4cjBQODVUSTdkVFpITkh2ei03dEnSAXNBVV95cUxOTDBaTENxeVZueDQ1VlRnY2FKczAyeWtnOEw5SHBXNXJCR083ekNGbzJTY2NTYWZvRWFjZU5SMVY0Y25KcDhYaDFWNHJhTERHaURzRDFTUmk4RDJiZk1GOHIwUDg1VEk3ZFRaSE5IdnotN3RJ?oc=5)
-- [삼성전자, 3분기 HBM 매출 HBM4가 60% 담당… SK하이닉스 턱밑 추격 - Chosunbiz](https://news.google.com/rss/articles/CBMiggFBVV95cUxNazVBQ2NiMXE2ZkJJQU8tTTh5R3BaakFzaEx4SGE3THBUSmkybHlnS3hnRFpFcGpWNExYa1JoZzFWdGhvdXM0ZDZEdHJuYl9ZOUhLdnAxQ3BvdXlsSHI1UFVWcjBnMURmQlo3UEhDMTFhWE5jbGNuWFFsNnlrVldycEd30gGWAUFVX3lxTE5zbVJJRWJiVkFvVndBbkc5Ulp6YnpqaFpWVnA4QUZteFAtenBBMjhaT0tYYjVZVnc3QlVVYlBmblhzZzJibThqLVhWQkd5d05wY2d3NGNtUy1DdEN0SkQ4UTc0aF9TYmNfWDA5akY1R05YbFE2MjVXdUd4ckYtaDFoOUxQM1lnblBDMGFnenFZNkhGVkZtdw?oc=5)
+- [美 금리 동결에도 살아있는 긴축 불씨··· 韓 환율 숨통·고금리 부담 공존 - 여성경제신문](https://news.google.com/rss/articles/CBMid0FVX3lxTE1rOE9mTlU3MWZoZjh4MXJXWDZTZERkdVRsbU45Q1BWZ1BtcWJoSjlfM1VUM0w1TWd3aDZ2YkNSamVXeUtGdklSdElXQTV5Yl93SGxPemlZVldLWWlpblBhajRpU1lURHdRMlJEVFUwTnd0cUg5WWdN0gF3QVVfeXFMTWs4T2ZOVTcxZmhmOHgxcldYNlNkRGR1VGxtTjlDUFZnUG1xYmhKOV8zVVQzTDVNZ3doNnZiQ1JqZVd5S0Z2SVJ0SVdBNXliX3dIbE96aVlWV0tZaWluUGFqNGlTWVREd1EyUkRUVTBOd3RxSDlZZ00?oc=5)
+- [삼성전자, 3분기 HBM 매출 HBM4가 60% 담당… SK하이닉스 턱밑 추격 - Chosunbiz](https://news.google.com/rss/articles/CBMiggFBVV95cUxNazVBQ2NiMXE2ZkJJQU8tTTh5R3BaakFzaEx4SGE3THBUSmkybHlnS3hnRFpFcGpWNExYa1JoZzFWdGhvdXM0ZDZEdHJuYl9ZOUhLdnAxQ3BvdXlsSHI1UFVWcjBnMURmQlo3UEhDMTFhWE5jbGNuWFFsNnlrVldycEd3?oc=5)
 - ["일단 물량부터 달라"…HBM 품귀에 엔비디아도 눈높이 낮췄다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE9iS2dqYTg2Q3d5dERmLUZjblVBdVk3VUJSLTU2TjRqVmdNTllVOWZWQURTLVNBZWtPU00tQzVVV25IMzg4VXVKekVCZHE1UWJiZmY2MXhXODlHUnZW?oc=5)
 
 ## 계산과 검증 한계
