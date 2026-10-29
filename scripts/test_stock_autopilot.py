@@ -150,4 +150,36 @@ class CascadeTests(unittest.TestCase):
     def test_no_trading_or_unrestricted_source_rewrite(self):
         self.assertFalse(a.POLICY['arbitrary_source_rewrite']);self.assertFalse(a.POLICY['live_orders'])
 
+
+class StagedLearningGateTests(unittest.TestCase):
+    def test_corrupt_staged_weight_must_block_publication(self):
+        """Synthetic-only fault: internally valid outcomes but disconnected saved weights."""
+        import json
+        from audit_stock_learning_evidence import synthetic
+        records, outcomes, deliveries, events, state, cutoff = synthetic()
+        deliveries[0]['verification_id'] = 'synthetic-public-proof'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stage = root / 'stage'
+            stage.mkdir()
+            for name, rows in (
+                ('stock-forecast-ledger.jsonl', records),
+                ('stock-forecast-outcomes.jsonl', outcomes),
+                ('stock-forecast-deliveries.jsonl', deliveries),
+                ('stock-forecast-learning-events.jsonl', events),
+            ):
+                (stage / name).write_text(''.join(
+                    json.dumps(row, ensure_ascii=False) + '\n' for row in rows))
+            a.write(stage / 'stock-forecast-learning-state.json', state)
+            a.write(stage / 'stock-forecast-learning.json',
+                    {'overall': {'samples': 1, 'correct': 0},
+                     'learning': {'training_updates': 1}})
+            a.write(stage / 'stock-direction-forecast.json', {'records': []})
+            self.assertEqual(a.verify_stage(root, stage, cutoff)['scored'], 1)
+            group = events[0]['group']
+            state['groups'][group]['weights'][0][0] += 0.125
+            a.write(stage / 'stock-forecast-learning-state.json', state)
+            with self.assertRaisesRegex(ValueError, 'staged_learning_evidence_rejected'):
+                a.verify_stage(root, stage, cutoff)
+
 if __name__=='__main__':unittest.main()
