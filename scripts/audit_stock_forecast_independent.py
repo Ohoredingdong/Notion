@@ -70,8 +70,25 @@ def audit(records, outcomes, deliveries, cutoff):
     for d in deliveries:
         if d.get('status') != 'public_verified':
             continue
-        seen = ts(d['verified_at'])
+        # Public verification cannot predate the snapshot nor prove a forecast
+        # that did not yet exist when that snapshot was generated.
+        try:
+            seen = ts(d['verified_at'])
+            snapshot = ts(d['snapshot_generated_at'])
+        except (KeyError, ValueError, TypeError):
+            errors.append({'id': d.get('verification_id'), 'error': 'invalid_public_snapshot_timestamp'})
+            continue
+        if snapshot > seen:
+            errors.append({'id': d.get('verification_id'), 'error': 'snapshot_generated_after_verification'})
+            continue
         for rid in d.get('prediction_ids', []):
+            forecast = by_id.get(rid)
+            if forecast is None:
+                errors.append({'id': rid, 'error': 'public_snapshot_unknown_prediction_id'})
+                continue
+            if ts(forecast['issued_at']) > snapshot:
+                errors.append({'id': rid, 'error': 'prediction_issued_after_public_snapshot'})
+                continue
             if rid not in public or seen < public[rid]:
                 public[rid] = seen
     actuals = {}
@@ -177,7 +194,8 @@ class SelfTests(unittest.TestCase):
              'target': base['target'], 'evaluated_at': '2026-10-29T14:31:00Z', 'target_open': 100.,
              'target_close': 99., 'return_pct': -1., 'actual': 'down', 'predicted': 'flat',
              'correct': False, 'brier_loss': 1.04}
-        d = {'status': 'public_verified', 'verified_at': '2026-10-29T13:37:00Z', 'prediction_ids': ['test-only']}
+        d = {'status': 'public_verified', 'snapshot_generated_at': '2026-10-29T13:36:30Z',
+             'verified_at': '2026-10-29T13:37:00Z', 'prediction_ids': ['test-only']}
         now = ts('2026-10-29T15:00:00Z')
         good = audit([base], [o], [d], now)
         self.assertEqual(good['scored'], 1); self.assertEqual(good['correct'], 0)
@@ -188,6 +206,44 @@ class SelfTests(unittest.TestCase):
         self.assertEqual(duplicate['scored'], 1); self.assertEqual(duplicate['rows'][0]['id'], 'test-only')
         overlapping = {**base, 'id': 'overlap', 'target': {'start': '2026-10-29T14:05:00Z', 'end': '2026-10-29T14:35:00Z'}}
         self.assertEqual(audit([base, overlapping], [o], [d], now)['counts']['overlap_excluded'], 1)
+
+
+    def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
+        # Deliberately inconsistent synthetic publication, not a market observation.
+        record = {'id': 'synthetic-late-issue', 'symbol': 'TEST', 'market': 'US',
+                  'mode': 'intraday', 'status': 'research_prediction',
+                  'observed_until': '2026-10-29T13:35:00Z',
+                  'received_at': '2026-10-29T13:35:10Z',
+                  'issued_at': '2026-10-29T13:36:00Z',
+                  'target': {'start': '2026-10-29T14:00:00Z',
+                             'end': '2026-10-29T14:30:00Z'},
+                  'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                  'direction': 'flat', 'neutral_band_pct': .3}
+        outcome = {'id': record['id'], 'symbol': 'TEST', 'mode': 'intraday',
+                   'status': 'observed', 'target': record['target'],
+                   'evaluated_at': '2026-10-29T14:31:00Z',
+                   'target_open': 100., 'target_close': 99.,
+                   'return_pct': -1., 'actual': 'down', 'predicted': 'flat',
+                   'correct': False, 'brier_loss': 1.04}
+        pub = {'status': 'public_verified',
+               'snapshot_generated_at': '2026-10-29T13:35:00Z',
+               'verified_at': '2026-10-29T13:37:00Z',
+               'prediction_ids': [record['id']]}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        # verified_at alone cannot prove a forecast appeared in an earlier snapshot.
+        old_snapshot = audit([record], [outcome], [pub], cutoff)
+        self.assertEqual(old_snapshot['scored'], 0)
+        self.assertEqual(old_snapshot['status'], 'integrity_errors')
+        backwards_clock = audit([record], [outcome], [
+            {**pub, 'snapshot_generated_at': '2026-10-29T13:38:00Z'}
+        ], cutoff)
+        self.assertEqual(backwards_clock['scored'], 0)
+        self.assertEqual(backwards_clock['status'], 'integrity_errors')
+        proper = audit([record], [outcome], [
+            {**pub, 'snapshot_generated_at': '2026-10-29T13:36:30Z'}
+        ], cutoff)
+        self.assertEqual(proper['scored'], 1)
+        self.assertEqual(proper['status'], 'ledger_arithmetic_consistent')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
