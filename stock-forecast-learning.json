@@ -1,0 +1,677 @@
+{
+  "version": "delayed-forward-learning-1.0",
+  "generated_at": "2026-10-29T06:45:01.704588+00:00",
+  "policy": {
+    "minimum_paired_targets": 120,
+    "minimum_sessions": 20,
+    "minimum_each_class": 10,
+    "minimum_brier_gain": 0.01,
+    "minimum_logloss_gain": 0.005,
+    "learning_rate": 0.01,
+    "l2": 0.001,
+    "rollback_targets": 40,
+    "rollback_sessions": 5,
+    "confidence_filter": 0.7,
+    "research_only": true,
+    "guaranteed_accuracy": null,
+    "automatic_orders": false,
+    "promotion_is_policy_not_statistical_proof": true
+  },
+  "status": "forward_validation_in_progress",
+  "real_time_connected": false,
+  "refresh_mode": "scheduled_best_effort_not_realtime",
+  "observations_available_through": "2026-10-29T06:45:01.660447+00:00",
+  "recorded_predictions": 47,
+  "evaluation_counts": {
+    "invalid_records": 0,
+    "unique_events": 26,
+    "duplicate_issuances": 21,
+    "overlap_excluded": 8,
+    "pending_targets": 12,
+    "independent_targets": 18,
+    "eligible_scored": 6
+  },
+  "overall": {
+    "samples": 6,
+    "correct": 3,
+    "accuracy": 0.5,
+    "wilson_95_interval": [
+      0.18761630648265576,
+      0.8123836935173443
+    ],
+    "calendar_days": 1,
+    "day_weighted_accuracy": 0.5,
+    "day_cluster_95_interval": null,
+    "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+    "balanced_accuracy": null,
+    "recall": {
+      "down": 0.0,
+      "flat": 1.0,
+      "up": null
+    },
+    "confusion_matrix": [
+      [
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "brier_loss": 0.5902211088938899,
+    "log_loss": 0.9879641699251267,
+    "calibration_error": 0.17355647122246481,
+    "reliability": [
+      {
+        "from": 0,
+        "to": 0.4,
+        "samples": 1,
+        "mean_confidence": 0.37715238495175707,
+        "accuracy": 0.0
+      },
+      {
+        "from": 0.4,
+        "to": 0.5,
+        "samples": 4,
+        "mean_confidence": 0.45200515510108263,
+        "accuracy": 0.5
+      },
+      {
+        "from": 0.5,
+        "to": 0.6,
+        "samples": 1,
+        "mean_confidence": 0.5277929372126375,
+        "accuracy": 1.0
+      }
+    ],
+    "high_confidence": {
+      "threshold": 0.7,
+      "samples": 0,
+      "coverage": 0.0,
+      "accuracy": null
+    }
+  },
+  "baseline_paired": {
+    "samples": 0,
+    "model": {
+      "samples": 0,
+      "accuracy": null,
+      "correct": 0,
+      "wilson_95_interval": null
+    },
+    "baseline": {
+      "samples": 0,
+      "accuracy": null,
+      "correct": 0,
+      "wilson_95_interval": null
+    },
+    "legacy_baseline_not_backfilled": true
+  },
+  "coverage": {
+    "attempts": 24,
+    "prediction_attempts": 12,
+    "no_calls": 12,
+    "call_rate": 0.5,
+    "definition": "scheduler-attempt coverage, not whole-market coverage",
+    "no_call_reasons": {
+      "insufficient_regular_session_time": 12
+    }
+  },
+  "learning": {
+    "training_updates": 6,
+    "state_revision": 1,
+    "adaptive_groups": 0,
+    "promotions": 0,
+    "rollbacks": 0,
+    "fresh_events": [
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "afad928cdcac167ab7f4aca6dfc1524ba22c1f521fdb9c6120a78d4eaba56b07",
+        "event_key": "b830bbbc60fbfce3b18beb5a7a4e96a61bf39671305d0312c549230e2ff094ad",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "^KS11|intraday|provider-latency-30m-v1",
+        "actual": "flat",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "09536ea84c36f5478eb1c9d145cbe055ae113b18864cdfd55648e20a9108ee67",
+        "not_rescored": true,
+        "id": "b50950bb1ba3a61c7fab9db12172c77c8193dcfc55b3bf413aad79b007e0a08c"
+      },
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "67a896c419c8e3608c5cdd0f538adb8a14eb5dd8fb85d7173ef8a5af62f90da2",
+        "event_key": "5336fb3223cce35fc71e89fab7106b41bdd1534a645faa2287aa862efe2c3e99",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "005930.KS|intraday|provider-latency-30m-v1",
+        "actual": "flat",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "b5d308c3754d7e1da16118b000b9f3ab31d941e0f2c5206315d380ed806203ee",
+        "not_rescored": true,
+        "id": "c01c01e3e2b58fd8b37b52e8420c5e655037eff3ac2ab1b6d7ba3c450da8d028"
+      },
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "7feaac28594ba497e95f9b1f974bda0a865807af272be02ec7f2583cd5f4b3bf",
+        "event_key": "bab0ca3c40ff5a6aa02537abe98931d198e0e033d2b9b8c2a590fcc5450a383a",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "000660.KS|intraday|provider-latency-30m-v1",
+        "actual": "down",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "44c2a2ec9134b1f92184ea256905ee3e3f2af4d879937fbe71ef45d56208028f",
+        "not_rescored": true,
+        "id": "05b576b29dcf7ffdecee15b539f6567095c8052eabed1798632259eb99cbeddc"
+      },
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "32799a1c99a5da025cb24a079485daf51e44951d172d5da75f31f06d13acc9f7",
+        "event_key": "dc9cc5c3b534d0b06609f70db9bf42bb6580a1148a528efc965e9dcd7eba12ca",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "035420.KS|intraday|provider-latency-30m-v1",
+        "actual": "flat",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "6a26e3fcd234aeedb106c747969a41a20911f44bcd5b8fcf01c291bb17d29af9",
+        "not_rescored": true,
+        "id": "fa2a09ca75e5663bb13a2fdb811c2ec7a9b76ea398b1a9cdf475dad07904230c"
+      },
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "c199c2061ecea6709fd48270a0ba1dd8a86486ab8a7519e212633a99204e59f6",
+        "event_key": "1e633cd6393cad3ac3d2ea9e58f63a47f2356126ebed73c0e67779fd661ff640",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "403870.KQ|intraday|provider-latency-30m-v1",
+        "actual": "down",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "68cf31a6b5ecf4f58053acc2f912f3468eb58860a68d1bd7250fec83531581b1",
+        "not_rescored": true,
+        "id": "864c68d17f02f675e01db35c803c68f5dd2e65c3f9bf501f019c4504aaaefadb"
+      },
+      {
+        "kind": "learn_after_score",
+        "prediction_id": "f1d00de97a75d74b48d8bff49a877648f567768b2d68852b0d190928eab774d1",
+        "event_key": "e2645346fe2171b5be747e7ae621bba93ee8690a3fee3170c66b155fb265f4e8",
+        "available_at": "2026-10-29T06:45:01.660447+00:00",
+        "learned_at": "2026-10-29T06:45:01.660447+00:00",
+        "group": "^KQ11|intraday|provider-latency-30m-v1",
+        "actual": "down",
+        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "weights_after": "a7ac38cf05155bca3b63024daa65699e779af519a3dcab858bdf715198e3d815",
+        "not_rescored": true,
+        "id": "5e25a3078e42580cbce3d1c68d20ee1485d7e8f22a7c6185c477070a283f39ac"
+      }
+    ]
+  },
+  "groups": {
+    "000660.KS|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 0,
+        "accuracy": 0.0,
+        "wilson_95_interval": [
+          0,
+          0.7934506856227534
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 0.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": 0.0,
+          "flat": null,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.8495480912542093,
+        "log_loss": 1.3427581161571243,
+        "calibration_error": 0.49321680993886097,
+        "reliability": [
+          {
+            "from": 0.4,
+            "to": 0.5,
+            "samples": 1,
+            "mean_confidence": 0.49321680993886097,
+            "accuracy": 0.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    },
+    "005930.KS|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 1,
+        "accuracy": 1.0,
+        "wilson_95_interval": [
+          0.20654931437724644,
+          0.9999999999999999
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 1.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": null,
+          "flat": 1.0,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.4016074899268951,
+        "log_loss": 0.7275094588125736,
+        "calibration_error": 0.5168892998883985,
+        "reliability": [
+          {
+            "from": 0.4,
+            "to": 0.5,
+            "samples": 1,
+            "mean_confidence": 0.48311070011160157,
+            "accuracy": 1.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    },
+    "035420.KS|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 1,
+        "accuracy": 1.0,
+        "wilson_95_interval": [
+          0.20654931437724644,
+          0.9999999999999999
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 1.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": null,
+          "flat": 1.0,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.5130808166000161,
+        "log_loss": 0.8761925768808323,
+        "calibration_error": 0.5836348240076246,
+        "reliability": [
+          {
+            "from": 0.4,
+            "to": 0.5,
+            "samples": 1,
+            "mean_confidence": 0.4163651759923754,
+            "accuracy": 1.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    },
+    "403870.KQ|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 0,
+        "accuracy": 0.0,
+        "wilson_95_interval": [
+          0,
+          0.7934506856227534
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 0.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": 0.0,
+          "flat": null,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.6981362936675889,
+        "log_loss": 1.1422586205158118,
+        "calibration_error": 0.37715238495175707,
+        "reliability": [
+          {
+            "from": 0,
+            "to": 0.4,
+            "samples": 1,
+            "mean_confidence": 0.37715238495175707,
+            "accuracy": 0.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    },
+    "^KQ11|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 0,
+        "accuracy": 0.0,
+        "wilson_95_interval": [
+          0,
+          0.7934506856227534
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 0.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": 0.0,
+          "flat": null,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.7411953980831038,
+        "log_loss": 1.200015010621981,
+        "calibration_error": 0.41532793436149257,
+        "reliability": [
+          {
+            "from": 0.4,
+            "to": 0.5,
+            "samples": 1,
+            "mean_confidence": 0.41532793436149257,
+            "accuracy": 0.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    },
+    "^KS11|intraday|provider-latency-30m-v1": {
+      "metrics": {
+        "samples": 1,
+        "correct": 1,
+        "accuracy": 1.0,
+        "wilson_95_interval": [
+          0.20654931437724644,
+          0.9999999999999999
+        ],
+        "calendar_days": 1,
+        "day_weighted_accuracy": 1.0,
+        "day_cluster_95_interval": null,
+        "interval_note": "Wilson assumes independent trials; day bootstrap is diagnostic, not proof against market dependence.",
+        "balanced_accuracy": null,
+        "recall": {
+          "down": null,
+          "flat": 1.0,
+          "up": null
+        },
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "brier_loss": 0.3377585638315261,
+        "log_loss": 0.6390512365624368,
+        "calibration_error": 0.47220706278736246,
+        "reliability": [
+          {
+            "from": 0.5,
+            "to": 0.6,
+            "samples": 1,
+            "mean_confidence": 0.5277929372126375,
+            "accuracy": 1.0
+          }
+        ],
+        "high_confidence": {
+          "threshold": 0.7,
+          "samples": 0,
+          "coverage": 0.0,
+          "accuracy": null
+        }
+      },
+      "comparison": {
+        "samples": 0,
+        "sessions": 0,
+        "class_counts": {},
+        "brier_gain": null,
+        "logloss_gain": null,
+        "accuracy_gain": null,
+        "day_cluster_brier_gain_95_interval": null,
+        "is_live_trading_proof": false
+      },
+      "learning": {
+        "learned": 1,
+        "active": "incumbent",
+        "last_train_end": "2026-10-29T05:50:00+00:00",
+        "last_gate_end": null,
+        "gate_checks": 0,
+        "promotions": 0,
+        "rollbacks": 0
+      }
+    }
+  },
+  "human_push_receipt_verified": false,
+  "live_profitability_proven": false,
+  "accuracy_target_is_not_a_guarantee": true,
+  "limitations": [
+    "타깃 시작 전 공개 확인된 예측만 주 성적에 포함",
+    "공개 웹페이지 확인은 사용자 푸시 수신 확인이 아님",
+    "단일 제공처 사후 가격 관찰이며 체결·비용 후 수익률이 아님",
+    "하루 안의 종목·구간 간 상관 및 반복 모델 비교가 있어 통계적 우위 보장 아님",
+    "적중률·표본수·보류율·기준모델·확률오차를 함께 평가; 100% 보장 없음"
+  ]
+}

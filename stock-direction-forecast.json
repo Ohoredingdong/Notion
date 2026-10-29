@@ -1,7 +1,7 @@
 {
   "version": "direction-forecast-1.0",
-  "generated_at": "2026-10-29T05:14:24.683110+00:00",
-  "source_run_id": "40822165588",
+  "generated_at": "2026-10-29T06:45:01.704588+00:00",
+  "source_run_id": "40830986038",
   "policy": {
     "daily_floor_pct": 0.3,
     "intraday_floor_pct": 0.15,
@@ -23,8 +23,8 @@
   "refresh_mode": "scheduled_best_effort_not_realtime",
   "coverage": 12,
   "counts": {
-    "no_call": 12,
-    "research_prediction": 12
+    "research_prediction": 12,
+    "no_call": 12
   },
   "records": [
     {
@@ -32,33 +32,33 @@
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:20.342180+00:00",
-      "received_at": "2026-10-29T05:14:19.777957+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
+      "issued_at": "2026-10-29T06:45:01.700897+00:00",
+      "received_at": "2026-10-29T06:44:52.416221+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
       "model_sha256": "20679626b07b83ce755385cc320017fed44f66437559e44e1bf5e0c8a5226a07",
       "trained_through": "2024-11-05T06:30:00+00:00",
       "calibrated_through": "2025-11-03T06:30:00+00:00",
       "training_samples": 716,
       "calibration_samples": 238,
       "validation": {
-        "test_samples": 239,
-        "test_sessions": 239,
-        "accuracy": 0.4811715481171548,
-        "baseline_accuracy": 0.4309623430962343,
-        "brier_loss": 0.6456353844432815,
-        "baseline_brier_loss": 0.6587089324956484,
-        "log_loss": 1.0789065627147867,
-        "baseline_log_loss": 1.087022648807706,
-        "brier_improvement": 0.013073548052366981,
+        "test_samples": 240,
+        "test_sessions": 240,
+        "accuracy": 0.48333333333333334,
+        "baseline_accuracy": 0.43333333333333335,
+        "brier_loss": 0.6448845404402722,
+        "baseline_brier_loss": 0.6584457531612637,
+        "log_loss": 1.0778038910170389,
+        "baseline_log_loss": 1.0866365754749208,
+        "brier_improvement": 0.01356121272099134,
         "session_bootstrap_95pct_interval": [
-          -0.01834694523330445,
-          0.04213483391691669
+          -0.016394416384539038,
+          0.042090472237791464
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.060984889282607514,
+        "calibration_ece": 0.06305176628770877,
         "test_start": "2025-11-04T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -71,7 +71,7 @@
           ],
           [
             7,
-            85,
+            86,
             11
           ],
           [
@@ -83,13 +83,17 @@
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.3321915542639298,
+        "flat": 0.3895533480659822,
+        "up": 0.278255097670088
+      },
+      "direction": "flat",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81860.34218,
+      "input_age_seconds": 893.543653,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -98,48 +102,94 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.8029503136404692,
+      "origin_reference_price": 1520000.0,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": 0.02219233355749828,
+        "r3": 0.19215686274509802,
+        "r6": 0.1746522411128284,
+        "r12": 0.053361053361053346,
+        "r20": -0.1388101983002833,
+        "vol20": 0.05151286610401341,
+        "ma5": 0.10144927536231885,
+        "ma20": 0.02893890675241151,
+        "range": 0.07105263157894737,
+        "body": 0.005956320317670417,
+        "drawdown20": -0.18059299191374667,
+        "rebound20": 0.2980358667805294
+      },
+      "input_sha256": "c4d8f163a93922607ea7f78c6cab35aa20e2aff04274ddd55d1878ee91a54c11",
+      "id": "621035ba1d2cd1b0ae7b4af87542db0d336dfe1778241ffe3eebf1c589b15f06",
+      "frozen_baseline_probabilities": {
+        "down": 0.3226703755215577,
+        "flat": 0.36995827538247567,
+        "up": 0.30737134909596664
+      },
       "name": "SK하이닉스",
       "source_url": "https://finance.yahoo.com/quote/000660.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "6f5b3110fe4602dd5177e3a8b7e434bb345a7ab92ca12076dcee73d3368603b6"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "007be5265b0d6050eae02ae35c1a61d5cdcc00202f4dff193b290d16bded531e",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.3321915542639298,
+          "flat": 0.3895533480659822,
+          "up": 0.278255097670088
+        },
+        "challenger_probabilities": {
+          "down": 0.33219155426392977,
+          "flat": 0.3895533480659822,
+          "up": 0.278255097670088
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "005930.KS",
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:19.157638+00:00",
-      "received_at": "2026-10-29T05:14:18.600995+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
-      "model_sha256": "20daaacac262959a9f60914311c600cc732b169f8230873a64e28ccfbc71c34d",
+      "issued_at": "2026-10-29T06:45:01.700618+00:00",
+      "received_at": "2026-10-29T06:44:50.315379+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "207d3ba64f44f58f4f422851910504123520bc66e03713687395291a17a86a1e",
       "trained_through": "2024-11-04T06:30:00+00:00",
-      "calibrated_through": "2025-10-31T06:30:00+00:00",
+      "calibrated_through": "2025-11-03T06:30:00+00:00",
       "training_samples": 717,
-      "calibration_samples": 238,
+      "calibration_samples": 239,
       "validation": {
         "test_samples": 240,
         "test_sessions": 240,
         "accuracy": 0.42083333333333334,
         "baseline_accuracy": 0.4125,
-        "brier_loss": 0.6718514417052824,
+        "brier_loss": 0.670038546933105,
         "baseline_brier_loss": 0.662025462962963,
-        "log_loss": 1.1096218869360883,
+        "log_loss": 1.1059113788771653,
         "baseline_log_loss": 1.0925203803477535,
-        "brier_improvement": -0.009825978742319517,
+        "brier_improvement": -0.008013083970142068,
         "session_bootstrap_95pct_interval": [
-          -0.036819582169964796,
-          0.01836452317632604
+          -0.037170231152148694,
+          0.020268969025584952
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.06494689492385443,
-        "test_start": "2025-11-03T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "calibration_ece": 0.05808053954956706,
+        "test_start": "2025-11-04T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -164,13 +214,17 @@
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.4206707759229475,
+        "flat": 0.33619931059099173,
+        "up": 0.24312991348606075
+      },
+      "direction": "down",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81859.157638,
+      "input_age_seconds": 891.428478,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -179,48 +233,94 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.477331179874964,
+      "origin_reference_price": 232000.0,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.04132231404958675,
+        "r3": 0.08920187793427226,
+        "r6": 0.03803131991051445,
+        "r12": 0.0,
+        "r20": -0.14862385321100913,
+        "vol20": 0.042209462282141834,
+        "ma5": 0.03156958648288133,
+        "ma20": -0.024185068349106165,
+        "range": 0.0980603448275862,
+        "body": -0.03734439834024896,
+        "drawdown20": -0.16994633273703041,
+        "rebound20": 0.14004914004914015
+      },
+      "input_sha256": "e405765c59d7509e3951d47b836bfa65b95f14b1fa339c49b228431b35422144",
+      "id": "3a4cf7431e09d86bc199c37f53ae6d89038fed164c3b3e83aec317d2f8d0e470",
+      "frozen_baseline_probabilities": {
+        "down": 0.35138888888888886,
+        "flat": 0.39305555555555555,
+        "up": 0.25555555555555554
+      },
       "name": "삼성전자",
       "source_url": "https://finance.yahoo.com/quote/005930.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "23b4419148dfdf122d4d8c2d40d3c7a8cb6f7b163334acb427e9e2a78a0a90e0"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "315e70e24a8ca3e578c3d5755950389d4ecf810d1dfbd7ca502270f3d5b0fa8c",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.4206707759229475,
+          "flat": 0.33619931059099173,
+          "up": 0.24312991348606075
+        },
+        "challenger_probabilities": {
+          "down": 0.4206707759229475,
+          "flat": 0.3361993105909918,
+          "up": 0.24312991348606075
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "035420.KS",
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:21.245324+00:00",
-      "received_at": "2026-10-29T05:14:20.574815+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
-      "model_sha256": "42c25f11120dcb09aac5766bec40192d33582dd4ef2b94563b8cb6e597b7efa8",
+      "issued_at": "2026-10-29T06:45:01.701357+00:00",
+      "received_at": "2026-10-29T06:44:53.840298+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "b8a6e4252aad1bbab62ae7c8b4667f07cd740dccc621d04aa52a6bb205868153",
       "trained_through": "2024-11-04T06:30:00+00:00",
-      "calibrated_through": "2025-10-31T06:30:00+00:00",
+      "calibrated_through": "2025-11-03T06:30:00+00:00",
       "training_samples": 717,
-      "calibration_samples": 238,
+      "calibration_samples": 239,
       "validation": {
         "test_samples": 240,
         "test_sessions": 240,
         "accuracy": 0.44583333333333336,
-        "baseline_accuracy": 0.39166666666666666,
-        "brier_loss": 0.6523889445195271,
-        "baseline_brier_loss": 0.6523302469135802,
-        "log_loss": 1.0774931188980716,
-        "baseline_log_loss": 1.0762510027306296,
-        "brier_improvement": -5.869760594698302e-05,
+        "baseline_accuracy": 0.3875,
+        "brier_loss": 0.6522465543337497,
+        "baseline_brier_loss": 0.6523765432098764,
+        "log_loss": 1.077288545635074,
+        "baseline_log_loss": 1.0763156035078627,
+        "brier_improvement": 0.0001299888761268781,
         "session_bootstrap_95pct_interval": [
-          -0.011747389683856664,
-          0.012358847594938167
+          -0.01222261721003498,
+          0.012475889586311106
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07248130659226508,
-        "test_start": "2025-11-03T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "calibration_ece": 0.07212897308761616,
+        "test_start": "2025-11-04T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -228,13 +328,13 @@
         "confusion_matrix": [
           [
             30,
-            39,
+            38,
             25
           ],
           [
             13,
             65,
-            17
+            18
           ],
           [
             17,
@@ -245,13 +345,17 @@
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.35238554157478413,
+        "flat": 0.3095788442261279,
+        "up": 0.338035614199088
+      },
+      "direction": "down",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81861.245324,
+      "input_age_seconds": 895.192787,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -260,48 +364,94 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 0.6029445887989654,
+      "origin_reference_price": 174900.0,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.01741573033707866,
+        "r3": 0.0040183696900115695,
+        "r6": -0.025626740947075177,
+        "r12": -0.01741573033707866,
+        "r20": -0.10215605749486656,
+        "vol20": 0.017226988251399015,
+        "ma5": -0.0005714285714285561,
+        "ma20": -0.034848108600281424,
+        "range": 0.030874785591766724,
+        "body": -0.0028506271379703536,
+        "drawdown20": -0.10992366412213739,
+        "rebound20": 0.023405500292568826
+      },
+      "input_sha256": "c83773d4176ba1a009dc0a92d8e06a7e8edda0f4abdc4313db6feec649d06bad",
+      "id": "230176fca1a6e4a897ea1325b278d4217504a8c66d50a358496e3ac0b2ac6d2d",
+      "frozen_baseline_probabilities": {
+        "down": 0.3611111111111111,
+        "flat": 0.35555555555555557,
+        "up": 0.2833333333333333
+      },
       "name": "NAVER",
       "source_url": "https://finance.yahoo.com/quote/035420.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "c67c1be562961380448af242d4e34993c38e61caa1f570153d9c4474f036f4d0"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "77154691d89442705584ab2be10ef969df2d774ec9b9724339420c8e45fd988e",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.35238554157478413,
+          "flat": 0.3095788442261279,
+          "up": 0.338035614199088
+        },
+        "challenger_probabilities": {
+          "down": 0.3523855415747841,
+          "flat": 0.3095788442261279,
+          "up": 0.338035614199088
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "403870.KQ",
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:21.196628+00:00",
-      "received_at": "2026-10-29T05:14:20.547651+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
-      "model_sha256": "b68a1f034f4c9000565b512be54be9cf9ce93c414cdad1dcd0409213c33fb94a",
-      "trained_through": "2025-02-18T06:30:00+00:00",
-      "calibrated_through": "2025-12-19T06:30:00+00:00",
-      "training_samples": 612,
+      "issued_at": "2026-10-29T06:45:01.701126+00:00",
+      "received_at": "2026-10-29T06:44:54.079597+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "0ddf76343460979ff365ec822e3cd7802641b37a308b655e45e04bc3eb5b8215",
+      "trained_through": "2025-02-19T06:30:00+00:00",
+      "calibrated_through": "2025-12-22T06:30:00+00:00",
+      "training_samples": 613,
       "calibration_samples": 204,
       "validation": {
         "test_samples": 205,
         "test_sessions": 205,
         "accuracy": 0.35609756097560974,
-        "baseline_accuracy": 0.32682926829268294,
-        "brier_loss": 0.6987890140880129,
-        "baseline_brier_loss": 0.6710344371736401,
-        "log_loss": 1.1504369975710556,
-        "baseline_log_loss": 1.1049866230216274,
-        "brier_improvement": -0.027754576914372817,
+        "baseline_accuracy": 0.33170731707317075,
+        "brier_loss": 0.6955504178050427,
+        "baseline_brier_loss": 0.6701414913879279,
+        "log_loss": 1.1451443999521103,
+        "baseline_log_loss": 1.103673795061171,
+        "brier_improvement": -0.025408926417114716,
         "session_bootstrap_95pct_interval": [
-          -0.06428493280079849,
-          0.008532006678063623
+          -0.056982252812900355,
+          0.006212078550079756
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.10891774908941415,
-        "test_start": "2025-12-22T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "calibration_ece": 0.10351767473425297,
+        "test_start": "2025-12-23T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -309,30 +459,34 @@
         "confusion_matrix": [
           [
             23,
-            30,
+            31,
             14
           ],
           [
-            24,
+            23,
             33,
             11
           ],
           [
-            28,
-            25,
+            27,
+            26,
             17
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.2939911764120387,
+        "flat": 0.3572721072186013,
+        "up": 0.34873671636936
+      },
+      "direction": "flat",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81861.196628,
+      "input_age_seconds": 895.144104,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -341,79 +495,129 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.8790492620364776,
+      "origin_reference_price": 45400.0,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.04016913319238902,
+        "r3": 0.011135857461024523,
+        "r6": -0.10805500982318272,
+        "r12": -0.262987012987013,
+        "r20": -0.2557377049180328,
+        "vol20": 0.05368712177247079,
+        "ma5": -0.019014693171996555,
+        "ma20": -0.1851020866053399,
+        "range": 0.05947136563876652,
+        "body": -0.029914529914529916,
+        "drawdown20": -0.3514285714285714,
+        "rebound20": 0.02947845804988658
+      },
+      "input_sha256": "211c0dc5c0de4cb842c65cf8ecbc8681d90f660157fbb0ee12d17d66edbf47be",
+      "id": "c883e41c13fde3a4155af7694e29cf1bd8f5da82e07f49bc135d93f8786dd4a8",
+      "frozen_baseline_probabilities": {
+        "down": 0.37987012987012986,
+        "flat": 0.29545454545454547,
+        "up": 0.3246753246753247
+      },
       "name": "HPSP",
       "source_url": "https://finance.yahoo.com/quote/403870.KQ",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "57a1dbf7c60c668653c24bf39c878bb8670dc98ab337c44a1f72f97486ce9ee9"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "699c0babb03ab5724a775f59acda078cf918153044efe09807a5c4aaf7f6b29b",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.2939911764120387,
+          "flat": 0.3572721072186013,
+          "up": 0.34873671636936
+        },
+        "challenger_probabilities": {
+          "down": 0.2939911764120387,
+          "flat": 0.35727210721860136,
+          "up": 0.34873671636936
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "^KQ11",
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:17.203629+00:00",
-      "received_at": "2026-10-29T05:14:16.641353+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
-      "model_sha256": "8c8b40d16464ba0d7ab6b1b729be9d2d74cba22f415ba78a1b9813ff21350e1c",
-      "trained_through": "2024-11-04T06:30:00+00:00",
-      "calibrated_through": "2025-10-31T06:30:00+00:00",
-      "training_samples": 718,
+      "issued_at": "2026-10-29T06:45:01.699975+00:00",
+      "received_at": "2026-10-29T06:44:46.284251+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "854084424af5202d314ddb6942c0ce62cc52816b89932a386d8cc637707c762b",
+      "trained_through": "2024-11-05T06:30:00+00:00",
+      "calibrated_through": "2025-11-03T06:30:00+00:00",
+      "training_samples": 719,
       "calibration_samples": 239,
       "validation": {
         "test_samples": 240,
         "test_sessions": 240,
         "accuracy": 0.42083333333333334,
         "baseline_accuracy": 0.37083333333333335,
-        "brier_loss": 0.6418870846024176,
-        "baseline_brier_loss": 0.6625699653034933,
-        "log_loss": 1.0708862169515359,
-        "baseline_log_loss": 1.0923589840849341,
-        "brier_improvement": 0.020682880701075837,
+        "brier_loss": 0.6438481009785965,
+        "baseline_brier_loss": 0.6623265820550792,
+        "log_loss": 1.0734420690372108,
+        "baseline_log_loss": 1.0919735142831613,
+        "brier_improvement": 0.018478481076482867,
         "session_bootstrap_95pct_interval": [
-          -0.01654258142506225,
-          0.060164118638614775
+          -0.017940608406893748,
+          0.051990100260128305
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08771181533554978,
-        "test_start": "2025-11-03T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "calibration_ece": 0.08780960879719729,
+        "test_start": "2025-11-04T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
         "live_validated": false,
         "confusion_matrix": [
           [
-            17,
-            41,
+            16,
+            43,
             28
           ],
           [
-            4,
-            65,
+            3,
+            66,
             20
           ],
           [
             9,
-            37,
+            36,
             19
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.3202190311551133,
+        "flat": 0.3438966366922476,
+        "up": 0.33588433215263913
+      },
+      "direction": "flat",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81857.203629,
+      "input_age_seconds": 887.62117,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -422,56 +626,102 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.1143364355918914,
+      "origin_reference_price": 752.72998046875,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.024050990721276477,
+        "r3": 0.03509296864043132,
+        "r6": -0.05049451133226268,
+        "r12": -0.10071329089463976,
+        "r20": -0.1142268871717933,
+        "vol20": 0.031838183874054043,
+        "ma5": 0.00451321704810792,
+        "ma20": -0.0772127964443513,
+        "range": 0.03559042249208772,
+        "body": -0.019602032162659502,
+        "drawdown20": -0.18335087670041317,
+        "rebound20": 0.03510721649224946
+      },
+      "input_sha256": "68f7579b653ec3b2ae78d1e2144947b016c8247c195fb569bdd261bd750e7962",
+      "id": "926e8d2f6bb0f96d2bbb33c649f704e08f81cfdb05676d04c919d4bda2d43152",
+      "frozen_baseline_probabilities": {
+        "down": 0.33102493074792244,
+        "flat": 0.3656509695290859,
+        "up": 0.3033240997229917
+      },
       "name": "코스닥",
       "source_url": "https://finance.yahoo.com/quote/^KQ11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "3ac763c0f17fb9a9f4a9a136b0eed932724c22b0649e14f018855a421e497579"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "a60d0055321774b96f6f0bcf3edbc30e8310cc4b2319b38fe1e4f775a9874fce",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.3202190311551133,
+          "flat": 0.3438966366922476,
+          "up": 0.33588433215263913
+        },
+        "challenger_probabilities": {
+          "down": 0.32021903115511324,
+          "flat": 0.3438966366922476,
+          "up": 0.3358843321526391
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "^KS11",
       "market": "KR",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:17.188378+00:00",
-      "received_at": "2026-10-29T05:14:16.522886+00:00",
-      "observed_until": "2026-10-28T06:30:00+00:00",
-      "origin_session": "2026-10-28",
-      "model_sha256": "280c9b420124a1b74f14e2e1e5277eb6738018fdaac98d37af8747a590c08e24",
-      "trained_through": "2024-11-04T06:30:00+00:00",
-      "calibrated_through": "2025-10-31T06:30:00+00:00",
-      "training_samples": 718,
+      "issued_at": "2026-10-29T06:45:01.700336+00:00",
+      "received_at": "2026-10-29T06:44:46.507688+00:00",
+      "observed_until": "2026-10-29T06:30:00+00:00",
+      "origin_session": "2026-10-29",
+      "model_sha256": "6e404a09ab820bdb38e24d1c808b6b37eea32560052d789b4e971ed7ea846a8c",
+      "trained_through": "2024-11-05T06:30:00+00:00",
+      "calibrated_through": "2025-11-03T06:30:00+00:00",
+      "training_samples": 719,
       "calibration_samples": 239,
       "validation": {
         "test_samples": 240,
         "test_sessions": 240,
-        "accuracy": 0.37916666666666665,
+        "accuracy": 0.375,
         "baseline_accuracy": 0.3875,
-        "brier_loss": 0.6889797906224935,
-        "baseline_brier_loss": 0.6658554410547327,
-        "log_loss": 1.1491831952374383,
-        "baseline_log_loss": 1.0981179265721555,
-        "brier_improvement": -0.023124349567760657,
+        "brier_loss": 0.6855701042151369,
+        "baseline_brier_loss": 0.6659102651657575,
+        "log_loss": 1.1417637159177283,
+        "baseline_log_loss": 1.0982014059452347,
+        "brier_improvement": -0.01965983904937951,
         "session_bootstrap_95pct_interval": [
-          -0.06641917800411991,
-          0.016408170872028595
+          -0.06023088136707426,
+          0.01661610924987482
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.17273233344049607,
-        "test_start": "2025-11-03T06:30:00+00:00",
-        "test_end": "2026-10-28T06:30:00+00:00",
+        "calibration_ece": 0.16867353586755926,
+        "test_start": "2025-11-04T06:30:00+00:00",
+        "test_end": "2026-10-29T06:30:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
         "live_validated": false,
         "confusion_matrix": [
           [
-            7,
-            60,
+            6,
+            61,
             4
           ],
           [
@@ -488,13 +738,17 @@
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "no_call",
-      "probabilities": null,
-      "direction": null,
+      "status": "research_prediction",
+      "probabilities": {
+        "down": 0.25844935116795364,
+        "flat": 0.49904416862499806,
+        "up": 0.2425064802070483
+      },
+      "direction": "flat",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 81857.188378,
+      "input_age_seconds": 887.648498,
       "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -503,26 +757,72 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": "target_already_started_or_delivery_window_too_short",
-      "target": null,
+      "reason": null,
+      "target": {
+        "start": "2026-10-30T00:00:00+00:00",
+        "end": "2026-10-30T06:30:00+00:00"
+      },
+      "neutral_band_pct": 1.1321128493570258,
+      "origin_reference_price": 5929.97998046875,
+      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
+      "feature_values": {
+        "r1": -0.013714891415316677,
+        "r3": 0.08419641163328939,
+        "r6": 0.03387924300344136,
+        "r12": -0.017458824340350843,
+        "r20": -0.13693146369957432,
+        "vol20": 0.03234608141020074,
+        "ma5": 0.03669058318395657,
+        "ma20": -0.02807712210191704,
+        "range": 0.04758699731460874,
+        "body": -0.014498428054833187,
+        "drawdown20": -0.15823167781714398,
+        "rebound20": 0.11760315762534668
+      },
+      "input_sha256": "d017f604badc32a15f6c47f82a7d71144282f1c14ee42eb4248ba90bc1ae6af8",
+      "id": "22a4ab96bc34260799415bf2cf62b5e31e9a0e604215bbd619081bdc552996bf",
+      "frozen_baseline_probabilities": {
+        "down": 0.32132963988919666,
+        "flat": 0.41274238227146814,
+        "up": 0.2659279778393352
+      },
       "name": "코스피",
       "source_url": "https://finance.yahoo.com/quote/^KS11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "6185eb3d15edc5b97aeab7342fe01ca7c7e3fcccac48d38d030b6e72614e460b"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "3ca130707a18f879252c11ac1bf55e1cf967082bbc799798e85cce806ab67bc4",
+      "online_learning": {
+        "version": "delayed-forward-learning-1.0",
+        "active_variant": "incumbent",
+        "learned_before_issuance": 0,
+        "weights_sha256": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
+        "label_available_through": "2026-10-29T06:45:01.660447+00:00",
+        "incumbent_probabilities": {
+          "down": 0.25844935116795364,
+          "flat": 0.49904416862499806,
+          "up": 0.2425064802070483
+        },
+        "challenger_probabilities": {
+          "down": 0.25844935116795364,
+          "flat": 0.49904416862499806,
+          "up": 0.24250648020704832
+        },
+        "challenger_calibration": "not_yet_forward_validated",
+        "trading_enabled": false
+      }
     },
     {
       "symbol": "AAPL",
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:32.908618+00:00",
-      "received_at": "2026-10-29T05:10:31.677045+00:00",
+      "issued_at": "2026-10-29T05:00:15.765041+00:00",
+      "received_at": "2026-10-29T05:00:14.185950+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "f33f4798c9eeac688e44e444f101c92a0b4ce7cadee6ef0b5104e069fcddb032",
+      "model_sha256": "9c8e1d79cac74b69d3800c0e4f21233a2e04583ca2b8cd29e0f3a543564419a8",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -578,9 +878,6 @@
       "direction": "down",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33032.908618,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -610,14 +907,14 @@
         "drawdown20": -0.022460478683377305,
         "rebound20": 0.05530827521777071
       },
-      "input_sha256": "7947df3fcf3deecc501282501a4cec38d3735a48679d30dcbdce3f2c9d41be9d",
-      "id": "07b17e43ae4742df3ce76f5868d8b33de19ea6a716b94166037211149f0d8eb4",
+      "input_sha256": "be32becbb39c500abdc07229c170c7298375b0dd3510c2d6365901d4247d43d5",
+      "id": "d40cdd8c12f9555ae4bbbfeace7c208443a39985c61fa4b1db2794e982ad323e",
       "name": "Apple",
       "source_url": "https://finance.yahoo.com/quote/AAPL",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "65eb673b4a798d31c7f94fc7dc6072315e496030d2f848a84aaf68566aed51ae"
     },
     {
@@ -625,11 +922,11 @@
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:32.925067+00:00",
-      "received_at": "2026-10-29T05:10:31.879105+00:00",
+      "issued_at": "2026-10-29T05:00:17.118744+00:00",
+      "received_at": "2026-10-29T05:00:15.985222+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "dd380ef19b6797b6cd1f4501a21281680ca68ca480eb3cbec848164b92ebdf9e",
+      "model_sha256": "b56f892aa363174a7c64fa068156083d3753d38bf2b22cddc5a17d1f64a5fd71",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -685,9 +982,6 @@
       "direction": "up",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33032.925067,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -717,14 +1011,14 @@
         "drawdown20": -0.03654180124522122,
         "rebound20": 0.0367847150050058
       },
-      "input_sha256": "564064678e9860a9a19270b453dac7b3c5f3ac87c41910c03ef6eff0df5dc26c",
-      "id": "f5e65cd6383480309645767d3e8ac471ac10f4082d93f5c446b58fb30f25f663",
+      "input_sha256": "1e1e39ebe5d17bf7817898788003ffe2fdbe2c7d33fec1ec703963de6ece6d58",
+      "id": "6aa304e7b3afe1d9bbba5f637b217919c12a5dd747cc1501296d80ede34a5d84",
       "name": "Microsoft",
       "source_url": "https://finance.yahoo.com/quote/MSFT",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "23578d2afeebd058421f027ed22f9e633bef03f98c462965dcdbb3dcf623e4c4"
     },
     {
@@ -732,11 +1026,11 @@
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:34.865451+00:00",
-      "received_at": "2026-10-29T05:10:33.429082+00:00",
+      "issued_at": "2026-10-29T05:00:17.143598+00:00",
+      "received_at": "2026-10-29T05:00:16.867568+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "dca527da876efb2804a02740be523ac44fb659da682955c09420da89fac4a5da",
+      "model_sha256": "1b7db604d31e15999d9c760e308b6b00aa59ce76c87410b5f4047fa24f2b4bd7",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -792,9 +1086,6 @@
       "direction": "up",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33034.865451,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -824,14 +1115,14 @@
         "drawdown20": -0.11501002915703418,
         "rebound20": 0.024740757390036894
       },
-      "input_sha256": "5255b383b5897990813448199b534bb9a2e0763182a11002c2a53434b9861701",
-      "id": "c5b572f1ce0e3c3daf652e4bf3d4e69786ee588113910baa2a8832d1015b2193",
+      "input_sha256": "df39152c1867df69b4d6cb5dc4c7fcbda12cc6c3040d758fcd9480230d98cf70",
+      "id": "d79398cce4ac24d23024f47e21f153b4caea3831dca340fe744e7bded6e98614",
       "name": "NVIDIA",
       "source_url": "https://finance.yahoo.com/quote/NVDA",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "5c5ffdd38f12e762c2fad9972bd149106eb7b819ec2b33d78fc88beb378ee24a"
     },
     {
@@ -839,11 +1130,11 @@
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:35.463954+00:00",
-      "received_at": "2026-10-29T05:10:35.097367+00:00",
+      "issued_at": "2026-10-29T05:00:18.984849+00:00",
+      "received_at": "2026-10-29T05:00:17.299333+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "f6491bb31ab844e6ff09b71e82a6325b5e8cab4ec28a8c91f8156744952e6f1f",
+      "model_sha256": "ff487dd13862cc15b5d216f72e61c660891ae1e847e863914658ef7fad5afdd9",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -899,9 +1190,6 @@
       "direction": "down",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33035.463954,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -931,14 +1219,14 @@
         "drawdown20": -0.12988956688175612,
         "rebound20": 0.06521122892137976
       },
-      "input_sha256": "04a959d5fe1e520a859f0e7ccbaa151881bc180921d26aa746af4689920a74c4",
-      "id": "510737e9dc57967813f4ec7d387aba4b2ce159c94e05a3629c7e5f07ec143ab4",
+      "input_sha256": "8ef8e734580cb90f1dba84d1bdf85bc7e852d36a19428e0815351fb3fc19732f",
+      "id": "416cfd260624da6ad69f6d3a5384164fd2ad8fcb242496586371108530bcb1e4",
       "name": "ON Semiconductor",
       "source_url": "https://finance.yahoo.com/quote/ON",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "1413f1996c9c385b3e53a5372120135a2613b197a6ff46684dc0ea77e2a2c7fc"
     },
     {
@@ -946,11 +1234,11 @@
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:22.605762+00:00",
-      "received_at": "2026-10-29T05:10:22.002671+00:00",
+      "issued_at": "2026-10-29T05:00:06.735295+00:00",
+      "received_at": "2026-10-29T05:00:05.941273+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "b7ae29cc7488038b264ac1ff9debbcbbc19fb9dec4d5a4bb13f484081a3fb164",
+      "model_sha256": "f325f679e3f68c3663105f7afe0b15ceea9b56000eecbd8ae3c1952455c38abe",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -1006,9 +1294,6 @@
       "direction": "flat",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33022.605762,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -1038,14 +1323,14 @@
         "drawdown20": -0.012816595382786455,
         "rebound20": 0.01732907859440691
       },
-      "input_sha256": "edfebccbe65f7280e5ac3d657bc9db800a6e225de7b4f657a48174cd889c1d64",
-      "id": "fdc4d1758af4d5dd6586a5b4ba72617a7b7147cbac69b44048712a4d6fa9e422",
+      "input_sha256": "340af7d7f3b4d20f680ba9c7a99abf804bbc5e5a47d9550717013a09639ad26a",
+      "id": "dbef845c83696eb4d5b5e263fdb8c7c79e295acd491d9b054d07f9ff9f62462c",
       "name": "S&P 500",
       "source_url": "https://finance.yahoo.com/quote/^GSPC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "653a15e15dca8de56fde73c241e730b4d34ad2d43f804dad995e4f96f38dd2c2"
     },
     {
@@ -1053,11 +1338,11 @@
       "market": "US",
       "mode": "daily",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:10:26.399391+00:00",
-      "received_at": "2026-10-29T05:10:25.113584+00:00",
+      "issued_at": "2026-10-29T05:00:10.187882+00:00",
+      "received_at": "2026-10-29T05:00:09.028613+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
-      "model_sha256": "0a77fcb1e3e166ebcd0ceb58e6ac688833758329a05a95c5188994d1b68e1c4f",
+      "model_sha256": "1476f40f775f4e36286724570c4d53578cfb5e582a2531f6575c7054aaed5dad",
       "trained_through": "2024-11-05T21:00:00+00:00",
       "calibrated_through": "2025-10-31T20:00:00+00:00",
       "training_samples": 738,
@@ -1113,9 +1398,6 @@
       "direction": "up",
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
-      "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33026.399391,
-      "lead_minutes_from_observation": null,
       "history_is_point_in_time_vintage": false,
       "limitations": [
         "가격 기반 연구 모델",
@@ -1145,14 +1427,14 @@
         "drawdown20": -0.042308226659512504,
         "rebound20": 0.02643219839152411
       },
-      "input_sha256": "8c8ef5137e5d0f1380449c053bc4b84607ba3e0cb0aae6654693a56f743f44cb",
-      "id": "0323f176687c043f9b0ee8b37a69f826048ce3d9789e4d8d15ea95ecbc8c43f4",
+      "input_sha256": "7b30e6209e1c58cfd88e1f42cbdbf86a67c0eefd0e932e3414c93802c7f58a5a",
+      "id": "4b3cc24293be0b468a8e0bdc1ca04c124d387e44d91a481a7cf8002eed4903c7",
       "name": "나스닥 종합",
       "source_url": "https://finance.yahoo.com/quote/^IXIC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40821667157",
-      "source_commit": "99e20485e3798cf2a253a74ee47f579b16afad9f",
+      "source_run_id": "40820793267",
+      "source_commit": "ff6e844ae1240d807e2984803cb2e868c3adabe0",
       "history_sha256": "00a0a810a700636d3d2906e64479807bf2e2527dc32b570c1478e3a95a549920"
     },
     {
@@ -1160,9 +1442,9 @@
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:20.381829+00:00",
-      "received_at": "2026-10-29T05:14:19.897044+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:53.622452+00:00",
+      "received_at": "2026-10-29T06:44:52.699939+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "c012c7c06d8bfdecfe8ef5d7ef2d44e594395553a93c97abee2d4aecbc702ca8",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1170,23 +1452,23 @@
       "training_samples": 2140,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 116,
+        "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.4224137931034483,
-        "baseline_accuracy": 0.3275862068965517,
-        "brier_loss": 0.6541969865032059,
-        "baseline_brier_loss": 0.678603920599167,
-        "log_loss": 1.0857981056505521,
-        "baseline_log_loss": 1.1153595229288549,
-        "brier_improvement": 0.024406934095961084,
+        "accuracy": 0.4152542372881356,
+        "baseline_accuracy": 0.3220338983050847,
+        "brier_loss": 0.6565826394643263,
+        "baseline_brier_loss": 0.6801063725494773,
+        "log_loss": 1.0890805280136684,
+        "baseline_log_loss": 1.1175309469133805,
+        "brier_improvement": 0.023523733085151006,
         "session_bootstrap_95pct_interval": [
-          -0.011830248774785211,
-          0.060008249008434635
+          -0.008991472517873801,
+          0.06061375502211874
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.05686165311205441,
+        "calibration_ece": 0.057549458218273,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1203,25 +1485,21 @@
             2
           ],
           [
-            10,
-            22,
+            11,
+            23,
             5
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.3216309437641379,
-        "flat": 0.4011702998480009,
-        "up": 0.27719875638786123
-      },
-      "direction": "flat",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1160.381829,
+      "input_age_seconds": 2693.622452,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1230,46 +1508,29 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.29398040130657954,
+        "flat": 0.41763882407839475,
+        "up": 0.28838077461502565
       },
-      "neutral_band_pct": 0.3423070019333037,
-      "origin_reference_price": 1537000.0,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": 0.001955671447196883,
-        "r3": 0.007208387942332806,
-        "r6": 0.002609262883235486,
-        "r12": 0.01788079470198678,
-        "r20": 0.019230769230769162,
-        "vol20": 0.003992749952945187,
-        "ma5": 0.00483786610878667,
-        "ma20": 0.012983589270414653,
-        "range": 0.0032530904359141183,
-        "body": 0.0013029315960912053,
-        "drawdown20": 0.0,
-        "rebound20": 0.02878179384203472
-      },
-      "input_sha256": "34ae0a45ea754898c9ee1dab5e715344a0ad8612d1557289e4e032e99a651c05",
-      "id": "53374644d91c1fc7a99899c997e42482a28c1c413d3f4c219c69ea850af860bf",
       "name": "SK하이닉스",
       "source_url": "https://finance.yahoo.com/quote/000660.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "39dee9714a4d9d39950bbc84b6c339e320feae59a37b77474ad23f00126079ea"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "acf734a49448a9f6fa35ec1c3372a755fd6743b83d3953d3e35de21a6d1afb58"
     },
     {
       "symbol": "005930.KS",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:20.358067+00:00",
-      "received_at": "2026-10-29T05:14:19.377498+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:53.580435+00:00",
+      "received_at": "2026-10-29T06:44:51.669790+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "ce92be4e19728c582a21c99309dba9900795041e2d05bb78c77777a370db5dbd",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1277,23 +1538,23 @@
       "training_samples": 2140,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 116,
+        "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.39655172413793105,
-        "baseline_accuracy": 0.4224137931034483,
-        "brier_loss": 0.64276768882142,
-        "baseline_brier_loss": 0.6578426778992783,
-        "log_loss": 1.064424444459648,
-        "baseline_log_loss": 1.0867674527899964,
-        "brier_improvement": 0.01507498907785814,
+        "accuracy": 0.3983050847457627,
+        "baseline_accuracy": 0.423728813559322,
+        "brier_loss": 0.6416008542816274,
+        "baseline_brier_loss": 0.6570437247338337,
+        "log_loss": 1.0628992071517445,
+        "baseline_log_loss": 1.0854930805580416,
+        "brier_improvement": 0.015442870452206223,
         "session_bootstrap_95pct_interval": [
-          -0.02298171030360774,
-          0.05580647462677909
+          -0.02293003464843949,
+          0.055831020562984016
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.09616399767872968,
+        "calibration_ece": 0.08953514310840673,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1306,29 +1567,25 @@
           ],
           [
             1,
-            38,
+            39,
             10
           ],
           [
             3,
-            23,
+            24,
             5
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.28371597543742777,
-        "flat": 0.38461040058046203,
-        "up": 0.3316736239821102
-      },
-      "direction": "flat",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1160.358067,
+      "input_age_seconds": 2693.580435,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1337,46 +1594,29 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.2594493700419972,
+        "flat": 0.4400373308446104,
+        "up": 0.3005132991133924
       },
-      "neutral_band_pct": 0.26218258604450717,
-      "origin_reference_price": 230000.0,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": -0.0010857763300760048,
-        "r3": 0.002178649237472685,
-        "r6": -0.0043290043290042934,
-        "r12": 0.0010881392818280489,
-        "r20": 0.009879253567508295,
-        "vol20": 0.003058159786916135,
-        "ma5": 0.00043497172683770735,
-        "ma20": 0.002560889227919194,
-        "range": 0.004347826086956522,
-        "body": 0.0,
-        "drawdown20": -0.00540540540540535,
-        "rebound20": 0.015452538631346657
-      },
-      "input_sha256": "25e7d209795f824302aa30b4dec8ba24c36a837f10ab954d195ba640d70ba917",
-      "id": "5fbabb56c26e083acd147f12b1f7d3792e85f29ea64737f51f9a85ddca80e2fc",
       "name": "삼성전자",
       "source_url": "https://finance.yahoo.com/quote/005930.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "49f9a716be72804436f38013eb0cdabd2fb8a393ef7d6cf10d976c5501880c48"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "e26d1915e0a2aa596ad5648139e705afe44afdb02e474ac1e0e2ddc104eb1382"
     },
     {
       "symbol": "035420.KS",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:21.264139+00:00",
-      "received_at": "2026-10-29T05:14:20.788255+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:55.223358+00:00",
+      "received_at": "2026-10-29T06:44:54.308402+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "76933c33c14bf5aaaa332cfbe39c3e8fc984e8b96edf691056d89bf5a579348c",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1384,23 +1624,23 @@
       "training_samples": 2140,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 116,
+        "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.5,
-        "baseline_accuracy": 0.5258620689655172,
-        "brier_loss": 0.5966094469417967,
-        "baseline_brier_loss": 0.6120222753060287,
-        "log_loss": 1.0118423410758202,
-        "baseline_log_loss": 1.0193609487920328,
-        "brier_improvement": 0.015412828364232072,
+        "accuracy": 0.4915254237288136,
+        "baseline_accuracy": 0.5169491525423728,
+        "brier_loss": 0.5978361017166036,
+        "baseline_brier_loss": 0.6156633144715067,
+        "log_loss": 1.0133058720726111,
+        "baseline_log_loss": 1.024498443135176,
+        "brier_improvement": 0.017827212754902975,
         "session_bootstrap_95pct_interval": [
-          -0.03744561913153318,
-          0.05738571284454852
+          -0.02615394956946347,
+          0.0582865285921059
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.07355655452026673,
+        "calibration_ece": 0.07847915353595422,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1408,7 +1648,7 @@
         "confusion_matrix": [
           [
             7,
-            26,
+            27,
             7
           ],
           [
@@ -1418,24 +1658,20 @@
           ],
           [
             2,
-            13,
+            14,
             0
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.3840859616959947,
-        "flat": 0.3163423038960183,
-        "up": 0.29957173440798707
-      },
-      "direction": "down",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1161.264139,
+      "input_age_seconds": 2695.223358,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1444,46 +1680,29 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.27718152123191786,
+        "flat": 0.4666355576294914,
+        "up": 0.25618292113859076
       },
-      "neutral_band_pct": 0.15,
-      "origin_reference_price": 174600.0,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": 0.0011467889908256534,
-        "r3": 0.004602991944764101,
-        "r6": 0.008083140877598094,
-        "r12": 0.008083140877598094,
-        "r20": 0.012173913043478368,
-        "vol20": 0.001205059439302446,
-        "ma5": 0.002641552773630318,
-        "ma20": 0.007530511555440045,
-        "range": 0.0028636884306987398,
-        "body": 0.0011467889908256881,
-        "drawdown20": -0.0005724098454493731,
-        "rebound20": 0.013937282229965264
-      },
-      "input_sha256": "c8fe51523442c6a22c0d3e22058a8c9317b2b32610c5b1e0a9b3b8889ae25845",
-      "id": "c02667175d53889da2171c714e8cadcda9d93d5a2e039ea9ed627347170a44e1",
       "name": "NAVER",
       "source_url": "https://finance.yahoo.com/quote/035420.KS",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "beeb6784fbd69da707dee0b8b1dda7efe298aa267addc9ff2cae740d76d41691"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "09239d27dc3d94e836106cb23d2b574d1ab09c7825ae4ffe72d00ead787b034f"
     },
     {
       "symbol": "403870.KQ",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:22.440828+00:00",
-      "received_at": "2026-10-29T05:14:21.400137+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:57.406598+00:00",
+      "received_at": "2026-10-29T06:44:55.396257+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "c0f2c9ceb33c39b0afcdd6540bca0a0b89da229a9e0a76db3c4087b4de2d8213",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1491,23 +1710,23 @@
       "training_samples": 2140,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 116,
+        "test_samples": 118,
         "test_sessions": 12,
-        "accuracy": 0.4224137931034483,
-        "baseline_accuracy": 0.43103448275862066,
-        "brier_loss": 0.6110422060723579,
-        "baseline_brier_loss": 0.658073029790033,
-        "log_loss": 1.0216958155777303,
-        "baseline_log_loss": 1.0882284339623836,
-        "brier_improvement": 0.047030823717675065,
+        "accuracy": 0.423728813559322,
+        "baseline_accuracy": 0.4322033898305085,
+        "brier_loss": 0.6118933246310875,
+        "baseline_brier_loss": 0.6572368494161628,
+        "log_loss": 1.0228591003111605,
+        "baseline_log_loss": 1.0868704617351963,
+        "brier_improvement": 0.045343524785075195,
         "session_bootstrap_95pct_interval": [
-          0.018017547363410033,
-          0.08293378259859821
+          0.016490590478817204,
+          0.08120571772130836
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.08721417286317254,
+        "calibration_ece": 0.08302686300731034,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1520,29 +1739,25 @@
           ],
           [
             3,
-            42,
+            43,
             5
           ],
           [
             0,
-            22,
+            23,
             5
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.3388615545358612,
-        "flat": 0.3495825178537216,
-        "up": 0.3115559276104173
-      },
-      "direction": "flat",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1162.440828,
+      "input_age_seconds": 2697.406598,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1551,46 +1766,29 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.2552496500233318,
+        "flat": 0.44657022865142326,
+        "up": 0.29818012132524496
       },
-      "neutral_band_pct": 0.21200153490835225,
-      "origin_reference_price": 45750.0,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": 0.0,
-        "r3": 0.004390779363337094,
-        "r6": 0.0,
-        "r12": 0.009933774834437026,
-        "r20": 0.008820286659316334,
-        "vol20": 0.0024728361200585655,
-        "ma5": 0.001532399299474685,
-        "ma20": 0.006047278724574001,
-        "range": 0.002185792349726776,
-        "body": 0.0,
-        "drawdown20": -0.0032679738562091387,
-        "rebound20": 0.015538290788013276
-      },
-      "input_sha256": "0bbdb083538d47b6e2dc1c45ab5a634df3bb7b72921f089801283590906a57c1",
-      "id": "41531d7a708275efa6c7c3aec1600a82121c8ecf73df180efa56d932eec28841",
       "name": "HPSP",
       "source_url": "https://finance.yahoo.com/quote/403870.KQ",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "52df85e22267f495d4cd48fe9427c1263f31736b6e16f25dc4763dda5b5cf183"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "f6bf5afa6d4418968493e3e22528d56bb3da7da9a6a3a747925092bb13bf5440"
     },
     {
       "symbol": "^KQ11",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:18.304942+00:00",
-      "received_at": "2026-10-29T05:14:17.317134+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:49.831312+00:00",
+      "received_at": "2026-10-29T06:44:47.823002+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "e4d3b948fdec603066b81549140994903f5214bf2a70120369d404756fb26b57",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1598,23 +1796,23 @@
       "training_samples": 2140,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 118,
+        "test_samples": 120,
         "test_sessions": 12,
-        "accuracy": 0.5169491525423728,
-        "baseline_accuracy": 0.4915254237288136,
-        "brier_loss": 0.6099117438254421,
-        "baseline_brier_loss": 0.6336459320764684,
-        "log_loss": 1.017572631475406,
-        "baseline_log_loss": 1.0522750895426587,
-        "brier_improvement": 0.023734188251026172,
+        "accuracy": 0.5083333333333333,
+        "baseline_accuracy": 0.48333333333333334,
+        "brier_loss": 0.6124793750513208,
+        "baseline_brier_loss": 0.6357103330561391,
+        "log_loss": 1.0213569672448746,
+        "baseline_log_loss": 1.054878735035612,
+        "brier_improvement": 0.023230958004818305,
         "session_bootstrap_95pct_interval": [
-          -0.008282623604138601,
-          0.05212000978596303
+          -0.008915797044266437,
+          0.05074424303966441
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.06101659404270286,
+        "calibration_ece": 0.053322417064882735,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1632,24 +1830,20 @@
           ],
           [
             2,
-            22,
+            24,
             5
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.2901801505514909,
-        "flat": 0.4232831812150683,
-        "up": 0.2865366682334409
-      },
-      "direction": "flat",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1158.304942,
+      "input_age_seconds": 2689.831312,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1658,46 +1852,29 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.25151656556229585,
+        "flat": 0.4498366775548297,
+        "up": 0.29864675688287445
       },
-      "neutral_band_pct": 0.15,
-      "origin_reference_price": 753.6300048828125,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": -1.3281892455863087e-05,
-        "r3": 0.001621498626848794,
-        "r6": 0.0027409257135311282,
-        "r12": 0.005725008505612861,
-        "r20": 0.004505171453265566,
-        "vol20": 0.0012027566283347862,
-        "ma5": 0.0007914759539231486,
-        "ma20": 0.003944483619163108,
-        "range": 0.0006369723880366138,
-        "body": 6.633375598492061e-05,
-        "drawdown20": -0.00014591948548237088,
-        "rebound20": 0.007809715330599376
-      },
-      "input_sha256": "a22958210625528940f14ce4a4db94e9eccac832dfe0b5aa511688199e37054b",
-      "id": "772e416234e2e577b338dd728dc7531fff77dcce5c27d89421d1b22c480aa642",
       "name": "코스닥",
       "source_url": "https://finance.yahoo.com/quote/^KQ11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "6c5061d1843c47259f3fd2ece84c6bad795aa4419dd2dd73b168295a54c0e6c4"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "da59daef352cc8bc68aeac8499ca6fc909ca3cf81767e8f464a1d928af726ff9"
     },
     {
       "symbol": "^KS11",
       "market": "KR",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:17.261542+00:00",
-      "received_at": "2026-10-29T05:14:16.778826+00:00",
-      "observed_until": "2026-10-29T04:55:00+00:00",
+      "issued_at": "2026-10-29T06:44:47.717877+00:00",
+      "received_at": "2026-10-29T06:44:46.809929+00:00",
+      "observed_until": "2026-10-29T06:00:00+00:00",
       "origin_session": "2026-10-29",
       "model_sha256": "a200c5b41ce4fc5dc425354c4b8f9090fdfea176f3ee44b9c5e94ab9d1994cd7",
       "trained_through": "2026-09-21T06:00:00+00:00",
@@ -1705,23 +1882,23 @@
       "training_samples": 2115,
       "calibration_samples": 720,
       "validation": {
-        "test_samples": 118,
+        "test_samples": 120,
         "test_sessions": 12,
-        "accuracy": 0.3559322033898305,
-        "baseline_accuracy": 0.3389830508474576,
-        "brier_loss": 0.6781057819770587,
-        "baseline_brier_loss": 0.6882404696731299,
-        "log_loss": 1.116742726102968,
-        "baseline_log_loss": 1.129825107407549,
-        "brier_improvement": 0.01013468769607141,
+        "accuracy": 0.35,
+        "baseline_accuracy": 0.3333333333333333,
+        "brier_loss": 0.6798712876631452,
+        "baseline_brier_loss": 0.6896364940645451,
+        "log_loss": 1.1189523420587457,
+        "baseline_log_loss": 1.1315506639883561,
+        "brier_improvement": 0.009765206401399868,
         "session_bootstrap_95pct_interval": [
           -0.03221545010473141,
-          0.05441957647207332
+          0.05435311435089781
         ],
         "confidence_interval_limitation": "Session-resampling diagnostic; not multiple-testing corrected or live-proven.",
-        "calibration_ece": 0.13584333450664787,
+        "calibration_ece": 0.14107616093121209,
         "test_start": "2026-10-14T00:05:00+00:00",
-        "test_end": "2026-10-29T04:35:00+00:00",
+        "test_end": "2026-10-29T05:35:00+00:00",
         "above_baseline_in_this_holdout": false,
         "validation_status": "no_reliable_edge",
         "live_success_rate": null,
@@ -1739,24 +1916,20 @@
           ],
           [
             2,
-            29,
+            31,
             4
           ]
         ]
       },
       "recommendation": false,
       "strict_green_override": false,
-      "status": "research_prediction",
-      "probabilities": {
-        "down": 0.2656250145923833,
-        "flat": 0.4138633652213655,
-        "up": 0.3205116201862512
-      },
-      "direction": "flat",
+      "status": "no_call",
+      "probabilities": null,
+      "direction": null,
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 1157.261542,
+      "input_age_seconds": 2687.717877,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1765,45 +1938,28 @@
         "재수집한 과거자료의 시간순 검증이며 실거래 성과 아님",
         "실사 통과·상승수익 보장 아님"
       ],
-      "reason": null,
-      "target": {
-        "start": "2026-10-29T05:25:00+00:00",
-        "end": "2026-10-29T05:55:00+00:00"
+      "reason": "insufficient_regular_session_time",
+      "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.2577903682719547,
+        "flat": 0.4508970727101039,
+        "up": 0.29131255901794145
       },
-      "neutral_band_pct": 0.2071120287148246,
-      "origin_reference_price": 5929.330078125,
-      "target_price_basis": "미래 target.start 시각의 정규장 봉 시가 → target.end 종가; 현재가 수익 예측 아님",
-      "feature_values": {
-        "r1": -0.0013440397065334064,
-        "r3": 0.0028295471015165052,
-        "r6": 0.002590511870482315,
-        "r12": 0.0088424421938893,
-        "r20": 0.013416899645316116,
-        "vol20": 0.0024158037616379903,
-        "ma5": 0.0007865515848795024,
-        "ma20": 0.00687589101947883,
-        "range": 0.0023274624260948536,
-        "body": -0.0006016997214700633,
-        "drawdown20": -0.001875295442255287,
-        "rebound20": 0.017226202726370765
-      },
-      "input_sha256": "2f84939a1af14685fb628f10e68bfc18bab37a719715f47a70ab8f2c3250e853",
-      "id": "630815198a8fe99191cf5a4f7b4c0dc4f6718af94b0157b13099753fc0fae655",
       "name": "코스피",
       "source_url": "https://finance.yahoo.com/quote/^KS11",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
-      "history_sha256": "15c9bdf0a2d8877a83b444279f9f67988d6a0d969f695d28d73fbdee35b2b606"
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
+      "history_sha256": "81d45a1d2869356deec3a9769ab2db51e6dcae5f11472632104134ca808b87b7"
     },
     {
       "symbol": "AAPL",
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:22.467627+00:00",
-      "received_at": "2026-10-29T05:14:21.949458+00:00",
+      "issued_at": "2026-10-29T06:44:57.451355+00:00",
+      "received_at": "2026-10-29T06:44:56.467901+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "923480cc5aa7d44886a94b69e2ea150c24e7fa8d1aaa60954a43426ffc2fdc57",
@@ -1859,7 +2015,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33262.467627,
+      "input_age_seconds": 38697.451355,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1870,12 +2026,17 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.20983467571004663,
+        "flat": 0.5540483255616787,
+        "up": 0.23611699872827469
+      },
       "name": "Apple",
       "source_url": "https://finance.yahoo.com/quote/AAPL",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "7f8d47576777785bb5033f49be0ac810cd9918bec0f31b2d0980a54b769beff2"
     },
     {
@@ -1883,8 +2044,8 @@
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:23.422009+00:00",
-      "received_at": "2026-10-29T05:14:22.662437+00:00",
+      "issued_at": "2026-10-29T06:44:59.249208+00:00",
+      "received_at": "2026-10-29T06:44:58.258059+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "a7c567b82fe0051c546b1f41a5de917c862e9492a37cd80b8f2e039e3a3ef5cc",
@@ -1940,7 +2101,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33263.422009,
+      "input_age_seconds": 38699.249208,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -1951,12 +2112,17 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.20983467571004663,
+        "flat": 0.5557439593047901,
+        "up": 0.2344213649851632
+      },
       "name": "Microsoft",
       "source_url": "https://finance.yahoo.com/quote/MSFT",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "4edafbb094efa23b9f42c1360fe8e4fa4306946b32020e00e9b791c3fccb9179"
     },
     {
@@ -1964,8 +2130,8 @@
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:24.632216+00:00",
-      "received_at": "2026-10-29T05:14:23.576840+00:00",
+      "issued_at": "2026-10-29T06:45:01.571242+00:00",
+      "received_at": "2026-10-29T06:44:59.435984+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "4d5542df33da616cd8631a218142b4975cddf4005f81fac0358f056dfafcec0b",
@@ -2021,7 +2187,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33264.632216,
+      "input_age_seconds": 38701.571242,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2032,12 +2198,17 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.258160237388724,
+        "flat": 0.5273420941076727,
+        "up": 0.21449766850360322
+      },
       "name": "NVIDIA",
       "source_url": "https://finance.yahoo.com/quote/NVDA",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "b97ce1894fd960668bf2ca3fe665c5bf644e6b90879c6df601211b32ef69f2b0"
     },
     {
@@ -2045,8 +2216,8 @@
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:24.661461+00:00",
-      "received_at": "2026-10-29T05:14:24.167288+00:00",
+      "issued_at": "2026-10-29T06:45:01.623730+00:00",
+      "received_at": "2026-10-29T06:45:00.608267+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "03b5408d49ea85655464cc23a3b1e2378614f9f98d130eb4dae581b7d22e8557",
@@ -2102,7 +2273,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33264.661461,
+      "input_age_seconds": 38701.62373,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2113,12 +2284,17 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.281475201356507,
+        "flat": 0.44128868164476476,
+        "up": 0.2772361169987283
+      },
       "name": "ON Semiconductor",
       "source_url": "https://finance.yahoo.com/quote/ON",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "a62af0b348389b4536b84032d4afb5674388c42c6dad040de7e04deb54d5a976"
     },
     {
@@ -2126,8 +2302,8 @@
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:18.332931+00:00",
-      "received_at": "2026-10-29T05:14:17.823666+00:00",
+      "issued_at": "2026-10-29T06:44:49.881041+00:00",
+      "received_at": "2026-10-29T06:44:48.834619+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "d6e1460ef8edf81367cb691d37ba75896d5b226d019a3319e71f8c18955237f6",
@@ -2183,7 +2359,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33258.332931,
+      "input_age_seconds": 38689.881041,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2194,12 +2370,17 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.06010230179028133,
+        "flat": 0.8900255754475703,
+        "up": 0.049872122762148335
+      },
       "name": "S&P 500",
       "source_url": "https://finance.yahoo.com/quote/^GSPC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "2ce27157d91439f36f6a67984294f571e284d9db0490a9f2cb33671b79a8888d"
     },
     {
@@ -2207,8 +2388,8 @@
       "market": "US",
       "mode": "intraday",
       "version": "direction-forecast-1.0",
-      "issued_at": "2026-10-29T05:14:19.223383+00:00",
-      "received_at": "2026-10-29T05:14:18.728265+00:00",
+      "issued_at": "2026-10-29T06:44:51.526555+00:00",
+      "received_at": "2026-10-29T06:44:50.576133+00:00",
       "observed_until": "2026-10-28T20:00:00+00:00",
       "origin_session": "2026-10-28",
       "model_sha256": "adc4e7bd27d37dcdd102616847099b9606925c97706e91e7089534922ac6af95",
@@ -2264,7 +2445,7 @@
       "delivery_verified": false,
       "source_type": "provider_historical_prices",
       "policy_revision": "provider-latency-30m-v1",
-      "input_age_seconds": 33259.223383,
+      "input_age_seconds": 38691.526555,
       "lead_minutes_from_observation": 30,
       "history_is_point_in_time_vintage": false,
       "limitations": [
@@ -2275,29 +2456,61 @@
       ],
       "reason": "insufficient_regular_session_time",
       "target": null,
+      "frozen_baseline_probabilities": {
+        "down": 0.10470538363713437,
+        "flat": 0.7833827893175074,
+        "up": 0.11191182704535821
+      },
       "name": "나스닥 종합",
       "source_url": "https://finance.yahoo.com/quote/^IXIC",
       "collector": "yfinance",
       "provider_is_official_exchange": false,
-      "source_run_id": "40822165588",
-      "source_commit": "9be234d2572e320174a1a159483b1202a653b6ed",
+      "source_run_id": "40830986038",
+      "source_commit": "d0c4cd603de3925ee5a463e34c015e5290d61618",
       "history_sha256": "3bd0e181616ea7d2a1293759cdc43b1c33bd09cf48feb510281b770afc96664c"
     }
   ],
   "forward_evaluation": {
-    "recorded_predictions": 41,
-    "matured_observations": 0,
-    "publicly_timely_observations": 0,
-    "pending_or_unavailable": 41,
-    "live_accuracy": null,
-    "baseline_comparison": "historical holdout shown per model; forward baseline pending",
-    "not_trade_returns": true
+    "recorded_predictions": 47,
+    "matured_observations": 21,
+    "publicly_timely_observations": 6,
+    "pending_or_unavailable": 12,
+    "live_accuracy": 0.5,
+    "accuracy_interval": [
+      0.18761630648265576,
+      0.8123836935173443
+    ],
+    "independent_deduplicated": true,
+    "baseline_comparison": {
+      "samples": 0,
+      "model": {
+        "samples": 0,
+        "accuracy": null,
+        "correct": 0,
+        "wilson_95_interval": null
+      },
+      "baseline": {
+        "samples": 0,
+        "accuracy": null,
+        "correct": 0,
+        "wilson_95_interval": null
+      },
+      "legacy_baseline_not_backfilled": true
+    },
+    "not_trade_returns": true,
+    "human_push_receipt_verified": false
+  },
+  "learning_evaluation": {
+    "version": "delayed-forward-learning-1.0",
+    "training_updates": 6,
+    "adaptive_groups": 0,
+    "report": "stock-forecast-learning.json"
   },
   "disclosures": [
     "실제 과거 OHLC로 학습한 모델 추정치",
-    "수익확률·매수승인 아님; strict-green 변경 없음",
-    "지연·유실·휴장 시 예측 보류",
-    "다수 모델 중 우연한 성과 가능; 미래 검증 전"
+    "공개 확인된 과거 예측을 채점한 뒤 새 예측에만 학습 반영",
+    "100% 적중·수익 보장 아님; strict-green 변경 없음",
+    "지연·누락·미래 타깃 종료 전에는 채점하지 않음"
   ],
-  "schedule_note": "Actions 지연 가능. 장중 예측은 표시된 미래 시간 구간에만 유효."
+  "schedule_note": "정기 실행은 지연 가능. 실시간 연결과 사용자 푸시 수신은 미확인."
 }
