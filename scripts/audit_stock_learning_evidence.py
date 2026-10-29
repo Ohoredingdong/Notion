@@ -242,6 +242,47 @@ class Tests(unittest.TestCase):
         s['groups'][name]['weights'][0][0] += 0.01
         self.assertEqual(examine(r,o,d,e,s,t)['status'], 'integrity_errors')
 
+    def test_two_updates_link_with_saved_terminal_weights(self):
+        # Both events are prospective and the second begins after the first
+        # target ends. A changed but SHA-shaped intermediate hash must fail.
+        r,o,d,e,s,_=synthetic()
+        next_r={**r[0], 'id':'synthetic-next',
+                'observed_until':'2026-10-29T14:30:00Z',
+                'received_at':'2026-10-29T14:32:00Z',
+                'issued_at':'2026-10-29T14:38:00Z',
+                'target':{'start':'2026-10-29T15:00:00Z',
+                          'end':'2026-10-29T15:30:00Z'}}
+        next_o={**o[0], 'id':next_r['id'], 'target':next_r['target'],
+                'evaluated_at':'2026-10-29T15:35:00Z'}
+        next_delivery={**d[0],
+                       'snapshot_generated_at':'2026-10-29T14:39:00Z',
+                       'verified_at':'2026-10-29T14:40:00Z',
+                       'prediction_ids':[next_r['id']]}
+        key2=forecast_key(next_r)
+        next_weights=[[0.06,0.0],[-0.06,0.0],[0.0,0.0]]
+        next_event={**e[0], 'prediction_id':next_r['id'],
+                    'event_key':key2,
+                    'available_at':next_o['evaluated_at'],
+                    'learned_at':'2026-10-29T15:36:00Z',
+                    'weights_before':e[0]['weights_after'],
+                    'weights_after':digest(next_weights),
+                    'id':digest({'version':VERSION,'trained_event':key2})}
+        name=e[0]['group']
+        s['groups'][name].update(weights=next_weights,learned=2,
+                                 last_train_end=next_r['target']['end'])
+        s['trained_events']=sorted([e[0]['event_key'],key2])
+        s['training_updates']=2
+        s['last_outcome_available_at']=next_o['evaluated_at']
+        inputs=(r+[next_r],o+[next_o],d+[next_delivery])
+        cutoff=ts('2026-10-29T16:00:00Z')
+        self.assertEqual(examine(*inputs,e+[next_event],s,cutoff)['status'],
+                         'learning_evidence_consistent')
+        forged={**next_event,'weights_before':'f'*64}
+        bad=examine(*inputs,e+[forged],s,cutoff)
+        self.assertEqual(bad['status'],'integrity_errors')
+        self.assertIn('learning_weight_hash_chain_broken',
+                      [x['error'] for x in bad['errors']])
+
     def test_unknown_learning_group_is_not_accepted(self):
         r,o,d,e,s,t=synthetic()
         s['groups']={}
