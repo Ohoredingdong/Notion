@@ -22,7 +22,7 @@ CLASSES = ['down', 'flat', 'up']
 FEATURES = ['r1', 'r3', 'r6', 'r12', 'r20', 'vol20', 'ma5', 'ma20',
             'range', 'body', 'drawdown20', 'rebound20']
 POLICY = {'daily_floor_pct': 0.30, 'intraday_floor_pct': 0.15,
-          'volatility_band_factor': 0.35, 'intraday_gap_minutes': 5,
+          'volatility_band_factor': 0.35, 'intraday_gap_minutes': 30, 'policy_revision': 'provider-latency-30m-v1',
           'intraday_target_minutes': 30, 'minimum_sessions_intraday': 30,
           'minimum_daily_samples': 500, 'minimum_independent_test_samples': 40,
           'minimum_test_sessions': 6, 'logistic_C': 0.2,
@@ -104,8 +104,9 @@ def features(bars, mode):
 
 
 def target_rows(bars, mode):
-    """Intraday: one full 5m gap, then 6 bars (30m), without crossing a session."""
-    first, last = (1, 1) if mode == 'daily' else (2, 7)
+    """Fixed provider-latency gap, then 6 bars (30m); never cross a session."""
+    gap = POLICY['intraday_gap_minutes']//5
+    first, last = (1, 1) if mode == 'daily' else (gap+1, gap+6)
     future_open = bars['open'].shift(-first)
     future_close = bars['close'].shift(-last)
     valid = future_open.notna() & future_close.notna()
@@ -229,7 +230,7 @@ def fit_model(bars, mode):
     baseline = (np.bincount(train.y, minlength=3)+1)/(len(train)+3)
     metrics = evaluate_model(test.y.to_numpy(), p, baseline, test)
     scaler, logistic = model.steps[0][1], model.steps[-1][1]
-    fingerprint = digest({'version': VERSION, 'coef': logistic.coef_.tolist(),
+    fingerprint = digest({'version': VERSION, 'policy': POLICY, 'coef': logistic.coef_.tolist(),
                           'intercept': logistic.intercept_.tolist(), 'mean': scaler.mean_.tolist(),
                           'scale': scaler.scale_.tolist(), 'temperature': temperature})
     return {'model': model, 'temperature': temperature, 'metrics': metrics,
@@ -248,13 +249,13 @@ def future_target(last, market, mode, issued_at):
         next_session = cal.next_session(current_session)
         start, end = cal.session_open(next_session), cal.session_close(next_session)
     else:
-        start = last['end'] + pd.Timedelta(minutes=5)
+        start = last['end'] + pd.Timedelta(minutes=POLICY['intraday_gap_minutes'])
         end = start + pd.Timedelta(minutes=30)
         if end > cal.session_close(current_session):
             return None, 'insufficient_regular_session_time'
     if start <= issued + pd.Timedelta(seconds=20):
         return None, 'target_already_started_or_delivery_window_too_short'
-    if mode == 'intraday' and issued-last['end'] > pd.Timedelta(minutes=5):
+    if mode == 'intraday' and issued-last['end'] > pd.Timedelta(minutes=POLICY['intraday_gap_minutes']):
         return None, 'intraday_source_stale'
     return {'start': start.isoformat(), 'end': end.isoformat()}, None
 
@@ -272,6 +273,9 @@ def make_prediction(bars, fitted, symbol, market, mode, received_at, issued_at=N
             'validation': fitted['metrics'], 'recommendation': False, 'strict_green_override': False,
             'status': 'no_call', 'probabilities': None, 'direction': None,
             'delivery_verified': False, 'source_type': 'provider_historical_prices',
+            'policy_revision': POLICY['policy_revision'],
+            'input_age_seconds': float((issued-last['end']).total_seconds()),
+            'lead_minutes_from_observation': POLICY['intraday_gap_minutes'] if mode == 'intraday' else None,
             'history_is_point_in_time_vintage': False,
             'limitations': ['가격 기반 연구 모델', '이벤트·수급·호가 미포함',
                            '재수집한 과거자료의 시간순 검증이며 실거래 성과 아님',
