@@ -3,6 +3,7 @@ An internally consistent outcome is NOT independent verification of exchange pri
 """
 from __future__ import annotations
 import argparse
+import hashlib
 from collections import Counter
 from datetime import datetime, timezone
 import json
@@ -28,6 +29,12 @@ def classify(change_pct, band_pct):
     if band < 0:
         raise ValueError('negative_band')
     return 'up' if change > band else 'down' if change < -band else 'flat'
+
+def audit_digest(value):
+    # Canonical schema fingerprint, recomputed independently of model output.
+    return hashlib.sha256(json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(',', ':'),
+        allow_nan=False).encode('utf-8')).hexdigest()
 
 def event_key(r):
     return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])
@@ -59,6 +66,71 @@ def validate(r):
             direction = candidate.get('direction')
             if direction not in CLASSES or abs(cp[CLASSES.index(direction)]-max(cp)) > 1e-12:
                 raise ValueError('shadow_direction_not_maximum_probability')
+
+    # Online-learning metadata freezes the incumbent/adaptive probabilities and
+    # the first issuance ID. The specialist selector, when present, wraps that
+    # ID into a second immutable ID and may choose a preregistered shadow model.
+    # Older records without online_learning retain their historical audit path.
+    online = r.get('online_learning')
+    if online is not None:
+        if not isinstance(online, dict) or online.get('version') != 'delayed-forward-learning-1.0':
+            raise ValueError('invalid_online_learning_structure')
+        if online.get('trading_enabled') is not False:
+            raise ValueError('invalid_online_learning_structure')
+        base_variant = online.get('active_variant')
+        if base_variant not in ('incumbent', 'adaptive'):
+            raise ValueError('unknown_online_variant')
+        choices = {}
+        for variant, name in (('incumbent', 'incumbent_probabilities'),
+                              ('adaptive', 'challenger_probabilities')):
+            distribution = online.get(name)
+            if not isinstance(distribution, dict) or set(distribution) != set(CLASSES):
+                raise ValueError('invalid_online_distribution')
+            values = [finite(distribution[k]) for k in CLASSES]
+            if any(x < 0 or x > 1 for x in values) or abs(sum(values)-1) > 1e-6:
+                raise ValueError('invalid_online_distribution')
+            choices[variant] = values
+        prior_id = audit_digest({
+            'event': audit_digest({k: r[k] for k in
+                                   ('symbol', 'market', 'mode', 'target')}),
+            'policy': r.get('policy_revision'),
+            'base_model': r['model_sha256'],
+            'online': online})
+        selector = r.get('directional_selection')
+        if selector is None:
+            chosen = base_variant
+            expected_id = prior_id
+        else:
+            if not isinstance(selector, dict) or selector.get('version') != 'direction-specialists-1.0':
+                raise ValueError('invalid_directional_selector')
+            if selector.get('orders_enabled') is not False or selector.get('strict_green_override') is not False:
+                raise ValueError('invalid_directional_selector')
+            chosen = selector.get('active')
+            if chosen not in ('incumbent', 'adaptive', 'balanced_linear',
+                              'balanced_nonlinear', 'movement_then_direction'):
+                raise ValueError('unknown_directional_selector_variant')
+            if chosen not in choices:
+                suites = r.get('directional_specialists')
+                candidate = (suites.get('candidates', {}).get(chosen)
+                             if isinstance(suites, dict) else None)
+                if not isinstance(candidate, dict):
+                    raise ValueError('selected_directional_candidate_missing')
+                distribution = candidate.get('probabilities')
+                if not isinstance(distribution, dict) or set(distribution) != set(CLASSES):
+                    raise ValueError('invalid_online_distribution')
+                values = [finite(distribution[k]) for k in CLASSES]
+                if any(x < 0 or x > 1 for x in values) or abs(sum(values)-1) > 1e-6:
+                    raise ValueError('invalid_online_distribution')
+                choices[chosen] = values
+            expected_id = audit_digest({
+                'prior_id': prior_id, 'selection': selector,
+                'specialists': r.get('directional_specialists'),
+                'issued': r['issued_at']})
+        if any(abs(expected-actual) > 1e-12
+               for expected, actual in zip(choices[chosen], p)):
+            raise ValueError('online_frozen_probabilities_mismatch')
+        if r.get('id') != expected_id:
+            raise ValueError('online_issuance_id_mismatch')
 
     if not (ts(r['observed_until']) <= ts(r['received_at']) <= ts(r['issued_at']) <
             ts(r['target']['start']) < ts(r['target']['end'])):
@@ -364,6 +436,100 @@ class SelfTests(unittest.TestCase):
                 'direction': 'up'}}}}
         self.assertEqual(audit([bad_direction], [], [], cutoff)['status'],
                          'integrity_errors')
+
+    def test_frozen_online_issuance_binding_is_fail_closed(self):
+        # Synthetic fixture, not a historical quote or model candidate trial.
+        row = {'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
+               'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'policy_revision': 'provider-latency-30m-v1',
+               'model_sha256': 'b'*64, 'neutral_band_pct': .3,
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat',
+               'online_learning': {
+                   'version': 'delayed-forward-learning-1.0',
+                   'active_variant': 'incumbent',
+                   'learned_before_issuance': 0,
+                   'weights_sha256': 'a'*64,
+                   'label_available_through': None,
+                   'incumbent_probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                   'challenger_probabilities': {'down': .3, 'flat': .4, 'up': .3},
+                   'challenger_calibration': 'not_yet_forward_validated',
+                   'trading_enabled': False}}
+        def frozen_hash(value):
+            return hashlib.sha256(json.dumps(
+                value, ensure_ascii=False, sort_keys=True, allow_nan=False,
+                separators=(',', ':')).encode('utf-8')).hexdigest()
+        row['id'] = frozen_hash({
+            'event': frozen_hash({k: row[k] for k in
+                                  ('symbol','market','mode','target')}),
+            'policy': row['policy_revision'],
+            'base_model': row['model_sha256'],
+            'online': row['online_learning']})
+        validate(row)
+        # Both below pass the old auditor: a forged primary probability/direction
+        # and a forged issuance ID can appear internally valid without binding.
+        changed = {**row, 'probabilities': {'down': .7, 'flat': .2, 'up': .1},
+                   'direction': 'down'}
+        with self.assertRaisesRegex(ValueError, 'online_frozen_probabilities_mismatch'):
+            validate(changed)
+        with self.assertRaisesRegex(ValueError, 'online_issuance_id_mismatch'):
+            validate({**row, 'id': '0'*64})
+        malformed = {**row, 'online_learning': {**row['online_learning'],
+                     'challenger_probabilities': {'down': 1.1, 'flat': -.1, 'up': 0.}}}
+        with self.assertRaisesRegex(ValueError, 'invalid_online_distribution'):
+            validate(malformed)
+
+    def test_wrapped_specialist_issuance_binding(self):
+        # Post-recipe synthetic reference: second-stage selection wraps prior ID.
+        row = {'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
+               'status': 'research_prediction',
+               'observed_until':'2026-10-29T13:30:00Z',
+               'received_at':'2026-10-29T13:31:00Z',
+               'issued_at':'2026-10-29T13:36:00Z',
+               'target':{'start':'2026-10-29T14:00:00Z',
+                         'end':'2026-10-29T14:30:00Z'},
+               'policy_revision':'provider-latency-30m-v1',
+               'model_sha256':'f'*64, 'neutral_band_pct':.3,
+               'probabilities':{'down':.2,'flat':.6,'up':.2}, 'direction':'flat',
+               'online_learning':{
+                   'version':'delayed-forward-learning-1.0',
+                   'active_variant':'incumbent','trading_enabled':False,
+                   'incumbent_probabilities':{'down':.2,'flat':.6,'up':.2},
+                   'challenger_probabilities':{'down':.4,'flat':.4,'up':.2}},
+               'directional_selection':{
+                   'version':'direction-specialists-1.0','active':'incumbent',
+                   'fallback_reason':None,'orders_enabled':False,
+                   'strict_green_override':False},
+               'directional_specialists':{
+                   'version':'direction-specialists-1.0',
+                   'status':'shadow_only',
+                   'candidates':{'movement_then_direction':{
+                       'probabilities':{'down':.6,'flat':.2,'up':.2},
+                       'direction':'down'}}}}
+        prior = audit_digest({'event':audit_digest({k:row[k] for k in
+                              ('symbol','market','mode','target')}),
+                              'policy':row['policy_revision'],
+                              'base_model':row['model_sha256'],
+                              'online':row['online_learning']})
+        row['id'] = audit_digest({
+            'prior_id':prior,'selection':row['directional_selection'],
+            'specialists':row['directional_specialists'],'issued':row['issued_at']})
+        validate(row)
+        tampered = {**row, 'probabilities':{'down':.6,'flat':.2,'up':.2},
+                    'direction':'down'}
+        with self.assertRaisesRegex(ValueError,'online_frozen_probabilities_mismatch'):
+            validate(tampered)
+        with self.assertRaisesRegex(ValueError,'online_issuance_id_mismatch'):
+            validate({**row,'id':'1'*64})
+        alternate = {**row, 'directional_selection':{
+            **row['directional_selection'], 'active':'movement_then_direction'}}
+        with self.assertRaisesRegex(ValueError,'online_frozen_probabilities_mismatch'):
+            validate(alternate)
 
     def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
         # Deliberately inconsistent synthetic publication, not a market observation.
