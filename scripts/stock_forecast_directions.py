@@ -14,11 +14,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.class_weight import compute_sample_weight
+from stock_forecast_cascade import MovementThenDirection, RECIPE as CASCADE_RECIPE
 import stock_forecast_model as base
 import stock_forecast_learning as online
 
 VERSION = 'direction-specialists-1.0'
-SPECIALISTS = ('balanced_linear', 'balanced_nonlinear')
+SPECIALISTS = ('balanced_linear', 'balanced_nonlinear', 'movement_then_direction')
 VARIANTS = ('adaptive',) + SPECIALISTS
 CLASSES = base.CLASSES
 POLICY = {
@@ -90,9 +91,9 @@ def expanded_features(bars, mode):
 
 
 def fit(bars, mode, incumbent):
-    """Fixed two candidates; all fitting/calibration precedes untouched test.
+    """Fixed preregistered candidates; all fitting/calibration precedes untouched test.
 
-Class balancing can worsen probability calibration; neither candidate is promoted
+Class balancing can worsen probability calibration; no candidate is promoted
 on its historical scores. The existing target rows and neutral bands stay fixed.
 """
     data, _, _ = base.samples(bars, mode)
@@ -113,6 +114,7 @@ on its historical scores. The existing target rows and neutral bands stay fixed.
     bp = base.temperature_scale(incumbent['model'].predict_proba(test[base.FEATURES]), incumbent['temperature'])
     reference = metrics(test.y, bp)
     model_specs = {
+        'movement_then_direction': MovementThenDirection(),
         'balanced_linear': make_pipeline(StandardScaler(), LogisticRegression(
             C=.2, class_weight='balanced', max_iter=1000, solver='lbfgs')),
         'balanced_nonlinear': HistGradientBoostingClassifier(
@@ -145,7 +147,8 @@ on its historical scores. The existing target rows and neutral bands stay fixed.
         p = base.temperature_scale(model.predict_proba(latest), temp)[0]
         report = metrics(test.y, tp)
         model_id = base.digest({'inputs': input_hash, 'name': name, 'temperature': temp,
-                                'policy_version': VERSION})
+                                'policy_version': VERSION,
+                                'recipe': CASCADE_RECIPE if name == 'movement_then_direction' else name})
         out['candidates'][name] = {'model_sha256': model_id, 'probabilities': online.pdict(p),
                                   'direction': CLASSES[int(p.argmax())], 'temperature': temp,
                                   'validation': report, 'recommendation': False,
