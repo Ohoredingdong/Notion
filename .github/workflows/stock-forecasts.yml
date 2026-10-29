@@ -6,15 +6,17 @@ on:
     paths:
       - 'scripts/stock_forecast_model.py'
       - 'scripts/stock_forecast_sources.py'
+      - 'scripts/stock_forecast_learning.py'
       - 'scripts/run_stock_forecasts.py'
       - 'scripts/publish_stock_forecasts.py'
       - 'scripts/verify_stock_forecast_public.py'
       - 'scripts/test_stock_forecast*'
-      - 'assets/stock-forecast.js'
+      - 'assets/stock-forecast*.js'
       - 'stock-forecast.html'
       - '.github/workflows/stock-forecasts.yml'
   schedule:
-    - cron: '17,47 0-7,13-21 * * 1-5'
+    - cron: '7,17,27,37,47,57 0-7,13-22 * * 1-5'
+    - cron: '47 23 * * 0-4'
 permissions:
   contents: write
   pages: write
@@ -37,30 +39,33 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install reproducible model and session readers
+      - name: Install model and session readers
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2' 'playwright==1.56.0'
-      - name: Test future targets and leakage guards
+      - name: Test future targets, delayed feedback and rollback guards
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecast_learning.py' -v
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
+          node --check assets/stock-forecast-learning.js
           node scripts/test_stock_forecast_ui.cjs
-      - name: Train real historical candles and freeze future predictions
+      - name: Evaluate frozen calls, learn known answers, then predict future targets
         run: python scripts/run_stock_forecasts.py
-      - name: Test actual forecast screen
+      - name: Test actual forecast and learning screens
         run: |
           python -m playwright install --with-deps chromium
           python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
           python scripts/test_stock_forecast_browser.py
-      - name: Publish without changing strict approvals
+          python scripts/test_stock_forecast_learning_browser.py
+      - name: Publish forecast and learning state atomically
         run: python scripts/publish_stock_forecasts.py
       - name: Request public build
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
-      - name: Verify exact public payload, main integration and code
+      - name: Verify exact public predictions, learning report and code
         run: python scripts/verify_stock_forecast_public.py
-      - name: Preserve public observation timestamps separately
+      - name: Preserve public availability timestamps
         run: python scripts/publish_stock_forecasts.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -70,7 +75,9 @@ jobs:
           path: |
             stock-direction-forecast.json
             stock-forecast-*.jsonl
+            stock-forecast-learning*.json
             forecast-*.png
             scripts/stock_forecast_model.py
             scripts/stock_forecast_sources.py
+            scripts/stock_forecast_learning.py
             scripts/run_stock_forecasts.py

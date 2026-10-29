@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from stock_forecast_model import (VERSION, POLICY, normalise_history, fit_model,
                                   make_prediction, score_prediction, stamp, digest)
+import stock_forecast_learning as learning
 UTC = timezone.utc
 DEFAULT = [
     ('^KS11', '코스피', 'KR'), ('^KQ11', '코스닥', 'KR'),
@@ -58,7 +59,6 @@ def collect(spec, mode):
     received = datetime.now(UTC)
     if raw is None or raw.empty:
         raise ValueError('provider_returned_no_candles')
-    # Explicit unresolved corporate actions are not allowed inside a target bar.
     bars = normalise_history(raw, market, mode, received)
     if 'Stock Splits' in raw.columns:
         for idx, val in raw['Stock Splits'].items():
@@ -71,10 +71,12 @@ def collect(spec, mode):
 
 def process(spec, mode):
     symbol, name, market = spec
+    bars = None
     try:
         bars, received = collect(spec, mode)
         fitted = fit_model(bars, mode)
         record = make_prediction(bars, fitted, symbol, market, mode, received)
+        record['frozen_baseline_probabilities'] = learning.pdict(fitted['baseline'])
         record.update(name=name, source_url='https://finance.yahoo.com/quote/'+symbol,
                       collector='yfinance', provider_is_official_exchange=False,
                       source_run_id=os.environ.get('GITHUB_RUN_ID'),
@@ -84,87 +86,116 @@ def process(spec, mode):
                                             for row in bars.itertuples()]))
         return record, bars
     except Exception as exc:
-        # Do not print request URLs or credentials if a provider fails.
         return {'symbol': symbol, 'name': name, 'market': market, 'mode': mode,
                 'status': 'no_call', 'probabilities': None, 'direction': None,
                 'reason': type(exc).__name__+': '+str(exc).split('https:')[0][:140],
-                'issued_at': datetime.now(UTC).isoformat(), 'recommendation': False}, None
+                'issued_at': datetime.now(UTC).isoformat(), 'recommendation': False}, bars
+
+
+def complete_target(record, bars):
+    if record['mode'] != 'intraday':
+        return True
+    start, end = stamp(record['target']['start']), stamp(record['target']['end'])
+    segment = bars[(bars.start >= start) & (bars.end <= end)].sort_values('start')
+    expected = int((end-start).total_seconds()/300)
+    return bool(expected == 6 and len(segment) == expected and
+                list(segment.start) == list(pd.date_range(start, periods=expected, freq='5min')) and
+                segment.session.nunique() == 1)
 
 
 def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
     specs = specs or DEFAULT
+    state, parent_hash = learning.load_state(root)
+    ledger = root/'stock-forecast-ledger.jsonl'
+    old_records = readlines(ledger)
+    old_outcomes = readlines(root/'stock-forecast-outcomes.jsonl')
+    deliveries = readlines(root/'stock-forecast-deliveries.jsonl')
     all_records, histories = [], {}
-    # Network+model tasks are independent. Native BLAS threads should be set to 1.
     with ThreadPoolExecutor(max_workers=3) as pool:
         jobs = {pool.submit(process, spec, mode): (spec[0], mode) for spec in specs for mode in modes}
         for future in as_completed(jobs):
             record, bars = future.result()
             all_records.append(record)
-            if bars is not None:
-                histories[jobs[future]] = bars
-            print(record['symbol'], record['mode'], record['status'],
-                  record.get('validation', {}).get('validation_status', record.get('reason')), flush=True)
+            if bars is not None: histories[jobs[future]] = bars
+            print(record['symbol'], record['mode'], record['status'], flush=True)
     now = stamp(datetime.now(UTC))
-    ledger = root/'stock-forecast-ledger.jsonl'
-    previous = {r['id']: r for r in readlines(ledger)}
-    ready = []
-    for r in all_records:
-        if r.get('status') == 'research_prediction' and r['id'] in previous:
-            # Never move an old issue timestamp forward to make it look new.
-            r = previous[r['id']]
-        elif r.get('status') == 'research_prediction' and stamp(r['target']['start']) <= now+pd.Timedelta(seconds=45):
-            r = {**r, 'status': 'no_call', 'reason': 'publication_window_missed',
-                 'probabilities': None, 'direction': None}
-        ready.append(r)
-    ready.sort(key=lambda r: (r['mode'], r['market'], r['symbol']))
-    frozen = freeze(ledger, ready)
-    deliveries = readlines(root/'stock-forecast-deliveries.jsonl')
-    delivery_times = {}
-    for d in deliveries:
-        if d.get('status') == 'public_verified':
-            for rid in d.get('prediction_ids', []):
-                delivery_times.setdefault(rid, d['verified_at'])
-    prior_outcomes = {r['id']: r for r in readlines(root/'stock-forecast-outcomes.jsonl') if r.get('status') == 'observed'}
-    fresh_outcomes = []
-    pending = 0
-    for old in frozen.values():
-        if old['id'] in prior_outcomes:
-            continue
-        bars = histories.get((old['symbol'], old['mode']))
-        if bars is None:
-            pending += 1
-            continue
-        outcome = score_prediction(old, bars, now, delivery_times.get(old['id']))
+    prior_outcomes = {r['id']: r for r in old_outcomes if r.get('status') == 'observed'}
+    public = learning.delivery_map(deliveries)
+    fresh = []
+    for r in old_records:
+        if r['id'] in prior_outcomes: continue
+        bars = histories.get((r['symbol'], r['mode']))
+        if bars is None or not complete_target(r, bars): continue
+        outcome = score_prediction(r, bars, now, public.get(r['id']))
         if outcome and outcome['status'] == 'observed':
-            fresh_outcomes.append(outcome)
-            prior_outcomes[old['id']] = outcome
-        else:
-            pending += 1
-    if fresh_outcomes:
-        with (root/'stock-forecast-outcomes.jsonl').open('a') as f:
-            for outcome in fresh_outcomes:
-                f.write(json.dumps(outcome, ensure_ascii=False, allow_nan=False)+'\n')
-    # Ensure publication has all append-only files even on the initial no-call run.
+            outcome['source_checked_at'] = now.isoformat()
+            outcome['single_provider_not_execution'] = True
+            fresh.append(outcome); prior_outcomes[r['id']] = outcome
+    learning.append_unique(root/'stock-forecast-outcomes.jsonl', fresh)
+    outcomes = list(prior_outcomes.values())
+    pairs, _ = learning.joined(old_records, outcomes, deliveries, now)
+    # Test old issued distributions first; only then learn from their known answers.
+    events = learning.select_variant(state, pairs, now)
+    events += learning.learn(state, pairs, now)
+    ready, attempts = [], []
+    first_by_event = {}
+    for r in sorted(old_records, key=lambda r:r.get('issued_at','')):
+        if learning.contract(r): first_by_event.setdefault(learning.key(r),r)
+    run_id = str(os.environ.get('GITHUB_RUN_ID') or now.isoformat())
+    for r in all_records:
+        if r.get('status') == 'research_prediction':
+            existing = first_by_event.get(learning.key(r))
+            if existing is not None:
+                r = existing
+            elif stamp(r['target']['start']) <= stamp(datetime.now(UTC))+pd.Timedelta(seconds=45):
+                r = {**r, 'status':'no_call', 'probabilities':None, 'direction':None,
+                     'reason':'publication_window_missed'}
+            else:
+                r = learning.augment(r, state, datetime.now(UTC))
+        ready.append(r)
+        attempt={'version':learning.VERSION, 'run_id':run_id, 'symbol':r['symbol'],
+                 'mode':r['mode'], 'checked_at':now.isoformat(), 'status':r['status'],
+                 'prediction_id':r.get('id') if r['status']=='research_prediction' else None,
+                 'reason':r.get('reason') if r['status']!='research_prediction' else None}
+        attempt['id']=digest({'run':run_id,'attempt':os.environ.get('GITHUB_RUN_ATTEMPT','1'),
+                              'symbol':r['symbol'],'mode':r['mode'],'version':learning.VERSION})
+        attempts.append(attempt)
+    ready.sort(key=lambda r:(r['mode'],r['market'],r['symbol']))
+    frozen = freeze(ledger, ready)
+    attempts_by_id = learning.append_unique(root/learning.ATTEMPTS_FILE, attempts)
+    learning.append_unique(root/learning.EVENTS_FILE, events)
+    state.update(revision=state['revision']+1, updated_at=stamp(datetime.now(UTC)).isoformat(),
+                 parent_sha256=parent_hash)
+    write(root/learning.STATE_FILE, state)
+    evaluation = learning.report(list(frozen.values()), outcomes, deliveries,
+                                  list(attempts_by_id.values()), state, events, datetime.now(UTC))
+    write(root/learning.REPORT_FILE, evaluation)
     for path in [ledger, root/'stock-forecast-outcomes.jsonl', root/'stock-forecast-deliveries.jsonl']:
         path.touch(exist_ok=True)
-    verified = [v for v in prior_outcomes.values() if v['public_before_target_verified']]
-    summary = {'recorded_predictions': len(frozen), 'matured_observations': len(prior_outcomes),
-               'publicly_timely_observations': len(verified), 'pending_or_unavailable': pending,
-               'live_accuracy': float(np.mean([v['correct'] for v in verified])) if verified else None,
-               'baseline_comparison': 'historical holdout shown per model; forward baseline pending',
-               'not_trade_returns': True}
-    artifact = {'version': VERSION, 'generated_at': now.isoformat(),
-                'source_run_id': os.environ.get('GITHUB_RUN_ID'), 'policy': POLICY,
-                'status': 'research_only', 'real_time_connected': False,
-                'refresh_mode': 'scheduled_best_effort_not_realtime',
-                'coverage': len(specs), 'counts': dict(Counter(r['status'] for r in ready)),
-                'records': ready, 'forward_evaluation': summary,
-                'disclosures': ['실제 과거 OHLC로 학습한 모델 추정치',
-                                '수익확률·매수승인 아님; strict-green 변경 없음',
-                                '지연·유실·휴장 시 예측 보류', '다수 모델 중 우연한 성과 가능; 미래 검증 전'],
-                'schedule_note': 'Actions 지연 가능. 장중 예측은 표시된 미래 시간 구간에만 유효.'}
-    write(root/'stock-direction-forecast.json', artifact)
-    print(json.dumps({'counts': artifact['counts'], 'evaluation': summary}, ensure_ascii=False), flush=True)
+    counts=evaluation['evaluation_counts']; performance=evaluation['overall']
+    summary={'recorded_predictions':len(frozen), 'matured_observations':len(prior_outcomes),
+             'publicly_timely_observations':performance['samples'],
+             'pending_or_unavailable':counts.get('pending_targets',0)+counts.get('outcome_missing',0),
+             'live_accuracy':performance['accuracy'], 'accuracy_interval':performance['wilson_95_interval'],
+             'independent_deduplicated':True, 'baseline_comparison':evaluation['baseline_paired'],
+             'not_trade_returns':True, 'human_push_receipt_verified':False}
+    artifact={'version':VERSION, 'generated_at':evaluation['generated_at'],
+              'source_run_id':os.environ.get('GITHUB_RUN_ID'), 'policy':POLICY,
+              'status':'research_only', 'real_time_connected':False,
+              'refresh_mode':'scheduled_best_effort_not_realtime',
+              'coverage':len(specs), 'counts':dict(Counter(r['status'] for r in ready)),
+              'records':ready,'forward_evaluation':summary,
+              'learning_evaluation':{'version':learning.VERSION,'training_updates':state['training_updates'],
+                  'adaptive_groups':evaluation['learning']['adaptive_groups'],'report':learning.REPORT_FILE},
+              'disclosures':['실제 과거 OHLC로 학습한 모델 추정치',
+                  '공개 확인된 과거 예측을 채점한 뒤 새 예측에만 학습 반영',
+                  '100% 적중·수익 보장 아님; strict-green 변경 없음',
+                  '지연·누락·미래 타깃 종료 전에는 채점하지 않음'],
+              'schedule_note':'정기 실행은 지연 가능. 실시간 연결과 사용자 푸시 수신은 미확인.'}
+    write(root/'stock-direction-forecast.json',artifact)
+    print(json.dumps({'counts':artifact['counts'],'scored':performance['samples'],
+                      'correct':performance['correct'],'training_updates':state['training_updates'],
+                      'promotions':evaluation['learning']['promotions']},ensure_ascii=False),flush=True)
     return artifact
 
 
