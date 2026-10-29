@@ -3,6 +3,7 @@ An internally consistent outcome is NOT independent verification of exchange pri
 """
 from __future__ import annotations
 import argparse
+import hashlib
 from collections import Counter
 from datetime import datetime, timezone
 import json
@@ -364,6 +365,53 @@ class SelfTests(unittest.TestCase):
                 'direction': 'up'}}}}
         self.assertEqual(audit([bad_direction], [], [], cutoff)['status'],
                          'integrity_errors')
+
+    def test_frozen_online_issuance_binding_is_fail_closed(self):
+        # Synthetic fixture, not a historical quote or model candidate trial.
+        row = {'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
+               'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'policy_revision': 'provider-latency-30m-v1',
+               'model_sha256': 'b'*64, 'neutral_band_pct': .3,
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat',
+               'online_learning': {
+                   'version': 'delayed-forward-learning-1.0',
+                   'active_variant': 'incumbent',
+                   'learned_before_issuance': 0,
+                   'weights_sha256': 'a'*64,
+                   'label_available_through': None,
+                   'incumbent_probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                   'challenger_probabilities': {'down': .3, 'flat': .4, 'up': .3},
+                   'challenger_calibration': 'not_yet_forward_validated',
+                   'trading_enabled': False}}
+        def frozen_hash(value):
+            return hashlib.sha256(json.dumps(
+                value, ensure_ascii=False, sort_keys=True, allow_nan=False,
+                separators=(',', ':')).encode('utf-8')).hexdigest()
+        row['id'] = frozen_hash({
+            'event': frozen_hash({k: row[k] for k in
+                                  ('symbol','market','mode','target')}),
+            'policy': row['policy_revision'],
+            'base_model': row['model_sha256'],
+            'online': row['online_learning']})
+        validate(row)
+        # Both below pass the old auditor: a forged primary probability/direction
+        # and a forged issuance ID can appear internally valid without binding.
+        changed = {**row, 'probabilities': {'down': .7, 'flat': .2, 'up': .1},
+                   'direction': 'down'}
+        with self.assertRaisesRegex(ValueError, 'online_frozen_probabilities_mismatch'):
+            validate(changed)
+        with self.assertRaisesRegex(ValueError, 'online_issuance_id_mismatch'):
+            validate({**row, 'id': '0'*64})
+        malformed = {**row, 'online_learning': {**row['online_learning'],
+                     'challenger_probabilities': {'down': 1.1, 'flat': -.1, 'up': 0.}}}
+        with self.assertRaisesRegex(ValueError, 'invalid_online_distribution'):
+            validate(malformed)
 
     def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
         # Deliberately inconsistent synthetic publication, not a market observation.
