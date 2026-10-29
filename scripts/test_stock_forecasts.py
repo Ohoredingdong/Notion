@@ -153,7 +153,7 @@ class ForecastTests(unittest.TestCase):
         row = bars.iloc[-30]
         target, reason = future_target(row, 'US', 'intraday', row.end+pd.Timedelta(seconds=20))
         self.assertIsNone(reason)
-        self.assertEqual(stamp(target['start'])-row.end, pd.Timedelta(minutes=5))
+        self.assertEqual(stamp(target['start'])-row.end, pd.Timedelta(minutes=POLICY['intraday_gap_minutes']))
         self.assertEqual(stamp(target['end'])-stamp(target['start']), pd.Timedelta(minutes=30))
 
     def test_last_minutes_no_forecast(self):
@@ -167,6 +167,19 @@ class ForecastTests(unittest.TestCase):
         bars.loc[bars.index[-1], 'close'] *= 100
         r = make_prediction(bars, self.fitted, 'TEST', 'US', 'daily', self.now, self.now)
         self.assertEqual(r['reason'], 'unresolved_price_discontinuity')
+
+    def test_provider_delay_keeps_target_in_future(self):
+        bars = fixture(mode='intraday')
+        row = bars.iloc[-30]
+        target, reason = future_target(row, 'US', 'intraday', row.end+pd.Timedelta(minutes=16))
+        self.assertIsNone(reason)
+        self.assertGreater(stamp(target['start']), row.end+pd.Timedelta(minutes=16))
+
+    def test_fixed_lead_is_also_used_in_training_labels(self):
+        bars = fixture(mode='intraday')
+        targets = target_rows(bars, 'intraday')
+        self.assertEqual(targets.iloc[25]['target_start']-bars.iloc[25]['end'], pd.Timedelta(minutes=POLICY['intraday_gap_minutes']))
+        self.assertEqual(targets.iloc[25]['target_end']-targets.iloc[25]['target_start'], pd.Timedelta(minutes=30))
 
 if __name__ == '__main__':
     unittest.main()
