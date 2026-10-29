@@ -3,9 +3,11 @@ Same unofficial provider, not an independent-source cross-check.
 """
 from datetime import datetime, timezone
 import threading
+import time
 import pandas as pd
 
 _CALENDAR_LOCK = threading.Lock()
+_HISTORY_LOCK = threading.Lock()
 _PREPARED_YEAR = None
 
 
@@ -42,13 +44,28 @@ def regular_grid(frame, mode):
     return output
 
 
+def read_history_serially(fetcher):
+    """yfinance shares a SQLite cookie/timezone cache; serialize its I/O only."""
+    with _HISTORY_LOCK:
+        for attempt in range(3):
+            try:
+                return fetcher()
+            except Exception as exc:
+                # Only retry this observed transient cache lock. Never retry a
+                # missing-data error by returning an old or synthetic snapshot.
+                if 'database is locked' not in str(exc).lower() or attempt == 2:
+                    raise
+                time.sleep(.25*(attempt+1))
+
+
 def history(symbol, mode):
     prepare_sessions()
     import yfinance as yf
-    frame = yf.Ticker(symbol).history(period='5y' if mode == 'daily' else '60d',
-                                    interval='1d' if mode == 'daily' else '5m',
-                                    auto_adjust=False, actions=True, prepost=False,
-                                    timeout=18, raise_errors=True)
+    frame = read_history_serially(lambda: yf.Ticker(symbol).history(
+        period='5y' if mode == 'daily' else '60d',
+        interval='1d' if mode == 'daily' else '5m',
+        auto_adjust=False, actions=True, prepost=False,
+        timeout=18, raise_errors=True))
     return regular_grid(frame, mode)
 
 
@@ -76,7 +93,27 @@ def self_test():
         pass
     else:
         raise AssertionError('duplicate bars must be rejected')
-    print('Source guards passed: 32 concurrent initializations; off-grid, UTC and duplicate checks')
+    active = [0, 0]
+    def fake_io():
+        active[0] += 1; active[1] = max(active[1], active[0])
+        time.sleep(.002); active[0] -= 1
+        return 'synthetic_test_only'
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        assert set(pool.map(lambda _: read_history_serially(fake_io), range(16))) == {'synthetic_test_only'}
+    assert active[1] == 1
+    from unittest.mock import patch
+    calls = [0]
+    def temporary_lock():
+        calls[0] += 1
+        if calls[0] < 3: raise RuntimeError('database is locked')
+        return 'test_only'
+    with patch('time.sleep'):
+        assert read_history_serially(temporary_lock) == 'test_only' and calls[0] == 3
+    def missing(): raise ValueError('no_history')
+    try: read_history_serially(missing)
+    except ValueError: pass
+    else: raise AssertionError('missing source must not be fabricated')
+    print('Source guards passed: session concurrency, bar boundaries, serialized cache I/O and bounded lock retry')
 
 if __name__ == '__main__':
     self_test()
