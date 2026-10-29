@@ -44,7 +44,7 @@ jobs:
       - name: Test future targets, delayed feedback and rollback guards
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
-          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecast_learning.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display -v
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
           node --check assets/stock-forecast-learning.js
