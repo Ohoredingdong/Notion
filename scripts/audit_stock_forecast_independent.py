@@ -30,6 +30,12 @@ def classify(change_pct, band_pct):
         raise ValueError('negative_band')
     return 'up' if change > band else 'down' if change < -band else 'flat'
 
+def audit_digest(value):
+    # Canonical schema fingerprint, recomputed independently of model output.
+    return hashlib.sha256(json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(',', ':'),
+        allow_nan=False).encode('utf-8')).hexdigest()
+
 def event_key(r):
     return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])
 
