@@ -89,6 +89,7 @@ def audit(records, outcomes, deliveries, cutoff):
         except (KeyError, ValueError, TypeError) as exc:
             errors.append({'id': r.get('id'), 'error': str(exc)})
     public = {}
+    valid_public_times = []  # verified snapshots, distinct from first public time per forecast
     for d in deliveries:
         if d.get('status') != 'public_verified':
             continue
@@ -103,6 +104,7 @@ def audit(records, outcomes, deliveries, cutoff):
         if snapshot > seen:
             errors.append({'id': d.get('verification_id'), 'error': 'snapshot_generated_after_verification'})
             continue
+        at_least_one_valid_id = False
         for rid in d.get('prediction_ids', []):
             forecast = by_id.get(rid)
             if forecast is None:
@@ -111,8 +113,11 @@ def audit(records, outcomes, deliveries, cutoff):
             if ts(forecast['issued_at']) > snapshot:
                 errors.append({'id': rid, 'error': 'prediction_issued_after_public_snapshot'})
                 continue
+            at_least_one_valid_id = True
             if rid not in public or seen < public[rid]:
                 public[rid] = seen
+        if at_least_one_valid_id and seen <= cutoff:
+            valid_public_times.append(seen)
     actuals = {}
     for o in outcomes:
         if o.get('status') != 'observed':
@@ -185,6 +190,22 @@ def audit(records, outcomes, deliveries, cutoff):
         direction[c] = {'actual': actual, 'calls': calls, 'hits': hits, 'missed': actual-hits,
                         'false_calls': calls-hits, 'recall': hits/actual if actual else None,
                         'precision': hits/calls if calls else None}
+    # This is evidence age only. Neither exchange-session freshness nor human
+    # notification delivery can be certified from this repository snapshot.
+    def newest(field):
+        values = [ts(r[field]) for r in by_id.values() if r.get(field) and ts(r[field]) <= cutoff]
+        return max(values).isoformat() if values else None
+    last_public = max(valid_public_times) if valid_public_times else None
+    freshness = {
+        'last_observed_until': newest('observed_until'),
+        'last_received_at': newest('received_at'),
+        'last_issued_at': newest('issued_at'),
+        'last_public_verified_at': last_public.isoformat() if last_public else None,
+        'public_age_minutes': (cutoff-last_public).total_seconds()/60 if last_public else None,
+        'exchange_session_freshness_verified': False,
+        'human_delivery_verified': False,
+        'scope': 'Ages of immutable repository evidence; not live quote/session/receipt validation.'
+    }
     return {'version': 'independent-forecast-audit-1.0', 'audit_cutoff': cutoff.isoformat(),
             'generated_at': datetime.now(timezone.utc).isoformat(),
             'status': 'integrity_errors' if errors else 'ledger_arithmetic_consistent',
@@ -196,7 +217,8 @@ def audit(records, outcomes, deliveries, cutoff):
             'constant_flat_is_diagnostic_not_preregistered_benchmark': True,
             'externally_verified_candles': False, 'human_push_delivery_verified': False,
             'proven_predictive_edge': False, 'perfect_future_prediction_proven': False,
-            'scope': 'Recomputes stored open/close arithmetic and timing; does not verify raw exchange candles or execution.'}
+            'scope': 'Recomputes stored open/close arithmetic and timing; does not verify raw exchange candles or execution.',
+            'freshness_evidence': freshness}
 
 def read_lines(path):
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
@@ -281,6 +303,33 @@ class SelfTests(unittest.TestCase):
         self.assertEqual(bad['scored'], 1)
         self.assertEqual(bad['status'], 'integrity_errors')
         self.assertTrue(any(e.get('id') == second['id'] for e in bad['errors']))
+
+    def test_latest_evidence_timestamp_never_claims_trading_freshness(self):
+        # Synthetic-only red/green test: a past verified snapshot can be old
+        # even if all immutable prediction/outcome arithmetic is valid.
+        row = {'id':'synthetic-freshness', 'symbol':'TEST', 'market':'US',
+               'mode':'intraday', 'status':'research_prediction',
+               'observed_until':'2026-10-29T13:30:00Z',
+               'received_at':'2026-10-29T13:31:00Z',
+               'issued_at':'2026-10-29T13:36:00Z',
+               'target':{'start':'2026-10-29T14:00:00Z',
+                         'end':'2026-10-29T14:30:00Z'},
+               'probabilities':{'down':.2,'flat':.6,'up':.2},
+               'direction':'flat','neutral_band_pct':.3}
+        delivery = {'status':'public_verified',
+                    'snapshot_generated_at':'2026-10-29T13:36:20Z',
+                    'verified_at':'2026-10-29T13:36:25Z',
+                    'prediction_ids':[row['id']]}
+        result = audit([row], [], [delivery], ts('2026-10-29T16:13:11Z'))
+        self.assertEqual(result['status'], 'ledger_arithmetic_consistent')
+        meta = result['freshness_evidence']
+        self.assertEqual(meta['last_observed_until'], '2026-10-29T13:30:00+00:00')
+        self.assertEqual(meta['last_received_at'], '2026-10-29T13:31:00+00:00')
+        self.assertEqual(meta['last_issued_at'], '2026-10-29T13:36:00+00:00')
+        self.assertEqual(meta['last_public_verified_at'], '2026-10-29T13:36:25+00:00')
+        self.assertGreater(meta['public_age_minutes'], 150)
+        self.assertFalse(meta['exchange_session_freshness_verified'])
+        self.assertFalse(meta['human_delivery_verified'])
 
     def test_shadow_candidate_probability_corruption_must_be_reported(self):
         # Synthetic-only red/green test. No real predictions or outcomes are changed.
