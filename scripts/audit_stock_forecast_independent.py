@@ -38,6 +38,28 @@ def validate(r):
         raise ValueError('invalid_probabilities')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
+    # Independently validate frozen research-only challengers as evidence,
+    # without promoting them or rescoring any historical outcome.
+    specialists = r.get('directional_specialists')
+    if specialists is not None:
+        if not isinstance(specialists, dict):
+            raise ValueError('invalid_shadow_candidate_structure')
+        candidates = specialists.get('candidates', {})
+        if not isinstance(candidates, dict):
+            raise ValueError('invalid_shadow_candidate_structure')
+        for candidate_name, candidate in candidates.items():
+            if not isinstance(candidate_name, str) or not isinstance(candidate, dict):
+                raise ValueError('invalid_shadow_candidate_structure')
+            distribution = candidate.get('probabilities')
+            if not isinstance(distribution, dict):
+                raise ValueError('invalid_shadow_candidate_structure')
+            cp = [finite(distribution[k]) for k in CLASSES]
+            if any(x < 0 or x > 1 for x in cp) or abs(sum(cp)-1) > 1e-6:
+                raise ValueError('invalid_shadow_probabilities')
+            direction = candidate.get('direction')
+            if direction not in CLASSES or abs(cp[CLASSES.index(direction)]-max(cp)) > 1e-12:
+                raise ValueError('shadow_direction_not_maximum_probability')
+
     if not (ts(r['observed_until']) <= ts(r['received_at']) <= ts(r['issued_at']) <
             ts(r['target']['start']) < ts(r['target']['end'])):
         raise ValueError('nonprospective_timing')
