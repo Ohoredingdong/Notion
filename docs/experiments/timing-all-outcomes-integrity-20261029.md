@@ -31,3 +31,9 @@ Acceptance for any user completion notice remains `docs/stock-timing-acceptance-
 
 ## Publication / independent audit
 Branch CI did not publish forecasts or modify old ledger, outcomes, deliveries, learning, source state or attempts. Merge only the auditor plus this experiment record after review. On main rerun the independent audit; do not label the published page or workflow pass as a proven trading signal.
+
+## Main acceptance (2026-10-29)
+- [PR #38](https://github.com/Ohoredingdong/Notion/pull/38) merged the scoped auditor and experiment note only; merge commit `811d22227fd973b62b8c32d2de01aecb0e49f130`.
+- [Main independent audit 40891601006](https://github.com/Ohoredingdong/Notion/actions/runs/40891601006) finished **success**: all seven auditor self-tests (including overlapping corruption) passed, independent stored-price audit returned `ledger_arithmetic_consistent`, forward score **6 / 3 correct**, down **3 misses**, up **0 samples** and **no integrity errors**. The branch's stored-price audit separately verified all 21 observed rows internally, not against an exchange.
+- Main code update changes independent evidence integrity only. No change to strict-green, raw ledger/outcomes/attempt/delivery timestamps, actionability, model selection or automated orders. Existing public pages do not require a UI deployment for this internal audit guard.
+- **Timing usefulness remains unproven; no user completion notification.** All acceptance contract blockers concerning adequate prospective bidirectional targets, real user signal receipt, executable quotes/costs and untouched follow-up remain open.
