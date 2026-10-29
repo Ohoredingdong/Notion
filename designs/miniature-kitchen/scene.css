@@ -97,66 +97,70 @@ body .shell .fridge-stage{filter:none}
 .fridge-displays{position:absolute;inset:0;z-index:7;pointer-events:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
 .fridge-lcd{
- position:absolute;container-type:inline-size;overflow:hidden;padding:2px;
- border:1px solid #c4c5bd;border-radius:10px;background:linear-gradient(145deg,#f5f3eb,#c9ccc5);
- box-shadow:inset 0 1px 0 #ffffffc9,0 2px 4px #48483d26;
- color:#30362f;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
- --lcd-module:linear-gradient(145deg,#f4f2ec,#e9e7df);
- --lcd-module-edge:#ffffffb3;--lcd-module-shadow:inset 0 1px 0 #ffffff8c,0 1px 2px #56594c0d;
+ position:absolute;container-type:inline-size;overflow:hidden;padding:1px;
+ border:1px solid #ffffff2e;border-radius:10px;background:rgba(52,60,68,.78);
+ -webkit-backdrop-filter:blur(10px) saturate(.75);backdrop-filter:blur(10px) saturate(.75);
+ box-shadow:inset 0 1px 0 #ffffff0f,0 2px 8px #1c232b26;
+ color:#f8fafb;font-size:11px;line-height:1.3;pointer-events:none;filter:none;transform:none;
+ --lcd-module:rgba(255,255,255,.045);
+ --lcd-module-edge:rgba(255,255,255,.07);--lcd-module-shadow:none;
 }
 .fridge-lcd:after{content:none}
-.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:4px;border-radius:7px;background:linear-gradient(145deg,#e8e5de,#dad8d0)}
-.lcd-header{display:flex;align-items:center;justify-content:space-between;gap:3px;flex-shrink:0;padding:1px 0 2px}
-.lcd-title{font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;color:#30362f}
-.lcd-total{flex-shrink:0;padding:1px 3px;border:1px solid #ffffffb3;border-radius:12px;background:#efeee7;font-size:9px;font-weight:500;line-height:1.2;color:#4f5f49;font-variant-numeric:tabular-nums}
-.lcd-total.is-overdue{background:#f8e9e3;color:#9d3936}
-.lcd-counters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,18px);gap:3px;margin:0;flex-shrink:0}
-.lcd-counters>div{display:flex;align-items:center;justify-content:space-between;gap:2px;min-width:0;padding:2px 4px;border:1px solid var(--lcd-module-edge);border-radius:5px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow)}
-.lcd-counters>div:first-child{grid-row:1/3;flex-direction:column;align-items:flex-start;justify-content:center}
-.lcd-counters dt{font-size:9px;line-height:1.1;white-space:nowrap;color:#555c54}
+.lcd-screen{height:100%;min-width:0;display:flex;flex-direction:column;gap:3px;padding:4px;border-radius:8px;background:transparent}
+.lcd-header{display:block;flex-shrink:0;padding:0;text-align:center}
+.lcd-title{display:block;font-size:11px;font-weight:500;line-height:1.2;letter-spacing:-.3px;white-space:normal;word-break:keep-all;text-align:center;color:#fff}
+.lcd-total{display:none}
+.lcd-counters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,16px);gap:3px;margin:0;flex-shrink:0}
+.lcd-counters>div{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;padding:2px 4px;border:1px solid var(--lcd-module-edge);border-radius:5px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow)}
+.lcd-counters>div:first-child{grid-row:1/3;flex-direction:column;align-items:center;justify-content:center}
+.lcd-counters dt{font-size:9px;line-height:1.1;white-space:nowrap;color:#f3f6f8}
 .lcd-counters dd{margin:0;font-size:11px;line-height:1.1;font-weight:500;font-variant-numeric:tabular-nums;color:var(--expiry,#315f32)}
 .lcd-counters>div:first-child dd{font-size:18px;line-height:1;margin-top:1px}
-.fridge-lcd [data-expiry-tone="today"]{--expiry:#805024}
-.fridge-lcd [data-expiry-tone="tomorrow"]{--expiry:#3a5f7a}
-.fridge-lcd [data-expiry-tone="soon"]{--expiry:#315f32}
-.fridge-lcd [data-expiry-tone="overdue"]{--expiry:#9d3936}
-.lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0;padding:2px 4px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow)}
-.lcd-row{min-width:0;display:flex;align-items:center;gap:4px;padding:0;border:0;border-bottom:1px solid #dcded3;background:none}
+.fridge-lcd [data-expiry-tone="today"]{--expiry:#fff1d6;--expiry-bar:#ead09e}
+.fridge-lcd [data-expiry-tone="tomorrow"]{--expiry:#edf6ff;--expiry-bar:#afd7f2}
+.fridge-lcd [data-expiry-tone="soon"]{--expiry:#edf9ee;--expiry-bar:#b0e9bf}
+.fridge-lcd [data-expiry-tone="overdue"]{--expiry:#fff1ef;--expiry-bar:#f0bdb7}
+.lcd-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(var(--lcd-rows),minmax(0,1fr));gap:0;padding:0 4px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow)}
+.lcd-row{min-width:0;display:flex;align-items:center;gap:4px;padding:0;border:0;border-bottom:1px solid #ffffff14;background:none}
 .lcd-row:last-child{border-bottom:0}
 .lcd-food{width:20px;height:24px;flex-shrink:0;display:block}
 .lcd-food .food-art{width:100%;height:100%;filter:none}
-.lcd-item-copy{min-width:0;flex:1}
+.lcd-item-copy{min-width:0;flex:1;text-align:center}
 .lcd-row b{display:block;font-size:12px;font-weight:500;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.2px}
-.lcd-item-meta{display:flex;align-items:center;gap:3px;min-width:0;margin-top:1px;font-size:10px;line-height:1.1}
-.lcd-deadline{display:flex;align-items:center;flex-shrink:0;font-size:inherit;font-weight:400;line-height:1.1;color:var(--expiry,#315f32)}
+.lcd-item-meta{display:flex;align-items:center;justify-content:center;gap:3px;min-width:0;margin-top:1px;font-size:10px;line-height:1.1}
+.lcd-deadline{display:flex;align-items:center;flex-shrink:0;font-size:inherit;font-weight:400;line-height:1.1;color:var(--expiry,#edf9ee)}
 .lcd-deadline:before{content:none}
 [data-expiry-tone="overdue"] .lcd-deadline{font-weight:500}
-.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555c54;font-variant-numeric:tabular-nums}
-.lcd-empty{align-self:center;text-align:center;color:#555c54;font-size:11px;line-height:1.4;word-break:keep-all}
-.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;font-size:10px;line-height:1.2;color:#555c54;flex-shrink:0;white-space:nowrap}
+.lcd-quantity{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f3f6f8;font-variant-numeric:tabular-nums}
+.lcd-empty{align-self:center;text-align:center;color:#f3f6f8;font-size:11px;line-height:1.4;word-break:keep-all}
+.lcd-footer{display:flex;align-items:center;justify-content:space-between;gap:3px;font-size:10px;line-height:1.2;color:#f3f6f8;flex-shrink:0;white-space:nowrap}
 .lcd-expiry-footer{flex-direction:column;align-items:stretch;gap:3px}
-.lcd-expiry-footer>span{display:none}
-.lcd-expiry-track{display:flex;gap:2px;height:2px;overflow:hidden;border-radius:4px;background:#c8cbbf}
-.lcd-expiry-track i{display:block;min-width:0;background:var(--expiry,#4b8346);border-radius:2px}
+.lcd-expiry-footer>span{display:block}
+.fridge-lcd[data-lcd-layout="standard"] .lcd-expiry-footer{flex-direction:row;align-items:center;gap:5px}
+.fridge-lcd[data-lcd-layout="standard"] .lcd-expiry-footer>span{order:2;font-size:9px}
+.fridge-lcd[data-lcd-layout="standard"] .lcd-expiry-track{flex:1;min-width:0}
+.fridge-lcd:has(.lcd-total.is-overdue) .lcd-expiry-footer>span{color:#fff1ef}
+.lcd-expiry-track{display:flex;gap:2px;height:2px;overflow:hidden;border-radius:4px;background:#ffffff29}
+.lcd-expiry-track i{display:block;min-width:0;background:var(--expiry-bar,#9de5d5);border-radius:2px}
 .lcd-recipe-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;white-space:normal}
-.lcd-recipe-facts>span{display:flex;align-items:center;justify-content:center;min-width:0;padding:2px;border:1px solid var(--lcd-module-edge);border-radius:5px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;color:#555c54;line-height:1.1;text-align:center;word-break:keep-all}
-.lcd-recipe-facts .lcd-level{color:#315f32}
+.lcd-recipe-facts>span{display:flex;align-items:center;justify-content:center;min-width:0;padding:2px;border:1px solid var(--lcd-module-edge);border-radius:5px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;color:#f3f6f8;line-height:1.1;text-align:center;word-break:keep-all}
+.lcd-recipe-facts .lcd-level{color:#edf9ee}
 .lcd-menu{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex:1;min-height:0;padding:2px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow)}
 .lcd-dish{display:grid;place-items:center;flex:1 1 20px;width:44px;min-height:20px;max-height:36px;overflow:hidden}
 .lcd-dish .dish-art{display:block;width:100%;height:100%;filter:none}
 .lcd-recipe{display:block;min-width:0;flex:0 0 auto;width:100%;font-size:12px;font-weight:500;line-height:1.2;text-align:center;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.2px}
 .lcd-recipe-detail{flex-shrink:0;display:grid;grid-template-columns:36px minmax(0,1fr);gap:3px}
-.lcd-stock{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(26px,1fr) auto;align-items:center;justify-items:center;gap:2px;min-width:0;padding:3px 2px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;line-height:1.2;color:#555c54}
+.lcd-stock{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(26px,1fr) auto;align-items:center;justify-items:center;gap:2px;min-width:0;padding:3px 2px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;line-height:1.2;color:#f3f6f8}
 .lcd-stock:only-child{grid-column:1/-1;display:block;padding:4px;text-align:center}
 .lcd-stock-label{display:contents}
 .lcd-stock-label>span{grid-column:1;grid-row:2;min-width:0;white-space:nowrap}
 .lcd-stock-word{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.lcd-stock-label b{grid-column:1;grid-row:1;z-index:1;font-size:9px;font-weight:500;font-variant-numeric:tabular-nums;color:#315f32}
-.lcd-stock-track{grid-column:1;grid-row:1;width:26px;height:26px;border-radius:50%;background:conic-gradient(#4b8346 var(--lcd-coverage,0%),#c6cdbd 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}
+.lcd-stock-label b{grid-column:1;grid-row:1;z-index:1;font-size:9px;font-weight:500;font-variant-numeric:tabular-nums;color:#f8fafb}
+.lcd-stock-track{grid-column:1;grid-row:1;width:26px;height:26px;border-radius:50%;background:conic-gradient(#9de5d5 var(--lcd-coverage,0%),#ffffff29 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0)}
 .lcd-stock-track i{display:none}
-.lcd-missing{display:flex;flex-direction:column;justify-content:center;min-width:0;margin:0;padding:3px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;line-height:1.2;color:#555c54;overflow-wrap:anywhere}
+.lcd-missing{display:flex;flex-direction:column;justify-content:center;min-width:0;margin:0;padding:3px;border:1px solid var(--lcd-module-edge);border-radius:6px;background:var(--lcd-module);box-shadow:var(--lcd-module-shadow);font-size:9px;line-height:1.2;text-align:center;color:#f3f6f8;overflow-wrap:anywhere}
 .lcd-missing span{display:block;margin-bottom:2px;word-break:keep-all}
-.lcd-missing b{display:block;font-size:10px;font-weight:400;line-height:1.2;color:#41493d;word-break:keep-all}
+.lcd-missing b{display:block;font-size:10px;font-weight:400;line-height:1.2;color:#f8fafb;word-break:keep-all}
 .fridge-lcd[data-lcd-layout="compact"] .lcd-counters,.fridge-lcd[data-lcd-layout="summary"] .lcd-counters,
 .fridge-lcd[data-lcd-layout="compact"] .lcd-total,.fridge-lcd[data-lcd-layout="summary"] .lcd-total,
 .fridge-lcd[data-lcd-layout="compact"] .lcd-missing,.fridge-lcd[data-lcd-layout="summary"] .lcd-missing,
@@ -192,8 +196,10 @@ body .shell .fridge-stage{filter:none}
 .fridge-lcd[data-lcd-layout="summary"] .lcd-stock{display:block;padding:0;border:0;background:none;box-shadow:none;font-size:10px}
 .fridge-lcd[data-lcd-layout="summary"] .lcd-stock-label{display:flex;align-items:center;justify-content:space-between;gap:3px;white-space:nowrap}
 .fridge-lcd[data-lcd-layout="summary"] .lcd-stock-label b{font-size:10px}
-.fridge-lcd[data-lcd-layout="summary"] .lcd-stock-track{display:block;width:100%;height:2px;margin-top:1px;border-radius:3px;background:#c6cdbd;-webkit-mask:none;mask:none;overflow:hidden}
-.fridge-lcd[data-lcd-layout="summary"] .lcd-stock-track i{display:block;height:100%;border-radius:3px;background:#4b8346}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-stock-track{display:block;width:100%;height:2px;margin-top:1px;border-radius:3px;background:#ffffff29;-webkit-mask:none;mask:none;overflow:hidden}
+.fridge-lcd[data-lcd-layout="summary"] .lcd-stock-track i{display:block;height:100%;border-radius:3px;background:#9de5d5}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.fridge-lcd{background:#60676e}}
+@media(prefers-reduced-transparency:reduce){.fridge-lcd{background:#60676e;-webkit-backdrop-filter:none;backdrop-filter:none}}
 @container(max-width:100px){.lcd-food,.lcd-level{display:none}.lcd-item-meta{gap:3px}.lcd-menu{gap:1px}}
 .kitchen-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:44px;padding:6px 10px;background:#f0ede4;border:1px solid #ded7c5;border-radius:12px;font-size:12px;color:#605c49}
 .kitchen-progress button{min-height:36px;padding:4px 9px;border:1px solid #cfdbc5;border-radius:8px;background:#fffef9;color:#416b51;font-weight:600}
