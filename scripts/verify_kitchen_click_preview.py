@@ -2,7 +2,7 @@ import hashlib,json,os,shutil,subprocess,tempfile,time,traceback
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-SOURCE='6f20477efd576378aa92b9f44cec59370d5315d6'
+SOURCE='2e08219869c2493c04436eecfd0828da282a14d7'
 OUT=Path('/tmp/kitchen-click-preview');OUT.mkdir(exist_ok=True)
 RESULT=OUT/'status.json'
 result={'source':SOURCE,'run_url':f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}','cases':[],'scope':'Actual public HTTPS HTMLPreview execution in fresh Chromium desktop/mobile contexts, not a local proxy or stub; no physical-device claim.'}
@@ -15,7 +15,7 @@ try:
    raw=f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{SOURCE}/previews/mobile/{mode}.html'
    url='https://htmlpreview.github.io/?'+raw
    for profile,width,height in [('desktop',649,900),('phone',390,844)]:
-    label=f'{mode}-{profile}';case={'mode':mode,'profile':profile,'url':url,'passed':False};ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=True,is_mobile=profile=='phone',device_scale_factor=2,reduced_motion='reduce',timezone_id='Asia/Seoul');page=ctx.new_page();errors=[];sources=[]
+    label=f'{mode}-{profile}';case={'mode':mode,'profile':profile,'url':url,'passed':False};ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=True,is_mobile=profile=='phone',device_scale_factor=2,reduced_motion='no-preference',timezone_id='Asia/Seoul');page=ctx.new_page();errors=[];sources=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.on('response',lambda r:sources.append(r) if r.url==raw else None)
     try:
@@ -29,6 +29,17 @@ try:
      expect(frame.locator('[data-lcd="freshRight"] .lcd-title')).to_have_text('오늘의 추천메뉴')
      expect(frame.locator('.lcd-dish')).to_be_visible()
      assert not frame.evaluate('document.documentElement.scrollWidth>innerWidth')
+     expect(frame.locator('.door-label')).to_have_count(0)
+     frame.locator('[data-door="freshLeft"]').evaluate("""e=>{e.click();const a=e.getAnimations().find(a=>a.transitionProperty==='transform');if(!a)throw new Error('Missing real opening transition');a.pause();a.currentTime=0;}""")
+     hit=frame.evaluate("""()=>{const r=document.querySelector('[data-item="broccoli"]').getBoundingClientRect(),e=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {door:e?.closest('[data-door]')?.dataset.door||null,item:e?.closest('[data-item]')?.dataset.item||null}}""")
+     assert hit=={'door':'freshLeft','item':None},hit
+     frame.locator('[data-door="freshLeft"]').evaluate("e=>e.getAnimations().forEach(a=>a.play())")
+     frame.wait_for_function("document.querySelector('[data-door=\"freshLeft\"]').getAnimations().every(a=>a.playState==='finished')")
+     frame.locator('[data-door="freshLeft"]').evaluate('e=>e.click()')
+     frame.wait_for_function("!MiniKitchen.isDoorClosing('freshLeft')")
+     expect(frame.locator('[data-lcd="freshLeft"]')).to_be_visible()
+     case['opening_food_occluded_at_first_frame']=True
+     case['door_surface_labels_removed']=True
      frame.locator('#expandDisplays').click();expect(frame.locator('.display-inspector .fridge-lcd')).to_have_count(2);frame.locator('#closeTray').click()
      assert sources,'No real public raw source response observed'
      case['source_sha256']=hashlib.sha256(sources[0].body()).hexdigest()
