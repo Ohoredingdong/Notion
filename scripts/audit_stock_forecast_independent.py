@@ -282,6 +282,33 @@ class SelfTests(unittest.TestCase):
         self.assertEqual(bad['status'], 'integrity_errors')
         self.assertTrue(any(e.get('id') == second['id'] for e in bad['errors']))
 
+    def test_latest_evidence_timestamp_never_claims_trading_freshness(self):
+        # Synthetic-only red/green test: a past verified snapshot can be old
+        # even if all immutable prediction/outcome arithmetic is valid.
+        row = {'id':'synthetic-freshness', 'symbol':'TEST', 'market':'US',
+               'mode':'intraday', 'status':'research_prediction',
+               'observed_until':'2026-10-29T13:30:00Z',
+               'received_at':'2026-10-29T13:31:00Z',
+               'issued_at':'2026-10-29T13:36:00Z',
+               'target':{'start':'2026-10-29T14:00:00Z',
+                         'end':'2026-10-29T14:30:00Z'},
+               'probabilities':{'down':.2,'flat':.6,'up':.2},
+               'direction':'flat','neutral_band_pct':.3}
+        delivery = {'status':'public_verified',
+                    'snapshot_generated_at':'2026-10-29T13:36:20Z',
+                    'verified_at':'2026-10-29T13:36:25Z',
+                    'prediction_ids':[row['id']]}
+        result = audit([row], [], [delivery], ts('2026-10-29T16:13:11Z'))
+        self.assertEqual(result['status'], 'ledger_arithmetic_consistent')
+        meta = result['freshness_evidence']
+        self.assertEqual(meta['last_observed_until'], '2026-10-29T13:30:00+00:00')
+        self.assertEqual(meta['last_received_at'], '2026-10-29T13:31:00+00:00')
+        self.assertEqual(meta['last_issued_at'], '2026-10-29T13:36:00+00:00')
+        self.assertEqual(meta['last_public_verified_at'], '2026-10-29T13:36:25+00:00')
+        self.assertGreater(meta['public_age_minutes'], 150)
+        self.assertFalse(meta['exchange_session_freshness_verified'])
+        self.assertFalse(meta['human_delivery_verified'])
+
     def test_shadow_candidate_probability_corruption_must_be_reported(self):
         # Synthetic-only red/green test. No real predictions or outcomes are changed.
         record = {'id': 'synthetic-shadow', 'symbol': 'TEST', 'market': 'US',

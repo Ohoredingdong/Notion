@@ -1,0 +1,44 @@
+name: Research Forecast Freshness Evidence Gate
+on:
+  push:
+    branches: [research/timing-freshness-evidence-20261030]
+    paths:
+      - 'scripts/audit_stock_forecast_independent.py'
+      - 'docs/experiments/timing-freshness-evidence-20261030.md'
+      - '.github/workflows/research-timing-freshness-evidence-20261030.yml'
+permissions:
+  contents: read
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit synthetic defect and pinned real data without writes
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py --cutoff '2026-10-29T16:13:11Z' --output /tmp/freshness-verified.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/freshness-verified.json').read_text())
+          assert r['status']=='ledger_arithmetic_consistent',r['errors']
+          assert (r['scored'],r['correct'],r['prediction_rows'],r['unique_events'])==(6,3,53,32)
+          assert r['outcome_rows_seen']==r['outcome_rows_verified']==21
+          assert r['counts']['nonoverlapping_targets']==24 and r['counts']['overlap_excluded']==8
+          assert r['directions']['down']['missed']==3 and r['directions']['up']['actual']==0
+          f=r['freshness_evidence']
+          assert f['last_public_verified_at']=='2026-10-29T13:47:26.310461+00:00',f
+          assert f['public_age_minutes']>145,f
+          assert f['human_delivery_verified'] is False and f['exchange_session_freshness_verified'] is False
+          print('RESEARCH_ONLY_STORED_EVIDENCE_TIMING_AND_FRESHNESS_CHECK_PASS',f)
+          PY
+      - name: Existing learning and directional regression (no prediction publishing)
+        run: |
+          pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py'
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_directions test_stock_autopilot
+          python scripts/stock_forecast_sources.py
