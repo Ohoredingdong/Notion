@@ -99,13 +99,13 @@
       // Match the approved tall-glass concept. The room, appliance, handles and
       // hit targets keep their existing coordinates; only the live inset grows.
       const height=doorHeight*.72;
-      const layout=expanded?'standard':height<128||width<62?'summary':width<100||height<210?'compact':'standard';
+      const layout=expanded?'standard':height<128||width<62?'summary':width<96||height<195?'compact':'standard';
       const x=stage.x-room.x+(p.x+p.w*(left?.10:.20))*stage.width;
       // The original atlas already has recessed screens at y188..394. Center
       // the live screen over that recess so it never peeks out below the UI.
       const center=.48;
       const y=stage.y-room.y+p.y*stage.height+doorHeight*center-height/2;
-      const visible=near.slice(0,layout==='summary'?1:layout==='standard'?3:2),overdue=counts.overdue>0;
+      const visible=near.slice(0,layout==='standard'?3:layout==='compact'&&height>=150?2:1),overdue=counts.overdue>0;
       const recipe=window.KitchenCatalog.find(r=>r.name===meal.name);
       const title=left?'유통기한 임박':'오늘의 추천메뉴';
       const empty=layout==='summary'?'임박 재료<br>없어요':'3일 이내<br>임박 재료 없어요';
@@ -125,7 +125,7 @@
       const stock=recipe?`<div class="lcd-stock" style="--lcd-coverage:${ratio}%" title="기록된 재료 이름 중 일치하는 종류 수 · 기한 경과 항목 제외 · 수량 미검증"><div class="lcd-stock-label"><span>재료<span class="lcd-stock-word"> 기록</span></span><b>${registered}/${required.length}</b></div><div class="lcd-stock-track" role="meter" aria-label="기록된 재료 종류 · 이름 기준, 수량 미검증" aria-valuemin="0" aria-valuemax="${required.length||1}" aria-valuenow="${registered}"><i style="width:${ratio}%"></i></div></div>`:'<div class="lcd-stock"><span>재료 미입력</span></div>';
       const missingNote=recipe?`<p class="lcd-missing" title="${esc(missing.join(' · '))}"><span>${missing.length?'미등록 재료':'이름 기록됨'}</span>${missing.length?`<b>${esc(missing.slice(0,2).join(' · '))}${missing.length>2?' 외 '+(missing.length-2):''}</b>`:'<b>수량 확인 필요</b>'}</p>`:'';
       const content=left?`${counters}<div class="lcd-list" style="--lcd-rows:${visible.length||1}">${rows||'<p class="lcd-empty">'+empty+'</p>'}</div><div class="lcd-footer lcd-expiry-footer"><span>${overdue?'경과 '+counts.overdue+'건':near.length?'임박 '+near.length+'건':'보관 '+items.filter(r=>r.kind==='food'||r.kind==='seasoning').length+'건'}</span><div class="lcd-expiry-track" role="img" aria-label="${distributionLabel}">${distribution}</div></div>`:`<div class="lcd-menu"><div class="lcd-dish">${A.dishArt({id:meal.name})}</div><b class="lcd-recipe">${esc(meal.name)}</b></div><div class="lcd-footer lcd-recipe-facts"><span>${esc(recipe?.time||'시간 미입력')}</span><span class="lcd-level">${esc(recipe?.level||'')}</span></div><div class="lcd-recipe-detail">${stock}${missingNote}</div>`;
-      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong>${totalBadge}</div>${content}</div></section>`;
+      return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" data-lcd-height="${expanded?'tall':height<150?'short':height<220?'medium':'tall'}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong>${totalBadge}</div>${content}</div></section>`;
     }).join('');
     if(expanded)return markup;
     root.innerHTML=markup;window.dispatchEvent(new Event('mini-kitchen:layout'));
