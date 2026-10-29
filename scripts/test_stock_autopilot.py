@@ -205,7 +205,7 @@ class StagedLearningGateTests(unittest.TestCase):
                 ('stock-forecast-learning-events.jsonl', events),
             ):
                 (stage / name).write_text(''.join(
-                    json.dumps(row, ensure_ascii=False) + '\\n' for row in rows))
+                    json.dumps(row, ensure_ascii=False) + '\n' for row in rows))
             a.write(stage / 'stock-forecast-learning-state.json', state)
             a.write(stage / 'stock-direction-forecast.json', {'records': []})
             report = {'overall': valid, 'learning': {'training_updates': 1}}
