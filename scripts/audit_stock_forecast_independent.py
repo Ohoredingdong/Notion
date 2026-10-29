@@ -99,6 +99,35 @@ def audit(records, outcomes, deliveries, cutoff):
             errors.append({'id': o['id'], 'error': 'conflicting_outcome_id'})
             continue
         actuals.setdefault(o['id'], o)
+    # Validate every stored observed result, including events excluded for
+    # overlapping targets or non-timely publication. Scoring stays separate.
+    verified_outcomes = {}
+    for o in actuals.values():
+        r = by_id.get(o['id'])
+        if r is None:
+            errors.append({'id': o['id'], 'error': 'outcome_unknown_prediction_id'})
+            continue
+        try:
+            if o['target'] != r['target'] or o['symbol'] != r['symbol'] or o['mode'] != r['mode']:
+                raise ValueError('outcome_target_mismatch')
+            if not ts(r['target']['end']) <= ts(o['evaluated_at']) <= cutoff:
+                raise ValueError('outcome_timestamp_not_eligible')
+            opening, closing = finite(o['target_open']), finite(o['target_close'])
+            if min(opening, closing) <= 0:
+                raise ValueError('nonpositive_price')
+            change = 100*(closing/opening-1)
+            label = classify(change, r['neutral_band_pct'])
+            correct = label == r['direction']
+            loss = sum((finite(r['probabilities'][k])-(k == label))**2 for k in CLASSES)
+            if abs(finite(o['return_pct'])-change) > 1e-8 or o['actual'] != label:
+                raise ValueError('stored_return_or_label_wrong')
+            if o['predicted'] != r['direction'] or o['correct'] is not correct:
+                raise ValueError('stored_score_wrong')
+            if abs(finite(o['brier_loss'])-loss) > 1e-8:
+                raise ValueError('stored_brier_wrong')
+            verified_outcomes[o['id']] = (opening, closing, change, label, correct, loss)
+        except (KeyError, ValueError, TypeError, ZeroDivisionError) as exc:
+            errors.append({'id': o.get('id'), 'error': str(exc)})
     rows = []; last_end = {}
     # Selection is chronological and independent of the observed correctness.
     for r in sorted(originals.values(), key=lambda x: (event_key(x)[:3], ts(x['target']['start']), ts(x['issued_at']))):
@@ -115,33 +144,16 @@ def audit(records, outcomes, deliveries, cutoff):
         o = actuals.get(r['id'])
         if o is None:
             counts['missing_outcomes'] += 1; continue
-        try:
-            if o['target'] != r['target'] or o['symbol'] != r['symbol'] or o['mode'] != r['mode']:
-                raise ValueError('outcome_target_mismatch')
-            if not end <= ts(o['evaluated_at']) <= cutoff:
-                raise ValueError('outcome_timestamp_not_eligible')
-            opening, closing = finite(o['target_open']), finite(o['target_close'])
-            if min(opening, closing) <= 0:
-                raise ValueError('nonpositive_price')
-            change = 100*(closing/opening-1)
-            label = classify(change, r['neutral_band_pct'])
-            correct = label == r['direction']
-            loss = sum((finite(r['probabilities'][k])-(k == label))**2 for k in CLASSES)
-            if abs(finite(o['return_pct'])-change) > 1e-8 or o['actual'] != label:
-                raise ValueError('stored_return_or_label_wrong')
-            if o['predicted'] != r['direction'] or o['correct'] is not correct:
-                raise ValueError('stored_score_wrong')
-            if abs(finite(o['brier_loss'])-loss) > 1e-8:
-                raise ValueError('stored_brier_wrong')
-            rows.append({'id': r['id'], 'symbol': r['symbol'], 'name': r.get('name', r['symbol']),
+        if r['id'] not in verified_outcomes:
+            continue  # An invalid stored outcome never contributes to performance.
+        opening, closing, change, label, correct, loss = verified_outcomes[r['id']]
+        rows.append({'id': r['id'], 'symbol': r['symbol'], 'name': r.get('name', r['symbol']),
                          'issued_at': r['issued_at'], 'public_at': seen.isoformat(),
                          'target': r['target'], 'opening': opening, 'closing': closing,
                          'change_pct': change, 'band_pct': r['neutral_band_pct'],
                          'predicted': r['direction'], 'actual': label, 'correct': correct,
                          'brier_loss': loss,
                          'frozen_baseline_available': 'frozen_baseline_probabilities' in r})
-        except (KeyError, ValueError, TypeError) as exc:
-            errors.append({'id': r['id'], 'error': str(exc)})
     n = len(rows); correct = sum(r['correct'] for r in rows)
     direction = {}
     for c in CLASSES:
@@ -155,6 +167,7 @@ def audit(records, outcomes, deliveries, cutoff):
             'generated_at': datetime.now(timezone.utc).isoformat(),
             'status': 'integrity_errors' if errors else 'ledger_arithmetic_consistent',
             'prediction_rows': len(records), 'unique_events': len(originals), 'counts': dict(counts),
+            'outcome_rows_seen': len(actuals), 'outcome_rows_verified': len(verified_outcomes),
             'scored': n, 'correct': correct, 'accuracy': correct/n if n else None,
             'directions': direction, 'rows': rows, 'errors': errors,
             'retrospective_constant_flat_accuracy': sum(r['actual'] == 'flat' for r in rows)/n if n else None,
@@ -207,6 +220,45 @@ class SelfTests(unittest.TestCase):
         overlapping = {**base, 'id': 'overlap', 'target': {'start': '2026-10-29T14:05:00Z', 'end': '2026-10-29T14:35:00Z'}}
         self.assertEqual(audit([base, overlapping], [o], [d], now)['counts']['overlap_excluded'], 1)
 
+
+    def test_corrupt_overlapping_outcome_is_an_integrity_error(self):
+        # Synthetic data only. Overlap exclusion cannot hide a malformed outcome.
+        first = {'id': 'synthetic-first', 'symbol': 'TEST', 'market': 'US',
+                 'mode': 'intraday', 'status': 'research_prediction',
+                 'observed_until': '2026-10-29T13:30:00Z',
+                 'received_at': '2026-10-29T13:31:00Z',
+                 'issued_at': '2026-10-29T13:36:00Z',
+                 'target': {'start': '2026-10-29T14:00:00Z',
+                            'end': '2026-10-29T14:30:00Z'},
+                 'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                 'direction': 'flat', 'neutral_band_pct': .3}
+        second = {**first, 'id': 'synthetic-overlap',
+                  'target': {'start': '2026-10-29T14:05:00Z',
+                             'end': '2026-10-29T14:35:00Z'}}
+        first_outcome = {'id': first['id'], 'symbol': 'TEST', 'mode': 'intraday',
+                         'status': 'observed', 'target': first['target'],
+                         'evaluated_at': '2026-10-29T14:40:00Z',
+                         'target_open': 100., 'target_close': 99.,
+                         'return_pct': -1., 'actual': 'down', 'predicted': 'flat',
+                         'correct': False, 'brier_loss': 1.04}
+        # Fabrication: the source prices imply UP, not the frozen DOWN label.
+        bad_overlap = {**first_outcome, 'id': second['id'],
+                       'target': second['target'], 'target_close': 101.}
+        publication = {'status': 'public_verified',
+                       'snapshot_generated_at': '2026-10-29T13:37:00Z',
+                       'verified_at': '2026-10-29T13:38:00Z',
+                       'prediction_ids': [first['id'], second['id']]}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        good = audit([first, second], [first_outcome, {**bad_overlap,
+            'target_close': 99.}], [publication], cutoff)
+        self.assertEqual(good['scored'], 1)
+        self.assertEqual(good['counts']['overlap_excluded'], 1)
+        self.assertEqual(good['status'], 'ledger_arithmetic_consistent')
+        bad = audit([first, second], [first_outcome, bad_overlap],
+                    [publication], cutoff)
+        self.assertEqual(bad['scored'], 1)
+        self.assertEqual(bad['status'], 'integrity_errors')
+        self.assertTrue(any(e.get('id') == second['id'] for e in bad['errors']))
 
     def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
         # Deliberately inconsistent synthetic publication, not a market observation.
