@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const {valid}=require('../assets/stock-forecast.js');
+const now=Date.parse('2026-10-29T01:01:00Z');
+const record={status:'research_prediction',observed_until:'2026-10-29T01:00:00Z',received_at:'2026-10-29T01:00:10Z',issued_at:'2026-10-29T01:00:20Z',target:{start:'2026-10-29T01:05:00Z',end:'2026-10-29T01:35:00Z'},probabilities:{down:.2,flat:.3,up:.5}};
+assert.equal(valid(record,now),true);
+assert.equal(valid({...record,status:'no_call'},now),false);
+assert.equal(valid({...record,probabilities:{down:.5,flat:.5,up:.5}},now),false);
+assert.equal(valid({...record,probabilities:{down:NaN,flat:.5,up:.5}},now),false);
+assert.equal(valid({...record,received_at:'2026-10-29T01:00:30Z'},now),false);
+assert.equal(valid({...record,issued_at:'2026-10-29T01:06:00Z'},now),false);
+assert.equal(valid({...record,observed_until:'2026-10-29T01:03:00Z'},now),false);
+assert.equal(valid({...record,target:{start:'2026-10-29T01:05:00Z',end:'2026-10-29T01:04:00Z'}},now),false);
+assert.equal(valid({...record,probabilities:{down:-.2,flat:.3,up:.9}},now),false);
+console.log('9 forecast UI time/probability invariants passed');

@@ -1,0 +1,73 @@
+name: Stock Prospective Forecasts
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/stock_forecast_model.py'
+      - 'scripts/run_stock_forecasts.py'
+      - 'scripts/publish_stock_forecasts.py'
+      - 'scripts/verify_stock_forecast_public.py'
+      - 'scripts/test_stock_forecast*'
+      - 'assets/stock-forecast.js'
+      - 'stock-forecast.html'
+      - '.github/workflows/stock-forecasts.yml'
+  schedule:
+    - cron: '17,47 0-7,13-21 * * 1-5'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: stock-prospective-forecasts
+  cancel-in-progress: false
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reproducible model and session readers
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2' 'playwright==1.56.0'
+      - name: Test future targets and leakage guards
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          node --check assets/stock-forecast.js
+          node scripts/test_stock_forecast_ui.cjs
+      - name: Train real historical candles and freeze future predictions
+        run: python scripts/run_stock_forecasts.py
+      - name: Test actual forecast screen
+        run: |
+          python -m playwright install --with-deps chromium
+          python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
+          python scripts/test_stock_forecast_browser.py
+      - name: Publish without changing strict approvals
+        run: python scripts/publish_stock_forecasts.py
+      - name: Request public build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify exact public payload, main integration and code
+        run: python scripts/verify_stock_forecast_public.py
+      - name: Preserve public observation timestamps separately
+        run: python scripts/publish_stock_forecasts.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prospective-forecast-evidence
+          retention-days: 7
+          path: |
+            stock-direction-forecast.json
+            stock-forecast-*.jsonl
+            forecast-*.png
+            scripts/stock_forecast_model.py
+            scripts/run_stock_forecasts.py
