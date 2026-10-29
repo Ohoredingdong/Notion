@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/audit_stock_learning_evidence.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
     - cron: '33 * * * *'
@@ -28,6 +29,10 @@ jobs:
         run: python scripts/audit_stock_forecast_independent.py --self-test
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
+      - name: Independently verify immutable learning-event chronology and replay guards
+        run: |
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py
       - name: Summarize evidence without declaring trading readiness
         if: always()
         run: |
@@ -52,4 +57,6 @@ jobs:
         with:
           name: independent-forecast-evidence
           retention-days: 30
-          path: stock-forecast-independent-audit.json
+          path: |
+            stock-forecast-independent-audit.json
+            stock-forecast-learning-evidence.json
