@@ -16,6 +16,8 @@
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null;
   const closing=new Set(),closingTimers=new Map();
+  const movingDisplays=new Map();
+  let movingDisplayCSS;
   const doors={freshLeft:false,freshRight:false,frozenLeft:false,frozenRight:false};
   const items=[
     {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.26,y:.32,z:1},
@@ -128,7 +130,47 @@
       return `<section class="fridge-lcd ${hidden?'':'is-on'}" data-lcd="${key}" data-lcd-layout="${layout}" data-lcd-height="${expanded?'tall':height<150?'short':height<220?'medium':'tall'}" aria-label="${title} 디스플레이" style="left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px" ${hidden?'hidden':''}><div class="lcd-screen"><div class="lcd-header"><strong class="lcd-title">${title}</strong>${totalBadge}</div>${content}</div></section>`;
     }).join('');
     if(expanded)return markup;
-    root.innerHTML=markup;window.dispatchEvent(new Event('mini-kitchen:layout'));
+    root.innerHTML=markup;syncMovingDisplays(stage,room);window.dispatchEvent(new Event('mini-kitchen:layout'));
+  }
+  function syncMovingDisplays(stage,room) {
+    // Keep a front-face copy on a moving door. The stationary, native-pixel LCD
+    // returns after closing; an unfinished transition must never expose the
+    // old blank recess. A closed shadow tree scopes SVG clip IDs and keeps the
+    // decorative copy out of the UI's selectors and accessibility tree.
+    const inverse=$('.fridge-stage').offsetWidth/stage.width;
+    for(const key of ['freshLeft','freshRight']) {
+      const door=$('[data-door="'+key+'"]'),active=doors[key]||closing.has(key);
+      if(!door)continue;
+      if(!active){movingDisplays.get(key)?.host.remove();movingDisplays.delete(key);continue;}
+      if(movingDisplayCSS===undefined){
+        const relevant=/\.(?:fridge-lcd|lcd-[\w-]+|food-art|dish-art)\b|^\*$/;
+        const select=rule=>{
+          if(rule.selectorText)return relevant.test(rule.selectorText)?rule.cssText:'';
+          if(!rule.cssRules)return '';
+          const children=[...rule.cssRules].map(select).join('\n');
+          return children?rule.cssText.slice(0,rule.cssText.indexOf('{')+1)+children+'}':'';
+        };
+        movingDisplayCSS=[...document.styleSheets].map(sheet=>{try{return [...sheet.cssRules].map(select).join('\n');}catch(_){return '';}}).join('\n');
+      }
+      let copy=movingDisplays.get(key);
+      if(!copy?.host.isConnected){
+        const host=document.createElement('span');host.className='door-live-display';host.setAttribute('aria-hidden','true');host.inert=true;
+        copy={host,root:host.attachShadow({mode:'closed'})};movingDisplays.set(key,copy);door.appendChild(host);
+      }
+      const panel=$('#fridgeDisplays [data-lcd="'+key+'"]'),p=panels[key];
+      const clone=panel.cloneNode(true),style=document.createElement('style');
+      clone.hidden=false;clone.classList.add('is-on');
+      Object.assign(clone.style,{position:'relative',left:'0px',top:'0px'});
+      // A moving face uses an opaque backing; it does not need to sample the
+      // animated 3D scene with backdrop-filter. The normal LCD is unchanged.
+      style.textContent=movingDisplayCSS+'\n.fridge-lcd{background-color:#49463f;-webkit-backdrop-filter:none;backdrop-filter:none}';
+      copy.root.replaceChildren(style,clone);
+      Object.assign(copy.host.style,{
+        left:(room.x+$('.room').clientLeft+parseFloat(panel.style.left)-stage.x-p.x*stage.width)*inverse+'px',
+        top:(room.y+$('.room').clientTop+parseFloat(panel.style.top)-stage.y-p.y*stage.height)*inverse+'px',
+        width:panel.style.width,height:panel.style.height,transform:'scale('+inverse+')'
+      });
+    }
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
   for(const [key,p] of Object.entries(panels)) {

@@ -109,6 +109,7 @@ body .shell .fridge-stage{filter:none}
 .cabinet{filter:drop-shadow(6px 9px 7px #5d4c3428)}
 .fridge-displays{position:absolute;inset:0;z-index:7;pointer-events:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
+.door-live-display{position:absolute;display:block;z-index:1;transform-origin:0 0;backface-visibility:hidden;pointer-events:none}
 /* Tall smoke-glass insets from the approved image concept, with native text.
    Reflections stay behind the content; they never blur labels or hit targets. */
 .fridge-lcd{
@@ -764,6 +765,8 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
   const props={utensils:{name:&#x27;도자기 도구통&#x27;,crop:[48,15,550,648]},flowers:{name:&#x27;데이지 유리병&#x27;,crop:[735,25,510,640]},cup:{name:&#x27;우드 트레이와 찻잔&#x27;,crop:[24,685,694,495]},cookies:{name:&#x27;쿠키 유리병&#x27;,crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null;
   const closing=new Set(),closingTimers=new Map();
+  const movingDisplays=new Map();
+  let movingDisplayCSS;
   const doors={freshLeft:false,freshRight:false,frozenLeft:false,frozenRight:false};
   const items=[
     {id:&#x27;egg&#x27;,kind:&#x27;food&#x27;,name:&#x27;계란&#x27;,quantity:&#x27;6개&#x27;,expiry:date(),zone:&#x27;freshLeft&#x27;,x:.26,y:.32,z:1},
@@ -876,7 +879,47 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
       return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; data-lcd-height=&quot;${expanded?&#x27;tall&#x27;:height&lt;150?&#x27;short&#x27;:height&lt;220?&#x27;medium&#x27;:&#x27;tall&#x27;}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;${totalBadge}&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);
     if(expanded)return markup;
-    root.innerHTML=markup;window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
+    root.innerHTML=markup;syncMovingDisplays(stage,room);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
+  }
+  function syncMovingDisplays(stage,room) {
+    // Keep a front-face copy on a moving door. The stationary, native-pixel LCD
+    // returns after closing; an unfinished transition must never expose the
+    // old blank recess. A closed shadow tree scopes SVG clip IDs and keeps the
+    // decorative copy out of the UI&#x27;s selectors and accessibility tree.
+    const inverse=$(&#x27;.fridge-stage&#x27;).offsetWidth/stage.width;
+    for(const key of [&#x27;freshLeft&#x27;,&#x27;freshRight&#x27;]) {
+      const door=$(&#x27;[data-door=&quot;&#x27;+key+&#x27;&quot;]&#x27;),active=doors[key]||closing.has(key);
+      if(!door)continue;
+      if(!active){movingDisplays.get(key)?.host.remove();movingDisplays.delete(key);continue;}
+      if(movingDisplayCSS===undefined){
+        const relevant=/\.(?:fridge-lcd|lcd-[\w-]+|food-art|dish-art)\b|^\*$/;
+        const select=rule=&gt;{
+          if(rule.selectorText)return relevant.test(rule.selectorText)?rule.cssText:&#x27;&#x27;;
+          if(!rule.cssRules)return &#x27;&#x27;;
+          const children=[...rule.cssRules].map(select).join(&#x27;\n&#x27;);
+          return children?rule.cssText.slice(0,rule.cssText.indexOf(&#x27;{&#x27;)+1)+children+&#x27;}&#x27;:&#x27;&#x27;;
+        };
+        movingDisplayCSS=[...document.styleSheets].map(sheet=&gt;{try{return [...sheet.cssRules].map(select).join(&#x27;\n&#x27;);}catch(_){return &#x27;&#x27;;}}).join(&#x27;\n&#x27;);
+      }
+      let copy=movingDisplays.get(key);
+      if(!copy?.host.isConnected){
+        const host=document.createElement(&#x27;span&#x27;);host.className=&#x27;door-live-display&#x27;;host.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);host.inert=true;
+        copy={host,root:host.attachShadow({mode:&#x27;closed&#x27;})};movingDisplays.set(key,copy);door.appendChild(host);
+      }
+      const panel=$(&#x27;#fridgeDisplays [data-lcd=&quot;&#x27;+key+&#x27;&quot;]&#x27;),p=panels[key];
+      const clone=panel.cloneNode(true),style=document.createElement(&#x27;style&#x27;);
+      clone.hidden=false;clone.classList.add(&#x27;is-on&#x27;);
+      Object.assign(clone.style,{position:&#x27;relative&#x27;,left:&#x27;0px&#x27;,top:&#x27;0px&#x27;});
+      // A moving face uses an opaque backing; it does not need to sample the
+      // animated 3D scene with backdrop-filter. The normal LCD is unchanged.
+      style.textContent=movingDisplayCSS+&#x27;\n.fridge-lcd{background-color:#49463f;-webkit-backdrop-filter:none;backdrop-filter:none}&#x27;;
+      copy.root.replaceChildren(style,clone);
+      Object.assign(copy.host.style,{
+        left:(room.x+$(&#x27;.room&#x27;).clientLeft+parseFloat(panel.style.left)-stage.x-p.x*stage.width)*inverse+&#x27;px&#x27;,
+        top:(room.y+$(&#x27;.room&#x27;).clientTop+parseFloat(panel.style.top)-stage.y-p.y*stage.height)*inverse+&#x27;px&#x27;,
+        width:panel.style.width,height:panel.style.height,transform:&#x27;scale(&#x27;+inverse+&#x27;)&#x27;
+      });
+    }
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
   for(const [key,p] of Object.entries(panels)) {
@@ -1168,6 +1211,7 @@ body .shell .fridge-stage{filter:none}
 .cabinet{filter:drop-shadow(6px 9px 7px #5d4c3428)}
 .fridge-displays{position:absolute;inset:0;z-index:7;pointer-events:none}
 .fridge-displays[hidden],.fridge-lcd[hidden]{display:none}
+.door-live-display{position:absolute;display:block;z-index:1;transform-origin:0 0;backface-visibility:hidden;pointer-events:none}
 /* Tall smoke-glass insets from the approved image concept, with native text.
    Reflections stay behind the content; they never blur labels or hit targets. */
 .fridge-lcd{
@@ -1823,6 +1867,8 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
   const props={utensils:{name:&#x27;도자기 도구통&#x27;,crop:[48,15,550,648]},flowers:{name:&#x27;데이지 유리병&#x27;,crop:[735,25,510,640]},cup:{name:&#x27;우드 트레이와 찻잔&#x27;,crop:[24,685,694,495]},cookies:{name:&#x27;쿠키 유리병&#x27;,crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null;
   const closing=new Set(),closingTimers=new Map();
+  const movingDisplays=new Map();
+  let movingDisplayCSS;
   const doors={freshLeft:false,freshRight:false,frozenLeft:false,frozenRight:false};
   const items=[
     {id:&#x27;egg&#x27;,kind:&#x27;food&#x27;,name:&#x27;계란&#x27;,quantity:&#x27;6개&#x27;,expiry:date(),zone:&#x27;freshLeft&#x27;,x:.26,y:.32,z:1},
@@ -1935,7 +1981,47 @@ return {NUTRIENTS,REWARDS,blank,day,valid,validWorld,create};
       return `&lt;section class=&quot;fridge-lcd ${hidden?&#x27;&#x27;:&#x27;is-on&#x27;}&quot; data-lcd=&quot;${key}&quot; data-lcd-layout=&quot;${layout}&quot; data-lcd-height=&quot;${expanded?&#x27;tall&#x27;:height&lt;150?&#x27;short&#x27;:height&lt;220?&#x27;medium&#x27;:&#x27;tall&#x27;}&quot; aria-label=&quot;${title} 디스플레이&quot; style=&quot;left:${Math.round(x)}px;top:${Math.round(y)}px;width:${Math.round(width)}px;height:${Math.round(height)}px&quot; ${hidden?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;div class=&quot;lcd-screen&quot;&gt;&lt;div class=&quot;lcd-header&quot;&gt;&lt;strong class=&quot;lcd-title&quot;&gt;${title}&lt;/strong&gt;${totalBadge}&lt;/div&gt;${content}&lt;/div&gt;&lt;/section&gt;`;
     }).join(&#x27;&#x27;);
     if(expanded)return markup;
-    root.innerHTML=markup;window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
+    root.innerHTML=markup;syncMovingDisplays(stage,room);window.dispatchEvent(new Event(&#x27;mini-kitchen:layout&#x27;));
+  }
+  function syncMovingDisplays(stage,room) {
+    // Keep a front-face copy on a moving door. The stationary, native-pixel LCD
+    // returns after closing; an unfinished transition must never expose the
+    // old blank recess. A closed shadow tree scopes SVG clip IDs and keeps the
+    // decorative copy out of the UI&#x27;s selectors and accessibility tree.
+    const inverse=$(&#x27;.fridge-stage&#x27;).offsetWidth/stage.width;
+    for(const key of [&#x27;freshLeft&#x27;,&#x27;freshRight&#x27;]) {
+      const door=$(&#x27;[data-door=&quot;&#x27;+key+&#x27;&quot;]&#x27;),active=doors[key]||closing.has(key);
+      if(!door)continue;
+      if(!active){movingDisplays.get(key)?.host.remove();movingDisplays.delete(key);continue;}
+      if(movingDisplayCSS===undefined){
+        const relevant=/\.(?:fridge-lcd|lcd-[\w-]+|food-art|dish-art)\b|^\*$/;
+        const select=rule=&gt;{
+          if(rule.selectorText)return relevant.test(rule.selectorText)?rule.cssText:&#x27;&#x27;;
+          if(!rule.cssRules)return &#x27;&#x27;;
+          const children=[...rule.cssRules].map(select).join(&#x27;\n&#x27;);
+          return children?rule.cssText.slice(0,rule.cssText.indexOf(&#x27;{&#x27;)+1)+children+&#x27;}&#x27;:&#x27;&#x27;;
+        };
+        movingDisplayCSS=[...document.styleSheets].map(sheet=&gt;{try{return [...sheet.cssRules].map(select).join(&#x27;\n&#x27;);}catch(_){return &#x27;&#x27;;}}).join(&#x27;\n&#x27;);
+      }
+      let copy=movingDisplays.get(key);
+      if(!copy?.host.isConnected){
+        const host=document.createElement(&#x27;span&#x27;);host.className=&#x27;door-live-display&#x27;;host.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);host.inert=true;
+        copy={host,root:host.attachShadow({mode:&#x27;closed&#x27;})};movingDisplays.set(key,copy);door.appendChild(host);
+      }
+      const panel=$(&#x27;#fridgeDisplays [data-lcd=&quot;&#x27;+key+&#x27;&quot;]&#x27;),p=panels[key];
+      const clone=panel.cloneNode(true),style=document.createElement(&#x27;style&#x27;);
+      clone.hidden=false;clone.classList.add(&#x27;is-on&#x27;);
+      Object.assign(clone.style,{position:&#x27;relative&#x27;,left:&#x27;0px&#x27;,top:&#x27;0px&#x27;});
+      // A moving face uses an opaque backing; it does not need to sample the
+      // animated 3D scene with backdrop-filter. The normal LCD is unchanged.
+      style.textContent=movingDisplayCSS+&#x27;\n.fridge-lcd{background-color:#49463f;-webkit-backdrop-filter:none;backdrop-filter:none}&#x27;;
+      copy.root.replaceChildren(style,clone);
+      Object.assign(copy.host.style,{
+        left:(room.x+$(&#x27;.room&#x27;).clientLeft+parseFloat(panel.style.left)-stage.x-p.x*stage.width)*inverse+&#x27;px&#x27;,
+        top:(room.y+$(&#x27;.room&#x27;).clientTop+parseFloat(panel.style.top)-stage.y-p.y*stage.height)*inverse+&#x27;px&#x27;,
+        width:panel.style.width,height:panel.style.height,transform:&#x27;scale(&#x27;+inverse+&#x27;)&#x27;
+      });
+    }
   }
   $(&#x27;#cabinet&#x27;).innerHTML=crop(FRIDGE,[833,10,570,994],[1536,1024]);
   for(const [key,p] of Object.entries(panels)) {
