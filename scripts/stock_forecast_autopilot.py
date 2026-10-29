@@ -125,6 +125,15 @@ def verify_stage(root,stage,cutoff):
     if check['errors']: raise ValueError('independent_audit_rejected_staged_results')
     prior=read(root,'stock-forecast-learning-state.json',learning.blank_state())
     current=read(stage,'stock-forecast-learning-state.json',learning.blank_state())
+    # Publication safety: independently verify every frozen learning event,
+    # chronology and terminal weight fingerprint while the transaction is
+    # still staged. A later scheduled audit cannot undo already-published state.
+    from audit_stock_learning_evidence import examine as examine_learning
+    learning_evidence=examine_learning(
+        records, outcomes, deliveries,
+        lines(stage/'stock-forecast-learning-events.jsonl'), current, cutoff)
+    if learning_evidence['status']!='learning_evidence_consistent':
+        raise ValueError('staged_learning_evidence_rejected')
     old=set(prior['trained_events']);new=current['trained_events']
     if len(new)!=len(set(new)) or not old.issubset(set(new)):
         raise ValueError('learning_history_was_rewritten')

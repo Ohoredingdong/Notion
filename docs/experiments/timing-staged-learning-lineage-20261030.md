@@ -16,4 +16,8 @@ The bounded autonomous research transaction calls `verify_stage` before copying 
 
 ## Evidence and results
 
-Pending RED/GREEN CI results. Same held-out market evidence is not a new independent trial. External executable quotes, exchange candles, user notification receipt, after-cost edge and untouched follow-up confirmation remain unverified; the timing-utility completion gate remains closed.
+- **RED (intentional)**: [Actions 40964901640](https://github.com/Ohoredingdong/Notion/actions/runs/40964901640), commit `81fc985f713db8f549c8606b30c01b6aa2e963a4`, ran against the **unmodified** producer guard. The valid one-event synthetic stage passed; changing only saved terminal learning weights then incorrectly also passed. The one new test failed with `AssertionError: ValueError not raised`; 86 other tests passed in the same unit group. No branch trial outputs were published, because tests stopped the workflow before research/publish stages.
+- **GREEN implementation**: `verify_stage` now directly invokes the already existing, read-only, producer-independent `audit_stock_learning_evidence.examine` over complete staged source/learning evidence and rejects mismatch before copying any staged artifact. This adds a safety gate, does not change learning weights/model candidates, prospective evaluation or accepted signals.
+- **GREEN and post-merge verification**: pending checks and IDs.
+
+Same held-out market evidence is not a new independent trial. External executable quotes, exchange candles, user notification receipt, after-cost edge and untouched follow-up confirmation remain unverified; the timing-utility completion gate remains closed.
