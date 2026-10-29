@@ -123,7 +123,7 @@ def complete_target(record, bars):
                 segment.session.nunique() == 1)
 
 
-def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
+def run(root=Path('.'), specs=None, modes=('daily', 'intraday'), processor=None):
     specs = specs or DEFAULT
     state, parent_hash = learning.load_state(root)
     ledger = root/'stock-forecast-ledger.jsonl'
@@ -132,7 +132,7 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
     deliveries = readlines(root/'stock-forecast-deliveries.jsonl')
     all_records, histories = [], {}
     with ThreadPoolExecutor(max_workers=3) as pool:
-        jobs = {pool.submit(process, spec, mode): (spec[0], mode) for spec in specs for mode in modes}
+        jobs = {pool.submit(processor or process, spec, mode): (spec[0], mode) for spec in specs for mode in modes}
         for future in as_completed(jobs):
             record, bars = future.result()
             all_records.append(record)
@@ -216,16 +216,13 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
                   'adaptive_groups':evaluation['learning']['adaptive_groups'],'report':learning.REPORT_FILE},
               'disclosures':['실제 과거 OHLC로 학습한 모델 추정치',
                   '공개 확인된 과거 예측을 채점한 뒤 새 예측에만 학습 반영',
-                  '상승·하락별 포착률·정밀도와 기존 모델을 같은 미래 구간에서 비교',
                   '100% 적중·수익 보장 아님; strict-green 변경 없음',
                   '지연·누락·미래 타깃 종료 전에는 채점하지 않음'],
               'schedule_note':'정기 실행은 지연 가능. 실시간 연결과 사용자 푸시 수신은 미확인.'}
     write(root/'stock-direction-forecast.json',artifact)
     print(json.dumps({'counts':artifact['counts'],'scored':performance['samples'],
                       'correct':performance['correct'],'training_updates':state['training_updates'],
-                      'promotions':evaluation['learning']['promotions'],
-                      'directional_suites':evaluation['directional_research']['successful_candidate_suites'],
-                      'directional_errors':evaluation['directional_research']['candidate_suite_errors']},ensure_ascii=False),flush=True)
+                      'promotions':evaluation['learning']['promotions']},ensure_ascii=False),flush=True)
     return artifact
 
 
