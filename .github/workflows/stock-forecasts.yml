@@ -2,16 +2,15 @@ name: Stock Prospective Forecasts
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, research/bounded-autopilot-20261029]
     paths:
-      - 'scripts/stock_forecast_model.py'
-      - 'scripts/stock_forecast_sources.py'
-      - 'scripts/stock_forecast_learning.py'
-      - 'scripts/stock_forecast_directions.py'
+      - 'scripts/stock_forecast*.py'
+      - 'scripts/stock_autopilot*.cjs'
       - 'scripts/run_stock_forecasts.py'
       - 'scripts/publish_stock_forecasts.py'
       - 'scripts/verify_stock_forecast_public.py'
       - 'scripts/test_stock_forecast*'
+      - 'scripts/test_stock_autopilot*'
       - 'assets/stock-forecast*.js'
       - 'stock-forecast.html'
       - '.github/workflows/stock-forecasts.yml'
@@ -22,7 +21,7 @@ permissions:
   contents: write
   pages: write
 concurrency:
-  group: stock-prospective-forecasts
+  group: stock-prospective-forecasts-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   research:
@@ -35,40 +34,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.ref }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install model and session readers
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2' 'playwright==1.56.0'
-      - name: Test future targets, delayed feedback and directional promotion guards
+      - name: Test future targets, transaction rejection and bounded recovery
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
-          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+          python scripts/audit_stock_forecast_independent.py --self-test
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
           node --check assets/stock-forecast-learning.js
           node --check assets/stock-forecast-directions.js
+          node --check assets/stock-forecast-autopilot.js
           node scripts/test_stock_forecast_ui.cjs
-      - name: Evaluate frozen calls, train direction-balanced shadows and learn known answers
-        run: python scripts/run_stock_forecasts.py
-      - name: Test actual forecast and directional quality screens
+          node scripts/stock_autopilot_recovery.cjs
+      - name: Execute bounded autonomous research transaction
+        run: python scripts/stock_forecast_autopilot.py
+      - name: Test actual forecast and autonomous status screens
         run: |
           python -m playwright install --with-deps chromium
           python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
           python scripts/test_stock_forecast_browser.py
           python scripts/test_stock_forecast_learning_browser.py
           python scripts/test_stock_forecast_directions_browser.py
+          python scripts/test_stock_autopilot_browser.py
       - name: Publish forecast and learning state atomically
+        if: github.ref == 'refs/heads/main'
         run: python scripts/publish_stock_forecasts.py
       - name: Request public build
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
-      - name: Verify exact public predictions, directional report and code
+      - name: Verify public autonomous cycle and code
+        if: github.ref == 'refs/heads/main'
         run: python scripts/verify_stock_forecast_public.py
       - name: Preserve public availability timestamps
+        if: github.ref == 'refs/heads/main'
         run: python scripts/publish_stock_forecasts.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -79,9 +86,10 @@ jobs:
             stock-direction-forecast.json
             stock-forecast-*.jsonl
             stock-forecast-learning*.json
+            stock-forecast-autopilot.json
+            stock-forecast-source-state.json
             forecast-*.png
-            scripts/stock_forecast_model.py
-            scripts/stock_forecast_sources.py
-            scripts/stock_forecast_learning.py
-            scripts/stock_forecast_directions.py
+            scripts/stock_forecast*.py
+            scripts/test_stock_autopilot.py
+            scripts/audit_stock_forecast_independent.py
             scripts/run_stock_forecasts.py
