@@ -1,0 +1,35 @@
+name: Research Timing Snapshot Integrity (branch only)
+on:
+  push:
+    branches: [research/timing-delivery-snapshot-20261029]
+    paths:
+      - 'scripts/audit_stock_forecast_independent.py'
+      - '.github/workflows/research-timing-snapshot-20261029.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independent audit self-tests and timestamp counterexample
+        run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Reread pinned records without any edits or publication
+        run: |
+          python scripts/audit_stock_forecast_independent.py --output /tmp/research-timing-audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/research-timing-audit.json').read_text())
+          assert x['status']=='ledger_arithmetic_consistent',x['errors']
+          assert x['scored']==6 and x['correct']==3,(x['scored'],x['correct'])
+          assert not x['human_push_delivery_verified']
+          assert not x['externally_verified_candles']
+          assert not x['proven_predictive_edge']
+          print('PINNED_LEDGER_COUNTS_AND_LIMITATIONS_RECONFIRMED')
+          PY
