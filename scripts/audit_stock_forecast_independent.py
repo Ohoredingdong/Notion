@@ -211,6 +211,14 @@ def audit(records, outcomes, deliveries, cutoff):
                 raise ValueError('outcome_target_mismatch')
             if not ts(r['target']['end']) <= ts(o['evaluated_at']) <= cutoff:
                 raise ValueError('outcome_timestamp_not_eligible')
+            # A claimed result cannot be evaluated before the provider was
+            # checked or before its target window closed. This only validates
+            # recorded timestamps, NOT the external price or its feed rights.
+            # Absence in legacy records is not retroactively inferred.
+            source_checked = o.get('source_checked_at')
+            if source_checked is not None and not (
+                    ts(r['target']['end']) <= ts(source_checked) <= ts(o['evaluated_at'])):
+                raise ValueError('outcome_source_time_inconsistent')
             opening, closing = finite(o['target_open']), finite(o['target_close'])
             if min(opening, closing) <= 0:
                 raise ValueError('nonpositive_price')
