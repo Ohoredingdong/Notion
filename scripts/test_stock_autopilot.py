@@ -182,4 +182,48 @@ class StagedLearningGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'staged_learning_evidence_rejected'):
                 a.verify_stage(root, stage, cutoff)
 
+
+    def test_direction_summary_forgery_must_block_publication(self):
+        """Synthetic-only: a staged report cannot invent directional recall."""
+        import json
+        from copy import deepcopy
+        from audit_stock_learning_evidence import synthetic
+        records, outcomes, deliveries, events, state, cutoff = synthetic()
+        deliveries[0]['verification_id'] = 'synthetic-public-proof'
+        valid = {'samples': 1, 'correct': 0, 'accuracy': 0.0,
+                 'brier_loss': 1.04,
+                 'recall': {'down': 0.0, 'flat': None, 'up': None},
+                 'confusion_matrix': [[0, 1, 0], [0, 0, 0], [0, 0, 0]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stage = root / 'stage'
+            stage.mkdir()
+            for name, rows in (
+                ('stock-forecast-ledger.jsonl', records),
+                ('stock-forecast-outcomes.jsonl', outcomes),
+                ('stock-forecast-deliveries.jsonl', deliveries),
+                ('stock-forecast-learning-events.jsonl', events),
+            ):
+                (stage / name).write_text(''.join(
+                    json.dumps(row, ensure_ascii=False) + '\\n' for row in rows))
+            a.write(stage / 'stock-forecast-learning-state.json', state)
+            a.write(stage / 'stock-direction-forecast.json', {'records': []})
+            report = {'overall': valid, 'learning': {'training_updates': 1}}
+            a.write(stage / 'stock-forecast-learning.json', report)
+            self.assertEqual(a.verify_stage(root, stage, cutoff)['scored'], 1)
+            mutations = {
+                'accuracy': 0.98,
+                'brier_loss': 0.01,
+                'recall': {'down': 1.0, 'flat': None, 'up': None},
+                'confusion_matrix': [[1, 0, 0], [0, 0, 0], [0, 0, 0]],
+            }
+            for field, forged in mutations.items():
+                with self.subTest(tampered_field=field):
+                    corrupted = deepcopy(report)
+                    corrupted['overall'] = deepcopy(valid)
+                    corrupted['overall'][field] = forged
+                    a.write(stage / 'stock-forecast-learning.json', corrupted)
+                    with self.assertRaisesRegex(ValueError, 'staged_score_summary_mismatch'):
+                        a.verify_stage(root, stage, cutoff)
+
 if __name__=='__main__':unittest.main()
