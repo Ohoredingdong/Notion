@@ -92,6 +92,19 @@ def process(spec, mode):
                 'issued_at': datetime.now(UTC).isoformat(), 'recommendation': False}, bars
 
 
+def label_validation(record):
+    """An adaptive model must not inherit the incumbent's historical score."""
+    if (record.get('online_learning') or {}).get('active_variant') != 'adaptive':
+        return record
+    out = dict(record)
+    out['incumbent_historical_validation'] = record.get('incumbent_historical_validation', record.get('validation', {}))
+    out['validation'] = {'validation_status':'adaptive_forward_research_only',
+                         'test_samples':0, 'test_sessions':0, 'accuracy':None,
+                         'baseline_accuracy':None, 'above_baseline_in_this_holdout':False,
+                         'live_validated':False, 'forward_report':learning.REPORT_FILE}
+    return out
+
+
 def complete_target(record, bars):
     if record['mode'] != 'intraday':
         return True
@@ -134,7 +147,6 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
     learning.append_unique(root/'stock-forecast-outcomes.jsonl', fresh)
     outcomes = list(prior_outcomes.values())
     pairs, _ = learning.joined(old_records, outcomes, deliveries, now)
-    # Test old issued distributions first; only then learn from their known answers.
     events = learning.select_variant(state, pairs, now)
     events += learning.learn(state, pairs, now)
     ready, attempts = [], []
@@ -152,7 +164,7 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday')):
                      'reason':'publication_window_missed'}
             else:
                 r = learning.augment(r, state, datetime.now(UTC))
-        ready.append(r)
+        ready.append(label_validation(r))
         attempt={'version':learning.VERSION, 'run_id':run_id, 'symbol':r['symbol'],
                  'mode':r['mode'], 'checked_at':now.isoformat(), 'status':r['status'],
                  'prediction_id':r.get('id') if r['status']=='research_prediction' else None,
