@@ -20,3 +20,5 @@
 - 장면·이동·저장 회귀 111개, 식사·영양·도감 회귀 13개 통과. 원본/작은 내장형 UI 코드 일치, 1MiB 이하 공개 파일과 구문·diff 검사 통과.
 
 전후 화면은 같은 예시 데이터·649×900·Asia/Seoul·고정 날짜 `2026-10-29T03:00:00Z`에서 열림 전환의 0도 프레임을 비교했다. [검사 기록](miniature-kitchen/opening-order-validation.json)을 따른다. 실제 개인 휴대폰/Safari·Notion이나 이전의 간헐적인 공개 프레임 터치 문제를 해결했다는 의미는 아니다. main·Pages는 변경하지 않는다.
+
+공개 HTMLPreview의 새 앱·위젯 주소도 [실제 원격 브라우저 검사](https://github.com/Ohoredingdong/Notion/actions/runs/40860138314)에서 각각 PC·모바일 크기로 실행해 4조건을 통과했다. 응답 200과 소스 해시뿐 아니라 첫 열림 프레임의 물품 가림, 문 글씨 없음과 확대 창 실행·닫기를 확인했다. 공유 주소는 [모바일 전달 문서](MOBILE_KITCHEN_PREVIEW.md)의 현재 링크를 따른다.

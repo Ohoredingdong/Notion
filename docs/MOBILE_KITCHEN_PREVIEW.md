@@ -4,12 +4,12 @@
 
 사용자가 GitHack 주소의 차단·오류를 보고해, 현재 공유는 HTMLPreview 경로를 사용한다. 아래는 실제 공개 HTTPS 주소를 별도 GitHub Actions 브라우저에서 실행한 고정 링크다. 다운로드·PR·GitHack 확인 화면을 거치지 않는다.
 
-- [앱 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6f20477efd576378aa92b9f44cec59370d5315d6/previews/mobile/app.html)
-- [위젯 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6f20477efd576378aa92b9f44cec59370d5315d6/previews/mobile/widget.html)
+- [앱 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/2e08219869c2493c04436eecfd0828da282a14d7/previews/mobile/app.html)
+- [위젯 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/2e08219869c2493c04436eecfd0828da282a14d7/previews/mobile/widget.html)
 
-[실제 공개 주소 검증](https://github.com/Ohoredingdong/Notion/actions/runs/40857168139)에서 앱·위젯 각각 649×900·390×844의 총 4조건이 HTTP 200, 올바른 소스 SHA-256, 두 표시창 제목·그림 표시, 확대 버튼과 닫기 실행, 가로 넘침 없음과 JavaScript 예외 없음을 통과했다. [검사 기록](miniature-kitchen/click-preview-validation.json)을 따른다. 로컬 URL을 대체 응답한 결과가 아니며 실제 공개 서비스로 접속했다. 실제 개인 휴대폰/Safari·Notion과 기존 간헐 문 터치 문제의 검증을 뜻하지 않는다.
+[실제 공개 주소 검증](https://github.com/Ohoredingdong/Notion/actions/runs/40860138314)에서 앱·위젯 각각 649×900·390×844의 총 4조건이 HTTP 200, 올바른 소스 SHA-256, 두 표시창 제목·그림 표시, 확대 버튼과 닫기 실행, 가로 넘침 없음과 JavaScript 예외 없음을 통과했다. 추가로 실제 열림 애니메이션의 첫 프레임에서 재료가 가려지는 것과 문 표면 글씨 제거를 확인했다. [검사 기록](miniature-kitchen/click-preview-validation.json)을 따른다. 로컬 URL을 대체 응답한 결과가 아니며 실제 공개 서비스로 접속했다. 실제 개인 휴대폰/Safari·Notion과 기존 간헐 문 터치 문제의 검증을 뜻하지 않는다.
 
-검증은 `delivery/verify-kitchen-click-20261029` 브랜치의 전용 워크플로로 실행했으며 결과만 `preview/kitchen-click-validation-20261029` 브랜치에 보관했다. main·Pages 설정·기존 배포 파일은 바꾸거나 병합하지 않았다. 시안 내용과 문 닫힘 수정은 위 `6f20477e`에 고정한다. 이후 화면 변경 시 새 소스와 공개 실행 주소를 다시 검증해야 한다.
+검증은 `delivery/verify-kitchen-click-20261029` 브랜치의 전용 워크플로로 실행했으며 결과만 `preview/kitchen-click-validation-20261029` 브랜치에 보관했다. main·Pages 설정·기존 배포 파일은 바꾸거나 병합하지 않았다. 시안 내용·열림 순서·문 표면 글씨 제거는 위 `2e082198`에 고정한다. 이후 화면 변경 시 새 소스와 공개 실행 주소를 다시 검증해야 한다.
 
 아래는 이전 GitHack 전달과 그 당시 검증 한계를 보관한 기록이다.
 
