@@ -53,11 +53,8 @@ def freeze(path, records):
 
 def collect(spec, mode):
     symbol, name, market = spec
-    import yfinance as yf
-    raw = yf.Ticker(symbol).history(period='5y' if mode == 'daily' else '60d',
-                                   interval='1d' if mode == 'daily' else '5m',
-                                   auto_adjust=False, actions=True, prepost=False,
-                                   timeout=18, raise_errors=True)
+    from stock_forecast_sources import history
+    raw = history(symbol, mode)
     received = datetime.now(UTC)
     if raw is None or raw.empty:
         raise ValueError('provider_returned_no_candles')
