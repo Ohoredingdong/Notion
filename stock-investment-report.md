@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-29T03:53:41.316815+09:00
+- 계산일: 2026-10-29T18:53:46.017765+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.4배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.3배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.3배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.6배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 44.0배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.1배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 35.3배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 35.5배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 372.0배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 374.3배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [(친절한 경제) 11월 증시, 미국 선거부터 한은 금리까지 챙기세요 - https://www.standingout.kr/](https://news.google.com/rss/articles/CBMia0FVX3lxTE92ZXJHa1lDRjBOc19sRGo4c0dtNlZ6T2x6Smg4UGhMSDJva1pMc0c1WWtGZHJuaWptVXZGeVdZTnZHb0xrN0ViczZjTVp6Nkp2aE14M2tVR2FxVVVvd3c0Nld1Ylc2VVo0N0tv?oc=5)
-- [미 증시는 사상 최고치…일본 금리는 17년 만의 최고 수준 - :: 위즈경제 ::](https://news.google.com/rss/articles/CBMiVEFVX3lxTFBKYTliSVFOcFFmd3F0S2hCbXRvUWVvQUFjZm12TTBJSWZVbF9vR1l0QkZYdnRCNGtNMDJSRGVlNTdaa2lZeTNkMXpYbkU1YldsbmQxbQ?oc=5)
+- [(기획) 미국 금리 동결 한국 증시에 호재로 작용하나 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5ia0ZsVmxwLTNBMEtiTDhnQTJJOTQ3VnFXZkczZ2tjQy1BNENVNjlSaDRiTVpmYXZpZEx1T3dpZmxzM1BYVl9Ea1g4aXFXc2Z2NFlIeEs0Y3VTeVZsQi1wR0lkTjM?oc=5)
+- [연준 '매파적 금리동결'..장중 미국증시 '혼조', 오라클·반도체ETF '활짝' - 초이스경제](https://news.google.com/rss/articles/CBMic0FVX3lxTE5MMFpMQ3F5Vm54NDVWVGdjYUpzMDJ5a2c4TDlIcFc1ckJHTzd6Q0ZvMlNjY1NhZm9FYWNlTlIxVjRjbkpwOFhoMVY0cmFMREdpRHNEMVNSaThEMmJmTUY4cjBQODVUSTdkVFpITkh2ei03dEnSAXNBVV95cUxOTDBaTENxeVZueDQ1VlRnY2FKczAyeWtnOEw5SHBXNXJCR083ekNGbzJTY2NTYWZvRWFjZU5SMVY0Y25KcDhYaDFWNHJhTERHaURzRDFTUmk4RDJiZk1GOHIwUDg1VEk3ZFRaSE5IdnotN3RJ?oc=5)
+- [삼성전자, 3분기 HBM 매출 HBM4가 60% 담당… SK하이닉스 턱밑 추격 - Chosunbiz](https://news.google.com/rss/articles/CBMiggFBVV95cUxNazVBQ2NiMXE2ZkJJQU8tTTh5R3BaakFzaEx4SGE3THBUSmkybHlnS3hnRFpFcGpWNExYa1JoZzFWdGhvdXM0ZDZEdHJuYl9ZOUhLdnAxQ3BvdXlsSHI1UFVWcjBnMURmQlo3UEhDMTFhWE5jbGNuWFFsNnlrVldycEd30gGWAUFVX3lxTE5zbVJJRWJiVkFvVndBbkc5Ulp6YnpqaFpWVnA4QUZteFAtenBBMjhaT0tYYjVZVnc3QlVVYlBmblhzZzJibThqLVhWQkd5d05wY2d3NGNtUy1DdEN0SkQ4UTc0aF9TYmNfWDA5akY1R05YbFE2MjVXdUd4ckYtaDFoOUxQM1lnblBDMGFnenFZNkhGVkZtdw?oc=5)
 - ["일단 물량부터 달라"…HBM 품귀에 엔비디아도 눈높이 낮췄다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE9iS2dqYTg2Q3d5dERmLUZjblVBdVk3VUJSLTU2TjRqVmdNTllVOWZWQURTLVNBZWtPU00tQzVVV25IMzg4VXVKekVCZHE1UWJiZmY2MXhXODlHUnZW?oc=5)
-- ["중국 CXMT의 HBM 수율 30% 미만에도 생산 임박", 삼성전자 SK하이닉스 추격 서둘러 - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTE5Od0c0SlQzcW51b1ZRZzc5eGxzbU53Q1psU25kbkFQX2N4Ty1RY1lEQ09RVnhnU3ctX1JBc1dyNjdCUFh6TlMzZ1hmMkFZcmoyTExlRFM4SF9vXzhrOXZRQmtGRTNGVzhDczhvdUJvbWJVYlk?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
