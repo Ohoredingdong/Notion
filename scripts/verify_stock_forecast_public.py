@@ -1,4 +1,4 @@
-"""Verify actual public predictions, learning diagnostics and UI code, not push receipt."""
+"""Verify public prediction/controller snapshots and code; not human push receipt."""
 from datetime import datetime,timezone
 import hashlib,json,time,urllib.request
 from pathlib import Path
@@ -6,9 +6,9 @@ from stock_forecast_model import digest
 BASE='https://ohoredingdong.github.io/Notion/'
 
 def main():
-    names=['stock-direction-forecast.json','stock-forecast-learning.json']
+    names=['stock-direction-forecast.json','stock-forecast-learning.json','stock-forecast-autopilot.json']
     expected={n:json.loads(Path(n).read_text()) for n in names}
-    scripts=['assets/stock-forecast.js','assets/stock-forecast-learning.js','assets/stock-forecast-directions.js']
+    scripts=['assets/stock-forecast.js','assets/stock-forecast-learning.js','assets/stock-forecast-directions.js','assets/stock-forecast-autopilot.js']
     hashes={n:hashlib.sha256(Path(n).read_bytes()).hexdigest() for n in scripts}
     for attempt in range(16):
         try:
@@ -27,7 +27,7 @@ def main():
                     'human_notification_received':False}
             record['verification_id']=digest(record)
             with Path('stock-forecast-deliveries.jsonl').open('a') as f:f.write(json.dumps(record,ensure_ascii=False)+'\n')
-            print('EXACT_PUBLIC_FORECAST_DIRECTION_AUDIT_AND_CODE_VERIFIED',record['verified_at']);return
+            print('EXACT_PUBLIC_AUTOPILOT_FORECAST_AND_CODE_VERIFIED',record['verified_at']);return
         except Exception as exc:
             if attempt==15:raise RuntimeError('public_deployment_unverified: '+type(exc).__name__) from None
             time.sleep(8)
