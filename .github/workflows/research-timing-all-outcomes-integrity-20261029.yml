@@ -1,0 +1,44 @@
+name: Research Timing All Observed Outcomes Integrity
+on:
+  push:
+    branches: [research/timing-all-outcomes-integrity-20261029]
+    paths:
+      - scripts/audit_stock_forecast_independent.py
+      - docs/experiments/timing-all-outcomes-integrity-20261029.md
+      - .github/workflows/research-timing-all-outcomes-integrity-20261029.yml
+permissions:
+  contents: read
+jobs:
+  read-only-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/timing-all-outcomes-integrity-20261029
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reproduce expected failing overlap counterexample before fix
+        run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Recompute real stored evidence independently without writes
+        run: python scripts/audit_stock_forecast_independent.py --output /tmp/timing-full-outcome-audit.json
+      - name: Check actual raw outcome count and avoid score inflation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('/tmp/timing-full-outcome-audit.json').read_text())
+          actual=[json.loads(s) for s in Path('stock-forecast-outcomes.jsonl').read_text().splitlines() if s.strip()]
+          assert r['status']=='ledger_arithmetic_consistent'
+          assert len(actual)==21 and r['scored']==6 and r['correct']==3
+          assert r.get('outcome_rows_verified')==len(actual),r
+          assert r['directions']['down']['missed']==3
+          assert r['human_push_delivery_verified'] is False
+          print('OUTCOMES_ALL_21_VERIFIED; SCORED_6_CORRECT_3; NO_TRADING_CLAIM')
+          PY
+      - name: Regression forecast / learning / specialist / bounded recovery
+        run: |
+          pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+          PYTHONPATH=scripts python -m unittest test_stock_forecasts test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -q
+          python scripts/stock_forecast_sources.py
