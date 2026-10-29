@@ -224,6 +224,16 @@ def audit(records, outcomes, deliveries, cutoff):
                 raise ValueError('stored_score_wrong')
             if abs(finite(o['brier_loss'])-loss) > 1e-8:
                 raise ValueError('stored_brier_wrong')
+            # The copied public-HTML verification time is not a human receipt.
+            # When an observed outcome records this optional timestamp, it must
+            # agree with the earliest independently logged valid public snapshot.
+            # Historic outcomes lacking this copy are neither backfilled nor
+            # credited with human notification delivery.
+            copied_public = o.get('delivery_verified_at')
+            if copied_public is not None:
+                first_public = public.get(o['id'])
+                if first_public is None or ts(copied_public) != first_public:
+                    raise ValueError('outcome_public_timestamp_mismatch')
             verified_outcomes[o['id']] = (opening, closing, change, label, correct, loss)
         except (KeyError, ValueError, TypeError, ZeroDivisionError) as exc:
             errors.append({'id': o.get('id'), 'error': str(exc)})
