@@ -1,5 +1,19 @@
 # 휴대폰용 부엌 미리보기 전달
 
+## 2026-10-29 현재 공유 경로 — 공개 브라우저 실행 검증
+
+사용자가 GitHack 주소의 차단·오류를 보고해, 현재 공유는 HTMLPreview 경로를 사용한다. 아래는 실제 공개 HTTPS 주소를 별도 GitHub Actions 브라우저에서 실행한 고정 링크다. 다운로드·PR·GitHack 확인 화면을 거치지 않는다.
+
+- [앱 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6f20477efd576378aa92b9f44cec59370d5315d6/previews/mobile/app.html)
+- [위젯 바로 보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6f20477efd576378aa92b9f44cec59370d5315d6/previews/mobile/widget.html)
+
+[실제 공개 주소 검증](https://github.com/Ohoredingdong/Notion/actions/runs/40857168139)에서 앱·위젯 각각 649×900·390×844의 총 4조건이 HTTP 200, 올바른 소스 SHA-256, 두 표시창 제목·그림 표시, 확대 버튼과 닫기 실행, 가로 넘침 없음과 JavaScript 예외 없음을 통과했다. [검사 기록](miniature-kitchen/click-preview-validation.json)을 따른다. 로컬 URL을 대체 응답한 결과가 아니며 실제 공개 서비스로 접속했다. 실제 개인 휴대폰/Safari·Notion과 기존 간헐 문 터치 문제의 검증을 뜻하지 않는다.
+
+검증은 `delivery/verify-kitchen-click-20261029` 브랜치의 전용 워크플로로 실행했으며 결과만 `preview/kitchen-click-validation-20261029` 브랜치에 보관했다. main·Pages 설정·기존 배포 파일은 바꾸거나 병합하지 않았다. 시안 내용과 문 닫힘 수정은 위 `6f20477e`에 고정한다. 이후 화면 변경 시 새 소스와 공개 실행 주소를 다시 검증해야 한다.
+
+아래는 이전 GitHack 전달과 그 당시 검증 한계를 보관한 기록이다.
+
+
 2026-10-28 사용자가 채팅 내부 파일 링크로는 휴대폰에서 확인하지 못했다고 지적했다. `sandbox:/workspace/...`를 휴대폰 웹 주소로 간주하지 않는다. 이 문서는 표시창 디자인이 아닌 **전달 경로**의 수정이다.
 
 ## 파일과 빌드
