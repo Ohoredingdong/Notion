@@ -1,0 +1,132 @@
+name: Verify Radar Globe UI Preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'stock-radar-ui-preview.html'
+      - '.github/workflows/test-stock-radar-ui-preview.yml'
+permissions:
+  contents: read
+concurrency:
+  group: radar-globe-preview-check
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser verifier
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Check exact public HTML and script syntax
+        run: |
+          python - <<'PY'
+          import hashlib,time,urllib.request,re
+          from pathlib import Path
+          target=Path('stock-radar-ui-preview.html').read_bytes()
+          expected=hashlib.sha256(target).hexdigest()
+          url='https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html'
+          for attempt in range(20):
+              try:
+                  req=urllib.request.Request(url+'?verify='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
+                  with urllib.request.urlopen(req,timeout=15) as r:
+                      assert r.status==200
+                      actual=r.read()
+                  assert hashlib.sha256(actual).hexdigest()==expected
+                  print('PUBLIC_HTML_SHA256_VERIFIED',expected)
+                  break
+              except Exception:
+                  if attempt==19: raise
+                  time.sleep(5)
+          script=re.search(r'<script>(.*?)</script>',target.decode(),re.S).group(1)
+          Path('/tmp/radar-preview.js').write_text(script)
+          assert 'fetch(' not in script
+          assert 'type="password"' not in target.decode()
+          PY
+          node --check /tmp/radar-preview.js
+      - name: Test public interactions and storage on desktop and mobile
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json
+          from pathlib import Path
+          url='https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html'
+          checked=[]
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              for width in (390,1280):
+                  context=browser.new_context(viewport={'width':width,'height':950},reduced_motion='reduce')
+                  page=context.new_page(); errors=[]
+                  page.on('pageerror',lambda e:errors.append(str(e)))
+                  page.goto(url,wait_until='networkidle')
+                  page.locator('#globe').wait_for()
+                  before=page.locator('#globe').evaluate('(c)=>c.toDataURL()')
+                  page.locator('[data-rotate="30"]').click()
+                  assert before!=page.locator('#globe').evaluate('(c)=>c.toDataURL()')
+                  page.screenshot(path=f'globe-home-{width}.png',full_page=True)
+                  for route in ('discover','forecast','alerts','results'):
+                      page.locator(f'.quick[data-go="{route}"]').click()
+                      assert page.url.split('#/')[1].split('/')[0]==route
+                      page.locator('.back').click();page.locator('#globe').wait_for()
+                  page.locator('[data-homemarket="미국"]').click()
+                  page.locator('.country-pin').click()
+                  assert page.locator('#stockList .listrow').count()==2
+                  page.locator('[data-filter="전체"]').click()
+                  page.locator('#stockSearch').fill('삼성')
+                  assert page.locator('#stockList .listrow').count()==1
+                  page.locator('#stockList .listrow').click()
+                  page.locator('.star').click()
+                  assert page.locator('.star').get_attribute('aria-pressed')=='false'
+                  page.locator('.star').click()
+                  page.locator('[data-period="1주"]').click()
+                  assert '1주' in page.locator('.chart svg').get_attribute('aria-label')
+                  page.screenshot(path=f'globe-detail-{width}.png',full_page=True)
+                  page.locator('.flow[data-go="alert"]').click()
+                  page.locator('input[name=price]').fill('80000')
+                  page.locator('[type=submit]').click()
+                  assert page.locator('.alertcard').count()==1
+                  page.reload();page.locator('.alertcard').wait_for()
+                  assert '80,000' in page.locator('.alertcard').inner_text()
+                  page.locator('[data-edit]').click()
+                  page.locator('input[value="근거 변화"]').check()
+                  assert not page.locator('#priceField').is_visible()
+                  page.locator('[type=submit]').click()
+                  assert '근거 변화' in page.locator('.alertcard').inner_text()
+                  page.locator('[data-toggle]').click()
+                  assert page.locator('[data-toggle]').get_attribute('aria-checked')=='false'
+                  page.locator('[data-delete]').click()
+                  assert page.locator('.alertcard').count()==0
+                  for route in ('home','discover','stock/005930','forecast/005930','watchlist','alerts','alert/005930','news','results','settings'):
+                      page.goto(url+'#/'+route)
+                      page.locator('h1').wait_for()
+                      assert not page.evaluate('document.documentElement.scrollWidth>innerWidth+1'),(width,route)
+                  page.locator('[data-action="connection"]').click()
+                  assert page.locator('dialog').is_visible()
+                  assert page.locator('input[type=password]').count()==0
+                  page.keyboard.press('Escape')
+                  assert not page.locator('dialog').is_visible()
+                  page.goto(url+'#/home');page.locator('.quick[data-go=discover]').click()
+                  page.go_back();page.locator('#globe').wait_for()
+                  page.go_forward();page.locator('#stockList').wait_for()
+                  assert not errors,errors
+                  checked.append({'width':width,'navigation':'pass','globe':'pass','storage':'pass','dialogs':'pass','overflow':'pass','page_errors':errors})
+                  context.close()
+              browser.close()
+          Path('globe-ui-checks.json').write_text(json.dumps({'public_url':url,'checks':checked,'financial_data_connected':False,'orders_enabled':False},indent=2))
+          print('PUBLIC_DESKTOP_MOBILE_NAVIGATION_AND_LOCAL_PREVIEW_STORAGE_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: globe-ui-preview-checks
+          retention-days: 7
+          path: |
+            globe-home-*.png
+            globe-detail-*.png
+            globe-ui-checks.json
