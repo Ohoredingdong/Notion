@@ -208,6 +208,45 @@ class SelfTests(unittest.TestCase):
         self.assertEqual(audit([base, overlapping], [o], [d], now)['counts']['overlap_excluded'], 1)
 
 
+    def test_corrupt_overlapping_outcome_is_an_integrity_error(self):
+        # Synthetic data only. Overlap exclusion cannot hide a malformed outcome.
+        first = {'id': 'synthetic-first', 'symbol': 'TEST', 'market': 'US',
+                 'mode': 'intraday', 'status': 'research_prediction',
+                 'observed_until': '2026-10-29T13:30:00Z',
+                 'received_at': '2026-10-29T13:31:00Z',
+                 'issued_at': '2026-10-29T13:36:00Z',
+                 'target': {'start': '2026-10-29T14:00:00Z',
+                            'end': '2026-10-29T14:30:00Z'},
+                 'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                 'direction': 'flat', 'neutral_band_pct': .3}
+        second = {**first, 'id': 'synthetic-overlap',
+                  'target': {'start': '2026-10-29T14:05:00Z',
+                             'end': '2026-10-29T14:35:00Z'}}
+        first_outcome = {'id': first['id'], 'symbol': 'TEST', 'mode': 'intraday',
+                         'status': 'observed', 'target': first['target'],
+                         'evaluated_at': '2026-10-29T14:40:00Z',
+                         'target_open': 100., 'target_close': 99.,
+                         'return_pct': -1., 'actual': 'down', 'predicted': 'flat',
+                         'correct': False, 'brier_loss': 1.04}
+        # Fabrication: the source prices imply UP, not the frozen DOWN label.
+        bad_overlap = {**first_outcome, 'id': second['id'],
+                       'target': second['target'], 'target_close': 101.}
+        publication = {'status': 'public_verified',
+                       'snapshot_generated_at': '2026-10-29T13:37:00Z',
+                       'verified_at': '2026-10-29T13:38:00Z',
+                       'prediction_ids': [first['id'], second['id']]}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        good = audit([first, second], [first_outcome, {**bad_overlap,
+            'target_close': 99.}], [publication], cutoff)
+        self.assertEqual(good['scored'], 1)
+        self.assertEqual(good['counts']['overlap_excluded'], 1)
+        self.assertEqual(good['status'], 'ledger_arithmetic_consistent')
+        bad = audit([first, second], [first_outcome, bad_overlap],
+                    [publication], cutoff)
+        self.assertEqual(bad['scored'], 1)
+        self.assertEqual(bad['status'], 'integrity_errors')
+        self.assertTrue(any(e.get('id') == second['id'] for e in bad['errors']))
+
     def test_snapshot_created_before_forecast_cannot_be_claimed_as_public(self):
         # Deliberately inconsistent synthetic publication, not a market observation.
         record = {'id': 'synthetic-late-issue', 'symbol': 'TEST', 'market': 'US',
