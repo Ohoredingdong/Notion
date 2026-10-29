@@ -1,0 +1,52 @@
+name: Research - public verification copy integrity
+on:
+  push:
+    branches:
+      - research/timing-outcome-public-receipt-binding-20261030
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: research-outcome-public-copy
+  cancel-in-progress: false
+jobs:
+  audit-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic negative fixture must fail closed
+        run: python scripts/audit_stock_forecast_independent.py --self-test
+      - name: Independently audit untouched saved outcomes and learning lineage
+        run: |
+          python scripts/audit_stock_forecast_independent.py --output /tmp/public-copy-audit.json
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py --output /tmp/public-copy-learning-audit.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/public-copy-audit.json'))
+          assert p['status']=='ledger_arithmetic_consistent'
+          assert (p['prediction_rows'],p['outcome_rows_verified'],p['scored'],p['correct'])==(53,27,12,6)
+          assert not p['errors']
+          print('UNCHANGED_REAL_EVIDENCE_53_27_12_6')
+          PY
+      - name: Install dependencies for existing model and source regressions
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Run forecast, direction, learning, autopilot and session regression
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p test_stock_forecasts.py -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_directions test_stock_autopilot -v
+          python scripts/stock_forecast_sources.py
+          node --check assets/stock-forecast.js
+          node --check assets/stock-forecast-directions.js
+          node --check assets/stock-forecast-learning.js
+          node --check assets/stock-forecast-autopilot.js
+          node scripts/test_stock_forecast_ui.cjs
+          node scripts/stock_autopilot_recovery.cjs
