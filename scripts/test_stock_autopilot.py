@@ -172,7 +172,10 @@ class StagedLearningGateTests(unittest.TestCase):
                     json.dumps(row, ensure_ascii=False) + '\n' for row in rows))
             a.write(stage / 'stock-forecast-learning-state.json', state)
             a.write(stage / 'stock-forecast-learning.json',
-                    {'overall': {'samples': 1, 'correct': 0},
+                    {'overall': {'samples': 1, 'correct': 0, 'accuracy': 0.0,
+                                 'brier_loss': 1.04, 'balanced_accuracy': None,
+                                 'recall': {'down': 0.0, 'flat': None, 'up': None},
+                                 'confusion_matrix': [[0, 1, 0], [0, 0, 0], [0, 0, 0]]},
                      'learning': {'training_updates': 1}})
             a.write(stage / 'stock-direction-forecast.json', {'records': []})
             self.assertEqual(a.verify_stage(root, stage, cutoff)['scored'], 1)
@@ -191,7 +194,7 @@ class StagedLearningGateTests(unittest.TestCase):
         records, outcomes, deliveries, events, state, cutoff = synthetic()
         deliveries[0]['verification_id'] = 'synthetic-public-proof'
         valid = {'samples': 1, 'correct': 0, 'accuracy': 0.0,
-                 'brier_loss': 1.04,
+                 'brier_loss': 1.04, 'balanced_accuracy': None,
                  'recall': {'down': 0.0, 'flat': None, 'up': None},
                  'confusion_matrix': [[0, 1, 0], [0, 0, 0], [0, 0, 0]]}
         with tempfile.TemporaryDirectory() as tmp:
