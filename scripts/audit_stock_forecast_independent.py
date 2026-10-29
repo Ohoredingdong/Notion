@@ -67,6 +67,39 @@ def validate(r):
             if direction not in CLASSES or abs(cp[CLASSES.index(direction)]-max(cp)) > 1e-12:
                 raise ValueError('shadow_direction_not_maximum_probability')
 
+    # Online-learning records freeze both the selected distribution and the
+    # issuance fingerprint. Older records without this field are unaffected.
+    online = r.get('online_learning')
+    if online is not None:
+        if not isinstance(online, dict) or online.get('version') != 'delayed-forward-learning-1.0':
+            raise ValueError('invalid_online_learning_structure')
+        if online.get('trading_enabled') is not False:
+            raise ValueError('invalid_online_learning_structure')
+        variant = online.get('active_variant')
+        if variant not in ('incumbent', 'adaptive'):
+            raise ValueError('unknown_online_variant')
+        distributions = {}
+        for name in ('incumbent_probabilities', 'challenger_probabilities'):
+            value = online.get(name)
+            if not isinstance(value, dict) or set(value) != set(CLASSES):
+                raise ValueError('invalid_online_distribution')
+            values = [finite(value[k]) for k in CLASSES]
+            if any(x < 0 or x > 1 for x in values) or abs(sum(values)-1) > 1e-6:
+                raise ValueError('invalid_online_distribution')
+            distributions[name] = values
+        selected = distributions['challenger_probabilities' if variant == 'adaptive'
+                                 else 'incumbent_probabilities']
+        if any(abs(expected-actual) > 1e-12 for expected, actual in zip(selected, p)):
+            raise ValueError('online_frozen_probabilities_mismatch')
+        expected_id = audit_digest({
+            'event': audit_digest({k: r[k] for k in
+                                   ('symbol', 'market', 'mode', 'target')}),
+            'policy': r.get('policy_revision'),
+            'base_model': r['model_sha256'],
+            'online': online})
+        if r.get('id') != expected_id:
+            raise ValueError('online_issuance_id_mismatch')
+
     if not (ts(r['observed_until']) <= ts(r['received_at']) <= ts(r['issued_at']) <
             ts(r['target']['start']) < ts(r['target']['end'])):
         raise ValueError('nonprospective_timing')
