@@ -1,0 +1,36 @@
+name: Timing Equal First Issuance Research Trial
+on:
+  push:
+    branches: [research/timing-equal-issuance-20261030]
+permissions:
+  contents: read
+jobs:
+  preregistered-negative-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Equal-instant provenance synthetic RED GREEN test
+        run: PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v
+      - name: Independent forecast and integrity regression
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - name: Existing prospective source and acceptance negative controls
+        run: |
+          PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_ledger_status.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_public_payload_fingerprint.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
