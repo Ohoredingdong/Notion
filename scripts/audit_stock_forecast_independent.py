@@ -12,6 +12,9 @@ from pathlib import Path
 import unittest
 
 CLASSES = ('down', 'flat', 'up')
+# Shadow-only model catalogue was fixed before forward evidence accrued.
+REVIEWED_SHADOW_CANDIDATES = frozenset(('balanced_linear', 'balanced_nonlinear',
+                                       'movement_then_direction'))
 
 def ts(value):
     d = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
@@ -57,6 +60,8 @@ def validate(r):
         for candidate_name, candidate in candidates.items():
             if not isinstance(candidate_name, str) or not isinstance(candidate, dict):
                 raise ValueError('invalid_shadow_candidate_structure')
+            if candidate_name not in REVIEWED_SHADOW_CANDIDATES:
+                raise ValueError('unreviewed_shadow_candidate')
             distribution = candidate.get('probabilities')
             if not isinstance(distribution, dict):
                 raise ValueError('invalid_shadow_candidate_structure')
