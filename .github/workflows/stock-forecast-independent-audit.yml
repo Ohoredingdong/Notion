@@ -1,6 +1,14 @@
 name: Independent Forecast Evidence Audit
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/stock-forecast-independent-audit.yml'
+      - 'scripts/test_stock_timing_audit_handoff.py'
+  workflow_run:
+    workflows: ['Stock Prospective Forecasts']
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -28,17 +36,19 @@ concurrency:
   cancel-in-progress: false
 jobs:
   independent-audit:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Test audit independently of model code
         run: |
+          python scripts/test_stock_timing_audit_handoff.py -v
           python scripts/audit_stock_forecast_independent.py --self-test
           PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v
