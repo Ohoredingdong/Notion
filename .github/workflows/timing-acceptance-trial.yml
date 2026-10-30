@@ -1,0 +1,22 @@
+name: Timing Acceptance Research Trial
+on:
+  push:
+    branches:
+      - research/timing-acceptance-guard-20261030
+    paths:
+      - scripts/test_stock_timing_acceptance_guard.py
+      - scripts/audit_stock_timing_acceptance_guard.py
+      - .github/workflows/timing-acceptance-trial.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic timing completion-claim negative controls
+        run: PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
