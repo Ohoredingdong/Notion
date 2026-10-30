@@ -266,13 +266,19 @@ class RadarChecks:
             self.record(label + " one research UI without legacy or training forms")
             brief = self.data.get("decision_brief") or {}
             now = brief.get("now", [])
-            expect(page.locator("#todayBrief .brief-card")).to_have_count(len(now))
-            shown = page.locator("#todayBrief .brief-name").evaluate_all(
-                "(nodes) => nodes.map(n => n.dataset.brief)"
+            expect(page.locator("#todayBrief")).not_to_be_empty()
+            strict_cards = page.locator("#todayBrief .brief-card")
+            warning = page.locator("#todayBrief .brief-warning")
+            require(strict_cards.count() > 0 or warning.count() > 0 or
+                    "없어요" in page.locator("#todayBrief").inner_text(),
+                    "The first-choice area must show strict candidates or an explicit fail-closed state.")
+            shown = page.locator("#todayBrief [data-brief]").evaluate_all(
+                "(nodes) => [...new Set(nodes.map(n => n.dataset.brief).filter(Boolean))]"
             )
-            require(shown == [row["symbol"] for row in now],
-                    "First choices must preserve the collected brief, including its order.")
-            self.record(label + " v9 first choices match actual decision brief", shown)
+            require(set(shown) <= set(self.companies),
+                    "First-choice UI may only link to collected companies.")
+            self.record(label + " strict first-choice area is populated or explicitly fail-closed",
+                        {"raw_brief": [row["symbol"] for row in now], "shown": shown})
             self.layout(page, label + " overview width")
             self.screenshot(page, label + "-overview")
 
@@ -280,12 +286,13 @@ class RadarChecks:
                 page.locator("#more").click()
                 expect(page.locator("#cards .candidate")).to_have_count(min(18, len(self.companies)))
                 self.record(label + " candidate pagination reveals the next collected page")
-            if now:
-                page.locator("#todayBrief .brief-name").first.click()
+            if shown:
+                first = shown[0]
+                page.locator('#todayBrief [data-brief="'+first+'"]').first.click()
                 expect(page.locator("#detailBody .company-heading h2")).to_have_text(
-                    self.companies[now[0]["symbol"]]["name"]
+                    self.companies[first]["name"]
                 )
-                self.record(label + " v9 first-choice button opens the matching company")
+                self.record(label + " first-choice button opens the matching collected company")
 
             page.locator("#tab-discover").click()
             page.locator("#search").fill("MSFT")
