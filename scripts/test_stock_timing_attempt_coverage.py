@@ -117,11 +117,19 @@ class AttemptCoverageTests(unittest.TestCase):
         got = audit_attempt_coverage(a, l, r)
         self.assertIn("attempt_after_coverage_report", got["errors"])
 
-    def test_inconsistent_checked_at_within_same_run_rejected(self):
+    def test_legitimate_rerun_can_share_run_id_with_different_clock(self):
+        # An Actions run can be rerun. Frozen evidence has one run ID with
+        # two valid check batches, so reject impossible times, not ID reuse.
         a, l, r = fixture()
         a[1]["checked_at"] = "2026-10-29T13:01:00+00:00"
         got = audit_attempt_coverage(a, l, r)
-        self.assertIn("inconsistent_run_checked_at", got["errors"])
+        self.assertEqual(got["status"], "attempt_coverage_consistent")
+
+    def test_invalid_report_generation_clock_rejected(self):
+        a, l, r = fixture()
+        r.pop("generated_at")
+        got = audit_attempt_coverage(a, l, r)
+        self.assertIn("invalid_coverage_summary_generated_at", got["errors"])
 
     def test_same_instant_across_timezone_offsets_is_valid(self):
         a, l, r = fixture()
