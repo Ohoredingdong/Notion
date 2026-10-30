@@ -17,3 +17,8 @@ The read-only independent `validate()` checks `trained_through` and `calibrated_
 
 ## Evidence
 Preregistered; RED pending. Do not report timing usefulness, actual trader receipt, executable quotes, after-cost P&L or untouched future segment as verified.
+
+## RED reproduction executed
+- [Actions 40996854940](https://github.com/Ohoredingdong/Notion/actions/runs/40996854940): checkout the isolated research ref, execute six synthetic tests. Two control cases passed; all **four** preregistered inconsistent chronology mutations failed with `AssertionError: ValueError not raised`. This is a valid failing reproduction, not a live-data incident.
+- Patch scope: one read-only `validate()` check in `scripts/audit_stock_forecast_independent.py`. No forecast state or data rewritten.
+- GREEN/review: pending separately verified branch CI, original frozen audit and existing regression checks; no claim of utility.
