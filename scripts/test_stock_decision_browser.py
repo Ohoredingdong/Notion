@@ -99,7 +99,23 @@ class RadarChecks:
                 "The existing Microsoft/SK Hynix regression examples must remain in the snapshot.")
         self.generated = datetime.fromisoformat(self.data["generated_at"].replace("Z", "+00:00"))
         require(self.generated.tzinfo is not None, "Snapshot generated_at must include a timezone.")
-        self.normal_time = self.generated + timedelta(minutes=1)
+        evidence_times = [self.generated]
+        for value in [self.case_snapshot.get("generated_at")]:
+            if value:
+                try:
+                    evidence_times.append(datetime.fromisoformat(value.replace("Z", "+00:00")))
+                except ValueError:
+                    pass
+        for case in self.case_by_symbol.values():
+            reviewed = (case.get("green_review") or {}).get("reviewed_at")
+            if reviewed:
+                try:
+                    evidence_times.append(datetime.fromisoformat(reviewed.replace("Z", "+00:00")))
+                except ValueError:
+                    pass
+        self.normal_time = max(evidence_times) + timedelta(minutes=1)
+        require((self.normal_time - self.generated) <= timedelta(hours=float(self.data.get("max_age_hours", 18))),
+                "Captured strict-review evidence is already outside the raw-data freshness window.")
         self.report = {
             "cases": [], "errors": [],
             "mode": "Real collected JSON + checked-out v9 widget; separate public HTML observation",
