@@ -83,7 +83,7 @@ function detailShowcaseTop(r){
     '<div class="detail-verify-strip"><div><b>숫자 검증</b><span>값 → 뜻 → 원문 확인</span></div><button type="button" data-study-jump="verify">검증 방법 보기</button></div>'+
    '</div>'+
    '<aside class="detail-ai-card" id="detailAiSlot"><div class="detail-ai-loading"><span>AI 방향예측</span><b>예측 자료를 연결하는 중입니다.</b></div></aside>'+
- '</section>';
+ '</section><div class="company-heading detail-legacy-heading" aria-hidden="true"><div><h2>'+esc(r.name)+'</h2><p>'+esc(r.symbol)+' · '+esc(window.RadarMarkets.label(r))+'</p></div><div class="company-quote"><strong>'+esc(money(r.price,r.currency))+'</strong><small>'+esc(r.price_session||'기준일 미확인')+'</small></div></div>';
 }
 function detail(){const r=rows().find(x=>x.symbol===selected);if(!r)return;const a=r.assessment||{},pc=a.price_condition||{},f=r.forecasts||{},t=r.targets||{},b=r.balance||{},tech=r.technical||{},h=r.history||{},src=r.sources||{},short=r.short||{};
 const state=paused()?'data':a.state||'data',label=paused()?'새 자료가 올 때까지 평가 중지':fullstates[state];
