@@ -22,3 +22,7 @@ Preregistered; RED pending. Do not report timing usefulness, actual trader recei
 - [Actions 40996854940](https://github.com/Ohoredingdong/Notion/actions/runs/40996854940): checkout the isolated research ref, execute six synthetic tests. Two control cases passed; all **four** preregistered inconsistent chronology mutations failed with `AssertionError: ValueError not raised`. This is a valid failing reproduction, not a live-data incident.
 - Patch scope: one read-only `validate()` check in `scripts/audit_stock_forecast_independent.py`. No forecast state or data rewritten.
 - GREEN/review: pending separately verified branch CI, original frozen audit and existing regression checks; no claim of utility.
+
+## Initial GREEN verified (before broader regressions)
+- [Actions 40996976976](https://github.com/Ohoredingdong/Notion/actions/runs/40996976976), head `f3f4a9fbc059f3c818c85397172870b4966b69a1`: all six preregistered synthetic tests passed, original independent audit self-tests 12/12, source-time tests 4/4, frozen-band tests 6/6, 17 learning-evidence tests, frozen scored 18 (7 correct), 18 learning rows, no integrity errors. No real market outcome changed.
+- Broader model/direction/autopilot source regression run is now scheduled by temporary branch-only CI changes, no production publishing.
