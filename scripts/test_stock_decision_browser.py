@@ -431,7 +431,7 @@ class RadarChecks:
                 expect(page.locator("#reload")).to_be_enabled()
                 expect(page.locator("#liveStatus")).to_have_class(re.compile(r"\berror\b"))
                 expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-                    "새 자료로 다시 확인하고 있어요"
+                    "새 자료가 올 때까지 평가 중지"
                 )
                 expect(page.locator("#todayBrief .brief-warning")).to_contain_text(
                     "우선 매수 후보를 표시하지 않습니다"
