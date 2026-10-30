@@ -294,7 +294,7 @@ class RadarChecks:
                 )
                 self.record(label + " first-choice button opens the matching collected company")
 
-            page.locator("#tab-discover").click()
+            page.locator('.nr-rail [data-nr-view="discover"]').click()
             page.locator("#search").fill("MSFT")
             expect(page.locator("#cards .name-button")).to_have_count(1)
             expect(page.locator("#cards .name-button")).to_have_attribute("data-open", "MSFT")
@@ -308,7 +308,7 @@ class RadarChecks:
             self.company_detail(page, "MSFT", label)
             self.company_detail(page, "000660", label)
 
-            page.locator("#tab-discover").click()
+            page.locator('.nr-rail [data-nr-view="discover"]').click()
             page.locator("#search").fill("")
             page.locator('[data-mode="short"]').click()
             ready = [row for row in self.companies.values()
