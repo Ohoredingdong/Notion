@@ -221,19 +221,29 @@ class RadarChecks:
         expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
             expected_heading
         )
-        displayed = visible_number(
-            page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
-        )
-        expected = row["targets"]["median"] / 1.20
         tolerance = 0.51 if row["currency"] == "KRW" else 0.0051
-        require(math.isclose(displayed, expected, rel_tol=0, abs_tol=tolerance),
-                f"{symbol} condition price {displayed} != target median / 1.20 ({expected}).")
         quote = visible_number(page.locator("#detailBody .company-quote strong").inner_text())
         require(math.isclose(quote, row["price"], rel_tol=0, abs_tol=tolerance),
                 f"{symbol} displayed quote is not the collected quote.")
-        self.record(label + " " + symbol + " collected quote, price condition and assessment",
-                    {"assessment": row["assessment"]["state"],
-                     "quote": quote, "condition": displayed})
+        if strict_current:
+            price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
+            require("독립평가 매수 참고선" in price_text,
+                    "Strict detail must distinguish independent valuation from analyst target prices.")
+            green = (strict.get("green_review") or {}).get("green_eligible") is True
+            if not green:
+                require("평가 근거 확인 전" in price_text,
+                        "An unapproved strict review must not expose an independent-value buy line.")
+            condition = "strict independent valuation" if green else "blocked pending strict evidence"
+        else:
+            displayed = visible_number(
+                page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
+            )
+            expected = row["targets"]["median"] / 1.20
+            require(math.isclose(displayed, expected, rel_tol=0, abs_tol=tolerance),
+                    f"{symbol} legacy condition price {displayed} != target median / 1.20 ({expected}).")
+            condition = displayed
+        self.record(label + " " + symbol + " collected quote and current valuation gate",
+                    {"assessment": expected_heading, "quote": quote, "condition": condition})
         page.get_by_text("충족한 조건과 남은 조건", exact=True).click()
         body = page.locator("#detailBody").inner_text()
         for reason in row["assessment"].get("risks", []):
