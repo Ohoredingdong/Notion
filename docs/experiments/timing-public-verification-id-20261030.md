@@ -25,3 +25,9 @@ The calculation authenticates neither GitHub's actual user receipt nor official 
 - Extended isolated research run [41009127749](https://github.com/Ohoredingdong/Notion/actions/runs/41009127749): prospective/source/UI regression requested on this branch only; its ephemeral signals must never be counted as new published evidence. Record final result before any merge.
 
 This is **one** preregistered identity experiment, no trading improvement. No exchange prices, human receipts, transaction costs or untouched follow-up outcomes have been added.
+
+## Final isolated regression and change control
+
+Extended [Actions 41009127749](https://github.com/Ohoredingdong/Notion/actions/runs/41009127749) **passed**: 26 prospective tests, 88 direction/learning/autopilot tests, 12 independent audit self-tests, 4 new identity tests, source guards, JavaScript/UI invariants and real rendered desktop/mobile browser checks. The branch-only research transaction received 24 price-history groups and in its uncommitted working copy generated six forecasts and six learning updates; these are **not** main evidence, were not published, cannot be used as a new forward-performance result and cannot justify candidate promotion. All three publication steps (forecast push, public build, public verification) were skipped because this was not main.
+
+The temporary `stock-forecasts.yml` branch allowlist and temporary `stock-forecast-independent-audit.yml` branch checkout settings were reverted. The proposed final diff is restricted to the read-only independent auditor, four synthetic identity checks, permanent audit CI invocation and this record. No modification to production source collection or the running forecast system. Existing unrelated UI development on main must not be overwritten. No improvement to directional skill, execution returns or timing-utility acceptance is claimed.
