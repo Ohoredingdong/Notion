@@ -13,6 +13,8 @@ on:
       - 'scripts/test_stock_timing_shadow_catalogue.py'
       - 'scripts/test_stock_timing_public_payload_fingerprint.py'
       - 'scripts/audit_stock_learning_evidence.py'
+      - 'scripts/audit_stock_forecast_attempt_coverage.py'
+      - 'scripts/test_stock_timing_attempt_coverage.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
     - cron: '33 * * * *'
@@ -35,6 +37,7 @@ jobs:
       - name: Test audit independently of model code
         run: |
           python scripts/audit_stock_forecast_independent.py --self-test
+          PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
@@ -48,6 +51,8 @@ jobs:
         run: |
           python scripts/audit_stock_learning_evidence.py --self-test
           python scripts/audit_stock_learning_evidence.py
+      - name: Independently reconcile no-call and issue-attempt coverage
+        run: python scripts/audit_stock_forecast_attempt_coverage.py
       - name: Summarize evidence without declaring trading readiness
         if: always()
         run: |
@@ -75,3 +80,4 @@ jobs:
           path: |
             stock-forecast-independent-audit.json
             stock-forecast-learning-evidence.json
+            stock-forecast-attempt-coverage-audit.json
