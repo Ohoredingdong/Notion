@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import math
+from datetime import datetime, timezone
 from collections import Counter
 from pathlib import Path
 
@@ -17,8 +18,24 @@ REPORT = "stock-forecast-learning.json"
 OUTPUT = "stock-forecast-attempt-coverage-audit.json"
 
 
+def checked_instant(value):
+    """Parse archived attempt clocks, rejecting naive/non-ISO timestamps."""
+    if not isinstance(value, str):
+        raise ValueError("checked_at_is_not_a_string")
+    value = value.replace("Z", "+00:00")
+    checked = datetime.fromisoformat(value)
+    if checked.tzinfo is None:
+        raise ValueError("timezone_required")
+    return checked.astimezone(timezone.utc)
+
+
 def audit_attempt_coverage(attempts, predictions, report):
     errors = []
+    try:
+        summary_time = checked_instant(report.get("generated_at"))
+    except (ValueError, TypeError):
+        errors.append("invalid_coverage_summary_generated_at")
+        summary_time = None
     frozen_by_id = {}
     for row in predictions:
         if row.get("status") != "research_prediction":
@@ -34,6 +51,7 @@ def audit_attempt_coverage(attempts, predictions, report):
 
     ids = set()
     valid_runs = set()
+    run_checked_times = {}  # same producer run freezes one scheduler check instant
     calls = 0
     no_calls = 0
     reasons = Counter()
@@ -54,6 +72,22 @@ def audit_attempt_coverage(attempts, predictions, report):
             errors.append("missing_attempt_run_id")
         else:
             valid_runs.add(run)
+        # This is a scheduler check, not forecast issuance, public delivery or
+        # a user receipt. A later run can legitimately reference an old call.
+        try:
+            checked = checked_instant(row.get("checked_at"))
+        except (ValueError, TypeError):
+            errors.append("invalid_attempt_checked_at")
+            checked = None
+        if checked is not None:
+            if summary_time is not None and checked > summary_time:
+                errors.append("attempt_after_coverage_report")
+            if isinstance(run, str) and run:
+                prior_checked = run_checked_times.get(run)
+                if prior_checked is not None and checked != prior_checked:
+                    errors.append("inconsistent_run_checked_at")
+                else:
+                    run_checked_times[run] = checked
         if row.get("mode") not in ("daily", "intraday") or not isinstance(row.get("symbol"), str):
             errors.append("invalid_attempt_group")
         status = row.get("status")
