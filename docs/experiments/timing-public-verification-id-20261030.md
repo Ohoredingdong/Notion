@@ -17,3 +17,11 @@ Only include code, focused tests, the independent audit invocation and this expe
 ## External evidence still missing
 
 The calculation authenticates neither GitHub's actual user receipt nor official exchange candles. Independent executable bid/ask, fees/taxes/slippage and untouched prospective holdout are not connected. GitHub schedule/build success cannot satisfy the timing-utility acceptance contract.
+
+## Recorded experiment attempts
+
+- RED [run 41008998796](https://github.com/Ohoredingdong/Notion/actions/runs/41008998796): 4 focused tests; the two contradictory-proof tests failed exactly as hypothesized because the original audit returned `ledger_arithmetic_consistent`. The late genuine verification and byte-identical replay controls passed. The previous 12 audit self-tests, 4 source-time, 6 band, 6 model-vintage and 4 frozen status tests passed.
+- GREEN [run 41009045358](https://github.com/Ohoredingdong/Notion/actions/runs/41009045358): the same 4 focused tests, previous audit/source/band/vintage/status tests, 17 learning-evidence self-tests, and real read-only evidence recomputation passed. Production evidence remains 65 forecast rows, 45 observed outcomes, 17 public verification records, 18 qualified scored, 7 correct, 18 learning events; no changed original entries.
+- Extended isolated research run [41009127749](https://github.com/Ohoredingdong/Notion/actions/runs/41009127749): prospective/source/UI regression requested on this branch only; its ephemeral signals must never be counted as new published evidence. Record final result before any merge.
+
+This is **one** preregistered identity experiment, no trading improvement. No exchange prices, human receipts, transaction costs or untouched follow-up outcomes have been added.
