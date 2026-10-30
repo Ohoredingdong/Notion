@@ -24,6 +24,9 @@ def digest(value):
         allow_nan=False).encode('utf-8')).hexdigest()
 
 
+INITIAL_WEIGHT_HASH = digest([[0.0] * 13 for _ in range(3)])
+
+
 def forecast_key(r):
     return digest({key: r[key] for key in ('symbol', 'market', 'mode', 'target')})
 
@@ -114,6 +117,11 @@ def examine(records, outcomes, deliveries, events, state, cutoff):
                                    for row in weights)):
                         raise ValueError('untrained_group_weights_not_zero')
                     continue  # No older weight updates can be inferred.
+                # Anchor the genesis of every trained correction chain to
+                # the fixed all-zero 3-class, 13-feature initialization.
+                # Pairwise links and terminal hashes alone cannot verify it.
+                if history[0].get('weights_before') != INITIAL_WEIGHT_HASH:
+                    raise ValueError('learning_first_weights_not_initial_zero')
                 for prior, following in zip(history, history[1:]):
                     if prior['weights_after'] != following['weights_before']:
                         raise ValueError('learning_weight_hash_chain_broken')
@@ -176,8 +184,8 @@ def synthetic():
     d = {'status':'public_verified','snapshot_generated_at':'2026-10-29T13:36:10Z',
          'verified_at':'2026-10-29T13:36:15Z','prediction_ids':[r['id']]}
     k = forecast_key(r)
-    before = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
-    after = [[0.05, 0.0], [-0.05, 0.0], [0.0, 0.0]]
+    before = [[0.0] * 13 for _ in range(3)]
+    after = [[0.05] + [0.0] * 12, [-0.05] + [0.0] * 12, [0.0] * 13]
     group_name = 'TEST|intraday|legacy'
     e = {'kind':'learn_after_score','prediction_id':r['id'],
          'event_key':k,'available_at':o['evaluated_at'],
@@ -295,7 +303,7 @@ class Tests(unittest.TestCase):
                        'verified_at':'2026-10-29T14:40:00Z',
                        'prediction_ids':[next_r['id']]}
         key2=forecast_key(next_r)
-        next_weights=[[0.06,0.0],[-0.06,0.0],[0.0,0.0]]
+        next_weights=[[0.06]+[0.0]*12,[-0.06]+[0.0]*12,[0.0]*13]
         next_event={**e[0], 'prediction_id':next_r['id'],
                     'event_key':key2,
                     'available_at':next_o['evaluated_at'],
