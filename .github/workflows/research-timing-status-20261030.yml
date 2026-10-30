@@ -1,0 +1,43 @@
+name: Research Frozen Evidence Status RED GREEN
+on:
+  push:
+    branches: [research/timing-evidence-row-status-20261030]
+    paths:
+      - '.github/workflows/research-timing-status-20261030.yml'
+      - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/test_stock_timing_ledger_status.py'
+      - 'docs/experiments/timing-frozen-row-status-20261030.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reproduce synthetic status suppression with frozen auditor
+        run: PYTHONPATH=scripts python scripts/test_stock_timing_ledger_status.py -v
+      - name: Existing independent audit and real repository evidence (non-mutating)
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py --output /tmp/stock-indep-status.json
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py --output /tmp/stock-learning-status.json
+          PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
+      - name: Verify immutable live evidence stats remain unchanged
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/stock-indep-status.json'))
+          s=json.load(open('/tmp/stock-learning-status.json'))
+          assert r['status']=='ledger_arithmetic_consistent' and (r['scored'],r['correct'])==(18,7),r
+          assert s['status']=='learning_evidence_consistent' and s['learning_event_rows']==18,s
+          assert (r['directions']['down']['hits'],r['directions']['up']['hits'])==(0,0)
+          print('PASS: forward metrics unchanged, 18/7; 18 learning events, zero bidirectional improvement proof')
+          PY
