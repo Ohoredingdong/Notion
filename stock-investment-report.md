@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-30T19:01:01.334276+09:00
+- 계산일: 2026-10-31T03:35:59.906861+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -35,9 +35,9 @@
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
 - [(기획) 미국 금리 동결 한국 증시에 호재로 작용하나 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5ia0ZsVmxwLTNBMEtiTDhnQTJJOTQ3VnFXZkczZ2tjQy1BNENVNjlSaDRiTVpmYXZpZEx1T3dpZmxzM1BYVl9Ea1g4aXFXc2Z2NFlIeEs0Y3VTeVZsQi1wR0lkTjM?oc=5)
-- [알파벳 12% 폭락에 AI株 흔들…나스닥 1.38%↓ (뉴욕증시 브리핑) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE83UFV5c09ZTDM0bE9BVzRJU1ZNTmtBZ2FqaW1iMHRTdzlQNmZRTmZGd1VZbWxxV1Q3dGNtSUQ1RWtPMkxidjlJT3U0MnVMQWg3RW1ISFpwZHFNUQ?oc=5)
+- [뉴욕증시, 미 Fed 금리 동결에 3일째 상승…오라클 10%↑ (뉴욕증시 브리핑) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFB0ZzU5LTRVLVRycFRLSUd3eE5EUGdRWXFQMUJTaGNWdUFEbzdxU3BCWFdQeFd1VG44c2pyMWU4WTlrWmFwVjhXUW1RVll4dUs5LW1pc25SVmFFZw?oc=5)
 - [SK하이닉스, HBM 1위 굳히기 '승부수'…안현 사장 미국 전진 배치로 삼성전자 추격 차단 - 경인방송 뉴스](https://news.google.com/rss/articles/CBMiZEFVX3lxTFB0TnpSWmFFYUZwZ3YxeF91bXRMY3otTVhZVGZnRkQ0Ynh3UDVHREhmTWtPRFhJR1pXbTE0Wm1JLWFkYzk4QTZLcHFTNmVoYWlrU0tZOEdzeEVoLTdZbnBZYTVxRVPSAWhBVV95cUxQWXB6QnV3TGE2N0NQX0pqdGE1NVloc0d2b2hfQkhkanJfbWthSzNzZWlRZTlZZjd1Z1RHNW9kZ3Z2NER1dlZqVk4yOW9fVXhPbnVEd18wVGVtckp4ZUp6QVBlaXhzS3puMQ?oc=5)
-- [젠슨 황 밀착 '중국 女 스파이' 사건…한국 반도체까지 흔드나 - 뉴스버스](https://news.google.com/rss/articles/CBMiakFVX3lxTE9iVEZTbzBaN1BxbWNMelNvYmI0UDNZa0s5Wmc0alZMeHlEQmJiX3J0Z0hlV0c3R0xPcnNJb0QyWFJ1RHhZTUc2UndvVS1Taml1YnptOFJPTng5V01GT0RZUVY5Qkdkb2E1THc?oc=5)
+- ["일단 물량부터 달라"…HBM 품귀에 엔비디아도 눈높이 낮췄다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE9iS2dqYTg2Q3d5dERmLUZjblVBdVk3VUJSLTU2TjRqVmdNTllVOWZWQURTLVNBZWtPU00tQzVVV25IMzg4VXVKekVCZHE1UWJiZmY2MXhXODlHUnZW?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
