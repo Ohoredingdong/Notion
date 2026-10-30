@@ -40,6 +40,29 @@ function checksHTML(r){return (r.assessment?.checks||[]).map(c=>'<div class="che
 function openCompany(s){selected=s;$('#companySelect').value=s;detail();setView('detail');$('#view-detail').scrollIntoView({block:'start',behavior:'auto'})}
 function dataCell(label,value,note,source){return '<div class="data-cell"><span>'+label+'</span><strong>'+esc(value)+'</strong><small>'+esc(note)+'</small>'+link(source,'출처 비교')+'</div>'}
 function listText(list){return (list||[]).map(x=>'<p>• '+esc(x)+'</p>').join('')}
+
+function businessIntro(r){
+ const text=r.business_summary||r.business_description||r.profile?.business||r.business?.summary||'';
+ return text?esc(text):'저장된 사업 설명 원문이 아직 없습니다. 아래 공식 IR·사업보고서에서 “주요 제품·서비스 / 사업의 내용 / 매출 구성”부터 확인하세요.';
+}
+function metricStudy(label,value,meaning,verify,source){
+ return '<article class="study-metric"><div class="study-metric-top"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div><p>'+esc(meaning)+'</p><div class="study-verify"><b>검증</b><span>'+esc(verify)+'</span></div>'+(safe(source)?'<a href="'+safe(source)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a>':'')+'</article>';
+}
+function studyFlowTop(r){
+ const f=r.forecasts||{},t=r.targets||{},b=r.balance||{},h=r.history||{},src=r.sources||{},tech=r.technical||{};
+ const metrics=[
+  metricStudy('예상 EPS',money(f.next_fy?.avg,r.currency),'주당 얼마를 벌 것으로 예상하는지 보는 값입니다.','같은 회계연도인지 확인 → 회사 실적/컨센서스 원문과 비교',src.estimates),
+  metricStudy('EPS 30일 변화',pct(f.eps_revision30_pct),'한 달 사이 이익 예상이 좋아졌는지 나빠졌는지 봅니다.','30일 전과 현재가 같은 FY 추정치인지 확인',src.estimates),
+  metricStudy('예상 PER',fmt(f.next_fy_pe,1)+'배','현재 가격이 예상 이익의 몇 배인지 보는 값입니다. 낮다고 무조건 싼 것은 아닙니다.','동종업계 성장률·ROE·부채와 함께 비교',src.estimates),
+  metricStudy('목표가 중앙값',money(t.median,r.currency),'애널리스트 예상가격의 가운데 값입니다. 적정가치 확정값이 아닙니다.','리포트 날짜·기관 수·범위를 확인하고 독립 가치평가와 분리',src.estimates),
+  metricStudy('FCF',amount(h.fcf,r.currency),'본업과 투자 후 실제 남는 현금의 한 지표입니다.','현금흐름표 CFO와 CAPEX 범위를 같은 기간으로 맞춰 확인',src.cashflow),
+  metricStudy('순차입금/EBITDA',fmt(b.net_debt_ebitda,1)+'배','부채 부담을 영업현금창출력과 비교하는 값입니다.','현금·총차입금·리스·EBITDA 기준일과 연결범위 확인',src.balance)
+ ];
+ return '<section class="study-flow">'+
+ '<div class="study-step"><span>1</span><div><small>회사부터 이해</small><h3>'+esc(r.name)+'은 어떤 회사인가?</h3><p><b>'+esc(r.sector||'업종 미확인')+'</b> · '+businessIntro(r)+'</p><div class="study-links">'+link(src.official,'공식 IR·공시')+'</div></div></div>'+
+ '<div class="study-step"><span>2</span><div><small>숫자는 6개만 먼저</small><h3>이 회사에서 먼저 볼 핵심 수치</h3><p>각 숫자 옆에 “뜻 → 검증 방법 → 원문”을 붙였습니다. 하나씩 확인하면 됩니다.</p><div class="study-metrics">'+metrics.join('')+'</div></div></div>'+
+ '</section>';
+}
 function detail(){const r=rows().find(x=>x.symbol===selected);if(!r)return;const a=r.assessment||{},pc=a.price_condition||{},f=r.forecasts||{},t=r.targets||{},b=r.balance||{},tech=r.technical||{},h=r.history||{},src=r.sources||{},short=r.short||{};
 const state=paused()?'data':a.state||'data',label=paused()?'새 자료가 올 때까지 평가 중지':fullstates[state];
 const ceilingNote=a.price_condition_usable===false?'기준기간 또는 업종모델 미확인: 아래 가격을 매수 행동 기준으로 사용하지 마세요.':!finite(pc.move_pct)?'조건가격을 계산할 자료가 없습니다.':pc.move_pct>=0?'현재 가격은 이 가격 조건 이내입니다. 나머지 조건도 확인하세요.':'현재 종가보다 '+fmt(Math.abs(pc.move_pct),1)+'% 낮은 수준입니다.';
@@ -48,7 +71,7 @@ const metrics=[dataCell('다음 회계연도 예상 EPS',money(f.next_fy?.avg,r.
 const support=money(tech.support10,r.currency),breakout=money(tech.prior_high20,r.currency);
 const expectedAudit=r.extension_audit?.status==='compared'?{...r.extension_audit,fields:r.extension_audit.fields.map(x=>({...x,widget_period:r.extension_audit.period}))}:audit?.companies?.find(x=>x.symbol===selected);
 const auditTable=(expectedAudit?.fields||[]).map(x=>{const field=x.field,same=finite(h[field])&&finite(x.widget_value)&&Math.abs(Number(h[field])-Number(x.widget_value))<=Math.max(1e-8,Math.abs(Number(h[field]))*1e-10)&&h.filing_period===x.widget_period;const status=same?({'match':'일치','rounding_match':'반올림 허용범위 일치','minor_difference':'미세 차이','period_mismatch':'기간 다름','unverified':'미검증','mismatch':'수치 차이'}[x.status]||x.status):'입력 변경·미확인';return '<tr><td>'+esc(x.label||field)+'</td><td>'+esc(fmt(h[field],3))+'</td><td>'+esc(fmt(x.official_value,3))+'</td><td>'+esc(status)+'</td></tr>'}).join('');
-$('#detailBody').innerHTML='<div class="company-heading"><div><span class="pill purple">'+esc(sizes[r.size_group]||'규모 미확인')+' · '+esc(r.sector)+'</span><h2>'+esc(r.name)+'</h2><p>'+esc(r.symbol)+' · '+esc(window.RadarMarkets.label(r))+' · 수집 '+esc(clock(r.collected_at))+'</p></div><div class="company-quote"><strong>'+esc(money(r.price,r.currency))+'</strong><small>'+esc(r.price_session||'미확인')+' 정규장 마감 가격</small></div></div>'+
+$('#detailBody').innerHTML=studyFlowTop(r)+'<div class="company-heading"><div><span class="pill purple">'+esc(sizes[r.size_group]||'규모 미확인')+' · '+esc(r.sector)+'</span><h2>'+esc(r.name)+'</h2><p>'+esc(r.symbol)+' · '+esc(window.RadarMarkets.label(r))+' · 수집 '+esc(clock(r.collected_at))+'</p></div><div class="company-quote"><strong>'+esc(money(r.price,r.currency))+'</strong><small>'+esc(r.price_session||'미확인')+' 정규장 마감 가격</small></div></div>'+
 '<div class="decision-grid"><div class="panel '+state+'"><span class="pill '+state+'">장기 · 실적과 가격</span><h3>'+esc(label)+'</h3><p>'+esc(paused()?'오래된 데이터의 매수 조건을 현재 신호로 보여주지 않습니다.':a.next_action||'자료 수집 필요')+'</p><div class="condition-price"><span>목표가가 유지될 때의 가격 조건</span><strong>≤ '+esc(money(pc.ceiling,r.currency))+'</strong><small>'+esc(ceilingNote)+'</small><small>중앙 목표가 ÷ 1.20 · 20% 여유를 요구한다는 가정</small></div><div class="plan"><b>판단을 바꿀 조건</b>'+listText(a.invalidation)+'</div></div>'+
 '<div class="panel"><span class="pill '+(short.state==='conditional'?'ready':'price')+'">단기 · 5~20거래일</span><h3>'+esc(paused()?'새 자료 확인 필요':short.label||'단기 자료 부족')+'</h3>'+listText(short.reasons?.slice(0,3))+'<div class="condition-price"><span>관찰할 가격·거래량</span><strong>'+esc(breakout)+' 돌파 여부</strong><small>직전 20일 고점 · 거래량 평균의 1.5배 조건을 함께 확인</small><small>현재 거래량 배수 '+esc(fmt(tech.volume_ratio,2))+' · 상대성과 '+esc(fmt(tech.relative20_pp,1))+'%p</small></div><div class="plan"><b>가설 무효화 기준</b><div>과거 10일 저점 '+esc(support)+' 이탈 시 재검토. 갭 하락 때 이 가격에 팔 수 있다는 보장은 없습니다.</div><div>뉴스 원인·외국인·기관 매매는 미검증입니다.</div></div></div></div>'+
 '<div class="section-heading"><h3>결론을 만든 실제 숫자</h3><span>계산 기준과 출처를 함께 확인</span></div><div class="data-grid">'+metrics.join('')+'</div>'+
