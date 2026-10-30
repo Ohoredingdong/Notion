@@ -489,6 +489,33 @@ class SelfTests(unittest.TestCase):
         self.assertFalse(meta['exchange_session_freshness_verified'])
         self.assertFalse(meta['human_delivery_verified'])
 
+    def test_frozen_baseline_probability_distribution_must_be_valid(self):
+        # Synthetic-only negative controls: no changes to original forecasts.
+        base = {'id': 'synthetic-baseline', 'symbol': 'TEST', 'market': 'US',
+                'mode': 'intraday', 'status': 'research_prediction',
+                'observed_until': '2026-10-29T13:30:00Z',
+                'received_at': '2026-10-29T13:31:00Z',
+                'issued_at': '2026-10-29T13:36:00Z',
+                'target': {'start': '2026-10-29T14:00:00Z',
+                           'end': '2026-10-29T14:30:00Z'},
+                'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                'direction': 'flat', 'neutral_band_pct': .3}
+        # Legacy records have no invented baseline; valid original vectors pass.
+        validate(base)
+        valid = {**base, 'frozen_baseline_probabilities':
+                 {'down': .25, 'flat': .5, 'up': .25}}
+        validate(valid)
+        corruptions = {
+            'non_normalized': {'down': .25, 'flat': .5, 'up': .3},
+            'negative_with_sum_one': {'down': -.1, 'flat': .9, 'up': .2},
+            'nonfinite': {'down': float('nan'), 'flat': .5, 'up': .5},
+            'missing_class': {'down': .25, 'flat': .75},
+        }
+        for label, forged in corruptions.items():
+            with self.subTest(label=label):
+                with self.assertRaises(ValueError):
+                    validate({**base, 'frozen_baseline_probabilities': forged})
+
     def test_shadow_candidate_probability_corruption_must_be_reported(self):
         # Synthetic-only red/green test. No real predictions or outcomes are changed.
         record = {'id': 'synthetic-shadow', 'symbol': 'TEST', 'market': 'US',
