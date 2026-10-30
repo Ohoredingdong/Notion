@@ -279,6 +279,7 @@ class RadarChecks:
                 "Displayed numeric research must retain all five collected source destinations.")
         unsafe_external = anchors.evaluate_all(
             "(nodes) => nodes.filter(n => /^https?:/.test(n.href) && "
+            "new URL(n.href).origin !== location.origin && "
             "!(n.target === '_blank' && n.rel.includes('noopener') && n.rel.includes('noreferrer')))"
             ".map(n => ({href:n.href,target:n.target,rel:n.rel,text:n.textContent.trim()}))"
         )
