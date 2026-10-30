@@ -70,14 +70,14 @@ function compactStudyHTML(r){
  const good=valid(r),v=r.validation||{},band=n(r.neutral_band_pct),up=good?r.probabilities.up:null,flat=good?r.probabilities.flat:null,down=good?r.probabilities.down:null;
  const virtual=good&&band!==null?(up-down)*band:null;
  const top=good?TEXT[r.direction]:'예측 보류';
- const inputs=signalCards(r),pos=inputs.filter(x=>x.side==='up').sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,2),neg=inputs.filter(x=>x.side==='down').sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,2);
+ const inputs=signalCards(r),pos=inputs.filter(x=>x.side==='up').sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,1),neg=inputs.filter(x=>x.side==='down').sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,1);
  const rows=(arr,empty)=>arr.length?arr.map(x=>'<li><b>'+esc(x.label)+'</b><span>'+((x.value>=0?'+':'')+x.value.toFixed(1))+'%</span></li>').join(''):'<li class="muted">'+empty+'</li>';
  return '<div class="detail-ai-head"><div><span>AI 방향예측 · 연구용</span><h3>'+esc(top)+'</h3><p>'+(good?'상승·횡보·하락 중 가장 높은 비중입니다.':'현재는 유효한 예측 구간이 아닙니다.')+'</p></div><em>'+(r.mode==='intraday'?'30분':'다음 장')+'</em></div>'+
  (good?'<div class="detail-ai-probs"><div><span>상승</span><b>'+pct(up)+'</b><i style="--w:'+(up*100)+'%"></i></div><div><span>횡보</span><b>'+pct(flat)+'</b><i style="--w:'+(flat*100)+'%"></i></div><div><span>하락</span><b>'+pct(down)+'</b><i style="--w:'+(down*100)+'%"></i></div></div>'+
  '<div class="detail-ai-virtual"><small>교육용 가상 상·하락 계산</small><strong>'+(virtual>=0?'+':'')+virtual.toFixed(2)+'%</strong><span>(상승확률−하락확률) × 모델 분류문턱 · 목표수익률 아님</span></div>'+
  '<div class="detail-ai-reasons"><div><h4>상승 쪽 입력</h4><ul>'+rows(pos,'뚜렷한 상승 입력 없음')+'</ul></div><div><h4>하락 쪽 입력</h4><ul>'+rows(neg,'뚜렷한 하락 입력 없음')+'</ul></div></div>'+
- '<div class="detail-ai-check"><b>이 예측을 검증할 때</b><span>뉴스·수급·호가·공시가 빠져 있으므로 가격 신호만 믿지 않습니다.</span></div>'+
- (v.test_samples?'<div class="detail-ai-score"><span>과거 분리검증 '+v.test_samples+'건</span><b>일치 '+pct(v.accuracy)+'</b><small>기준 '+pct(v.baseline_accuracy)+'</small></div>':'')+
+
+ (v.test_samples?'<div class="detail-ai-score"><span>과거 '+v.test_samples+'건</span><b>일치 '+pct(v.accuracy)+'</b></div>':'')+
  '<button type="button" class="detail-ai-more" data-forecast-more>예측 이유 자세히 공부하기</button>':
  '<div class="fc-warning">'+esc(reason(r.reason))+'</div>');
 }
