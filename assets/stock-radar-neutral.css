@@ -10,3 +10,28 @@
 
 .nr-toolstrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.nr-toolstrip a{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid #e5e9ed;border-radius:12px;background:#ffffffa6;color:#314356;text-decoration:none;min-width:0}.nr-toolstrip a:hover{background:#fff}.nr-toolstrip .nr-icon{width:18px;height:18px;color:#627487}.nr-toolstrip span{min-width:0}.nr-toolstrip b{display:block;font-size:11px}.nr-toolstrip small{display:block;font-size:9px;color:#76828d;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:640px){.nr-toolstrip{grid-template-columns:1fr}.nr-toolstrip a{padding:11px 12px}.nr-toolstrip small{white-space:normal}}
+
+
+/* READABLE_DASHBOARD_V2 — denser finance hierarchy without copying reference screens */
+.nr-quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.nr-quick-grid>button{display:flex;align-items:center;gap:10px;min-height:64px;padding:12px 13px;border:1px solid #e4e8ec;border-radius:14px;background:#ffffffc9;text-align:left;box-shadow:0 3px 14px #17233104}
+.nr-quick-grid>button:hover{background:#fff;border-color:#dbe1e7}.nr-quick-grid .nr-icon{width:22px;height:22px;color:#31475d}
+.nr-quick-grid span{min-width:0}.nr-quick-grid b{display:block;font-size:12px}.nr-quick-grid small{display:block;font-size:9px;color:#7a8590;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nr-status-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-bottom:12px;border:1px solid #e4e8ec;border-radius:14px;overflow:hidden;background:#e7ebef}
+.nr-status-strip>div{background:#ffffffd9;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nr-status-strip small{font-size:10px;color:#74808c}.nr-status-strip strong{font-size:14px;color:#223548;font-variant-numeric:tabular-nums}
+.nr-focus-panel{margin-bottom:14px;padding:15px 18px}.nr-focus-panel .nr-head{margin-bottom:8px}
+.nr-focus-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.nr-focus-row{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);grid-template-areas:"rank name" "rank price" "rank state";gap:3px 8px;min-height:105px;padding:11px;border:1px solid #e7ebef;border-radius:12px;background:#fafbfc;text-align:left}
+.nr-focus-row:hover{background:#fff;border-color:#dce3e9}.nr-focus-rank{grid-area:rank;width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:#eef1f4;color:#536578;font-size:10px;font-weight:700}
+.nr-focus-name{grid-area:name;min-width:0}.nr-focus-name b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nr-focus-name small{display:block;font-size:9px;color:#84909b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nr-focus-price{grid-area:price;display:flex;align-items:baseline;gap:6px;min-width:0}.nr-focus-price b{font-size:13px;white-space:nowrap}.nr-focus-price small{font-size:9px;white-space:nowrap}
+.nr-focus-state{grid-area:state;justify-self:start;border-radius:999px;padding:4px 7px;font-size:9px;border:1px solid #e1e6eb;color:#667684;background:#f2f4f6}
+.nr-focus-state.good{background:#eef6f3;border-color:#d7ebe3;color:#247965}.nr-focus-state.info{background:#edf4fb;border-color:#d8e7f5;color:#2a649a}.nr-focus-state.wait{background:#faf5eb;border-color:#eee2cc;color:#86612c}.nr-focus-state.risk{background:#fff3f3;border-color:#f2dddd;color:#b74a53}
+.nr-focus-state.muted{background:#f3f4f5;color:#7a838c}
+.nr-top{margin-bottom:12px}.nr-top h2{font-size:24px}.nr-market-grid{margin-bottom:12px}.nr-index{min-height:116px}
+.nr-index .nr-num{font-size:23px}.nr-chart-panel{min-height:330px}.nr-chart{height:205px}
+.nr-right{gap:12px}.nr-left{gap:12px}.nr-panel{box-shadow:0 4px 18px #17233103}
+@media(max-width:1200px){.nr-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nr-focus-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.nr-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nr-focus-list{grid-template-columns:repeat(2,minmax(0,1fr))}.nr-status-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.nr-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.nr-quick-grid>button{min-height:58px;padding:10px}.nr-quick-grid>button:nth-child(5){grid-column:1/-1}.nr-focus-list{grid-template-columns:1fr}.nr-focus-row{min-height:auto;grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"rank name state" "rank price state";align-items:center}.nr-focus-state{align-self:center}.nr-status-strip{grid-template-columns:1fr 1fr}.nr-status-strip>div{padding:9px 10px}.nr-status-strip small{font-size:9px}.nr-status-strip strong{font-size:12px}.nr-top h2{font-size:22px}.nr-focus-panel{padding:14px}.nr-chart-panel{min-height:320px}.nr-chart{height:195px}}
