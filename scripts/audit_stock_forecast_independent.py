@@ -141,6 +141,26 @@ def validate(r):
         if r.get(field) and ts(r[field]) > ts(r['issued_at']):
             raise ValueError('future_training_label')
     classify(0.0, r['neutral_band_pct'])
+    # Independently reconstruct the precommitted neutral band for modern
+    # provider-latency forecasts, instead of trusting the number that itself
+    # decides whether a stored return is up, down, or flat. Older unknown
+    # policies keep their historical path; no old forecast is backfilled.
+    if (r.get('version') == 'direction-forecast-1.0' and
+            r.get('policy_revision') == 'provider-latency-30m-v1'):
+        mode = r.get('mode')
+        if mode not in ('daily', 'intraday'):
+            raise ValueError('unknown_frozen_band_mode')
+        features = r.get('feature_values')
+        if not isinstance(features, dict) or 'vol20' not in features:
+            raise ValueError('missing_frozen_band_feature')
+        volatility = finite(features['vol20'])
+        if volatility < 0:
+            raise ValueError('negative_frozen_volatility')
+        expected = max(0.30 if mode == 'daily' else 0.15,
+                       volatility * (1 if mode == 'daily' else math.sqrt(6))
+                       * 0.35 * 100)
+        if abs(finite(r['neutral_band_pct']) - expected) > 1e-9:
+            raise ValueError('neutral_band_policy_mismatch')
 
 def audit(records, outcomes, deliveries, cutoff):
     counts = Counter(); errors = []; by_id = {}; originals = {}

@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_source_asof.py'
+      - 'scripts/test_stock_timing_band_audit.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
@@ -30,6 +31,7 @@ jobs:
         run: |
           python scripts/audit_stock_forecast_independent.py --self-test
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards
