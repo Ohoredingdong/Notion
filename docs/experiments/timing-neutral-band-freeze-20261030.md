@@ -18,6 +18,6 @@ For `version=direction-forecast-1.0` and `policy_revision=provider-latency-30m-v
 
 ## Execution log
 
-- RED: pending.
+- RED: [Actions 40985561765](https://github.com/Ohoredingdong/Notion/actions/runs/40985561765) on research branch commit `c9dba991f40a6a0cc6af735d592decf2ed3a49ca`: 6 synthetic tests, 4 passed and exactly 2 adversarial negative tests FAILED as preregistered (unchanged band and legacy rows still accepted). The old independent auditor did not reject a synthetic band shift or removal of the frozen vol20 feature. This is a fabricated counterexample, not evidence of tampering in real markets.
 - GREEN: pending.
 - Merge and main audit: pending.
