@@ -30,6 +30,12 @@ jobs:
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
+      - name: Install only existing forecast test dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Existing prospective, direction, learning and bounded-autopilot unit regressions
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
       - name: Verify immutable live evidence stats remain unchanged
         run: |
           python - <<'PY'
