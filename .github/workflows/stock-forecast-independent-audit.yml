@@ -2,7 +2,7 @@ name: Independent Forecast Evidence Audit
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'research/timing-learning-genesis-anchor-20261030']
+    branches: [main]
     paths:
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_source_asof.py'
@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
