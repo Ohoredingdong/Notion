@@ -42,6 +42,13 @@ STATE_LABELS = {
     "risk": "실제 위험 먼저 확인",
     "data": "판단 자료 보강",
 }
+STRICT_STATE_LABELS = {
+    "attractive": "핵심 검증 통과 · 조건부 투자 후보",
+    "conditional": "좋은 점은 있지만 핵심 검증이 남았어요",
+    "price_wait": "회사는 괜찮지만, 더 싸게 기다려요",
+    "avoid": "위험 신호의 원인을 먼저 확인해요",
+    "insufficient": "자료가 부족해서 아직 판단할 수 없어요",
+}
 PUBLIC_URL = "https://ohoredingdong.github.io/Notion/stock-value-radar.html"
 
 
@@ -85,6 +92,8 @@ class RadarChecks:
         require(isinstance(self.directory.get("companies"), list) and self.directory["companies"],
                 "A real nonempty discovery snapshot is required.")
         self.companies = {row["symbol"]: row for row in self.data["companies"]}
+        self.case_snapshot = self.snapshots.get("stock-investment-cases.json") or {}
+        self.case_by_symbol = {row["symbol"]: row for row in self.case_snapshot.get("companies", [])}
         require(len(self.companies) == len(self.data["companies"]), "Duplicate decision symbols.")
         require("MSFT" in self.companies and "000660" in self.companies,
                 "The existing Microsoft/SK Hynix regression examples must remain in the snapshot.")
@@ -197,8 +206,20 @@ class RadarChecks:
         require(page.locator("#detailBody").count() == 1 and
                 page.locator("#detailBody .company-heading").count() == 1,
                 "Company navigation must replace one research view, not accumulate overlays.")
+        strict = self.case_by_symbol.get(symbol)
+        strict_current = (
+            strict
+            and self.case_snapshot.get("source_generated_at") == self.data.get("generated_at")
+            and strict.get("input_price") == row.get("price")
+            and strict.get("input_price_session") == row.get("price_session")
+            and strict.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
+        )
+        expected_heading = (
+            STRICT_STATE_LABELS.get(strict.get("state"))
+            if strict_current else STATE_LABELS[row["assessment"]["state"]]
+        )
         expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-            STATE_LABELS[row["assessment"]["state"]]
+            expected_heading
         )
         displayed = visible_number(
             page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
