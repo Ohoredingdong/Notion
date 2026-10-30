@@ -7,7 +7,7 @@ const assert=require('node:assert/strict');
    const page=await browser.newPage({viewport:{width,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:8765/stock-value-radar.html',{waitUntil:'domcontentloaded'});
-   const neutral=page.locator('[data-nr-view="discover"]');
+   const neutral=page.locator('.nr-rail [data-nr-view="discover"]');
    if(await neutral.count()){await neutral.first().waitFor({timeout:45000});await neutral.first().click();}
    else if(await page.locator('#tab-discover').count()){await page.locator('#tab-discover').click();}
    await page.locator('.entry-tabs').waitFor({state:'visible',timeout:45000});
@@ -24,7 +24,7 @@ const assert=require('node:assert/strict');
     await page.locator('#cards article').first().waitFor({timeout:45000});
     await page.locator('[data-entry-open]').first().click();
     await page.locator('#view-detail').waitFor({state:'visible',timeout:15000});
-    if(await page.locator('[data-nr-view="discover"]').count()) await page.locator('[data-nr-view="discover"]').first().click();
+    if(await page.locator('.nr-rail [data-nr-view="discover"]').count()) await page.locator('.nr-rail [data-nr-view="discover"]').first().click();
     else await page.locator('#tab-discover').click({force:true});
     await page.locator('.entry-tabs').waitFor({state:'visible',timeout:15000});
     assert.deepEqual(errors,[],'Runtime page errors');
