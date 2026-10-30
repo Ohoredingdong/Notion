@@ -24,7 +24,9 @@ const assert=require('node:assert/strict');
     await page.locator('#cards article').first().waitFor({timeout:45000});
     await page.locator('[data-entry-open]').first().click();
     await page.locator('#view-detail').waitFor({state:'visible',timeout:15000});
-    await page.locator('#tab-discover').click();
+    if(await page.locator('[data-nr-view="discover"]').count()) await page.locator('[data-nr-view="discover"]').first().click();
+    else await page.locator('#tab-discover').click({force:true});
+    await page.locator('.entry-tabs').waitFor({state:'visible',timeout:15000});
     assert.deepEqual(errors,[],'Runtime page errors');
    } catch(error) {
     console.error('BASE_DASHBOARD_DIAGNOSTICS',JSON.stringify({errors,status:await page.locator('#liveStatus').innerText()}));
