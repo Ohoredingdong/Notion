@@ -34,6 +34,7 @@ DATA_FILES = (
     "stock-official-audit.json",
     "stock-radar-health.json",
     "stock-investment-cases.json",
+    "stock-market-groups.json",
 )
 STATE_LABELS = {
     "ready": "명시 조건 충족 · 매수 후보",
