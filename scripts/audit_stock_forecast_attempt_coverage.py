@@ -51,7 +51,6 @@ def audit_attempt_coverage(attempts, predictions, report):
 
     ids = set()
     valid_runs = set()
-    run_checked_times = {}  # same producer run freezes one scheduler check instant
     calls = 0
     no_calls = 0
     reasons = Counter()
@@ -82,12 +81,8 @@ def audit_attempt_coverage(attempts, predictions, report):
         if checked is not None:
             if summary_time is not None and checked > summary_time:
                 errors.append("attempt_after_coverage_report")
-            if isinstance(run, str) and run:
-                prior_checked = run_checked_times.get(run)
-                if prior_checked is not None and checked != prior_checked:
-                    errors.append("inconsistent_run_checked_at")
-                else:
-                    run_checked_times[run] = checked
+            # One GitHub run_id can be rerun and archive a second legitimate
+            # batch with a new checked_at; do not assume run_id is one clock.
         if row.get("mode") not in ("daily", "intraday") or not isinstance(row.get("symbol"), str):
             errors.append("invalid_attempt_group")
         status = row.get("status")
