@@ -17,6 +17,7 @@ on:
       - 'scripts/audit_stock_timing_acceptance_guard.py'
       - 'scripts/test_stock_timing_acceptance_guard.py'
       - 'scripts/test_stock_timing_attempt_coverage.py'
+      - 'scripts/test_stock_timing_equal_issuance.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
     - cron: '33 * * * *'
@@ -40,6 +41,7 @@ jobs:
         run: |
           python scripts/audit_stock_forecast_independent.py --self-test
           PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
