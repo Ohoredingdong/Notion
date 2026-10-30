@@ -343,9 +343,11 @@ class RadarChecks:
             if page.locator("#view-home").count():
                 expect(page.locator("#view-home")).to_be_visible()
                 expect(page.locator("#nr-home-content")).to_be_visible()
-                require(page.locator("#nr-company,#nr-ops-panel,#nr-comparison").count() == 3,
-                        "Neutral home must expose company, operations and comparison panels.")
-                self.record(label + " neutral home exposes comparison, company and operating status")
+                require(page.locator("#nr-market-overview,#nr-home-alerts,#nr-home-picks").count() == 3,
+                        "Neutral home must expose market overview, alerts and research picks.")
+                require(page.locator(".nr-home-actions button").count() >= 6,
+                        "Neutral home must expose the primary screen entry points.")
+                self.record(label + " neutral home exposes market, alerts, picks and primary screen entry points")
                 page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
