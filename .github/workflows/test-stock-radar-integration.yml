@@ -34,6 +34,7 @@ jobs:
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-recommendations.js
           python -m py_compile scripts/test_stock_decision_browser.py
+          python -m unittest scripts.test_market_context -v
       - name: Start local radar
         run: |
           python -m http.server 8765 >/tmp/integrated-radar-http.log 2>&1 &
