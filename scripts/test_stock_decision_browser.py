@@ -167,7 +167,8 @@ class RadarChecks:
     def fresh(self, page):
         expect(page.locator("#reload")).to_be_enabled()
         expect(page.locator("#liveStatus")).not_to_have_class(re.compile(r"\berror\b"))
-        expect(page.locator("#cards .candidate")).to_have_count(min(9, len(self.companies)))
+        require(page.locator("#companySelect option").count() == len(self.companies),
+                "The last valid detailed-company inventory must remain available.")
 
     def layout(self, page, name):
         dimensions = page.evaluate(
@@ -238,6 +239,14 @@ class RadarChecks:
             self.fresh(page)
             require(page.locator('script[src*="stock-radar-v9.js"]').count() == 1,
                     "The current v9 extension must be included exactly once.")
+            if page.locator("#view-home").count():
+                expect(page.locator("#view-home")).to_be_visible()
+                expect(page.locator("#nr-home-content")).to_be_visible()
+                require(page.locator("#nr-company,#nr-ops-panel,#nr-comparison").count() == 3,
+                        "Neutral home must expose company, operations and comparison panels.")
+                self.record(label + " neutral home exposes comparison, company and operating status")
+                page.locator('[data-nr-view="discover"]').click()
+                expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
                     "The selector must include every collected company, not a fixed ten-row fixture.")
             expect(page.locator("#listCount")).to_have_text(
@@ -382,6 +391,9 @@ class RadarChecks:
         context, page, errors, _requests = self.new_page(browser, origin, 320, 844, state)
         try:
             expect(page.locator("#liveStatus")).to_have_class(re.compile(r"\berror\b"))
+            if page.locator('[data-nr-view="discover"]').count():
+                page.locator('[data-nr-view="discover"]').click()
+                expect(page.locator("#view-discover")).to_be_visible()
             expect(page.locator("#cards")).to_contain_text("최신 자료를 불러오지 못했습니다")
             require(page.locator("#cards .candidate,#companySelect option").count() == 0,
                     "Initial source failure must not create zero-valued or demo candidates.")
