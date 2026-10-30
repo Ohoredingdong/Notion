@@ -1,0 +1,51 @@
+name: Test Stock Radar Integrated UI
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'fix/radar-feature-audit-20261030']
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-radar-neutral.js'
+      - 'assets/stock-radar-neutral.css'
+      - 'assets/stock-radar-v8.js'
+      - 'assets/stock-radar-v9.js'
+      - 'assets/stock-recommendations.js'
+      - 'tests/stock-entry-browser.cjs'
+      - 'scripts/test_stock_decision_browser.py'
+      - '.github/workflows/test-stock-radar-integration.yml'
+permissions:
+  contents: read
+jobs:
+  integrated-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser dependencies
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+          npm install --no-save --package-lock=false @playwright/test
+      - name: Syntax checks
+        run: |
+          node --check assets/stock-radar-neutral.js
+          node --check assets/stock-recommendations.js
+          python -m py_compile scripts/test_stock_decision_browser.py
+      - name: Start local radar
+        run: |
+          python -m http.server 8765 >/tmp/integrated-radar-http.log 2>&1 &
+      - name: Verify neutral home, legacy research and entry-plan navigation
+        run: |
+          node tests/stock-entry-browser.cjs
+          python scripts/test_stock_decision_browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-radar-integrated-ui-evidence
+          retention-days: 5
+          path: |
+            entry-*.png
+            decision-browser-tests/
