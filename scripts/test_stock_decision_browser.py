@@ -245,7 +245,7 @@ class RadarChecks:
                 require(page.locator("#nr-company,#nr-ops-panel,#nr-comparison").count() == 3,
                         "Neutral home must expose company, operations and comparison panels.")
                 self.record(label + " neutral home exposes comparison, company and operating status")
-                page.locator('[data-nr-view="discover"]').click()
+                page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
                     "The selector must include every collected company, not a fixed ten-row fixture.")
@@ -391,8 +391,8 @@ class RadarChecks:
         context, page, errors, _requests = self.new_page(browser, origin, 320, 844, state)
         try:
             expect(page.locator("#liveStatus")).to_have_class(re.compile(r"\berror\b"))
-            if page.locator('[data-nr-view="discover"]').count():
-                page.locator('[data-nr-view="discover"]').click()
+            if page.locator('.nr-rail [data-nr-view="discover"]').count():
+                page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()
             expect(page.locator("#cards")).to_contain_text("최신 자료를 불러오지 못했습니다")
             require(page.locator("#cards .candidate,#companySelect option").count() == 0,
