@@ -8,63 +8,96 @@ on:
       - 'assets/stock-radar-neutral.*'
       - 'scripts/install_stock_radar_neutral.py'
       - 'scripts/test_stock_radar_neutral.py'
+      - 'scripts/build_stock_radar_chart_cache.py'
+  schedule:
+    - cron: '41 */2 * * 1-5'
 permissions:
-  contents: read
+  contents: write
+  pages: write
 concurrency:
   group: neutral-radar-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   verify:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build neutral production UI if present
+      - name: Install operating theme without changing original financial evidence
         run: |
-          if [ -f scripts/install_stock_radar_neutral.py ]; then
-            python scripts/install_stock_radar_neutral.py
-            node --check assets/stock-radar-neutral.js
+          sha256sum stock-opportunity-data.json stock-investment-cases.json stock-green-review.json stock-forecast-learning.json > /tmp/finance-before.sha
+          python scripts/install_stock_radar_neutral.py
+          node --check assets/stock-radar-neutral.js
+          node --check assets/stock-radar-v8.js
+          cp stock-value-radar.html /tmp/neutral-once.html
+          python scripts/install_stock_radar_neutral.py
+          cmp stock-value-radar.html /tmp/neutral-once.html
+          sha256sum -c /tmp/finance-before.sha
+      - name: Collect actual dated chart display data on design branch
+        if: github.ref_name == 'design/neutral-production-20261030'
+        run: |
+          pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
+          python scripts/build_stock_radar_chart_cache.py
+      - name: Browser regression with real repository snapshots
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+          python -m http.server 8770 >/tmp/neutral-http.log 2>&1 &
+          python scripts/test_stock_radar_neutral.py
+      - name: Save checked generated UI on design branch only
+        if: github.ref_name == 'design/neutral-production-20261030'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-value-radar.html assets/stock-radar-v8.html assets/stock-radar-v8.js stock-radar-chart-data.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ui: publish tested neutral operating home and real dated display cache'
+            git push origin HEAD:design/neutral-production-20261030
           fi
-      - name: Inspect source schemas without publishing or changing data
+      - name: Verify actual public page and assets on main
+        if: github.ref_name == 'main'
         run: |
+          git diff --exit-code -- stock-value-radar.html assets/stock-radar-v8.html assets/stock-radar-v8.js
           python - <<'PY'
-          import json
+          import hashlib,time,urllib.request
           from pathlib import Path
-          names=['stock-opportunity-data.json','stocks-dashboard-data.json','stock-market-context.json','stock-investment-cases.json']
-          for name in names:
-              if not Path(name).exists(): continue
-              obj=json.loads(Path(name).read_text())
-              print(name, 'top keys:',list(obj))
-              if isinstance(obj.get('companies'),list) and obj['companies']:
-                  c=obj['companies'][0]
-                  print('company keys:',list(c))
-                  print('technical keys:',list(c.get('technical') or {}))
+          names=['stock-value-radar.html','assets/stock-radar-neutral.css','assets/stock-radar-neutral.js','assets/stock-radar-v8.js']
+          expected={n:hashlib.sha256(Path(n).read_bytes()).hexdigest() for n in names}
+          for attempt in range(24):
+              try:
+                  for name,want in expected.items():
+                      req=urllib.request.Request('https://ohoredingdong.github.io/Notion/'+name+'?neutral-verify='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(req,timeout=15) as r:
+                          assert r.status==200
+                          assert hashlib.sha256(r.read()).hexdigest()==want,name
+                  print('EXACT_PUBLIC_OPERATING_NEUTRAL_UI_VERIFIED',expected)
+                  break
+              except Exception:
+                  if attempt==23:raise
+                  time.sleep(6)
           PY
-      - name: Browser regression
-        run: |
-          if [ -f scripts/test_stock_radar_neutral.py ]; then
-            pip install playwright
-            python -m playwright install --with-deps chromium
-            python -m http.server 8770 >/tmp/neutral-http.log 2>&1 &
-            python scripts/test_stock_radar_neutral.py
-          fi
+          python scripts/test_stock_radar_neutral.py --url 'https://ohoredingdong.github.io/Notion/stock-value-radar.html' --public
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: neutral-production-evidence
-          retention-days: 3
+          retention-days: 5
           path: |
             stock-value-radar.html
             assets/stock*.js
             assets/stock*.css
             assets/stock-radar-v8.html
+            stock-radar-chart-data.json
             stock-opportunity-data.json
             stock-opportunity-summary.json
             stock-market-context.json
-            stocks-dashboard-data.json
             stock-investment-cases.json
             stock-investment-cases-summary.json
             stock-green-review.json
@@ -73,3 +106,36 @@ jobs:
             stock-forecast-learning.json
             stock-event-risks.json
             neutral-ui-evidence/
+  display-cache:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
+      - name: Update only display closing-price cache
+        run: |
+          python scripts/build_stock_radar_chart_cache.py
+          cp stock-radar-chart-data.json /tmp/new-display-cache.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/new-display-cache.json stock-radar-chart-data.json
+            git add stock-radar-chart-data.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'data: refresh display-only completed-session comparison prices'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
+      - name: Request Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
