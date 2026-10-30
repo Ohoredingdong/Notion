@@ -14,6 +14,8 @@ on:
       - 'scripts/test_stock_timing_public_payload_fingerprint.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - 'scripts/audit_stock_forecast_attempt_coverage.py'
+      - 'scripts/audit_stock_timing_acceptance_guard.py'
+      - 'scripts/test_stock_timing_acceptance_guard.py'
       - 'scripts/test_stock_timing_attempt_coverage.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
@@ -53,6 +55,10 @@ jobs:
           python scripts/audit_stock_learning_evidence.py
       - name: Independently reconcile no-call and issue-attempt coverage
         run: python scripts/audit_stock_forecast_attempt_coverage.py
+      - name: Refuse unverified timing-usefulness completion claims
+        run: |
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+          python scripts/audit_stock_timing_acceptance_guard.py
       - name: Summarize evidence without declaring trading readiness
         if: always()
         run: |
@@ -81,3 +87,4 @@ jobs:
             stock-forecast-independent-audit.json
             stock-forecast-learning-evidence.json
             stock-forecast-attempt-coverage-audit.json
+            stock-timing-acceptance-guard.json
