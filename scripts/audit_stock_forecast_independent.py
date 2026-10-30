@@ -140,6 +140,22 @@ def validate(r):
     for field in ('trained_through', 'calibrated_through'):
         if r.get(field) and ts(r[field]) > ts(r['issued_at']):
             raise ValueError('future_training_label')
+    # The declared observation is the as-of boundary for all model data
+    # used to issue this forecast, not merely the issuance timestamp. This
+    # protects frozen provenance; it does not authenticate provider history.
+    observed = ts(r['observed_until'])
+    trained = ts(r['trained_through']) if r.get('trained_through') else None
+    calibrated = ts(r['calibrated_through']) if r.get('calibrated_through') else None
+    if trained and trained > observed:
+        raise ValueError('model_training_after_observed_input')
+    if calibrated and calibrated > observed:
+        raise ValueError('model_calibration_after_observed_input')
+    if trained and calibrated and trained > calibrated:
+        raise ValueError('model_training_after_calibration')
+    validation = r.get('validation')
+    if isinstance(validation, dict) and validation.get('test_end') is not None:
+        if ts(validation['test_end']) > observed:
+            raise ValueError('model_validation_after_observed_input')
     classify(0.0, r['neutral_band_pct'])
     # Independently reconstruct the precommitted neutral band for modern
     # provider-latency forecasts, instead of trusting the number that itself
