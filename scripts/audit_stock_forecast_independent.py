@@ -194,7 +194,7 @@ def validate(r):
             raise ValueError('neutral_band_policy_mismatch')
 
 def audit(records, outcomes, deliveries, cutoff):
-    counts = Counter(); errors = []; by_id = {}; originals = {}
+    counts = Counter(); errors = []; by_id = {}; originals = {}; issuance_times = {}
     for r in records:
         if r.get('status') != 'research_prediction':
             # Frozen forecast ledger is append-only calls; no-call attempts live
@@ -207,6 +207,7 @@ def audit(records, outcomes, deliveries, cutoff):
                 raise ValueError('conflicting_prediction_id')
             by_id[r['id']] = r
             key = event_key(r)
+            issuance_times.setdefault(key, []).append((ts(r['issued_at']), r['id']))
             old = originals.get(key)
             if old is not None:
                 counts['duplicate_issuances'] += 1
@@ -214,6 +215,19 @@ def audit(records, outcomes, deliveries, cutoff):
                 originals[key] = r
         except (KeyError, ValueError, TypeError) as exc:
             errors.append({'id': r.get('id'), 'error': str(exc)})
+    # The first issuance is evidence, not a file-order lottery. Distinct
+    # forecast IDs issued at the same earliest instant for the same future
+    # event are ambiguous: reject the event rather than select the row that
+    # happened to appear first in the JSONL file. Repeated identical IDs are
+    # allowed; later distinct reissuances remain excluded by first issuance.
+    ambiguous_events = set()
+    for key, candidates in issuance_times.items():
+        earliest = min(moment for moment, _ in candidates)
+        first_ids = {ident for moment, ident in candidates if moment == earliest}
+        if len(first_ids) > 1:
+            ambiguous_events.add(key)
+            errors.append({'id': sorted(first_ids)[0],
+                           'error': 'ambiguous_first_issuance_tie'})
     public = {}
     valid_public_times = []  # verified snapshots, distinct from first public time per forecast
     seen_verification_ids = {}
@@ -325,7 +339,8 @@ def audit(records, outcomes, deliveries, cutoff):
             errors.append({'id': o.get('id'), 'error': str(exc)})
     rows = []; last_end = {}
     # Selection is chronological and independent of the observed correctness.
-    for r in sorted(originals.values(), key=lambda x: (event_key(x)[:3], ts(x['target']['start']), ts(x['issued_at']))):
+    for r in sorted((r for key, r in originals.items() if key not in ambiguous_events),
+                    key=lambda x: (event_key(x)[:3], ts(x['target']['start']), ts(x['issued_at']))):
         group = event_key(r)[:3]; start = ts(r['target']['start']); end = ts(r['target']['end'])
         if group in last_end and start < last_end[group]:
             counts['overlap_excluded'] += 1; continue
