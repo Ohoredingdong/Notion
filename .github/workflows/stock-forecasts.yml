@@ -2,7 +2,7 @@ name: Stock Prospective Forecasts
 on:
   workflow_dispatch:
   push:
-    branches: [main, research/bounded-autopilot-20261029]
+    branches: [main, research/bounded-autopilot-20261029, research/timing-public-verification-identity-20261030-r11]
     paths:
       - 'scripts/stock_forecast*.py'
       - 'scripts/stock_autopilot*.cjs'
@@ -46,6 +46,7 @@ jobs:
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
           PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
           python scripts/audit_stock_forecast_independent.py --self-test
+          PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
           node --check assets/stock-forecast-learning.js
