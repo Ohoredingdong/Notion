@@ -2,7 +2,7 @@ name: Independent Forecast Evidence Audit
 on:
   workflow_dispatch:
   push:
-    branches: [main, research/timing-public-proof-hash-20261030-r13]
+    branches: [main]
     paths:
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_source_asof.py'
@@ -11,6 +11,7 @@ on:
       - 'scripts/test_stock_timing_ledger_status.py'
       - 'scripts/test_stock_timing_public_identity.py'
       - 'scripts/test_stock_timing_shadow_catalogue.py'
+      - 'scripts/test_stock_timing_public_payload_fingerprint.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
@@ -27,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
