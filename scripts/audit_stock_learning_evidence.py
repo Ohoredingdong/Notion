@@ -103,7 +103,17 @@ def examine(records, outcomes, deliveries, events, state, cutoff):
                 if type(saved.get('learned')) is not int or saved['learned'] != len(history):
                     raise ValueError('learning_group_count_disagrees_with_event_history')
                 if not history:
-                    continue  # Do not invent an older update for an inactive group.
+                    # An untrained group has no terminal event hash, but its
+                    # producer-defined initial 3-class/13-feature correction
+                    # is exactly zero. Never accept an undocumented correction.
+                    weights = saved.get('weights')
+                    if (not isinstance(weights, list) or len(weights) != 3
+                            or any(not isinstance(row, list) or len(row) != 13
+                                   or any(type(v) not in (int, float) or v != 0
+                                          for v in row)
+                                   for row in weights)):
+                        raise ValueError('untrained_group_weights_not_zero')
+                    continue  # No older weight updates can be inferred.
                 for prior, following in zip(history, history[1:]):
                     if prior['weights_after'] != following['weights_before']:
                         raise ValueError('learning_weight_hash_chain_broken')
@@ -222,6 +232,22 @@ class Tests(unittest.TestCase):
     def test_missing_publication_rejected(self):
         r,o,d,e,s,t=synthetic()
         self.assertEqual(examine(r,o,[],e,s,t)['status'], 'integrity_errors')
+
+    def test_untrained_group_zero_weights_baseline_and_forgery_rejected(self):
+        # A group with no learning events must retain the exact initial
+        # all-zero correction, even though no terminal event SHA exists.
+        r, o, d, e, s, t = synthetic()
+        name = 'UNTRAINED|daily|provider-latency-30m-v1'
+        s['groups'][name] = {'weights': [[0.0] * 13 for _ in range(3)],
+                             'learned': 0, 'active': 'incumbent',
+                             'last_train_end': None}
+        self.assertEqual(examine(r, o, d, e, s, t)['status'],
+                         'learning_evidence_consistent')
+        s['groups'][name]['weights'][0][0] = 0.125
+        result = examine(r, o, d, e, s, t)
+        self.assertEqual(result['status'], 'integrity_errors')
+        self.assertIn('untrained_group_weights_not_zero',
+                      [item['error'] for item in result['errors']])
 
     def test_terminal_weight_hash_forgery_rejected(self):
         # Research-only negative fixture: valid-looking hash differs from the saved state.
