@@ -13,10 +13,14 @@ s=replace_once(s,'function tag(r){',"function tag(r){if(mode==='long'&&!paused()
 s=replace_once(s,'function summary(){',"function summary(){if(mode==='long'&&!paused()&&window.StockInvestmentCase){window.StockInvestmentCase.summary(data);return;}")
 s=replace_once(s,"return '<article class=\"candidate ","if(mode==='long'&&window.StockInvestmentCase)next=window.StockInvestmentCase.cardReason(r,data);\nreturn '<article class=\"candidate ")
 s=s.replace('<strong>지금 할 일</strong>','<strong>왜 이런 판단인가</strong>')
-for fn,nextfn,call in [('function detail(){','function system(){','if(window.StockInvestmentCase)window.StockInvestmentCase.decorate(r,data);'),('function system(){','function banner(){','if(window.StockInvestmentCase)window.StockInvestmentCase.authStatus(data);')]:
+for fn,nextfn,call in [('function detail(){','function system(){','if(window.StockInvestmentCase&&!paused())window.StockInvestmentCase.decorate(r,data);'),('function system(){','function banner(){','if(window.StockInvestmentCase)window.StockInvestmentCase.authStatus(data);')]:
  a=s.index(fn);b=s.index(nextfn,a);part=s[a:b]
+ if fn=='function detail(){':
+  guarded='if(window.StockInvestmentCase&&!paused())window.StockInvestmentCase.decorate(r,data);'
+  part=re.sub(r'(?:;?if\(window\.StockInvestmentCase(?:&&!paused\(\))?\)window\.StockInvestmentCase\.decorate\(r,data\);)+',';'+guarded,part)
  if call not in part:
-  brace=part.rfind('}');part=part[:brace]+';'+call+part[brace:];s=s[:a]+part+s[b:]
+  brace=part.rfind('}');part=part[:brace]+';'+call+part[brace:]
+ s=s[:a]+part+s[b:]
 if "addEventListener('radar:cases-ready'" not in s:
  s=replace_once(s,'load();setInterval(load,5*60*1000);',"document.addEventListener('radar:cases-ready',()=>{if(data){renderCards();detail();system()}});\nload();setInterval(load,5*60*1000);")
 for before,after in [
