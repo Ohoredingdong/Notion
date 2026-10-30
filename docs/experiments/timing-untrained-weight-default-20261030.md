@@ -19,3 +19,8 @@ Frozen main: 59 ledger records; 38 unique event windows; 21 repeat issuances; 8 
 - Run branch independent audit tests against current real ledger and all existing event lineage, prospective/directional/autopilot tests if feasible. Check no original ledger/output files differ.
 - Revert temporary branch CI allowlist before PR merge. Include actual failing/success Actions IDs in this record and keep implementation only after GREEN.
 - Do not change 120/20, direction thresholds, movement_then_direction shadow status, strict-green, notification or user authentication controls.
+
+## Actual RED evidence (before audit patch)
+
+- [Actions 40980316835](https://github.com/Ohoredingdong/Notion/actions/runs/40980316835) checkout on isolated research branch at `fa938cf9c0305ea65d4150bd8be01aafba1cd785`: 12 base forecast auditor tests and 4 source as-of tests passed; saved-price audit of real 59 ledger/45 outcomes returned 18 scored, 7 correct, no integrity errors. The new negative test `test_untrained_group_zero_weights_baseline_and_forgery_rejected` **failed meaningfully**: untouched zero group passed, but tampering an untrained group's finite weight from 0 to 0.125 was wrongly accepted (`learning_evidence_consistent` instead of `integrity_errors`). All 15 existing learning lineage tests passed; 1/16 new test failed as preregistered.
+- The demonstrated defect is a blind spot in untrained *state provenance*, not proof that the live state was changed or that real trades are profitable. Frozen main has 30 groups, 12 with zero learning and valid all-zero 3×13 weights; learned 18 groups retain their terminal hash guard.

@@ -103,7 +103,17 @@ def examine(records, outcomes, deliveries, events, state, cutoff):
                 if type(saved.get('learned')) is not int or saved['learned'] != len(history):
                     raise ValueError('learning_group_count_disagrees_with_event_history')
                 if not history:
-                    continue  # Do not invent an older update for an inactive group.
+                    # An untrained group has no terminal event hash, but its
+                    # producer-defined initial 3-class/13-feature correction
+                    # is exactly zero. Never accept an undocumented correction.
+                    weights = saved.get('weights')
+                    if (not isinstance(weights, list) or len(weights) != 3
+                            or any(not isinstance(row, list) or len(row) != 13
+                                   or any(type(v) not in (int, float) or v != 0
+                                          for v in row)
+                                   for row in weights)):
+                        raise ValueError('untrained_group_weights_not_zero')
+                    continue  # No older weight updates can be inferred.
                 for prior, following in zip(history, history[1:]):
                     if prior['weights_after'] != following['weights_before']:
                         raise ValueError('learning_weight_hash_chain_broken')

@@ -18,7 +18,7 @@ concurrency:
 jobs:
   independent-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +26,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install bounded regression dependencies (research branch only)
+        if: github.ref_name == 'research/zero-event-weight-integrity-20261030'
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Test prospective, directional and bounded-autopilot regressions
+        if: github.ref_name == 'research/zero-event-weight-integrity-20261030'
+        run: |
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+          python scripts/stock_forecast_sources.py
+          node --check assets/stock-forecast.js
+          node --check assets/stock-forecast-learning.js
+          node --check assets/stock-forecast-directions.js
+          node --check assets/stock-forecast-autopilot.js
+          node scripts/test_stock_forecast_ui.cjs
+          node scripts/stock_autopilot_recovery.cjs
       - name: Test audit independently of model code
         run: |
           python scripts/audit_stock_forecast_independent.py --self-test
