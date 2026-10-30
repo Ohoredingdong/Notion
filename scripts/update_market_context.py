@@ -15,7 +15,9 @@ OUT=Path('stock-market-context.json')
 UA='PersonalInvestmentResearch/1.0 contact=private'
 
 FED_URL='https://www.federalreserve.gov/FOMC/fundsrate.htm'
-BOK_URL='https://www.bok.or.kr/portal/main/main.do'
+FED_CALENDAR_URL='https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm'
+BOK_URL='https://www.bok.or.kr/portal/singl/baseRate/list.do?menuNo=200643'
+BOK_DECISIONS_URL='https://www.bok.or.kr/portal/main/contents.do?menuNo=200755'
 TREASURY_URL='https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value={year}'
 FRED_CPI='https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL'
 FRED_UNRATE='https://fred.stlouisfed.org/graph/fredgraph.csv?id=UNRATE'
@@ -55,6 +57,33 @@ def parse_fed_funds(html,year=None):
     latest['source_url']=FED_URL;latest['basis']='FOMC 목표금리 범위와 해당 회의의 인상·인하 폭'
     return latest
 
+def parse_fed_latest_statement(html):
+    soup=BeautifulSoup(html,'html.parser');dates=[]
+    for a in soup.find_all('a',href=True):
+        match=re.search(r'monetary(20\d{6})a(?:1)?[.]htm',a['href'])
+        if not match:continue
+        try:day=datetime.strptime(match.group(1),'%Y%m%d').date()
+        except ValueError:continue
+        if day<=NOW.date():dates.append(day)
+    if not dates:raise ValueError('fomc_statement_date_not_found')
+    return max(dates).isoformat()
+
+def collect_fed_policy():
+    rate=parse_fed_funds(fetch(FED_URL))
+    meeting=parse_fed_latest_statement(fetch(FED_CALENDAR_URL))
+    effective=rate.get('date')
+    out=dict(rate);out['rate_effective_date']=effective;out['date']=meeting
+    try:
+        meeting_day=datetime.fromisoformat(meeting).date()
+        effective_day=datetime.fromisoformat(effective).date()
+        changed_here=abs((effective_day-meeting_day).days)<=1
+    except Exception:changed_here=False
+    if not changed_here:
+        out['increase_bp']=0;out['decrease_bp']=0;out['direction']='유지'
+    out['basis']='최신 FOMC statement 일자와 현재 목표금리 범위의 마지막 변경일을 분리'
+    out['source_url']=FED_CALENDAR_URL
+    return out
+
 def parse_bok(html):
     text=re.sub(r'\s+',' ',BeautifulSoup(html,'html.parser').get_text(' ',strip=True))
     current=re.search(r'한국은행\s*기준금리\s*([0-9.]+)%',text)
@@ -65,6 +94,40 @@ def parse_bok(html):
         out.update(date=decision.group(1).replace('.','-'),previous=float(decision.group(2)),change_pct_point=float(decision.group(4))*(1 if decision.group(5)=='상향' else -1),direction='인상' if decision.group(5)=='상향' else '인하')
     else:out.update(date=None,previous=None,change_pct_point=None,direction='최근 결정문 확인 필요')
     return out
+
+def parse_bok_rate_history(html):
+    text=re.sub(r'\s+',' ',BeautifulSoup(html,'html.parser').get_text(' ',strip=True));rows=[]
+    for y,m,d,v in re.findall(r'(20\d{2})\s+(\d{1,2})월\s*(\d{1,2})일\s+([0-9]+(?:[.][0-9]+)?)',text):
+        try:day=datetime(int(y),int(m),int(d)).date().isoformat();value=float(v)
+        except (ValueError,TypeError):continue
+        rows.append({'date':day,'value':value})
+    rows=sorted({(r['date'],r['value']) for r in rows},reverse=True)
+    if not rows:raise ValueError('bok_rate_history_not_found')
+    return [{'date':d,'value':v} for d,v in rows]
+
+def parse_bok_latest_decision(html):
+    text=re.sub(r'\s+',' ',BeautifulSoup(html,'html.parser').get_text(' ',strip=True));dates=[]
+    for y,m,d in re.findall(r'통화정책방향\s*[(](20\d{2})[.](\d{1,2})[.](\d{1,2})[)]',text):
+        try:day=datetime(int(y),int(m),int(d)).date()
+        except ValueError:continue
+        if day<=NOW.date():dates.append(day)
+    if not dates:raise ValueError('bok_decision_date_not_found')
+    return max(dates).isoformat()
+
+def collect_bok_policy():
+    history=parse_bok_rate_history(fetch(BOK_URL));meeting=parse_bok_latest_decision(fetch(BOK_DECISIONS_URL))
+    current=history[0];previous=history[1] if len(history)>1 else None
+    current_value=current['value'];change_date=current['date'];direction='최근 결정문 확인 필요';change=None
+    if meeting>change_date:
+        direction='유지';change=0.0;previous_value=current_value
+    elif meeting==change_date and previous:
+        previous_value=previous['value'];change=current_value-previous_value
+        direction='인상' if change>0 else '인하' if change<0 else '유지'
+    else:
+        previous_value=previous['value'] if previous else None
+    return {'date':meeting,'value':current_value,'previous':previous_value,'change_pct_point':change,
+            'direction':direction,'rate_change_date':change_date,'source_url':BOK_DECISIONS_URL,
+            'basis':'최신 통화정책방향 결정일과 기준금리 실제 변경일을 분리; 금리 수준은 한국은행 기준금리 추이'}
 
 def parse_treasury(xml):
     root=ET.fromstring(xml);ns={'a':'http://www.w3.org/2005/Atom','m':'http://schemas.microsoft.com/ado/2007/08/dataservices/metadata','d':'http://schemas.microsoft.com/ado/2007/08/dataservices'};rows=[]
@@ -126,7 +189,7 @@ def interpretation(i):
 
 def main():
     errors=[];ind={}
-    for key,fn in [('fed_policy',lambda:parse_fed_funds(fetch(FED_URL))),('bok_policy',lambda:parse_bok(fetch(BOK_URL))),('us_10y',lambda:parse_treasury(fetch(TREASURY_URL.format(year=NOW.year)))),('us_cpi',lambda:fred_cpi(fetch(FRED_CPI))),('us_unemployment',lambda:fred_unrate(fetch(FRED_UNRATE))),('usdkrw',lambda:market_series('KRW=X','usdkrw')),('sp500',lambda:market_series('^GSPC','sp500')),('nasdaq',lambda:market_series('^IXIC','nasdaq')),('kospi',lambda:market_series('^KS11','kospi')),('kosdaq',lambda:market_series('^KQ11','kosdaq'))]:
+    for key,fn in [('fed_policy',collect_fed_policy),('bok_policy',collect_bok_policy),('us_10y',lambda:parse_treasury(fetch(TREASURY_URL.format(year=NOW.year)))),('us_cpi',lambda:fred_cpi(fetch(FRED_CPI))),('us_unemployment',lambda:fred_unrate(fetch(FRED_UNRATE))),('usdkrw',lambda:market_series('KRW=X','usdkrw')),('sp500',lambda:market_series('^GSPC','sp500')),('nasdaq',lambda:market_series('^IXIC','nasdaq')),('kospi',lambda:market_series('^KS11','kospi')),('kosdaq',lambda:market_series('^KQ11','kosdaq'))]:
         try:ind[key]=fn()
         except Exception as e:errors.append({'field':key,'error':type(e).__name__+': '+str(e)[:160]})
     out={'version':'market-context-1.0','generated_at':NOW.isoformat(),'status':'ok' if not errors else 'partial','max_age_hours':18,'indicators':ind,'interpretation':interpretation(ind),'errors':errors,'source_note':'정책금리는 중앙은행 공식자료, 미국 10년물은 미국 재무부, CPI·실업률은 FRED, 환율·주가지수는 시장 데이터 제공처의 일봉 종가를 사용합니다.','terms':[{'term':'기준금리','meaning':'중앙은행이 정하는 돈의 기본 가격'},{'term':'국채금리','meaning':'정부가 돈을 빌릴 때 시장이 요구하는 금리'},{'term':'환율','meaning':'1달러를 사는 데 필요한 원화'}]}

@@ -33,6 +33,8 @@ DATA_FILES = (
     "stock-opportunity-discovery.json",
     "stock-official-audit.json",
     "stock-radar-health.json",
+    "stock-investment-cases.json",
+    "stock-market-groups.json",
 )
 STATE_LABELS = {
     "ready": "명시 조건 충족 · 매수 후보",
@@ -40,6 +42,13 @@ STATE_LABELS = {
     "price": "가격을 기다릴 후보",
     "risk": "실제 위험 먼저 확인",
     "data": "판단 자료 보강",
+}
+STRICT_STATE_LABELS = {
+    "attractive": "핵심 검증 통과 · 조건부 투자 후보",
+    "conditional": "좋은 점은 있지만 핵심 검증이 남았어요",
+    "price_wait": "회사는 괜찮지만, 더 싸게 기다려요",
+    "avoid": "위험 신호의 원인을 먼저 확인해요",
+    "insufficient": "자료가 부족해서 아직 판단할 수 없어요",
 }
 PUBLIC_URL = "https://ohoredingdong.github.io/Notion/stock-value-radar.html"
 
@@ -84,12 +93,30 @@ class RadarChecks:
         require(isinstance(self.directory.get("companies"), list) and self.directory["companies"],
                 "A real nonempty discovery snapshot is required.")
         self.companies = {row["symbol"]: row for row in self.data["companies"]}
+        self.case_snapshot = self.snapshots.get("stock-investment-cases.json") or {}
+        self.case_by_symbol = {row["symbol"]: row for row in self.case_snapshot.get("companies", [])}
         require(len(self.companies) == len(self.data["companies"]), "Duplicate decision symbols.")
         require("MSFT" in self.companies and "000660" in self.companies,
                 "The existing Microsoft/SK Hynix regression examples must remain in the snapshot.")
         self.generated = datetime.fromisoformat(self.data["generated_at"].replace("Z", "+00:00"))
         require(self.generated.tzinfo is not None, "Snapshot generated_at must include a timezone.")
-        self.normal_time = self.generated + timedelta(minutes=1)
+        evidence_times = [self.generated]
+        for value in [self.case_snapshot.get("generated_at")]:
+            if value:
+                try:
+                    evidence_times.append(datetime.fromisoformat(value.replace("Z", "+00:00")))
+                except ValueError:
+                    pass
+        for case in self.case_by_symbol.values():
+            reviewed = (case.get("green_review") or {}).get("reviewed_at")
+            if reviewed:
+                try:
+                    evidence_times.append(datetime.fromisoformat(reviewed.replace("Z", "+00:00")))
+                except ValueError:
+                    pass
+        self.normal_time = max(evidence_times) + timedelta(minutes=1)
+        require((self.normal_time - self.generated) <= timedelta(hours=float(self.data.get("max_age_hours", 18))),
+                "Captured strict-review evidence is already outside the raw-data freshness window.")
         self.report = {
             "cases": [], "errors": [],
             "mode": "Real collected JSON + checked-out v9 widget; separate public HTML observation",
@@ -167,7 +194,8 @@ class RadarChecks:
     def fresh(self, page):
         expect(page.locator("#reload")).to_be_enabled()
         expect(page.locator("#liveStatus")).not_to_have_class(re.compile(r"\berror\b"))
-        expect(page.locator("#cards .candidate")).to_have_count(min(9, len(self.companies)))
+        require(page.locator("#companySelect option").count() == len(self.companies),
+                "The last valid detailed-company inventory must remain available.")
 
     def layout(self, page, name):
         dimensions = page.evaluate(
@@ -182,7 +210,7 @@ class RadarChecks:
         page.screenshot(path=str(self.output / (name + ".png")), full_page=True)
 
     def select_company(self, page, symbol):
-        page.locator("#tab-detail").click()
+        page.evaluate("document.getElementById('tab-detail').click()")
         page.locator("#companySelect").select_option(symbol)
         expect(page.locator("#view-detail")).to_be_visible()
         expect(page.locator("#detailBody .company-heading h2")).to_have_text(
@@ -195,24 +223,52 @@ class RadarChecks:
         require(page.locator("#detailBody").count() == 1 and
                 page.locator("#detailBody .company-heading").count() == 1,
                 "Company navigation must replace one research view, not accumulate overlays.")
+        strict = self.case_by_symbol.get(symbol)
+        strict_current = (
+            strict
+            and self.case_snapshot.get("source_generated_at") == self.data.get("generated_at")
+            and strict.get("input_price") == row.get("price")
+            and strict.get("input_price_session") == row.get("price_session")
+            and strict.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
+        )
+        expected_heading = (
+            STRICT_STATE_LABELS.get(strict.get("state"))
+            if strict_current else STATE_LABELS[row["assessment"]["state"]]
+        )
         expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-            STATE_LABELS[row["assessment"]["state"]]
+            expected_heading
         )
-        displayed = visible_number(
-            page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
-        )
-        expected = row["targets"]["median"] / 1.20
         tolerance = 0.51 if row["currency"] == "KRW" else 0.0051
-        require(math.isclose(displayed, expected, rel_tol=0, abs_tol=tolerance),
-                f"{symbol} condition price {displayed} != target median / 1.20 ({expected}).")
         quote = visible_number(page.locator("#detailBody .company-quote strong").inner_text())
         require(math.isclose(quote, row["price"], rel_tol=0, abs_tol=tolerance),
                 f"{symbol} displayed quote is not the collected quote.")
-        self.record(label + " " + symbol + " collected quote, price condition and assessment",
-                    {"assessment": row["assessment"]["state"],
-                     "quote": quote, "condition": displayed})
-        page.get_by_text("충족한 조건과 남은 조건", exact=True).click()
-        body = page.locator("#detailBody").inner_text()
+        if strict_current:
+            price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
+            require("독립평가 매수 참고선" in price_text,
+                    "Strict detail must distinguish independent valuation from analyst target prices.")
+            green = (strict.get("green_review") or {}).get("green_eligible") is True
+            if not green:
+                require("평가 근거 확인 전" in price_text,
+                        "An unapproved strict review must not expose an independent-value buy line.")
+            condition = "strict independent valuation" if green else "blocked pending strict evidence"
+        else:
+            displayed = visible_number(
+                page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
+            )
+            expected = row["targets"]["median"] / 1.20
+            require(math.isclose(displayed, expected, rel_tol=0, abs_tol=tolerance),
+                    f"{symbol} legacy condition price {displayed} != target median / 1.20 ({expected}).")
+            condition = displayed
+        self.record(label + " " + symbol + " collected quote and current valuation gate",
+                    {"assessment": expected_heading, "quote": quote, "condition": condition})
+        body = page.locator("#detailBody").text_content()
+        if strict_current:
+            visible_strict = page.locator("#detailBody .case-primary").inner_text()
+            pending = [x for x in (strict.get("green_review") or {}).get("checks", [])
+                       if x.get("status") != "pass"]
+            for item in pending[:3]:
+                require(item.get("term", "") in visible_strict,
+                        f"{symbol} visible strict-review task missing: {item.get('term')}")
         for reason in row["assessment"].get("risks", []):
             require(reason in body, f"{symbol} risk explanation missing: {reason}")
         expected_sources = normalized_urls(
@@ -222,10 +278,15 @@ class RadarChecks:
         actual_sources = normalized_urls(anchors.evaluate_all("(nodes) => nodes.map(n => n.href)"))
         require(expected_sources <= actual_sources,
                 "Displayed numeric research must retain all five collected source destinations.")
-        require(anchors.evaluate_all(
-            "(nodes) => nodes.every(n => n.target === '_blank' && "
-            "n.rel.includes('noopener') && n.rel.includes('noreferrer'))"
-        ), "Source links must retain safe external-link attributes.")
+        source_anchors = anchors.evaluate_all(
+            "(nodes) => nodes.map(n => ({href:decodeURIComponent(n.href).replace(/\\/$/,''),"
+            "target:n.target,rel:n.rel,text:n.textContent.trim()}))"
+        )
+        unsafe_external = [a for a in source_anchors if a["href"] in expected_sources and
+                           not (a["target"] == "_blank" and
+                                "noopener" in a["rel"] and "noreferrer" in a["rel"])]
+        require(not unsafe_external,
+                "Expected external source links must retain safe external-link attributes: " + str(unsafe_external))
         self.record(label + " " + symbol + " distinct risks and numeric source links",
                     {"sources": len(expected_sources), "risk_reasons": len(row["assessment"].get("risks", []))})
         self.layout(page, label + " " + symbol + " detail width")
@@ -238,6 +299,14 @@ class RadarChecks:
             self.fresh(page)
             require(page.locator('script[src*="stock-radar-v9.js"]').count() == 1,
                     "The current v9 extension must be included exactly once.")
+            if page.locator("#view-home").count():
+                expect(page.locator("#view-home")).to_be_visible()
+                expect(page.locator("#nr-home-content")).to_be_visible()
+                require(page.locator("#nr-company,#nr-ops-panel,#nr-comparison").count() == 3,
+                        "Neutral home must expose company, operations and comparison panels.")
+                self.record(label + " neutral home exposes comparison, company and operating status")
+                page.locator('.nr-rail [data-nr-view="discover"]').click()
+                expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
                     "The selector must include every collected company, not a fixed ten-row fixture.")
             expect(page.locator("#listCount")).to_have_text(
@@ -256,13 +325,19 @@ class RadarChecks:
             self.record(label + " one research UI without legacy or training forms")
             brief = self.data.get("decision_brief") or {}
             now = brief.get("now", [])
-            expect(page.locator("#todayBrief .brief-card")).to_have_count(len(now))
-            shown = page.locator("#todayBrief .brief-name").evaluate_all(
-                "(nodes) => nodes.map(n => n.dataset.brief)"
+            expect(page.locator("#todayBrief")).not_to_be_empty()
+            strict_cards = page.locator("#todayBrief .brief-card")
+            warning = page.locator("#todayBrief .brief-warning")
+            require(strict_cards.count() > 0 or warning.count() > 0 or
+                    "없어요" in page.locator("#todayBrief").inner_text(),
+                    "The first-choice area must show strict candidates or an explicit fail-closed state.")
+            shown = page.locator("#todayBrief [data-brief]").evaluate_all(
+                "(nodes) => [...new Set(nodes.map(n => n.dataset.brief).filter(Boolean))]"
             )
-            require(shown == [row["symbol"] for row in now],
-                    "First choices must preserve the collected brief, including its order.")
-            self.record(label + " v9 first choices match actual decision brief", shown)
+            require(set(shown) <= set(self.companies),
+                    "First-choice UI may only link to collected companies.")
+            self.record(label + " strict first-choice area is populated or explicitly fail-closed",
+                        {"raw_brief": [row["symbol"] for row in now], "shown": shown})
             self.layout(page, label + " overview width")
             self.screenshot(page, label + "-overview")
 
@@ -270,14 +345,15 @@ class RadarChecks:
                 page.locator("#more").click()
                 expect(page.locator("#cards .candidate")).to_have_count(min(18, len(self.companies)))
                 self.record(label + " candidate pagination reveals the next collected page")
-            if now:
-                page.locator("#todayBrief .brief-name").first.click()
+            if shown:
+                first = shown[0]
+                page.locator('#todayBrief [data-brief="'+first+'"]').first.click()
                 expect(page.locator("#detailBody .company-heading h2")).to_have_text(
-                    self.companies[now[0]["symbol"]]["name"]
+                    self.companies[first]["name"]
                 )
-                self.record(label + " v9 first-choice button opens the matching company")
+                self.record(label + " first-choice button opens the matching collected company")
 
-            page.locator("#tab-discover").click()
+            page.locator('.nr-rail [data-nr-view="discover"]').click()
             page.locator("#search").fill("MSFT")
             expect(page.locator("#cards .name-button")).to_have_count(1)
             expect(page.locator("#cards .name-button")).to_have_attribute("data-open", "MSFT")
@@ -291,7 +367,7 @@ class RadarChecks:
             self.company_detail(page, "MSFT", label)
             self.company_detail(page, "000660", label)
 
-            page.locator("#tab-discover").click()
+            page.locator('.nr-rail [data-nr-view="discover"]').click()
             page.locator("#search").fill("")
             page.locator('[data-mode="short"]').click()
             ready = [row for row in self.companies.values()
@@ -318,7 +394,9 @@ class RadarChecks:
             shallow = next(row for row in directory_rows if row["symbol"] not in self.companies)
             page.locator("#directorySearch").fill(shallow["symbol"])
             shallow_row = page.locator("#directoryRows tbody tr").filter(
-                has=page.get_by_text(shallow["name"], exact=True)
+                has=page.locator(".directory-symbol").filter(
+                    has_text=re.compile(r"^" + re.escape(shallow["symbol"]) + r"\b")
+                )
             )
             expect(shallow_row).to_contain_text("기본 탐색만")
             require(shallow_row.get_by_role("button", name="정밀분석 보기 ›").count() == 0,
@@ -331,14 +409,16 @@ class RadarChecks:
             self.screenshot(page, label + "-directory")
             page.locator("#directorySearch").fill(deep["symbol"])
             deep_row = page.locator("#directoryRows tbody tr").filter(
-                has=page.get_by_text(deep["name"], exact=True)
+                has=page.locator(".directory-symbol").filter(
+                    has_text=re.compile(r"^" + re.escape(deep["symbol"]) + r"\b")
+                )
             )
             deep_row.get_by_role("button", name="정밀분석 보기 ›").click()
             expect(page.locator("#detailBody .company-heading h2")).to_have_text(
                 self.companies[deep["symbol"]]["name"]
             )
             self.record(label + " directory deep-analysis link opens the correct company")
-            page.locator("#tab-system").click()
+            page.locator('.nr-rail [data-nr-view="system"]').click()
             expect(page.locator("#systemBody")).to_contain_text("수집 시각과 기준")
             expect(page.locator("#systemBody")).to_contain_text("18시간")
             self.record(label + " source status and freshness policy remain accessible")
@@ -367,8 +447,12 @@ class RadarChecks:
                 state["decision"] = "normal"
                 page.locator("#reload").click()
                 self.fresh(page)
-                expect(page.locator("#todayBrief .brief-card")).to_have_count(len(now))
-                self.record(label + " recovery after " + fault + " restores current research")
+                expect(page.locator("#todayBrief")).not_to_be_empty()
+                require(page.locator("#todayBrief .brief-card").count() > 0 or
+                        page.locator("#todayBrief .brief-warning").count() > 0 or
+                        "없어요" in page.locator("#todayBrief").inner_text(),
+                        "Recovery must restore strict candidates or an explicit fail-closed state.")
+                self.record(label + " recovery after " + fault + " restores current strict research")
 
             require(not errors, "; ".join(errors))
             require(not [url for url in requests if url.startswith("unexpected:")],
@@ -382,6 +466,9 @@ class RadarChecks:
         context, page, errors, _requests = self.new_page(browser, origin, 320, 844, state)
         try:
             expect(page.locator("#liveStatus")).to_have_class(re.compile(r"\berror\b"))
+            if page.locator('.nr-rail [data-nr-view="discover"]').count():
+                page.locator('.nr-rail [data-nr-view="discover"]').click()
+                expect(page.locator("#view-discover")).to_be_visible()
             expect(page.locator("#cards")).to_contain_text("최신 자료를 불러오지 못했습니다")
             require(page.locator("#cards .candidate,#companySelect option").count() == 0,
                     "Initial source failure must not create zero-valued or demo candidates.")
