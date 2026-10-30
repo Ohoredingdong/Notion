@@ -249,6 +249,16 @@ class Tests(unittest.TestCase):
         self.assertIn('untrained_group_weights_not_zero',
                       [item['error'] for item in result['errors']])
 
+    def test_first_trained_weight_fingerprint_must_match_zero_initialization(self):
+        # Synthetic-only: the first prior hash is SHA-shaped, but cannot be
+        # justified by the producer's fixed all-zero initial correction.
+        r, o, d, e, s, t = synthetic()
+        forged = [{**e[0], 'weights_before': 'b' * 64}]
+        check = examine(r, o, d, forged, s, t)
+        self.assertEqual(check['status'], 'integrity_errors')
+        self.assertIn('learning_first_weights_not_initial_zero',
+                      [item['error'] for item in check['errors']])
+
     def test_terminal_weight_hash_forgery_rejected(self):
         # Research-only negative fixture: valid-looking hash differs from the saved state.
         # Prior independent gate accepts this, demonstrating the coverage gap.
