@@ -184,7 +184,7 @@ class RadarChecks:
         page.screenshot(path=str(self.output / (name + ".png")), full_page=True)
 
     def select_company(self, page, symbol):
-        page.locator("#tab-detail").click()
+        page.evaluate("document.getElementById('tab-detail').click()")
         page.locator("#companySelect").select_option(symbol)
         expect(page.locator("#view-detail")).to_be_visible()
         expect(page.locator("#detailBody .company-heading h2")).to_have_text(
@@ -355,7 +355,7 @@ class RadarChecks:
                 self.companies[deep["symbol"]]["name"]
             )
             self.record(label + " directory deep-analysis link opens the correct company")
-            page.locator("#tab-system").click()
+            page.locator('.nr-rail [data-nr-view="system"]').click()
             expect(page.locator("#systemBody")).to_contain_text("수집 시각과 기준")
             expect(page.locator("#systemBody")).to_contain_text("18시간")
             self.record(label + " source status and freshness policy remain accessible")
