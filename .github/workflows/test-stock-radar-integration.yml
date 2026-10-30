@@ -9,6 +9,7 @@ on:
       - 'assets/stock-radar-neutral.css'
       - 'assets/stock-radar-v8.js'
       - 'assets/stock-radar-v9.js'
+      - 'assets/stock-forecast.js'
       - 'assets/stock-recommendations.js'
       - 'assets/stock-investment-cases.js'
       - 'tests/stock-entry-browser.cjs'
@@ -36,6 +37,7 @@ jobs:
         run: |
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-recommendations.js
+          node --check assets/stock-forecast.js
           python -m py_compile scripts/test_stock_decision_browser.py
           python -m unittest scripts.test_market_context -v
       - name: Start local radar
