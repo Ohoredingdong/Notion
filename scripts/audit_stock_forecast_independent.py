@@ -182,6 +182,9 @@ def audit(records, outcomes, deliveries, cutoff):
     counts = Counter(); errors = []; by_id = {}; originals = {}
     for r in records:
         if r.get('status') != 'research_prediction':
+            # Frozen forecast ledger is append-only calls; no-call attempts live
+            # in a separate file. Suppressed/unknown rows cannot disappear.
+            errors.append({'id': r.get('id'), 'error': 'unexpected_forecast_ledger_status'})
             continue
         try:
             validate(r)
@@ -229,6 +232,9 @@ def audit(records, outcomes, deliveries, cutoff):
     actuals = {}
     for o in outcomes:
         if o.get('status') != 'observed':
+            # The outcome ledger contains only final observed results. A
+            # relabelled evidence row must not vanish into "missing outcomes".
+            errors.append({'id': o.get('id'), 'error': 'unexpected_observed_outcome_status'})
             continue
         if o['id'] in actuals and o != actuals[o['id']]:
             errors.append({'id': o['id'], 'error': 'conflicting_outcome_id'})
