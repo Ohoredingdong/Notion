@@ -393,7 +393,7 @@ class RadarChecks:
             shallow = next(row for row in directory_rows if row["symbol"] not in self.companies)
             page.locator("#directorySearch").fill(shallow["symbol"])
             shallow_row = page.locator("#directoryRows tbody tr").filter(
-                has=page.get_by_text(shallow["name"], exact=True)
+                has=page.get_by_text(shallow["symbol"], exact=True)
             )
             expect(shallow_row).to_contain_text("기본 탐색만")
             require(shallow_row.get_by_role("button", name="정밀분석 보기 ›").count() == 0,
@@ -406,7 +406,7 @@ class RadarChecks:
             self.screenshot(page, label + "-directory")
             page.locator("#directorySearch").fill(deep["symbol"])
             deep_row = page.locator("#directoryRows tbody tr").filter(
-                has=page.get_by_text(deep["name"], exact=True)
+                has=page.get_by_text(deep["symbol"], exact=True)
             )
             deep_row.get_by_role("button", name="정밀분석 보기 ›").click()
             expect(page.locator("#detailBody .company-heading h2")).to_have_text(
