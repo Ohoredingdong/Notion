@@ -462,7 +462,7 @@ class RadarChecks:
             )
             self.record(label + " directory deep-analysis link opens the correct company")
             page.locator('.nr-rail [data-nr-screen="settings"]').click()
-            page.locator('#nr-home-content [data-nr-view="system"]').click()
+            page.get_by_role("button", name="원자료 검증 화면 열기").click()
             expect(page.locator("#systemBody")).to_contain_text("수집 시각과 기준")
             expect(page.locator("#systemBody")).to_contain_text("18시간")
             self.record(label + " source status and freshness policy remain accessible")
