@@ -2,11 +2,12 @@ name: Independent Forecast Evidence Audit
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, research/timing-model-vintage-asof-20261030]
     paths:
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_source_asof.py'
       - 'scripts/test_stock_timing_band_audit.py'
+      - 'scripts/test_stock_timing_training_asof.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
@@ -23,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -32,6 +33,7 @@ jobs:
           python scripts/audit_stock_forecast_independent.py --self-test
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards
