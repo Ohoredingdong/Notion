@@ -268,16 +268,20 @@ class RadarChecks:
         heading_locator = page.locator("#detailBody .decision-grid > .panel").first.locator("h3")
         actual_heading = heading_locator.inner_text()
         allowed_headings = {expected_heading}
+        if strict:
+            allowed_headings.add("새 자료로 다시 확인하고 있어요")
         if strict_current and green:
             allowed_headings.add(STRICT_STATE_LABELS["insufficient"])
         require(actual_heading in allowed_headings,
                 f"{symbol} strict detail heading {actual_heading!r} not in {allowed_headings!r}")
-        fail_closed_heading = actual_heading == STRICT_STATE_LABELS["insufficient"]
+        fail_closed_heading = actual_heading in {
+            STRICT_STATE_LABELS["insufficient"], "새 자료로 다시 확인하고 있어요"
+        }
         tolerance = 0.51 if row["currency"] == "KRW" else 0.0051
         quote = visible_number(page.locator("#detailBody .company-quote strong").inner_text())
         require(math.isclose(quote, row["price"], rel_tol=0, abs_tol=tolerance),
                 f"{symbol} displayed quote is not the collected quote.")
-        if strict_current:
+        if strict_current and not fail_closed_heading:
             price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
             require("독립평가 매수 참고선" in price_text,
                     "Strict detail must distinguish independent valuation from analyst target prices.")
@@ -286,6 +290,8 @@ class RadarChecks:
                 require("평가 근거 확인 전" in price_text,
                         "An unapproved strict review must not expose an independent-value buy line.")
             condition = "strict independent valuation" if green_eligible else "blocked pending strict evidence"
+        elif fail_closed_heading:
+            condition = "blocked stale or mismatched snapshot"
         else:
             displayed = visible_number(
                 page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
