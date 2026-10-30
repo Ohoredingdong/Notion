@@ -157,7 +157,7 @@ class StagedLearningGateTests(unittest.TestCase):
         import json
         from audit_stock_learning_evidence import synthetic
         records, outcomes, deliveries, events, state, cutoff = synthetic()
-        deliveries[0]['verification_id'] = 'synthetic-public-proof'
+        deliveries[0]['verification_id'] = a.digest(deliveries[0])
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             stage = root / 'stage'
@@ -192,7 +192,7 @@ class StagedLearningGateTests(unittest.TestCase):
         from copy import deepcopy
         from audit_stock_learning_evidence import synthetic
         records, outcomes, deliveries, events, state, cutoff = synthetic()
-        deliveries[0]['verification_id'] = 'synthetic-public-proof'
+        deliveries[0]['verification_id'] = a.digest(deliveries[0])
         valid = {'samples': 1, 'correct': 0, 'accuracy': 0.0,
                  'brier_loss': 1.04, 'balanced_accuracy': None,
                  'recall': {'down': 0.0, 'flat': None, 'up': None},
