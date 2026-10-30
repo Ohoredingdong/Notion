@@ -201,7 +201,20 @@ def audit(records, outcomes, deliveries, cutoff):
             errors.append({'id': r.get('id'), 'error': str(exc)})
     public = {}
     valid_public_times = []  # verified snapshots, distinct from first public time per forecast
+    seen_verification_ids = {}
     for d in deliveries:
+        # A public proof identifier must never resolve to two different events.
+        # A conflicting replay could otherwise fabricate an earlier publication.
+        proof_id = d.get('verification_id')
+        if proof_id is not None:
+            if not isinstance(proof_id, str) or not proof_id:
+                errors.append({'id': None, 'error': 'invalid_public_verification_id'})
+                continue
+            previous = seen_verification_ids.get(proof_id)
+            if previous is not None and previous != d:
+                errors.append({'id': proof_id, 'error': 'conflicting_public_verification_id'})
+                continue
+            seen_verification_ids[proof_id] = d
         if d.get('status') != 'public_verified':
             continue
         # Public verification cannot predate the snapshot nor prove a forecast
