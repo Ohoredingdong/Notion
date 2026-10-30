@@ -64,6 +64,9 @@ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));limit=9;renderCards()}));
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));limit=9;renderCards()}));
 ['market','size'].forEach(id=>$('#'+id).addEventListener('change',()=>{limit=9;renderCards()}));$('#search').addEventListener('input',()=>{limit=9;renderCards()});$('#more').addEventListener('click',()=>{limit+=9;renderCards()});$('#cards').addEventListener('click',e=>{const star=e.target.closest('[data-star]');if(star){const s=star.dataset.star;favorites.has(s)?favorites.delete(s):favorites.add(s);try{localStorage.setItem('radar-v8-stars',JSON.stringify([...favorites]))}catch{}renderCards();return}const b=e.target.closest('[data-open]');if(b)openCompany(b.dataset.open)});$('#back').addEventListener('click',()=>setView('discover'));$('#companySelect').addEventListener('change',()=>{selected=$('#companySelect').value;detail()});$('#reload').addEventListener('click',load);
+
+// NEUTRAL_WATCH_SYNC
+document.addEventListener('radar:watchlist-changed',()=>{try{const x=JSON.parse(localStorage.getItem('radar-v8-stars')||'[]');favorites=new Set(Array.isArray(x)?x:[])}catch{favorites=new Set()}if(data)renderCards()});
 // MARKET_GROUP_FILTERS_V1
 document.addEventListener('radar:markets-ready',()=>{if(data){renderCards();detail();for(const o of $('#companySelect').options){const r=rows().find(x=>x.symbol===o.value);if(r)o.textContent=r.name+' · '+r.symbol+' ['+window.RadarMarkets.label(r)+']'}}});
 document.addEventListener('radar:cases-ready',()=>{if(data){renderCards();detail();system()}});
