@@ -16,7 +16,7 @@ class MarketContextTests(unittest.TestCase):
         html='<div>통화정책방향 (2026.8.27) 금융통화위원회는 기준금리를 2.75%에서 3.00%로 0.25%p 상향 조정 한국은행기준금리 3.00%</div>'
         x=m.parse_bok(html);self.assertEqual(x['value'],3.0);self.assertEqual(x['direction'],'인상')
     def test_fed_latest_meeting_can_be_hold_after_last_rate_change(self):
-        rate_html='''<table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
+        rate_html='''<h4>2026</h4><table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
         calendar_html='''<a href="/newsevents/pressreleases/monetary20260916a.htm">Sep statement</a><a href="/newsevents/pressreleases/monetary20261028a.htm">Oct statement</a>'''
         with patch.object(m,'fetch',side_effect=[rate_html.encode(),calendar_html.encode()]):
             x=m.collect_fed_policy()
