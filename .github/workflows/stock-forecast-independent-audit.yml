@@ -11,6 +11,7 @@ on:
       - 'scripts/test_stock_timing_ledger_status.py'
       - 'scripts/test_stock_timing_public_identity.py'
       - 'scripts/test_stock_timing_shadow_catalogue.py'
+      - 'scripts/test_stock_timing_public_payload_fingerprint.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - '.github/workflows/stock-forecast-independent-audit.yml'
   schedule:
@@ -40,6 +41,7 @@ jobs:
           PYTHONPATH=scripts python scripts/test_stock_timing_ledger_status.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v
+          PYTHONPATH=scripts python scripts/test_stock_timing_public_payload_fingerprint.py -v
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards

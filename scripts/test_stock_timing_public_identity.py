@@ -2,7 +2,7 @@
 from copy import deepcopy
 import unittest
 
-from audit_stock_forecast_independent import audit, ts
+from audit_stock_forecast_independent import audit, audit_digest, ts
 
 
 class PublicVerificationIdentityTests(unittest.TestCase):
@@ -28,12 +28,13 @@ class PublicVerificationIdentityTests(unittest.TestCase):
         }
         self.genuine = {
             "status": "public_verified",
-            "verification_id": "SYNTHETIC-one-fixed-proof-id",
             "snapshot_generated_at": "2026-10-29T14:05:00Z",
             "verified_at": "2026-10-29T14:06:00Z",
             "prediction_ids": [self.r["id"]],
             "human_notification_received": False,
         }
+        # Publisher-style canonical identifier on the original synthetic proof.
+        self.genuine["verification_id"] = audit_digest(self.genuine)
         self.forged = {
             **self.genuine,
             "snapshot_generated_at": "2026-10-29T13:36:30Z",
