@@ -14,7 +14,7 @@ permissions:
 jobs:
   negative-and-regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,3 +29,15 @@ jobs:
           python scripts/audit_stock_forecast_independent.py
           python scripts/audit_stock_learning_evidence.py --self-test
           python scripts/audit_stock_learning_evidence.py
+      - name: Existing prospective direction and autopilot regressions (no publishing)
+        run: |
+          pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+          python scripts/stock_forecast_sources.py
+          node --check assets/stock-forecast.js
+          node --check assets/stock-forecast-learning.js
+          node --check assets/stock-forecast-directions.js
+          node --check assets/stock-forecast-autopilot.js
+          node scripts/test_stock_forecast_ui.cjs
+          node scripts/stock_autopilot_recovery.cjs
