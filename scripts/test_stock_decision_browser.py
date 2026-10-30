@@ -277,10 +277,13 @@ class RadarChecks:
         actual_sources = normalized_urls(anchors.evaluate_all("(nodes) => nodes.map(n => n.href)"))
         require(expected_sources <= actual_sources,
                 "Displayed numeric research must retain all five collected source destinations.")
-        require(anchors.evaluate_all(
-            "(nodes) => nodes.filter(n => /^https?:/.test(n.href)).every(n => "
-            "n.target === '_blank' && n.rel.includes('noopener') && n.rel.includes('noreferrer'))"
-        ), "External source links must retain safe external-link attributes.")
+        unsafe_external = anchors.evaluate_all(
+            "(nodes) => nodes.filter(n => /^https?:/.test(n.href) && "
+            "!(n.target === '_blank' && n.rel.includes('noopener') && n.rel.includes('noreferrer')))"
+            ".map(n => ({href:n.href,target:n.target,rel:n.rel,text:n.textContent.trim()}))"
+        )
+        require(not unsafe_external,
+                "External source links must retain safe external-link attributes: " + str(unsafe_external))
         self.record(label + " " + symbol + " distinct risks and numeric source links",
                     {"sources": len(expected_sources), "risk_reasons": len(row["assessment"].get("risks", []))})
         self.layout(page, label + " " + symbol + " detail width")
