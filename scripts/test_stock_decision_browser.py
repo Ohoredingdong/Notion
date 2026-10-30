@@ -265,9 +265,14 @@ class RadarChecks:
             STRICT_STATE_LABELS.get(effective_state)
             if strict_current else STATE_LABELS[row["assessment"]["state"]]
         )
-        expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-            expected_heading
-        )
+        heading_locator = page.locator("#detailBody .decision-grid > .panel").first.locator("h3")
+        actual_heading = heading_locator.inner_text()
+        allowed_headings = {expected_heading}
+        if strict_current and green:
+            allowed_headings.add(STRICT_STATE_LABELS["insufficient"])
+        require(actual_heading in allowed_headings,
+                f"{symbol} strict detail heading {actual_heading!r} not in {allowed_headings!r}")
+        fail_closed_heading = actual_heading == STRICT_STATE_LABELS["insufficient"]
         tolerance = 0.51 if row["currency"] == "KRW" else 0.0051
         quote = visible_number(page.locator("#detailBody .company-quote strong").inner_text())
         require(math.isclose(quote, row["price"], rel_tol=0, abs_tol=tolerance),
@@ -276,7 +281,7 @@ class RadarChecks:
             price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
             require("독립평가 매수 참고선" in price_text,
                     "Strict detail must distinguish independent valuation from analyst target prices.")
-            green_eligible = green.get("green_eligible") is True and green_inputs_aligned
+            green_eligible = green.get("green_eligible") is True and green_inputs_aligned and green_time_aligned and not fail_closed_heading
             if not green_eligible:
                 require("평가 근거 확인 전" in price_text,
                         "An unapproved strict review must not expose an independent-value buy line.")
@@ -290,7 +295,7 @@ class RadarChecks:
                     f"{symbol} legacy condition price {displayed} != target median / 1.20 ({expected}).")
             condition = displayed
         self.record(label + " " + symbol + " collected quote and current valuation gate",
-                    {"assessment": expected_heading, "quote": quote, "condition": condition})
+                    {"assessment": actual_heading, "quote": quote, "condition": condition})
         body = page.locator("#detailBody").text_content()
         if strict_current:
             visible_strict = page.locator("#detailBody .case-primary").inner_text()
