@@ -52,25 +52,25 @@ def test(url='http://127.0.0.1:8770/stock-value-radar.html',public=False):
 
             # Scenario screen from the home action
             page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('#nr-home-content [data-nr-screen="scenario"]').click()
+            page.locator('.nr-home-actions [data-nr-screen="scenario"]').click()
             assert page.locator('.nr-scenario-cards').is_visible()
             assert page.locator('.nr-prob-bars').is_visible()
 
             # Portfolio/paper screen
             page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('#nr-home-content [data-nr-screen="portfolio"]').click()
+            page.locator('.nr-home-actions [data-nr-screen="portfolio"]').click()
             assert '포트폴리오' in page.locator('#nr-home-content').inner_text()
             assert '모의투자' in page.locator('#nr-home-content').inner_text()
 
             # News and macro
             page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('#nr-home-content [data-nr-screen="news"]').click()
+            page.locator('.nr-home-actions [data-nr-screen="news"]').click()
             assert '뉴스 & 경제 브리핑' in page.locator('#nr-home-content').inner_text()
             assert page.locator('.nr-news-grid').is_visible()
 
             # Forecast performance
             page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('#nr-home-content [data-nr-screen="performance"]').click()
+            page.locator('.nr-home-actions [data-nr-screen="performance"]').click()
             assert '성과 검증' in page.locator('#nr-home-content').inner_text()
             assert page.locator('.nr-performance-grid').is_visible()
 
