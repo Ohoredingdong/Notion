@@ -1,0 +1,31 @@
+name: Research Neutral Band Negative Test (temporary)
+on:
+  push:
+    branches:
+      - 'research/timing-band-freeze-20261030'
+    paths:
+      - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/test_stock_timing_band_audit.py'
+      - 'docs/experiments/timing-neutral-band-freeze-20261030.md'
+      - '.github/workflows/research-timing-band-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  negative-and-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exercise independent frozen-band counterexample
+        run: |
+          PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v
+      - name: Recheck all real evidence without rewriting it
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py
