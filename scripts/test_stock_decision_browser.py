@@ -241,8 +241,23 @@ class RadarChecks:
             and green.get("input_price_session") == row.get("price_session")
             and green.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
         )
+        def _dt(value):
+            if not value:
+                return None
+            try:
+                return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+            except ValueError:
+                return None
+        reviewed_at = _dt(green.get("reviewed_at"))
+        valid_until = _dt(green.get("valid_until"))
+        green_time_aligned = (
+            reviewed_at is not None and valid_until is not None
+            and reviewed_at <= self.normal_time + timedelta(minutes=5)
+            and self.normal_time - reviewed_at <= timedelta(hours=18)
+            and valid_until > self.normal_time
+        )
         effective_state = (
-            "insufficient" if strict_current and green and not green_inputs_aligned
+            "insufficient" if strict_current and green and not (green_inputs_aligned and green_time_aligned)
             else strict.get("state") if strict_current
             else None
         )
