@@ -20,3 +20,23 @@ jobs:
           python-version: '3.12'
       - name: Synthetic timing completion-claim negative controls
         run: PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+      - name: Recompute real immutable forecast audit and acceptance gate
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('stock-timing-acceptance-guard.json').read_text())
+          assert report['status']=='not_proven'
+          assert report['upstream_scored']==30
+          assert report['upstream_correct_recomputed']==11
+          assert len(report['groups'])==24
+          assert report['groups_with_minimal_sample_gate']==0
+          assert not report['actual_human_receipt_verified']
+          assert not report['actual_executable_quotes_verified']
+          assert not report['after_cost_forward_paper_edge_verified']
+          print('PINNED_REAL_ACCEPTANCE_NOT_PROVEN and 24 groups below minimum')
+          PY
