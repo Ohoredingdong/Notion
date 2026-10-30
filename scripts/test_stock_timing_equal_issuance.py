@@ -53,12 +53,14 @@ class EqualFirstIssuanceTests(unittest.TestCase):
         self.assertEqual(result["status"], "integrity_errors")
         self.assertIn("ambiguous_first_issuance_tie",
                       [e["error"] for e in result["errors"]])
+        self.assertEqual(result["scored"], 0)  # Never credit either competing forecast.
 
     def test_distinct_ids_same_instant_fail_closed_when_reversed(self):
         result = self.evaluate([self.alternate, self.first])
         self.assertEqual(result["status"], "integrity_errors")
         self.assertIn("ambiguous_first_issuance_tie",
                       [e["error"] for e in result["errors"]])
+        self.assertEqual(result["scored"], 0)  # Never credit either competing forecast.
 
     def test_equal_instant_with_timezone_offset_is_still_ambiguous(self):
         alternate = {**self.alternate, "issued_at": "2026-10-29T09:36:00-04:00"}
@@ -66,6 +68,7 @@ class EqualFirstIssuanceTests(unittest.TestCase):
         self.assertEqual(result["status"], "integrity_errors")
         self.assertIn("ambiguous_first_issuance_tie",
                       [e["error"] for e in result["errors"]])
+        self.assertEqual(result["scored"], 0)  # Never credit either competing forecast.
 
     def test_later_distinct_issuance_keeps_proven_first(self):
         later = {**self.alternate, "issued_at": "2026-10-29T13:39:00Z"}
@@ -77,6 +80,16 @@ class EqualFirstIssuanceTests(unittest.TestCase):
             self.assertEqual(result["scored"], 1)
             self.assertEqual(result["correct"], 0)
             self.assertEqual(result["rows"][0]["id"], self.first["id"])
+
+    def test_tie_between_only_later_reissues_does_not_poison_first(self):
+        later = {**self.alternate, "issued_at": "2026-10-29T13:39:00Z"}
+        other_later = {**later, "id": "synthetic-third-later-down"}
+        publication = {**self.publication, "snapshot_generated_at": "2026-10-29T13:40:00Z",
+                       "verified_at": "2026-10-29T13:41:00Z"}
+        result = self.evaluate([later, other_later, self.first], publication)
+        self.assertEqual(result["status"], "ledger_arithmetic_consistent")
+        self.assertEqual(result["scored"], 1)
+        self.assertEqual(result["rows"][0]["id"], self.first["id"])
 
     def test_exact_same_idempotent_record_remains_valid(self):
         publication = {**self.publication, "prediction_ids": [self.first["id"]]}
