@@ -231,8 +231,23 @@ class RadarChecks:
             and strict.get("input_price_session") == row.get("price_session")
             and strict.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
         )
+        green = (strict.get("green_review") or {}) if strict else {}
+        green_inputs_aligned = (
+            strict_current
+            and green
+            and green.get("version") == "strict-green-1.0"
+            and green.get("source_generated_at") == self.data.get("generated_at")
+            and green.get("input_price") == row.get("price")
+            and green.get("input_price_session") == row.get("price_session")
+            and green.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
+        )
+        effective_state = (
+            "insufficient" if strict_current and green and not green_inputs_aligned
+            else strict.get("state") if strict_current
+            else None
+        )
         expected_heading = (
-            STRICT_STATE_LABELS.get(strict.get("state"))
+            STRICT_STATE_LABELS.get(effective_state)
             if strict_current else STATE_LABELS[row["assessment"]["state"]]
         )
         expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
@@ -246,11 +261,11 @@ class RadarChecks:
             price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
             require("독립평가 매수 참고선" in price_text,
                     "Strict detail must distinguish independent valuation from analyst target prices.")
-            green = (strict.get("green_review") or {}).get("green_eligible") is True
-            if not green:
+            green_eligible = green.get("green_eligible") is True and green_inputs_aligned
+            if not green_eligible:
                 require("평가 근거 확인 전" in price_text,
                         "An unapproved strict review must not expose an independent-value buy line.")
-            condition = "strict independent valuation" if green else "blocked pending strict evidence"
+            condition = "strict independent valuation" if green_eligible else "blocked pending strict evidence"
         else:
             displayed = visible_number(
                 page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
