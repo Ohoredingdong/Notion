@@ -212,7 +212,8 @@ def audit(records, outcomes, deliveries, cutoff):
         # A conflicting replay could otherwise fabricate an earlier publication.
         proof_id = d.get('verification_id')
         if proof_id is not None:
-            if not isinstance(proof_id, str) or not proof_id:
+            if (not isinstance(proof_id, str) or len(proof_id) != 64 or
+                    any(ch not in '0123456789abcdef' for ch in proof_id)):
                 errors.append({'id': None, 'error': 'invalid_public_verification_id'})
                 continue
             previous = seen_verification_ids.get(proof_id)
@@ -220,6 +221,13 @@ def audit(records, outcomes, deliveries, cutoff):
                 errors.append({'id': proof_id, 'error': 'conflicting_public_verification_id'})
                 continue
             seen_verification_ids[proof_id] = d
+            # Publisher freezes its record's canonical hash as verification_id.
+            # This detects stale/altered payloads, NOT independent publication
+            # time or a human push receipt. Never infer missing legacy IDs.
+            frozen_payload = {k: v for k, v in d.items() if k != 'verification_id'}
+            if proof_id != audit_digest(frozen_payload):
+                errors.append({'id': proof_id, 'error': 'public_verification_fingerprint_mismatch'})
+                continue
         if d.get('status') != 'public_verified':
             continue
         # Public verification cannot predate the snapshot nor prove a forecast
