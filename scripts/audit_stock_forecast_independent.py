@@ -46,6 +46,16 @@ def validate(r):
     p = [finite(r['probabilities'][k]) for k in CLASSES]
     if any(x < 0 or x > 1 for x in p) or abs(sum(p)-1) > 1e-6:
         raise ValueError('invalid_probabilities')
+    # A baseline frozen at issuance may be used for paired performance
+    # comparison; malformed vectors must not silently enter that comparison.
+    # Absence in legacy forecasts is not an authorization to backfill one.
+    if 'frozen_baseline_probabilities' in r:
+        baseline = r['frozen_baseline_probabilities']
+        if not isinstance(baseline, dict) or set(baseline) != set(CLASSES):
+            raise ValueError('invalid_frozen_baseline_distribution')
+        bp = [finite(baseline[k]) for k in CLASSES]
+        if any(x < 0 or x > 1 for x in bp) or abs(sum(bp) - 1) > 1e-6:
+            raise ValueError('invalid_frozen_baseline_distribution')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
     # Independently validate frozen research-only challengers as evidence,
