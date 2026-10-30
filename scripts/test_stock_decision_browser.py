@@ -260,8 +260,14 @@ class RadarChecks:
             condition = displayed
         self.record(label + " " + symbol + " collected quote and current valuation gate",
                     {"assessment": expected_heading, "quote": quote, "condition": condition})
-        page.get_by_text("충족한 조건과 남은 조건", exact=True).click()
-        body = page.locator("#detailBody").inner_text()
+        body = page.locator("#detailBody").text_content()
+        if strict_current:
+            visible_strict = page.locator("#detailBody .case-primary").inner_text()
+            pending = [x for x in (strict.get("green_review") or {}).get("checks", [])
+                       if x.get("status") != "pass"]
+            for item in pending[:3]:
+                require(item.get("term", "") in visible_strict,
+                        f"{symbol} visible strict-review task missing: {item.get('term')}")
         for reason in row["assessment"].get("risks", []):
             require(reason in body, f"{symbol} risk explanation missing: {reason}")
         expected_sources = normalized_urls(
