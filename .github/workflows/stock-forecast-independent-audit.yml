@@ -40,6 +40,18 @@ jobs:
           PYTHONPATH=scripts python scripts/test_stock_timing_ledger_status.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v
+      - name: Research-only unchanged producer and bounded-autopilot regression
+        run: |
+          python -m pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+          PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+          python scripts/stock_forecast_sources.py
+          node --check assets/stock-forecast.js
+          node --check assets/stock-forecast-learning.js
+          node --check assets/stock-forecast-directions.js
+          node --check assets/stock-forecast-autopilot.js
+          node scripts/test_stock_forecast_ui.cjs
+          node scripts/stock_autopilot_recovery.cjs
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards
