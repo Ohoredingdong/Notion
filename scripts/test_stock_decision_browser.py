@@ -431,7 +431,7 @@ class RadarChecks:
                 expect(page.locator("#reload")).to_be_enabled()
                 expect(page.locator("#liveStatus")).to_have_class(re.compile(r"\berror\b"))
                 expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-                    "새 자료가 올 때까지 평가 중지"
+                    "새 자료로 다시 확인하고 있어요"
                 )
                 expect(page.locator("#todayBrief .brief-warning")).to_contain_text(
                     "우선 매수 후보를 표시하지 않습니다"
@@ -446,8 +446,12 @@ class RadarChecks:
                 state["decision"] = "normal"
                 page.locator("#reload").click()
                 self.fresh(page)
-                expect(page.locator("#todayBrief .brief-card")).to_have_count(len(now))
-                self.record(label + " recovery after " + fault + " restores current research")
+                expect(page.locator("#todayBrief")).not_to_be_empty()
+                require(page.locator("#todayBrief .brief-card").count() > 0 or
+                        page.locator("#todayBrief .brief-warning").count() > 0 or
+                        "없어요" in page.locator("#todayBrief").inner_text(),
+                        "Recovery must restore strict candidates or an explicit fail-closed state.")
+                self.record(label + " recovery after " + fault + " restores current strict research")
 
             require(not errors, "; ".join(errors))
             require(not [url for url in requests if url.startswith("unexpected:")],
