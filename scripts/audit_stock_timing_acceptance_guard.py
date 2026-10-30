@@ -182,7 +182,7 @@ def main():
     report = audit_acceptance(
         json.loads(Path(AUDIT).read_text()), read_jsonl(LEDGER),
         json.loads(Path(CONTROLLER).read_text()))
-    Path(OUTPUT).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n")
+    Path(OUTPUT).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"status": report["status"],
                       "upstream_scored": report["upstream_scored"],
                       "groups": len(report["groups"]),
