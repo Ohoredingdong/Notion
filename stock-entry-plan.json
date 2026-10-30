@@ -1,6 +1,6 @@
 {
   "version": "entry-plan-1.1",
-  "generated_at": "2026-10-30T14:54:10.544843+00:00",
+  "generated_at": "2026-10-30T15:16:21.786513+00:00",
   "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
   "source_sha256": "a55c08ccc1afceaa6e99e4463566e7c599bdd684e58f7590aaf672584e71bc9c",
   "rules": {
@@ -230,7 +230,7 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/SIRI/profile/"
       },
-      "research_score": 60.9
+      "research_score": 58.9
     },
     {
       "symbol": "CROX",
@@ -584,7 +584,6 @@
         "strict_not_approved"
       ],
       "timing_blocks": [
-        "earnings_event_near",
         "extension20_wait",
         "risk_reference_missing",
         "setup_confirmation_wait",
@@ -614,8 +613,7 @@
           "trend_confirmation_wait",
           "extension20_wait",
           "setup_confirmation_wait",
-          "risk_reference_missing",
-          "earnings_event_near"
+          "risk_reference_missing"
         ],
         "ma20": 316250.0,
         "ma60": 363600.0,
@@ -627,9 +625,7 @@
         "prior_high20": 384500.0,
         "setup": "conditions_wait",
         "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-10-30"
-        ],
+        "near_earnings_dates": [],
         "watch_conditions": [
           {
             "id": "breakout",
@@ -874,7 +870,7 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/MU/profile/"
       },
-      "research_score": 90.9
+      "research_score": 88.9
     },
     {
       "symbol": "PAYP",
@@ -1091,6 +1087,113 @@
         "profile": "https://finance.yahoo.com/quote/058470.KQ/profile/"
       },
       "research_score": 86.4
+    },
+    {
+      "symbol": "HBM",
+      "name": "Hudbay Minerals Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "HBM",
+      "state": "diligence_wait",
+      "price": 23.36000061,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 2.02072,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 4.34207877,
+      "collected_at": "2026-10-30T14:37:46.289627+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 24.51300011,
+        "ma60": 26.49933341,
+        "atr14": 1.08785752,
+        "distance_sma20": -4.703624586244082,
+        "volume_ratio": 1.12052697,
+        "relative20_pp": -11.47446822,
+        "support10": 21.62999916,
+        "prior_high20": 27.80999947,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 27.80999947,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 24.51300011,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 26.49933341,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 113123567.25206375
+      },
+      "fundamental_fingerprint": "808a5116efd4827202c02e2e455723ea41ad0b38c7c43cfdcca18d715d5076c7",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/HBM/history/",
+        "estimates": "https://finance.yahoo.com/quote/HBM/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/HBM/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/HBM/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/HBM/profile/"
+      },
+      "research_score": 86.2
     },
     {
       "symbol": "005930",
@@ -1734,112 +1837,7 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/META/profile/"
       },
-      "research_score": 75.2
-    },
-    {
-      "symbol": "DOCS",
-      "name": "Doximity",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "DOCS",
-      "state": "diligence_wait",
-      "price": 33.63000107,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 1.55822,
-      "forecast_fiscal_end": "2028-03-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 0.57184902,
-      "collected_at": "2026-10-30T14:36:51.167799+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 31.25200024,
-        "ma60": 27.65366675,
-        "atr14": 1.24657113,
-        "distance_sma20": 7.609115614162687,
-        "volume_ratio": 0.91313852,
-        "relative20_pp": 17.2971156,
-        "support10": 29.62000084,
-        "prior_high20": 34.27500153,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 34.27500153,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 31.25200024,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 27.65366675,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 91982574.81637955
-      },
-      "fundamental_fingerprint": "70ed950e9950f559a6d0d5d87da90606a79a522f38997a67f68e6a56de0c5b6d",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/DOCS/history/",
-        "estimates": "https://finance.yahoo.com/quote/DOCS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/DOCS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/DOCS/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/DOCS/profile/"
-      },
-      "research_score": 74.5
+      "research_score": 80.2
     },
     {
       "symbol": "AMD",
@@ -1946,7 +1944,112 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/AMD/profile/"
       },
-      "research_score": 74.1
+      "research_score": 75.1
+    },
+    {
+      "symbol": "DOCS",
+      "name": "Doximity",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "DOCS",
+      "state": "diligence_wait",
+      "price": 33.63000107,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 1.55822,
+      "forecast_fiscal_end": "2028-03-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 0.57184902,
+      "collected_at": "2026-10-30T14:36:51.167799+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 31.25200024,
+        "ma60": 27.65366675,
+        "atr14": 1.24657113,
+        "distance_sma20": 7.609115614162687,
+        "volume_ratio": 0.91313852,
+        "relative20_pp": 17.2971156,
+        "support10": 29.62000084,
+        "prior_high20": 34.27500153,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 34.27500153,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 31.25200024,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 27.65366675,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 91982574.81637955
+      },
+      "fundamental_fingerprint": "70ed950e9950f559a6d0d5d87da90606a79a522f38997a67f68e6a56de0c5b6d",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/DOCS/history/",
+        "estimates": "https://finance.yahoo.com/quote/DOCS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/DOCS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/DOCS/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/DOCS/profile/"
+      },
+      "research_score": 74.5
     },
     {
       "symbol": "CGNX",
@@ -2489,6 +2592,116 @@
       "research_score": 69.6
     },
     {
+      "symbol": "TGTX",
+      "name": "TG Therapeutics, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "TGTX",
+      "state": "diligence_wait",
+      "price": 58.08000183,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 2.708,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -8.66779089,
+      "collected_at": "2026-10-30T14:37:30.289180+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "earnings_event_near",
+        "eps_revision_wait",
+        "extension20_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "extension20_wait",
+          "setup_confirmation_wait",
+          "earnings_event_near"
+        ],
+        "ma20": 54.55349998,
+        "ma60": 54.19458319,
+        "atr14": 2.17885699,
+        "distance_sma20": 6.46429990980022,
+        "volume_ratio": 1.19746246,
+        "relative20_pp": 7.61490929,
+        "support10": 51.83300018,
+        "prior_high20": 57.45999908,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [
+          "2026-11-02"
+        ],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 57.45999908,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 54.55349998,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 54.19458319,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 80439420.06439209
+      },
+      "fundamental_fingerprint": "3fb82f0ce4d76c323426e475512057ce9d1fb3ba605faa50999630811f4cab4d",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/TGTX/history/",
+        "estimates": "https://finance.yahoo.com/quote/TGTX/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/TGTX/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/TGTX/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/TGTX/profile/"
+      },
+      "research_score": 69.0
+    },
+    {
       "symbol": "240810",
       "name": "원익IPS",
       "market": "KR",
@@ -2598,117 +2811,6 @@
       "research_score": 68.6
     },
     {
-      "symbol": "MTCH",
-      "name": "Match Group, Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "MTCH",
-      "state": "diligence_wait",
-      "price": 42.65000153,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 4.59354,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 0.34953272,
-      "collected_at": "2026-10-30T14:37:24.885448+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "earnings_event_near",
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait",
-          "earnings_event_near"
-        ],
-        "ma20": 43.04349995,
-        "ma60": 41.44150009,
-        "atr14": 1.4415711,
-        "distance_sma20": -0.9141877878357851,
-        "volume_ratio": 0.8590014,
-        "relative20_pp": 5.57670415,
-        "support10": 41.95999908,
-        "prior_high20": 46.66999817,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-11-02"
-        ],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 46.66999817,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 43.04349995,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 41.44150009,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 140163443.9694023
-      },
-      "fundamental_fingerprint": "aaaa3bad52b9ce368d10b228487345559970e664455b6066866ccc4ee7135ef1",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/MTCH/history/",
-        "estimates": "https://finance.yahoo.com/quote/MTCH/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/MTCH/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/MTCH/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/MTCH/profile/"
-      },
-      "research_score": 67.0
-    },
-    {
       "symbol": "SM",
       "name": "SM Energy Company",
       "market": "US",
@@ -2808,113 +2910,6 @@
         "balance": "https://finance.yahoo.com/quote/SM/balance-sheet/",
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/SM/profile/"
-      },
-      "research_score": 66.7
-    },
-    {
-      "symbol": "003490",
-      "name": "Korean Airlines Co.,Ltd.",
-      "market": "KR",
-      "currency": "KRW",
-      "provider_symbol": "003490.KS",
-      "state": "diligence_wait",
-      "price": 26550.0,
-      "price_session": "2026-10-30",
-      "source_expected_session": "2026-10-30",
-      "expected_session": "2026-10-30",
-      "session_clock": {
-        "date": "2026-10-30",
-        "closed_at": "2026-10-30T06:30:00+00:00",
-        "next_session": "2026-11-02",
-        "next_open": "2026-11-02T00:00:00+00:00",
-        "recheck_at": "2026-11-02T07:00:00+00:00",
-        "calendar": "XKRX",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 3604.2,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 4.56257439,
-      "collected_at": "2026-10-30T14:38:51.085940+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-31T08:39:34.240748+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 28232.5,
-        "ma60": 28284.16666667,
-        "atr14": 1171.42857143,
-        "distance_sma20": -5.95944390330293,
-        "volume_ratio": 0.53810365,
-        "relative20_pp": -0.83801629,
-        "support10": 25100.0,
-        "prior_high20": 32500.0,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 32500.0,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 28232.5,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 28284.16666667,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 64164481790.0
-      },
-      "fundamental_fingerprint": "19a7faa8b0d808918da987bad7b56b2120a50e849e1fd803cae79948c48cfea4",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/003490.KS/history/",
-        "estimates": "https://finance.yahoo.com/quote/003490.KS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/003490.KS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/003490.KS/balance-sheet/",
-        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Korean%20Airlines%20Co.%2CLtd.",
-        "profile": "https://finance.yahoo.com/quote/003490.KS/profile/"
       },
       "research_score": 66.7
     },
@@ -3230,7 +3225,7 @@
         ],
         "turnover20": 30988043725.0
       },
-      "fundamental_fingerprint": "e27568cc2ee2002d448b3833763d6259fdd3395c3b564920f8be68bdbbe458fb",
+      "fundamental_fingerprint": "c8ba6e4ecc9889f4f3987f2c52c5d3d5f0f82736a44eebd8b2ba159706e59a01",
       "sources": {
         "history": "https://finance.yahoo.com/quote/192820.KS/history/",
         "estimates": "https://finance.yahoo.com/quote/192820.KS/analysis/",
@@ -3349,6 +3344,117 @@
       "research_score": 65.1
     },
     {
+      "symbol": "MTCH",
+      "name": "Match Group, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "MTCH",
+      "state": "diligence_wait",
+      "price": 42.65000153,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 4.59354,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 0.34953272,
+      "collected_at": "2026-10-30T14:37:24.885448+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "earnings_event_near",
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait",
+          "earnings_event_near"
+        ],
+        "ma20": 43.04349995,
+        "ma60": 41.44150009,
+        "atr14": 1.4415711,
+        "distance_sma20": -0.9141877878357851,
+        "volume_ratio": 0.8590014,
+        "relative20_pp": 5.57670415,
+        "support10": 41.95999908,
+        "prior_high20": 46.66999817,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [
+          "2026-11-02"
+        ],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 46.66999817,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 43.04349995,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 41.44150009,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 140163443.9694023
+      },
+      "fundamental_fingerprint": "aaaa3bad52b9ce368d10b228487345559970e664455b6066866ccc4ee7135ef1",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/MTCH/history/",
+        "estimates": "https://finance.yahoo.com/quote/MTCH/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/MTCH/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/MTCH/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/MTCH/profile/"
+      },
+      "research_score": 65.0
+    },
+    {
       "symbol": "271560",
       "name": "오리온",
       "market": "KR",
@@ -3444,7 +3550,7 @@
         ],
         "turnover20": 10514430065.0
       },
-      "fundamental_fingerprint": "94c09f2c7bc7ba3543a1503f3bd1c5624799178e12cf3a849afd9e5446c5f38b",
+      "fundamental_fingerprint": "ace32cb2d858915943feea8575ee47dd1ee976fd199624341b8cd662e089e276",
       "sources": {
         "history": "https://finance.yahoo.com/quote/271560.KS/history/",
         "estimates": "https://finance.yahoo.com/quote/271560.KS/analysis/",
@@ -4424,6 +4530,111 @@
       "research_score": 60.2
     },
     {
+      "symbol": "CAI",
+      "name": "Caris Life Sciences, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "CAI",
+      "state": "diligence_wait",
+      "price": 36.13999939,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 0.37192,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -0.97449278,
+      "collected_at": "2026-10-30T14:38:11.197111+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 30.89174986,
+        "ma60": 27.8197498,
+        "atr14": 1.87500014,
+        "distance_sma20": 16.989162329051698,
+        "volume_ratio": 1.04457826,
+        "relative20_pp": 26.77506213,
+        "support10": 28.79999924,
+        "prior_high20": 36.5,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 36.5,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 30.89174986,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 27.8197498,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 110202060.23371696
+      },
+      "fundamental_fingerprint": "903bf480a8541478245183de79257783501208e654e797c6499505fbe75af051",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/CAI/history/",
+        "estimates": "https://finance.yahoo.com/quote/CAI/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/CAI/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/CAI/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/CAI/profile/"
+      },
+      "research_score": 60.2
+    },
+    {
       "symbol": "039030",
       "name": "EO Technics Co., Ltd.",
       "market": "KR",
@@ -4529,6 +4740,111 @@
         "profile": "https://finance.yahoo.com/quote/039030.KQ/profile/"
       },
       "research_score": 60
+    },
+    {
+      "symbol": "LFUS",
+      "name": "Littelfuse, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "LFUS",
+      "state": "diligence_wait",
+      "price": 404.07998657,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 22.3125,
+      "forecast_fiscal_end": "2027-12-27",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 11.04889884,
+      "collected_at": "2026-10-30T14:37:51.506648+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 402.44299927,
+        "ma60": 416.90966695,
+        "atr14": 19.80142866,
+        "distance_sma20": 0.4067625236292782,
+        "volume_ratio": 1.74171243,
+        "relative20_pp": -7.9282359,
+        "support10": 342.05999756,
+        "prior_high20": 461.33999634,
+        "setup": "early_rebound_watch",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 461.33999634,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 402.44299927,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 416.90966695,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 102747334.47998047
+      },
+      "fundamental_fingerprint": "33ef8bfc7a30f6cc47baa0eecd58011f07fc7fc370cbaf896f0cce4a41f6f79a",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/LFUS/history/",
+        "estimates": "https://finance.yahoo.com/quote/LFUS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/LFUS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/LFUS/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/LFUS/profile/"
+      },
+      "research_score": 59.2
     },
     {
       "symbol": "007660",
@@ -4852,6 +5168,111 @@
       "research_score": 57.7
     },
     {
+      "symbol": "APTV",
+      "name": "Aptiv PLC",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "APTV",
+      "state": "diligence_wait",
+      "price": 44.43000031,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 6.47315,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -1.1131955,
+      "collected_at": "2026-10-30T14:37:15.690060+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 44.11100025,
+        "ma60": 45.4068332,
+        "atr14": 1.17785726,
+        "distance_sma20": 0.7231757570494102,
+        "volume_ratio": 0.95688545,
+        "relative20_pp": 0.34327758,
+        "support10": 41.88000107,
+        "prior_high20": 46.08000183,
+        "setup": "early_rebound_watch",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 46.08000183,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 44.11100025,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 45.4068332,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 112596007.1288681
+      },
+      "fundamental_fingerprint": "be2da5cc23a65f5636639d203be6b81cf7e03fdc5e313d3f47439a783fb16529",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/APTV/history/",
+        "estimates": "https://finance.yahoo.com/quote/APTV/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/APTV/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/APTV/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/APTV/profile/"
+      },
+      "research_score": 57.5
+    },
+    {
       "symbol": "GGB",
       "name": "Gerdau S.A.",
       "market": "US",
@@ -5068,6 +5489,221 @@
       "research_score": 56.6
     },
     {
+      "symbol": "ORI",
+      "name": "Old Republic International Corporation",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "ORI",
+      "state": "diligence_wait",
+      "price": 38.43999863,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 3.16667,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -4.04030303,
+      "collected_at": "2026-10-30T14:38:00.730750+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "eps_revision_wait",
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 38.60099983,
+        "ma60": 40.19916681,
+        "atr14": 0.88357108,
+        "distance_sma20": -0.4170907507812127,
+        "volume_ratio": 1.02718282,
+        "relative20_pp": 1.83111266,
+        "support10": 37.29000092,
+        "prior_high20": 40.77999878,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 40.77999878,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 38.60099983,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 40.19916681,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 75314486.7840004
+      },
+      "fundamental_fingerprint": "a45015c39879dc015307a7539a6abd44cc25fd28f4ed27dc95c982d2d3565fb6",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/ORI/history/",
+        "estimates": "https://finance.yahoo.com/quote/ORI/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/ORI/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/ORI/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/ORI/profile/"
+      },
+      "research_score": 55.7
+    },
+    {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "AAPL",
+      "state": "diligence_wait",
+      "price": 348.91000366,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 9.5552,
+      "forecast_fiscal_end": "2027-09-27",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -0.44748207,
+      "collected_at": "2026-10-30T14:36:31.348573+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "earnings_event_near",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "setup_confirmation_wait",
+          "earnings_event_near"
+        ],
+        "ma20": 341.53650208,
+        "ma60": 328.3918335,
+        "atr14": 6.06428746,
+        "distance_sma20": 2.158920506327866,
+        "volume_ratio": 1.10462015,
+        "relative20_pp": 4.92498661,
+        "support10": 338.70001221,
+        "prior_high20": 351.73001099,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [
+          "2026-11-02"
+        ],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 351.73001099,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 341.53650208,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 328.3918335,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 13224552735.075684
+      },
+      "fundamental_fingerprint": "93fd31254f234152548c614c611fde96ba82c6c71888c524c268866b70d588ef",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/AAPL/history/",
+        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
+      },
+      "research_score": 54.7
+    },
+    {
       "symbol": "SOLS",
       "name": "Solstice Advanced Materials, Inc.",
       "market": "US",
@@ -5274,6 +5910,220 @@
         "profile": "https://finance.yahoo.com/quote/HSIC/profile/"
       },
       "research_score": 53.7
+    },
+    {
+      "symbol": "SPCX",
+      "name": "Space Exploration Technologies Corp.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "SPCX",
+      "state": "diligence_wait",
+      "price": 143.88999939,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 4.0304,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 116.14316589,
+      "collected_at": "2026-10-30T14:38:18.099855+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 154.56900024,
+        "ma60": 147.56783346,
+        "atr14": 7.69928305,
+        "distance_sma20": -6.908889126162854,
+        "volume_ratio": 0.63852019,
+        "relative20_pp": -3.5258825,
+        "support10": 140.66000366,
+        "prior_high20": 176.41999817,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 176.41999817,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 154.56900024,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 147.56783346,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 16108718461.094818
+      },
+      "fundamental_fingerprint": "962f22638f54b7ff011725da9fa722ed4399806d6e210c76b8994c7b4df9b810",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/SPCX/history/",
+        "estimates": "https://finance.yahoo.com/quote/SPCX/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/SPCX/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/SPCX/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/SPCX/profile/"
+      },
+      "research_score": 53
+    },
+    {
+      "symbol": "003490",
+      "name": "Korean Airlines Co.,Ltd.",
+      "market": "KR",
+      "currency": "KRW",
+      "provider_symbol": "003490.KS",
+      "state": "diligence_wait",
+      "price": 26550.0,
+      "price_session": "2026-10-30",
+      "source_expected_session": "2026-10-30",
+      "expected_session": "2026-10-30",
+      "session_clock": {
+        "date": "2026-10-30",
+        "closed_at": "2026-10-30T06:30:00+00:00",
+        "next_session": "2026-11-02",
+        "next_open": "2026-11-02T00:00:00+00:00",
+        "recheck_at": "2026-11-02T07:00:00+00:00",
+        "calendar": "XKRX",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 3604.2,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 4.56257439,
+      "collected_at": "2026-10-30T14:38:51.085940+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-31T08:39:34.240748+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 28232.5,
+        "ma60": 28284.16666667,
+        "atr14": 1171.42857143,
+        "distance_sma20": -5.95944390330293,
+        "volume_ratio": 0.53810365,
+        "relative20_pp": -0.83801629,
+        "support10": 25100.0,
+        "prior_high20": 32500.0,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 32500.0,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 28232.5,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 28284.16666667,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 64164481790.0
+      },
+      "fundamental_fingerprint": "19a7faa8b0d808918da987bad7b56b2120a50e849e1fd803cae79948c48cfea4",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/003490.KS/history/",
+        "estimates": "https://finance.yahoo.com/quote/003490.KS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/003490.KS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/003490.KS/balance-sheet/",
+        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Korean%20Airlines%20Co.%2CLtd.",
+        "profile": "https://finance.yahoo.com/quote/003490.KS/profile/"
+      },
+      "research_score": 53
     },
     {
       "symbol": "001820",
@@ -5593,223 +6443,6 @@
         "profile": "https://finance.yahoo.com/quote/OSCR/profile/"
       },
       "research_score": 52.1
-    },
-    {
-      "symbol": "AAPL",
-      "name": "Apple",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "AAPL",
-      "state": "diligence_wait",
-      "price": 348.91000366,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 9.5552,
-      "forecast_fiscal_end": "2027-09-27",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -0.44748207,
-      "collected_at": "2026-10-30T14:36:31.348573+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "earnings_event_near",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "setup_confirmation_wait",
-          "earnings_event_near"
-        ],
-        "ma20": 341.53650208,
-        "ma60": 328.3918335,
-        "atr14": 6.06428746,
-        "distance_sma20": 2.158920506327866,
-        "volume_ratio": 1.10462015,
-        "relative20_pp": 4.92498661,
-        "support10": 338.70001221,
-        "prior_high20": 351.73001099,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-11-02"
-        ],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 351.73001099,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 341.53650208,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 328.3918335,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 13224552735.075684
-      },
-      "fundamental_fingerprint": "93fd31254f234152548c614c611fde96ba82c6c71888c524c268866b70d588ef",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/AAPL/history/",
-        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
-      },
-      "research_score": 51.7
-    },
-    {
-      "symbol": "005380",
-      "name": "현대자동차",
-      "market": "KR",
-      "currency": "KRW",
-      "provider_symbol": "005380.KS",
-      "state": "diligence_wait",
-      "price": 282000.0,
-      "price_session": "2026-10-30",
-      "source_expected_session": "2026-10-30",
-      "expected_session": "2026-10-30",
-      "session_clock": {
-        "date": "2026-10-30",
-        "closed_at": "2026-10-30T06:30:00+00:00",
-        "next_session": "2026-11-02",
-        "next_open": "2026-11-02T00:00:00+00:00",
-        "recheck_at": "2026-11-02T07:00:00+00:00",
-        "calendar": "XKRX",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 44261.992,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -6.83441331,
-      "collected_at": "2026-10-30T14:36:47.479936+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "eps_revision_wait",
-        "extension20_wait",
-        "risk_reference_missing",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-31T08:39:34.240748+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait",
-          "risk_reference_missing"
-        ],
-        "ma20": 312575.0,
-        "ma60": 364808.33333333,
-        "atr14": 16785.71428571,
-        "distance_sma20": -9.78165240342318,
-        "volume_ratio": 1.19672586,
-        "relative20_pp": -2.06763586,
-        "support10": 284000.0,
-        "prior_high20": 353500.0,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 353500.0,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 312575.0,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 364808.33333333,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 179170137025.0
-      },
-      "fundamental_fingerprint": "be8beb22d53a220089cd7f7eb22be932585cc297c39dcddd2bfe6a907080309c",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/005380.KS/history/",
-        "estimates": "https://finance.yahoo.com/quote/005380.KS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/005380.KS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/005380.KS/balance-sheet/",
-        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8",
-        "profile": "https://finance.yahoo.com/quote/005380.KS/profile/"
-      },
-      "research_score": 51.4
     },
     {
       "symbol": "042510",
@@ -6241,6 +6874,111 @@
       "research_score": 50.3
     },
     {
+      "symbol": "CUBE",
+      "name": "CubeSmart",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "CUBE",
+      "state": "diligence_wait",
+      "price": 41.08000183,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 1.59002,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 1.1450236,
+      "collected_at": "2026-10-30T14:37:42.853439+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 38.78000011,
+        "ma60": 39.49566669,
+        "atr14": 0.76357051,
+        "distance_sma20": 5.930896630933491,
+        "volume_ratio": 0.97969128,
+        "relative20_pp": 8.75621968,
+        "support10": 38.22999954,
+        "prior_high20": 41.20999908,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 41.20999908,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 38.78000011,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 39.49566669,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 85595812.48844147
+      },
+      "fundamental_fingerprint": "f2ada806468708985ba9247cb2e0d835e844feb88a2c1c68b7c0283ceee506ef",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/CUBE/history/",
+        "estimates": "https://finance.yahoo.com/quote/CUBE/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/CUBE/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/CUBE/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/CUBE/profile/"
+      },
+      "research_score": 49.5
+    },
+    {
       "symbol": "009830",
       "name": "Hanwha Solutions Corporation",
       "market": "KR",
@@ -6349,6 +7087,328 @@
         "profile": "https://finance.yahoo.com/quote/009830.KS/profile/"
       },
       "research_score": 48.9
+    },
+    {
+      "symbol": "005380",
+      "name": "현대자동차",
+      "market": "KR",
+      "currency": "KRW",
+      "provider_symbol": "005380.KS",
+      "state": "diligence_wait",
+      "price": 282000.0,
+      "price_session": "2026-10-30",
+      "source_expected_session": "2026-10-30",
+      "expected_session": "2026-10-30",
+      "session_clock": {
+        "date": "2026-10-30",
+        "closed_at": "2026-10-30T06:30:00+00:00",
+        "next_session": "2026-11-02",
+        "next_open": "2026-11-02T00:00:00+00:00",
+        "recheck_at": "2026-11-02T07:00:00+00:00",
+        "calendar": "XKRX",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 44261.992,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -6.83441331,
+      "collected_at": "2026-10-30T14:36:47.479936+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "eps_revision_wait",
+        "extension20_wait",
+        "risk_reference_missing",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-31T08:39:34.240748+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait",
+          "risk_reference_missing"
+        ],
+        "ma20": 312575.0,
+        "ma60": 364808.33333333,
+        "atr14": 16785.71428571,
+        "distance_sma20": -9.78165240342318,
+        "volume_ratio": 1.19672586,
+        "relative20_pp": -2.06763586,
+        "support10": 284000.0,
+        "prior_high20": 353500.0,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 353500.0,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 312575.0,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 364808.33333333,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 179170137025.0
+      },
+      "fundamental_fingerprint": "be8beb22d53a220089cd7f7eb22be932585cc297c39dcddd2bfe6a907080309c",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/005380.KS/history/",
+        "estimates": "https://finance.yahoo.com/quote/005380.KS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/005380.KS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/005380.KS/balance-sheet/",
+        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8",
+        "profile": "https://finance.yahoo.com/quote/005380.KS/profile/"
+      },
+      "research_score": 48.4
+    },
+    {
+      "symbol": "AMKR",
+      "name": "Amkor Technology, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "AMKR",
+      "state": "diligence_wait",
+      "price": 41.20999908,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 2.77583,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -1.08753363,
+      "collected_at": "2026-10-30T14:37:17.341558+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 45.43399982,
+        "ma60": 49.4274999,
+        "atr14": 2.70071384,
+        "distance_sma20": -9.297003910583712,
+        "volume_ratio": 0.8975,
+        "relative20_pp": -22.80119081,
+        "support10": 36.36999893,
+        "prior_high20": 56.56000137,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 56.56000137,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 45.43399982,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 49.4274999,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 234672144.72661972
+      },
+      "fundamental_fingerprint": "119c2eca502bb4cc4c7ad9927b2122479de0a6fb7a2974ebbcc3127d81288397",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/AMKR/history/",
+        "estimates": "https://finance.yahoo.com/quote/AMKR/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/AMKR/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/AMKR/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/AMKR/profile/"
+      },
+      "research_score": 48.3
+    },
+    {
+      "symbol": "ZION",
+      "name": "Zions Bancorporation, National Association",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "ZION",
+      "state": "diligence_wait",
+      "price": 66.23000336,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 6.94413,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 1.49106051,
+      "collected_at": "2026-10-30T14:37:44.504452+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 63.93949947,
+        "ma60": 66.3198335,
+        "atr14": 1.37285723,
+        "distance_sma20": 3.582298749577606,
+        "volume_ratio": 0.50879261,
+        "relative20_pp": 5.01140035,
+        "support10": 61.70999908,
+        "prior_high20": 67.27999878,
+        "setup": "early_rebound_watch",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 67.27999878,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 63.93949947,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 66.3198335,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 100415363.09265137
+      },
+      "fundamental_fingerprint": "57bab40f0b8b1a572c2ece627a4425170ad34c32d6eaac5125ceb265bc281d9e",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/ZION/history/",
+        "estimates": "https://finance.yahoo.com/quote/ZION/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/ZION/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/ZION/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/ZION/profile/"
+      },
+      "research_score": 48.1
     },
     {
       "symbol": "010060",
@@ -6563,111 +7623,6 @@
         "profile": "https://finance.yahoo.com/quote/TSLA/profile/"
       },
       "research_score": 47.9
-    },
-    {
-      "symbol": "ZION",
-      "name": "Zions Bancorporation, National Association",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "ZION",
-      "state": "diligence_wait",
-      "price": 66.23000336,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 6.94413,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 1.49106051,
-      "collected_at": "2026-10-30T14:37:44.504452+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 63.93949947,
-        "ma60": 66.3198335,
-        "atr14": 1.37285723,
-        "distance_sma20": 3.582298749577606,
-        "volume_ratio": 0.50879261,
-        "relative20_pp": 5.01140035,
-        "support10": 61.70999908,
-        "prior_high20": 67.27999878,
-        "setup": "early_rebound_watch",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 67.27999878,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 63.93949947,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 66.3198335,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 100415363.09265137
-      },
-      "fundamental_fingerprint": "57bab40f0b8b1a572c2ece627a4425170ad34c32d6eaac5125ceb265bc281d9e",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/ZION/history/",
-        "estimates": "https://finance.yahoo.com/quote/ZION/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/ZION/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/ZION/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/ZION/profile/"
-      },
-      "research_score": 46.1
     },
     {
       "symbol": "066970",
@@ -7023,7 +7978,6 @@
         "strict_not_approved"
       ],
       "timing_blocks": [
-        "earnings_event_near",
         "eps_revision_wait",
         "extension20_wait",
         "risk_reference_missing",
@@ -7054,8 +8008,7 @@
           "trend_confirmation_wait",
           "extension20_wait",
           "setup_confirmation_wait",
-          "risk_reference_missing",
-          "earnings_event_near"
+          "risk_reference_missing"
         ],
         "ma20": 98130.0,
         "ma60": 112360.0,
@@ -7067,9 +8020,7 @@
         "prior_high20": 123500.0,
         "setup": "conditions_wait",
         "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-10-30"
-        ],
+        "near_earnings_dates": [],
         "watch_conditions": [
           {
             "id": "breakout",
@@ -8281,965 +9232,6 @@
       "research_score": 19
     },
     {
-      "symbol": "APTV",
-      "name": "Aptiv PLC",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "APTV",
-      "state": "diligence_wait",
-      "price": 44.43000031,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 6.47315,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -1.1131955,
-      "collected_at": "2026-10-30T14:37:15.690060+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 44.11100025,
-        "ma60": 45.4068332,
-        "atr14": 1.17785726,
-        "distance_sma20": 0.7231757570494102,
-        "volume_ratio": 0.95688545,
-        "relative20_pp": 0.34327758,
-        "support10": 41.88000107,
-        "prior_high20": 46.08000183,
-        "setup": "early_rebound_watch",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 46.08000183,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 44.11100025,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 45.4068332,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 112596007.1288681
-      },
-      "fundamental_fingerprint": "be2da5cc23a65f5636639d203be6b81cf7e03fdc5e313d3f47439a783fb16529",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/APTV/history/",
-        "estimates": "https://finance.yahoo.com/quote/APTV/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/APTV/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/APTV/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/APTV/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "AMKR",
-      "name": "Amkor Technology, Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "AMKR",
-      "state": "diligence_wait",
-      "price": 41.20999908,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 2.77583,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -1.08753363,
-      "collected_at": "2026-10-30T14:37:17.341558+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 45.43399982,
-        "ma60": 49.4274999,
-        "atr14": 2.70071384,
-        "distance_sma20": -9.297003910583712,
-        "volume_ratio": 0.8975,
-        "relative20_pp": -22.80119081,
-        "support10": 36.36999893,
-        "prior_high20": 56.56000137,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 56.56000137,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 45.43399982,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 49.4274999,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 234672144.72661972
-      },
-      "fundamental_fingerprint": "119c2eca502bb4cc4c7ad9927b2122479de0a6fb7a2974ebbcc3127d81288397",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/AMKR/history/",
-        "estimates": "https://finance.yahoo.com/quote/AMKR/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/AMKR/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/AMKR/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/AMKR/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "TGTX",
-      "name": "TG Therapeutics, Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "TGTX",
-      "state": "diligence_wait",
-      "price": 58.08000183,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 2.708,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -8.66779089,
-      "collected_at": "2026-10-30T14:37:30.289180+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "earnings_event_near",
-        "eps_revision_wait",
-        "extension20_wait",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "extension20_wait",
-          "setup_confirmation_wait",
-          "earnings_event_near"
-        ],
-        "ma20": 54.55349998,
-        "ma60": 54.19458319,
-        "atr14": 2.17885699,
-        "distance_sma20": 6.46429990980022,
-        "volume_ratio": 1.19746246,
-        "relative20_pp": 7.61490929,
-        "support10": 51.83300018,
-        "prior_high20": 57.45999908,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-11-02"
-        ],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 57.45999908,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 54.55349998,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 54.19458319,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 80439420.06439209
-      },
-      "fundamental_fingerprint": "3fb82f0ce4d76c323426e475512057ce9d1fb3ba605faa50999630811f4cab4d",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/TGTX/history/",
-        "estimates": "https://finance.yahoo.com/quote/TGTX/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/TGTX/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/TGTX/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/TGTX/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "CUBE",
-      "name": "CubeSmart",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "CUBE",
-      "state": "diligence_wait",
-      "price": 41.08000183,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 1.59002,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 1.1450236,
-      "collected_at": "2026-10-30T14:37:42.853439+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 38.78000011,
-        "ma60": 39.49566669,
-        "atr14": 0.76357051,
-        "distance_sma20": 5.930896630933491,
-        "volume_ratio": 0.97969128,
-        "relative20_pp": 8.75621968,
-        "support10": 38.22999954,
-        "prior_high20": 41.20999908,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 41.20999908,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 38.78000011,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 39.49566669,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 85595812.48844147
-      },
-      "fundamental_fingerprint": "f2ada806468708985ba9247cb2e0d835e844feb88a2c1c68b7c0283ceee506ef",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/CUBE/history/",
-        "estimates": "https://finance.yahoo.com/quote/CUBE/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/CUBE/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/CUBE/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/CUBE/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "HBM",
-      "name": "Hudbay Minerals Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "HBM",
-      "state": "diligence_wait",
-      "price": 23.36000061,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 2.02072,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 4.34207877,
-      "collected_at": "2026-10-30T14:37:46.289627+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 24.51300011,
-        "ma60": 26.49933341,
-        "atr14": 1.08785752,
-        "distance_sma20": -4.703624586244082,
-        "volume_ratio": 1.12052697,
-        "relative20_pp": -11.47446822,
-        "support10": 21.62999916,
-        "prior_high20": 27.80999947,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 27.80999947,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 24.51300011,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 26.49933341,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 113123567.25206375
-      },
-      "fundamental_fingerprint": "808a5116efd4827202c02e2e455723ea41ad0b38c7c43cfdcca18d715d5076c7",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/HBM/history/",
-        "estimates": "https://finance.yahoo.com/quote/HBM/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/HBM/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/HBM/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/HBM/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "LFUS",
-      "name": "Littelfuse, Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "LFUS",
-      "state": "diligence_wait",
-      "price": 404.07998657,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 22.3125,
-      "forecast_fiscal_end": "2027-12-27",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 11.04889884,
-      "collected_at": "2026-10-30T14:37:51.506648+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 402.44299927,
-        "ma60": 416.90966695,
-        "atr14": 19.80142866,
-        "distance_sma20": 0.4067625236292782,
-        "volume_ratio": 1.74171243,
-        "relative20_pp": -7.9282359,
-        "support10": 342.05999756,
-        "prior_high20": 461.33999634,
-        "setup": "early_rebound_watch",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 461.33999634,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 402.44299927,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 416.90966695,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 102747334.47998047
-      },
-      "fundamental_fingerprint": "33ef8bfc7a30f6cc47baa0eecd58011f07fc7fc370cbaf896f0cce4a41f6f79a",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/LFUS/history/",
-        "estimates": "https://finance.yahoo.com/quote/LFUS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/LFUS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/LFUS/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/LFUS/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "ORI",
-      "name": "Old Republic International Corporation",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "ORI",
-      "state": "diligence_wait",
-      "price": 38.43999863,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 3.16667,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -4.04030303,
-      "collected_at": "2026-10-30T14:38:00.730750+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "eps_revision_wait",
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 38.60099983,
-        "ma60": 40.19916681,
-        "atr14": 0.88357108,
-        "distance_sma20": -0.4170907507812127,
-        "volume_ratio": 1.02718282,
-        "relative20_pp": 1.83111266,
-        "support10": 37.29000092,
-        "prior_high20": 40.77999878,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 40.77999878,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 38.60099983,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 40.19916681,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 75314486.7840004
-      },
-      "fundamental_fingerprint": "a45015c39879dc015307a7539a6abd44cc25fd28f4ed27dc95c982d2d3565fb6",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/ORI/history/",
-        "estimates": "https://finance.yahoo.com/quote/ORI/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/ORI/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/ORI/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/ORI/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "CAI",
-      "name": "Caris Life Sciences, Inc.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "CAI",
-      "state": "diligence_wait",
-      "price": 36.13999939,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 0.37192,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -0.97449278,
-      "collected_at": "2026-10-30T14:38:11.197111+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 30.89174986,
-        "ma60": 27.8197498,
-        "atr14": 1.87500014,
-        "distance_sma20": 16.989162329051698,
-        "volume_ratio": 1.04457826,
-        "relative20_pp": 26.77506213,
-        "support10": 28.79999924,
-        "prior_high20": 36.5,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 36.5,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 30.89174986,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 27.8197498,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 110202060.23371696
-      },
-      "fundamental_fingerprint": "903bf480a8541478245183de79257783501208e654e797c6499505fbe75af051",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/CAI/history/",
-        "estimates": "https://finance.yahoo.com/quote/CAI/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/CAI/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/CAI/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/CAI/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "SPCX",
-      "name": "Space Exploration Technologies Corp.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "SPCX",
-      "state": "diligence_wait",
-      "price": 143.88999939,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 4.0304,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 116.14316589,
-      "collected_at": "2026-10-30T14:38:18.099855+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 154.56900024,
-        "ma60": 147.56783346,
-        "atr14": 7.69928305,
-        "distance_sma20": -6.908889126162854,
-        "volume_ratio": 0.63852019,
-        "relative20_pp": -3.5258825,
-        "support10": 140.66000366,
-        "prior_high20": 176.41999817,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 176.41999817,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 154.56900024,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 147.56783346,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 16108718461.094818
-      },
-      "fundamental_fingerprint": "962f22638f54b7ff011725da9fa722ed4399806d6e210c76b8994c7b4df9b810",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/SPCX/history/",
-        "estimates": "https://finance.yahoo.com/quote/SPCX/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/SPCX/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/SPCX/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/SPCX/profile/"
-      },
-      "research_score": null
-    },
-    {
       "symbol": "005290",
       "name": "동진쎄미켐",
       "market": "KR",
@@ -9571,6 +9563,117 @@
       "research_score": 33.2
     },
     {
+      "symbol": "MSGS",
+      "name": "Madison Square Garden Sports Corp.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "MSGS",
+      "state": "data_wait",
+      "price": 310.17999268,
+      "price_session": "2026-10-29",
+      "source_expected_session": "2026-10-29",
+      "expected_session": "2026-10-29",
+      "session_clock": {
+        "date": "2026-10-29",
+        "closed_at": "2026-10-29T20:00:00+00:00",
+        "next_session": "2026-10-30",
+        "next_open": "2026-10-30T13:30:00+00:00",
+        "recheck_at": "2026-10-30T20:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": -1.96333,
+      "forecast_fiscal_end": "2028-06-30",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": null,
+      "collected_at": "2026-10-30T14:38:12.940012+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [
+        "forecast_basis_missing"
+      ],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "corporate_action_review",
+        "earnings_event_near",
+        "eps_revision_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-30T20:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "setup_confirmation_wait",
+          "earnings_event_near"
+        ],
+        "ma20": 302.73914948,
+        "ma60": 300.75127665,
+        "atr14": 11.34611075,
+        "distance_sma20": 2.457839764953018,
+        "volume_ratio": 0.68898332,
+        "relative20_pp": 2.48582669,
+        "support10": 280.0,
+        "prior_high20": 314.5557251,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [
+          "2026-10-30"
+        ],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 314.5557251,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 302.73914948,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 300.75127665,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 149142845.2023529
+      },
+      "fundamental_fingerprint": "1f42fd776c818fa5c91c23d0310d620b12d34760ba178822eecad4845e558129",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/MSGS/history/",
+        "estimates": "https://finance.yahoo.com/quote/MSGS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/MSGS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/MSGS/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/MSGS/profile/"
+      },
+      "research_score": 26.9
+    },
+    {
       "symbol": "067310",
       "name": "HANA Micron Inc.",
       "market": "KR",
@@ -9790,6 +9893,117 @@
         "profile": "https://finance.yahoo.com/quote/086520.KQ/profile/"
       },
       "research_score": 24
+    },
+    {
+      "symbol": "017900",
+      "name": "AUK Corp.",
+      "market": "KR",
+      "currency": "KRW",
+      "provider_symbol": "017900.KS",
+      "state": "data_wait",
+      "price": 8670.0,
+      "price_session": "2026-10-30",
+      "source_expected_session": "2026-10-30",
+      "expected_session": "2026-10-30",
+      "session_clock": {
+        "date": "2026-10-30",
+        "closed_at": "2026-10-30T06:30:00+00:00",
+        "next_session": "2026-11-02",
+        "next_open": "2026-11-02T00:00:00+00:00",
+        "recheck_at": "2026-11-02T07:00:00+00:00",
+        "calendar": "XKRX",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": null,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": null,
+      "collected_at": "2026-10-30T14:39:32.467605+00:00",
+      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
+      "data_blocks": [
+        "forecast_basis_missing"
+      ],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "input_forecast_eps_mismatch",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "eps_revision_wait",
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-10-31T08:39:34.240748+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 8693.5,
+        "ma60": 8474.5,
+        "atr14": 812.85714286,
+        "distance_sma20": -0.2703169034335984,
+        "volume_ratio": 2.04168129,
+        "relative20_pp": 6.88361028,
+        "support10": 7020.0,
+        "prior_high20": 11450.0,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 11450.0,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 8693.5,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 8474.5,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 20434688900.0
+      },
+      "fundamental_fingerprint": "96d21f8cf2cf441a0368c31de10ece8b3655b00a297f1db3651ca594eb4416b7",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/017900.KS/history/",
+        "estimates": "https://finance.yahoo.com/quote/017900.KS/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/017900.KS/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/017900.KS/balance-sheet/",
+        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=AUK%20Corp.",
+        "profile": "https://finance.yahoo.com/quote/017900.KS/profile/"
+      },
+      "research_score": 20
     },
     {
       "symbol": "475150",
@@ -10894,7 +11108,7 @@
         ],
         "turnover20": 406746192350.0
       },
-      "fundamental_fingerprint": "5f2aa46637af5d82b4b2e8dfe4930807117c2eb2892146f36e34ba957ac7fc44",
+      "fundamental_fingerprint": "6a4621a5037fcf054b8dc1f74bf5b35eab2aff10550549323edf330ae7027f6a",
       "sources": {
         "history": "https://finance.yahoo.com/quote/036930.KQ/history/",
         "estimates": "https://finance.yahoo.com/quote/036930.KQ/analysis/",
@@ -11011,228 +11225,6 @@
         "profile": "https://finance.yahoo.com/quote/396300.KQ/profile/"
       },
       "research_score": 4
-    },
-    {
-      "symbol": "MSGS",
-      "name": "Madison Square Garden Sports Corp.",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "MSGS",
-      "state": "data_wait",
-      "price": 310.17999268,
-      "price_session": "2026-10-29",
-      "source_expected_session": "2026-10-29",
-      "expected_session": "2026-10-29",
-      "session_clock": {
-        "date": "2026-10-29",
-        "closed_at": "2026-10-29T20:00:00+00:00",
-        "next_session": "2026-10-30",
-        "next_open": "2026-10-30T13:30:00+00:00",
-        "recheck_at": "2026-10-30T20:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": -1.96333,
-      "forecast_fiscal_end": "2028-06-30",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": null,
-      "collected_at": "2026-10-30T14:38:12.940012+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [
-        "forecast_basis_missing"
-      ],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "corporate_action_review",
-        "earnings_event_near",
-        "eps_revision_wait",
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-30T20:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "setup_confirmation_wait",
-          "earnings_event_near"
-        ],
-        "ma20": 302.73914948,
-        "ma60": 300.75127665,
-        "atr14": 11.34611075,
-        "distance_sma20": 2.457839764953018,
-        "volume_ratio": 0.68898332,
-        "relative20_pp": 2.48582669,
-        "support10": 280.0,
-        "prior_high20": 314.5557251,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-10-30"
-        ],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 314.5557251,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 302.73914948,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 300.75127665,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 149142845.2023529
-      },
-      "fundamental_fingerprint": "1f42fd776c818fa5c91c23d0310d620b12d34760ba178822eecad4845e558129",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/MSGS/history/",
-        "estimates": "https://finance.yahoo.com/quote/MSGS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/MSGS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/MSGS/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/MSGS/profile/"
-      },
-      "research_score": null
-    },
-    {
-      "symbol": "017900",
-      "name": "AUK Corp.",
-      "market": "KR",
-      "currency": "KRW",
-      "provider_symbol": "017900.KS",
-      "state": "data_wait",
-      "price": 8670.0,
-      "price_session": "2026-10-30",
-      "source_expected_session": "2026-10-30",
-      "expected_session": "2026-10-30",
-      "session_clock": {
-        "date": "2026-10-30",
-        "closed_at": "2026-10-30T06:30:00+00:00",
-        "next_session": "2026-11-02",
-        "next_open": "2026-11-02T00:00:00+00:00",
-        "recheck_at": "2026-11-02T07:00:00+00:00",
-        "calendar": "XKRX",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": null,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": null,
-      "collected_at": "2026-10-30T14:39:32.467605+00:00",
-      "source_generated_at": "2026-10-30T14:39:34.240748+00:00",
-      "data_blocks": [
-        "forecast_basis_missing"
-      ],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "input_forecast_eps_mismatch",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "eps_revision_wait",
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-10-31T08:39:34.240748+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 8693.5,
-        "ma60": 8474.5,
-        "atr14": 812.85714286,
-        "distance_sma20": -0.2703169034335984,
-        "volume_ratio": 2.04168129,
-        "relative20_pp": 6.88361028,
-        "support10": 7020.0,
-        "prior_high20": 11450.0,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 11450.0,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 8693.5,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 8474.5,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 20434688900.0
-      },
-      "fundamental_fingerprint": "96d21f8cf2cf441a0368c31de10ece8b3655b00a297f1db3651ca594eb4416b7",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/017900.KS/history/",
-        "estimates": "https://finance.yahoo.com/quote/017900.KS/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/017900.KS/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/017900.KS/balance-sheet/",
-        "official": "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=AUK%20Corp.",
-        "profile": "https://finance.yahoo.com/quote/017900.KS/profile/"
-      },
-      "research_score": null
     }
   ],
   "top": [
@@ -11440,7 +11432,7 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/SIRI/profile/"
       },
-      "research_score": 60.9
+      "research_score": 58.9
     },
     {
       "symbol": "CROX",
@@ -11794,7 +11786,6 @@
         "strict_not_approved"
       ],
       "timing_blocks": [
-        "earnings_event_near",
         "extension20_wait",
         "risk_reference_missing",
         "setup_confirmation_wait",
@@ -11824,8 +11815,7 @@
           "trend_confirmation_wait",
           "extension20_wait",
           "setup_confirmation_wait",
-          "risk_reference_missing",
-          "earnings_event_near"
+          "risk_reference_missing"
         ],
         "ma20": 316250.0,
         "ma60": 363600.0,
@@ -11837,9 +11827,7 @@
         "prior_high20": 384500.0,
         "setup": "conditions_wait",
         "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [
-          "2026-10-30"
-        ],
+        "near_earnings_dates": [],
         "watch_conditions": [
           {
             "id": "breakout",
@@ -12084,18 +12072,18 @@
         "official": "https://www.sec.gov/edgar/search/",
         "profile": "https://finance.yahoo.com/quote/MU/profile/"
       },
-      "research_score": 90.9
+      "research_score": 88.9
     }
   ],
   "market": {
-    "written_at": "2026-10-30T14:54:10.544843+00:00",
-    "macro_generated_at": "2026-10-30T14:46:09.946207+00:00",
+    "written_at": "2026-10-30T15:16:21.786513+00:00",
+    "macro_generated_at": "2026-10-30T15:07:57.960090+00:00",
     "indices": [
       {
         "index": "kospi",
-        "reference_session": "2026-10-30",
-        "reference_value": 5730.740234375,
-        "observed_change_pct": -3.484873105396502,
+        "reference_session": "2026-10-29",
+        "reference_value": 5937.66015625,
+        "observed_change_pct": -1.2437510542310681,
         "source_url": "https://finance.yahoo.com/quote/^KS11",
         "is_prediction": false,
         "probability": null,
@@ -12124,9 +12112,9 @@
       },
       {
         "index": "kosdaq",
-        "reference_session": "2026-10-30",
-        "reference_value": 724.3800048828125,
-        "observed_change_pct": -3.8301682532582704,
+        "reference_session": "2026-10-29",
+        "reference_value": 753.22998046875,
+        "observed_change_pct": -2.3402717745174884,
         "source_url": "https://finance.yahoo.com/quote/^KQ11",
         "is_prediction": false,
         "probability": null,
@@ -12156,8 +12144,8 @@
       {
         "index": "sp500",
         "reference_session": "2026-10-30",
-        "reference_value": 7622.60009765625,
-        "observed_change_pct": -1.2666463395081928,
+        "reference_value": 7610.81982421875,
+        "observed_change_pct": -1.4192328439320057,
         "source_url": "https://finance.yahoo.com/quote/^GSPC",
         "is_prediction": false,
         "probability": null,
@@ -12187,8 +12175,8 @@
       {
         "index": "nasdaq",
         "reference_session": "2026-10-30",
-        "reference_value": 25640.986328125,
-        "observed_change_pct": -2.076533033003125,
+        "reference_value": 25597.6171875,
+        "observed_change_pct": -2.2421606947097716,
         "source_url": "https://finance.yahoo.com/quote/^IXIC",
         "is_prediction": false,
         "probability": null,
