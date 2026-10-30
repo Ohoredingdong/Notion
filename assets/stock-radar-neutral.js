@@ -66,6 +66,7 @@ function screenHead(title,sub,action=''){return `<div class="nr-screen-head"><di
 function homeQuick(){return `<div class="nr-home-actions">
 <button data-nr-screen="stocks">${I('search')}<span><b>AI 종목</b><small>연구용 후보 보기</small></span></button>
 <button data-nr-screen="monitor">${I('check')}<span><b>실시간 감시</b><small>연결·조건 확인</small></span></button>
+<button data-nr-screen="scenario">${I('chart')}<span><b>시나리오</b><small>낙관·기준·비관</small></span></button>
 <button data-nr-screen="portfolio">${I('star')}<span><b>내 종목</b><small>관심·모의투자</small></span></button>
 <button data-nr-view="discover">${I('chart')}<span><b>기업 분석</b><small>재무·실사 보기</small></span></button>
 <button data-nr-screen="news">${I('news')}<span><b>뉴스 브리핑</b><small>이슈·일정·거시</small></span></button>
