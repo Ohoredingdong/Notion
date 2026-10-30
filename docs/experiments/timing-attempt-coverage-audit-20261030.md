@@ -1,0 +1,25 @@
+# Attempt coverage provenance — prospective radar integrity study (2026-10-30)
+
+## Fixed evidence and hypothesis (registered before writing the auditor)
+
+Base main: `688cc839462e2b08486dbee4431fedd6aa0bc205` (2026-10-30 08:51:42 UTC). Governing acceptance: `docs/stock-timing-acceptance-20261029.md` and unchanged direction/autopilot policies. Existing prior studies on forecast arithmetic, overlap, publication proof, shadow models, latency and public timing were read first; this study addresses a **different evidence stream: scheduler attempts and reported call coverage**.
+
+Original immutable blobs: attempt ledger `ae2d27dbdc9dc602e456bd6f0d9129fbf35fbaa6`, forecast ledger `b1af95894d1dd49ae7a0d86f19cda347d3200f08`, reported learning/coverage `a6c881c640ea1179fe4019b422eccc036ea46bb4`, outcomes `2e4213bcca37c17a4e2feee327f702437e048b0b`, deliveries `51daccada19b8e8dc20160da9c3f82807ccbd7b1`. Current independent evidence auditor does not read the attempts or recompute the separate published `coverage` section. Producer and consumer could therefore agree on forecast correctness while a stale or altered call-rate summary passes through unaudited.
+
+**Predeclared falsifiable integrity test:** independently reconstruct raw attempt-status and no-call-reason counts, check each attempt's ID uniqueness, reference to originally frozen `prediction_id` and matching symbol/mode, and reject a synthetic report claiming 100% calls from the same 432 saved attempts. Also reject a duplicate attempt ID, an unknown forecast reference, a `no_call` with a prediction ID, a missing no-call reason, and an unrecognized status. Genuine source rows should pass. This establishes only audit consistency, not whether source files or a forecast were available at an executable market price.
+
+## Current diagnostic inputs (already inspected; not a novel forward performance test)
+
+- **432 scheduler-attempt rows across 17 distinct workflow run IDs** (one run ID has a second run attempt): 198 `research_prediction` attempts and 234 `no_call`. The reported **45.83% call rate is per scheduled attempt**, not per eligible market opportunity or distinct issuance; repeated calls may reference the same frozen forecast. Neither 198 nor 432 are independent successful predictive targets.
+- No-call reasons: 198 `insufficient_regular_session_time` (session/window deferral; **not** a detected system outage), 33 `target_already_started_or_delivery_window_too_short` (issuance window missed), two database-lock errors, one source-rate-limit error. The latter three are recorded source/issuance conditions, not fabricated wins or losses. No attempt-ID duplicates, orphan prediction links or symbol/mode mismatches were found in the fixed evidence.
+- Separately, 77 frozen forecasts / 56 unique targets / eight overlaps => 48 nonoverlapping, of which 30 already scored / 11 correct; 12 future results and six matured but not observable in the saved 5-minute provider horizon. **Existing labels and the previously measured shadow comparisons must not be re-used as new evidence.** No real recipient confirmation, official KRX/NXT/US executable quote or post-cost paper strategy exists in the repository.
+
+## Narrow permitted work and test gates
+
+Implement only a **read-only**, separately reproducible attempt-coverage evidence audit, with a synthetic failure test (RED) before code, the same test passing after code (GREEN), plus original forecast and independent learning audits and unchanged UI checks if invoked. Do **not** modify the production source collector, models, original attempt/forecast/outcome/delivery/learning files, confidence/selection thresholds, release, strict-green-1.0, authentication, order paths or other scheduled watchdog. Report raw attempts and reason categories separately; do not treat out-of-session `no_call` as model abstention, unsuccessful trade, or cause to buy. Do not output potentially sensitive free-form source errors.
+
+Trial budget: **one** integrity hypothesis, **zero** newly fitted model recipes, tuning searches, prospective trading strategy trials, promotions or model replacements. The finished run must log failed and passing workflow IDs, whether the main audit executed and the actual unchanged source hashes. If any required CI gate fails, leave the change on the research branch instead of claiming a deployed repair.
+
+## Results
+
+Pending tests. The preregistered hypothesis and denominator definitions above must remain unchanged; append results below after execution.
