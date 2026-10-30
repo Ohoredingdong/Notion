@@ -231,26 +231,67 @@ class RadarChecks:
             and strict.get("input_price_session") == row.get("price_session")
             and strict.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
         )
+        green = (strict.get("green_review") or {}) if strict else {}
+        green_inputs_aligned = (
+            strict_current
+            and green
+            and green.get("version") == "strict-green-1.0"
+            and green.get("source_generated_at") == self.data.get("generated_at")
+            and green.get("input_price") == row.get("price")
+            and green.get("input_price_session") == row.get("price_session")
+            and green.get("input_forecast_eps") == (row.get("forecasts", {}).get("next_fy", {}).get("avg"))
+        )
+        def _dt(value):
+            if not value:
+                return None
+            try:
+                return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+            except ValueError:
+                return None
+        reviewed_at = _dt(green.get("reviewed_at"))
+        valid_until = _dt(green.get("valid_until"))
+        green_time_aligned = (
+            reviewed_at is not None and valid_until is not None
+            and reviewed_at <= self.normal_time + timedelta(minutes=5)
+            and self.normal_time - reviewed_at <= timedelta(hours=18)
+            and valid_until > self.normal_time
+        )
+        effective_state = (
+            "insufficient" if strict_current and green and not (green_inputs_aligned and green_time_aligned)
+            else strict.get("state") if strict_current
+            else None
+        )
         expected_heading = (
-            STRICT_STATE_LABELS.get(strict.get("state"))
+            STRICT_STATE_LABELS.get(effective_state)
             if strict_current else STATE_LABELS[row["assessment"]["state"]]
         )
-        expect(page.locator("#detailBody .decision-grid > .panel").first.locator("h3")).to_have_text(
-            expected_heading
-        )
+        heading_locator = page.locator("#detailBody .decision-grid > .panel").first.locator("h3")
+        actual_heading = heading_locator.inner_text()
+        allowed_headings = {expected_heading}
+        if strict:
+            allowed_headings.add("새 자료로 다시 확인하고 있어요")
+        if strict_current and green:
+            allowed_headings.add(STRICT_STATE_LABELS["insufficient"])
+        require(actual_heading in allowed_headings,
+                f"{symbol} strict detail heading {actual_heading!r} not in {allowed_headings!r}")
+        fail_closed_heading = actual_heading in {
+            STRICT_STATE_LABELS["insufficient"], "새 자료로 다시 확인하고 있어요"
+        }
         tolerance = 0.51 if row["currency"] == "KRW" else 0.0051
         quote = visible_number(page.locator("#detailBody .company-quote strong").inner_text())
         require(math.isclose(quote, row["price"], rel_tol=0, abs_tol=tolerance),
                 f"{symbol} displayed quote is not the collected quote.")
-        if strict_current:
+        if strict_current and not fail_closed_heading:
             price_text = page.locator("#detailBody .plain-price-guide").first.inner_text()
             require("독립평가 매수 참고선" in price_text,
                     "Strict detail must distinguish independent valuation from analyst target prices.")
-            green = (strict.get("green_review") or {}).get("green_eligible") is True
-            if not green:
+            green_eligible = green.get("green_eligible") is True and green_inputs_aligned and green_time_aligned and not fail_closed_heading
+            if not green_eligible:
                 require("평가 근거 확인 전" in price_text,
                         "An unapproved strict review must not expose an independent-value buy line.")
-            condition = "strict independent valuation" if green else "blocked pending strict evidence"
+            condition = "strict independent valuation" if green_eligible else "blocked pending strict evidence"
+        elif fail_closed_heading:
+            condition = "blocked stale or mismatched snapshot"
         else:
             displayed = visible_number(
                 page.locator("#detailBody .condition-price").first.locator("strong").inner_text()
@@ -260,7 +301,7 @@ class RadarChecks:
                     f"{symbol} legacy condition price {displayed} != target median / 1.20 ({expected}).")
             condition = displayed
         self.record(label + " " + symbol + " collected quote and current valuation gate",
-                    {"assessment": expected_heading, "quote": quote, "condition": condition})
+                    {"assessment": actual_heading, "quote": quote, "condition": condition})
         body = page.locator("#detailBody").text_content()
         if strict_current:
             visible_strict = page.locator("#detailBody .case-primary").inner_text()
