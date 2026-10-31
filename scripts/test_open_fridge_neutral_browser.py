@@ -4,7 +4,6 @@ import argparse, json, functools, threading, traceback, base64
 from pathlib import Path
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from datetime import datetime
-from html import escape
 from playwright.sync_api import sync_playwright, expect
 
 class Quiet(SimpleHTTPRequestHandler):
@@ -30,8 +29,8 @@ def main():
         if init:page.add_init_script(init)
         url=origin+f'/miniature-kitchen-{mode}.html'
         if opaque:
-          source=(root/f'miniature-kitchen-{mode}.html').read_text()
-          page.set_content('<style>html,body{margin:0}iframe{border:0;width:100vw;height:100vh}</style><iframe sandbox="allow-scripts" srcdoc="'+escape(source,quote=True)+'"></iframe>')
+          page.goto(origin+f'/mobile/{mode}.html')
+          page.wait_for_selector('iframe[sandbox]')
           frame=page.frames[1]
         else:page.goto(url);frame=page
         frame.wait_for_function('window.MiniKitchen && window.KitchenJournal && window.KitchenWorkflows')
@@ -50,6 +49,9 @@ def main():
           assert f.locator('[data-balance]').count()==3
           assert all(f.evaluate('MiniKitchen.getSnapshot().doors').values())
           show(f,'settings');expect(f.locator('[data-wf-form="targets"]')).to_be_visible()
+          f.locator('[data-wf-form="targets"] [name="carb"]').fill('230')
+          f.locator('[data-wf-form="targets"] [type="submit"]').click()
+          assert f.evaluate('KitchenJournal.getSnapshot().targets.carb')==230
           if opaque:assert f.evaluate('KitchenJournal.status')=='temporary'
           f.evaluate('MiniKitchen.closeTray()')
           # Actual door-surface gesture, away from the separately interactive condiment.
@@ -58,7 +60,7 @@ def main():
           f.wait_for_function('MiniKitchen.getSnapshot().doors.freshLeft===false')
           (door.tap if touch else door.click)();f.wait_for_function('MiniKitchen.getSnapshot().doors.freshLeft===true')
           page.screenshot(path=str(out/(f'{mode}-{width}-'+('opaque' if opaque else 'native')+'.png')),full_page=True)
-          passed(f'layout and real door gestures {mode} {width}x{height} '+('opaque touch' if opaque else 'native mouse'))
+          passed(f'layout, target form submission and real door gestures {mode} {width}x{height} '+('opaque touch' if opaque else 'native mouse'))
           ctx.close()
         # The first animated frame must keep food occluded by the front door.
         ctx,page,f=new(motion='no-preference')
