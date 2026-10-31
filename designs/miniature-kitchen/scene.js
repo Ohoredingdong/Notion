@@ -15,7 +15,7 @@
     frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.507,y:.547,w:.484,h:.418,zx:.538,zy:.573,zw:.415,zh:.342}
   };
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
-  let serial=20, layer=20, cropSerial=0, decorating=false, selected='egg', active=null, previousFocus=null;
+  let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null;
   const closing=new Set(),closingTimers=new Map();
   const movingDisplays=new Map();
   let movingDisplayCSS;
@@ -174,14 +174,24 @@
     const cargo=document.createElement('div');cargo.className='door-cargo'+(key.endsWith('Right')?' right':'');cargo.dataset.cargo=key;Object.assign(cargo.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});const inner=document.createElement('div');inner.className='door-storage drop-zone';inner.dataset.zone='door'+key[0].toUpperCase()+key.slice(1);inner.setAttribute('aria-label',p.name+' 문 선반');cargo.appendChild(inner);$('.fridge-stage').appendChild(cargo);
   }
   function place(button,item){button.style.left=item.x*100+'%';button.style.top=item.y*100+'%';button.style.zIndex=String(item.z);}
-  function constrainItems(){for(const button of document.querySelectorAll('.drop-zone>.item')){const item=items.find(r=>r.id===button.dataset.item),width=button.parentElement.clientWidth;if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;const half=Math.min(.5,button.offsetWidth/2/width);place(button,item);button.style.left=clamp(item.x,half,1-half)*100+'%';}}
+  function syncShelfLabels(){
+    // Keep annotations above neighboring food art without changing stored positions or food layers.
+    for(const button of document.querySelectorAll('.fridge-interiors .drop-zone>.item')){
+      const zone=button.parentElement,item=items.find(i=>i.id===button.dataset.item);if(!item)continue;
+      let label=button.querySelector('.item-label')||zone.querySelector('[data-for-item="'+CSS.escape(item.id)+'"]');if(!label)continue;
+      label.classList.add('shelf-label');label.dataset.forItem=item.id;label.setAttribute('aria-hidden','true');
+      label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - '+(item.zone.startsWith('frozen')?18:12)+'px / var(--scene-scale,1))';
+      label.style.zIndex=String(selected===item.id?20000002:20000001);zone.appendChild(label);
+    }
+  }
+  function constrainItems(){for(const button of document.querySelectorAll('.drop-zone>.item')){const item=items.find(r=>r.id===button.dataset.item),width=button.parentElement.clientWidth;if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;const half=Math.min(.5,button.offsetWidth/2/width);place(button,item);button.style.left=clamp(item.x,half,1-half)*100+'%';}syncShelfLabels();}
   function itemButton(item) {
     const b=document.createElement('button');b.type='button';b.className='item '+item.kind;b.dataset.item=item.id;if(item.art)b.dataset.art=item.art;
     b.innerHTML=art(item)+(item.quantity?`<span class="quantity">${esc(item.quantity)}</span>`:'')+`<span class="item-name">${esc(item.name)}</span>`;
     if(['food','seasoning'].includes(item.kind)){
       const delta=item.expiry?Math.round((Date.parse(item.expiry+'T12:00:00')-Date.parse(date()+'T12:00:00'))/86400000):null;
-      const tone=delta===null?'unknown':delta<0?'overdue':delta===0?'today':'later',label=delta===null?'기한 미입력':delta<0?'기한 경과':delta===0?'오늘까지':delta===1?'내일':delta+'일';
-      b.innerHTML+=`<span class="item-label" data-tone="${tone}"><b>${esc(item.name)}</b><small><span class="label-qty">${esc(item.quantity)}${item.quantity?' · ':''}</span>${label}</small></span>`;
+      const tone=delta===null?'unknown':delta<0?'overdue':delta===0?'today':'later',label=delta===null?'기한 확인':delta<0?'기한 경과':delta===0?'오늘까지':delta===1?'내일':delta+'일';
+      b.innerHTML+=`<span class="item-label" data-tone="${tone}"><b>${esc(item.name==='양송이버섯'?'양송이':item.name.replace('냉동 채소','냉동채소'))}</b><small><span class="label-qty">${esc(item.quantity)}${item.quantity?' · ':''}</span>${label}</small></span>`;
     }
     b.setAttribute('aria-label',item.name+(item.quantity?' '+item.quantity:'')+(item.expiry?' · '+item.expiry:'')+(item.kind==='decor'?' · 소품 위치 바꾸기':' · 누르면 살펴보기, 끌어서 이동'));b.classList.toggle('is-selected',selected===item.id);place(b,item);return b;
   }
@@ -192,14 +202,14 @@
       const zone=$('[data-zone="'+key+'"]');zone.hidden=!open;zone.inert=!open;
       const cargo=$('[data-cargo="'+key+'"]');cargo.hidden=!open&&!closing.has(key);cargo.classList.toggle('is-open',open);cargo.classList.toggle('is-closing',closing.has(key));cargo.inert=!open;
     }
-    for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item'))child.remove();for(const item of items.filter(r=>r.zone===zone.dataset.zone&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();window.dispatchEvent(new Event('mini-kitchen:change'));
+    for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item,.shelf-label'))child.remove();for(const item of items.filter(r=>r.zone===zone.dataset.zone&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();window.dispatchEvent(new Event('mini-kitchen:change'));
   }
   function finishClosing(key){clearTimeout(closingTimers.get(key));closingTimers.delete(key);if(closing.delete(key))renderDisplays();}
   function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'));}
   function openTray(title,content,eyebrow='MY LITTLE KITCHEN') {
-    if(!$('#tray').open)previousFocus=document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;
+    if(!$('#tray').open)previousFocus=document.activeElement===document.body?document.querySelector('.item.is-selected')||document.activeElement:document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;$('#trayTitle').tabIndex=-1;$('#trayTitle').focus({preventScroll:true});
   }
-  function closeTray(){$('#tray').close();if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});}
+  function closeTray(){$('#tray').close();const target=previousFocus?.isConnected?previousFocus:previousFocus?.dataset.item?document.querySelector('[data-item="'+CSS.escape(previousFocus.dataset.item)+'"]'):previousFocus?.id?document.getElementById(previousFocus.id):null;target?.focus({preventScroll:true});}
   function showAdd(){if(window.KitchenWorkflows)return window.KitchenWorkflows.add();openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${A.foodArt(A.foodIdForName(name))}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
   function showDecor() {
     decorating=true;setCamera('counter');render();openTray('마음에 드는 소품을 놓아봐요',`<p class="tray-note">소품을 골라 조리대에 놓고 자유롭게 옮겨요. 소품을 누르면 앞뒤 순서와 배치를 바꿀 수 있어요.</p><div class="palette">${Object.entries(props).map(([key,p])=>`<button type="button" data-add-prop="${key}">${decorArt(key)}<strong>${p.name}</strong><small>${items.some(r=>r.art===key)?'이미 놓았어요 · 하나 더 놓기':'조리대에 놓기'}</small></button>`).join('')}</div><h3 class="placed-title">놓아둔 소품</h3><p class="tray-note">뒤에 가려진 소품도 여기서 고를 수 있어요.</p><div class="placed-props">${items.filter(r=>r.kind==='decor').map(r=>`<button type="button" data-select-prop="${esc(r.id)}">${art(r)}<span>${esc(r.name)}<br>선택해서 배치 바꾸기</span></button>`).join('')}</div><div class="tray-actions"><button type="button" class="small-action primary" data-close>부엌에서 옮겨보기</button></div>`);
@@ -244,7 +254,7 @@
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&active){event.preventDefault();cleanup();announce('이동을 취소했어요.');return;}const button=event.target.closest('.room .item');if(!button)return;const item=items.find(r=>r.id===button.dataset.item);if(!item)return;
     if(event.key==='Enter'||event.key===' '){event.preventDefault();showItem(item);return;}
-    const vector={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];if(vector&&(item.kind!=='decor'||decorating)){event.preventDefault();const step=event.shiftKey ? .1 : .025;item.x=clamp(item.x+vector[0]*step,.15,.85);item.y=clamp(item.y+vector[1]*step,.2,1);item.z=++layer;place(button,item);window.dispatchEvent(new Event('mini-kitchen:change'));announce(item.name+' 위치를 바꿨어요.');}
+    const vector={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];if(vector&&(item.kind!=='decor'||decorating)){event.preventDefault();const step=event.shiftKey ? .1 : .025;item.x=clamp(item.x+vector[0]*step,.15,.85);item.y=clamp(item.y+vector[1]*step,.2,1);item.z=++layer;place(button,item);syncShelfLabels();window.dispatchEvent(new Event('mini-kitchen:change'));announce(item.name+' 위치를 바꿨어요.');}
   });
   document.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;if(button.dataset.door)toggle(button.dataset.door);if(button.dataset.camera)setCamera(button.dataset.camera);

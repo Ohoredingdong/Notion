@@ -117,7 +117,7 @@ def build(root, mode, compact=False):
 
     html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', css, html)
     html = re.sub(r'<script defer src="([^"]+)"></script>', js, html)
-    html = html.replace('data-mode="app"',f'data-mode="{mode}"')
+    html = html.replace('<body data-mode="app"',f'<body data-mode="{mode}"',1)
     html = html.replace('<!-- Source template. Generate the two self-contained previews with the builder. -->',
                         '<!-- Generated miniature preview. Separate preview storage only; production data untouched. -->')
     return html.replace('</body>','\n'.join(scripts)+'\n</body>')
