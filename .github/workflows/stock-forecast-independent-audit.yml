@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/stock-forecast-independent-audit.yml'
       - 'scripts/test_stock_timing_audit_handoff.py'
+      - 'scripts/test_stock_timing_workflow_provenance.py'
+      - 'scripts/audit_stock_timing_workflow_provenance.py'
   workflow_run:
     workflows: ['Stock Prospective Forecasts']
     types: [completed]
@@ -49,6 +51,7 @@ jobs:
       - name: Test audit independently of model code
         run: |
           python scripts/test_stock_timing_audit_handoff.py -v
+          python scripts/test_stock_timing_workflow_provenance.py -v
           python scripts/audit_stock_forecast_independent.py --self-test
           PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v
