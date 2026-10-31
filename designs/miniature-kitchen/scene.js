@@ -1,7 +1,8 @@
 /* Miniature scene; the journal adapter persists only its separate preview key. */
 (() => {
   'use strict';
-  const FRIDGE = './designs/miniature-kitchen/assets/fridge-atlas.png';
+  const FRIDGE = './designs/miniature-kitchen/assets/fridge-neutral-atlas.png';
+  const FREEZER = './designs/miniature-kitchen/assets/freezer-food.png';
   const DECOR = './designs/miniature-kitchen/assets/decor-atlas.png';
   const A=window.UMFKitchenArt, $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -14,22 +15,31 @@
     frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.507,y:.547,w:.484,h:.418,zx:.538,zy:.573,zw:.415,zh:.342}
   };
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
-  let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null;
+  let serial=20, layer=20, cropSerial=0, decorating=false, selected='egg', active=null, previousFocus=null;
   const closing=new Set(),closingTimers=new Map();
   const movingDisplays=new Map();
   let movingDisplayCSS;
-  const doors={freshLeft:false,freshRight:false,frozenLeft:false,frozenRight:false};
+  const doors={freshLeft:true,freshRight:true,frozenLeft:true,frozenRight:true};
+  const doorForZone=z=>z.startsWith('door')?z.slice(4,5).toLowerCase()+z.slice(5):z;
+  const isAvailable=z=>!panels[doorForZone(z)]||doors[doorForZone(z)];
   const items=[
-    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.26,y:.32,z:1},
-    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshLeft',x:.76,y:.32,z:2},
-    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshLeft',x:.26,y:.63,z:3},
-    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshLeft',x:.74,y:.95,z:4},
-    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(4),zone:'freshRight',x:.28,y:.63,z:5},
-    {id:'fish',kind:'food',name:'생선',quantity:'2조각',expiry:date(14),zone:'frozenLeft',x:.43,y:.48,z:6},
-    ...['간장','고추장','된장','소금'].map((name,index)=>({id:'spice'+index,kind:'seasoning',name,quantity:'',expiry:date(30+index*10),zone:'seasoning',x:.1+index*.265,y:.98,z:7+index})),
-    {id:'meal',kind:'meal',name:'계란 볶음밥',zone:'counter',x:.46,y:.96,z:12},
-    {id:'flowers',kind:'decor',art:'flowers',name:props.flowers.name,zone:'counter',x:.83,y:.91,z:13},
-    {id:'cup',kind:'decor',art:'cup',name:props.cup.name,zone:'counter',x:.12,y:.98,z:14}
+    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.5,y:.63,z:1},
+    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshRight',x:.25,y:.63,z:2},
+    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshRight',x:.45,y:.32,z:3},
+    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshLeft',x:.5,y:.95,z:4},
+    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(1),zone:'freshLeft',x:.5,y:.32,z:5},
+    {id:'fish',kind:'food',name:'생선',quantity:'2조각',expiry:date(14),zone:'frozenLeft',x:.5,y:.66,z:6},
+    ...['간장','고추장','된장','소금'].map((name,index)=>({id:'spice'+index,kind:'seasoning',name,quantity:index===0?'150ml':'',expiry:date(30+index*10),zone:index===0||index===3?'doorFreshLeft':'doorFreshRight',x:index%2?.3:.7,y:index<2?.45:.86,z:7+index})),
+    {id:'scallion',kind:'food',name:'대파',quantity:'1개',expiry:date(5),zone:'freshRight',x:.75,y:.63,z:11},
+    {id:'mushroom',kind:'food',name:'양송이버섯',quantity:'100g',expiry:date(5),zone:'freshRight',x:.25,y:.95,z:12},
+    {id:'kimchi',kind:'food',name:'김치',quantity:'200g',expiry:date(12),zone:'freshRight',x:.75,y:.95,z:13},
+    {id:'beef',kind:'food',name:'소고기',quantity:'300g',expiry:date(12),zone:'frozenLeft',x:.5,y:.32,z:14},
+    {id:'shrimp',kind:'food',name:'새우',quantity:'200g',expiry:date(30),zone:'frozenRight',x:.5,y:.32,z:15},
+    {id:'dumplings',kind:'food',name:'만두',quantity:'1팩',expiry:date(18),zone:'frozenRight',x:.5,y:.66,z:16},
+    {id:'mixveg',kind:'food',name:'냉동 채소',quantity:'200g',expiry:date(25),zone:'frozenRight',x:.5,y:.98,z:17},
+    {id:'meal',kind:'meal',name:'계란 볶음밥',zone:'counter',x:.46,y:.96,z:18},
+    {id:'flowers',kind:'decor',art:'flowers',name:props.flowers.name,zone:'counter',x:.83,y:.91,z:19},
+    {id:'cup',kind:'decor',art:'cup',name:props.cup.name,zone:'counter',x:.12,y:.98,z:20}
   ];
   function crop(asset,box,total,cls='') {
     const id='mini-crop-'+(++cropSerial),[x,y,w,h]=box;
@@ -37,6 +47,9 @@
   }
   const decorArt=key=>crop(DECOR,props[key].crop,[1286,1223],'decor-art');
   function art(item) {
+    if(item.photo&&item.photoAsIcon!==false)return `<img class="food-art product-photo" alt="" src="${esc(item.photo)}">`;
+    const freezer={'소고기':[0,0,627,627],'새우':[627,0,627,627],'만두':[0,627,627,627],'냉동 채소':[627,627,627,627]}[item.name];
+    if(freezer)return crop(FREEZER,freezer,[1254,1254],'food-art');
     if(item.kind==='decor')return decorArt(item.art);
     if(item.kind==='meal')return A.dishArt({id:item.name});
     if(item.kind==='seasoning')return A.seasoningArt(item.name,'food-art');
@@ -45,32 +58,14 @@
   function announce(message){$('#liveMessage').textContent=message;}
   function compact(){return mode==='widget'||$('.shell').clientWidth<960;}
   function syncLayout(){
-    // One 1536 × 1024 room: furniture, food and backdrop share its scale.
-    // Reserve the header/tabs and a small floor margin in the FIRST viewport.
-    const shell=$('.shell'),view=$('.kitchen-view'),room=$('.room');
-    const available=Math.min(innerWidth-28,mode==='widget'?692:1452);
-    const top=$('.masthead').offsetHeight+$('.camera-tabs').offsetHeight+12;
-    // Frame the installed fridge, not the unused foreground floor. Its apparent
-    // size stays the same while the appliance fits the actual tile bay behind it.
-    const camera=document.body.dataset.camera;
-    const frame={
-      fridge:{height:880,top:16,width:700,center:768,maxWidth:1536},
-      seasoning:{height:640,top:80,width:600,center:300,maxWidth:600},
-      counter:{height:640,top:304,width:600,center:1236,maxWidth:600}
-    }[camera];
-    // Reserve the journal summary without changing the accepted scene framing.
-    const controls=104-50*clamp((innerWidth-560)/160,0,1);
-    const scale=Math.max(.2,Math.min(819.2/frame.height,available/frame.width,Math.max(280,innerHeight-top-controls-24)/frame.height));
+    const room=$('.room'),shell=$('.shell');
+    const width=room.clientWidth||shell.clientWidth-28,scale=width/1000;
     shell.style.setProperty('--scene-scale',String(scale));
-    shell.style.setProperty('--scene-height',scale*frame.height+'px');
-    shell.style.setProperty('--scene-y',-scale*frame.top+'px');
-    shell.style.setProperty('--scene-max-width',scale*frame.maxWidth+28+'px');
-    shell.style.setProperty('--object',Math.max(94,44/scale)+'px');
-    shell.style.setProperty('--seasoning',Math.max(100,44/scale)+'px');
-    view.classList.toggle('is-compact',compact());
-    const x=clamp(room.clientWidth/2-frame.center*scale,Math.min(0,room.clientWidth-1536*scale),0);
-    shell.style.setProperty('--scene-x',x+'px');
-    renderDisplays();
+    shell.style.setProperty('--scene-height',scale*1200+'px');
+    shell.style.setProperty('--scene-x','0px');shell.style.setProperty('--scene-y','0px');
+    shell.style.setProperty('--object',Math.max(118,42/scale)+'px');
+    shell.style.setProperty('--seasoning',Math.max(130,44/scale)+'px');
+    $('.kitchen-view').classList.toggle('is-compact',compact());renderDisplays();
   }
   function setCamera(camera) {
     cleanup();document.body.dataset.camera=camera;
@@ -86,13 +81,13 @@
     // Calendar-day comparison avoids DST and midnight timezone rounding.
     const dayNumber=value=>{const [y,m,d]=value.split('-').map(Number);return Date.UTC(y,m-1,d)/86400000;};
     const today=dayNumber(date());
-    const near=items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&r.expiry&&dayNumber(r.expiry)-today<=3).sort((a,b)=>a.expiry.localeCompare(b.expiry));
+    const near=items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0&&r.expiry&&dayNumber(r.expiry)-today<=3).sort((a,b)=>a.expiry.localeCompare(b.expiry));
     const counts={overdue:0,today:0,tomorrow:0,soon:0};
     for(const item of near){const days=dayNumber(item.expiry)-today;counts[days<0?'overdue':days===0?'today':days===1?'tomorrow':'soon']++;}
     const distribution=Object.entries(counts).filter(([,count])=>count).map(([tone,count])=>`<i data-expiry-tone="${tone}" style="flex:${count}"></i>`).join('');
     const distributionLabel=`기한 경과 ${counts.overdue}건, 오늘 ${counts.today}건, 내일 ${counts.tomorrow}건, 2~3일 이내 ${counts.soon}건`;
     const cleanName=name=>String(name).normalize('NFKC').replace(/\s+/g,'').toLowerCase();
-    const names=new Set(items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&(!r.expiry||dayNumber(r.expiry)>=today)).map(r=>cleanName(r.name)));
+    const names=new Set(items.filter(r=>(r.kind==='food'||r.kind==='seasoning')&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0&&(!r.expiry||dayNumber(r.expiry)>=today)).map(r=>cleanName(r.name)));
     const markup=['freshLeft','freshRight'].map(key=>{
       const p=panels[key],left=key==='freshLeft',meal=items.find(r=>r.kind==='meal'),hidden=!expanded&&(doors[key]||closing.has(key));
       // Fit inside the door's flat surface, leaving the curved edge and handle
@@ -163,7 +158,7 @@
       Object.assign(clone.style,{position:'relative',left:'0px',top:'0px'});
       // A moving face uses an opaque backing; it does not need to sample the
       // animated 3D scene with backdrop-filter. The normal LCD is unchanged.
-      style.textContent=movingDisplayCSS+'\n.fridge-lcd{background-color:#49463f;-webkit-backdrop-filter:none;backdrop-filter:none}';
+      style.textContent=movingDisplayCSS+'\n.fridge-lcd{background-color:#faf8f2;-webkit-backdrop-filter:none;backdrop-filter:none}';
       copy.root.replaceChildren(style,clone);
       Object.assign(copy.host.style,{
         left:(room.x+$('.room').clientLeft+parseFloat(panel.style.left)-stage.x-p.x*stage.width)*inverse+'px',
@@ -176,12 +171,18 @@
   for(const [key,p] of Object.entries(panels)) {
     const zone=document.createElement('div');zone.className='drop-zone';zone.dataset.zone=key;zone.setAttribute('aria-label',p.name+' 재료');Object.assign(zone.style,{left:p.zx*100+'%',top:p.zy*100+'%',width:p.zw*100+'%',height:p.zh*100+'%'});$('#fridgeInteriors').appendChild(zone);
     const door=document.createElement('button');door.type='button';door.className='door'+(key.endsWith('Right')?' right':'')+(key.startsWith('frozen')?' frozen':'');door.dataset.door=key;Object.assign(door.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});$('#fridgeDoors').appendChild(door);door.addEventListener('transitionend',event=>{if(event.target===door&&event.propertyName==='transform')finishClosing(key);});
+    const cargo=document.createElement('div');cargo.className='door-cargo'+(key.endsWith('Right')?' right':'');cargo.dataset.cargo=key;Object.assign(cargo.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});const inner=document.createElement('div');inner.className='door-storage drop-zone';inner.dataset.zone='door'+key[0].toUpperCase()+key.slice(1);inner.setAttribute('aria-label',p.name+' 문 선반');cargo.appendChild(inner);$('.fridge-stage').appendChild(cargo);
   }
   function place(button,item){button.style.left=item.x*100+'%';button.style.top=item.y*100+'%';button.style.zIndex=String(item.z);}
-  function constrainItems(){for(const button of document.querySelectorAll('.drop-zone>.item')){const item=items.find(r=>r.id===button.dataset.item),width=button.parentElement.clientWidth;if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;const half=Math.min(.5,button.offsetWidth/2/width);item.x=clamp(item.x,half,1-half);place(button,item);}}
+  function constrainItems(){for(const button of document.querySelectorAll('.drop-zone>.item')){const item=items.find(r=>r.id===button.dataset.item),width=button.parentElement.clientWidth;if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;const half=Math.min(.5,button.offsetWidth/2/width);place(button,item);button.style.left=clamp(item.x,half,1-half)*100+'%';}}
   function itemButton(item) {
     const b=document.createElement('button');b.type='button';b.className='item '+item.kind;b.dataset.item=item.id;if(item.art)b.dataset.art=item.art;
     b.innerHTML=art(item)+(item.quantity?`<span class="quantity">${esc(item.quantity)}</span>`:'')+`<span class="item-name">${esc(item.name)}</span>`;
+    if(['food','seasoning'].includes(item.kind)){
+      const delta=item.expiry?Math.round((Date.parse(item.expiry+'T12:00:00')-Date.parse(date()+'T12:00:00'))/86400000):null;
+      const tone=delta===null?'unknown':delta<0?'overdue':delta===0?'today':'later',label=delta===null?'기한 미입력':delta<0?'기한 경과':delta===0?'오늘까지':delta===1?'내일':delta+'일';
+      b.innerHTML+=`<span class="item-label" data-tone="${tone}"><b>${esc(item.name)}</b><small><span class="label-qty">${esc(item.quantity)}${item.quantity?' · ':''}</span>${label}</small></span>`;
+    }
     b.setAttribute('aria-label',item.name+(item.quantity?' '+item.quantity:'')+(item.expiry?' · '+item.expiry:'')+(item.kind==='decor'?' · 소품 위치 바꾸기':' · 누르면 살펴보기, 끌어서 이동'));b.classList.toggle('is-selected',selected===item.id);place(b,item);return b;
   }
   function render() {
@@ -189,22 +190,23 @@
     for(const [key,p] of Object.entries(panels)) {
       const door=$('[data-door="'+key+'"]'),open=doors[key];door.innerHTML=crop(FRIDGE,[137+570*p.x,10+994*p.y,570*p.w,994*p.h],[1536,1024])+`<span class="door-back"></span>`;door.classList.toggle('is-open',open);door.setAttribute('aria-expanded',String(open));door.setAttribute('aria-label',p.name+' 문 '+(open?'닫기':'열기'));door.tabIndex=0;
       const zone=$('[data-zone="'+key+'"]');zone.hidden=!open;zone.inert=!open;
+      const cargo=$('[data-cargo="'+key+'"]');cargo.hidden=!open&&!closing.has(key);cargo.classList.toggle('is-open',open);cargo.classList.toggle('is-closing',closing.has(key));cargo.inert=!open;
     }
-    for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item'))child.remove();for(const item of items.filter(r=>r.zone===zone.dataset.zone))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();window.dispatchEvent(new Event('mini-kitchen:change'));
+    for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item'))child.remove();for(const item of items.filter(r=>r.zone===zone.dataset.zone&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();window.dispatchEvent(new Event('mini-kitchen:change'));
   }
   function finishClosing(key){clearTimeout(closingTimers.get(key));closingTimers.delete(key);if(closing.delete(key))renderDisplays();}
   function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'));}
   function openTray(title,content,eyebrow='MY LITTLE KITCHEN') {
-    previousFocus=document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;
+    if(!$('#tray').open)previousFocus=document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;
   }
   function closeTray(){$('#tray').close();if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});}
-  function showAdd(){openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${A.foodArt(A.foodIdForName(name))}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
+  function showAdd(){if(window.KitchenWorkflows)return window.KitchenWorkflows.add();openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${A.foodArt(A.foodIdForName(name))}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
   function showDecor() {
     decorating=true;setCamera('counter');render();openTray('마음에 드는 소품을 놓아봐요',`<p class="tray-note">소품을 골라 조리대에 놓고 자유롭게 옮겨요. 소품을 누르면 앞뒤 순서와 배치를 바꿀 수 있어요.</p><div class="palette">${Object.entries(props).map(([key,p])=>`<button type="button" data-add-prop="${key}">${decorArt(key)}<strong>${p.name}</strong><small>${items.some(r=>r.art===key)?'이미 놓았어요 · 하나 더 놓기':'조리대에 놓기'}</small></button>`).join('')}</div><h3 class="placed-title">놓아둔 소품</h3><p class="tray-note">뒤에 가려진 소품도 여기서 고를 수 있어요.</p><div class="placed-props">${items.filter(r=>r.kind==='decor').map(r=>`<button type="button" data-select-prop="${esc(r.id)}">${art(r)}<span>${esc(r.name)}<br>선택해서 배치 바꾸기</span></button>`).join('')}</div><div class="tray-actions"><button type="button" class="small-action primary" data-close>부엌에서 옮겨보기</button></div>`);
   }
-  function showRecipes(){openTray('오늘은 어떤 한 끼가 좋을까요?',`<p class="tray-note">조리대에 놓을 요리 카드를 골라봐요. 기존 요리 8종을 살펴봐요. 영양은 식사 기록에 직접 입력한 값으로 계산해요.</p><div class="recipe-sheet">${window.KitchenCatalog.map(({name,f})=>`<button type="button" class="recipe-option" data-recipe="${name}" aria-pressed="${items.find(r=>r.kind==='meal').name===name}">${A.dishArt({id:name})}<strong>${name}</strong><small>${f.join(' · ')}</small></button>`).join('')}</div>`,'TODAY’S LITTLE MEAL');}
+  function showRecipes(){if(window.KitchenWorkflows)return window.KitchenWorkflows.recipes();openTray('오늘은 어떤 한 끼가 좋을까요?',`<p class="tray-note">조리대에 놓을 요리 카드를 골라봐요. 기존 요리 8종을 살펴봐요. 영양은 식사 기록에 직접 입력한 값으로 계산해요.</p><div class="recipe-sheet">${window.KitchenCatalog.map(({name,f})=>`<button type="button" class="recipe-option" data-recipe="${name}" aria-pressed="${items.find(r=>r.kind==='meal').name===name}">${A.dishArt({id:name})}<strong>${name}</strong><small>${f.join(' · ')}</small></button>`).join('')}</div>`,'TODAY’S LITTLE MEAL');}
   function showItem(item) {
-    selected=item.id;render();if(item.kind==='meal'){showRecipes();return;}
+    selected=item.id;render();if(window.KitchenWorkflows&&['food','seasoning'].includes(item.kind))return window.KitchenWorkflows.item(item.id);if(item.kind==='meal'){showRecipes();return;}
     if(item.kind==='decor') {
       decorating=true;render();openTray(item.name,`<div class="ingredient-preview">${art(item)}</div><p class="tray-note">창을 닫고 소품을 끌어 위치를 바꿔보세요. 겹쳐 놓고 앞뒤 순서도 고를 수 있어요.</p><div class="tray-actions"><button type="button" class="small-action" data-layer="back" data-id="${esc(item.id)}">뒤로 보내기</button><button type="button" class="small-action" data-layer="front" data-id="${esc(item.id)}">앞으로 가져오기</button><button type="button" class="small-action" data-remove="${esc(item.id)}">소품 치우기</button><button type="button" class="small-action primary" data-close>옮기기</button></div>`);return;
     }
@@ -215,8 +217,8 @@
   function moveLayer(id,direction){const item=items.find(r=>r.id===id);if(!item)return;const order=items.filter(r=>r.zone===item.zone&&r!==item).sort((a,b)=>a.z-b.z);if(direction==='front')order.push(item);else order.unshift(item);order.forEach((r,i)=>{r.z=i+1;});render();closeTray();announce(item.name+'을 '+(direction==='front'?'앞에':'뒤에')+' 놓았어요.');}
   let ghost=null, scrollFrame=0, pointer=null;
   function cleanup(){cancelAnimationFrame(scrollFrame);scrollFrame=0;pointer=null;if(active){active.button.classList.remove('is-dragging');try{active.button.releasePointerCapture(active.pointer);}catch(_){}active=null;}ghost?.remove();ghost=null;for(const zone of document.querySelectorAll('.is-over'))zone.classList.remove('is-over');}
-  function dropAt(x,y){return document.elementFromPoint(x,y)?.closest('.drop-zone');}
-  function highlightDrop(x,y){for(const z of document.querySelectorAll('.is-over'))z.classList.remove('is-over');const target=dropAt(x,y);if(active&&target&&(!panels[target.dataset.zone]||doors[target.dataset.zone])&&(active.item.kind!=='decor'||target.dataset.zone==='counter'))target.classList.add('is-over');}
+  function dropAt(x,y){const direct=document.elementFromPoint(x,y)?.closest('.drop-zone');if(direct&&isAvailable(direct.dataset.zone))return direct;return [...document.querySelectorAll('.drop-zone')].reverse().find(z=>{if(!isAvailable(z.dataset.zone)||z.hidden)return false;const r=z.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;})||null;}
+  function highlightDrop(x,y){for(const z of document.querySelectorAll('.is-over'))z.classList.remove('is-over');const target=dropAt(x,y);if(active&&target&&isAvailable(target.dataset.zone)&&(active.item.kind!=='decor'||target.dataset.zone==='counter'))target.classList.add('is-over');}
   function scrollDrag(){
     scrollFrame=0;if(!active?.moved||!pointer)return;
     const edge=72,y=pointer.y,delta=y<edge?-Math.ceil(18*Math.min(1,(edge-y)/edge)):y>innerHeight-edge?Math.ceil(18*Math.min(1,(y-innerHeight+edge)/edge)):0;
@@ -235,7 +237,7 @@
   },{passive:false});
   window.addEventListener('pointerup',event=>{
     const drag=active;if(!drag||event.pointerId!==drag.pointer)return;event.preventDefault();const target=dropAt(event.clientX,event.clientY),wasMoved=drag.moved;cleanup();if(!wasMoved){showItem(drag.item);return;}
-    const zone=target?.dataset.zone;if(!zone||(panels[zone]&&!doors[zone])||((drag.item.kind==='decor'||drag.item.kind==='meal')&&zone!=='counter')){announce('놓을 수 있는 선반이나 조리대에 옮겨주세요.');return;}
+    const zone=target?.dataset.zone;if(!zone||!isAvailable(zone)||((drag.item.kind==='decor'||drag.item.kind==='meal')&&zone!=='counter')){announce('놓을 수 있는 선반이나 조리대에 옮겨주세요.');return;}
     const rect=target.getBoundingClientRect();drag.item.zone=zone;drag.item.x=clamp((event.clientX-drag.w*drag.ax+drag.w/2-rect.left)/rect.width,drag.w/2/rect.width,1-drag.w/2/rect.width);drag.item.y=clamp((event.clientY+drag.h*(1-drag.ay)-rect.top)/rect.height,Math.min(1,drag.h/rect.height),1);drag.item.z=++layer;selected=drag.item.id;render();announce(drag.item.name+'을 원하는 자리에 놓았어요.');
   });
   window.addEventListener('pointercancel',cleanup);window.addEventListener('blur',cleanup);window.addEventListener('resize',()=>{cleanup();syncLayout();constrainItems();});
@@ -246,7 +248,7 @@
   });
   document.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;if(button.dataset.door)toggle(button.dataset.door);if(button.dataset.camera)setCamera(button.dataset.camera);
-    if(button.id==='addFood')showAdd();if(button.id==='recipes')showRecipes();if(button.id==='decorate'){if(decorating){decorating=false;selected=null;render();announce('소품 배치를 마쳤어요.');}else showDecor();}
+    if(button.id==='addFood')showAdd();if(button.id==='recipes')showRecipes();if(button.id==='decorate'){if(window.KitchenWorkflows){window.KitchenWorkflows.decor();return;}if(decorating){decorating=false;selected=null;render();announce('소품 배치를 마쳤어요.');}else showDecor();}
     if(button.id==='propList')showDecor();
     if(button.id==='expandDisplays')openTray('냉장고 디스플레이',`<div class="display-inspector">${renderDisplays(true)}</div><p class="tray-note">현재 기록의 확대 화면이에요. 기한별 숫자는 재료·양념 기록 건수이며, 재료 기록률은 이름 기준으로 수량의 충분함을 확인한 값은 아니에요.</p>`,'OUR KITCHEN');
     if(button.dataset.selectProp){const item=items.find(r=>r.id===button.dataset.selectProp&&r.kind==='decor');if(item)showItem(item);}
@@ -263,10 +265,11 @@
   document.title='한끼의 부엌 · '+(mode==='widget'?'위젯':'앱')+' 미니어처 시안';syncLayout();render();
   window.MiniKitchen=Object.freeze({
     isDoorClosing:key=>closing.has(key),
-    getSnapshot:()=>JSON.parse(JSON.stringify({mode,doors,items,decorating,camera:document.body.dataset.camera})),
+    getSnapshot:()=>JSON.parse(JSON.stringify({mode,doors,items,decorating,selected,camera:document.body.dataset.camera})),
     exportWorld:()=>JSON.parse(JSON.stringify({items,doors,serial,layer})),
-    restoreWorld(world){cleanup();items.splice(0,items.length,...JSON.parse(JSON.stringify(world.items)));for(const key of Object.keys(panels))doors[key]=world.doors[key];serial=world.serial;layer=world.layer;selected=null;decorating=false;render();},
-    showTray:openTray,closeTray,refreshDisplays:renderDisplays,
+    restoreWorld(world,preserveSelection=false){cleanup();items.splice(0,items.length,...JSON.parse(JSON.stringify(world.items)));for(const key of Object.keys(panels))doors[key]=world.doors[key];serial=world.serial;layer=world.layer;if(!preserveSelection)selected=null;decorating=false;render();},
+    showTray:openTray,closeTray,refreshDisplays:renderDisplays,showItem:id=>{const item=items.find(r=>r.id===id);if(item)showItem(item);},setCamera,decorate:showDecor,render,announce,
+    getArt:art,
     chooseRecipe(name){if(!window.KitchenCatalog.some(r=>r.name===name))return;items.find(r=>r.kind==='meal').name=name;setCamera('counter');render();closeTray();window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name}}));}
   });
 })();

@@ -7,22 +7,25 @@
 <title>한끼의 부엌 · 미니어처 시안</title>
 <!-- Source template. Generate the two self-contained previews with the builder. -->
 <link rel="stylesheet" href="designs/miniature-kitchen/scene.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/neutral.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
 <script defer src="designs/miniature-kitchen/catalog.js"></script>
 <script defer src="designs/miniature-kitchen/play-model.js"></script>
+<script defer src="designs/miniature-kitchen/workflow-model.js"></script>
 <script defer src="designs/miniature-kitchen/scene.js"></script>
 <script defer src="designs/miniature-kitchen/play-ui.js"></script>
+<script defer src="designs/miniature-kitchen/workflows.js"></script>
 </head>
 <body data-mode="app" data-camera="fridge">
 <a class="skip" href="#kitchen">부엌으로 이동</a>
 <main class="shell">
   <header class="masthead">
     <div class="brand"><span class="brand-icon" data-icon="fridge" aria-hidden="true"></span><div><h1>한끼의 부엌</h1><p>나의 작은 부엌</p></div></div>
-    <div class="header-actions"><button type="button" class="prototype-label display-expand" id="expandDisplays" aria-haspopup="dialog">표시창 크게 보기</button></div>
+    <div class="header-actions"><button type="button" data-workflow="shopping">장보기</button><button type="button" data-workflow="hub">기록</button><button type="button" data-workflow="settings" aria-label="기록과 설정">설정</button></div>
   </header>
-  <nav class="camera-tabs" aria-label="부엌에서 볼 곳">
-    <button type="button" data-camera="fridge" aria-pressed="true">냉장고</button><button type="button" data-camera="seasoning" aria-pressed="false">양념 선반</button><button type="button" data-camera="counter" aria-pressed="false">조리대</button>
-  </nav>
+  <button class="daily-balance" id="dailyBalance" type="button" data-workflow="nutrition" aria-label="오늘의 균형과 영양 기록"></button>
+  <div class="expiry-summary" id="expirySummary" aria-live="polite"></div>
+
   <div class="kitchen-view">
   <section class="room" id="kitchen" aria-label="직접 만지고 꾸미는 미니어처 부엌" tabindex="-1">
     <div class="room-caption"><span class="morning-dot" aria-hidden="true"></span><span id="roomMessage">냉장고 문을 열어, 우리 집 재료를 살펴봐요.</span></div>
@@ -38,14 +41,19 @@
     <div class="fridge-displays" id="fridgeDisplays" role="group" aria-label="냉장고 디스플레이"></div>
     <div class="scene-note" id="sceneNote">재료를 누르면 살펴볼 수 있어요</div>
   </section>
+  <aside class="desktop-summary" id="desktopSummary" aria-label="오늘의 요리와 빠른 기능"></aside>
   <div class="kitchen-progress" id="kitchenProgress"><span>문을 한 번 더 누르면 닫혀요</span><button type="button" id="openJournal">식사·영양과 도감</button></div>
   </div>
   <div class="decoration-tools" id="decorationTools" hidden><span>소품을 끌어 배치해요</span><button type="button" id="propList">놓아둔 소품 보기</button></div>
   <div class="worktop-actions" role="group" aria-label="부엌에서 하기">
-    <button type="button" class="action primary" id="addFood"><span data-icon="plus" aria-hidden="true"></span>재료 담기</button>
-    <button type="button" class="action" id="recipes"><span data-icon="recipes" aria-hidden="true"></span>오늘 뭐 먹지?</button>
-    <button type="button" class="action" id="decorate" aria-pressed="false"><span data-icon="sparkles" aria-hidden="true"></span><span>꾸미기</span></button>
+    <button type="button" class="action primary" id="addFood"><span data-icon="plus" aria-hidden="true"></span>재료 추가</button>
+    <button type="button" class="action" id="recipes"><span data-icon="recipes" aria-hidden="true"></span>요리 찾기</button>
+    <button type="button" class="action" id="openRecords" data-workflow="hub"><span data-icon="menu" aria-hidden="true"></span>기록</button>
   </div>
+  <div class="quiet-shortcuts"><button type="button" data-workflow="inventory">재료 목록</button><button type="button" data-workflow="plan">이번 주 식단</button><button type="button" data-workflow="book">요리 도감</button><button type="button" id="decorate" aria-pressed="false"><span>꾸미기</span></button><button type="button" class="display-expand" id="expandDisplays" aria-haspopup="dialog">표시창 크게 보기</button></div>
+  <nav class="camera-tabs" aria-label="부엌에서 볼 곳">
+    <button type="button" data-camera="fridge" aria-pressed="true">냉장고</button><button type="button" data-camera="seasoning" aria-pressed="false">양념 선반</button><button type="button" data-camera="counter" aria-pressed="false">조리대</button>
+  </nav>
   <div class="design-note"><span>이 시안의 기록 · 저장 상태를 확인하고 있어요.</span><button type="button" id="help">조작 방법</button></div>
   <div class="live-message" id="liveMessage" role="status" aria-live="polite"></div>
 </main>

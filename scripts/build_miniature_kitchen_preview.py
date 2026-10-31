@@ -15,7 +15,7 @@ import subprocess
 # Unused atlas cells are omitted; source images and published apps stay untouched.
 COMPACT_SPRITES = {
     'assets/food-miniatures-v2.webp': ('sprites', (1254,1254),
-        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','egg-rice','tofu-soup','chicken-salad','zucchini-fritters','egg-salad','tofu-steak','mushroom-tofu','omelette','ingredient')),
+        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','onion','rice','kimchi','mushroom','chicken','garlic','potato','zucchini','oil','cheese','yogurt','lettuce','pepper','egg-rice','tofu-soup','chicken-salad','zucchini-fritters','egg-salad','tofu-steak','mushroom-tofu','omelette','ingredient')),
     'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
         ('soy','salt','gochujang','doenjang','jar')),
 }
@@ -45,9 +45,12 @@ def web_image(path, size, boxes):
                       '-geometry',f'+{x}+{y}','-composite']
     else:
         command+=[str(path)]
-    if path.name=='magnets.png':command+=['-resize','627x627']
-    if path.name=='decor-atlas.png':command+=['-resize','643x612']
-    quality='94' if path.name=='fridge-atlas.png' else '76' if path.name in ('room-centered.png','room-concept.png') else '82'
+    if path.name=='food-miniatures-v2.webp':command+=['-resize','900x900']
+    if path.name=='freezer-food.png':command+=['-resize','560x560']
+    if path.name=='room-warm.png':command+=['-resize','900x1080']
+    if path.name=='magnets.png':command+=['-resize','500x500']
+    if path.name=='decor-atlas.png':command+=['-resize','560x533']
+    quality='88' if path.name=='fridge-neutral-atlas.png' else '94' if path.name=='fridge-atlas.png' else '68' if path.name=='room-warm.png' else '76' if path.name in ('food-miniatures-v2.webp','freezer-food.png','decor-atlas.png') else '76' if path.name in ('room-centered.png','room-concept.png') else '82'
     command+=['-define','webp:method=6','-define','webp:alpha-quality=100','-quality',quality,'webp:-']
     return subprocess.run(command,check=True,capture_output=True).stdout
 
@@ -102,7 +105,7 @@ def build(root, mode, compact=False):
         replacements = {
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-atlas.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FREEZER','designs/miniature-kitchen/assets/freezer-food.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"

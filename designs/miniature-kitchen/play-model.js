@@ -2,7 +2,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.KitchenPlayModel=api;})(typeof window!=='undefined'?window:globalThis,function(){
 'use strict';
 const NUTRIENTS=Object.freeze({kcal:['열량','kcal'],carb:['탄수화물','g'],protein:['단백질','g'],fat:['지방','g'],fiber:['식이섬유','g'],water:['수분','mL']});
-const REWARDS=Object.freeze({tile:{name:'블루 세라믹',cost:1},daisy:{name:'데이지 마그넷',cost:2},photo:{name:'딸기 그림 액자',cost:2},plate:{name:'우리 집 이름표',cost:3}});
+const REWARDS=Object.freeze({tile:{name:'세라믹 타일',cost:1},daisy:{name:'데이지 마그넷',cost:2},photo:{name:'딸기 그림 액자',cost:2},plate:{name:'우리 집 이름표',cost:3}});
 const clone=x=>JSON.parse(JSON.stringify(x));
 const day=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T12:00:00Z'))&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
 const text=(x,max=120)=>typeof x==='string'&&x.trim().length>0&&x.length<=max;
@@ -21,10 +21,10 @@ function valid(s,ids){
  return s.meals.every(m=>m&&text(m.id)&&day(m.day)&&text(m.name)&&typeof m.portion==='string'&&m.portion.length<=80&&(m.recipeId===null||allowed.has(m.recipeId)&&s.awarded.includes(m.recipeId))&&m.source==='manual'&&m.nutrients&&Object.keys(NUTRIENTS).every(k=>amount(m.nutrients[k])));
 }
 function validWorld(w){
- const zones=['freshLeft','freshRight','frozenLeft','frozenRight','seasoning','counter'];
+ const zones=['freshLeft','freshRight','frozenLeft','frozenRight','seasoning','counter','doorFreshLeft','doorFreshRight','doorFrozenLeft','doorFrozenRight'];
  if(!w||!Number.isInteger(w.serial)||w.serial<20||w.serial>1e7||!Number.isInteger(w.layer)||w.layer<1||w.layer>1e7||!w.doors||!zones.slice(0,4).every(k=>typeof w.doors[k]==='boolean')||!Array.isArray(w.items)||w.items.length>2000||!unique(w.items.map(i=>i?.id)))return false;
  if(w.items.filter(i=>i?.kind==='meal').length!==1||!w.items.some(i=>i?.kind==='meal'&&i.id==='meal'))return false;
- return w.items.every(i=>i&&text(i.id)&&/^[A-Za-z0-9_-]+$/.test(i.id)&&text(i.name)&&['food','seasoning','meal','decor'].includes(i.kind)&&zones.includes(i.zone)&&['x','y'].every(k=>typeof i[k]==='number'&&Number.isFinite(i[k])&&i[k]>=0&&i[k]<=1)&&Number.isInteger(i.z)&&i.z>=1&&i.z<=1e7&&(i.kind!=='decor'||['utensils','flowers','cup','cookies'].includes(i.art))&&(['food','seasoning'].includes(i.kind)?typeof i.quantity==='string'&&i.quantity.length<=80&&typeof i.expiry==='string'&&(i.expiry===''||day(i.expiry)):true));
+ return w.items.every(i=>i&&text(i.id)&&/^[A-Za-z0-9_-]+$/.test(i.id)&&text(i.name)&&(i.depleted===undefined||typeof i.depleted==='boolean')&&['photo','expiryPhoto'].every(k=>i[k]===undefined||typeof i[k]==='string'&&i[k].length<250000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(i[k]))&&(i.photoAsIcon===undefined||typeof i.photoAsIcon==='boolean')&&(i.opened===undefined||i.opened===''||day(i.opened))&&(i.expiryType===undefined||['printed','useBy','bestBefore','unknown'].includes(i.expiryType))&&(i.manualRevision===undefined||Number.isInteger(i.manualRevision)&&i.manualRevision>=0)&&['food','seasoning','meal','decor'].includes(i.kind)&&zones.includes(i.zone)&&['x','y'].every(k=>typeof i[k]==='number'&&Number.isFinite(i[k])&&i[k]>=0&&i[k]<=1)&&Number.isInteger(i.z)&&i.z>=1&&i.z<=1e7&&(i.kind!=='decor'||['utensils','flowers','cup','cookies'].includes(i.art))&&(['food','seasoning'].includes(i.kind)?typeof i.quantity==='string'&&i.quantity.length<=80&&typeof i.expiry==='string'&&(i.expiry===''||day(i.expiry)):true));
 }
 function create(ids,saved){
  const allowed=new Set(ids);if(saved&&!valid(saved,ids))throw new Error('기록 형식을 확인할 수 없어요.');
@@ -42,11 +42,12 @@ function create(ids,saved){
    if(state.meals.length>=10000)throw new Error('기록이 많아 새 입력을 멈췄어요.백업을 먼저 보관해 주세요.');
    if(!input||!day(input.day)||!text(input.name)||typeof input.portion!=='string'||input.portion.length>80||!input.nutrients||!Object.keys(NUTRIENTS).every(k=>amount(input.nutrients[k])))throw new Error('날짜와 식사·영양 입력값을 확인해 주세요.');
    if(input.recipeId!==null)requireId(input.recipeId);
-   const record={id:'meal-'+Date.now().toString(36)+'-'+(++seq),day:input.day,name:input.name.trim(),portion:input.portion,recipeId:input.recipeId,nutrients:clone(input.nutrients),source:'manual'};
+   const record={id:'meal-'+(globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+'-'+(++seq)+'-'+Math.random().toString(36).slice(2)),day:input.day,name:input.name.trim(),portion:input.portion,recipeId:input.recipeId,nutrients:clone(input.nutrients),source:'manual'};
    while(state.meals.some(m=>m.id===record.id))record.id+='x';
    let earned=false;if(record.recipeId){if(!state.discovered.includes(record.recipeId))state.discovered.push(record.recipeId);if(!state.awarded.includes(record.recipeId)){state.awarded.push(record.recipeId);earned=true;}}
    state.meals.push(record);lastRemoved=null;return {record:clone(record),earned};
   },
+  restoreMeal(record){const next=clone(state);next.meals.push(clone(record));if(!valid(next,ids))throw new Error('복구할 식사 기록을 확인해 주세요.');state=next;lastRemoved=null;},
   remove(id){const found=state.meals.find(m=>m.id===id);if(!found)return false;lastRemoved=clone(found);state.meals=state.meals.filter(m=>m.id!==id);return true;},
   undo(){if(!lastRemoved)return false;if(!state.meals.some(m=>m.id===lastRemoved.id))state.meals.push(lastRemoved);lastRemoved=null;return true;},
   buy(id){const r=REWARDS[id];if(!r)throw new Error('소품을 확인해 주세요.');if(state.owned.includes(id))return false;if(summary('').tickets<r.cost)throw new Error('꾸밈권이 더 필요해요. 새 요리를 처음 기록하면 1개를 받아요.');state.owned.push(id);return true;},

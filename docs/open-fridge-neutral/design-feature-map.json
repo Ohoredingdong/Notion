@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-31",
+  "timezone": "Asia/Seoul",
+  "scope": "design_only",
+  "repository_modified": false,
+  "chosen_reference": "/workspace/generated_images/exec-626f1eb7-c1c3-4072-ae6b-1adadce84de6.png",
+  "requirements": [
+    {
+      "id": "R01",
+      "requirement": "중앙의 흰색 4도어·상단 냉장/하단 냉동",
+      "screens": "01-1, 08-1",
+      "condition": "기존 선택한 크기·구도·따뜻한 배경을 유지한다."
+    },
+    {
+      "id": "R02",
+      "requirement": "문을 다시 눌러 닫기·양쪽 디스플레이",
+      "screens": "08-1",
+      "condition": "문 자체를 조작한다. 별도 개폐 버튼을 만들지 않는다."
+    },
+    {
+      "id": "R03",
+      "requirement": "재료 이름·수량·단위·표시 기한",
+      "screens": "01-2",
+      "condition": "사용자 원문과 기한 종류를 보존하고 날짜를 임의 갱신하지 않는다."
+    },
+    {
+      "id": "R04",
+      "requirement": "냉장·냉동 위치와 같은 재료의 다른 묶음",
+      "screens": "01-2",
+      "condition": "묶음별 수량·기한·위치를 구분한다."
+    },
+    {
+      "id": "R05",
+      "requirement": "양념의 수량·기한·개봉일",
+      "screens": "01-3",
+      "condition": "된장·고추장·간장도 재료와 같은 관리 화면을 쓴다."
+    },
+    {
+      "id": "R06",
+      "requirement": "드래그·자유 겹침·앞뒤 순서·위치 저장",
+      "screens": "01-1, 01-3, 06-3",
+      "condition": "재료·양념·소품의 위치와 순서를 다룬다. 자동 재배치하지 않는다."
+    },
+    {
+      "id": "R07",
+      "requirement": "소진·폐기·잘못된 수정의 되돌리기",
+      "screens": "01-2, 08-3",
+      "condition": "소진/폐기는 식사 섭취 기록과 구분한다."
+    },
+    {
+      "id": "R08",
+      "requirement": "제품 사진 1장 + 기한 사진 1장",
+      "screens": "02-1",
+      "condition": "두 사진을 같은 등록 세션에 묶고 교체·취소·직접 입력을 제공한다."
+    },
+    {
+      "id": "R09",
+      "requirement": "읽은 이름·수량·기한의 수동 검수",
+      "screens": "02-2",
+      "condition": "원문 확대·불확실 표시·날짜 수정 후 확인한 값만 추가한다."
+    },
+    {
+      "id": "R10",
+      "requirement": "사진 기반 미니어처 아이콘·기본 그림 대체",
+      "screens": "02-2",
+      "condition": "사진/미니어처/기본 그림을 선택하고 생성 실패와 재고 저장을 분리한다."
+    },
+    {
+      "id": "R11",
+      "requirement": "첫 냉장고 전체 사진 인식",
+      "screens": "02-3",
+      "condition": "가려진 재료·잔량·날짜를 지어내지 않고 후보를 제안한다."
+    },
+    {
+      "id": "R12",
+      "requirement": "인식 중복·선택 저장·누락 재료 수동 추가",
+      "screens": "02-3",
+      "condition": "기존 묶음과 합치기 또는 별도 등록을 명시적으로 고른다."
+    },
+    {
+      "id": "R13",
+      "requirement": "보유/임박 재료 기반 요리 탐색",
+      "screens": "03-1",
+      "condition": "이름 일치율을 수량 충분함이나 실제 조리 가능 판정으로 쓰지 않는다."
+    },
+    {
+      "id": "R14",
+      "requirement": "예산·시간·선호·피할 재료",
+      "screens": "03-1, 08-2",
+      "condition": "필터와 개인 설정으로 제어한다."
+    },
+    {
+      "id": "R15",
+      "requirement": "레시피 인분·재료량·조리법·부족 재료",
+      "screens": "03-2",
+      "condition": "보유량/필요량/부족량을 분리하고 장보기로 연결한다."
+    },
+    {
+      "id": "R16",
+      "requirement": "레시피 열량·탄단지·영양 출처",
+      "screens": "03-2",
+      "condition": "이번 한 끼의 영양과 오늘 누적을 구분한다. 미상은 0이 아니다."
+    },
+    {
+      "id": "R17",
+      "requirement": "재료 사용 원가·추가 구매 예상금액",
+      "screens": "03-2, 05-1",
+      "condition": "먹은 재료 원가와 포장 단위 추가 구매비를 구분한다."
+    },
+    {
+      "id": "R18",
+      "requirement": "주간 식단·식단 예산",
+      "screens": "03-3",
+      "condition": "계획은 아직 섭취·재고 차감·실제 지출에 반영하지 않는다."
+    },
+    {
+      "id": "R19",
+      "requirement": "먹은 분량·실사용 재료 확인",
+      "screens": "03-4",
+      "condition": "레시피 인분과 실제 먹은 양을 구분한다."
+    },
+    {
+      "id": "R20",
+      "requirement": "식사 확정 후 재고/영양 반영",
+      "screens": "03-4, 04-1",
+      "condition": "확정 시점에만 한 번 반영한다. 중복 확정 방지가 필요하다."
+    },
+    {
+      "id": "R21",
+      "requirement": "식사 취소·수정과 재고/영양 복구",
+      "screens": "04-1, 08-3",
+      "condition": "내역별 복구. 장보기 지출이나 다른 사용자의 기록을 무조건 되돌리지 않는다."
+    },
+    {
+      "id": "R22",
+      "requirement": "오늘 탄수화물·단백질·지방 현재량(목표량)",
+      "screens": "01-1, 04-1, 07-1/2, 08-1",
+      "condition": "단위 g와 괄호를 유지하고 수치와 비례한 막대를 사용한다."
+    },
+    {
+      "id": "R23",
+      "requirement": "하루 목표 설정·권장 기준 적용 조건",
+      "screens": "04-1, 07-3, 08-2",
+      "condition": "직접 설정과 기준 참고를 구분한다. 검증 전 개인 권장량으로 단정하지 않는다."
+    },
+    {
+      "id": "R24",
+      "requirement": "수분·식이섬유·미량 영양소·성분 정보",
+      "screens": "04-1",
+      "condition": "미입력·추정·출처와 기준량을 구분한다."
+    },
+    {
+      "id": "R25",
+      "requirement": "식사 관련 건강정보·식품 정보",
+      "screens": "04-1",
+      "condition": "출처를 볼 수 있는 정보로 제공하고 진단/건강 점수를 만들지 않는다."
+    },
+    {
+      "id": "R26",
+      "requirement": "영양제 성분표·표시량·일정·복용 기록",
+      "screens": "04-2",
+      "condition": "사용자 일정과 제품 표시량을 다룬다. 추가 복용을 보상하지 않는다."
+    },
+    {
+      "id": "R27",
+      "requirement": "월간 식사·비용·영양 비율·누락률",
+      "screens": "04-3",
+      "condition": "기록한 기간/식사만의 통계임을 표시한다."
+    },
+    {
+      "id": "R28",
+      "requirement": "부족 재료 장보기 목록·수량 수정",
+      "screens": "03-2/3, 05-1",
+      "condition": "예상 목록과 실제 구매를 구분한다."
+    },
+    {
+      "id": "R29",
+      "requirement": "실제 구매금액·사진·기한·재고 입고",
+      "screens": "05-2",
+      "condition": "식비 기록과 냉장고 입고를 확인하고 적용한다."
+    },
+    {
+      "id": "R30",
+      "requirement": "월별 식비 예산·실제 지출·잔여 예산",
+      "screens": "05-3",
+      "condition": "식사 원가를 구매 지출에 중복 합산하지 않는다."
+    },
+    {
+      "id": "R31",
+      "requirement": "요리 도감·사진·팁·변형·만든 횟수",
+      "screens": "06-1",
+      "condition": "기본 레시피는 미기록 상태여도 사용할 수 있다."
+    },
+    {
+      "id": "R32",
+      "requirement": "선택할 수 있는 목표·진행·보상",
+      "screens": "06-2",
+      "condition": "기록·요리 경험·계획 실천에 연결한다. 보상 규칙/수량은 제안이다."
+    },
+    {
+      "id": "R33",
+      "requirement": "꾸미기·정리함·라벨·배경·그릇",
+      "screens": "06-3",
+      "condition": "열린 냉장고에서도 변화를 볼 수 있는 소품을 우선한다."
+    },
+    {
+      "id": "R34",
+      "requirement": "앱과 위젯 동일 기능·읽을 수 있는 크기",
+      "screens": "07-1/2",
+      "condition": "폭에 맞춰 재배치하고 필요한 스크롤을 허용한다. 전체 화면을 통째로 축소하지 않는다."
+    },
+    {
+      "id": "R35",
+      "requirement": "자동 저장 상태·연결 상태·내보내기·가져오기",
+      "screens": "07-3",
+      "condition": "저장/동기화 실제 상태를 표시하고 원본 보존·미리보기·복구를 제공한다."
+    },
+    {
+      "id": "R36",
+      "requirement": "원래 데이터·키·URL 보존",
+      "screens": "설계 전반",
+      "condition": "이번에는 기존 앱/배포/저장 형식을 수정하지 않는다."
+    },
+    {
+      "id": "R37",
+      "requirement": "실패·미입력·불확실 상태",
+      "screens": "02-2/3, 04-1, 07-3",
+      "condition": "실패를 성공으로 보이지 않게 하고 재시도/직접 입력을 제공한다."
+    },
+    {
+      "id": "R38",
+      "requirement": "커뮤니티·수익화 보류",
+      "screens": "전체에서 제외",
+      "condition": "새 캐릭터·허브 육성·유료 재화도 추가하지 않는다."
+    }
+  ],
+  "intended_boards": 8,
+  "intended_screen_count": 25,
+  "palette": {
+    "surface": [
+      "pearl_white",
+      "ivory",
+      "light_oak"
+    ],
+    "ink": "#393530",
+    "secondary": "#837a70",
+    "selection": "#b4a89b",
+    "nutrients": {
+      "carbohydrate": "#e6b69d",
+      "protein": "#bbb1c8",
+      "fat": "#bdb2a5"
+    },
+    "supersedes": "blue_accent_drafts",
+    "fridge_light": "neutral_white"
+  },
+  "neutral_master": "00-neutral-home.png",
+  "image_manifest": "manifest.json",
+  "completed_design_boards": 8,
+  "representative_screens": 25
+}
