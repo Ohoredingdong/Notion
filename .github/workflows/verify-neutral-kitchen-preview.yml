@@ -1,0 +1,37 @@
+name: Verify neutral kitchen public preview
+on:
+  push:
+    branches: [delivery/verify-neutral-kitchen-20261031]
+    paths:
+      - '.github/workflows/verify-neutral-kitchen-preview.yml'
+      - 'scripts/verify_public_neutral.py'
+permissions:
+  contents: write
+concurrency:
+  group: neutral-kitchen-public-verification
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Check real public app and widget with desktop and touch gestures
+        run: python scripts/verify_public_neutral.py --source 3d3b55630a4966264eca4a7c5806ae32633fb462
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neutral-kitchen-public-browser
+          path: /tmp/neutral-kitchen-public/
+          retention-days: 3
