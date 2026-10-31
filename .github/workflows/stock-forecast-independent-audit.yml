@@ -22,6 +22,8 @@ on:
       - 'scripts/test_stock_timing_public_identity.py'
       - 'scripts/test_stock_timing_shadow_catalogue.py'
       - 'scripts/test_stock_timing_public_payload_fingerprint.py'
+      - 'scripts/test_stock_timing_workflow_provenance.py'
+      - 'scripts/audit_stock_timing_workflow_provenance.py'
       - 'scripts/audit_stock_learning_evidence.py'
       - 'scripts/audit_stock_forecast_attempt_coverage.py'
       - 'scripts/audit_stock_timing_acceptance_guard.py'
@@ -62,6 +64,15 @@ jobs:
           PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_public_payload_fingerprint.py -v
+      - name: Verify initiating forecast run provenance (workflow_run only)
+        if: github.event_name == 'workflow_run'
+        env:
+          EXPECTED_FORECAST_RUN_ID: ${{ github.event.workflow_run.id }}
+          EXPECTED_FORECAST_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          python scripts/audit_stock_timing_workflow_provenance.py \
+            --expected-run-id "$EXPECTED_FORECAST_RUN_ID" \
+            --expected-head-sha "$EXPECTED_FORECAST_HEAD_SHA"
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards
