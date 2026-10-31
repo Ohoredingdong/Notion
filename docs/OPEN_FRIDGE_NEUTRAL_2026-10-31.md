@@ -10,7 +10,7 @@
 - 생성 파일: `previews/miniature-kitchen-{app,widget,board}.html`, `previews/mobile/{app,widget}.html`. 앱·위젯은 같은 모델과 기능을 사용한다.
 - 원래 `use-me-first.html`·`use-me-first-widget.html`, 운영 JS/CSS, 원래 저장 키와 배포 URL은 변경하지 않았다. 이 화면으로 운영 데이터가 자동 이전되지는 않는다.
 - 기존 시안 키 **`miniature-kitchen-preview-v1`**, envelope **version 1**을 유지한다. 선택적인 `workflow` 필드만 추가했다. 이전 world/play만 있는 백업도 읽으며, 과거 기한·좌표·수량을 갱신하지 않는다. 알 수 없는 envelope 필드는 보존한다.
-- 일반 출처에서 실행하면 이 기기의 시안 기록을 저장한다. 공개 HTMLPreview 링크는 `sandbox="allow-scripts"`인 별도 출처 프레임에서 실행하므로 **임시 세션**이다. 화면에 실제 저장 상태와 JSON 백업을 제공한다. 기기 간 동기화는 연결 전이다.
+- 일반 출처에서 실행하면 이 기기의 시안 기록을 저장한다. 공개 HTMLPreview 링크는 `sandbox="allow-scripts allow-forms"`인 별도 출처 프레임에서 실행하므로 **임시 세션**이다. 화면에 실제 저장 상태와 JSON 백업을 제공한다. 기기 간 동기화는 연결 전이다.
 - 가져오기는 형식 검사→차이 미리보기→확정 순서다. 저장 가능 환경에서는 교체 전 원문을 같은 키의 `-recovery`에 보존한다. 잘못된 기존 원본·다른 탭과의 충돌은 저장을 중단하며 운영 기록을 덮어쓰지 않는다.
 
 ## 실제 연결한 흐름과 남은 범위
@@ -56,7 +56,7 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 - 전체 Node 회귀 **177/177**, Python unittest **262/262** 통과. Python의 데이터 실패/경합 로그는 실패 조건을 재현하는 테스트 출력이며 실제 시장 데이터 갱신·main 게시를 실행한 결과가 아니다.
 - 생성된 실제 HTML의 새 브라우저 검사 **27개 통과, 실패 0**: 앱 320/390/649/1120px, 위젯 320/390px, 앱·위젯 opaque 프레임 터치, 문 첫 프레임 가림, 재료 이동, 양념 기한, 식사 차감/수정/취소/복구/재고 부족, 계획/구매/식비/영양제/월간, 사진 2장 직접 확인, 저장/원래 키 보존, 백업/레거시 복구.
 - 같은 world·문 상태·날짜·뷰포트로 **8개 전후 화면**을 비교했다. 419/420/421, 759/760/761, 999/1000/1001px 경계도 캡처했고 가로 넘침이 없었다. 냉장고는 새 배경의 중앙 빈 공간에 서고 발이 바닥에 닿는다. 작은 위젯은 스크롤하며 재료 선택 시 수량/전체 이름을 확인한다.
-- 압축 앱 **949,284B**, 위젯 **949,290B**, 휴대폰 wrapper **997,980/997,992B**. 각 파일 1MiB 상한을 통과했다. 원본 PNG와 공개용 인코딩은 분리한다.
+- 압축 앱 **949,284B**, 위젯 **949,290B**, 휴대폰 wrapper **997,992/998,004B**. 각 파일 1MiB 상한을 통과했다. 원본 PNG와 공개용 인코딩은 분리한다.
 - [브라우저 상세 결과](open-fridge-neutral/browser-results.json), [검증 요약](open-fridge-neutral/checks.json), [화면 비교 조건](open-fridge-neutral/comparison.json).
 
 | 비교 | 변경 전 | 같은 데이터의 변경 후 |
@@ -66,3 +66,12 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 | 앱 1120×1000 | [열기](open-fridge-neutral/before-app-1120.png) | [열기](open-fridge-neutral/after-app-1120.png) |
 
 새 예시 재료가 있는 [첫 화면](open-fridge-neutral/app-390-initial.png), [닫힌 문](open-fridge-neutral/app-390-closed.png), [기록 허브](open-fridge-neutral/app-390-records.png)도 실제 실행 캡처다. 기능 테스트 통과와 별도로 이 화면을 검토했다. 공개 HTTPS 실행 확인은 소스 커밋을 고정한 뒤 별도로 기록한다.
+
+
+### 공개 미리보기의 입력 저장 수정
+
+첫 실제 HTTPS 검사에서는 HTTP 200·소스 해시·화면·문 제스처가 맞았지만 양념 저장이 반영되지 않았다([실패 증거](open-fridge-neutral/public-before-form-fix.json)). 로컬의 실제 생성 wrapper에서도 콘솔에 `Blocked form submission ... the allow-forms permission is not set`을 재현했다. 원인은 입력 로직이 아니라 iframe의 누락된 폼 권한이었다.
+
+`build_kitchen_mobile_preview.py`에 `allow-forms`를 추가했다. `allow-same-origin`은 추가하지 않았으므로 기존 임시 세션/출처 분리 조건은 유지한다. 새 브라우저 검사는 임의로 만든 프레임 대신 **실제로 생성된 `previews/mobile/*.html`**을 열고 앱·위젯의 목표 폼 제출과 저장값 변경까지 검증한다. 수정 후 로컬 27개가 다시 통과했다.
+
+수정 브랜치는 원격에 올렸다. PR 생성 요청은 GitHub GraphQL API의 `403 Forbidden`으로 차단됐으며 생성됐다고 보고하지 않는다. main 병합·Pages 배포는 수행하지 않았다.

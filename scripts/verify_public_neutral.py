@@ -19,7 +19,7 @@ try:
     page.on('pageerror',lambda e:errors.append(str(e)));page.on('response',lambda r:sources.append(r) if r.url==raw else None)
     try:
      response=page.goto(url,wait_until='domcontentloaded',timeout=45000);case['http_status']=response.status;assert response.status==200
-     wrapper=page.locator('iframe[sandbox="allow-scripts"]');expect(wrapper).to_be_attached(timeout=45000);frame=wrapper.element_handle().content_frame();frame.wait_for_function('window.MiniKitchen && window.KitchenJournal && window.KitchenWorkflows',timeout=30000)
+     wrapper=page.locator('iframe[sandbox="allow-scripts allow-forms"]');expect(wrapper).to_be_attached(timeout=45000);frame=wrapper.element_handle().content_frame();frame.wait_for_function('window.MiniKitchen && window.KitchenJournal && window.KitchenWorkflows',timeout=30000)
      assert frame.locator('body').get_attribute('data-mode')==mode
      assert frame.locator('[data-balance]').count()==3
      assert frame.locator('.door').count()==4 and all(frame.evaluate('MiniKitchen.getSnapshot().doors').values())
@@ -36,7 +36,7 @@ try:
      frame.locator('#openRecords').click();expect(frame.locator('#tray')).to_be_visible();assert frame.locator('#tray .workflow-card').count()==10;frame.locator('#closeTray').click();frame.locator('#addFood').click();frame.locator('[data-wf="photos"]').click();assert frame.locator('[data-photo]').count()==2;expect(frame.locator('button:disabled')).to_contain_text('연결 전');case['photo_registration_is_honest']=True
      page.screenshot(path=str(OUT/(label+'-photo.png')));assert not errors,errors;case['runtime_errors']=errors;case['passed']=True
     except Exception as e:
-     case['error']=str(e);case['runtime_errors']=errors;page.screenshot(path=str(OUT/(label+'-failure.png')))
+     case['error']=str(e);case['trace']=traceback.format_exc();case['runtime_errors']=errors;page.screenshot(path=str(OUT/(label+'-failure.png')))
     result['cases'].append(case);ctx.close()
   browser.close()
 except Exception:result['setup_error']=traceback.format_exc()
