@@ -75,3 +75,13 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 `build_kitchen_mobile_preview.py`에 `allow-forms`를 추가했다. `allow-same-origin`은 추가하지 않았으므로 기존 임시 세션/출처 분리 조건은 유지한다. 새 브라우저 검사는 임의로 만든 프레임 대신 **실제로 생성된 `previews/mobile/*.html`**을 열고 앱·위젯의 목표 폼 제출과 저장값 변경까지 검증한다. 수정 후 로컬 27개가 다시 통과했다.
 
 수정 브랜치는 원격에 올렸다. PR 생성 요청은 GitHub GraphQL API의 `403 Forbidden`으로 차단됐으며 생성됐다고 보고하지 않는다. main 병합·Pages 배포는 수행하지 않았다.
+
+### 최종 공개 HTTPS 확인
+
+수정한 소스 `9d747f42d2c490aa01bf5c24e8105258e4bd8ef5`를 고정한 [실제 원격 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41198138424)에서 **4/4 통과**했다. 앱·위젯 각각 649×900 PC/390×844 휴대폰 크기의 새 Chromium으로 실제 HTMLPreview 링크를 열었다. HTTP 200, 받아온 원문 해시, 앱/위젯 모드, 가로 넘침 없음, 실제 문 제스처, 양념 기한 폼 제출 후 상태 변경, 기록 허브·사진 등록 화면, 런타임 오류 없음까지 확인했다. 휴대폰 프로필은 터치를 사용하며 실물 휴대폰·Safari·실제 Notion 임베드를 확인한 결과는 아니다.
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/9d747f42d2c490aa01bf5c24e8105258e4bd8ef5/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/9d747f42d2c490aa01bf5c24e8105258e4bd8ef5/previews/mobile/widget.html)
+- [공개 검사 결과 JSON](open-fridge-neutral/public-results.json), [공개 앱 캡처](open-fridge-neutral/public-app-phone.png), [공개 위젯 캡처](open-fridge-neutral/public-widget-phone.png).
+
+실행 도구는 `delivery/verify-neutral-kitchen-20261031`, 결과는 `preview/neutral-kitchen-validation-20261031`의 `1b622285cdc5fc72cabbb0c4892de9ca591ddf39`에 별도로 보관했다. 실제 외부 HTML을 검사했고 로컬 대체 페이지·가짜 응답을 사용하지 않았다. 공개 미리보기의 기록은 임시 세션이며 내보내기로 보관할 수 있다. 사용자 운영 기록·main·Pages 설정은 이 실행에서 수정하지 않았다.
