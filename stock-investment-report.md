@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-31T18:34:07.599497+09:00
+- 계산일: 2026-11-01T02:45:42.437145+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,8 +34,8 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [11월 첫째 주 한국·미국 증시 주요 일정｜AMD·애플 실적부터 미국 중간선거·고용보고서까지 - 네이버 프리미엄콘텐츠](https://news.google.com/rss/articles/CBMifkFVX3lxTE9UaEx2RUlXNlJsWnJVQTNmNkZjNUdMLXlfZFZzMUl2MmRwU3Y1RExBUGI1b2RoSHVCc2l2Mkc4bWNCdlVkMHRvLXBONmFsejdKSFZBeFp2eUtmWWdwaUM2ZlU0OGpsaEtwSU55YzZkSFZmMzY0Q1F2NnJETElCQQ?oc=5)
 - [(기획) 미국 금리 동결 한국 증시에 호재로 작용하나 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5ia0ZsVmxwLTNBMEtiTDhnQTJJOTQ3VnFXZkczZ2tjQy1BNENVNjlSaDRiTVpmYXZpZEx1T3dpZmxzM1BYVl9Ea1g4aXFXc2Z2NFlIeEs0Y3VTeVZsQi1wR0lkTjM?oc=5)
+- [11월 첫째 주 한국·미국 증시 주요 일정｜AMD·애플 실적부터 미국 중간선거·고용보고서까지 - 네이버 프리미엄콘텐츠](https://news.google.com/rss/articles/CBMifkFVX3lxTE9UaEx2RUlXNlJsWnJVQTNmNkZjNUdMLXlfZFZzMUl2MmRwU3Y1RExBUGI1b2RoSHVCc2l2Mkc4bWNCdlVkMHRvLXBONmFsejdKSFZBeFp2eUtmWWdwaUM2ZlU0OGpsaEtwSU55YzZkSFZmMzY0Q1F2NnJETElCQQ?oc=5)
 - [삼성전자·SK하이닉스 최대 실적에도 주가 급락…AI 투자 거품 터지면 반도체주 어디까지 떨어질까 - 톱스타뉴스](https://news.google.com/rss/articles/CBMickFVX3lxTFBrMkVxSUF4Z21kdTRXVXhCSlYyV3RYWjNsNjlfS0lNVUdEdmhjTDJpYThPVFBxUE0zWnN1OHQxazBuZlN3RWN2eUJIOEpDcml5UEdSUUxvU1E0OHRFRjgxMFl2NEtWVVhVdjlSS2k0d2pmZw?oc=5)
 - [(초점) AI 거품론 비웃은 K반도체…삼성·SK, 빅테크 제치고 ‘실적 질주’ - 뉴시안](https://news.google.com/rss/articles/CBMibEFVX3lxTFBrcmFPRHJFWVZUR20zTnhPVVc2MmlfS05ORDRXLXF4d2lIN3FoWjRoUVM2bE5mQVRuNzNPLXpWd19YV1ViU3BaVktBNVJ0M3NxSHlhSTZLb3JsTVJDdmpDRzlReGlCWUt0UDJndA?oc=5)
 
