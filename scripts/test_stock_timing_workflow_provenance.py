@@ -15,6 +15,10 @@ except ImportError:
 
 WORKFLOW = (Path(__file__).resolve().parents[1]
             / ".github/workflows/stock-forecast-independent-audit.yml")
+FORECAST_WORKFLOW = (Path(__file__).resolve().parents[1]
+                     / ".github/workflows/stock-forecasts.yml")
+CONTROLLER_SCRIPT = (Path(__file__).resolve().parent / "stock_forecast_autopilot.py")
+FORECAST_SCRIPT = (Path(__file__).resolve().parent / "run_stock_forecasts.py")
 RUN = "41157151233"
 SHA = "f9db984b97b070ceca198ac023667740aebc3497"
 
@@ -69,6 +73,20 @@ class UpstreamRunEvidenceBinding(unittest.TestCase):
 
 
 class WorkflowIsolation(unittest.TestCase):
+    def test_forecast_producer_pins_event_sha_not_mutable_branch_ref(self):
+        workflow = FORECAST_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("- uses: actions/checkout@v4", workflow)
+        checkout = workflow.split("- uses: actions/checkout@v4", 1)[1].split("- uses:", 1)[0]
+        self.assertIn("ref: ${{ github.sha }}", checkout)
+        self.assertNotIn("ref: ${{ github.ref }}", checkout)
+        self.assertIn("fetch-depth: 0", checkout)
+
+    def test_source_sha_label_is_event_sha_in_both_producers(self):
+        controller = CONTROLLER_SCRIPT.read_text(encoding="utf-8")
+        forecast = FORECAST_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("'source_commit':os.environ.get('GITHUB_SHA')", controller)
+        self.assertIn("source_commit=os.environ.get('GITHUB_SHA')", forecast)
+
     def test_event_only_read_only_provenance_step(self):
         s = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("python scripts/audit_stock_timing_workflow_provenance.py", s)
