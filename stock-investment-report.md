@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-10-31T03:35:59.906861+09:00
+- 계산일: 2026-10-31T18:34:07.599497+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.5배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 43.6배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.8배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.1배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 41.8배 | warning |
+| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.2배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 34.0배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 33.5배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 373.4배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 370.2배 | warning |
 
 ## 데이터 이상·제약
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
+- [11월 첫째 주 한국·미국 증시 주요 일정｜AMD·애플 실적부터 미국 중간선거·고용보고서까지 - 네이버 프리미엄콘텐츠](https://news.google.com/rss/articles/CBMifkFVX3lxTE9UaEx2RUlXNlJsWnJVQTNmNkZjNUdMLXlfZFZzMUl2MmRwU3Y1RExBUGI1b2RoSHVCc2l2Mkc4bWNCdlVkMHRvLXBONmFsejdKSFZBeFp2eUtmWWdwaUM2ZlU0OGpsaEtwSU55YzZkSFZmMzY0Q1F2NnJETElCQQ?oc=5)
 - [(기획) 미국 금리 동결 한국 증시에 호재로 작용하나 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5ia0ZsVmxwLTNBMEtiTDhnQTJJOTQ3VnFXZkczZ2tjQy1BNENVNjlSaDRiTVpmYXZpZEx1T3dpZmxzM1BYVl9Ea1g4aXFXc2Z2NFlIeEs0Y3VTeVZsQi1wR0lkTjM?oc=5)
-- [뉴욕증시, 미 Fed 금리 동결에 3일째 상승…오라클 10%↑ (뉴욕증시 브리핑) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFB0ZzU5LTRVLVRycFRLSUd3eE5EUGdRWXFQMUJTaGNWdUFEbzdxU3BCWFdQeFd1VG44c2pyMWU4WTlrWmFwVjhXUW1RVll4dUs5LW1pc25SVmFFZw?oc=5)
-- [SK하이닉스, HBM 1위 굳히기 '승부수'…안현 사장 미국 전진 배치로 삼성전자 추격 차단 - 경인방송 뉴스](https://news.google.com/rss/articles/CBMiZEFVX3lxTFB0TnpSWmFFYUZwZ3YxeF91bXRMY3otTVhZVGZnRkQ0Ynh3UDVHREhmTWtPRFhJR1pXbTE0Wm1JLWFkYzk4QTZLcHFTNmVoYWlrU0tZOEdzeEVoLTdZbnBZYTVxRVPSAWhBVV95cUxQWXB6QnV3TGE2N0NQX0pqdGE1NVloc0d2b2hfQkhkanJfbWthSzNzZWlRZTlZZjd1Z1RHNW9kZ3Z2NER1dlZqVk4yOW9fVXhPbnVEd18wVGVtckp4ZUp6QVBlaXhzS3puMQ?oc=5)
-- ["일단 물량부터 달라"…HBM 품귀에 엔비디아도 눈높이 낮췄다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE9iS2dqYTg2Q3d5dERmLUZjblVBdVk3VUJSLTU2TjRqVmdNTllVOWZWQURTLVNBZWtPU00tQzVVV25IMzg4VXVKekVCZHE1UWJiZmY2MXhXODlHUnZW?oc=5)
+- [삼성전자·SK하이닉스 최대 실적에도 주가 급락…AI 투자 거품 터지면 반도체주 어디까지 떨어질까 - 톱스타뉴스](https://news.google.com/rss/articles/CBMickFVX3lxTFBrMkVxSUF4Z21kdTRXVXhCSlYyV3RYWjNsNjlfS0lNVUdEdmhjTDJpYThPVFBxUE0zWnN1OHQxazBuZlN3RWN2eUJIOEpDcml5UEdSUUxvU1E0OHRFRjgxMFl2NEtWVVhVdjlSS2k0d2pmZw?oc=5)
+- [(초점) AI 거품론 비웃은 K반도체…삼성·SK, 빅테크 제치고 ‘실적 질주’ - 뉴시안](https://news.google.com/rss/articles/CBMibEFVX3lxTFBrcmFPRHJFWVZUR20zTnhPVVc2MmlfS05ORDRXLXF4d2lIN3FoWjRoUVM2bE5mQVRuNzNPLXpWd19YV1ViU3BaVktBNVJ0M3NxSHlhSTZLb3JsTVJDdmpDRzlReGlCWUt0UDJndA?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
