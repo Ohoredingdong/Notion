@@ -50,3 +50,15 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 | 위젯 1120×1000 · 첫 화면 | [열기](kitchen-details-20261101/before-widget-1120-home.png) | [열기](kitchen-details-20261101/after-widget-1120-home.png) |
 
 검토용 브랜치에만 올리고 main·Pages 배포는 유지한다. 공개 미리보기는 원래와 같이 opaque 임시 세션이며, 백업을 통해 보관할 수 있다. 소스 커밋을 고정한 공개 HTTPS 실행 결과는 별도로 기록한다.
+
+## 공개 링크 확인
+
+소스 `38cd042f5429e9e6090097724d7499acb8eadcab`를 고정한 [공개 브라우저 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41222691778)에서 **6/6 통과**했다. 앱·위젯 각각 PC 649×900, 휴대폰 크기 390×844와 320×660에서 실제 HTMLPreview 링크의 HTTP 200·원문 SHA256·실행·문 개폐·양념 기한 저장·하나의 영양 메뉴·사진 등록의 미연결 안내·런타임 오류 없음을 확인했다. 모바일 프로필은 실제 터치 이벤트를 사용했고 실기기 검증을 뜻하지 않는다.
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/38cd042f5429e9e6090097724d7499acb8eadcab/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/38cd042f5429e9e6090097724d7499acb8eadcab/previews/mobile/widget.html)
+- [실제 결과 JSON](kitchen-details-20261101/public-results.json), [공개 앱 320px](kitchen-details-20261101/public-app-320.png), [공개 위젯 320px](kitchen-details-20261101/public-widget-320.png).
+
+검증 실행은 `delivery/verify-kitchen-details-20261101`, 결과는 `preview/kitchen-details-validation-20261101`의 `9e15bf717125e6fa77380a4c3eacd1d8332be013`에 보관한다. 이 실행은 운영 기록이나 main·Pages 설정을 수정하지 않는다.
+
+PR은 `feat/open-fridge-neutral-ui`를 기준으로 `fix/kitchen-ui-details` 생성 요청을 했으나 GitHub GraphQL API가 `403 Forbidden`을 반환해 생성되지 않았다. 수정·전후 증거·검증 결과는 원격 작업 브랜치에 보관한다.
