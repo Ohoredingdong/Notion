@@ -90,5 +90,49 @@ class RecoverableCopyFailureTests(unittest.TestCase):
                 "cycle_rejected")
 
 
+
+class PlainNoCallQualityGateTests(unittest.TestCase):
+    def test_noncolon_quality_no_call_with_real_history_is_not_processed(self):
+        # Synthetic only; OHLC survived, but features/quality did not.
+        model = SimpleNamespace(process=lambda *_: ({
+            "symbol": "SYNTH", "market": "US", "mode": "daily",
+            "status": "no_call", "reason": "latest_features_missing",
+            "observed_until": FROZEN.isoformat(), "received_at": FROZEN.isoformat(),
+        }, object()))
+        cascade = SimpleNamespace(RECIPE={"name": "movement_then_direction",
+                                           "synthetic_only": True})
+        with tempfile.TemporaryDirectory() as dirname:
+            root = Path(dirname)
+            with patch.dict(sys.modules, {
+                "run_stock_forecasts": model, "stock_forecast_cascade": cascade,
+            }), patch.object(
+                autopilot, "verify_stage",
+                return_value={"status": "ledger_arithmetic_consistent",
+                              "scored": 0, "correct": 0},
+            ):
+                with self.assertRaisesRegex(RuntimeError, "all_processors_failed"):
+                    autopilot.run(root=root, pipeline=synthetic_pipeline,
+                                  clock=lambda: FROZEN)
+            self.assertEqual(autopilot.read(root, autopilot.REPORT, {})["status"],
+                             "cycle_rejected")
+            self.assertFalse((root / "stock-direction-forecast.json").exists())
+
+    def test_other_plain_quality_stops_are_not_success_responses(self):
+        # Pre-fixed finite examples from stock_forecast_model.make_prediction.
+        for reason in ("intraday_source_stale", "future_input_timestamp",
+                       "unresolved_price_discontinuity", "latest_features_missing"):
+            with self.subTest(reason=reason):
+                self.assertEqual(autopilot.source_failure({
+                    "status": "no_call", "reason": reason}), "nontransient")
+
+    def test_legitimate_session_deferrals_remain_processed_responses(self):
+        for reason in ("insufficient_regular_session_time",
+                       "target_already_started_or_delivery_window_too_short"):
+            with self.subTest(reason=reason):
+                self.assertIsNone(autopilot.source_failure({
+                    "status": "no_call", "reason": reason}))
+
+
+
 if __name__ == "__main__":
     unittest.main()
