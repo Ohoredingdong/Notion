@@ -64,6 +64,42 @@ def preserve_records(old,new):
     if any(k not in b or b[k]!=v for k,v in a.items()):
         raise ValueError('original_evidence_was_changed_or_deleted')
 
+def commit_stage_with_rollback(root, stage):
+    """Recover original output bytes if a staged copy fails mid-publication.
+
+    Handles recoverable Python/I/O exceptions, including a partially written
+    destination. This is NOT atomic multi-file visibility or crash/power-loss
+    recovery; the later Git commit publishes a distinct atomic remote snapshot.
+    """
+    originals = {
+        name: (root/name).read_bytes() if (root/name).exists() else None
+        for name in OUTPUTS
+    }
+    touched = []
+    try:
+        for name in OUTPUTS:
+            if not (stage/name).exists():
+                continue
+            touched.append(name)  # before copy: copy2 can truncate then raise
+            shutil.copy2(stage/name, root/name)
+    except Exception:
+        # Best-effort restoration of *all* touched destinations, including a
+        # newly created file and the currently partial destination.
+        failures = []
+        for name in reversed(touched):
+            target, original = root/name, originals[name]
+            try:
+                if original is None:
+                    target.unlink(missing_ok=True)
+                else:
+                    target.write_bytes(original)
+            except Exception:
+                failures.append(name)
+        if failures:
+            raise RuntimeError('staged_copy_rollback_incomplete')
+        raise
+
+
 def source_failure(record):
     reason=str(record.get('reason') or '')
     kind=reason.split(':',1)[0]
@@ -245,15 +281,18 @@ def run(root=Path('.'),pipeline=None,clock=now):
             for name,sha in before.items():
                 current=hashlib.sha256((root/name).read_bytes()).hexdigest() if (root/name).exists() else None
                 if current!=sha: raise RuntimeError('working_snapshot_changed; refusing_overwrite')
-            for name in OUTPUTS:
-                if (stage/name).exists(): shutil.copy2(stage/name,root/name)
+            commit_stage_with_rollback(root,stage)
             print(json.dumps({k:report[k] for k in ('status','collected_groups','new_frozen_predictions','new_learning_updates','diagnosis')},ensure_ascii=False))
             return report
     except Exception as exc:
         report={'version':VERSION,'generated_at':clock().isoformat(),'run_id':run_id,
                 'status':'cycle_rejected','error_type':type(exc).__name__,
                 'reason':str(exc).split('https:')[0][:160],
-                'previous_evidence_preserved':True,'timing_utility':{'status':'not_proven'},
+                'previous_evidence_preserved':all(
+                    (hashlib.sha256((root/name).read_bytes()).hexdigest()
+                     if (root/name).exists() else None)==sha
+                    for name,sha in before.items() if name!=REPORT),
+                'timing_utility':{'status':'not_proven'},
                 'orders_enabled':False,'perfect_prediction_proven':False}
         write(root/REPORT,report)
         raise
