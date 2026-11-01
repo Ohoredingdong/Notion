@@ -193,7 +193,7 @@
     for(const button of document.querySelectorAll('.fridge-interiors .drop-zone>.item')){
       const zone=button.parentElement,item=items.find(i=>i.id===button.dataset.item);if(!item)continue;
       let label=button.querySelector('.item-label')||zone.querySelector('[data-for-item="'+CSS.escape(item.id)+'"]');if(!label)continue;
-      label.classList.add('shelf-label');label.dataset.forItem=item.id;label.setAttribute('aria-hidden','true');
+      label.classList.add('shelf-label');label.classList.toggle('is-selected',selected===item.id);label.dataset.forItem=item.id;label.setAttribute('aria-hidden','true');
       label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - '+18+'px / var(--scene-scale,1))';
       label.style.zIndex=String(selected===item.id?20000002:20000001);zone.appendChild(label);
     }
