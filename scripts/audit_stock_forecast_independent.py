@@ -340,6 +340,12 @@ def audit(records, outcomes, deliveries, cutoff):
         try:
             if o['target'] != r['target'] or o['symbol'] != r['symbol'] or o['mode'] != r['mode']:
                 raise ValueError('outcome_target_mismatch')
+            # An outcome may report its own issuance time for provenance,
+            # but it must not silently change the originally frozen forecast
+            # issuance time. Legacy missing copies are not backfilled.
+            # Compare absolute UTC instants, not ISO string formatting.
+            if 'issued_at' in o and ts(o['issued_at']) != ts(r['issued_at']):
+                raise ValueError('outcome_issued_at_mismatch')
             if not ts(r['target']['end']) <= ts(o['evaluated_at']) <= cutoff:
                 raise ValueError('outcome_timestamp_not_eligible')
             # A claimed result cannot be evaluated before the provider was
