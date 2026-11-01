@@ -284,6 +284,15 @@ def audit(records, outcomes, deliveries, cutoff):
             # forecasts from prospective scoring or apparent coverage.
             errors.append({'id': proof_id, 'error': 'unexpected_public_proof_status'})
             continue
+        # A verified public snapshot must identify a meaningful set of frozen
+        # calls. An empty/malformed/repeated membership is not publication proof.
+        # Even a recomputed canonical fingerprint cannot make it such proof.
+        members = d.get('prediction_ids')
+        if (not isinstance(members, list) or not members or
+                any(not isinstance(rid, str) or not rid for rid in members) or
+                len(set(members)) != len(members)):
+            errors.append({'id': proof_id, 'error': 'invalid_public_proof_prediction_ids'})
+            continue
         # Public verification cannot predate the snapshot nor prove a forecast
         # that did not yet exist when that snapshot was generated.
         try:
@@ -296,7 +305,7 @@ def audit(records, outcomes, deliveries, cutoff):
             errors.append({'id': d.get('verification_id'), 'error': 'snapshot_generated_after_verification'})
             continue
         at_least_one_valid_id = False
-        for rid in d.get('prediction_ids', []):
+        for rid in members:
             forecast = by_id.get(rid)
             if forecast is None:
                 errors.append({'id': rid, 'error': 'public_snapshot_unknown_prediction_id'})
