@@ -40,6 +40,18 @@ def main():
         expect(frame.locator('#tray')).to_be_visible()
       def stock(frame,item='egg'):
         return frame.evaluate('(id)=>MiniKitchen.exportWorld().items.find(i=>i.id===id).quantity',item)
+      def tap_door(frame,page,key,touch=False):
+        door=frame.locator('[data-door="'+key+'"]');door.scroll_into_view_if_needed()
+        point=door.evaluate('''e=>{const r=e.getBoundingClientRect();
+          for(const fy of [.12,.2,.8,.9,.5])for(const fx of [.12,.2,.8,.9,.5]){
+            const x=r.x+r.width*fx,y=r.y+r.height*fy;
+            if(x<1||y<1||x>=innerWidth-1||y>=innerHeight-1)continue;
+            if(document.elementFromPoint(x,y)?.closest('[data-door]')===e)return {x,y};
+          }return null;}''')
+        assert point,'No reachable surface on '+key
+        if frame!=page:
+          offset=frame.frame_element().bounding_box();point={'x':point['x']+offset['x'],'y':point['y']+offset['y']}
+        (page.touchscreen.tap if touch else page.mouse.click)(point['x'],point['y'])
       try:
         for mode,width,height,opaque in [('app',390,844,False),('app',320,568,False),('app',649,900,False),('app',1120,1000,False),('widget',390,844,False),('widget',320,660,False),('app',390,844,True),('widget',390,844,True)]:
           touch=opaque
@@ -55,10 +67,9 @@ def main():
           if opaque:assert f.evaluate('KitchenJournal.status')=='temporary'
           f.evaluate('MiniKitchen.closeTray()')
           # Actual door-surface gesture, away from the separately interactive condiment.
-          door=f.locator('[data-door="freshLeft"]');box=door.bounding_box()
-          (page.touchscreen.tap if touch else page.mouse.click)(box['x']+box['width']*.12,box['y']+box['height']*.12)
+          tap_door(f,page,'freshLeft',touch)
           f.wait_for_function('MiniKitchen.getSnapshot().doors.freshLeft===false')
-          (door.tap if touch else door.click)();f.wait_for_function('MiniKitchen.getSnapshot().doors.freshLeft===true')
+          tap_door(f,page,'freshLeft',touch);f.wait_for_function('MiniKitchen.getSnapshot().doors.freshLeft===true')
           page.screenshot(path=str(out/(f'{mode}-{width}-'+('opaque' if opaque else 'native')+'.png')),full_page=True)
           passed(f'layout, target form submission and real door gestures {mode} {width}x{height} '+('opaque touch' if opaque else 'native mouse'))
           ctx.close()
@@ -84,6 +95,7 @@ def main():
         f.locator('[data-item="spice0"]').click();f.locator('#ingredientForm [name="expiry"]').fill('2027-03-01');f.locator('#ingredientForm [name="opened"]').fill('2026-10-31');f.locator('#ingredientForm [type="submit"]').click()
         spice=f.evaluate('MiniKitchen.exportWorld().items.find(i=>i.id==="spice0")');assert spice['expiry']=='2027-03-01' and spice['opened']=='2026-10-31';passed('condiment expiry and opening date persist')
         show(f,'settings');form=f.locator('[data-wf-form="targets"]')
+        form.locator('details.target-extras summary').click()
         for name,value in [('carb','230'),('protein','70'),('fat','60'),('calcium','700')]:form.locator(f'[name="{name}"]').fill(value)
         form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getSnapshot().targets.carb')==230
         f.evaluate('KitchenWorkflows.show("recipes")');f.locator('#tray [data-wf="recipe"][data-arg="recipe-1"]').click();f.locator('[data-wf="recipeFacts"]').click()
@@ -124,7 +136,7 @@ def main():
         # Save, reload, and verify native persistence plus preservation of original app keys.
         f.evaluate('MiniKitchen.closeTray()');snapshot=f.evaluate('KitchenJournal.getEnvelope()');page.reload();f.wait_for_function('window.KitchenWorkflows');assert f.evaluate('KitchenJournal.getEnvelope()')==snapshot
         assert f.evaluate('(keys)=>keys.every(k=>localStorage.getItem(k)==="SENTINEL-"+k)',original_keys);passed('native reload preserves records and leaves all original app keys unchanged')
-        show(f,'settings');raw=f.locator('#journalExport').input_value();assert json.loads(raw)==snapshot
+        show(f,'settings');f.locator('details.backup-tools summary').click();raw=f.locator('#journalExport').input_value();assert json.loads(raw)==snapshot
         form=f.locator('[data-wf-form="import"]');form.locator('[name="backup"]').fill('{bad');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getEnvelope()')==snapshot
         modified=json.loads(raw);modified['world']['items'][0]['quantity']='9개';form.locator('[name="backup"]').fill(json.dumps(modified));form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getEnvelope()')==snapshot
         f.locator('[data-wf="confirmImport"]').click();assert stock(f)=='9개';assert f.evaluate('JSON.parse(localStorage.getItem(KitchenJournal.storageKey+"-recovery"))')==snapshot

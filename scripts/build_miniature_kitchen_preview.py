@@ -32,7 +32,7 @@ def sprite_boxes(source, name, keys):
     return tuple(boxes[key] for key in keys)
 
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=32)
 def web_image(path, size, boxes):
     encoder=shutil.which('magick')
     if not encoder:
@@ -45,7 +45,10 @@ def web_image(path, size, boxes):
                       '-geometry',f'+{x}+{y}','-composite']
     else:
         command+=[str(path)]
-    if path.name=='food-miniatures-v2.webp':command+=['-resize','900x900']
+    if path.name=='food-miniatures-v2.webp':command+=['-resize','740x740']
+    if path.name=='pantry-food-atlas.png':command+=['-resize','960x640']
+    if path.name=='seasoning-miniatures-v1.png':command+=['-resize','550x413']
+    if path.name=='door-insides.png':command+=['-resize','640x960']
     if path.name=='freezer-food.png':command+=['-resize','560x560']
     if path.name=='room-warm.png':command+=['-resize','900x1080']
     if path.name=='magnets.png':command+=['-resize','500x500']
@@ -105,7 +108,7 @@ def build(root, mode, compact=False):
         replacements = {
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FREEZER','designs/miniature-kitchen/assets/freezer-food.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/pantry-food-atlas.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"

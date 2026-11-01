@@ -30,9 +30,17 @@ function update(){
 }
 function charm(id,label=''){if(id==='plate')return `<span class="charm-nameplate">${esc(label)}</span>`;const box={tile:[64,70,560,560],daisy:[628,70,610,600],photo:[64,644,560,560]}[id];const clip='journal-magnet-'+(++magnetSerial);return `<svg class="magnet-art" viewBox="${box.join(' ')}" aria-hidden="true"><defs><clipPath id="${clip}"><rect x="${box[0]}" y="${box[1]}" width="${box[2]}" height="${box[3]}"/></clipPath></defs><image href="${MAGNETS}" width="1254" height="1254" clip-path="url(#${clip})"/></svg>`;}
 function updateDecorations(){
- const root=$('#fridgeDisplays');root.querySelectorAll('.fridge-charm').forEach(n=>n.remove());const s=model.state(),world=K.getSnapshot();
+ const root=$('#fridgeDisplays');document.querySelectorAll('.fridge-charm').forEach(n=>n.remove());const s=model.state(),world=K.getSnapshot();
  const stage=$('.fridge-stage').getBoundingClientRect(),room=$('.room').getBoundingClientRect();
- for(const [position,id] of Object.entries(s.equipped))if(id&&!world.doors[position]&&!K.isDoorClosing(position)){const right=position==='frozenRight',n=document.createElement('span'),size=Math.max(28,Math.min(58,stage.width*.16));n.className='fridge-charm';n.dataset.charm=id;n.setAttribute('aria-hidden','true');Object.assign(n.style,{left:Math.round(stage.x-room.x+stage.width*(right?.75:.255)-size/2)+'px',top:Math.round(stage.y-room.y+stage.height*.72)+'px',width:size+'px',height:size+'px'});n.innerHTML=charm(id,s.plateLabel);root.appendChild(n);}
+ for(const [position,id] of Object.entries(s.equipped))if(id&&!K.isDoorClosing(position)){
+  const n=document.createElement('span');n.className='fridge-charm';n.dataset.charm=id;n.setAttribute('aria-hidden','true');n.innerHTML=charm(id,s.plateLabel);
+  if(world.doors[position]){
+   const parent=document.querySelector('[data-cargo="'+position+'"] .door-storage');if(!parent)continue;
+   n.classList.add('is-interior');Object.assign(n.style,{left:'25%',top:'9%',width:'50%',height:'24%'});parent.appendChild(n);
+  }else{
+   const right=position==='frozenRight',size=Math.max(28,Math.min(58,stage.width*.16));Object.assign(n.style,{left:Math.round(stage.x-room.x+stage.width*(right?.75:.255)-size/2)+'px',top:Math.round(stage.y-room.y+stage.height*.72)+'px',width:size+'px',height:size+'px'});root.appendChild(n);
+  }
+ }
 }
 function nav(){return `<nav class="journal-tabs" aria-label="식사와 성장에서 볼 곳">${[['nutrition','영양'],['book','도감'],['rewards','꾸밈'],['backup','백업']].map(([id,label])=>`<button type="button" data-journal="${id}" aria-pressed="${tab===id}">${label}</button>`).join('')}</nav>`;}
 function show(next=tab){tab=next;const titles={nutrition:'내 식사와 영양',book:'나의 요리 도감',rewards:'부엌을 꾸미는 보상',backup:'이 시안의 기록 보관'};K.showTray(titles[tab],nav()+({nutrition:nutrition,book:book,rewards:rewards,backup:backup}[tab])(),'MY KITCHEN JOURNAL');window.KitchenWorkflows?.enhanceJournal(tab);}

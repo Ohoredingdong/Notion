@@ -16,9 +16,9 @@ def mobile_page(content, mode):
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#faf7f0">
+<meta name="theme-color" content="#f5eee3">
 <title>한끼의 부엌 · {label} 미리보기</title>
-<style>html,body{{margin:0;width:100%;height:100%;background:#faf7f0;overflow:hidden}}iframe{{display:block;border:0;width:100%;height:100vh;height:100dvh}}</style>
+<style>html,body{{margin:0;width:100%;height:100%;background:#f5eee3;overflow:hidden}}iframe{{display:block;border:0;width:100%;height:100vh;height:100dvh}}</style>
 </head><body>
 <iframe title="한끼의 부엌 {label} 미리보기" sandbox="allow-scripts allow-forms" srcdoc="{escape(content, quote=True)}"></iframe>
 </body></html>
