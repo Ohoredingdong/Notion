@@ -75,8 +75,8 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 | 데이터 보존 | 100자 연속 이름·80자 비정형 수량, 과거 기한·정확한 좌표·미지의 v1 envelope 필드·운영 저장 키 보존 검사 통과. |
 | 같은 조건의 전후 비교 | 앱·위젯 각각 320×660 / 390×844 / 1120×1000. 고정한 날짜와 최초 world·문·선택 상태가 전후 정확히 같다. [상태/레이아웃 비교](kitchen-readability/comparison.json). |
 | 도감과 보상 | 실제 첫 요리 기록→꾸밈권→세라믹 타일 구매/장착 후, 네 문이 열린 상태에서 타일과 1/8 도감 상태를 확인했다. [검사 화면](kitchen-readability/earned-open-kitchen.png). 영양 미입력은 여전히 미입력이다. |
-| 공개 HTTPS 실행 | 최종 소스 커밋 게시 후 실제 원격 HTMLPreview 6개 프로필을 검증하고 이 문서에 결과를 추가한다. 로컬 검사 통과를 원격 실행 통과로 대신하지 않는다. |
-| 브랜치/PR/main | `feat/kitchen-readability-redesign`에서 작성. PR 생성 결과와 게시 소스는 후속 공개 검증 기록에 남긴다. main과 운영 진입점은 변경하지 않았다. |
+| 공개 HTTPS 실행 | **6/6 통과**. 앱·위젯 × 649×900 / 390×844 / 320×660, 실제 HTTP 200·raw SHA256 일치·JS 예외 0. 4문 독립 제스처·첫 프레임 가림·350ms 양념 상세 유지·정확한 저장·직접 목표·주요 기록 메뉴·하단 버튼을 검증했다. [결과](kitchen-readability/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41286584584). |
+| 브랜치/PR/main | `feat/kitchen-readability-redesign`에 push 완료. `fix/kitchen-ui-details`를 base로 PR 생성 시도했으나 `https://api.github.com/graphql: Forbidden`(403)으로 생성되지 않았다. main과 운영 진입점은 변경하지 않았다. |
 
 ### 같은 데이터로 비교한 첫 화면
 
@@ -91,3 +91,14 @@ PYTHONPATH="$PWD:$PWD/scripts" python -m unittest discover -s scripts -p 'test_*
 작은 선반 라벨은 이름·수량을 우선한다. 두 칸이 나란한 냉장 오른쪽에서는 짧은 기한 문구를 생략하고 임박점으로 표시하며, 전체 날짜와 긴 이름·수량은 선택 요약/목록/상세에서 읽는다. 320px에서는 냉장고를 더 축소하지 않고 화면 아래를 스크롤한다. PC의 큰 냉장고도 필요한 세로 스크롤을 사용하며 dock는 화면 아래에 유지한다.
 
 시각 검수는 벽/바닥과 냉장고 위치, 문·수납·식재료의 비례, 라벨과 그림의 겹침, 수량·기한의 읽기, 고정 dock와 입력 화면의 가림을 따로 확인한다. 기능 검사 통과만으로 최종 디자인 승인이나 실기기 검증을 보고하지 않는다.
+
+
+## 실제 실행한 공개 검토 링크
+
+고정 소스: `f855795d25144b3674ffb1c1961bb9ff5f9925e6`. 후속 문서 커밋은 이 생성 HTML을 변경하지 않는다.
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/f855795d25144b3674ffb1c1961bb9ff5f9925e6/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/f855795d25144b3674ffb1c1961bb9ff5f9925e6/previews/mobile/widget.html)
+- [PR 작성 비교 화면](https://github.com/Ohoredingdong/Notion/compare/fix/kitchen-ui-details...feat/kitchen-readability-redesign?expand=1) — API 제한으로 PR 자체는 생성하지 못했다.
+
+실제 공개 검증은 격리된 `delivery/verify-kitchen-readable-20261101`에서 수행했고, 합성 검사 결과만 `preview/kitchen-readable-validation-20261101`에 게시했다. 운영 브랜치/Pages 설정을 바꾸지 않았다. 이 링크는 opaque 프레임의 임시 세션이며, 검토 중 필요한 기록은 설정·백업에서 보관한다. 물리 iPhone/Android, Safari 및 실제 Notion 임베드 검증은 포함하지 않는다.
