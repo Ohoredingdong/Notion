@@ -31,9 +31,9 @@
 | 실제 크기 | 모바일 냉장/양념 그림 폭28% 감소. 넓은 화면은 장면 확대도 제한해 약41~50% 감소. 냉동은15~40.9% 감소. 이름11px·수량10px 최소 유지. [8개 실제 비교](kitchen-proportions/comparison.json). |
 | 세로 길이 | 앱320:3460→3205px(-7.4%),390:3316→3062px(-7.7%),649:3394→2942px(-13.3%),1120:3073→2539px(-17.4%). 390 이상 초기 냉장고의 dock 가림0,320은28.5%→0.97%. |
 | 같은 상태 | 앱/위젯8개 원본 envelope exact, 문4개 열림/선택없음/동일 날짜. JS예외0, 가로 넘침0. 냉동 라벨은 글자 크기를 유지한 이름+수량 한 줄이며 그림/이름ID·수량·2px간격이 맞는다. |
-| 문·드래그·resize | 추가 실제 조작10개 프로필 통과: 8개 화면의 문4개 독립 열기/닫기, 냉장/냉동/문 양념 ghost 크기/이동량, 도킹 drop 취소, 그림 겹침과 reload exact. opaque320/390 하단3버튼 실제터치도 통과. [조작 근거](kitchen-proportions/interaction-results.json). 반응형559/560/999/1000 경계는 추가 확인 중이다. |
+| 문·드래그·resize | 추가 실제 조작10개 프로필 통과: 8개 화면의 문4개 독립 열기/닫기, 냉장/냉동/문 양념 ghost 크기/이동량, 도킹 drop 취소, 그림 겹침과 reload exact. opaque320/390 하단3버튼 실제터치도 통과. [조작 근거](kitchen-proportions/interaction-results.json). 반응형559/560/999/1000 경계4개도 통과했다. [경계 근거](kitchen-proportions/boundaries.json). 문 비율0.57345와 장면 중앙 오차0px를 유지하며 경계의 폭 차이는3.57%/1.53%다. |
 | 기능·저장 회귀 | 기존 사용 흐름22+가독성23+기본 기능27 = **72/72 통과**, JS0. 원래8개 envelope와 운영 키·수량·기한·좌표·층 보존. [요약](kitchen-proportions/final-summary.json) · [기록/분량](kitchen-proportions/journey-results.json) · [가독성](kitchen-proportions/readability-results.json) · [기존 기능](kitchen-proportions/regression-results.json). |
-| 공개 HTTPS | 새 고정 소스 게시 후 실제 공개6프로필 결과를 추가한다. 미리보기의 임시 세션과 물리 기기/Safari/실제 Notion 미검증 범위는 유지한다. |
+| 공개 HTTPS | **6/6 통과**. 앱·위젯 × 649×900/390×844/320×660, HTTP200·원문SHA256 일치·JS예외0. 문·실제터치·영양/예산/사진 검수 흐름과 정상 CDN OCR2개도 통과했다. [결과](kitchen-proportions/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41301550470). 물리 기기/Safari/실제 Notion은 미검증이다. |
 
 ### 같은 원본 데이터의 전후 화면
 
@@ -44,3 +44,16 @@
 [PC 전](kitchen-proportions/app-1120-before.png) · [후](kitchen-proportions/app-1120-after.png) · [320px 전](kitchen-proportions/app-320-before.png) · [후](kitchen-proportions/app-320-after.png) · [649px 전](kitchen-proportions/app-649-before.png) · [후](kitchen-proportions/app-649-after.png) · [위젯 전](kitchen-proportions/widget-390-before.png) · [후](kitchen-proportions/widget-390-after.png)
 
 공개 미리보기의 임시 저장 성격을 바꾸거나 main/운영 배포를 완료한 것으로 보고하지 않는다.
+
+
+## 공개 확인과 반영 상태
+
+고정 소스: `268e4d7eeb64e01473f7c38ed25f15d08d6ebaa1`. 후속 증거/문서 커밋은 생성 HTML을 바꾸지 않는다.
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/268e4d7eeb64e01473f7c38ed25f15d08d6ebaa1/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/268e4d7eeb64e01473f7c38ed25f15d08d6ebaa1/previews/mobile/widget.html)
+- [냉장고 부분 실제 화면](kitchen-proportions/app-390-fridge.png)
+
+`fix/kitchen-compact-proportions`에 push했다. base `feat/kitchen-complete-flow`로 PR 생성을 시도했으나 GitHub GraphQL API403 Forbidden으로 생성되지 않았다. [PR 비교/작성 화면](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-complete-flow...fix/kitchen-compact-proportions?expand=1).
+
+공개 검증은 `delivery/verify-kitchen-proportions-20261101`, 합성 결과는 `preview/kitchen-proportions-validation-20261101`에서만 실행/게시했다. main/Pages 설정/운영 진입점/사용자 데이터에는 반영하지 않았다.
