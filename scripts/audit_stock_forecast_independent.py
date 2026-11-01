@@ -279,6 +279,10 @@ def audit(records, outcomes, deliveries, cutoff):
                 errors.append({'id': proof_id, 'error': 'public_verification_fingerprint_mismatch'})
                 continue
         if d.get('status') != 'public_verified':
+            # This append-only ledger contains successful public proofs only.
+            # Unknown/missing statuses must not silently remove issued
+            # forecasts from prospective scoring or apparent coverage.
+            errors.append({'id': proof_id, 'error': 'unexpected_public_proof_status'})
             continue
         # Public verification cannot predate the snapshot nor prove a forecast
         # that did not yet exist when that snapshot was generated.
