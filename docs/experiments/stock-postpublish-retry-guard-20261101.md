@@ -1,0 +1,14 @@
+# Post-publication forecast retry safety — hypothesis (2026-11-01)
+
+Status: research only, no production fix or timing edge claimed.
+Pinned main: `abb3ff851117e480b6a91017ae32e98d42749b38`.
+Contracts read and unchanged: `docs/stock-timing-acceptance-20261029.md`, `docs/stock-direction-specialists.md`, `docs/stock-bounded-autopilot.md`.
+Prior studies reviewed: PR #88 staged-publication rollback, PR #89 operational fault test and its post-merge recovery/Pages failure comment, PR #82 timing experiments.
+
+## Falsifiable hypothesis (registered before code change)
+A failed *public verification* or *public build request* AFTER the forecast bundle has already been published should not trigger a full re-run of the research workflow. The current recovery planner allowlists these steps without checking whether `Publish forecast and learning state atomically` succeeded. In actual [forecast run 41290337232](https://github.com/Ohoredingdong/Notion/actions/runs/41290337232) the first attempt published a new bundle, then public verification failed after a Pages deployment conflict. [Recovery 41290560101](https://github.com/Ohoredingdong/Notion/actions/runs/41290560101) requested its single permitted full-workflow retry, which necessarily attempted to publish again against changed learning state and safely failed `learning_state_changed; recollect_rather_than_overwrite`. The existing CAS check is correct; bypassing it is forbidden. The older data files are not corrupted.
+
+## Preregistered RED/GREEN controls and narrow candidate
+Inject into the pure `stock_autopilot_recovery.cjs` planner a synthetic failed workflow whose steps say publication succeeded and public verification failed. Assert `retry:false`. A second control checks a published bundle followed by `Request public build` failure. Both should FAIL against original planner. A pre-publication transient dependency failure must remain eligible for a single retry, and run-attempt/tampered-branch/ref provenance guards must remain unchanged. After RED, add one *postpublication success* gate to stop futile whole-research retries; leave independent Pages recovery, standalone public proof, exchange quotes and user delivery unresolved. No retries beyond existing limits, source-model search, shadow candidate promotion, auth changes, orders, or edits to strict-green-1.0.
+
+Acceptance: actual RED recorded; GREEN same tests plus original 7 planner checks; full forecast/source, immutable-state, desktop/mobile UI tests in research branch; independent evidence audit; exact changed-file check and public deployment if merging. If any gate or Pages release fails, keep change unmerged, record failure, do not call it complete. This policy reduces futile retries but is NOT a repair for the currently stuck GitHub Pages deployment. No user notification unless the preapproved timing-utility contract is fulfilled or new user action is essential.
