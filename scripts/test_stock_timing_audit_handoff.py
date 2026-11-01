@@ -61,11 +61,11 @@ class PostForecastAuditHandoff(unittest.TestCase):
         # Static premerge gate: PRs modifying any directly executed audit
         # entrypoint must run the same independent audit before they can merge.
         # Parse only the pull_request trigger, not the broader push trigger.
-        pr = re.search(r"(?ms)^  pull_request:\\n(?P<body>.*?)(?=^  [a-z_-]+:\\n|\\Z)", self.triggers)
+        pr = re.search(r"(?ms)^  pull_request:\n(?P<body>.*?)(?=^  [a-z_-]+:\n|\Z)", self.triggers)
         self.assertIsNotNone(pr)
-        reviewed_paths = set(re.findall(r"(?m)^\\s+- '([^']+)'\\s*$", pr.group("body")))
+        reviewed_paths = set(re.findall(r"(?m)^\s+- '([^']+)'\s*$", pr.group("body")))
         executed = set(re.findall(
-            r"\\bpython\\s+(scripts/[A-Za-z0-9_/-]+\\.py)\\b",
+            r"\bpython\s+(scripts/[A-Za-z0-9_/-]+\.py)\b",
             self.source,
         ))
         self.assertIn("scripts/audit_stock_timing_acceptance_guard.py", executed)
