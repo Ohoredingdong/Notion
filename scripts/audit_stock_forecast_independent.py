@@ -669,6 +669,10 @@ class SelfTests(unittest.TestCase):
                    'version':'direction-specialists-1.0','active':'incumbent',
                    'fallback_reason':None,'orders_enabled':False,
                    'strict_green_override':False},
+               'directional_signal':{
+                   'uncertain':False, 'uncertainty_is_not_flat':True,
+                   'all_original_predictions_still_scored':True,
+                   'thresholds_are_policy_not_success_probabilities':True},
                'directional_specialists':{
                    'version':'direction-specialists-1.0',
                    'status':'shadow_only',
