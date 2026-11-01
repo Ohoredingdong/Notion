@@ -452,6 +452,47 @@ def read_lines(path):
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 class SelfTests(unittest.TestCase):
+    def test_public_proof_cannot_assert_unauthenticated_human_receipt(self):
+        # Pre-registered synthetic RED: a canonical self-hash is not a
+        # recipient's independent acknowledgment of a pushed signal.
+        from copy import deepcopy
+        row = {'id': 'synthetic-human-receipt', 'symbol': 'TEST',
+               'market': 'US', 'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3}
+        original = {'status': 'public_verified',
+                    'snapshot_generated_at': '2026-10-29T13:36:20Z',
+                    'verified_at': '2026-10-29T13:37:00Z',
+                    'prediction_ids': [row['id']],
+                    'human_notification_received': False}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        valid = {**original, 'verification_id': audit_digest(original)}
+        self.assertEqual(audit([row], [], [valid], cutoff)['status'],
+                         'ledger_arithmetic_consistent')
+        # Missing historical optional field is not retroactively invented.
+        legacy = {k: v for k, v in original.items()
+                  if k != 'human_notification_received'}
+        self.assertEqual(audit([row], [],
+                              [{**legacy, 'verification_id': audit_digest(legacy)}],
+                              cutoff)['status'], 'ledger_arithmetic_consistent')
+        # A deliberate false human-delivery claim, even with a new valid
+        # self-fingerprint, must NOT pass the independent evidence audit.
+        for claimed in (True, 'true'):
+            forged = deepcopy(original)
+            forged['human_notification_received'] = claimed
+            forged['verification_id'] = audit_digest(forged)
+            with self.subTest(receipt=claimed):
+                result = audit([row], [], [forged], cutoff)
+                self.assertEqual(result['status'], 'integrity_errors')
+                self.assertTrue(any(
+                    e['error'] == 'unsupported_human_receipt_claim'
+                    for e in result['errors']))
+
     def test_bands_fixed(self):
         self.assertEqual(classify(-.3, .3), 'flat')
         self.assertEqual(classify(.3, .3), 'flat')
