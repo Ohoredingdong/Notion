@@ -532,6 +532,52 @@ class SelfTests(unittest.TestCase):
         self.assertTrue(any(e['error'] == 'invalid_public_proof_prediction_ids'
                             for e in result['errors']))
 
+    def test_outcome_issuance_timestamp_must_match_frozen_forecast(self):
+        # One preregistered synthetic RED/GREEN outcome-lineage negative
+        # control. This must not alter or learn from any production outcome.
+        row = {'id': 'synthetic-issuance-binding', 'symbol': 'TEST',
+               'market': 'US', 'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3}
+        outcome = {'id': row['id'], 'symbol': row['symbol'],
+                   'mode': row['mode'], 'status': 'observed',
+                   'issued_at': row['issued_at'], 'target': row['target'],
+                   'evaluated_at': '2026-10-29T14:31:00Z',
+                   'target_open': 100., 'target_close': 100.,
+                   'return_pct': 0., 'actual': 'flat', 'predicted': 'flat',
+                   'correct': True, 'brier_loss': .24}
+        payload = {'status': 'public_verified',
+                   'snapshot_generated_at': '2026-10-29T13:36:30Z',
+                   'verified_at': '2026-10-29T13:37:00Z',
+                   'prediction_ids': [row['id']],
+                   'human_notification_received': False}
+        proof = {**payload, 'verification_id': audit_digest(payload)}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        good = audit([row], [outcome], [proof], cutoff)
+        self.assertEqual(good['status'], 'ledger_arithmetic_consistent')
+        self.assertEqual(good['scored'], 1)
+        # An equivalent exchange-independent timestamp is legitimate.
+        offset = {**outcome, 'issued_at': '2026-10-29T22:36:00+09:00'}
+        self.assertEqual(audit([row], [offset], [proof], cutoff)['scored'], 1)
+        # A timestamp not frozen at original forecast issuance must be an
+        # integrity error, even if score and publication arithmetic agree.
+        altered = {**outcome, 'issued_at': '2026-10-29T13:35:00Z'}
+        checked = audit([row], [altered], [proof], cutoff)
+        self.assertEqual(checked['status'], 'integrity_errors')
+        self.assertTrue(any(e['error'] == 'outcome_issued_at_mismatch'
+                            for e in checked['errors']))
+        no_tz = {**outcome, 'issued_at': '2026-10-29T13:36:00'}
+        self.assertEqual(audit([row], [no_tz], [proof], cutoff)['status'],
+                         'integrity_errors')
+        # Historical missing-field fixtures must not have a timestamp invented.
+        legacy = {k: v for k, v in outcome.items() if k != 'issued_at'}
+        self.assertEqual(audit([row], [legacy], [proof], cutoff)['scored'], 1)
+
     def test_first_issue_and_timing(self):
         base = {'id': 'test-only', 'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
                 'status': 'research_prediction', 'observed_until': '2026-10-29T13:35:00Z',
