@@ -106,7 +106,14 @@ def source_failure(record):
     if 'RateLimit' in kind or 'rate_limit_cooldown' in reason: return 'rate_limit'
     if any(x in kind for x in ('Timeout','Connection','URLError')): return 'transient_network'
     if kind=='OperationalError' and 'locked' in reason.lower(): return 'cache_lock'
-    if record.get('status')=='no_call' and ':' in reason: return 'nontransient'
+    if record.get('status')=='no_call':
+        # Only documented market-session deferrals are usable no-call results.
+        # Model quality/data guards may return a plain reason without ':' and
+        # must not falsely satisfy the verified-research-cycle processor gate.
+        if reason in ('insufficient_regular_session_time',
+                      'target_already_started_or_delivery_window_too_short'):
+            return None
+        return 'nontransient'
     return None
 
 class SafeCollector:
