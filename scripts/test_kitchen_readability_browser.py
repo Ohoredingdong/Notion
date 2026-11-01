@@ -153,17 +153,19 @@ def main():
                 assert frame.locator('body').get_attribute('data-mode') == mode
                 assert not frame.evaluate('document.documentElement.scrollWidth>innerWidth')
                 expect(frame.locator('[data-balance]')).to_have_count(3)
-                expect(frame.locator('.balance-empty')).to_be_visible()
                 assert frame.locator('.balance-empty').inner_text().strip()
                 for key in ('carb', 'protein', 'fat'):
-                    current = frame.locator(f'[data-balance="{key}"] strong').inner_text()
+                    value = frame.locator(f'[data-balance="{key}"] strong')
+                    expect(value).to_be_visible()
+                    expect(frame.locator(f'[data-balance="{key}"] .balance-number>span')).to_be_visible()
+                    current = value.inner_text()
                     assert re.sub(r'\s+', '', current) == '—g', current
                     assert '%' not in frame.locator(f'[data-balance="{key}"] .balance-percent').inner_text()
                 no_macro_clipping(frame)
                 sizes = frame.locator('[data-balance] strong').evaluate_all('''nodes=>nodes.map(e=>{
                     const r=e.getBoundingClientRect();return parseFloat(getComputedStyle(e).fontSize)*(r.height/(e.offsetHeight||r.height));
                 })''')
-                assert all(size >= 19.5 for size in sizes), sizes  # Native-size 20px main values, allowing subpixel rounding.
+                assert all(size >= 19.5 for size in sizes), sizes  # Native-size 20px core values, allowing subpixel rounding.
                 actions = in_view_actions(frame)
                 frame.evaluate('window.scrollTo(0,document.documentElement.scrollHeight)')
                 in_view_actions(frame)
@@ -179,8 +181,10 @@ def main():
                 assert first and first['y'] >= 0 and first['y']+min(first['height'], 44) <= height, first
                 frame.locator('#closeTray').click()
                 frame.locator('#openRecords').click()
-                expect(frame.locator('#tray [data-workflow="nutrition"]')).to_be_visible()
-                frame.locator('#closeTray').click()
+                expect(frame.locator('#openRecords')).to_have_attribute('aria-selected', 'true')
+                expect(frame.locator('#panel-records [data-workflow="nutrition"]')).to_be_visible()
+                expect(frame.locator('#panel-records [data-workflow="hub"]')).to_be_visible()
+                frame.locator('.home-shortcuts [data-home-tab="fridge"]').click()
                 page.screenshot(path=str(out/(f'{mode}-{width}-'+('opaque' if opaque else 'native')+'.png')), full_page=True)
                 report['layouts'].append({'mode': mode, 'viewport': [width, height], 'opaque': opaque, 'primary_actions': actions})
                 passed(f'{mode} {width}x{height} '+('opaque touch' if opaque else 'native')+': reachable primary actions, unclipped empty macros, real independent doors and recipes before filters')
@@ -365,7 +369,9 @@ def main():
             context.close()
 
             context, page, frame = new()
-            expect(frame.locator('#kitchenMilestone')).to_be_visible()
+            frame.locator('[data-home-tab="kitchen"]').click()
+            frame.locator('[data-home-subtab="growth"]').click()
+            expect(frame.locator('#homeGrowth')).to_be_visible()
             before = frame.evaluate('KitchenJournal.getSnapshot()')
             frame.evaluate('''() => KitchenJournal.transact(({play:p})=>{
                 p.record({day:'2026-11-01',name:'도감 진행 검사',portion:'1회',recipeId:'recipe-1',nutrients:{kcal:null,carb:null,protein:null,fat:null,fiber:null,water:null}});
@@ -373,15 +379,16 @@ def main():
             })''')
             current = frame.evaluate('KitchenJournal.getSnapshot()')
             assert before['owned'] == [] and current['owned'] == ['tile']
-            expect(frame.locator('#kitchenMilestone .milestone-owned')).to_contain_text('세라믹 타일')
-            expect(frame.locator('.fridge-charm.is-interior[data-charm="tile"]')).to_be_visible()
+            expect(frame.locator('#homeGrowth')).to_contain_text('세라믹 타일')
             goal = frame.evaluate('KitchenJournal.summary().goal')
-            progress = frame.locator('#kitchenMilestone [data-milestone-progress]')
+            progress = frame.locator('#homeGrowth [role="progressbar"]')
             assert float(progress.get_attribute('aria-valuenow')) == goal['value']
             assert float(progress.get_attribute('aria-valuemax')) == goal['target']
+            frame.locator('[data-home-tab="fridge"]').click()
+            expect(frame.locator('.fridge-charm.is-interior[data-charm="tile"]')).to_be_visible()
             assert all(frame.evaluate('MiniKitchen.getSnapshot().doors').values())
             page.screenshot(path=str(out/'earned-open-kitchen.png'), full_page=True)
-            passed('actual collection progress, owned reward and equipped interior charm remain visible while all four doors are open')
+            passed('actual collection progress and owned reward are visible in their tab; equipped interior charm and all four open doors persist in the fridge tab')
             context.close()
 
             legacy_world = json.loads((repo/'tests/fixtures/miniature-legacy-world-v1.json').read_text())

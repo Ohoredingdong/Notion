@@ -45,7 +45,7 @@ function update(){
  const expiry=$('#expirySummary');if(expiry)expiry.innerHTML=Object.entries(counts).filter(([,v])=>v).map(([k,v])=>`<button type="button" data-wf="expiryFilter" data-arg="${k}" class="expiry-chip ${k==='overdue'?'overdue':''}"><span>${{overdue:'기한 경과',today:'오늘까지',tomorrow:'내일',soon:'2~3일'}[k]}</span><b>${v}</b></button>`).join('')||'<span class="expiry-empty">기한을 입력하면 먼저 먹을 재료를 알려드려요</span>';
  const snap=K.getSnapshot(),item=snap.items.find(i=>i.id===snap.selected&&['food','seasoning'].includes(i.kind));
  const progress=$('#kitchenProgress>span');if(progress)progress.textContent=item?item.name:'우리 집 재료';
- const selectedMeta=$('#selectedItemMeta');if(selectedMeta)selectedMeta.textContent=item?(item.quantity||'수량 미입력')+' · '+(item.expiry?'표시 기한 '+item.expiry:'기한 미입력'):'재료를 눌러 수량과 기한을 확인해요';
+ const selectedMeta=$('#selectedItemMeta');if(selectedMeta)selectedMeta.textContent=item?(item.quantity||'수량 미입력')+' · '+(item.expiry?'표시 기한 '+item.expiry:'기한 미입력'):'눌러서 수량·기한 확인';
  const journal=$('#openJournal');if(journal)journal.textContent=item?'이 재료로 요리 찾기':'재료 목록 보기';
  const settings=flow().theme;document.body.classList.toggle('theme-stone',settings.background==='stone');document.body.classList.toggle('label-minimal',settings.labels==='minimal');document.body.classList.toggle('organizer-outline',settings.organizer);
  const report=J.summary(today()),state=play(),milestone=$('#kitchenMilestone');
