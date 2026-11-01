@@ -91,7 +91,7 @@ class AttemptCoverageTests(unittest.TestCase):
     def test_repeated_attempt_is_not_new_forecast(self):
         a, l, r = fixture()
         new = copy.deepcopy(a[0]); new["id"] = "attempt-4"; new["run_id"] = "102"
-        new["checked_at"] = "2026-10-29T13:10:00+00:00"
+        new["checked_at"] = "2026-10-29T13:11:00+00:00"  # distinct rerun check, not same run/group/instant
         a.append(new)
         r["coverage"].update(attempts=4, prediction_attempts=2, call_rate=.5)
         got = audit_attempt_coverage(a, l, r)
