@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build small, self-contained kitchen previews for an external HTML preview URL."""
 import argparse
-from html import escape
+import json
+import re
 from pathlib import Path
 
 from build_miniature_kitchen_preview import build
@@ -9,6 +10,11 @@ from build_miniature_kitchen_preview import build
 
 def mobile_page(content, mode):
     label = '앱' if mode == 'app' else '위젯'
+    # JSON data avoids repeatedly entity-encoding the app's quotes. Preserve the
+    # exact inner HTML and the opaque sandbox, without shrinking image assets.
+    payload = json.dumps(content, ensure_ascii=False)
+    payload = re.sub(r'</script', lambda m: m.group().replace('/', r'\/'), payload, flags=re.I)
+    payload = payload.replace('<!--', r'\u003c!--')
     # Public raw-file renderers share an origin across unrelated repositories.
     # An opaque frame uses the existing temporary-storage fallback and keeps
     # preview records out of that shared origin's persistent localStorage.
@@ -20,7 +26,9 @@ def mobile_page(content, mode):
 <title>한끼의 부엌 · {label} 미리보기</title>
 <style>html,body{{margin:0;width:100%;height:100%;background:#f5eee3;overflow:hidden}}iframe{{display:block;border:0;width:100%;height:100vh;height:100dvh}}</style>
 </head><body>
-<iframe title="한끼의 부엌 {label} 미리보기" sandbox="allow-scripts allow-forms" srcdoc="{escape(content, quote=True)}"></iframe>
+<iframe title="한끼의 부엌 {label} 미리보기" sandbox="allow-scripts allow-forms"></iframe>
+<script type="application/json" id="kitchenSource">{payload}</script>
+<script>document.querySelector('iframe').srcdoc=JSON.parse(document.getElementById('kitchenSource').textContent);document.getElementById('kitchenSource').remove();</script>
 </body></html>
 '''
 

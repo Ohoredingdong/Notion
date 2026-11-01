@@ -5,6 +5,7 @@ import base64
 from functools import lru_cache
 from html import escape
 import mimetypes
+import os
 from pathlib import Path
 import re
 import shutil
@@ -19,6 +20,16 @@ COMPACT_SPRITES = {
     'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
         ('soy','salt','gochujang','doenjang','jar')),
 }
+
+
+@lru_cache(maxsize=32)
+def compact_script(source):
+    """Keep the delivery budget without reducing image resolution or functionality."""
+    encoder = os.environ.get('KITCHEN_TERSER') or shutil.which('terser')
+    if not encoder:
+        raise RuntimeError('--compact requires terser 5.44.1; install it outside the repository and set KITCHEN_TERSER to its executable')
+    return subprocess.run([encoder, '--compress', '--mangle', '--ecma', '2020'],
+                          input=source, text=True, check=True, capture_output=True).stdout.strip()
 
 
 def sprite_boxes(source, name, keys):
@@ -115,6 +126,8 @@ def build(root, mode, compact=False):
             if script.count(needle) != 1:
                 raise ValueError('Asset constant changed: '+key)
             script=script.replace(needle,f"const {key} = '{image(asset)}';")
+        if compact:
+            script = compact_script(script)
         scripts.append('<script>\n'+re.sub(r'</script',r'<\\/script',script,flags=re.I)+'\n</script>')
         return ''
 

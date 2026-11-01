@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args(); root=args.root.resolve();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     if out.is_relative_to(Path(__file__).resolve().parents[1]):raise SystemExit('Keep browser output outside checkout')
-    report={'scope':'Local Chromium; new preview only; photo OCR and live nutrition are not connected','passed':[],'failures':[]}
+    report={'scope':'Local Chromium; new preview only; paired-photo input gates and manual registration, not actual OCR recognition or live nutrition','passed':[],'failures':[]}
     def passed(name):report['passed'].append(name);print('PASS '+name,flush=True)
     server=ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=str(root)));threading.Thread(target=server.serve_forever,daemon=True).start()
     origin=f'http://127.0.0.1:{server.server_port}'
@@ -98,7 +98,7 @@ def main():
         form.locator('details.target-extras summary').click()
         for name,value in [('carb','230'),('protein','70'),('fat','60'),('calcium','700')]:form.locator(f'[name="{name}"]').fill(value)
         form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getSnapshot().targets.carb')==230
-        f.evaluate('KitchenWorkflows.show("recipes")');f.locator('#tray [data-wf="recipe"][data-arg="recipe-1"]').click();f.locator('[data-wf="recipeFacts"]').click()
+        f.evaluate('KitchenWorkflows.show("recipes")');f.locator('#tray [data-wf="recipe"][data-arg="recipe-1"]').click();f.locator('#tray [data-wf="recipeFacts"]').click()
         form=f.locator('[data-wf-form="facts"]')
         for name,value in [('kcal','458'),('carb','65'),('protein','18'),('fat','14'),('cost','2300'),('calcium','30')]:form.locator(f'[name="{name}"]').fill(value)
         form.locator('[name="source"]').fill('검사용 직접 입력 · 1회분');form.locator('[type="submit"]').click();passed('recipe nutrition/cost are explicit inputs, not fabricated data')
@@ -125,11 +125,18 @@ def main():
         f.locator('[data-wf="editSupplement"]').click();form=f.locator('[data-wf-form="editSupplement"]');form.locator('[name="remaining"]').fill('29정');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].days')==['2026-10-31'];assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].remaining')=='29정'
         show(f,'monthly');expect(f.locator('.workflow-month')).to_be_visible();assert f.locator('.workflow-month>div').count()==31;passed('monthly calendar uses actual month and recorded data')
         # Real local image decoding/compression, paired-photo review and explicit manual registration.
-        show(f,'photos');assert f.locator('[data-photo]').count()==2;expect(f.locator('button:disabled')).to_contain_text('연결 전')
+        show(f,'photos');assert f.locator('[data-photo]').count()==2
+        expect(f.locator('[data-wf="readPhotos"]')).to_be_disabled()
+        expect(f.locator('#photoReaderProgress')).to_contain_text('각각 선택')
+        assert f.evaluate('typeof KitchenPhotoReader.read')=='function'
+        photo_before=f.evaluate('KitchenJournal.getEnvelope()')
         image_bytes=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jrGQAAAAASUVORK5CYII=')
         for slot in ['product','expiry']:
           f.locator(f'[data-photo="{slot}"]').set_input_files({'name':slot+'.png','mimeType':'image/png','buffer':image_bytes})
           expect(f.locator(f'img[alt="선택한 {"제품 사진" if slot=="product" else "기한 사진"}"]')).to_be_visible()
+          assert f.evaluate('KitchenJournal.getEnvelope()')==photo_before
+          if slot=='product':expect(f.locator('[data-wf="readPhotos"]')).to_be_disabled()
+          else:expect(f.locator('[data-wf="readPhotos"]')).to_be_enabled()
         f.locator('[data-wf="manualAdd"]').click();form=f.locator('[data-wf-form="add"]');form.locator('[name="name"]').fill('사진 확인 재료');form.locator('[name="quantity"]').fill('250g');form.locator('[name="expiry"]').fill('2026-11-12');form.locator('[name="picture"]').select_option('photo');form.locator('[type="submit"]').click()
         photo_item=f.evaluate('MiniKitchen.exportWorld().items.find(i=>i.name==="사진 확인 재료")');assert photo_item['expiry']=='2026-11-12' and photo_item['photo'].startswith('data:image/jpeg;base64,') and photo_item['expiryPhoto'].startswith('data:image/jpeg;base64,')
         passed('two local photos require manual confirmation and can create a dated stock item with a compressed product photo')

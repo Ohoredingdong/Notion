@@ -9,9 +9,19 @@ const money=x=>num(x)&&Number.isInteger(x);
 const list=x=>Array.isArray(x)&&x.length<=10000;
 const unique=x=>new Set(x).size===x.length;
 const zones=['freshLeft','freshRight','frozenLeft','frozenRight','seasoning','counter','doorFreshLeft','doorFreshRight','doorFrozenLeft','doorFrozenRight'];
-const units={g:['g',1],kg:['g',1000],ml:['mL',1],mL:['mL',1],l:['mL',1000],L:['mL',1000],'개':['개',1],'알':['개',1],'모':['모',1],'팩':['팩',1],'병':['병',1],'봉':['봉',1],'조각':['조각',1],'공기':['공기',1],'큰술':['큰술',1],'작은술':['작은술',1],'인분':['인분',1],'캔':['캔',1]};
+const units={g:['g',1],kg:['g',1000],'그램':['g',1],'킬로그램':['g',1000],'밀리리터':['mL',1],'리터':['mL',1000],ml:['mL',1],mL:['mL',1],l:['mL',1000],L:['mL',1000],'개':['개',1],'알':['개',1],'모':['모',1],'팩':['팩',1],'병':['병',1],'봉':['봉',1],'조각':['조각',1],'장':['장',1],'공기':['공기',1],'큰술':['큰술',1],'작은술':['작은술',1],'인분':['인분',1],'캔':['캔',1]};
 const round=x=>Math.round(x*1e6)/1e6;
-function parseQuantity(input){if(typeof input!=='string')return null;const m=input.trim().match(/^(\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?)\s*([A-Za-z가-힣]+)$/);if(!m||!own(units,m[2]))return null;const parts=m[1].split('/').map(Number);const amount=parts.length===2?parts[0]/parts[1]:parts[0];if(!num(amount,1e8))return null;const [baseUnit,factor]=units[m[2]];return {amount,unit:m[2],baseUnit,factor,baseAmount:round(amount*factor)};}
+function parseQuantity(input){
+ if(typeof input!=='string')return null;
+ const value=input.replace(/(\d)([¼½¾⅓⅔⅛⅜⅝⅞])/g,'$1 $2').normalize('NFKC').replace(/⁄/g,'/').trim();
+ const m=value.match(/^(플레인\s+)?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)(?:\s+(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?))?(?:\s*\/\s*(\d+(?:\.\d+)?))?\s*([A-Za-z가-힣]+)$/);
+ if(!m||!own(units,m[6])||m[3]&&m[5])return null;
+ let amount=Number(m[2].replace(/,/g,''));
+ if(m[3]){if(Number(m[4])===0)return null;amount+=Number(m[3])/Number(m[4]);}
+ if(m[5]){if(Number(m[5])===0)return null;amount/=Number(m[5]);}
+ if(!num(amount,1e8))return null;
+ const [baseUnit,factor]=units[m[6]];return {amount,unit:m[6],baseUnit,factor,baseAmount:round(amount*factor)};
+}
 const quantity=(base,parsed)=>String(round(base/parsed.factor))+parsed.unit;
 const blank=()=>({version:1,budgets:{},expenses:[],shopping:[],plans:[],supplements:[],recipeFacts:{},recipeNotes:{},transactions:[],lastCanceled:null,extraTargets:{calcium:null,sodium:null,sugar:null},extraNutrients:{},theme:{background:'linen',labels:'standard',organizer:false},exclusions:''});
 function valid(s){

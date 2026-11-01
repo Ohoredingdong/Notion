@@ -8,13 +8,17 @@
 <!-- Source template. Generate the two self-contained previews with the builder. -->
 <link rel="stylesheet" href="designs/miniature-kitchen/scene.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/neutral.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/journey.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
 <script defer src="designs/miniature-kitchen/catalog.js"></script>
 <script defer src="designs/miniature-kitchen/play-model.js"></script>
 <script defer src="designs/miniature-kitchen/workflow-model.js"></script>
+<script defer src="designs/miniature-kitchen/journey-model.js"></script>
+<script defer src="designs/miniature-kitchen/photo-reader.js"></script>
 <script defer src="designs/miniature-kitchen/scene.js"></script>
 <script defer src="designs/miniature-kitchen/play-ui.js"></script>
 <script defer src="designs/miniature-kitchen/workflows.js"></script>
+<script defer src="designs/miniature-kitchen/home.js"></script>
 </head>
 <body data-mode="app" data-camera="fridge">
 <a class="skip" href="#kitchen">부엌으로 이동</a>
@@ -24,6 +28,12 @@
     <div class="header-actions"><button type="button" data-workflow="inventory" aria-label="재료 목록">재료 목록</button></div>
   </header>
   <button class="daily-balance" id="dailyBalance" type="button" data-workflow="nutrition" aria-label="오늘의 균형과 영양 기록"></button>
+  <nav class="home-shortcuts" aria-label="부엌에서 바로 하기">
+    <button type="button" data-home-scroll="todayKitchen">오늘의 식탁</button>
+    <button type="button" data-workflow="plan">식단</button>
+    <button type="button" data-workflow="budget">식비</button>
+    <button type="button" data-workflow="book">도감</button>
+  </nav>
   <div class="expiry-summary" id="expirySummary" aria-live="polite"></div>
 
   <div class="kitchen-view">
@@ -45,6 +55,16 @@
   <aside class="desktop-summary" id="desktopSummary" aria-label="오늘의 요리와 빠른 기능"></aside>
   <div class="kitchen-progress" id="kitchenProgress"><span>우리 집 냉장고</span><small id="selectedItemMeta">재료를 눌러 수량과 기한을 확인해요</small><button type="button" id="openJournal">재료 목록</button></div>
   </div>
+  <section class="today-kitchen" id="todayKitchen" tabindex="-1" aria-labelledby="todayKitchenTitle">
+    <header class="section-heading"><div><p>재료에서 한 끼, 기록까지</p><h2 id="todayKitchenTitle">오늘의 식탁</h2></div><button type="button" data-home-scroll="kitchen">냉장고로</button></header>
+    <div id="homeStorageNotice" class="home-storage-notice" hidden></div>
+    <section class="home-recommendation" id="homeRecommendation" aria-label="재고와 입력 정보를 반영한 추천"></section>
+    <section class="home-plans" id="homePlans" aria-label="오늘의 식단"></section>
+    <div class="home-pair"><section id="homeBudget" aria-label="이번 달 예산과 장보기"></section><section id="homeSupplements" aria-label="오늘 영양제"></section></div>
+    <section id="homeMonthly" aria-label="한 달의 식사와 비용"></section>
+    <section id="homeGrowth" aria-label="내 목표와 부엌 꾸미기"></section>
+    <section id="homeConnections" aria-label="재료 등록과 사용할 수 있는 기능"></section>
+  </section>
   <div class="decoration-tools" id="decorationTools" hidden><span>소품을 끌어 배치해요</span><button type="button" id="propList">놓아둔 소품 보기</button></div>
   <div class="worktop-actions" role="group" aria-label="부엌에서 하기">
     <button type="button" class="action primary" id="addFood"><span data-icon="plus" aria-hidden="true"></span>재료 추가</button>
