@@ -249,6 +249,12 @@ def run(root=Path('.'),pipeline=None,clock=now):
             evaluation=read(stage,'stock-forecast-learning.json',{})
             collected={(v['symbol'],v['mode']) for v in collector.events if v['history_received']}
             if not collected: raise RuntimeError('all_collectors_failed; previous_success_is_not_current_success')
+            # Received OHLC alone is not a usable processing cycle. A model/feature
+            # exception can return its previously collected bars along with no_call.
+            # Legitimate market-session deferrals remain response_received.
+            processed={(v['symbol'],v['mode']) for v in collector.events
+                       if v['history_received'] and v['result']=='response_received'}
+            if not processed: raise RuntimeError('all_processors_failed; no_usable_source_results')
             new_count=len(lines(stage/'stock-forecast-ledger.jsonl'))-original_count
             updates=evaluation.get('learning',{}).get('training_updates',0)-old_updates
             report={'version':VERSION,'generated_at':clock().isoformat(),'run_id':run_id,

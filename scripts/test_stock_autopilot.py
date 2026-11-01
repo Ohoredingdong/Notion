@@ -117,6 +117,28 @@ class EvidenceTests(unittest.TestCase):
             with patch('run_stock_forecasts.process',lambda *_:failure('YFRateLimitError: test')):
                 with self.assertRaises(RuntimeError):a.run(root,pipeline=engine,clock=lambda:NOW)
             self.assertFalse((root/'stock-direction-forecast.json').exists())
+    def test_all_post_collection_processor_errors_reject_verified_cycle(self):
+        """A real source response followed by model failure is not a usable research cycle."""
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t)
+            def engine(root,processor):
+                record,bars=processor(SPEC,'daily')
+                self.assertIsNotNone(bars)  # history existed; later processing failed
+                self.assertEqual(record['status'],'no_call')
+                for name in a.CORE_OUTPUTS:
+                    if name.endswith('.jsonl'):(root/name).touch()
+                a.write(root/'stock-forecast-learning-state.json',l.blank_state())
+                a.write(root/'stock-forecast-learning.json',{'overall':{'samples':0,'correct':0},'learning':{'training_updates':0}})
+                a.write(root/'stock-direction-forecast.json',{'records':[]})
+            def processor(*_):
+                record,_=failure('RuntimeError: synthetic_model_fit_failed')
+                return record,object()
+            with patch('run_stock_forecasts.process',processor):
+                with self.assertRaisesRegex(RuntimeError,'all_processors_failed'):
+                    a.run(root,pipeline=engine,clock=lambda:NOW)
+            self.assertFalse((root/'stock-direction-forecast.json').exists())
+            self.assertEqual(a.read(root,a.REPORT,{})['status'],'cycle_rejected')
+
     def test_unauthorized_learning_is_rejected(self):
         with tempfile.TemporaryDirectory() as t:
             root=Path(t);stage=root/'stage';stage.mkdir();s=l.blank_state()
