@@ -9,4 +9,15 @@ function plan(run,jobs,repository){
  return {retry:true,reason:'single_infrastructure_retry',failures};
 }
 module.exports={plan};
-if(require.main===module){const assert=require('node:assert/strict');const r={name:'Stock Prospective Forecasts',path:'.github/workflows/stock-forecasts.yml',head_branch:'main',head_repository:{full_name:'a/b'},conclusion:'failure',run_attempt:1};const jobs=[{steps:[{name:'Request public build',conclusion:'failure'}]}];assert.equal(plan(r,jobs,'a/b').retry,true);assert.equal(plan({...r,run_attempt:2},jobs,'a/b').retry,false);assert.equal(plan({...r,conclusion:'success'},jobs,'a/b').retry,false);assert.equal(plan({...r,head_branch:'fork'},jobs,'a/b').retry,false);assert.equal(plan(r,jobs,'other/repo').retry,false);assert.equal(plan(r,[{steps:[{name:'Test future targets',conclusion:'failure'}]}],'a/b').retry,false);assert.equal(plan(r,[],'a/b').retry,false);console.log('7 bounded infrastructure recovery checks passed');}
+if(require.main===module){const assert=require('node:assert/strict');const r={name:'Stock Prospective Forecasts',path:'.github/workflows/stock-forecasts.yml',head_branch:'main',head_repository:{full_name:'a/b'},conclusion:'failure',run_attempt:1};const jobs=[{steps:[{name:'Request public build',conclusion:'failure'}]}];assert.equal(plan(r,jobs,'a/b').retry,true);assert.equal(plan({...r,run_attempt:2},jobs,'a/b').retry,false);assert.equal(plan({...r,conclusion:'success'},jobs,'a/b').retry,false);assert.equal(plan({...r,head_branch:'fork'},jobs,'a/b').retry,false);assert.equal(plan(r,jobs,'other/repo').retry,false);assert.equal(plan(r,[{steps:[{name:'Test future targets',conclusion:'failure'}]}],'a/b').retry,false);assert.equal(plan(r,[],'a/b').retry,false);
+const postPublishedVerify=[{steps:[
+ {name:'Publish forecast and learning state atomically',conclusion:'success'},
+ {name:'Verify public autonomous cycle and code',conclusion:'failure'}
+]}];
+const postPublishedBuild=[{steps:[
+ {name:'Publish forecast and learning state atomically',conclusion:'success'},
+ {name:'Request public build',conclusion:'failure'}
+]}];
+assert.equal(plan(r,postPublishedVerify,'a/b').retry,false,'postpublish verify must not rerun all research');
+assert.equal(plan(r,postPublishedBuild,'a/b').retry,false,'postpublish build must not rerun all research');
+console.log('9 bounded infrastructure recovery checks passed');}
