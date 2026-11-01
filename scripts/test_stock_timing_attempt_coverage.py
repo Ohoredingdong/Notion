@@ -125,6 +125,41 @@ class AttemptCoverageTests(unittest.TestCase):
         got = audit_attempt_coverage(a, l, r)
         self.assertEqual(got["status"], "attempt_coverage_consistent")
 
+    def test_unique_row_id_cannot_replay_same_logical_forecast_check(self):
+        a, l, r = fixture()
+        replay = copy.deepcopy(a[0]); replay["id"] = "distinct-id-same-check"
+        a.append(replay)
+        r["coverage"].update(attempts=4, prediction_attempts=2, call_rate=0.5)
+        got = audit_attempt_coverage(a, l, r)
+        self.assertIn("duplicate_logical_attempt", got["errors"])
+
+    def test_timezone_alias_cannot_replay_same_logical_check(self):
+        a, l, r = fixture()
+        replay = copy.deepcopy(a[0]); replay["id"] = "timezone-alias-id"
+        replay["checked_at"] = "2026-10-29T22:00:00+09:00"
+        a.append(replay)
+        r["coverage"].update(attempts=4, prediction_attempts=2, call_rate=0.5)
+        got = audit_attempt_coverage(a, l, r)
+        self.assertIn("duplicate_logical_attempt", got["errors"])
+
+    def test_new_id_cannot_replay_same_no_call(self):
+        a, l, r = fixture()
+        replay = copy.deepcopy(a[1]); replay["id"] = "no-call-replay"
+        a.append(replay)
+        r["coverage"].update(attempts=4, no_calls=3, call_rate=0.25)
+        r["coverage"]["no_call_reasons"]["insufficient_regular_session_time"] = 2
+        got = audit_attempt_coverage(a, l, r)
+        self.assertIn("duplicate_logical_attempt", got["errors"])
+
+    def test_same_run_group_different_check_time_is_allowed(self):
+        a, l, r = fixture()
+        retry = copy.deepcopy(a[0]); retry["id"] = "legitimate-new-check"
+        retry["checked_at"] = "2026-10-29T13:01:00+00:00"
+        a.append(retry)
+        r["coverage"].update(attempts=4, prediction_attempts=2, call_rate=0.5)
+        got = audit_attempt_coverage(a, l, r)
+        self.assertEqual(got["status"], "attempt_coverage_consistent")
+
     def test_invalid_report_generation_clock_rejected(self):
         a, l, r = fixture()
         r.pop("generated_at")
