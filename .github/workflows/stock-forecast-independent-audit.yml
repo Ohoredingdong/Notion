@@ -11,6 +11,7 @@ on:
       - 'scripts/audit_stock_timing_workflow_provenance.py'
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_shadow_catalogue.py'
+      - 'scripts/stock_autopilot_recovery.cjs'
   workflow_run:
     workflows: ['Stock Prospective Forecasts']
     types: [completed]
@@ -57,6 +58,7 @@ jobs:
       - name: Test audit independently of model code
         run: |
           python scripts/test_stock_timing_audit_handoff.py -v
+          node scripts/stock_autopilot_recovery.cjs
           python scripts/test_stock_timing_transaction_rollback.py -v
           python scripts/test_stock_timing_workflow_provenance.py -v
           python scripts/audit_stock_forecast_independent.py --self-test
