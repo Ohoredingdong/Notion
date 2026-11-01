@@ -66,9 +66,14 @@
   }
   function syncLayout(){
     const room=$('.room'),shell=$('.shell');
-    const width=room.clientWidth||shell.clientWidth-28,scale=width/1000;
+    room.style.removeProperty('--room-fit-width');
+    let width=room.clientWidth||shell.clientWidth-28;
+    if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.worktop-actions').offsetHeight||72; width=Math.min(width,Math.max(380,innerHeight-top-dock-12));}
+    room.style.setProperty('--room-fit-width',width+'px');
+    const scale=width/1000,logicalHeight=document.body.dataset.camera==='fridge'?1000:1200;
     shell.style.setProperty('--scene-scale',String(scale));
-    shell.style.setProperty('--scene-height',scale*1200+'px');
+    shell.style.setProperty('--scene-logical-height',logicalHeight+'px');
+    shell.style.setProperty('--scene-height',scale*logicalHeight+'px');
     shell.style.setProperty('--scene-x','0px');shell.style.setProperty('--scene-y','0px');
     shell.style.setProperty('--object',Math.max(118,42/scale)+'px');
     shell.style.setProperty('--seasoning',Math.max(130,44/scale)+'px');
@@ -189,7 +194,7 @@
       const zone=button.parentElement,item=items.find(i=>i.id===button.dataset.item);if(!item)continue;
       let label=button.querySelector('.item-label')||zone.querySelector('[data-for-item="'+CSS.escape(item.id)+'"]');if(!label)continue;
       label.classList.add('shelf-label');label.dataset.forItem=item.id;label.setAttribute('aria-hidden','true');
-      label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - '+22+'px / var(--scene-scale,1))';
+      label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - '+18+'px / var(--scene-scale,1))';
       label.style.zIndex=String(selected===item.id?20000002:20000001);zone.appendChild(label);
     }
   }
@@ -262,7 +267,10 @@
   });
   window.addEventListener('pointermove',event=>{
     const drag=active;if(!drag||event.pointerId!==drag.pointer)return;if(!drag.moved&&Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)<6)return;event.preventDefault();
-    if(!drag.moved){drag.moved=true;drag.button.classList.add('is-dragging');ghost=itemButton(drag.item);ghost.classList.add('ghost');ghost.removeAttribute('data-item');ghost.setAttribute('aria-hidden','true');ghost.tabIndex=-1;ghost.disabled=true;Object.assign(ghost.style,{width:drag.w+'px',height:drag.h+'px'});document.body.appendChild(ghost);}
+    if(!drag.moved){drag.moved=true;drag.button.classList.add('is-dragging');ghost=itemButton(drag.item);ghost.classList.add('ghost');ghost.removeAttribute('data-item');ghost.setAttribute('aria-hidden','true');ghost.tabIndex=-1;ghost.disabled=true;Object.assign(ghost.style,{width:drag.w+'px',height:drag.h+'px'});document.body.appendChild(ghost);
+      const sourceArt=drag.button.querySelector('.food-art'),copyArt=ghost.querySelector('.food-art');
+      if(sourceArt&&copyArt){const r=sourceArt.getBoundingClientRect(),b=drag.button.getBoundingClientRect();Object.assign(copyArt.style,{position:'absolute',left:(r.left-b.left)+'px',top:(r.top-b.top)+'px',right:'auto',bottom:'auto',width:r.width+'px',height:r.height+'px',maxHeight:'none',transform:'none'});}
+    }
     ghost.style.left=event.clientX-drag.w*drag.ax+'px';ghost.style.top=event.clientY-drag.h*drag.ay+'px';pointer={x:event.clientX,y:event.clientY};highlightDrop(pointer.x,pointer.y);if(!scrollFrame)scrollFrame=requestAnimationFrame(scrollDrag);
   },{passive:false});
   window.addEventListener('pointerup',event=>{
@@ -270,7 +278,8 @@
     const zone=target?.dataset.zone;if(!zone||!isAvailable(zone)||((drag.item.kind==='decor'||drag.item.kind==='meal')&&zone!=='counter')){announce('놓을 수 있는 선반이나 조리대에 옮겨주세요.');return;}
     const rect=target.getBoundingClientRect();drag.item.zone=zone;drag.item.x=clamp((event.clientX-drag.w*drag.ax+drag.w/2-rect.left)/rect.width,drag.w/2/rect.width,1-drag.w/2/rect.width);drag.item.y=clamp((event.clientY+drag.h*(1-drag.ay)-rect.top)/rect.height,Math.min(1,drag.h/rect.height),1);drag.item.z=++layer;selected=drag.item.id;render();announce(drag.item.name+'을 원하는 자리에 놓았어요.');
   });
-  new ResizeObserver(()=>positionBackground()).observe($('#dailyBalance'));
+  const layoutObserver=new ResizeObserver(()=>{syncLayout();constrainItems();});
+  layoutObserver.observe($('#dailyBalance'));layoutObserver.observe($('#kitchenMilestone'));
   window.addEventListener('pointercancel',event=>{if(active&&event.pointerId===active.pointer)rememberItemPointer(event);cleanup();});window.addEventListener('blur',cleanup);window.addEventListener('resize',()=>{cleanup();syncLayout();constrainItems();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&active){event.preventDefault();cleanup();announce('이동을 취소했어요.');return;}const button=event.target.closest('.room .item');if(!button)return;const item=items.find(r=>r.id===button.dataset.item);if(!item)return;

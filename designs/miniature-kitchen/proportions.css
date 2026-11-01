@@ -1,0 +1,46 @@
+/* Smaller pictures and less vertical space; persistent stock coordinates stay intact. */
+body .masthead{height:48px!important}
+body .daily-balance{padding:11px 14px;border-radius:18px}
+body .balance-head{margin-bottom:7px}
+body .balance-number{min-height:30px}
+body .balance-track{margin-top:4px;height:6px}
+body .balance-percent{margin-top:2px}
+body .balance-empty,body .balance-note{margin-top:6px}
+body .home-shortcuts{margin-top:7px;padding:3px;gap:3px;border-radius:14px}
+body .expiry-summary{min-height:34px;padding:2px 0;gap:5px}
+body .shell .kitchen-milestone{position:relative;top:auto;left:auto;transform:none;width:100%;max-width:808px;margin:3px auto 7px;padding:4px 10px;border-radius:12px;box-shadow:none}
+body .milestone-footer{margin:0;line-height:1.4}
+body .milestone-footer .small-action{min-height:24px;padding:0 7px}
+body .shell .scene-world{height:var(--scene-logical-height,1000px)}
+body .shell .kitchen-view .room{width:var(--room-fit-width,100%);margin-inline:auto}
+/* Picture area ends just above the native-size shelf label. */
+body .fridge-interiors .item>.food-art{position:absolute;left:50%;bottom:calc(20px / var(--scene-scale,1));width:72%;height:46.08%;max-height:calc(100% - 20px / var(--scene-scale,1));transform:translateX(-50%);align-self:auto}
+body .fridge-interiors [data-zone^="frozen"] .item>.food-art{width:85%;height:47.6%}
+body .door-storage .item>.food-art{transform:scale(.72);transform-origin:center bottom}
+body .door-storage .item-name{top:69%}
+body .shell .worktop-actions{min-height:72px;padding-top:6px;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+body .worktop-actions .action{min-height:58px;gap:3px}
+body .kitchen-progress{padding:9px 12px;margin-top:6px}
+body .today-kitchen{margin-top:18px}
+body .today-kitchen>section,body .home-pair>section{padding:15px;margin-bottom:10px;border-radius:18px}
+body .section-heading{margin-bottom:10px}
+body .home-block-heading{margin-bottom:10px}
+body .home-recipe-body{grid-template-columns:100px minmax(0,1fr);margin:10px 0;gap:12px}
+body .home-dish{width:100px;height:94px}
+body .home-recipe-macros{padding:10px 0}
+body .home-reason{margin:10px 0 6px;line-height:1.55}
+body .home-note,body .home-empty{margin-top:9px;line-height:1.55}
+body .home-actions{margin-top:11px;gap:7px}
+body .home-plan-row{padding:10px 0}
+body .home-data-status{margin-top:12px;padding-top:10px}
+body .home-supplement{padding:8px 0;min-height:48px}
+body .home-pair{gap:10px}
+@media(min-width:560px){body .shell .kitchen-view .room{max-width:520px}}
+@media(min-width:1000px){body[data-mode="app"] .kitchen-view{grid-template-columns:minmax(0,520px) 268px;gap:18px}body .daily-balance{padding:13px 20px}body .desktop-summary{padding:16px!important}body .desktop-summary .home-dish{width:100%;height:106px}}
+@media(max-width:360px){body .home-recipe-body{grid-template-columns:80px minmax(0,1fr);gap:10px}body .home-dish{width:80px;height:88px}body .daily-balance{padding:10px 12px}body .balance-head{margin-bottom:6px}}
+@media(min-width:1000px){body .desktop-summary .home-recipe-body{grid-template-columns:72px minmax(0,1fr);gap:10px}body .desktop-summary .home-dish{width:72px;height:78px}body .desktop-summary .home-recipe-copy h3{font-size:17px}body .desktop-summary .home-reason,body .desktop-summary .home-shortage{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}body .desktop-summary .home-sidebar-links{grid-template-columns:repeat(3,minmax(0,1fr));padding-top:12px;margin-top:12px;gap:6px}body .desktop-summary .home-sidebar-links button{padding-inline:2px;font-size:13px}}
+/* A compact caption leaves freezer food clear of the next shelf. */
+body .shelf-label b,body .shelf-label small{line-height:1.1}
+body [data-zone^="frozen"]>.shelf-label{display:flex;align-items:center;gap:3px;padding:1px 2px}
+body [data-zone^="frozen"]>.shelf-label b{min-width:0;flex:0 1 auto}
+body [data-zone^="frozen"]>.shelf-label small{flex:0 0 auto;max-width:60%;overflow:hidden;text-overflow:ellipsis}
