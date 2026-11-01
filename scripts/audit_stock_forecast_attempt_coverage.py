@@ -50,6 +50,7 @@ def audit_attempt_coverage(attempts, predictions, report):
         frozen_by_id[ident] = row
 
     ids = set()
+    logical_checks = set()
     valid_runs = set()
     calls = 0
     no_calls = 0
@@ -83,8 +84,18 @@ def audit_attempt_coverage(attempts, predictions, report):
                 errors.append("attempt_after_coverage_report")
             # One GitHub run_id can be rerun and archive a second legitimate
             # batch with a new checked_at; do not assume run_id is one clock.
-        if row.get("mode") not in ("daily", "intraday") or not isinstance(row.get("symbol"), str):
+        valid_group = row.get("mode") in ("daily", "intraday") and isinstance(row.get("symbol"), str)
+        if not valid_group:
             errors.append("invalid_attempt_group")
+        if checked is not None and isinstance(run, str) and run and valid_group:
+            # A workflow rerun has a new check instant. A new row ID alone
+            # cannot turn the same run/instant/group into a second attempt.
+            # Normalize timezone aliases so the identity is an absolute instant.
+            logical_key = (run, checked, row["symbol"], row["mode"])
+            if logical_key in logical_checks:
+                errors.append("duplicate_logical_attempt")
+            else:
+                logical_checks.add(logical_key)
         status = row.get("status")
         if status == "research_prediction":
             calls += 1
