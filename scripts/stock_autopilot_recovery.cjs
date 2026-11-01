@@ -4,8 +4,15 @@ function plan(run,jobs,repository){
  if(run.name!=='Stock Prospective Forecasts'||run.path!=='.github/workflows/stock-forecasts.yml')return {retry:false,reason:'not_owned_workflow'};
  if(run.head_branch!=='main'||run.head_repository?.full_name!==repository)return {retry:false,reason:'untrusted_or_research_branch'};
  if(run.conclusion!=='failure'||run.run_attempt!==1)return {retry:false,reason:'not_first_failure'};
- const failures=jobs.flatMap(j=>j.steps||[]).filter(s=>s.conclusion==='failure').map(s=>s.name);
+ const steps=jobs.flatMap(j=>j.steps||[]);
+ const failures=steps.filter(s=>s.conclusion==='failure').map(s=>s.name);
  if(!failures.length||failures.some(n=>!allowed.has(n)))return {retry:false,reason:'needs_diagnosis_not_blind_rerun',failures};
+ // The complete forecast workflow is NOT safe to rerun after it published its
+ // bundle: a second research stage has a different state parent and CAS must
+ // reject it. Public-only recovery needs a separate, verified mechanism.
+ const published=steps.some(s=>s.name==='Publish forecast and learning state atomically'&&s.conclusion==='success');
+ const postpublish=failures.some(n=>n==='Request public build'||n==='Verify public autonomous cycle and code'||n==='Verify exact public predictions, directional report and code');
+ if(published&&postpublish)return {retry:false,reason:'published_bundle_requires_public_only_recovery',failures};
  return {retry:true,reason:'single_infrastructure_retry',failures};
 }
 module.exports={plan};
