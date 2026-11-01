@@ -448,6 +448,39 @@ class SelfTests(unittest.TestCase):
         result = audit([], [], [], ts('2026-10-29T10:00:00Z'))
         self.assertIsNone(result['accuracy'])
         self.assertFalse(result['perfect_future_prediction_proven'])
+    def test_unknown_or_missing_public_proof_status_must_fail_closed(self):
+        # Synthetic-only negative control. A malformed delivery entry must
+        # not silently suppress a previously eligible forecast from scoring.
+        from copy import deepcopy
+        row = {'id': 'synthetic-proof-status', 'symbol': 'TEST', 'market': 'US',
+               'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3}
+        original_proof = {'status': 'public_verified',
+                          'snapshot_generated_at': '2026-10-29T13:36:20Z',
+                          'verified_at': '2026-10-29T13:37:00Z',
+                          'prediction_ids': [row['id']],
+                          'human_notification_received': False}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        valid = deepcopy(original_proof)
+        valid['verification_id'] = audit_digest(valid)
+        self.assertEqual(audit([row], [], [valid], cutoff)['status'],
+                         'ledger_arithmetic_consistent')
+        for malformed in ({**original_proof, 'status': 'not_verified'},
+                          {k: v for k, v in original_proof.items()
+                           if k != 'status'}):
+            # Updating the fingerprint does not authorize an unknown status.
+            altered = deepcopy(malformed)
+            altered['verification_id'] = audit_digest(altered)
+            with self.subTest(status=altered.get('status')):
+                result = audit([row], [], [altered], cutoff)
+                self.assertEqual(result['status'], 'integrity_errors')
+
     def test_first_issue_and_timing(self):
         base = {'id': 'test-only', 'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
                 'status': 'research_prediction', 'observed_until': '2026-10-29T13:35:00Z',
