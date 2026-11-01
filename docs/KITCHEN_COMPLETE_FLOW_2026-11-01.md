@@ -79,7 +79,7 @@ python scripts/build_kitchen_mobile_preview.py
 
 | 항목 | 실제 결과·증거 |
 | --- | --- |
-| 생성 파일 | 앱 1,006,671B / 위젯 1,006,674B. 공개 wrapper 1,016,778B / 1,016,787B로 각각 1MiB 이내. [크기·SHA256](kitchen-complete-flow/generated-files.json). 검사한 파일을 그대로 복사했다. |
+| 생성 파일 | 앱 1,006,671B / 위젯 1,006,674B. 공개 wrapper 1,031,386B / 1,031,395B로 각각 1MiB 이내. [크기·SHA256](kitchen-complete-flow/generated-files.json). 검사한 파일을 그대로 복사했다. |
 | Node·Python | **219/219**, **264/264** 통과. 새 순수 수량/추천 33개, OCR parser/취소 9개, wrapper 정확한 원문 복원 2개 포함. |
 | 실제 UI 여정 | 신규 **22/22**, 기존 가독성 **23/23**, 기존 흐름 **27/27**, JS 예외 0. [새 여정](kitchen-complete-flow/journey-results.json) · [가독성](kitchen-complete-flow/readability-results.json) · [기존 흐름](kitchen-complete-flow/regression-results.json). |
 | 분량·날짜·차감 | 실제 폼으로 3회분 계획→234kcal/탄30·단15·지6/입력 원가3000원·5재료의 3배 사용량을 확인. 중복 기록 방지·취소 exact 복구·재차감, 계획 삭제 후 기존 식사 수정도 통과. |
@@ -105,3 +105,5 @@ python scripts/build_kitchen_mobile_preview.py
 [3회분 실제 기록 폼](kitchen-complete-flow/plan-three-portions-confirm.png) · [직접 입력한 검사 기록의 요약](kitchen-complete-flow/entered-records-home.png). 이 이미지의 수치는 합성 검사에서 입력한 값이며 첫 실행에 삽입하는 사용자 섭취량이 아니다.
 
 큰 요리 그림은 기존 아틀라스 해상도 범위여서 상세 화면에서 220×160으로 제한했다. 핵심 그림·문·아이콘 원본과 compact 이미지의 해상도를 더 낮추지 않았다. 공개 wrapper는 JSON 데이터로 원문을 정확히 복원해 opaque iframe에 넣으므로 같은 이미지 품질로 1MiB 예산을 지킨다. 혼합 대소문자 script 종료·한글·따옴표 원문 복원과 sandbox 유지도 검사했다.
+
+공개 렌더러는 HTML의 script 표기를 다시 쓰므로, 공개 wrapper의 JSON 원문은 `<template>` 안에 `<`·`&`를 이스케이프해 보관한다. 실행 코드는 이를 정확히 복원해 기존 opaque iframe에 넣는다. 렌더러의 실제 rewrite를 적용해도 원문이 같은지 회귀 검사하며, 일반 JSON script를 실행 스크립트로 오인하는 경로를 피한다.
