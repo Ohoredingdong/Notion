@@ -56,5 +56,59 @@ class ReviewedShadowCatalogueTests(unittest.TestCase):
                                     'oracle_future_peek': candidate()}))
 
 
+def with_uncertainty_signal(record, *, uncertain, selection=True):
+    """Synthetic applied forecast metadata, never a production recommendation."""
+    row = dict(record)
+    if selection:
+        row['directional_selection'] = {
+            'version': 'direction-specialists-1.0',
+            'active': 'incumbent',
+            'orders_enabled': False,
+            'strict_green_override': False,
+        }
+    row['directional_signal'] = {
+        'uncertain': uncertain,
+        'uncertainty_is_not_flat': True,
+        'all_original_predictions_still_scored': True,
+        'thresholds_are_policy_not_success_probabilities': True,
+    }
+    return row
+
+
+class FrozenUncertaintyMetadataTests(unittest.TestCase):
+    def test_correct_low_confidence_flag_remains_valid(self):
+        record = frozen_record()
+        record['probabilities'] = {'down': .42, 'flat': .34, 'up': .24}
+        record['direction'] = 'down'
+        validate(with_uncertainty_signal(record, uncertain=True))
+
+    def test_false_certain_flag_is_rejected(self):
+        record = frozen_record()
+        record['probabilities'] = {'down': .42, 'flat': .34, 'up': .24}
+        record['direction'] = 'down'
+        with self.assertRaisesRegex(ValueError, 'directional_uncertainty_mismatch'):
+            validate(with_uncertainty_signal(record, uncertain=False))
+
+    def test_false_uncertain_flag_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'directional_uncertainty_mismatch'):
+            validate(with_uncertainty_signal(frozen_record(), uncertain=True))
+
+    def test_nonboolean_uncertainty_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'invalid_directional_signal'):
+            validate(with_uncertainty_signal(frozen_record(), uncertain='no'))
+
+    def test_selected_direction_without_signal_is_rejected(self):
+        record = with_uncertainty_signal(frozen_record(), uncertain=False)
+        del record['directional_signal']
+        with self.assertRaisesRegex(ValueError, 'directional_signal_missing'):
+            validate(record)
+
+    def test_safety_flags_cannot_be_dropped(self):
+        record = with_uncertainty_signal(frozen_record(), uncertain=False)
+        record['directional_signal']['all_original_predictions_still_scored'] = False
+        with self.assertRaisesRegex(ValueError, 'invalid_directional_signal'):
+            validate(record)
+
+
 if __name__ == '__main__':
     unittest.main()

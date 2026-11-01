@@ -58,6 +58,32 @@ def validate(r):
             raise ValueError('invalid_frozen_baseline_distribution')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
+    # The published research-uncertainty flag is part of the frozen signal,
+    # not a free-text display hint. Independently recompute it from the
+    # applied three-class distribution using the *existing* 0.50/0.10 policy.
+    # A mismatched flag could disguise an uncertain call as a confident one.
+    # Legacy rows issued without direction selection contain no signal.
+    selector_present = r.get('directional_selection') is not None
+    signal_present = 'directional_signal' in r
+    if selector_present and not signal_present:
+        raise ValueError('directional_signal_missing')
+    if signal_present:
+        if not selector_present:
+            raise ValueError('invalid_directional_signal')
+        signal = r['directional_signal']
+        required = ('uncertain', 'uncertainty_is_not_flat',
+                    'all_original_predictions_still_scored',
+                    'thresholds_are_policy_not_success_probabilities')
+        if (not isinstance(signal, dict) or
+                any(name not in signal for name in required) or
+                type(signal['uncertain']) is not bool or
+                any(signal[name] is not True for name in required[1:])):
+            raise ValueError('invalid_directional_signal')
+        ranked = sorted(p, reverse=True)
+        originally_uncertain = ranked[0] < 0.50 or ranked[0] - ranked[1] < 0.10
+        if signal['uncertain'] is not originally_uncertain:
+            raise ValueError('directional_uncertainty_mismatch')
+
     # Independently validate frozen research-only challengers as evidence,
     # without promoting them or rescoring any historical outcome.
     specialists = r.get('directional_specialists')
@@ -643,6 +669,10 @@ class SelfTests(unittest.TestCase):
                    'version':'direction-specialists-1.0','active':'incumbent',
                    'fallback_reason':None,'orders_enabled':False,
                    'strict_green_override':False},
+               'directional_signal':{
+                   'uncertain':False, 'uncertainty_is_not_flat':True,
+                   'all_original_predictions_still_scored':True,
+                   'thresholds_are_policy_not_success_probabilities':True},
                'directional_specialists':{
                    'version':'direction-specialists-1.0',
                    'status':'shadow_only',
