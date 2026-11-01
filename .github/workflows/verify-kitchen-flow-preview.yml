@@ -1,0 +1,38 @@
+name: Verify kitchen flow public previews
+on:
+  push:
+    branches: [delivery/verify-kitchen-flow-20261101]
+    paths:
+      - '.github/workflows/verify-kitchen-flow-preview.yml'
+      - 'scripts/verify_kitchen_flow_public.py'
+      - 'scripts/fixtures/kitchen-flow-ocr/**'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-flow-public-verification
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Verify real HTTPS app and widget at desktop, phone and small-phone sizes
+        run: python scripts/verify_kitchen_flow_public.py --source 2b9bb16acfe3bce013086e28aa6a22c69f41c5a5 --publish-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-flow-public-browser
+          path: /tmp/kitchen-flow-public/
+          retention-days: 3
