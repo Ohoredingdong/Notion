@@ -75,7 +75,7 @@ python scripts/build_kitchen_mobile_preview.py
 
 ## 최종 실행·화면 검증
 
-**아래 수치와 링크를 채우기 전에는 최종 검증 완료로 보고하지 않는다.** 이전 가독성 수정의 50개 회귀나 공개 6개 통과를 이번 변경의 결과로 재사용하지 않는다. 실제 CDN OCR 실행, 전체 사진 객체 인식, 실제 휴대폰·Safari·Notion 검증도 각각 구분한다.
+아래는 이번 고정 생성물의 실행 결과다. 이전 작업의 통과 수치를 재사용하지 않았다. 실제 CDN OCR 실행과 전체 사진 객체 인식, 실제 휴대폰·Safari·Notion 검증을 구분한다.
 
 | 항목 | 실제 결과·증거 |
 | --- | --- |
@@ -86,11 +86,11 @@ python scripts/build_kitchen_mobile_preview.py
 | 장보기 | 2+3회분 수요 합산 후 보유 재고를 한 번만 배분. 재실행 중복 추가 없음. 기한/양을 확인해야 하는 재고에 확정 구매량을 만들지 않는다. |
 | 홈·LCD | 실제 입력 후 추천 ID·부족 수량/수량 충족 상태·0kcal/0원 및 미입력 구분 일치. 예산·영양제·월간 요약 갱신, 320/390/1120px과 opaque touch 확인. |
 | 목표·도감·보상 | 모델 상태를 미리 심지 않고 실제 UI로 목표→식사 기록→꾸밈권→타일 선택/장착 여정 통과. [기록 화면](kitchen-complete-flow/goal-meal-reward-earned.png). |
-| 실제 OCR 엔진 | 동일 엔진 바이트의 로컬 미러에서 native/opaque 둘 다 한국어 ‘신선한 우유’·500mL·2026-11-30 인식, 예외 0. [별도 로컬 근거](kitchen-complete-flow/local-ocr-engine.json). 원본 CDN 브라우저는 환경 CA 오류가 있어 아래 공개 CI로 별도 확인한다. |
+| 실제 OCR 엔진 | 동일 엔진 바이트의 로컬 미러에서 native/opaque 둘 다 한국어 ‘신선한 우유’·500mL·2026-11-30 인식, 예외 0. [별도 로컬 근거](kitchen-complete-flow/local-ocr-engine.json). 이 환경의 원본 CDN 브라우저 CA 오류와 별도로, 아래 공개 CI에서 정상 CDN의 실제 엔진·검수 UI를 앱/위젯 모두 확인했다. |
 | 저장·구버전 | 실제 편집·reload·구버전 필드 없는 거래 기록·미지 envelope 필드·운영 키·날짜·좌표 보존 통과. 공개 wrapper는 계속 opaque 임시 세션이다. |
 | 같은 상태의 전후 화면 | 앱·위젯 320×660 / 390×844 / 1120×1000. 고정 날짜, 초기 envelope, 문 네 개 열림, 선택 없음이 정확히 같다. [비교 결과](kitchen-complete-flow/comparison.json). 냉장고 폭을 줄이지 않았다. |
-| 공개 HTTPS·원본 CDN OCR | 게시한 고정 소스의 실제 HTTPS 앱·위젯 6개 프로필 및 원격 OCR 2개를 검증 후 결과를 추가한다. 로컬 미러 통과로 대신하지 않는다. |
-| PR·main·실기기 | `feat/kitchen-complete-flow`에서 작업. PR/API 결과는 후속 기록. 운영 진입점·main 미변경. 물리 휴대폰·Safari·실제 Notion 검증은 미실행. |
+| 공개 HTTPS·원본 CDN OCR | **6/6 통과**, 정상 CDN 실제 OCR **2/2 통과**. 앱·위젯 × 649×900 / 390×844 / 320×660, HTTP200·원문SHA256 일치·JS예외0. 두 phone 프로필에서 한국어 제품명·500mL·2026-11-30을 실제 읽고 검수→최종 입력 폼까지 확인. 사진 HTTP POST/동기화 요청 없음, 최종 저장 전 재고 불변. [공개 결과](kitchen-complete-flow/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41295821295), [실제 화면](kitchen-complete-flow/actual-public-ocr-review.png). |
+| PR·main·실기기 | `feat/kitchen-complete-flow` push 완료. base `feat/kitchen-readability-redesign`로 PR 생성 시도했으나 GitHub GraphQL API403 Forbidden으로 생성되지 않았다. 운영 진입점·main 미변경. 물리 휴대폰·Safari·실제 Notion 검증은 미실행. |
 
 ### 같은 상태의 화면과 실제 입력 여정
 
@@ -107,3 +107,16 @@ python scripts/build_kitchen_mobile_preview.py
 큰 요리 그림은 기존 아틀라스 해상도 범위여서 상세 화면에서 220×160으로 제한했다. 핵심 그림·문·아이콘 원본과 compact 이미지의 해상도를 더 낮추지 않았다. 공개 wrapper는 JSON 데이터로 원문을 정확히 복원해 opaque iframe에 넣으므로 같은 이미지 품질로 1MiB 예산을 지킨다. 혼합 대소문자 script 종료·한글·따옴표 원문 복원과 sandbox 유지도 검사했다.
 
 공개 렌더러는 HTML의 script 표기를 다시 쓰므로, 공개 wrapper의 JSON 원문은 `<template>` 안에 `<`·`&`를 이스케이프해 보관한다. 실행 코드는 이를 정확히 복원해 기존 opaque iframe에 넣는다. 렌더러의 실제 rewrite를 적용해도 원문이 같은지 회귀 검사하며, 일반 JSON script를 실행 스크립트로 오인하는 경로를 피한다.
+
+
+## 공개 검토 링크와 전달 검증
+
+고정 소스는 `f152f80d60620dd1882b56bbd2a8efd85dceb729`다. 후속 증거/문서 커밋은 앱과 위젯 생성 파일을 바꾸지 않는다.
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/f152f80d60620dd1882b56bbd2a8efd85dceb729/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/f152f80d60620dd1882b56bbd2a8efd85dceb729/previews/mobile/widget.html)
+- [PR 비교/작성 화면](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-readability-redesign...feat/kitchen-complete-flow?expand=1) — API403으로 PR 자체는 생성되지 않았다.
+
+최초 공개 검사는 일반 JSON script의 내용까지 외부 렌더러가 다시 써서 실패했다([실패 요약](kitchen-complete-flow/public-initial-failure.json)). 실제 렌더러 소스와 오류를 확인해 이스케이프한 template로 전달 방식을 수정했고, 최종 wrapper로 로컬72개와 실제 공개6개/OCR2개를 다시 통과했다. 내부 앱 원문·native 파일·8개 인코딩 이미지 바이트는 유지했다. 실패를 통과로 바꾸거나 외부 요청을 미러로 돌려 최종 성공으로 기록하지 않았다.
+
+검증용 CI는 `delivery/verify-kitchen-flow-20261101`, 합성 결과는 `preview/kitchen-flow-validation-20261101`에만 게시했다. main/Pages 설정과 운영 데이터는 변경하지 않았다. 공개 미리보기는 임시 세션이며 필요한 기록은 설정·백업의 원문으로 보관한다. 이 결과를 미연결 기능 전체의 완성이나 사용자의 최종 디자인 승인으로 해석하지 않는다.
