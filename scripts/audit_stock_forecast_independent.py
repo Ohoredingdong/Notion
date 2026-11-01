@@ -284,6 +284,15 @@ def audit(records, outcomes, deliveries, cutoff):
             # forecasts from prospective scoring or apparent coverage.
             errors.append({'id': proof_id, 'error': 'unexpected_public_proof_status'})
             continue
+        # Website verification is NOT proof of receipt by a specific person.
+        # The present public-proof schema has no independently authenticated
+        # recipient acknowledgment. Do not accept a boolean/string receipt
+        # claim even if the untrusted proof fingerprint was recomputed.
+        # Missing historical optional flags remain absent, never backfilled.
+        if ('human_notification_received' in d and
+                d['human_notification_received'] is not False):
+            errors.append({'id': proof_id, 'error': 'unsupported_human_receipt_claim'})
+            continue
         # A verified public snapshot must identify a meaningful set of frozen
         # calls. An empty/malformed/repeated membership is not publication proof.
         # Even a recomputed canonical fingerprint cannot make it such proof.
