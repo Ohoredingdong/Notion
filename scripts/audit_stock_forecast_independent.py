@@ -284,6 +284,15 @@ def audit(records, outcomes, deliveries, cutoff):
             # forecasts from prospective scoring or apparent coverage.
             errors.append({'id': proof_id, 'error': 'unexpected_public_proof_status'})
             continue
+        # A verified public snapshot must identify a meaningful set of frozen
+        # calls. An empty/malformed/repeated membership is not publication proof.
+        # Even a recomputed canonical fingerprint cannot make it such proof.
+        members = d.get('prediction_ids')
+        if (not isinstance(members, list) or not members or
+                any(not isinstance(rid, str) or not rid for rid in members) or
+                len(set(members)) != len(members)):
+            errors.append({'id': proof_id, 'error': 'invalid_public_proof_prediction_ids'})
+            continue
         # Public verification cannot predate the snapshot nor prove a forecast
         # that did not yet exist when that snapshot was generated.
         try:
@@ -296,7 +305,7 @@ def audit(records, outcomes, deliveries, cutoff):
             errors.append({'id': d.get('verification_id'), 'error': 'snapshot_generated_after_verification'})
             continue
         at_least_one_valid_id = False
-        for rid in d.get('prediction_ids', []):
+        for rid in members:
             forecast = by_id.get(rid)
             if forecast is None:
                 errors.append({'id': rid, 'error': 'public_snapshot_unknown_prediction_id'})
@@ -484,6 +493,44 @@ class SelfTests(unittest.TestCase):
             with self.subTest(status=altered.get('status')):
                 result = audit([row], [], [altered], cutoff)
                 self.assertEqual(result['status'], 'integrity_errors')
+
+    def test_public_proof_membership_cannot_be_empty_malformed_or_repeated(self):
+        # Synthetic-only RED/GREEN control: canonical proof hashes alone do
+        # not establish that a public snapshot contains any frozen call.
+        row = {'id': 'synthetic-proof-membership', 'symbol': 'TEST', 'market': 'US',
+               'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3}
+        proof = {'status': 'public_verified',
+                 'snapshot_generated_at': '2026-10-29T13:36:20Z',
+                 'verified_at': '2026-10-29T13:37:00Z',
+                 'prediction_ids': [row['id']],
+                 'human_notification_received': False}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        good = {**proof, 'verification_id': audit_digest(proof)}
+        self.assertEqual(audit([row], [], [good], cutoff)['status'],
+                         'ledger_arithmetic_consistent')
+        malformed_memberships = [[], {}, [row['id'], row['id']]]
+        for membership in malformed_memberships:
+            payload = {**proof, 'prediction_ids': membership}
+            tampered = {**payload, 'verification_id': audit_digest(payload)}
+            with self.subTest(membership=membership):
+                result = audit([row], [], [tampered], cutoff)
+                self.assertEqual(result['status'], 'integrity_errors')
+                self.assertTrue(any(e['error'] == 'invalid_public_proof_prediction_ids'
+                                    for e in result['errors']))
+        missing = {key: value for key, value in proof.items()
+                   if key != 'prediction_ids'}
+        missing['verification_id'] = audit_digest(missing)
+        result = audit([row], [], [missing], cutoff)
+        self.assertEqual(result['status'], 'integrity_errors')
+        self.assertTrue(any(e['error'] == 'invalid_public_proof_prediction_ids'
+                            for e in result['errors']))
 
     def test_first_issue_and_timing(self):
         base = {'id': 'test-only', 'symbol': 'TEST', 'market': 'US', 'mode': 'intraday',
