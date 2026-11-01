@@ -12,3 +12,9 @@ The producer computes `directional_signal.uncertain` from the **already-frozen a
 **Evidence baseline** (not a fresh sample): archived immutable file SHAs ledger `1f254b2302dc1350ad95363ac4fbba5a4b145a46`, outcomes `f24b7e93f9aa438b8084e857429dbef99031d8fc`, delivery proofs `e5dabbecc48346f1fd29e7e49aa650678c11a785`. 89 issuances / 68 unique targets / 60 nonoverlapping / 42 scored / 13 correct / mean Brier 0.6493241094. 42 modern records have both selection and uncertainty metadata; 47 legacy rows omit both. The original 42 modern flags agree with the unchanged formula; no real corruption found.
 
 **Operational limitations**: The frozen-output audit is not a record of user notification receipt, exchange-verified price, executable bid/ask, after-fee prospective trade or untouched forward holdout. The rule remains that 24 groups have not met directional acceptance, `timing_utility=not_proven`, no actual orders and strict-green-1.0 unchanged.
+
+## Actual reproducibility result — RED (before changing the auditor)
+
+- [Draft PR #87](https://github.com/Ohoredingdong/Notion/pull/87) was opened strictly on the research branch.
+- Actual [RED independent-audit CI run 41264818370](https://github.com/Ohoredingdong/Notion/actions/runs/41264818370), job 124725310013, **failed as preregistered**: 11 shadow-catalogue/signal tests; the legitimate low-confidence fixture passed while all five deliberately malformed signal fixtures were incorrectly accepted by the original independent auditor (AssertionError: ValueError not raised). Other independent suites preceding this fixture completed successfully.
+- This is a **synthetic-only reproduced missing guard**, not an observed corrupted production row and not a failure of the market data feed. No forecast, model, probability, threshold, outcome, source data, user receipt or order was changed. The one RED CI run is recorded as a deliberate failed test rather than discarded from trial accounting.
