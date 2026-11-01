@@ -22,6 +22,35 @@
 
 ## 검증과 증거
 
-생성물의 크기와 SHA256은 [generated-files.json](kitchen-tabs/generated-files.json)에 기록했다. 같은 8개 이미지의 인코딩 바이트를 보존해 UI만 재생성했다. `test_kitchen_mobile_transport` 2/2를 통과했다. 실제 브라우저와 공개 HTTPS의 최종 결과는 고정 소스를 검사한 뒤 후속 근거 커밋에 기록한다. 이 단계에서 미실행 검사를 통과로 표시하지 않는다.
+최종 UI 소스는 `6a02899fdbdec9cc46d92bc750864c78a6f37e3d`다. 후속 문서·근거·회귀 체크 보강 커밋은 이 생성 HTML을 바꾸지 않는다. 검증에는 별도 시안의 예시 재료와 테스트용 수동 기록을 사용했다.
 
-공개 검토는 기존 운영과 별도 시안이며 opaque iframe에서 임시 세션이다. 물리 휴대폰·Safari·실제 Notion 검증과 브라우저의 모바일 크기 검사를 구별한다. main과 Pages 설정은 변경하지 않는다.
+| 검사 | 실제 결과와 근거 |
+| --- | --- |
+| 생성·전송 | 앱1,020,863B / 위젯1,020,866B, 모바일 wrapper1,046,358B / 1,046,367B로 각1MiB 이내다. [바이트·SHA256](kitchen-tabs/generated-files.json). 같은8개 인코딩 이미지 바이트와 원본 자산을 유지했고, 사용하지 않는 숨긴 목표 스타일만 정리했다. 전송 단위검사2/2 통과. |
+| 기능·저장 | **82/82 통과**, JS예외0. 기존 냉장고27 + 가독성23 + 식단/재고/예산/복구 실제 흐름22 + 새 탭10이다. [요약](kitchen-tabs/summary.json), [흐름](kitchen-tabs/journey-results.json), [가독성](kitchen-tabs/readability-results.json), [회귀](kitchen-tabs/regression-results.json), [탭](kitchen-tabs/tabs-results.json). 최종 생성물4개의 해시가 검사 입력과 일치한다. |
+| 탭·긴 목록 | 4개 동일폭44px 탭·단일 패널·8개 하위 보기·방향키/Home/End·모달 초점 복귀·숨긴 장면에서 조리대 복귀를 실제 조작했다. 영양제16개를 실제 form으로 등록해 탭 내부 스크롤로 끝까지 체크하고 기록과 초점을 확인했다. 탭만 오간 경우 원본 envelope가 완전히 같다. |
+| 작은 화면 | 앱/위젯×320/390×일반/opaque **8/8** 추가 사전 검사: 헤더 제목/상태/백업/재료 목록 겹침0, 320px 실제 이름 glyph 겹침0, 문서 스크롤0. [측정](kitchen-tabs/compact-preflight.json). 100,000g 수치도 칸 안에 줄바꿈되어 기존 경계 검사를 통과했다. 작은 화면의 주요 영양값20px·상세14px·입력16px를 유지한다. |
+| 같은 상태 전후 | 앱/위젯390·1120 **4개**, 같은 envelope/Nov1/문4개 열림/선택 없음. 원본 데이터가 같고 원래 가로세로 비율·중앙 배치를 유지한다. 앱390 페이지3062→844px, 위젯390 3059→844px, 넓은 화면2539/2937→1000px다. 가로 넘침/하단 작업 영역과 냉장고 겹침0. [비교](kitchen-tabs/comparison.json), [변경 전 manifest](kitchen-tabs/before-manifest.json), [후](kitchen-tabs/after-manifest.json). |
+| 크기 차이 | 새 카메라 탭을 계속 보이게 하므로 native390 장면은370→336.72px로 약9% 줄고, 넓은 화면도 약8% 줄었다. 그림의 native 크기가 그대로라는 주장은 하지 않는다. 최종 opaque320에서는 저장 안내를 헤더로 옮겨 장면237.31px·본체227.61px 높이를 확보하며 native와 같은 공간을 사용한다. 냉장고 구도·배경 설치선도 화면에서 확인했다. |
+| 실제 공개 HTTPS | 앱/위젯×649×900·390×844·320×660 **6/6**, 정상 원본CDN OCR **2/2** 통과. HTTP200·원문SHA256 일치·JS0·실제 터치/문/양념·탭·예산·식단·사진 검수 흐름을 확인했다. [최종 공개 결과](kitchen-tabs/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41317446189). 이전 후보 결과를 최종 소스 결과로 재사용하지 않았다. |
+
+공개 검토는 기존 운영과 별도 시안이며 opaque iframe에서 임시 세션이다. 화면을 닫기 전에 헤더 백업으로 보관한다. 물리 휴대폰·Safari·실제 Notion 검증과 브라우저의 모바일 크기 검사를 구별한다. main과 Pages 설정은 변경하지 않았다.
+
+## 실제 화면
+
+같은 데이터·문·뷰포트의 [변경 전](kitchen-tabs/app-390-before.png) / [변경 후](kitchen-tabs/app-390-after.png). [PC](kitchen-tabs/app-1120-after.png) · [위젯](kitchen-tabs/widget-390-after.png) · [320px 공개 프레임](kitchen-tabs/app-320-opaque.png).
+
+| 추천 요리 탭 | 식비 탭 | 목표·도감 탭 |
+| --- | --- | --- |
+| ![추천](kitchen-tabs/meals.png) | ![식비](kitchen-tabs/budget.png) | ![목표](kitchen-tabs/growth.png) |
+
+양념 비교는 같은 재료를 선반으로 옮긴 상태다. [중복 배지 이전](kitchen-tabs/sauces-before.png) / [단일 주석 이후](kitchen-tabs/sauces-after.png). 사진으로 제품을 새로 인식하거나 생성한 결과로 제시하는 이미지가 아니다.
+
+## 공개 확인과 반영 상태
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6a02899fdbdec9cc46d92bc750864c78a6f37e3d/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/6a02899fdbdec9cc46d92bc750864c78a6f37e3d/previews/mobile/widget.html)
+
+`feat/kitchen-tab-navigation`에 push했다. base `fix/kitchen-subtle-labels`로 PR 생성 시도는 GitHub GraphQL API403 Forbidden으로 실패했다. [PR 비교/작성](https://github.com/Ohoredingdong/Notion/compare/fix/kitchen-subtle-labels...feat/kitchen-tab-navigation?expand=1).
+
+검증용 CI는 `delivery/verify-kitchen-tabs-20261101`, 합성 결과는 `preview/kitchen-tabs-validation-20261101`에만 게시했다. 최종 검증 source는 위6a02899f이며, 최초 후보 ed548539의 결과는 별도로 보존했다. main·Pages 설정·운영 진입점과 운영 데이터를 바꾸지 않았다.

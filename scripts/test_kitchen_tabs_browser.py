@@ -86,6 +86,45 @@ def main():
             assert sum(t['tabIndex'] == 0 for t in metrics['tabs']) == 1, metrics
             return metrics
 
+        def header(frame):
+            result = frame.evaluate('''()=>{
+                const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,left:r.left,right:r.right,top:r.top,bottom:r.bottom};};
+                const selectors=['.masthead h1','.header-actions button','#homeStorageNotice span','#homeStorageNotice button'];
+                const rows=selectors.map(selector=>{const e=document.querySelector(selector);return {selector,e,r:e?rect(e):null};})
+                    .filter(v=>v.r?.width&&v.r?.height);
+                const overlaps=[];for(let i=0;i<rows.length;i++)for(let j=i+1;j<rows.length;j++){
+                    const a=rows[i].r,b=rows[j].r;if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>.5&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>.5)
+                        overlaps.push([rows[i].selector,rows[j].selector]);
+                }
+                return {overlaps,rows:rows.map(({selector,e,r})=>({selector,...r,hit:e.tagName!=='BUTTON'||document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===e}))};
+            }''')
+            assert not result['overlaps'], result
+            assert all(row['left'] >= 0 and row['hit'] for row in result['rows']), result
+            backup = next((row for row in result['rows'] if row['selector'] == '#homeStorageNotice button'), None)
+            if backup:
+                assert backup['width'] >= 44 and backup['height'] >= 44, backup
+                expect(frame.locator('#homeStorageNotice')).to_have_attribute('aria-label', '임시 세션입니다. 닫기 전에 백업해 주세요.')
+            return result
+
+        def small_shelf_labels(frame):
+            result = frame.evaluate('''()=>{
+                const rows=[];for(const e of document.querySelectorAll('.fridge-interiors .shelf-label:not(.is-selected) b')){
+                    const label=e.closest('.shelf-label'),range=new Range();range.selectNodeContents(e);
+                    for(const r of range.getClientRects())if(r.width&&r.height)rows.push({id:label.dataset.forItem,text:e.textContent,left:r.left,right:r.right,top:r.top,bottom:r.bottom});
+                }
+                const overlaps=[];for(let i=0;i<rows.length;i++)for(let j=i+1;j<rows.length;j++){
+                    const a=rows[i],b=rows[j];if(a.id!==b.id&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>.5&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>.5)
+                        overlaps.push([a.text,b.text]);
+                }
+                const visibleQuantities=[...document.querySelectorAll('.fridge-interiors .shelf-label:not(.is-selected) small')]
+                    .filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).length;
+                return {rows,overlaps,visibleQuantities};
+            }''')
+            assert result['rows'], result
+            assert not result['overlaps'], result
+            assert result['visibleQuantities'] == 0, result
+            return result
+
         try:
             profiles = [(mode, width, height, False) for mode in ('app', 'widget')
                         for width, height in ((320, 660), (390, 844), (1120, 1000))]
@@ -95,6 +134,8 @@ def main():
                 before = frame.evaluate('KitchenJournal.getEnvelope()')
                 fridge = frame.locator('.fridge-stage').bounding_box()
                 nav = frame.locator('.home-shortcuts').bounding_box()
+                header_metrics = header(frame)
+                shelf_metrics = small_shelf_labels(frame) if width == 320 else None
                 for name, sub in [('meals', 'recommendation'), ('meals', 'plans'), ('records', 'nutrition'),
                                   ('records', 'budget'), ('records', 'supplements'), ('records', 'monthly'),
                                   ('kitchen', 'growth'), ('kitchen', 'connections'), ('fridge', None)]:
@@ -145,7 +186,7 @@ def main():
                 frame.locator('.camera-tabs [data-camera="fridge"]').click()
                 viewport(frame)
                 report['profiles'].append({'mode': mode, 'width': width, 'height': height, 'opaque': opaque,
-                                           'metrics': viewport(frame)})
+                                           'metrics': viewport(frame), 'header': header_metrics, 'small_shelf_labels': shelf_metrics})
                 passed(f'{mode} {width}x{height} {"opaque touch" if opaque else "native"}: one viewport, keyboard tabs, stable fridge, recipe-to-counter focus and exact records')
                 context.close()
 
