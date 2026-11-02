@@ -588,6 +588,73 @@ class SelfTests(unittest.TestCase):
         self.assertTrue(any(e['error'] == 'invalid_public_proof_prediction_ids'
                             for e in result['errors']))
 
+    def test_outcome_provenance_assertions_must_be_independently_supported(self):
+        # Preregistered research-only negative controls. No operating evidence
+        # is changed and a stored price movement is never a paper fill.
+        row = {'id': 'synthetic-outcome-claims', 'symbol': 'TEST',
+               'market': 'US', 'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3}
+        outcome = {'id': row['id'], 'symbol': row['symbol'], 'mode': row['mode'],
+                   'status': 'observed', 'issued_at': row['issued_at'],
+                   'target': row['target'], 'evaluated_at': '2026-10-29T14:31:00Z',
+                   'target_open': 100., 'target_close': 100., 'return_pct': 0.,
+                   'actual': 'flat', 'predicted': 'flat', 'correct': True,
+                   'brier_loss': .24,
+                   'public_before_target_verified': True,
+                   'delivery_verified_at': '2026-10-29T13:37:00Z',
+                   'price_observation_not_execution_return': True,
+                   'single_provider_not_execution': True}
+        payload = {'status': 'public_verified',
+                   'snapshot_generated_at': '2026-10-29T13:36:30Z',
+                   'verified_at': '2026-10-29T13:37:00Z',
+                   'prediction_ids': [row['id']],
+                   'human_notification_received': False}
+        proof = {**payload, 'verification_id': audit_digest(payload)}
+        cutoff = ts('2026-10-29T15:00:00Z')
+        baseline = audit([row], [outcome], [proof], cutoff)
+        self.assertEqual(baseline['status'], 'ledger_arithmetic_consistent')
+        self.assertEqual(baseline['scored'], 1)
+        cases = (
+            ('price_observation_not_execution_return', False,
+             'unsupported_execution_return_claim'),
+            ('single_provider_not_execution', False,
+             'unsupported_independent_provider_claim'),
+            ('public_before_target_verified', False,
+             'outcome_public_timing_claim_mismatch'),
+            ('public_before_target_verified', 'true',
+             'outcome_public_timing_claim_mismatch'),
+        )
+        for field, claimed, reason in cases:
+            with self.subTest(field=field, claimed=claimed):
+                tampered = {**outcome, field: claimed}
+                result = audit([row], [tampered], [proof], cutoff)
+                self.assertEqual(result['status'], 'integrity_errors')
+                self.assertIn(reason, [x['error'] for x in result['errors']])
+        # A false early-publication claim is not rescued by a missing proof;
+        # removing its copied timestamp avoids an unrelated identity error.
+        without_proof = {k: v for k, v in outcome.items()
+                         if k != 'delivery_verified_at'}
+        result = audit([row], [without_proof], [], cutoff)
+        self.assertEqual(result['status'], 'integrity_errors')
+        self.assertIn('outcome_public_timing_claim_mismatch',
+                      [x['error'] for x in result['errors']])
+        # Older rows without optional assertions must not be retroactively
+        # assigned new fields or silently turned into execution claims.
+        for field in ('price_observation_not_execution_return',
+                      'single_provider_not_execution',
+                      'public_before_target_verified'):
+            with self.subTest(legacy_missing=field):
+                legacy = {k: v for k, v in outcome.items() if k != field}
+                preserved = audit([row], [legacy], [proof], cutoff)
+                self.assertEqual(preserved['status'], 'ledger_arithmetic_consistent')
+                self.assertEqual(preserved['scored'], 1)
+
     def test_outcome_issuance_timestamp_must_match_frozen_forecast(self):
         # One preregistered synthetic RED/GREEN outcome-lineage negative
         # control. This must not alter or learn from any production outcome.
