@@ -22,10 +22,43 @@ function company(id){return rows().find(x=>String(x.symbol)===String(id));}
 
 function series(id){const r=D.charts?.series?.[id];return r&&r.status!=="unavailable"&&Array.isArray(r.bars)&&r.bars.length>1?r:null;}
 
-function change(c){const s=series(String(c?.symbol)),a=s?.bars;if(!s||!c||s.price_session!==c.price_session||!a||a.length<2||N(c.price)===null||Math.abs(a.at(-1).close-c.price)>Math.max(.01,c.price*1e-6))return null;return a.at(-2).close?(a.at(-1).close/a.at(-2).close-1)*100:null;}
-
-function pointData(ids,period){const sets=ids.map(id=>{const s=series(id),c=company(id);return c&&s?.price_session!==c.price_session?null:s});if(!sets.length||sets.some(x=>!x||!x.bars?.length))return null;const end=sets.map(x=>x.bars.at(-1).date).sort()[0],days={"1W":7,"1M":31,"3M":93,"6M":190}[period]||93;const from=new Date(Date.parse(end+"T00:00:00Z")-days*86400000).toISOString().slice(0,10);let dates=sets[0].bars.map(b=>b.date).filter(x=>x>=from&&x<=end);dates=dates.filter(x=>sets.every(s=>s.bars.some(b=>b.date===x)));if(dates.length<2)return null;const mapped=sets.map(s=>{const map=new Map(s.bars.map(b=>[b.date,b.close])),prices=dates.map(d=>map.get(d));return {symbol:s.symbol,name:s.name,currency:s.currency,prices,returns:prices.map(v=>(v/prices[0]-1)*100)}});return {dates,series:mapped,sets};}
-
+function chartFor(id){
+ const c=company(id),source=series(String(id));
+ if(!source?.bars?.length)return null;
+ const original=source.bars.filter(b=>typeof b?.date==="string"&&N(b.close)!==null);
+ if(original.length<2)return null;
+ const last=original.at(-1),nowDate=String(c?.price_session||"");
+ if(!c||!nowDate||N(c.price)===null)return {...source,bars:original,chart_status:"historical_only",historical_end:last.date};
+ if(c.currency&&source.currency&&c.currency!==source.currency)return null;
+ const dateLast=Date.parse(last.date+"T00:00:00Z"),dateNow=Date.parse(nowDate+"T00:00:00Z");
+ if(!Number.isFinite(dateLast)||!Number.isFinite(dateNow))return {...source,bars:original,chart_status:"dates_unverified",historical_end:last.date};
+ if(dateNow===dateLast){
+  const match=Math.abs(last.close-c.price)<=Math.max(.02,Math.abs(c.price)*1e-6);
+  return {...source,bars:original,chart_status:match?"aligned":"provider_value_mismatch",historical_end:last.date};
+ }
+ if(dateNow<dateLast)return {...source,bars:original.filter(x=>x.date<=nowDate),chart_status:"history_newer_than_snapshot",historical_end:last.date};
+ const gap=(dateNow-dateLast)/86400000;
+ if(gap>12)return {...source,bars:original,chart_status:"history_outdated",historical_end:last.date};
+ const appended={date:nowDate,close:c.price,volume:null,origin:"latest_research_snapshot",not_interpolated:true};
+ return {...source,bars:[...original,appended],chart_status:"snapshot_appended",historical_end:last.date};
+}
+function change(c){
+ const x=chartFor(String(c?.symbol)),b=x?.bars;
+ if(!c||!x||!["aligned","snapshot_appended"].includes(x.chart_status)||b.length<2)return null;
+ const before=b.at(-2)?.close,last=b.at(-1)?.close;
+ return N(before)!==null&&N(last)!==null&&before!==0?(last/before-1)*100:null;
+}
+function pointData(ids,period){
+ const sets=ids.map(chartFor);
+ if(!sets.length||sets.some(x=>!x||x.bars?.length<2))return null;
+ const end=sets.map(s=>s.bars.at(-1).date).sort()[0],days={"1W":7,"1M":31,"3M":93,"6M":190}[period]||93;
+ const from=new Date(Date.parse(end+"T00:00:00Z")-days*86400000).toISOString().slice(0,10);
+ let dates=sets[0].bars.map(b=>b.date).filter(d=>d>=from&&d<=end);
+ dates=dates.filter(d=>sets.every(s=>s.bars.some(b=>b.date===d)));
+ if(dates.length<2)return null;
+ const mapped=sets.map(s=>{const m=new Map(s.bars.map(b=>[b.date,b.close])),values=dates.map(d=>m.get(d));return {symbol:s.symbol,name:s.name,currency:s.currency,prices:values,returns:values.map(v=>(v/values[0]-1)*100),status:s.chart_status,historical_end:s.historical_end}});
+ return {dates,series:mapped,sets,calendar_end:end};
+}
 function mini(s,r){const arr=s?.bars?.slice(-22).map(b=>b.close).filter(v=>N(v)!==null)||[];if(arr.length<2)return "";const lo=Math.min(...arr),hi=Math.max(...arr),p=arr.map((v,i)=>`${i*80/(arr.length-1)},${40-(v-lo)/(hi-lo||1)*35}`).join(" ");return `<svg class="nr-mini-chart" viewBox="0 0 80 44" aria-label="저장된 지수 추이"><polyline points="${p}" fill="none" stroke="${r<0?"#4b84d7":"#e57286"}" stroke-width="1.5"/></svg>`;}
 
 function url(u){try{const v=new URL(u);return v.protocol==="https:"?v.href:""}catch{return"";}}
@@ -145,6 +178,6 @@ function render(){const host=document.getElementById("nr-home-content");if(!host
 
 function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;const c=window.StockRadarFlowV2?.pick?.();if(c)selected=String(c.symbol);render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
-function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id))selected=String(id)},deep,helpers:{I,change,pointData,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();}
+function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id))selected=String(id)},deep,helpers:{I,change,pointData,chartFor,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
