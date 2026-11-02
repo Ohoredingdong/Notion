@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from collections import Counter
 from pathlib import Path
 
@@ -109,6 +109,18 @@ def audit_attempt_coverage(attempts, predictions, report):
                 referenced.add(pred_id)
                 if forecast.get("symbol") != row.get("symbol") or forecast.get("mode") != row.get("mode"):
                     errors.append("attempt_prediction_symbol_mode_mismatch")
+                # An attempt cannot claim to reference a forecast that would
+                # not be issued until minutes later. The scheduler captures
+                # checked_at before the row is frozen: archived same-run checks
+                # precede issued_at by as much as 47 ms, so allow <=1 second
+                # solely for local pipeline clock ordering, not user delivery.
+                try:
+                    issuance = checked_instant(forecast.get("issued_at"))
+                except (ValueError, TypeError, OverflowError):
+                    errors.append("invalid_frozen_forecast_issued_at")
+                else:
+                    if checked is not None and issuance - checked > timedelta(seconds=1):
+                        errors.append("attempt_forecast_not_yet_issued")
         elif status == "no_call":
             no_calls += 1
             if row.get("prediction_id") is not None:
