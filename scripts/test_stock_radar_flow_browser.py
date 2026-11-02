@@ -94,7 +94,7 @@ with sync_playwright() as play:
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
         check("Market index cards",
-            page.locator(".fx-market-row .nr-index").count() == 4)
+            page.locator(".fx-v5-markets .nr-index").count() == 4)
         check("Signal probability labels",
             page.locator(".fx-list-panel .fx-row").count() > 0 and
             page.locator(".fx-v5-cockpit .fx-v5-ai").count() == 1)
@@ -125,7 +125,7 @@ with sync_playwright() as play:
               symbol in page.locator(".fx-focus-head").inner_text())
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
         check("Details preserve selected ticker",
-            symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
+            symbol in page.locator(".fx-detail-intro p").inner_text() and page.locator(".fx-detail-content").count()==1)
         check("Deep financial analysis now integrated",
             page.locator(".fx-detail-mid .fx-panel").count() == 3 and
             page.locator(".fx-detail-lower .fx-panel").count() == 3 and
