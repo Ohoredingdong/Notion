@@ -1,0 +1,38 @@
+name: Research-only radar flow browser isolation
+on:
+  push:
+    branches:
+      - research/timing-flow-browser-isolation-20261102-1434z
+    paths:
+      - '.github/workflows/research-stock-flow-browser-20261102.yml'
+permissions:
+  contents: read
+jobs:
+  independent-modern-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install headless browser
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Verify unchanged modern UI syntax and existing test
+        run: |
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python -m py_compile scripts/test_stock_radar_flow_browser.py
+      - name: Run existing modern-flow browser suite on saved data
+        run: |
+          python -m http.server 8765 >/tmp/research-radar-browser-http.log 2>&1 &
+          python scripts/test_stock_radar_flow_browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-modern-radar-flow-evidence
+          retention-days: 5
+          path: |
+            decision-browser-tests/
