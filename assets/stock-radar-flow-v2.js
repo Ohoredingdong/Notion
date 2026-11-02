@@ -82,19 +82,30 @@ function fxStockPanel(ctx,expanded){
 }
 
 function fxChart(c){
- const h=fxHelpers(),p=h.pointData?.([String(c.symbol)],fxLocal.period),series=p?.series?.[0],vs=series?.prices||[];
- if(vs.length<2)return '<div class="fx-chart-empty">비교 가능한 실제 종가가 없습니다.</div>';
- const w=620,H=166,L=9,R=10,T=8,B=18,lo=Math.min(...vs),hi=Math.max(...vs),pad=(hi-lo||Math.abs(hi)*.01||1)*.18;
- const x=i=>L+i*(w-L-R)/(vs.length-1),y=v=>T+(hi+pad-v)*(H-B-T)/(hi-lo+2*pad),pts=vs.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");
- const rising=vs.at(-1)>=vs[0],color=rising?"#df617a":"#4b83d3";
- return `<svg class="fx-chart-svg" viewBox="0 0 ${w} ${H}" role="img" aria-label="${fxEscape(c.name)} ${fxEscape(p.dates[0])}부터 ${fxEscape(p.dates.at(-1))}까지의 실제 종가 차트">
- ${[.2,.5,.8].map(k=>`<line x1="${L}" x2="${w-R}" y1="${T+k*(H-T-B)}" y2="${T+k*(H-T-B)}" stroke="#e6edf7" stroke-dasharray="4 4"/>`).join("")}
- <polygon points="${L},${H-B} ${pts} ${w-R},${H-B}" fill="${rising?"#fff0f4":"#eaf2ff"}"/>
- <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
- <circle cx="${x(vs.length-1)}" cy="${y(vs.at(-1))}" r="4.8" fill="${color}" stroke="white" stroke-width="2"/></svg>
- <div class="fx-chart-foot"><span>${fxEscape(p.dates[0])}</span><span>확정 일봉</span><span>${fxEscape(p.dates.at(-1))}</span></div>`;
+ const h=fxHelpers(),p=h.pointData?.([String(c.symbol)],fxLocal.period),line=p?.series?.[0],vals=line?.prices||[];
+ if(vals.length<2)return '<div class="fx-chart-empty">비교할 수 있는 과거 종가 기록이 없습니다. 다른 기간을 선택하거나 수집 상태를 확인하세요.</div>';
+ const W=700,H=230,L=59,R=63,T=14,B=31,lo=Math.min(...vals),hi=Math.max(...vals),pad=(hi-lo||Math.abs(hi)*.01||1)*.14;
+ const x=i=>L+i*(W-L-R)/Math.max(1,vals.length-1),y=v=>T+(hi+pad-v)*(H-T-B)/(hi-lo+2*pad);
+ const pts=vals.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" "),rising=vals.at(-1)>=vals[0],stroke=rising?"#db5a76":"#3c77ca";
+ const anchors=[0,.5,1].map(t=>{const v=lo+(hi-lo)*t;return `<line x1="${L}" x2="${W-R+3}" y1="${y(v)}" y2="${y(v)}" stroke="#e9eef7" stroke-dasharray="5 5"/><text x="${L-9}" y="${y(v)+4}" fill="#8c9fb7" font-size="12" text-anchor="end">${fxNum(v,0)}</text>`}).join("");
+ const original=p?.sets?.[0];
+ const latest=p.dates.at(-1),hist=original?.historical_end,additional=original?.chart_status==="snapshot_appended";
+ const actual=original?.bars||[];
+ const atDate=new Map(actual.map(b=>[b.date,b.volume]));
+ const vol= p.dates.map(k=>fxN(atDate.get(k)));const max=Math.max(0,...vol.filter(v=>v!==null));
+ const volumeColumns=max>0?vol.map((v,i)=>v===null?"":`<rect x="${x(i)-3}" y="${H-B-20*(v/max)}" width="6" height="${20*v/max}" fill="#b9c9e7" opacity=".72"/>`).join(""):"";
+ const caution=additional?`과거 일봉 ${fxEscape(hist)} + 이후 저장 종가 ${fxEscape(latest)} (중간 가격 연결은 생략)`:
+  original?.chart_status==="aligned"?"실제 완료 거래일 종가":`차트 기준일 ${fxEscape(hist||"확인 전")} · 저장 종가와 날짜가 다를 수 있습니다`;
+ return `<svg class="fx-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fxEscape(c.name)} ${fxEscape(p.dates[0])}부터 ${fxEscape(latest)}까지 검증된 실제 종가">
+ <defs><linearGradient id="fx-price-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${stroke}" stop-opacity=".17"/><stop offset="1" stop-color="${stroke}" stop-opacity=".015"/></linearGradient></defs>
+ ${anchors}<polygon points="${L},${H-B} ${pts} ${W-R},${H-B}" fill="url(#fx-price-fill)"/>
+ ${volumeColumns}
+ <polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"/>
+ <circle cx="${x(vals.length-1)}" cy="${y(vals.at(-1))}" r="5" fill="${stroke}" stroke="white" stroke-width="2.5"/>
+ <rect x="${W-R+4}" y="${y(vals.at(-1))-13}" rx="6" width="${R-8}" height="25" fill="#274a78"/>
+ <text x="${W-R+(R-8)/2+4}" y="${y(vals.at(-1))+5}" text-anchor="middle" fill="white" font-size="11.7" font-weight="700">${fxNum(vals.at(-1),0)}</text>
+ </svg><div class="fx-chart-foot"><span>${fxEscape(p.dates[0])}</span><span>${fxEscape(caution)}</span><span>${fxEscape(latest)}</span></div>`;
 }
-
 function fxBars(c,ctx){
  const sig=fxPrediction(c,ctx),r=sig.r;
  if(sig.value===null)return '<div class="fx-chart-empty">이 종목의 방향 연구 신호는 미발행입니다.</div>';
