@@ -123,7 +123,7 @@ function flowRows(){
  if(!cs.length)return '<div class="rf-empty"><b>조건에 맞는 종목이 없습니다.</b>시장·AI 방향 필터를 바꿔 보세요.</div>';
  return cs.map((c,i)=>{
   const f=flowForecast(c),st=flowState(f),signal=forecastLabel(f),delta=change(c);
-  const q=st.studied?`<span class="rf-signal ${signal.cls}">${signal.label} ${signal.prob===null?'':F(signal.prob*100,0)+'%'}</span><small class="rf-timing">${st.expired?'기간 종료':'연구용'}</small>`:`<span class="rf-signal none">미산출</span>`;
+  const q=st.studied?`<span class="rf-signal ${st.expired?'aged':signal.cls}">${signal.label} ${signal.prob===null?'':F(signal.prob*100,0)+'%'}</span><small class="rf-timing ${st.expired?'aged':''}">${st.expired?'지난 예측':'연구용'}</small>`:`<span class="rf-signal none">미산출</span>`;
   const market=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
   return `<button type="button" class="rf-item ${String(c.symbol)===String(selected)?'active':''}" data-nr-select="${E(c.symbol)}" aria-pressed="${String(c.symbol)===String(selected)}" aria-label="${E(c.name)} 요약 보기">
    <span class="rf-item-name"><strong><em class="rf-row-rank">${i+1}</em>${E(c.name)}</strong><small>${E(c.symbol)} · ${E(market)}</small></span>
@@ -169,7 +169,7 @@ function flowFocus(){
    <div class="rf-analysis-split">
     <div class="rf-chart-area"><div class="rf-box-cap"><b>가격 흐름</b><div class="rf-periods">${[['1W','1주'],['1M','1개월'],['3M','3개월'],['6M','6개월']].map(([v,t])=>`<button data-rf-range="${v}" type="button" class="${flowRange===v?'active':''}">${t}</button>`).join('')}</div></div><div class="rf-chart-wrap">${flowChart(c)}</div></div>
     <div class="rf-ai-area"><div class="rf-box-cap"><b>AI 방향 신호</b><span class="rf-ai-tag">연구용</span></div>
-      <div class="rf-model-top">${st.studied?`<span class="rf-signal ${prediction.cls}">${prediction.label}</span><strong>${F(prediction.prob*100,1)}%</strong>`:'<strong>신호 미산출</strong>'}<small>${E(st.label)}</small></div>
+      <div class="rf-model-top">${st.studied?`<span class="rf-signal ${st.expired?'aged':prediction.cls}">${prediction.label}</span><strong>${F(prediction.prob*100,1)}%</strong>`:'<strong>신호 미산출</strong>'}<small>${E(st.label)}</small></div>
       ${st.studied?bars:'<div class="rf-chart-empty">이 종목의 방향 분포가 없습니다.</div>'}
       <p class="rf-disclosure">※ 모델의 분류 확률이며 상승 수익률·매수 성공률이 아닙니다.${st.expired?' 종료된 목표 구간의 과거 예측입니다.':''}</p>
     </div>
@@ -205,7 +205,7 @@ function flowSignalsTop(){
  const o=data.learning?.overall||{},n=N(o.samples),good=N(o.correct);
  return `<div class="rf-status-row" aria-label="핵심 운영 상태">
   <button type="button" data-nr-screen="stocks"><span class="rf-status-icon blue">${I('search')}</span><span>분석 대상 <strong>${rows().length?F(rows().length,0)+'개':'확인 중'}</strong></span><small>종목 목록 보기 ${I('arrow')}</small></button>
-  <button type="button" data-nr-screen="stocks" data-rf-nav-ai="1"><span class="rf-status-icon violet">${I('chart')}</span><span>AI 분포 산출 <strong>${F(research,0)}개</strong></span><small>연구 신호만 ${I('arrow')}</small></button>
+  <button type="button" data-nr-screen="stocks" data-rf-nav-ai="1"><span class="rf-status-icon violet">${I('chart')}</span><span>AI 분포 산출 <strong>${F(research,0)}개</strong></span><small>지난 예측 포함 ${I('arrow')}</small></button>
   <button type="button" data-nr-view="discover"><span class="rf-status-icon yellow">${I('check')}</span><span>엄격 검증 통과 <strong>${strict===null?'확인 전':F(strict,0)+'개'}</strong></span><small>공식 자료 점검 ${I('arrow')}</small></button>
   <button type="button" data-nr-screen="performance"><span class="rf-status-icon coral">${I('check')}</span><span>예측 검증 <strong>${n===null||good===null?'평가 전':F(good,0)+' / '+F(n,0)}</strong></span><small>실전 효용 미입증 ${I('arrow')}</small></button>
  </div>`;
