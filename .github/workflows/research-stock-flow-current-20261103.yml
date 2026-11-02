@@ -1,0 +1,39 @@
+name: Research-only current-main radar flow acceptance
+on:
+  push:
+    branches:
+      - research/timing-flow-current-main-20261103
+    paths:
+      - '.github/workflows/research-stock-flow-current-20261103.yml'
+      - 'scripts/test_stock_radar_flow_browser.py'
+permissions:
+  contents: read
+jobs:
+  observe-full-flow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install read-only Chromium
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Verify source and test syntax
+        run: |
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python -m py_compile scripts/test_stock_radar_flow_browser.py
+      - name: Run full existing flow acceptance on saved repo snapshot
+        run: |
+          python -m http.server 8765 >/tmp/research-stock-flow-http.log 2>&1 &
+          python scripts/test_stock_radar_flow_browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-current-main-radar-flow-evidence
+          retention-days: 5
+          path: |
+            decision-browser-tests/
