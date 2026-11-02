@@ -1,5 +1,5 @@
 (()=>{'use strict';
-let D={},selected='005930',screen='home',market='ALL',favorites=[],busy=false,errors=[];
+let D={},selected='005930',screen='home',market='ALL',favorites=[],rules=[],paper=[],busy=false,errors=[];
 function E(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 function N(v){return typeof v==="number"&&Number.isFinite(v)?v:null;}
@@ -50,15 +50,40 @@ function renderNews(){const m=D.macro?.indicators||{},f=m.usdkrw||{},ten=m.us_10
 
 function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
 
-async function read(name){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),22000);try{const r=await fetch("./"+name+"?v="+Date.now(),{cache:"no-store",signal:ac.signal});if(!r.ok)throw Error("HTTP "+r.status);return await r.json()}finally{clearTimeout(t)}}
+async function read(name){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),22000);try{const r=await fetch("./"+name+"?v="+Date.now(),{cache:"no-store",signal:ac.signal});if(!r.ok)throw Error("HTTP "+r.status);return name.endsWith(".jsonl")?(await r.text()).split("\n").filter(Boolean).map(v=>{try{return JSON.parse(v)}catch{return null}}).filter(Boolean):await r.json()}finally{clearTimeout(t)}}
 
-async function load(){if(busy)return;busy=true;const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",toss:"toss-live-config.json"};const keys=Object.keys(files),results=await Promise.allSettled(keys.map(k=>read(files[k])));errors=[];keys.forEach((k,i)=>{if(results[i].status==="fulfilled")D[k]=results[i].value;else{errors.push(k);delete D[k]}});if(!Array.isArray(D.raw?.companies)){errors.push("종목 원자료");delete D.raw}if(!company(selected)&&rows().length)selected=String(rows()[0].symbol);busy=false;render();}
+async function load(){if(busy)return;busy=true;const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl"};const keys=Object.keys(files),results=await Promise.allSettled(keys.map(k=>read(files[k])));errors=[];keys.forEach((k,i)=>{if(results[i].status==="fulfilled")D[k]=results[i].value;else{errors.push(k);delete D[k]}});if(!Array.isArray(D.raw?.companies)){errors.push("종목 원자료");delete D.raw}if(!company(selected)&&rows().length)selected=String(rows()[0].symbol);busy=false;render();}
 
 function isMarket(c,m){if(m==="ALL")return true;const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];const venue=info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])||"UNKNOWN";if(m==="DOW")return D.markets?.dow?.status==="current"&&D.markets?.dow?.symbols?.includes(k);return venue===m;}
 
 function marketLabel(c){const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];return info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])|| (c.market==="KR"?"한국 · 세부시장 확인 전":c.market==="US"?"미국 · 세부시장 확인 전":"미확인");}
 
-function snapshot(){return {screen,selected,data:D,favorites:[...favorites],market};}
+function loadValue(key){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a:[]}catch{return []}}
+
+function storeValue(key,a){try{localStorage.setItem(key,JSON.stringify(a))}catch{}}
+
+function forms(ev){
+ const id=ev.target?.id;if(!["radar-rule-form","radar-paper-form"].includes(id))return;
+ ev.preventDefault();
+ const value=x=>document.getElementById(x)?.value;
+ const symbol=String(value(id==="radar-rule-form"?"radar-rule-symbol":"radar-paper-symbol")||"");
+ const c=company(symbol);if(!c)return;
+ if(id==="radar-rule-form"){
+  const kind=value("radar-rule-kind"),price=Number(value("radar-rule-value"));
+  if(!["gte","lte"].includes(kind)||!Number.isFinite(price)||price<=0)return;
+  rules.push({symbol,kind,value:price});
+  storeValue("radar-manual-rules-v2",rules);
+ }else{
+  const qty=Number(value("radar-paper-qty")),cost=Number(value("radar-paper-cost"));
+  if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<=0||qty>1e9||cost>1e12)return;
+  const old=paper.find(p=>p.symbol===symbol);
+  if(old){const n=old.qty+qty;old.cost=(old.qty*old.cost+qty*cost)/n;old.qty=n;}
+  else paper.push({symbol,qty,cost});
+  storeValue("radar-paper-holdings-v2",paper);
+ }
+ render();
+}
+function snapshot(){return {screen,selected,data:D,favorites:[...favorites],market,rules:[...rules],paper:[...paper]};}
 
 function choose(id){const c=company(id);if(!c)return;selected=String(c.symbol);render();}
 
@@ -66,12 +91,12 @@ function goto(v){if(!["home","stocks","stockdetail","scenario","monitor","portfo
 
 function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];try{localStorage.setItem("radar-v8-stars",JSON.stringify(favorites))}catch{}render();}
 
-function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html","_blank","noopener");}
+function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(id)),"_blank","noopener");}
 
 function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 수집 오류: "+errors.join(", "):"") + " · 실시간 호가 아님";}
 
-function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
+function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;const c=window.StockRadarFlowV2?.pick?.();if(c)selected=String(c.symbol);render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
-function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,deep,helpers:{I,change,pointData,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();}
+function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id))selected=String(id)},deep,helpers:{I,change,pointData,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
