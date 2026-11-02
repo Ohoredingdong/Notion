@@ -251,7 +251,12 @@ def future_target(last, market, mode, issued_at):
     else:
         start = last['end'] + pd.Timedelta(minutes=POLICY['intraday_gap_minutes'])
         end = start + pd.Timedelta(minutes=30)
-        if end > cal.session_close(current_session):
+        # XKRX 15:20-15:30 is a closing call auction, not two independently
+        # executed continuous 5-minute bars. Do not invent those target prices.
+        continuous_end = cal.session_close(current_session)
+        if market == 'KR':
+            continuous_end -= pd.Timedelta(minutes=10)
+        if end > continuous_end:
             return None, 'insufficient_regular_session_time'
     if start <= issued + pd.Timedelta(seconds=20):
         return None, 'target_already_started_or_delivery_window_too_short'
