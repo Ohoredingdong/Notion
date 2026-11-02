@@ -315,10 +315,22 @@ function fxV5Cockpit(ctx){
  </section>`;
 }
 
+function fxV5Sentiment(ctx){
+ const d=ctx.data?.sentiment||{},score=fxN(d.headline?.score),t=d.source_timestamp||d.headline?.timestamp;
+ const valid=d.market==="us"&&score!==null&&score>=0&&score<=100&&t&&Number.isFinite(Date.parse(t));
+ const rating=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"지표 확인 전";
+ const size=valid?Math.max(0,Math.min(100,score)):0;
+ const color=size<45?"#e37a64":size<55?"#d4b15e":"#33aa7b";
+ return `<section class="fx-v5-sentiment" title="CNN 미국 공포·탐욕 지수. 해외시장 지표이며 국내 증시를 대표하지 않습니다.">
+ <div><strong>미국 공포·탐욕</strong><small>${valid?fxEscape(rating):"데이터 미확인"}</small></div>
+ <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?"미국 공포·탐욕 "+fxNum(score,0)+"점":"미국 공포·탐욕 지표 미확인"}" style="--sentiment:${size}%;--sentiment-color:${color}"><span>${valid?fxNum(score,0):"—"}</span></div>
+ <small class="fx-v5-sentiment-date">${valid?fxEscape(new Date(t).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"numeric",day:"numeric"})):"출처 시각 미확인"} · CNN</small>
+ </section>`;
+}
 function fxHome(ctx){
  const h=fxHelpers(),c=fxChosen(ctx),connected=!!(ctx.data?.toss?.enabled&&ctx.data.toss.api_base);
  return `<div class="fx-v5-home">
-  <section class="fx-v5-marketline"><div class="fx-v5-markettitle"><h2>시장 현황</h2><p>저장된 최근 완료 지수</p></div><div class="fx-v5-markets nr-market-grid">${h.indices?.()||""}</div></section>
+  <section class="fx-v5-marketline"><div class="fx-v5-markettitle"><h2>시장 현황</h2><p>저장된 최근 완료 지수</p></div><div class="fx-v5-markets nr-market-grid">${h.indices?.()||""}</div>${fxV5Sentiment(ctx)}</section>
   <div class="fx-v5-main">${fxStockPanel(ctx,false)}
    <div class="fx-v5-central" id="fx-focus-slot">${fxV5Cockpit(ctx)}</div>${fxV5Side(ctx,c)}
   </div>
