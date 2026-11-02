@@ -1,0 +1,167 @@
+{
+  "scope": "Two new full-resolution AVIF scene/recipe images exceed WebP82 PSNR and SSIM. New transparent closed-front artwork stays WebP82 with exact alpha. No existing miniature resolution/quality lowered; only retired old front/grey backdrop and old catalog-dish cells are omitted.",
+  "encoder": {
+    "sharp": "0.35.5",
+    "aom": "3.15.1",
+    "vips": "8.18.7",
+    "heif": "1.23.5",
+    "recipe": {
+      "quality": 57,
+      "effort": 9,
+      "chromaSubsampling": "4:4:4"
+    },
+    "background": {
+      "quality": 50,
+      "effort": 7,
+      "chromaSubsampling": "4:4:4"
+    }
+  },
+  "qualityReference": "Same source PNG at existing generic WebP82, no resize; ImageMagick PSNR and SSIM compare decoded pixels to the source PNG.",
+  "assets": [
+    {
+      "name": "recipe-photos-v1",
+      "width": 1024,
+      "height": 1536,
+      "sourcePNGBytes": 2827644,
+      "sourceSHA256": "52124396174f91eef6c5a9e17d5bfa029cacec80d0dc1b3f680602c6eed798ca",
+      "encodedAVIFBytes": 152387,
+      "encodedSHA256": "93cd8fec38c5de5a28af5e70f7acd6d51a30c7ac2d2bbab7b3503d22550d41fe",
+      "referenceWebPBytes": 253710,
+      "referencePSNR": 34.9093,
+      "referenceSSIM": 0.948204,
+      "selectedPSNR": 35.1159,
+      "selectedSSIM": 0.94828,
+      "resolutionUnchanged": true,
+      "bothMetricsAtLeastReference": true
+    },
+    {
+      "name": "kitchen-built-in-v1",
+      "width": 1402,
+      "height": 1122,
+      "sourcePNGBytes": 1919204,
+      "sourceSHA256": "3a7853d309b15e6685b654fac41211331cda1241e2a0d3222f34c9a000d44ca5",
+      "encodedAVIFBytes": 34592,
+      "encodedSHA256": "fef03c401fd4e05ac3275857b09b615c13f32b8b082e8791b44964a7fa015621",
+      "referenceWebPBytes": 64518,
+      "referencePSNR": 38.9082,
+      "referenceSSIM": 0.963961,
+      "selectedPSNR": 39.498,
+      "selectedSSIM": 0.969326,
+      "resolutionUnchanged": true,
+      "bothMetricsAtLeastReference": true
+    },
+    {
+      "name": "fridge-front-fidelity-v1",
+      "width": 1159,
+      "height": 1358,
+      "sourcePNGBytes": 1618916,
+      "sourceSHA256": "c419571212eceff72a05a2f7b491313b6853e6a6a36649ce9d95fd5c305ac41d",
+      "encodedFormat": "webp",
+      "encodedBytes": 54122,
+      "encodedSHA256": "94b5d0b0ebe301c4c888124f04a0ac80ab0676b90342396edb65a73df39aed5b",
+      "quality": 82,
+      "alphaQuality": 100,
+      "resolutionUnchanged": true,
+      "alphaDifferentPixels": 0,
+      "visibleRGBReferencePSNR": 46.6806,
+      "visibleRGBReferenceSSIM": 0.991774,
+      "qualityMethod": "Compare over-white RGB and compare original alpha separately; selected bytes are the planned WebP82 reference, not the rejected lossy-alpha AVIF experiments.",
+      "crop": [
+        76,
+        32,
+        1007,
+        1300
+      ]
+    }
+  ],
+  "legacy": {
+    "oldEmbeddedImages": 8,
+    "newEmbeddedImages": 10,
+    "unchangedEncodedImages": 5,
+    "removedBackground": "room-warm.png",
+    "retiredAtlasCells": [
+      "egg-rice",
+      "tofu-soup",
+      "chicken-salad",
+      "zucchini-fritters",
+      "egg-salad",
+      "tofu-steak",
+      "mushroom-tofu",
+      "omelette"
+    ],
+    "remainingFoodAtlasBytes": 90798,
+    "oldFoodAtlasBytes": 127058,
+    "unchangedEncodedImageSHA256": [
+      "1187cfe8527552b184cca964da938da158175e5e6057ea83e923928cc6c7548d",
+      "a60783623e790b5d46e6cf82d3e168a8119ced91a0c12741031bcf5445efb020",
+      "e544e77e51db7e8aaebb64c39cb1fa1c22c1d344029f5408ce80e9932ef6550f",
+      "d595271e62f18373c2f15524b803a064ef07b76d7dfe806488bc91d50e9d195b",
+      "e3fbe2ff65bb40f3277bf4ca42b836049d7aeb6aaa94b53f84a3cb904d305408"
+    ],
+    "rightInterior": {
+      "source": "fridge-neutral-atlas.png",
+      "canvas": [
+        1536,
+        1024
+      ],
+      "keptRectangle": [
+        833,
+        10,
+        570,
+        994
+      ],
+      "encodedBytes": 58506,
+      "webpQuality": 88,
+      "alphaQuality": 100,
+      "resized": false,
+      "retired": "Everything outside the one right-hand open-interior source rectangle; original PNG untouched."
+    }
+  },
+  "packing": {
+    "format": "gzip-v1; standard DEFLATE and unchanged gunzipSync decoder",
+    "codecs": [
+      "gzip-base64",
+      "gzip-base85"
+    ],
+    "selection": "Use HTML-safe base85 only if the base64 document exceeds delivery budget. No Zopfli or new compression dependency.",
+    "base85": "Python RFC1924 base64.b85encode; replace &<> digits with .,/ in inert HTML text; reverse before Python b85decode. Browser uses same ordered safe alphabet and exact partial-group padding.",
+    "capPerDelivery": 1048576,
+    "nativeWrapperReserve": 2048,
+    "unitTests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "candidate": {
+      "miniature-kitchen-app.html": {
+        "bytes": 1008006,
+        "sha256": "8e111b41de28df3923c48ece3c566b9fdcc8cba033699e1a794aa7a9e778616c",
+        "decodedBytes": 1280109,
+        "decodedSha256": "e356b16788d884288e4f3dd9f7ebad0d0b14f95af41c61f509e64be5482641df",
+        "codec": "gzip-base85"
+      },
+      "mobile/app.html": {
+        "bytes": 1009353,
+        "sha256": "a1d39b22b9c45888d8c36b635babe3bdeff651da7037759bbaa6c64805b5ec4f",
+        "decodedBytes": 1280109,
+        "decodedSha256": "e356b16788d884288e4f3dd9f7ebad0d0b14f95af41c61f509e64be5482641df",
+        "codec": "gzip-base85"
+      },
+      "miniature-kitchen-widget.html": {
+        "bytes": 1008010,
+        "sha256": "3c624f05332f2b6b6496f7e6f17d5581586a5ada1cfe77255d681b89abe10c69",
+        "decodedBytes": 1280112,
+        "decodedSha256": "137143d552d497b2c329f6a36639e9eeda4f197a02efcce07bef80a62d3b7107",
+        "codec": "gzip-base85"
+      },
+      "mobile/widget.html": {
+        "bytes": 1009363,
+        "sha256": "d3c3119d07ffce8b3e2ff0f627121503248ea15a322e8b2c8b949ef625df22e6",
+        "decodedBytes": 1280112,
+        "decodedSha256": "137143d552d497b2c329f6a36639e9eeda4f197a02efcce07bef80a62d3b7107",
+        "codec": "gzip-base85"
+      }
+    }
+  },
+  "compatibility": "AVIF image decoding requires Chrome85+, Firefox93+ or Safari16+. Actual physical Safari/Notion verification is not claimed. PNG originals are preserved for other exports.",
+  "visualReview": "Compared decoded selected AVIF and WebP82 atlas at full resolution; no visible degradation or cropping change observed. Root will review actual UI screenshots separately."
+}

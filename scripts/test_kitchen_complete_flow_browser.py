@@ -139,6 +139,14 @@ def main():
             tab(frame, *target)
             expect(frame.locator(selector)).to_be_visible()
 
+        def inspect_lcd(frame):
+            before = envelope(frame)
+            section(frame, '#homeConnections')
+            frame.locator('#expandDisplays').click()
+            expect(frame.locator('#tray .display-inspector')).to_be_visible()
+            assert envelope(frame) == before, 'Inspecting recommendation/expiry never writes stock or records'
+            return frame.locator('#tray .display-inspector [data-lcd="freshRight"]')
+
         def go(frame, route):
             tab(frame, 'records', 'nutrition')
             frame.locator('#panel-records [data-workflow="hub"]').click()
@@ -332,8 +340,7 @@ def main():
                     home_status = frame.locator('#homeRecommendation [data-stock-status]')
                     expected_status = home_status.get_attribute('data-stock-status')
                     home_status_text = home_status.inner_text()
-                    tap_door(page, frame, 'freshRight')
-                    lcd_status = frame.locator('#fridgeDisplays [data-lcd="freshRight"] [data-lcd-stock-status]')
+                    lcd_status = inspect_lcd(frame).locator('[data-lcd-stock-status]')
                     expect(lcd_status).to_be_visible()
                     expect(lcd_status).to_have_attribute('data-lcd-stock-status', expected_status)
                     if expected_status == 'shortage':
@@ -343,7 +350,8 @@ def main():
                         expect(lcd_status).to_contain_text('수량 확인')
                     else:
                         expect(lcd_status).to_contain_text('수량 충족')
-                    tap_door(page, frame, 'freshRight')
+                    close(frame)
+                    section(frame, '#homeRecommendation')
                 if opaque:
                     section(frame, '#homeConnections')
                     assert frame.evaluate('KitchenJournal.status') == 'temporary'
@@ -592,26 +600,29 @@ def main():
             expect(frame.locator('#homeRecommendation [data-home-kcal]')).to_have_text('0 kcal')
             expect(frame.locator('#homeRecommendation [data-home-cost]')).to_have_text('0원')
             home_name = frame.locator('#homeRecommendation [data-home-recipe] h3').inner_text()
-            tap_door(page, frame, 'freshRight')
-            lcd = frame.locator('#fridgeDisplays [data-lcd="freshRight"]')
+            stock_status = frame.locator('#homeRecommendation [data-stock-status]').get_attribute('data-stock-status')
+            inspection_before = envelope(frame)
+            lcd = inspect_lcd(frame)
             expect(lcd).to_be_visible()
+            assert lcd.evaluate('e=>e.checkVisibility({opacityProperty:true,visibilityProperty:true})')
+            assert lcd.locator('.lcd-recipe').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') >= 14
             expect(lcd).to_have_attribute('data-recommended-recipe', recommended_id)
             expect(lcd.locator('.lcd-recipe')).to_have_text(home_name)
-            stock_status = frame.locator('#homeRecommendation [data-stock-status]').get_attribute('data-stock-status')
             expect(lcd.locator('[data-lcd-stock-status]')).to_have_attribute('data-lcd-stock-status', stock_status)
             assert stock_status == 'ready', 'Known compatible dated stock should be ready in this fixture'
             expect(lcd.locator('[data-lcd-stock-status]')).to_contain_text('수량 충족')
             expect(lcd.locator('.lcd-recipe-detail')).not_to_contain_text('수량 확인')
             expect(lcd.locator('.lcd-nutrition-cost')).to_contain_text('0 kcal')
             expect(lcd.locator('.lcd-nutrition-cost')).to_contain_text('0원')
-            tap_door(page, frame, 'freshRight')
+            close(frame)
+            assert envelope(frame) == inspection_before
             facts(frame, {'kcal': '', 'carb': '', 'protein': '', 'fat': '', 'cost': ''}, recommended_id)
             close(frame)
             section(frame, '#homeRecommendation')
             expect(frame.locator('#homeRecommendation [data-home-kcal]')).to_contain_text('미입력')
             expect(frame.locator('#homeRecommendation [data-home-cost]')).to_contain_text('미입력')
             assert frame.evaluate('KitchenJournal.summary().nutrients.carb.value') == 10
-            passed('recommendation LCD and home use the same recipe; explicitly entered zero remains zero and missing nutrition/cost remains unknown')
+            passed('actual expanded inspector and home use the same recipe; explicitly entered zero remains zero and missing nutrition/cost remains unknown')
 
             snapshot = envelope(frame)
             page.reload()
