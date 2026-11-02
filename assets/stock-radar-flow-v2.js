@@ -222,4 +222,6 @@ function fxHandleInput(e){
 const fxLocal={filter:'all',search:'',limit:36,period:'1M'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
 window.StockRadarFlowV2={render:fxRender,version:'ux-flow-20261102-v2'};
+const fxBoot=()=>window.StockRadarV2Bridge?.render?.();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
