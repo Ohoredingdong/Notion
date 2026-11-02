@@ -264,26 +264,72 @@ function fxDetail(ctx){
   </div>${fxSteps(ctx)}</div>`;
 }
 function fxScenarioPlot(c){
- const t=c.targets||{},vals=[["상단",t.high,"#d65c74"],["중앙",t.median,"#417ed0"],["하단",t.low,"#2a9a70"],["현재",c.price,"#8493a9"]].filter(x=>fxN(x[1])!==null);
- if(vals.length<2)return '<div class="fx-chart-empty">비교 가능한 가격 구간 자료가 없습니다.</div>';
- const n=vals.map(x=>x[1]),lo=Math.min(...n),hi=Math.max(...n),pad=(hi-lo||1)*.16,y=v=>22+(hi+pad-v)/(hi-lo+2*pad)*160;
- return `<div class="fx-target-diagram"><svg viewBox="0 0 640 205" role="img" aria-label="현재 종가와 실제 저장된 애널리스트 목표가의 수준 비교">
- ${vals.map(([title,v,color])=>`<line x1="110" x2="515" y1="${y(v)}" y2="${y(v)}" stroke="${color}" stroke-width="${title==="현재"?2:4}" ${title==="현재"?'stroke-dasharray="8 6"':""}/><circle cx="515" cy="${y(v)}" r="5" fill="${color}"/><text x="20" y="${y(v)+4}" font-size="15" fill="${color}">${title}</text><text x="535" y="${y(v)+4}" font-size="13" fill="${color}">${fxNum(v,0)}</text>`).join("")}</svg></div>`;
+ const t=c.targets||{},h=fxHelpers(),series=h.pointData?.([String(c.symbol)],"3M"),vals=series?.series?.[0]?.prices||[];
+ const current=fxN(c.price),refs=[["상단 목표",t.high,"#d85876"],["중앙 목표",t.median,"#377bd1"],["하단 목표",t.low,"#28a074"]].filter(x=>fxN(x[1])!==null);
+ if(current===null||refs.length===0)return '<div class="fx-chart-empty">저장 종가와 목표가를 비교할 데이터가 없습니다.</div>';
+ const prices=[current,...refs.map(x=>x[1]),...vals],low=Math.min(...prices),high=Math.max(...prices),pad=(high-low||Math.abs(high)*.015||1)*.14;
+ const W=800,H=260,L=69,R=67,T=25,B=35,y=n=>T+(high+pad-n)*(H-T-B)/(high-low+2*pad);
+ const pivot=414,right=738;const grid=[0,.25,.5,.75,1].map(k=>{const v=low+(high-low)*k;return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#e7eff9" stroke-dasharray="4 5"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" fill="#91a5bb" font-size="12">${fxNum(v,0)}</text>`}).join("");
+ const plot=vals.length>=2?`<polyline points="${vals.map((v,i)=>`${L+i*(pivot-L)/Math.max(vals.length-1,1)},${y(v)}`).join(" ")}" stroke="#447ecf" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="${pivot}" cy="${y(vals.at(-1))}" r="5" fill="#3c78ca" stroke="white" stroke-width="2"/>`: `<text x="170" y="145" fill="#899bb6" font-size="13">이전 일봉 데이터 확인 전</text>`;
+ const horizontals=refs.map(([label,v,color],i)=>`<line x1="${pivot+45}" x2="${right}" y1="${y(v)}" y2="${y(v)}" stroke="${color}" stroke-width="3" stroke-dasharray="9 5"/><rect x="${right-3}" y="${y(v)-13}" width="58" height="26" rx="7" fill="${color}"/><text x="${right+26}" y="${y(v)+4}" fill="white" text-anchor="middle" font-size="11.5" font-weight="750">${fxNum(v,0)}</text>`).join("");
+ const linkLine=`<line x1="${pivot}" x2="${pivot+36}" y1="${y(current)}" y2="${y(current)}" stroke="#889cb6" stroke-width="2" stroke-dasharray="6 4"/>`;
+ return `<svg class="fx-scenario-plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fxEscape(c.name)} 실제 과거 종가와 3개 저장 목표가 수준을 비교하는 차트. 날짜별 미래 경로는 예측하지 않았습니다.">
+ <rect x="${pivot+23}" y="${T-7}" width="${W-R-pivot-15}" height="${H-T-B+13}" rx="12" fill="#f6f9ff"/>
+ ${grid}<text x="175" y="17" text-anchor="middle" font-size="12" fill="#526d93" font-weight="800">실제 과거 종가</text>
+ <text x="594" y="17" text-anchor="middle" font-size="12" fill="#526d93" font-weight="800">상단·중앙·하단 목표 수준 (미래 경로 아님)</text>
+ <line x1="${pivot+17}" x2="${pivot+17}" y1="${T-8}" y2="${H-B+8}" stroke="#cddbf0" stroke-width="1" stroke-dasharray="4 4"/>
+ ${plot}${linkLine}${horizontals}
+ <circle cx="${pivot}" cy="${y(current)}" r="5" fill="#213e64" stroke="#fff" stroke-width="2.5"/>
+ <text x="${pivot-4}" y="${Math.max(T+9,y(current)-11)}" text-anchor="end" font-size="12" font-weight="800" fill="#234467">${fxNum(current,0)}</text>
+ <text x="${L}" y="${H-8}" font-size="11" fill="#8aa0b9">${fxEscape(series?.dates?.[0]||"과거")}</text>
+ <text x="${pivot}" y="${H-8}" text-anchor="end" font-size="11" fill="#8aa0b9">${fxEscape(c.price_session||"현재 종가")}</text>
+ <text x="${pivot+47}" y="${H-8}" font-size="11" fill="#8aa0b9">목표가 집계 (날짜별 예측 아님)</text>
+ </svg>`;
 }
-
 function fxScenario(ctx){
- const h=fxHelpers(),c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
- if(!c)return '<div class="fx-chart-empty">분석할 종목을 선택해 주세요.</div>';
- const t=c.targets||{},vals=[["상단",t.high,"optimistic"],["중앙",t.median,"base"],["하단",t.low,"conservative"]];
- return `<div class="fx-intro"><div><h2>${fxEscape(c.name)} · 가격 시나리오</h2><p>애널리스트 목표가의 상·중·하단을 비교하며, AI 가격방향 연구와는 별도입니다.</p></div><button class="fx-link" data-nr-detail="${fxEscape(c.symbol)}">상세 분석 ${h.I?.("arrow")||"›"}</button></div>
- <div class="fx-scenario-layout"><section class="fx-panel"><h3>목표가 구간 비교</h3><p>저장 종가 ${fxMoney(c.price,c.currency)} · ${fxEscape(c.price_session||"기준일 미확인")}</p>${fxScenarioPlot(c)}
- <div class="fx-target-row">${vals.map(([title,v,cl])=>`<div class="${cl}"><span>${title} 목표가</span><strong>${fxMoney(v,c.currency)}</strong><small>${fxN(v)===null||fxN(c.price)===null||c.price===0?"비교 불가":fxPct((v/c.price-1)*100)}</small></div>`).join("")}</div>
- <p class="fx-page-note">위 차트는 실제 목표가 수준을 비교한 것입니다. 미래 날짜별 가격 경로를 생성한 예측 차트가 아닙니다.</p></section>
- <aside class="fx-panel fx-scenario-aside"><h3>AI 방향 연구 분포</h3><p>발행 시점·기간 종료를 확인하세요.</p><div class="fx-ai-card">${fxBars(c,ctx)}</div>
- <p class="fx-page-note">AI 분류 확률과 애널리스트 목표가를 결합해 수익 확률로 표시하지 않습니다.</p>
- <div class="fx-detail-cta"><button class="fx-action-primary" data-nr-screen="performance">실제 검증 확인</button><button class="fx-action-secondary" data-nr-screen="portfolio">모의투자</button></div></aside></div>${fxSteps(ctx)}`;
+ const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
+ if(!c)return '<section class="fx-empty-state">기업을 먼저 선택해 주세요.</section>';
+ const t=c.targets||{},f=c.forecasts||{},a=c.assessment||{},tech=c.technical||{},current=fxN(c.price);
+ const order=[["낙관 상단",t.high,"up","상단"],["중앙 기준",t.median,"base","중앙"],["비관 하단",t.low,"down","하단"]];
+ const conditions=[
+  ["EPS 추정치 상향·전고점 돌파 확인",fxN(tech.prior_high20)===null?"실적 발표·공시 재검증":`20일 전고점 ${fxMoney(tech.prior_high20,c.currency)} 재확인`],
+  ["EPS·목표가 집계 유지 여부 확인",fxN(f.eps_revision30_pct)===null?"동일 회계연도 EPS 정합성 확인":`최근 EPS 수정 ${fxPct(f.eps_revision30_pct)}`],
+  ["사업·금리·수요 위험과 지지선 확인",fxN(tech.support10)===null?"주요 하방 무효화 조건 재검증":`과거 10일 저점 ${fxMoney(tech.support10,c.currency)} 확인`]
+ ];
+ const fig=order.map(([title,v,cl,alt],i)=>`<section class="fx-scenario-option ${cl}">
+ <div class="fx-scenario-option-heading"><span>${title}</span><small>${fxN(v)===null?"집계 없음":fxN(current)===null||current===0?"가격 차이 계산 불가":fxPct((v/current-1)*100)+" · 저장 종가 대비"}</small></div>
+ <strong>${fxMoney(v,c.currency)}</strong><p>${fxEscape(conditions[i][0])}</p><small>${fxEscape(conditions[i][1])}</small>
+ </section>`).join("");
+ const up=fxN(t.high)!==null&&current? (t.high/current-1)*100:null,down=fxN(t.low)!==null&&current?(t.low/current-1)*100:null;
+ const earliest=ctx.data?.raw?.generated_at?fxHelpers().T?.(ctx.data.raw.generated_at):"기준 시각 확인 필요";
+ const risks=(a.risks||[]).slice(0,2).map(x=>fxEscape(typeof x==="string"?x:x?.text||x?.label||"")).filter(Boolean);
+ return `<div class="fx-scenario-v4">
+ <div class="fx-intro"><div><h2>${fxEscape(c.name)} · 시나리오 한눈에</h2><p>저장된 목표가 수준과 AI 방향 연구를 따로 비교합니다. 투자 전략의 조건은 최신 공시로 재확인해야 합니다.</p></div><span class="fx-stamp">${fxEscape(c.price_session||"기준일 미확인")} 종가 ${fxMoney(c.price,c.currency)}</span></div>
+ <div class="fx-scenario-main">
+  <section class="fx-panel fx-scenario-chart-panel"><div class="fx-panel-heading"><div><h3>실제 종가와 3가지 목표가 구간</h3><p>애널리스트 집계 가격을 수준으로만 표시합니다.</p></div><span class="fx-mini-chip">가격 경로 예측 아님</span></div>
+    ${fxScenarioPlot(c)}<div class="fx-scenario-legend"><span><i style="background:#447ecf"></i>실제 일별 종가</span><span><i style="background:#d85876"></i>낙관 상단</span><span><i style="background:#377bd1"></i>중앙 기준</span><span><i style="background:#28a074"></i>비관 하단</span></div>
+  </section>
+  <section class="fx-panel fx-scenario-ai-panel"><div class="fx-panel-heading"><h3>AI 연구 방향 분포</h3><span class="fx-mini-chip">예측 확률 ≠ 목표가 확률</span></div><div class="fx-ai-card">${fxBars(c,ctx)}</div>
+   <p class="fx-mini-notice">분류 확률은 각 목표가가 실현될 가능성을 나타내지 않습니다.</p>
+  </section>
+ </div>
+ <div class="fx-scenario-options">${fig}</div>
+ <div class="fx-scenario-footer">
+  <section class="fx-panel fx-scenario-conditions"><div class="fx-panel-heading"><h3>판단을 바꾸는 조건</h3></div>
+   ${[a.next_action,...risks].filter(Boolean).slice(0,3).map(x=>`<p>• ${fxEscape(x)}</p>`).join("")||'<p>정기 공시·EPS 변경·거래량 조건을 차례로 확인하세요.</p>'}
+  </section>
+  <section class="fx-panel fx-scenario-difference"><div class="fx-panel-heading"><h3>상승 여력 / 하락 위험</h3></div><div class="fx-scen-difference-grid">
+   <div><small>상단 목표가 대비</small><strong class="fx-up">${up===null?"—":fxPct(up)}</strong></div>
+   <div><small>하단 목표가 대비</small><strong class="fx-down">${down===null?"—":fxPct(down)}</strong></div></div>
+  </section>
+  <section class="fx-panel fx-scenario-next"><div class="fx-panel-heading"><h3>다음 확인 단계</h3></div>
+    <p>저장 종가·목표가를 최신 원문과 비교한 다음 AI 사후검증을 확인하세요.</p>
+    <div class="fx-scen-buttons"><button type="button" data-nr-screen="stockdetail">종목 심층 분석</button><button type="button" data-nr-screen="performance">예측 검증</button></div>
+  </section>
+ </div>
+ ${fxSteps(ctx)}
+ </div>`;
 }
-
 function fxPerformance(ctx){
  const h=fxHelpers(),o=ctx.data?.learning?.overall||{},rec=o.recall||{};
  const facts=[["사후 방향 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["일치 / 평가",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["실제 상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["실제 하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
