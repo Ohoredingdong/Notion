@@ -94,13 +94,13 @@ function fxChart(c){
  const atDate=new Map(actual.map(b=>[b.date,b.volume]));
  const vol= p.dates.map(k=>fxN(atDate.get(k)));const max=Math.max(0,...vol.filter(v=>v!==null));
  const volumeColumns=max>0?vol.map((v,i)=>v===null?"":`<rect x="${x(i)-3}" y="${H-B-20*(v/max)}" width="6" height="${20*v/max}" fill="#b9c9e7" opacity=".72"/>`).join(""):"";
- const caution=additional?`과거 일봉 ${fxEscape(hist)} + 이후 저장 종가 ${fxEscape(latest)} (중간 가격 연결은 생략)`:
+ const caution=additional?`과거 일봉 ${fxEscape(hist)} + 이후 저장 종가 ${fxEscape(latest)} (마지막 구간 점선·중간 호가는 미확인)`:
   original?.chart_status==="aligned"?"실제 완료 거래일 종가":`차트 기준일 ${fxEscape(hist||"확인 전")} · 저장 종가와 날짜가 다를 수 있습니다`;
  return `<svg class="fx-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fxEscape(c.name)} ${fxEscape(p.dates[0])}부터 ${fxEscape(latest)}까지 검증된 실제 종가">
  <defs><linearGradient id="fx-price-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${stroke}" stop-opacity=".17"/><stop offset="1" stop-color="${stroke}" stop-opacity=".015"/></linearGradient></defs>
  ${anchors}<polygon points="${L},${H-B} ${pts} ${W-R},${H-B}" fill="url(#fx-price-fill)"/>
  ${volumeColumns}
- <polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"/>
+ ${additional?`<polyline points="${vals.slice(0,-1).map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ")}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round"/><line x1="${x(vals.length-2)}" y1="${y(vals.at(-2))}" x2="${x(vals.length-1)}" y2="${y(vals.at(-1))}" stroke="${stroke}" stroke-width="3.1" stroke-dasharray="7 5"/>`:`<polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"/>`}
  <circle cx="${x(vals.length-1)}" cy="${y(vals.at(-1))}" r="5" fill="${stroke}" stroke="white" stroke-width="2.5"/>
  <rect x="${W-R+4}" y="${y(vals.at(-1))-13}" rx="6" width="${R-8}" height="25" fill="#274a78"/>
  <text x="${W-R+(R-8)/2+4}" y="${y(vals.at(-1))+5}" text-anchor="middle" fill="white" font-size="11.7" font-weight="700">${fxNum(vals.at(-1),0)}</text>
