@@ -32,7 +32,10 @@ function fxPrediction(c,ctx){
 function fxUniverse(ctx){
  const h=fxHelpers(),fav=new Set(ctx.favorites||[]);
  const data=[...(ctx.data?.raw?.companies||[])];
- data.sort((a,b)=>Number(fav.has(b.symbol))-Number(fav.has(a.symbol))+(Number(b.priority?.display_score??b.priority?.score??0)-Number(a.priority?.display_score??a.priority?.score??0))/1000);
+ data.sort((a,b)=>{
+  if(ctx.screen==="home"){const pin=Number(String(b.symbol)===String(ctx.selected))-Number(String(a.symbol)===String(ctx.selected));if(pin)return pin;}
+  return Number(fav.has(b.symbol))-Number(fav.has(a.symbol))+(Number(b.priority?.display_score??b.priority?.score??0)-Number(a.priority?.display_score??a.priority?.score??0))/1000;
+ });
  return data.filter(c=>{
   if(ctx.market!=="ALL"){
    if(typeof window.RadarMarkets?.match==="function"){if(!window.RadarMarkets.match(c,ctx.market))return false}
