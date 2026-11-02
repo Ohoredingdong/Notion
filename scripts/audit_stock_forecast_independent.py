@@ -365,6 +365,27 @@ def audit(records, outcomes, deliveries, cutoff):
             if source_checked is not None and not (
                     ts(r['target']['end']) <= ts(source_checked) <= ts(o['evaluated_at'])):
                 raise ValueError('outcome_source_time_inconsistent')
+            # An observed provider return is not an order fill or an
+            # independently authenticated executable quote. These optional
+            # frozen disclosure fields may be absent in legacy rows, but a
+            # present contradictory claim must never pass the independent
+            # evidence audit merely because its price arithmetic is correct.
+            if ('price_observation_not_execution_return' in o and
+                    o['price_observation_not_execution_return'] is not True):
+                raise ValueError('unsupported_execution_return_claim')
+            if ('single_provider_not_execution' in o and
+                    o['single_provider_not_execution'] is not True):
+                raise ValueError('unsupported_independent_provider_claim')
+            # The outcome's pre-target publication assertion is checked
+            # against the earliest independent public proof, not trusted as
+            # its own verification. A public web proof is not a human receipt.
+            if 'public_before_target_verified' in o:
+                earliest = public.get(o['id'])
+                timely = (earliest is not None and
+                          ts(r['issued_at']) <= earliest < ts(r['target']['start']))
+                if (type(o['public_before_target_verified']) is not bool or
+                        o['public_before_target_verified'] is not timely):
+                    raise ValueError('outcome_public_timing_claim_mismatch')
             opening, closing = finite(o['target_open']), finite(o['target_close'])
             if min(opening, closing) <= 0:
                 raise ValueError('nonpositive_price')
