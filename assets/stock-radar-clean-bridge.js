@@ -28,6 +28,7 @@ function chartFor(id){
  const original=source.bars.filter(b=>typeof b?.date==="string"&&N(b.close)!==null);
  if(original.length<2)return null;
  const last=original.at(-1),nowDate=String(c?.price_session||"");
+ if(source.price_session&&source.price_session!==last.date)return {...source,bars:original,chart_status:"metadata_mismatch",historical_end:last.date};
  if(!c||!nowDate||N(c.price)===null)return {...source,bars:original,chart_status:"historical_only",historical_end:last.date};
  if(c.currency&&source.currency&&c.currency!==source.currency)return null;
  const dateLast=Date.parse(last.date+"T00:00:00Z"),dateNow=Date.parse(nowDate+"T00:00:00Z");
@@ -37,6 +38,8 @@ function chartFor(id){
   return {...source,bars:original,chart_status:match?"aligned":"provider_value_mismatch",historical_end:last.date};
  }
  if(dateNow<dateLast)return {...source,bars:original.filter(x=>x.date<=nowDate),chart_status:"history_newer_than_snapshot",historical_end:last.date};
+ const actions=Array.isArray(source.corporate_actions)?source.corporate_actions:[];
+ if(actions.some(a=>{const at=String(a.date||a.ex_date||a.effective_date||"");return at>last.date&&at<=nowDate}))return {...source,bars:original,chart_status:"corporate_action_pending",historical_end:last.date};
  const gap=(dateNow-dateLast)/86400000;
  if(gap>12)return {...source,bars:original,chart_status:"history_outdated",historical_end:last.date};
  const appended={date:nowDate,close:c.price,volume:null,origin:"latest_research_snapshot",not_interpolated:true};
