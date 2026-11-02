@@ -8,7 +8,8 @@ from audit_stock_forecast_attempt_coverage import audit_attempt_coverage
 
 def fixture():
     ledger = [
-        {"id": "forecast-A", "symbol": "TEST", "mode": "daily", "status": "research_prediction"},
+        {"id": "forecast-A", "symbol": "TEST", "mode": "daily", "status": "research_prediction",
+         "issued_at": "2026-10-29T13:00:00.050000+00:00"},
     ]
     attempts = [
         {"id": "attempt-1", "run_id": "101", "symbol": "TEST", "mode": "daily",
@@ -110,6 +111,21 @@ class AttemptCoverageTests(unittest.TestCase):
                     a[0]["checked_at"] = forged
                 got = audit_attempt_coverage(a, l, r)
                 self.assertIn("invalid_attempt_checked_at", got["errors"])
+
+    def test_attempt_cannot_reference_a_forecast_issued_two_minutes_later(self):
+        # Preregistered negative control: summary counts stay valid, but this
+        # artificial attempt precedes the frozen forecast's issuance by >1 s.
+        a, l, r = fixture()
+        a[0]["checked_at"] = "2026-10-29T12:58:00+00:00"
+        got = audit_attempt_coverage(a, l, r)
+        self.assertIn("attempt_forecast_not_yet_issued", got["errors"])
+
+    def test_subsecond_pipeline_check_is_not_a_false_chronology_alarm(self):
+        # The archived pipeline can record checked_at 50 ms before issued_at.
+        a, l, r = fixture()
+        got = audit_attempt_coverage(a, l, r)
+        self.assertNotIn("attempt_forecast_not_yet_issued", got["errors"])
+        self.assertEqual(got["status"], "attempt_coverage_consistent")
 
     def test_attempt_clock_after_saved_report_rejected(self):
         a, l, r = fixture()
