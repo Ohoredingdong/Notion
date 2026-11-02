@@ -2,6 +2,8 @@
 """Build the isolated miniature design prototypes; never edits published entries."""
 import argparse
 import base64
+import gzip
+import hashlib
 from functools import lru_cache
 from html import escape
 import mimetypes
@@ -10,6 +12,70 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+
+
+DELIVERY_LIMIT = 1048576
+PACKED_MARKER = 'data-kitchen-packed="gzip-v1"'
+
+
+def unpack_document(content):
+    """Recover and verify the exact original HTML from our optional envelope."""
+    if PACKED_MARKER not in content:
+        return content
+    match = re.search(
+        r'<template id="kitchenPacked" data-codec="gzip-base64" '
+        r'data-bytes="(\d+)" data-sha256="([0-9a-f]{64})">'
+        r'([A-Za-z0-9+/=]+)</template>', content)
+    if not match:
+        raise ValueError('Invalid packed kitchen document')
+    try:
+        raw = gzip.decompress(base64.b64decode(match[3], validate=True))
+    except (ValueError, OSError, EOFError) as error:
+        raise ValueError('Invalid packed kitchen payload') from error
+    if len(raw) != int(match[1]) or hashlib.sha256(raw).hexdigest() != match[2]:
+        raise ValueError('Packed kitchen document does not match its original')
+    return raw.decode('utf-8')
+
+
+def pack_document(content, mode='app'):
+    """Losslessly package HTML; every original image and script byte survives.
+
+    The vendored synchronous decoder works without DecompressionStream or any
+    runtime download. The original document is written only after the small
+    envelope has finished parsing, retaining normal inline-script execution.
+    """
+    if mode not in ('app', 'widget'):
+        raise ValueError('Unknown presentation')
+    if PACKED_MARKER in content:
+        unpack_document(content)
+        return content
+    raw = content.encode('utf-8')
+    payload = base64.b64encode(gzip.compress(raw, compresslevel=9, mtime=0)).decode('ascii')
+    decoder = (Path(__file__).resolve().parent/'vendor/fflate-gunzip-0.8.2.min.js').read_text()
+    if '</script' in decoder.lower():
+        raise ValueError('Unexpected decoder script terminator')
+    label = '위젯' if mode == 'widget' else '앱'
+    digest = hashlib.sha256(raw).hexdigest()
+    return f'''<!doctype html>
+<html lang="ko" {PACKED_MARKER}><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5eee3"><title>한끼의 부엌 · {label}</title>
+<style>html,body{{margin:0;min-height:100%;background:#f5eee3;color:#514331;font:15px/1.5 -apple-system,BlinkMacSystemFont,sans-serif}}body{{display:grid;place-items:center;min-height:100vh}}p{{padding:16px}}</style>
+</head><body><p role="status">부엌을 열고 있어요…</p>
+<template id="kitchenPacked" data-codec="gzip-base64" data-bytes="{len(raw)}" data-sha256="{digest}">{payload}</template>
+<script>{decoder}
+(()=>{{function openKitchen(){{try{{const node=document.getElementById('kitchenPacked'),encoded=node.content.textContent,compressed=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)),bytes=KitchenPackedDecoder.gunzipSync(compressed);if(bytes.length!==Number(node.dataset.bytes))throw new Error('Incomplete kitchen document');const html=new TextDecoder('utf-8',{{fatal:true,ignoreBOM:true}}).decode(bytes);document.open();document.write(html);document.close();}}catch(error){{document.body.textContent='화면을 열지 못했어요. 새로고침해 주세요.';document.body.setAttribute('role','alert');console.error(error);}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',openKitchen,{{once:true}});else openKitchen();}})();
+</script></body></html>'''
+
+
+def fit_document(content, mode='app'):
+    """Keep small documents unchanged and package only oversized deliveries."""
+    if len(content.encode('utf-8')) <= DELIVERY_LIMIT:
+        return content
+    packed = pack_document(content, mode)
+    if len(packed.encode('utf-8')) > DELIVERY_LIMIT:
+        raise ValueError('Lossless kitchen preview exceeds the 1 MiB delivery budget')
+    return packed
 
 
 # The compact build keeps every food/seasoning used by this isolated prototype.
@@ -30,6 +96,25 @@ def compact_script(source):
         raise RuntimeError('--compact requires terser 5.44.1; install it outside the repository and set KITCHEN_TERSER to its executable')
     return subprocess.run([encoder, '--compress', '--mangle', '--ecma', '2020'],
                           input=source, text=True, check=True, capture_output=True).stdout.strip()
+
+
+@lru_cache(maxsize=32)
+def compact_style(source):
+    """Minify CSS locally without rebasing URLs or fetching imports.
+
+    Level one preserves rule order and avoids cross-rule restructuring. Image
+    encoding is deliberately independent of this text-only delivery saving.
+    """
+    encoder = os.environ.get('KITCHEN_CLEANCSS') or shutil.which('cleancss')
+    if not encoder:
+        raise RuntimeError('--compact requires clean-css-cli 5.6.3 (clean-css 5.3.3); install it outside the repository and set KITCHEN_CLEANCSS to its executable')
+    result = subprocess.run([encoder, '-O1', '--inline', 'none'], input=source,
+                            text=True, check=True, capture_output=True)
+    if result.stderr.strip():
+        raise RuntimeError('CSS minifier reported a warning: '+result.stderr.strip()[:1500])
+    if source.strip() and not result.stdout.strip():
+        raise RuntimeError('CSS minifier returned an empty stylesheet')
+    return result.stdout.strip()
 
 
 def sprite_boxes(source, name, keys):
@@ -109,6 +194,8 @@ def build(root, mode, compact=False):
             return 'url("'+image(target)+'")'
 
         style = re.sub(r'url\([\'"]?([^\)]+?)\)', url, style)
+        if compact:
+            style = compact_style(style)
         if '</style' in style.lower():
             raise ValueError('Unexpected style terminator')
         return '<style>\n'+style+'\n</style>'
@@ -170,7 +257,9 @@ def main():
         raise SystemExit('Only previews/ or a folder outside the checkout is allowed.')
     output.mkdir(parents=True,exist_ok=True)
     pages={mode:build(root,mode,args.compact) for mode in ('app','widget')}
-    if args.compact and any(len(page.encode('utf-8'))>1048576 for page in pages.values()):
+    if args.compact:
+        pages={mode:fit_document(content,mode) for mode,content in pages.items()}
+    if args.compact and any(len(page.encode('utf-8'))>DELIVERY_LIMIT for page in pages.values()):
         raise SystemExit('Compact preview exceeds the chosen 1 MiB delivery budget; no files were written.')
     for mode,content in pages.items():
         path=output/f'miniature-kitchen-{mode}.html';path.write_text(content);print(f'{path.name}: {path.stat().st_size:,} bytes')

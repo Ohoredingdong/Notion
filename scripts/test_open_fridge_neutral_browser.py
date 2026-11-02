@@ -38,6 +38,8 @@ def main():
       def show(frame,name):
         frame.evaluate('(name)=>KitchenWorkflows.show(name)',name)
         expect(frame.locator('#tray')).to_be_visible()
+      def success_records(frame):
+        if frame.locator('#tray .meal-success').is_visible():frame.locator('#tray [data-wf="successRecords"]').click()
       def stock(frame,item='egg'):
         return frame.evaluate('(id)=>MiniKitchen.exportWorld().items.find(i=>i.id===id).quantity',item)
       def tap_door(frame,page,key,touch=False):
@@ -109,11 +111,13 @@ def main():
         assert stock(f)=='6개';assert f.evaluate('KitchenJournal.summary("2026-10-31").nutrients.carb.value')==65
         assert f.evaluate('KitchenJournal.getWorkflow().extraNutrients[KitchenJournal.getSnapshot().meals[0].id].calcium')==30
         passed('meal commit updates entered nutrition, micronutrients and confirmed inventory atomically')
+        success_records(f)
         f.locator('[data-remove-meal]').click();f.locator('[data-wf="confirmCancelMeal"]').click();assert stock(f)=='8개';assert f.evaluate('KitchenJournal.getSnapshot().meals.length')==0
         f.locator('[data-undo-meal]').click();assert stock(f)=='6개';assert f.evaluate('KitchenJournal.getSnapshot().meals.length')==1;assert f.evaluate('KitchenJournal.getSnapshot().awarded.length')==1;passed('meal cancellation and restore include stock, nutrition and no reward farming')
-        f.locator('[data-wf="editMeal"]').click();form=f.locator('[data-wf-form="meal"]');assert form.locator('[name="qty0"]').input_value()=='2개';form.locator('[name="qty0"]').fill('3개');form.locator('[name="protein"]').fill('20');form.locator('[type="submit"]').click()
+        f.locator('#tray [data-wf="editMeal"]').click();form=f.locator('[data-wf-form="meal"]');assert form.locator('[name="qty0"]').input_value()=='2개';form.locator('[name="qty0"]').fill('3개');form.locator('[name="protein"]').fill('20');form.locator('[type="submit"]').click()
         assert stock(f)=='5개';assert f.evaluate('KitchenJournal.summary("2026-10-31").nutrients.protein.value')==20;passed('meal edits reverse only the old transaction before applying new use')
-        before=f.evaluate('KitchenJournal.getEnvelope()');f.locator('[data-wf="editMeal"]').click();form=f.locator('[data-wf-form="meal"]');form.locator('[name="qty0"]').fill('99개');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getEnvelope()')==before;passed('insufficient-stock meal edits leave all records unchanged')
+        success_records(f)
+        before=f.evaluate('KitchenJournal.getEnvelope()');f.locator('#tray [data-wf="editMeal"]').click();form=f.locator('[data-wf-form="meal"]');form.locator('[name="qty0"]').fill('99개');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getEnvelope()')==before;passed('insufficient-stock meal edits leave all records unchanged')
         show(f,'plan');form=f.locator('[data-wf-form="plan"]');form.locator('[type="submit"]').click();assert stock(f)=='5개';assert f.evaluate('KitchenJournal.getSnapshot().meals.length')==1;passed('meal planning does not consume stock or add spending')
         show(f,'shopping');form=f.locator('[data-wf-form="shopping"]');form.locator('[name="name"]').fill('양파');form.locator('[name="quantity"]').fill('1개');form.locator('[name="estimate"]').fill('600');form.locator('[type="submit"]').click()
         f.locator('[data-wf="purchase"]').click();form=f.locator('[data-wf-form="purchase"]');form.locator('[name="paid"]').fill('700');form.locator('[name="expiry"]').fill('2026-11-10');form.locator('[type="submit"]').click()
@@ -122,7 +126,7 @@ def main():
         show(f,'budget');form=f.locator('[data-wf-form="budget"]');form.locator('[name="budget"]').fill('400000');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getWorkflow().expenses.length')==1;passed('shopping purchase separately confirms real expense and dated inventory without double counting')
         f.locator('[data-wf="editExpense"]').click();form=f.locator('[data-wf-form="editExpense"]');form.locator('[name="amount"]').fill('900');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getWorkflow().expenses[0].amount')==900;passed('cash expense can be corrected independently of inventory')
         show(f,'supplements');form=f.locator('[data-wf-form="supplement"]');form.locator('[name="name"]').fill('내 비타민');form.locator('[name="amount"]').fill('제품 표시량');form.locator('[name="schedule"]').fill('내 일정');form.locator('[name="ingredients"]').fill('비타민D');form.locator('[type="submit"]').click();f.locator('[data-supplement-check]').check();assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].days')==['2026-10-31'];passed('supplement schedule and selected-day checks are stored without inferred dosage')
-        f.locator('[data-wf="editSupplement"]').click();form=f.locator('[data-wf-form="editSupplement"]');form.locator('[name="remaining"]').fill('29정');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].days')==['2026-10-31'];assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].remaining')=='29정'
+        f.locator('#tray [data-wf="editSupplement"]').click();form=f.locator('[data-wf-form="editSupplement"]');form.locator('[name="remaining"]').fill('29정');form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].days')==['2026-10-31'];assert f.evaluate('KitchenJournal.getWorkflow().supplements[0].remaining')=='29정'
         show(f,'monthly');expect(f.locator('.workflow-month')).to_be_visible();assert f.locator('.workflow-month>div').count()==31;passed('monthly calendar uses actual month and recorded data')
         # Real local image decoding/compression, paired-photo review and explicit manual registration.
         show(f,'photos');assert f.locator('[data-photo]').count()==2

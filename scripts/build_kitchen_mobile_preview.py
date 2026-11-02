@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """Build small, self-contained kitchen previews for an external HTML preview URL."""
 import argparse
-import json
 from pathlib import Path
 
-from build_miniature_kitchen_preview import build
+from build_miniature_kitchen_preview import build, fit_document, pack_document, DELIVERY_LIMIT
 
 
 def mobile_page(content, mode):
     label = '앱' if mode == 'app' else '위젯'
-    # JSON data avoids repeatedly entity-encoding the app's quotes. Preserve the
-    # exact inner HTML and the opaque sandbox, without shrinking image assets.
-    payload = json.dumps(content, ensure_ascii=False)
-    # HTMLPreview rewrites every literal <script token, including inside data.
-    # An inert template with escaped markup survives that rewrite intact.
-    payload = payload.replace('&', r'\u0026').replace('<', r'\u003c')
+    if '\0' in content:
+        raise ValueError('A null character cannot round-trip through HTML text')
+    # The template holds text, not HTML nodes or JavaScript string syntax.
+    # Escape ampersands first so existing character references survive exactly;
+    # escaping '<' also survives HTMLPreview's naive literal <script rewrite.
+    # Quotes/backslashes need no escaping. A numeric CR reference prevents the
+    # HTML parser from normalizing CR/CRLF in otherwise exact source text.
+    payload = content.replace('&', '&amp;').replace('<', '&lt;').replace('\r', '&#13;')
     # Public raw-file renderers share an origin across unrelated repositories.
     # An opaque frame uses the existing temporary-storage fallback and keeps
     # preview records out of that shared origin's persistent localStorage.
@@ -28,7 +29,7 @@ def mobile_page(content, mode):
 </head><body>
 <iframe title="한끼의 부엌 {label} 미리보기" sandbox="allow-scripts allow-forms"></iframe>
 <template id="kitchenSource">{payload}</template>
-<script>document.querySelector('iframe').srcdoc=JSON.parse(document.getElementById('kitchenSource').content.textContent);document.getElementById('kitchenSource').remove();</script>
+<script>document.querySelector('iframe').srcdoc=document.getElementById('kitchenSource').content.textContent;document.getElementById('kitchenSource').remove();</script>
 </body></html>
 '''
 
@@ -42,9 +43,14 @@ def main():
     output = (args.output_dir or root / 'previews/mobile').resolve()
     if output.is_relative_to(root) and not output.is_relative_to(root / 'previews'):
         raise SystemExit('Only previews/ or a folder outside the checkout is allowed.')
-    pages = {mode: mobile_page(build(root, mode, compact=True), mode)
-             for mode in ('app', 'widget')}
-    if any(len(content.encode('utf-8')) > 1048576 for content in pages.values()):
+    pages = {}
+    for mode in ('app', 'widget'):
+        content = fit_document(build(root, mode, compact=True), mode)
+        page = mobile_page(content, mode)
+        if len(page.encode('utf-8')) > DELIVERY_LIMIT:
+            page = mobile_page(pack_document(content, mode), mode)
+        pages[mode] = page
+    if any(len(content.encode('utf-8')) > DELIVERY_LIMIT for content in pages.values()):
         raise SystemExit('Mobile preview exceeds the 1 MiB delivery budget; no files written.')
     output.mkdir(parents=True, exist_ok=True)
     for mode, content in pages.items():

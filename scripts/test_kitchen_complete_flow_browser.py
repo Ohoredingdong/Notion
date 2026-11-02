@@ -94,18 +94,29 @@ def main():
             return frame.evaluate('KitchenJournal.getEnvelope()')
 
         def close(frame):
-            if frame.locator('#tray').is_visible():
+            # Focused sheets return through their actual context before leaving.
+            for _ in range(8):
+                if not frame.locator('#tray').is_visible():
+                    return
                 frame.locator('#closeTray').click()
+            expect(frame.locator('#tray')).not_to_be_visible()
+
+        def success_records(frame):
+            if frame.locator('#tray .meal-success').is_visible():
+                frame.locator('#tray [data-wf="successRecords"]').click()
 
         def tab(frame, name, page=None):
             """Use the same persistent tabs a person uses; never unhide by API."""
             close(frame)
+            if frame.locator('.decor-footer [data-decor-cancel]').is_visible():
+                frame.locator('.decor-footer [data-decor-cancel]').click()
             control = frame.locator(f'.home-shortcuts [data-home-tab="{name}"]')
             control.click()
             expect(control).to_have_attribute('aria-selected', 'true')
             if page:
                 control = frame.locator(f'[data-home-subtab="{page}"]')
-                control.click()
+                if control.get_attribute('aria-selected') != 'true':
+                    control.click()
                 expect(control).to_have_attribute('aria-selected', 'true')
 
         def section(frame, selector):
@@ -124,8 +135,8 @@ def main():
             expect(frame.locator('#tray')).to_be_visible()
 
         def recipe(frame, recipe_id='recipe-1'):
-            tab(frame, 'fridge')
-            frame.locator('#recipes').click()
+            tab(frame, 'meals', 'recommendation')
+            frame.locator('#homeRecommendation [data-workflow="recipes"]').click()
             card = frame.locator(f'#tray [data-wf="recipe"][data-arg="{recipe_id}"]')
             if card.count() == 0:
                 frame.locator('#tray .recipe-filters summary').click()
@@ -228,8 +239,8 @@ def main():
                 assert not frame.locator('#tray').evaluate('e=>e.scrollWidth>e.clientWidth+1')
 
         def dock(frame):
-            rows = frame.evaluate('''()=>['addFood','recipes','openRecords'].map(id=>{
-                const e=document.getElementById(id),r=e.getBoundingClientRect();
+            rows = frame.evaluate('''()=>[document.getElementById('addFood'),...document.querySelectorAll('.home-shortcuts [data-home-tab]')].map(e=>{
+                const id=e.id||e.dataset.homeTab,r=e.getBoundingClientRect();
                 return {id,width:r.width,height:r.height,visible:r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1,
                     hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===e};})''')
             assert all(row['visible'] and row['hit'] and row['height'] >= 44 for row in rows), rows
@@ -272,6 +283,8 @@ def main():
                     assert frame.locator('.home-panel:not([hidden])').count() == 1
                     assert frame.evaluate('document.documentElement.scrollHeight<=innerHeight+1'), selector
                     assert frame.evaluate('scrollY') == 0
+                    if mode == 'app' and width == 390 and not opaque and selector == '#homeRecommendation':
+                        page.screenshot(path=str(output/'recipes-390x844.png'))
                 assert envelope(frame) == before_tabs, 'Tabs must never change inventory, dates, positions or records'
                 for selector, button, expected_selector in (
                     ('#homePlans', '[data-workflow="plan"]', '[data-wf-form="plan"]'),
@@ -280,16 +293,21 @@ def main():
                     ('#homeMonthly', '[data-workflow="monthly"]', '.workflow-month'),
                     ('#homeGrowth', '[data-workflow="book"]', '#journalGoal'),
                     ('#homeGrowth', '[data-workflow="rewards"]', '[data-reward="tile"]'),
-                    ('#homeDecor', '[data-workflow="decor"]', '[data-wf-form="theme"]'),
-                    ('#homeConnections', '[data-workflow="photos"]', '[data-wf="readPhotos"]')):
+                    ('#homeDecor', '[data-workflow="decor"]', '[data-wf-form="theme"]')):
                     section(frame, selector)
                     frame.locator(selector+' '+button).first.click()
                     expect(frame.locator('#tray '+expected_selector)).to_be_visible()
                     no_overflow(frame)
                     close(frame)
+                tab(frame, 'fridge')
+                frame.locator('#addFood').click()
+                frame.locator('#tray [data-wf="photos"]').click()
+                expect(frame.locator('#tray [data-wf="readPhotos"]')).to_be_visible()
+                no_overflow(frame)
+                close(frame)
                 section(frame, '#homeGrowth')
                 growth_before = envelope(frame)
-                frame.locator('#homeGrowth [data-home-open="decor"]').click()
+                frame.locator('#homeGrowth .growth-preview').click()
                 expect(frame.locator('#decorStage .room')).to_be_visible()
                 assert envelope(frame) == growth_before
                 section(frame, '#homeConnections')
@@ -297,7 +315,7 @@ def main():
                 status.locator('summary').click()
                 expect(status).to_contain_text('공식')
                 expect(status).to_contain_text('연결 전')
-                expect(status).to_contain_text('자동 동기화는 지원하지')
+                expect(status).to_contain_text('기기 간 동기화는 연결 전')
                 if mode == 'app' and width == 390 and not opaque:
                     section(frame, '#homeRecommendation')
                     home_status = frame.locator('#homeRecommendation [data-stock-status]')
@@ -319,7 +337,7 @@ def main():
                     section(frame, '#homeConnections')
                     assert frame.evaluate('KitchenJournal.status') == 'temporary'
                     expect(frame.locator('#homeStorageNotice')).to_be_visible()
-                    expect(status).to_contain_text('임시 세션')
+                    expect(frame.locator('#homeConnections .home-save-state')).to_contain_text('임시 세션')
                     # A trusted touch must leave the newly opened sheet alive
                     # after the compatibility click (the former retarget bug).
                     tab(frame, 'fridge')
@@ -364,6 +382,19 @@ def main():
             for name, expected in {'계란': '3개', '양파': '1.25개', '식용유': '7작은술', '간장': '7작은술', '밥': '7공기'}.items():
                 actual_item = next(item for item in after['world']['items'] if item['name'] == name)
                 assert quantity(actual_item['quantity']) == quantity(expected), actual_item
+            expect(frame.locator('#tray')).to_have_attribute('data-workflow-route', 'mealSuccess')
+            expect(frame.locator('#tray .meal-success')).to_be_visible()
+            page.screenshot(path=str(output/'meal-success-entered-fixture-390x844.png'))
+            expect(frame.locator('#tray [data-wf="successRecords"]')).to_be_visible()
+            expect(frame.locator('#tray [data-wf="successHome"]')).to_be_visible()
+            frame.locator('#tray [data-wf="cancelMeal"]').click()
+            expect(frame.locator('#tray')).to_have_attribute('data-workflow-route', 'cancelMeal')
+            expect(frame.locator('#tray [data-wf="confirmCancelMeal"]')).to_be_visible()
+            assert envelope(frame) == after, 'Opening cancellation must only preview its transaction'
+            frame.locator('#tray .workflow-nav [data-wf="back"]').click()
+            expect(frame.locator('#tray .meal-success')).to_be_visible()
+            assert envelope(frame) == after
+            success_records(frame)
             assert frame.locator('#journalDay').input_value() == '2026-11-03'
             view_plans(frame, '2026-11-03')
             row = frame.locator(f'.plan-row[data-plan-id="{plan_id}"]')
@@ -391,7 +422,7 @@ def main():
             go(frame, 'nutrition')
             frame.locator('#journalDay').fill('2026-11-03')
             frame.locator('#journalDay').dispatch_event('change')
-            frame.locator(f'[data-wf="editMeal"][data-arg="{meal["id"]}"]').click()
+            frame.locator(f'#tray [data-wf="editMeal"][data-arg="{meal["id"]}"]').click()
             form = frame.locator('#workflowMealForm')
             expect(form).to_be_visible()
             form.locator('[name="protein"]').fill('16')
@@ -471,10 +502,13 @@ def main():
             expect(frame.locator('#homeGrowth [role="progressbar"]')).to_have_attribute('aria-valuenow', '1')
             frame.locator('#homeGrowth [data-workflow="rewards"]').click()
             frame.locator('#tray [data-reward="tile"]').click()
+            bought = envelope(frame)['play']
+            assert bought['owned'] == ['tile'] and bought['equipped']['frozenLeft'] is None
+            assert frame.evaluate('KitchenJournal.summary().tickets') == 0
+            expect(frame.locator('.decor-door-charm[data-charm="tile"]')).to_be_visible()
+            frame.locator('[data-decor-apply]').click()
             reward = envelope(frame)['play']
             assert reward['owned'] == ['tile'] and reward['equipped']['frozenLeft'] == 'tile'
-            assert frame.evaluate('KitchenJournal.summary().tickets') == 0
-            frame.locator('#tray [data-see-fridge]').click()
             expect(frame.locator('.fridge-charm.is-interior[data-charm="tile"]')).to_be_visible()
             expect(frame.locator('.home-shortcuts [data-home-tab="fridge"]')).to_have_attribute('aria-selected', 'true')
             section(frame, '#homeGrowth')
@@ -512,8 +546,26 @@ def main():
             expect(frame.locator('.workflow-month')).to_be_visible()
             assert frame.locator('.workflow-month>div').count() == 30
             close(frame)
+            records_before = envelope(frame)
+            frame.locator('#homeMonth').fill('2026-12')
+            frame.locator('#homeMonth').dispatch_event('change')
+            expect(frame.locator('#homeMonthly .home-calendar button')).to_have_count(31)
+            assert frame.locator('#homeMonthly .home-month-stats>span').nth(2).locator('b').text_content() == '0원'
+            frame.locator('#homeMonth').fill('2026-11')
+            frame.locator('#homeMonth').dispatch_event('change')
+            expect(frame.locator('#homeMonthly .home-calendar button')).to_have_count(30)
+            frame.locator(f'#homeMonthly [data-home-day="{DAY}"]').click()
+            expect(frame.locator('[data-home-subtab="nutrition"]')).to_have_attribute('aria-selected','true')
+            expect(frame.locator('#homeRecordDay')).to_have_value(DAY)
+            expect(frame.locator('#homeNutrition .record-meal-row')).to_have_count(1)
+            page.screenshot(path=str(output/'nutrition-entered-fixture-390x844.png'))
+            frame.locator('#homeRecordDay').fill('2026-11-02')
+            frame.locator('#homeRecordDay').dispatch_event('change')
+            expect(frame.locator('#homeNutrition .record-meal-row')).to_have_count(0)
+            assert envelope(frame) == records_before, 'Changing record dates/months must not alter records'
+            section(frame, '#homeMonthly')
             page.screenshot(path=str(output/'entered-records-home.png'), full_page=True)
-            passed('home shows actual remaining budget, supplement schedule/check and November records without adding estimated meal cost or supplement nutrients')
+            passed('home shows actual budget and supplements; calendar month/day controls filter real records without adding estimates, nutrients or writes')
 
             # Honest zero/unknown distinction and same actual recipe on LCD/home.
             close(frame)

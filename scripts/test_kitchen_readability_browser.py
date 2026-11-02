@@ -79,10 +79,17 @@ def main():
             frame.wait_for_function('window.MiniKitchen && window.KitchenJournal && window.KitchenWorkflows')
             return context, page, frame
 
+        def close(frame):
+            for _ in range(8):
+                if not frame.locator('#tray').is_visible():
+                    return
+                frame.locator('#closeTray').click()
+            expect(frame.locator('#tray')).not_to_be_visible()
+
         def in_view_actions(frame):
             result = frame.evaluate('''() => {
-                return ['addFood','recipes','openRecords'].map(id=>{
-                    const e=document.getElementById(id),r=e.getBoundingClientRect();
+                return [document.getElementById('addFood'),...document.querySelectorAll('.home-shortcuts [data-home-tab]')].map(e=>{
+                    const id=e.id||e.dataset.homeTab,r=e.getBoundingClientRect();
                     const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
                     return {id,x:r.x,y:r.y,width:r.width,height:r.height,
                         visible:r.width>0&&r.height>0&&r.left>=-1&&r.right<=innerWidth+1&&r.top>=-1&&r.bottom<=innerHeight+1,
@@ -172,14 +179,15 @@ def main():
                 frame.evaluate('window.scrollTo(0,0)')
                 check_doors(page, frame, opaque)
                 frame.evaluate('window.scrollTo(0,0)')
-                frame.locator('#recipes').click()
+                frame.locator('[data-home-tab="meals"]').click()
+                frame.locator('#homeRecommendation [data-workflow="recipes"]').click()
                 expect(frame.locator('#tray .recipe-filters')).to_be_visible()
                 assert frame.locator('#tray .recipe-filters').get_attribute('open') is None
                 recipe_cards = frame.locator('#tray [data-wf="recipe"]')
                 assert recipe_cards.count() == frame.evaluate('KitchenCatalog.length') == 8
                 first = recipe_cards.first.bounding_box()
                 assert first and first['y'] >= 0 and first['y']+min(first['height'], 44) <= height, first
-                frame.locator('#closeTray').click()
+                close(frame)
                 frame.locator('#openRecords').click()
                 expect(frame.locator('#openRecords')).to_have_attribute('aria-selected', 'true')
                 expect(frame.locator('#panel-records [data-workflow="nutrition"]')).to_be_visible()
@@ -288,17 +296,18 @@ def main():
             for fraction in (.5, .25):
                 frame.evaluate('window.scrollTo(0,0)')
                 source = frame.locator('[data-item="egg"]').bounding_box()
-                dock = frame.locator('#recipes').bounding_box()
+                dock = frame.locator('.home-shortcuts [data-home-tab="meals"]').bounding_box()
                 x, y = dock['x']+dock['width']*fraction, dock['y']+dock['height']/2
-                assert frame.evaluate('p=>document.elementFromPoint(p.x,p.y)?.closest("button")?.id', {'x':x,'y':y}) == 'recipes'
+                assert frame.evaluate('p=>document.elementFromPoint(p.x,p.y)?.closest("button")?.dataset.homeTab', {'x':x,'y':y}) == 'meals'
                 page.mouse.move(source['x']+source['width']/2, source['y']+source['height']/2)
                 page.mouse.down()
                 page.mouse.move(x, y, steps=16)
                 page.mouse.up()
                 assert frame.evaluate('MiniKitchen.exportWorld()') == before_drop
                 assert not frame.locator('#tray').is_visible()
+                expect(frame.locator('.home-shortcuts [data-home-tab="fridge"]')).to_have_attribute('aria-selected', 'true')
                 expect(frame.locator('.ghost,.item.is-dragging')).to_have_count(0)
-            passed('drag onto the fixed recipe dock cancels without stock changes, opening a dialog or leaving a ghost')
+            passed('drag onto the fixed recipe navigation cancels without stock changes, opening a dialog or leaving a ghost')
             context.close()
 
             # Existing schemas allow long names and an unparsed quantity; native

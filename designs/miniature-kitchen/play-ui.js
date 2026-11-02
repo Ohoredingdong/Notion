@@ -23,14 +23,19 @@ function save(){
 function statusText(){return {saved:'이 시안에 저장 · 기존 앱 기록과 별도',temporary:'임시 세션 · 백업에서 기록을 보관해 주세요',blocked:'이전 저장 원본 보존 · 새 저장 중단',conflict:'다른 화면의 기록 변경 · 새로 열거나 백업해 주세요'}[status];}
 function update(){
  const s=model.state(),report=model.summary(today());
- $('#kitchenProgress>span').textContent='도감 '+report.cooked.length+'/'+C.length+' · 꾸밈권 '+report.tickets;
- $('#openJournal').textContent='식사·영양과 도감';
- $('.design-note>span').textContent=statusText();
+ const progress=$('#kitchenProgress>span'),journal=$('#openJournal'),note=$('.design-note>span');
+ if(progress)progress.textContent='도감 '+report.cooked.length+'/'+C.length+' · 꾸밈권 '+report.tickets;
+ if(journal)journal.textContent='식사·영양과 도감';
+ if(note)note.textContent=statusText();
  updateDecorations();window.KitchenWorkflows?.update();
 }
 function charm(id,label=''){if(id==='plate')return `<span class="charm-nameplate">${esc(label)}</span>`;const box={tile:[64,70,560,560],daisy:[628,70,610,600],photo:[64,644,560,560]}[id];const clip='journal-magnet-'+(++magnetSerial);return `<svg class="magnet-art" viewBox="${box.join(' ')}" aria-hidden="true"><defs><clipPath id="${clip}"><rect x="${box[0]}" y="${box[1]}" width="${box[2]}" height="${box[3]}"/></clipPath></defs><image href="${MAGNETS}" width="1254" height="1254" clip-path="url(#${clip})"/></svg>`;}
 function updateDecorations(){
- const root=$('#fridgeDisplays');document.querySelectorAll('.fridge-charm').forEach(n=>n.remove());const s=model.state(),world=K.getSnapshot();
+ const root=$('#fridgeDisplays');document.querySelectorAll('.fridge-charm,.decor-door-charm').forEach(n=>n.remove());const s=model.state(),world=K.getSnapshot();
+ const pending=K.getDecorEquippedDraft?.(),backdrop=$('.decor-fridge-backdrop');
+ if(pending&&backdrop&&document.body.dataset.camera==='counter'&&$('#decorStage')?.getClientRects().length){
+  for(const [position,id] of Object.entries(pending))if(id){const n=document.createElement('span');n.className='decor-door-charm';n.dataset.slot=position;n.dataset.charm=id;n.setAttribute('aria-hidden','true');n.innerHTML=charm(id,s.plateLabel);backdrop.appendChild(n);}
+ }
  const stage=$('.fridge-stage').getBoundingClientRect(),room=$('.room').getBoundingClientRect();
  for(const [position,id] of Object.entries(s.equipped))if(id&&!K.isDoorClosing(position)){
   const n=document.createElement('span');n.className='fridge-charm';n.dataset.charm=id;n.setAttribute('aria-hidden','true');n.innerHTML=charm(id,s.plateLabel);
@@ -57,7 +62,7 @@ function logForm(recipeId=null){
  const recipe=find(recipeId),chosen=recipeId||'';K.showTray('먹은 한 끼를 기록해요',`<form id="mealForm"><div class="journal-fields"><label>날짜<input type="date" name="day" value="${viewDay}" required></label><label>도감에 연결할 요리<select name="recipeId"><option value="">직접 입력한 식사</option>${C.map(r=>`<option value="${r.id}" ${r.id===chosen?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label><label>식사 이름<input name="name" value="${esc(recipe?.name||'')}" required maxlength="120" placeholder="먹은 음식"></label><label>먹은 분량 메모<input name="portion" maxlength="80" placeholder="예: 반 공기, 1인분"></label></div><h3 class="journal-subtitle">먹은 분량 전체의 영양값</h3><p class="journal-note">제품 영양표나 확인한 자료를 보고 입력하세요. 레시피에서 영양값을 자동 추정하지 않아요. 모르는 값은 비워 두어도 식사를 기록할 수 있어요.</p>${fields()}<button type="submit" class="small-action primary">식사 기록하기</button><div class="journal-feedback" role="status"></div></form>`,'MY MEAL');
 }
 function rewards(){
- const s=model.state(),r=model.summary(today());return `<div class="journal-heading"><strong>꾸밈권 ${r.tickets}개</strong><span>소품 ${s.owned.length} / ${Object.keys(M.REWARDS).length}</span></div><p class="journal-note">처음 기록한 서로 다른 요리마다 꾸밈권 1개를 받아요. 같은 요리는 다시 지급되지 않고, 기록을 취소해도 받은 꾸밈권은 유지돼요.</p><label class="journal-select">붙일 곳<select id="rewardSlot"><option value="frozenLeft" ${slot==='frozenLeft'?'selected':''}>냉동 왼쪽 문</option><option value="frozenRight" ${slot==='frozenRight'?'selected':''}>냉동 오른쪽 문</option></select></label><div class="reward-catalog">${Object.entries(M.REWARDS).map(([id,reward])=>{const owned=s.owned.includes(id),equipped=s.equipped[slot]===id;return `<article class="reward-card"><span class="reward-art">${charm(id,s.plateLabel)}</span><strong>${reward.name}</strong><small>${owned?'가지고 있어요':'꾸밈권 '+reward.cost+'개'}</small><button type="button" class="small-action ${owned?'':'primary'}" ${!owned&&r.tickets<reward.cost?'disabled':''} data-reward="${id}">${equipped?'붙여 두었어요':owned?'여기에 붙이기':'선택해서 받기'}</button></article>`;}).join('')}</div>${s.owned.includes('plate')?`<form id="plateForm" class="journal-section"><label>이름표 문구<input name="label" value="${esc(s.plateLabel)}" maxlength="12" required></label><button class="small-action" type="submit">문구 바꾸기</button></form>`:''}<button type="button" class="small-action" data-clear-charm>선택한 문의 소품 떼기</button><button type="button" class="small-action primary" data-see-fridge>냉장고에서 보기</button><div class="journal-feedback" role="status"></div>`;
+ const s=model.state(),r=model.summary(today());return `<div class="journal-heading"><strong>꾸밈권 ${r.tickets}개</strong><span>소품 ${s.owned.length} / ${Object.keys(M.REWARDS).length}</span></div><p class="journal-note">처음 기록한 서로 다른 요리마다 꾸밈권 1개를 받아요. 같은 요리는 다시 지급되지 않고, 기록을 취소해도 받은 꾸밈권은 유지돼요.</p><label class="journal-select">붙일 곳<select id="rewardSlot"><option value="frozenLeft" ${slot==='frozenLeft'?'selected':''}>냉동 왼쪽 문</option><option value="frozenRight" ${slot==='frozenRight'?'selected':''}>냉동 오른쪽 문</option></select></label><div class="reward-catalog">${Object.entries(M.REWARDS).map(([id,reward])=>{const owned=s.owned.includes(id),equipped=s.equipped[slot]===id;return `<article class="reward-card"><span class="reward-art">${charm(id,s.plateLabel)}</span><strong>${reward.name}</strong><small>${owned?'가지고 있어요':'꾸밈권 '+reward.cost+'개'}</small><button type="button" class="small-action ${owned?'':'primary'}" ${!owned&&r.tickets<reward.cost?'disabled':''} data-reward="${id}">${equipped?'붙여 두었어요':owned?'배치하기':'선택해서 받기'}</button></article>`;}).join('')}</div>${s.owned.includes('plate')?`<form id="plateForm" class="journal-section"><label>이름표 문구<input name="label" value="${esc(s.plateLabel)}" maxlength="12" required></label><button class="small-action" type="submit">문구 바꾸기</button></form>`:''}<button type="button" class="small-action" data-clear-charm>소품 떼어 보기</button><button type="button" class="small-action primary" data-see-fridge>냉장고에서 보기</button><div class="journal-feedback" role="status"></div>`;
 }
 function backup(){return `<p class="journal-note">이 시안의 재료·문 상태·식사·영양 목표·도감·소품을 함께 보관해요. 기존 앱 기록은 읽거나 변경하지 않아요.</p><p class="journal-save-status">${statusText()}</p><label class="journal-select">복사해서 보관할 기록<textarea id="journalExport" rows="5" readonly>${esc(JSON.stringify(envelope(),null,2))}</textarea></label>${originalRaw?'<details class="journal-section"><summary>읽지 못한 이전 원본 보관</summary><textarea rows="4" readonly>'+esc(originalRaw)+'</textarea></details>':''}<form id="importForm" class="journal-section"><label>이 시안의 백업 붙여넣기<textarea name="backup" rows="5" required></textarea></label><p class="journal-note">형식을 확인한 뒤 이 시안의 현재 기록을 교체해요. 읽기 오류나 다른 화면과 충돌이 있으면 원본 저장은 유지하고 임시로 불러와요.</p><button class="small-action primary" type="submit">이 기록 불러오기</button><div class="journal-feedback" role="status"></div></form>`;}
 function feedback(message){const node=$('#trayContent .journal-feedback');if(node)node.textContent=message;else $('#liveMessage').textContent=message;}
@@ -69,8 +74,8 @@ document.addEventListener('click',event=>{const b=event.target.closest('button')
  if(b.dataset.previewRecipe)K.chooseRecipe(find(b.dataset.previewRecipe).name);
  if(b.dataset.removeMeal){if(window.KitchenWorkflows)window.KitchenWorkflows.cancelMeal(b.dataset.removeMeal);else{model.remove(b.dataset.removeMeal);save();show('nutrition');feedback('기록을 취소했어요. 영양 합계도 다시 계산했어요.');}}
  if(b.hasAttribute('data-undo-meal')){if(window.KitchenWorkflows){window.KitchenWorkflows.undoMeal();return;}if(model.undo()){save();show('nutrition');feedback('방금 취소한 기록을 복구했어요.');}else feedback('복구할 취소 기록이 없어요.');}
- if(b.dataset.reward){const received=model.buy(b.dataset.reward);model.equip(slot,b.dataset.reward);save();show('rewards');feedback(received?'소품을 받았어요. 냉장고에 붙여 두었어요.':'선택한 문에 붙였어요.');}
- if(b.hasAttribute('data-clear-charm')){model.equip(slot,null);save();show('rewards');}
+ if(b.dataset.reward){const received=model.buy(b.dataset.reward);if(received)save();else update();K.setDecorEquippedDraft(slot,b.dataset.reward);K.setCamera('counter');K.closeTray();K.announce(received?'소품을 받았어요. 배치를 확인하고 적용해 주세요.':'배치 미리보기예요. 적용하면 냉장고에 붙여요.');}
+ if(b.hasAttribute('data-clear-charm')){K.setDecorEquippedDraft(slot,null);K.setCamera('counter');K.closeTray();K.announce('소품을 뗀 미리보기예요. 적용하면 저장해요.');}
  if(b.hasAttribute('data-see-fridge')){K.setCamera('fridge');K.closeTray();}
 }catch(e){feedback(e.message);}});
 document.addEventListener('change',event=>{try{const e=event.target;if(e.id==='journalDay'&&M.day(e.value)){viewDay=e.value;show('nutrition');}if(e.id==='journalGoal'){model.setGoal(e.value);save();show('book');}if(e.id==='rewardSlot'){slot=e.value;show('rewards');}if(e.name==='recipeId'&&e.closest('#mealForm')){const r=find(e.value);if(r)$('#mealForm [name="name"]').value=r.name;}}catch(e){feedback(e.message);}});
@@ -80,7 +85,7 @@ document.addEventListener('submit',event=>{const form=event.target;if(!['mealFor
  if(form.id==='plateForm'){model.setLabel(f.get('label'));save();show('rewards');}
  if(form.id==='importForm'){if(window.KitchenWorkflows){window.KitchenWorkflows.previewImport(f.get('backup'));return;}const data=JSON.parse(f.get('backup'));if(!validEnvelope(data))throw new Error('이 시안의 올바른 백업 형식인지 확인해 주세요. 원본은 변경하지 않았어요.');loading=true;model=M.create(ids,data.play);K.restoreWorld(data.world);loading=false;save();show('backup');feedback('백업을 불러왔어요.');}
 }catch(e){loading=false;feedback(e instanceof SyntaxError?'백업 JSON을 읽을 수 없어요. 현재 기록은 유지돼요.':e.message);}});
-window.addEventListener('mini-kitchen:change',()=>{if(!loading)save();});
+window.addEventListener('mini-kitchen:change',event=>{if(!loading){if(event.detail?.preview)update();else save();}});
 window.addEventListener('mini-kitchen:layout',updateDecorations);
 window.addEventListener('mini-kitchen:recipe',event=>{const recipe=C.find(r=>r.name===event.detail.name);if(recipe){model.discover(recipe.id);save();}});
 window.addEventListener('storage',event=>{if(event.key===KEY&&event.newValue!==lastRaw){blocked=true;status='conflict';update();}});
