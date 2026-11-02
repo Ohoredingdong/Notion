@@ -31,6 +31,6 @@ python scripts/test_stock_decision_browser.py --root "$PWD" --output /tmp/notion
 
 Node DOM 테스트에는 Linkedom이 필요하다. 위 클라우드 활성화 파일이 `FRIDGE_TEST_DOM`을 지정한다. 다른 환경에서는 저장소 밖에 설치한 Linkedom 경로로 지정한다. 일부 Python 테스트의 직접 실행은 추적 JSON 결과 파일을 덮어쓰므로 unittest discovery를 사용한다. 로컬 서버는 `python -m http.server 8000 --bind 127.0.0.1`로 실행하고 HTTP 내용과 주요 상호작용을 확인한다. 온보딩 UI에는 localhost 미리보기 링크를 제공하지 않는다.
 
-냉장고 compact 미리보기 생성에는 `magick`과 Terser 5.44.1이 필요하다. 저장소 밖에 설치하고 `KITCHEN_TERSER`로 실행 파일을 지정한다. 설치·생성 절차는 [현재 기능 흐름 기록](docs/KITCHEN_COMPLETE_FLOW_2026-11-01.md)의 생성 환경을 따른다. 생성 파일을 줄이려고 필수 기능이나 이미지 해상도를 임의로 삭제·축소하지 않는다.
+냉장고 compact 미리보기 생성에는 `magick`, Terser 5.44.1, clean-css-cli 5.6.3(clean-css 5.3.3)이 필요하다. 저장소 밖에 설치하고 `KITCHEN_TERSER`·`KITCHEN_CLEANCSS`로 실행 파일을 지정한다. 설치·생성 절차는 [현재 시안 적용 기록](docs/KITCHEN_STORYBOARD_WIDGET_2026-11-02.md)의 생성 환경을 따른다. 생성 파일을 줄이려고 필수 기능이나 이미지 해상도를 임의로 삭제·축소하지 않는다.
 
 기준 커밋의 알려진 실패는 현황 보고서에 기록되어 있다. 기존 실패와 변경으로 새로 생긴 실패를 분리한다. 외부 데이터·실제 동기화·발음 재생·실제 Notion 임베드는 로컬 렌더링 통과만으로 검증된 것이 아니다.

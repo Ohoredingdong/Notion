@@ -46,21 +46,45 @@
 
 공통 구현은 `designs/miniature-kitchen/scene.html`, `home.js`, `storyboard.css`, `scene.js`, `workflows.js`, `play-ui.js`에서 앱·위젯에 함께 적용한다. `miniature-kitchen-preview-v1` 키, envelope version1, 원래 재료 ID·보관 위치·좌표와 기존 기록을 유지한다. 이번 디자인을 이유로 저장 형식을 교체하거나 기존 사용자 값을 데모로 재분류하지 않는다. 원래 운영 진입점 `use-me-first.html`·`use-me-first-widget.html`, main·Pages 설정·운영 데이터는 이번 시안 적용 범위에서 변경하지 않는다.
 
-생성기는 이미지와 스크립트를 포함한 단일 HTML을 만들며 기존 **파일별 1MiB 제한**을 유지한다. 이미지 품질/해상도와 기능을 줄여 제한에 맞추지 않는다. CSS의 순서를 보존하는 로컬 minify와 모바일 wrapper의 inert text 전송을 사용한다. 모바일 wrapper는 entity를 복원한 원문을 `srcdoc`에 전달하고 `sandbox="allow-scripts allow-forms"` 경계를 유지한다. `allow-same-origin`을 추가하지 않으며 공개 미리보기는 임시 세션 상태와 백업 경로를 알린다.
+생성기는 이미지와 스크립트를 포함한 단일 HTML을 만들며 앱·위젯 및 모바일 wrapper **4개 전송 파일의 각 1MiB 제한**을 유지한다. 두 화면을 함께 담는 로컬 비교 보드는 이 전송 제한 대상이 아니다. 이미지 품질/해상도와 기능을 줄여 제한에 맞추지 않는다. CSS의 순서를 보존하는 로컬 minify와 모바일 wrapper의 inert text 전송을 사용한다. 모바일 wrapper는 entity를 복원한 원문을 `srcdoc`에 전달하고 `sandbox="allow-scripts allow-forms"` 경계를 유지한다. `allow-same-origin`을 추가하지 않으며 공개 미리보기는 임시 세션 상태와 백업 경로를 알린다.
 
-**생성 후속 작업 대기:** 제한을 넘는 compact HTML에만 손실 없는 gzip+base64 부트스트랩과 포함된 소형 디코더를 적용하는 작업이 진행 중이다. 최종 크기·원문 복원·이미지 바이트 동일성·일반/opaque 실행 비교가 끝나기 전 이를 검증 완료로 취급하지 않는다. 최종 적용 방식과 수치는 아래 증거를 기준으로 갱신한다.
+제한을 넘는 compact HTML에만 손실 없는 gzip+base64 부트스트랩과 포함된 소형 디코더를 적용한다. Python 생성기는 복원한 원문의 UTF-8 바이트 수·SHA256을 검사하며, 브라우저는 포함된 디코더로 원문을 복원한 뒤 실행한다. `DecompressionStream`이나 실행 중 디코더 다운로드가 필요하지 않다. 정상 문서·중복 압축 방지·결정적 생성·손상/길이/SHA 불일치·특수 문자 전송을 단위검사7개로 검증했다. 비교 보드와 로컬 무압축 진단 파일을 실제 공개 전송물의 크기 근거로 쓰지 않는다.
 
-## 최종 검증 — 대기
+### 생성 환경
 
-이 절은 최종 생성물을 고정한 뒤 실제 실행 결과로 채운다. 이전 목적별 이동 작업의 통과 수나 중간 무압축 진단 결과를 이번 최종 전송물의 결과로 재사용하지 않는다.
+Python3.12, ImageMagick `magick`과 다음 외부 Node 도구를 사용한다. 루트 npm 프로젝트를 만들지 않는다. 포함된 fflate0.8.2 gunzip 디코더와 MIT 라이선스는 `scripts/vendor/`에 있으므로 실행 중 디코더를 내려받지 않는다.
+
+```bash
+kitchen_build_tools=/tmp/notion-kitchen-build-tools
+npm install --prefix "$kitchen_build_tools" --no-save --no-package-lock terser@5.44.1 clean-css-cli@5.6.3 clean-css@5.3.3
+export KITCHEN_TERSER="$kitchen_build_tools/node_modules/.bin/terser"
+export KITCHEN_CLEANCSS="$kitchen_build_tools/node_modules/.bin/cleancss"
+python scripts/build_miniature_kitchen_preview.py --compact
+python scripts/build_kitchen_mobile_preview.py
+python -m unittest scripts/test_kitchen_mobile_transport.py
+```
+
+## 최종 검증
+
+고정 UI 소스는 `2634bea1e01cc3d913583b6629e383985db15ad7`다. 이후 문서·증거 커밋은 생성 HTML을 바꾸지 않는다. 예시 재고와 명시적인 테스트용 입력으로 검증했으며 이전 작업이나 중간 무압축 진단의 통과 수를 최종 전송물의 결과로 재사용하지 않았다.
 
 | 검사 | 현재 기록 |
 | --- | --- |
-| 고정 UI 소스·생성 SHA256 | **대기** — 최종 소스 커밋과 앱/위젯·모바일 wrapper 4개 원문을 기록할 것. |
-| 크기·복원·전송 | **대기** — 파일별 1MiB, 압축 전후 원문·8개 인코딩 이미지 바이트·wrapper/srcdoc 동일성, 단위검사 결과. |
-| 실제 브라우저 흐름 | **대기** — 탭/문/터치/드래그, 등록 초안·OCR 검수, 계획/식사·수량 전후·실행 취소, 영양/식비/영양제/월간, 꾸미기 미리보기·적용/취소·최신 기록 보존. |
-| 동일 상태 전후·시각 검토 | **대기** — 같은 날짜·기존 envelope·네 문 열림·선택 없음으로 앱/위젯의 320×568, 320×660, 390×844, 649×900, 1120×1000을 비교. 가로 넘침·문서 스크롤·하단 조작과 장면 겹침·반응형 경계·가독성·배경 바닥선 결과를 구분할 것. |
+| 고정 UI 소스·생성 SHA256 | 위 소스의 실제 전송4개 바이트·SHA256과 복원 원문 해시를 [생성 기록](kitchen-storyboard-widget/generated-files.json)에 보관했다. |
+| 크기·복원·전송 | 앱881,409B / 위젯881,416B, 모바일882,734B / 882,747B로 모두1MiB 이내. 복원 원문은 각각1,064,830B / 1,064,833B이며 기존8개 인코딩 이미지 바이트와 minify 모듈을 보존한다. 모바일 payload는 packed native와 정확히 같고 전송/압축 단위검사 **7/7 통과**. |
+| 실제 브라우저 흐름 | 최종 packed 전송물로 **91/91 통과·JS0**. [요약](kitchen-storyboard-widget/summary.json), [탭/새 동작19](kitchen-storyboard-widget/tabs-results.json), [전체 흐름22](kitchen-storyboard-widget/flow-results.json), [가독성23](kitchen-storyboard-widget/readability-results.json), [회귀27](kitchen-storyboard-widget/regression-results.json). 등록 초안/저장 후 새 등록, 목록 필터·스크롤 복귀, 수량 전→후·실행 취소, 실제 기록/달력, 꾸미기 미리보기·적용/취소·동시 재고/보유권 보존 및 초점을 검사했다. OCR 제어 응답 검수와 실제 인식은 구분한다. |
+| 동일 상태 전후·시각 검토 | 앱/위젯×320×568·320×660·390×844·649×900·1120×1000 **10개**. 같은Nov1·원본 envelope·네 문 열림·선택 없음에서 데이터 완전 일치, 문서 높이=뷰포트, 가로 넘침0·하단 탭/장면 겹침0. [전후 비교](kitchen-storyboard-widget/comparison.json), [전 manifest](kitchen-storyboard-widget/before-manifest.json), [후](kitchen-storyboard-widget/after-manifest.json), [배경/발 위치10개](kitchen-storyboard-widget/background-geometry.json). 배경 바닥선 계산 오차0px, 프레임 발은 기존 의미대로 바닥선 아래8px. 320×568·390×844의 실제 글자/그림 및 집중 편집기 구도를 함께 검토했다. |
 | 실제 공개 HTTPS·원래 CDN OCR | **대기** — 고정 소스의 실제 HTTP 응답·SHA256·화면 실행과 OCR 엔진/원래 CDN을 쓴 사진 2장 경로를 확인할 것. 제어된 OCR 응답 검수 UI 통과와 실제 글자 인식을 구분한다. |
 | PR·공개 링크 | **대기** — feature 브랜치/PR 시도와 실제 검증한 앱·위젯 URL 및 공개 결과를 기록할 것. |
 
 실제 휴대폰·Safari·Notion 호스트 검증은 Chromium의 모바일 크기·터치 모방·공개 iframe 실행과 구분한다. 전체 냉장고 사진의 객체 자동 판별, 새 미니어처 생성, 공식 성분·가격 DB, 개인별 권장량/건강 조언, 기기 간 지속 저장·동기화와 운영 데이터 연결은 이번 UI 변경의 완료 범위가 아니다.
+
+## 실제 화면
+
+[390px 변경 전](kitchen-storyboard-widget/app-390-before.png) / [변경 후](kitchen-storyboard-widget/app-390-after.png) · [320×568 변경 전](kitchen-storyboard-widget/widget-320-short-before.png) / [변경 후](kitchen-storyboard-widget/widget-320-short-after.png) · [PC](kitchen-storyboard-widget/app-1120-after.png).
+
+| 위젯 홈 | 레시피 | 식사 완료 |
+| --- | --- | --- |
+| ![위젯](kitchen-storyboard-widget/widget-390-after.png) | ![레시피](kitchen-storyboard-widget/recipes.png) | ![식사 완료 테스트 입력](kitchen-storyboard-widget/meal-success-test-fixture.png) |
+
+[영양 화면의 테스트 입력](kitchen-storyboard-widget/nutrition-test-fixture.png) · [꾸미기 임시 배치의 테스트 입력](kitchen-storyboard-widget/decor-preview-test-fixture.png). 사진의 흰색1px 테스트 업로드를 실제 인식/표시 실패로 오인하지 않도록 제어 응답 A4 사진은 사용자용 화면 예시에서 제외한다.
