@@ -495,7 +495,7 @@ function fxRender(){
 function fxHandleClick(e){
  const button=e.target.closest?.("button");if(!button)return;
  const ds=button.dataset,bridge=window.StockRadarV2Bridge;if(!bridge)return;
- if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36;bridge.render();return}
+ if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36;return}
  if("fxRefresh" in ds){bridge.refresh();return}
  if(ds.fxPeriod){fxLocal.period=ds.fxPeriod;bridge.render();return}
  if(ds.fxFilter){fxLocal.filter=ds.fxFilter;fxLocal.limit=36;const c=fxChosen(fxContext());if(c)bridge.select(c.symbol);else bridge.render();return}
@@ -512,8 +512,9 @@ function fxHandleInput(e){
  ctx=fxContext();
  const list=document.getElementById?.("fx-results"),count=document.getElementById?.("fx-result-count"),focus=document.getElementById?.("fx-focus-slot"),risk=document.getElementById?.("fx-risk-slot"),expanded=ctx.screen==="stocks",cap=expanded?fxLocal.limit:9;
  if(list)list.innerHTML=fxStockRows(ctx,expanded);
- if(focus)focus.innerHTML=fxFocus(ctx);
- if(risk)risk.innerHTML=fxRisk(ctx);
+ if(focus)focus.innerHTML=ctx.screen==="home"?fxV5Cockpit(ctx):fxFocus(ctx);
+ if(risk&&ctx.screen==="home"){const chosen=fxChosen(ctx);risk.outerHTML=fxV5Side(ctx,chosen)}
+ else if(risk)risk.innerHTML=fxRisk(ctx);
  if(count)count.textContent=Math.min(pool.length,cap)+" / "+pool.length+"개 · AI 연구용";
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M'};
