@@ -42,10 +42,58 @@ function compactAlerts(){const items=[];for(const c of D.events?.companies||[])f
 
 function qualityHTML(){const x=D.learning?.overall||{};return `<div class="nr-head"><h3>예측 사후검증</h3><button class="nr-link" data-nr-forecast>전체 연구 성적표 ${I("arrow")}</button></div><div class="nr-quality"><strong>${F(x.correct,0)} / ${F(x.samples,0)}</strong><span>일치 / 평가 표본 · 연구용</span></div><p class="nr-small-note">실전 수익성·타이밍 유용성 미입증 · 자료 ${T(D.learning?.generated_at)}</p>`;}
 
-function renderMonitor(){const live=!!(D.toss?.enabled&&D.toss?.api_base);const watch=rows().filter(c=>favorites.includes(c.symbol));return `<div class="nr-screen-head"><div><h2>감시 상태</h2><p>실시간 알림 스트림이 아닌, 저장된 종가로 관심 기업을 확인하는 화면입니다.</p></div></div><div class="nr-status-banner warn"><b>${live?"조회 서버 설정 있음 · 응답 확인 전":"실시간 시세 연결 전"}</b><span>실시간 조건 감시나 푸시가 구현된 것처럼 표시하지 않습니다.</span></div><div class="nr-screen-grid"><section class="nr-panel"><h3>관심 종목 · 저장 종가 기준</h3><div class="nr-monitor-list">${watch.map(c=>`<button data-nr-detail="${E(c.symbol)}"><span>${E(c.name)}<small>${E(c.symbol)}</small></span><b>${money(c.price,c.currency)}</b><em class="${tone(change(c))}">${P(change(c))}</em></button>`).join("")||'<p class="nr-sub">관심 종목을 먼저 등록해 주세요.</p>'}</div></section><section class="nr-panel"><h3>데이터 감시 안내</h3><p class="nr-sub">가격은 완료된 거래 세션 기준입니다. 알림 발송과 실시간 호가는 아직 연결되어 있지 않습니다.</p><button class="nr-action" data-nr-screen="settings">연결 상태 확인</button></section></div>`;}
-
-function renderPortfolio(){const watch=rows().filter(c=>favorites.includes(c.symbol));return `<div class="nr-screen-head"><div><h2>포트폴리오 · 모의투자</h2><p>실계좌 연결 전에는 보유 자산과 수익률을 생성하지 않습니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><div class="nr-head"><h3>관심 종목 ${watch.length}개</h3></div><div class="nr-monitor-list">${watch.map(c=>`<button data-nr-detail="${E(c.symbol)}"><span>${E(c.name)}<small>${E(c.symbol)}</small></span><b>${money(c.price,c.currency)}</b></button>`).join("")||'<p class="nr-sub">종목 목록에서 별표를 눌러 관심 종목을 등록하세요.</p>'}</div></section><section class="nr-panel"><div class="nr-head"><h3>모의투자</h3><span class="nr-badge warn">실계좌 미연결</span></div><div class="nr-empty-big"><b>실제 자금을 사용하지 않고 매매 판단을 연습합니다.</b><p>실제 투자 성과와 연구 예측 결과를 혼합하지 않습니다.</p><a class="nr-action primary" href="./stock-paper-investing.html" target="_blank" rel="noopener">모의투자 열기</a></div></section></div>`;}
-
+function renderMonitor(){
+ const live=!!(D.toss?.enabled&&D.toss.api_base),list=rows(),checks=rules.map((r,i)=>{
+  const c=company(r.symbol),price=N(c?.price),met=price!==null&&(r.kind==="gte"?price>=r.value:price<=r.value);
+  return `<div class="nr-manual-row"><div><b>${E(c?.name||r.symbol)}</b><small>${r.kind==="gte"?"저장 종가가 설정가 이상":"저장 종가가 설정가 이하"} · ${money(r.value,c?.currency)}</small><small>${E(c?.price_session||"관측 시점 없음")} · 저장 종가 ${money(price,c?.currency)}</small></div><span class="nr-check-state ${price===null?"unknown":met?"match":"pending"}">${price===null?"조회 전":met?"조건 충족":"미충족"}</span><button class="nr-delete" data-nr-rule-remove="${i}" type="button" aria-label="조건 삭제">삭제</button></div>`;
+ });
+ return `<div class="nr-screen-head"><div><h2>감시 조건 & 상태</h2><p>관심 종목의 저장 종가와 가격 조건을 비교합니다. 서버의 실시간 푸시는 연결되지 않았습니다.</p></div><span class="nr-badge warn">${live?"조회 서버 설정됨 · 실제 응답 확인 전":"실시간 시세 미연결"}</span></div>
+ <div class="nr-screen-grid nr-feature-grid"><section class="nr-panel"><div class="nr-head"><h3>조건 만들기</h3><span class="nr-sub">내 브라우저에만 저장</span></div>
+ <form id="radar-rule-form" class="nr-form">
+ <label for="radar-rule-symbol">종목</label><select id="radar-rule-symbol" required ${list.length?"":"disabled"}>${list.map(c=>`<option value="${E(c.symbol)}" ${c.symbol===selected?"selected":""}>${E(c.name)} · ${E(c.symbol)}</option>`).join("")}</select>
+ <label for="radar-rule-kind">기준</label><select id="radar-rule-kind"><option value="gte">저장 종가가 설정가 이상</option><option value="lte">저장 종가가 설정가 이하</option></select>
+ <label for="radar-rule-value">가격 (해당 종목의 거래통화)</label><input id="radar-rule-value" required type="number" step="any" min="0.01" placeholder="설정 가격 입력">
+ <button class="nr-action primary" type="submit" ${list.length?"":"disabled"}>+ 감시 조건 저장</button></form>
+ <div class="nr-validation-note">이 조건은 페이지 새로고침 또는 데이터 갱신 시에만 평가됩니다. 자동 알림 발송이나 실시간 체결 확인 기능이 아닙니다.</div></section>
+ <section class="nr-panel"><div class="nr-head"><h3>내 감시 조건</h3><span class="nr-sub">${rules.length}개</span></div><div class="nr-manual-list">${checks.join("")||'<p class="nr-sub">저장된 조건이 없습니다. 왼쪽에서 추가해 주세요.</p>'}</div>
+ <button class="nr-action" type="button" data-nr-reload>저장 종가 다시 조회</button></section></div>`;
+}
+function renderPortfolio(){
+ const saved=paper.map((p,i)=>({p,i,c:company(p.symbol)}));
+ const groups={};
+ for(const {p,c} of saved){
+  if(!c||N(c.price)===null)continue;
+  const k=c.currency||"UNKNOWN",g=groups[k]||(groups[k]={code:k,value:0,cost:0,items:[]});
+  const marketValue=c.price*p.qty,initial=p.cost*p.qty;
+  g.value+=marketValue;g.cost+=initial;
+  g.items.push({name:c.name,symbol:c.symbol,v:marketValue,price:c.price,currency:c.currency});
+ }
+ const colors=["#4c85e3","#8a83df","#42b2a8","#efbe6a","#e788a8","#8cabb8"];
+ const donuts=Object.values(groups).map(g=>{
+  const points=g.items.map((x,i)=>({...x,part:g.value?x.v/g.value*100:0,color:colors[i%colors.length]}));
+  let acc=0;const gradient=points.map(x=>{const start=acc;acc+=x.part;return `${x.color} ${start.toFixed(2)}% ${acc.toFixed(2)}%`}).join(",");
+  return `<div class="nr-paper-overview"><div class="nr-donut" style="background:conic-gradient(${gradient||"#dde6f5 0 100%"})"><div><small>${E(g.code)} 모의 평가</small><b>${money(g.value,g.code)}</b></div></div>
+  <div class="nr-paper-values"><div><small>기록된 매수원가</small><strong>${money(g.cost,g.code)}</strong></div><div><small>장부상 손익 (세금·수수료 전)</small><strong class="${tone(g.value-g.cost)}">${money(g.value-g.cost,g.code)} · ${g.cost?P((g.value/g.cost-1)*100):"—"}</strong></div><small>통화별로만 합산하며 환율 변환은 하지 않습니다.</small></div></div>`;
+ }).join("");
+ const list=saved.map(({p,c,i})=>{
+  const amount=c&&N(c.price)!==null?c.price*p.qty:null,book=p.cost*p.qty;
+  const changeValue=amount===null?null:amount-book;
+  return `<tr><td>${E(c?.name||p.symbol)}</td><td>${F(p.qty,4)}</td><td>${money(p.cost,c?.currency)}</td><td>${money(amount,c?.currency)}</td><td class="${tone(changeValue)}">${money(changeValue,c?.currency)}</td><td><button class="nr-delete" data-nr-paper-remove="${i}" type="button">삭제</button></td></tr>`;
+ }).join("");
+ const all=rows();
+ return `<div class="nr-screen-head"><div><h2>포트폴리오 & 모의투자</h2><p>실계좌와 분리된 수기 모의 보유내역입니다. 실제 자산이나 실현손익으로 표시하지 않습니다.</p></div><span class="nr-badge warn">실계좌 미연결</span></div>
+ <div class="nr-screen-grid nr-feature-grid"><section class="nr-panel"><div class="nr-head"><h3>모의 보유 종목 등록</h3><span class="nr-sub">브라우저에 저장 · 주문 아님</span></div>
+ <form id="radar-paper-form" class="nr-form"><label for="radar-paper-symbol">종목</label><select id="radar-paper-symbol" required ${all.length?"":"disabled"}>${all.map(c=>`<option value="${E(c.symbol)}" ${c.symbol===selected?"selected":""}>${E(c.name)} · ${E(c.symbol)}</option>`).join("")}</select>
+ <label for="radar-paper-qty">수량</label><input id="radar-paper-qty" type="number" min="0.0001" max="1000000000" step="any" placeholder="예: 2" required>
+ <label for="radar-paper-cost">1주당 가상 매수 가격 (해당 종목 통화)</label><input id="radar-paper-cost" type="number" min="0.01" max="1000000000000" step="any" placeholder="가상 매수가 입력" required>
+ <button class="nr-action primary" type="submit" ${all.length?"":"disabled"}>+ 모의 보유내역 추가</button></form>
+ <div class="nr-validation-note">추가 시 현재 거래가로 주문하지 않습니다. 사용자가 입력한 가상 수량과 원가만 기록합니다. 동일 종목은 가중평균 원가로 합산됩니다.</div>
+ <a class="nr-action" href="./stock-paper-investing.html" target="_blank" rel="noopener noreferrer">별도 모의매매 훈련 위젯 열기</a></section>
+ <section class="nr-panel"><div class="nr-head"><h3>모의 포트폴리오</h3><span class="nr-sub">${paper.length}개 종목</span></div>
+ ${donuts||'<div class="nr-empty-big"><b>아직 모의 보유내역이 없습니다.</b><p>왼쪽에서 직접 입력한 가상 포트폴리오만 표시됩니다.</p></div>'}
+ <div class="nr-table-scroll"><table class="nr-table"><thead><tr><th>종목</th><th>수량</th><th>가상 원가</th><th>평가액</th><th>장부상 손익</th><th></th></tr></thead><tbody>${list||'<tr><td colspan="6">등록된 종목이 없습니다.</td></tr>'}</tbody></table></div>
+ <p class="nr-small-note">저장된 최종 종가 기준 단순 평가입니다. 세금·수수료·배당·실제 체결가는 포함되지 않습니다.</p></section></div>`;
+}
 function renderNews(){const m=D.macro?.indicators||{},f=m.usdkrw||{},ten=m.us_10y||{},bok=m.bok_policy||{};return `<div class="nr-screen-head"><div><h2>뉴스 · 경제 브리핑</h2><p>기업 이벤트는 원문 확인이 필요한 자동 탐지 결과를 포함합니다.</p></div><a class="nr-action" href="./news-link-hub-v3.html" target="_blank" rel="noopener">뉴스 원문 허브</a></div><div class="nr-news-grid"><section class="nr-panel"><h3>공시·이벤트 탐지</h3>${compactAlerts()}</section><section class="nr-panel"><h3>경제 지표</h3><div class="nr-ops-grid"><div class="nr-op"><small>원/달러 · ${E(f.date||"—")}</small><strong>${F(f.value,2)}원</strong></div><div class="nr-op"><small>미국 10년물 · ${E(ten.date||"—")}</small><strong>${F(ten.value,2)}%</strong></div><div class="nr-op"><small>한국은행 기준금리 · ${E(bok.date||"—")}</small><strong>${F(bok.value,2)}%</strong></div></div></section></div>`;}
 
 function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
