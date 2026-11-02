@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko" data-radar-version="8">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light"><meta name="robots" content="noindex,nofollow">
+<title>투자 레이더 · 통합 AI 분석 대시보드</title>
+<link rel="stylesheet" href="./assets/stock-radar-v8.css?v=6d74c0608890">
+<link rel="stylesheet" href="./assets/stock-reading-depth.css?v=82becbc5fe35">
+<link rel="stylesheet" href="./assets/stock-decision-guide.css?v=331fbf5a5cd6">
+<script src="./assets/stock-green-review.js?v=f487ec0b40d0" defer></script>
+<script src="./assets/stock-recommendations.js?v=b4a92d3daf0a" defer></script>
+<script src="./assets/stock-investment-cases.js?v=b89846477093" defer></script>
+<script src="./assets/stock-market-groups.js?v=a5c28e09efe5" defer></script>
+<script src="./assets/stock-radar-v8.js?v=c10527bc2d85" defer></script>
+<script src="./assets/stock-forecast.js?v=direction-forecast-1.0" defer></script>
+<script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>
+<script src="./assets/stock-forecast-directions.js?v=direction-specialists-1.0" defer></script>
+<script src="./assets/stock-forecast-autopilot.js?v=bounded-autopilot-1.0" defer></script>
+<script src="./assets/stock-decision-guide.js?v=0adda5bd97dc" defer></script>
+<script src="./assets/stock-report-reading-guide.js?v=77d1592b4718" defer></script>
+<link rel="stylesheet" href="./assets/stock-radar-neutral.css?v=7589d03c307a">
+<link rel="stylesheet" href="./assets/stock-radar-flow-v1.css?v=restored-v1-20261102-c826">
+<script src="./assets/stock-radar-neutral.js?v=restored-v1-20261102-c826" defer></script>
+<script src="./assets/stock-radar-v9.js?v=115cbde52d56" defer></script>
+</head>
+<body>
+<div class="app">
+<header class="header">
+ <div class="brand"><div class="app-icon" aria-hidden="true">↗</div><div><div class="eyebrow">내 투자 후보</div><h1>투자 레이더</h1><p>살 만한 이유와 조심할 점을 한눈에.</p></div></div>
+ <button id="reload" class="icon-button" type="button">↻ <span>새로고침</span></button>
+</header>
+<div class="notice" id="liveStatus" role="status" aria-live="polite">실제 수집 결과를 확인하고 있습니다.</div>
+<p style="margin:6px 0 12px;font-size:12px"><a href="./toss-live-radar.html" style="color:#3978bd;text-decoration:underline">토스증권 실시간 감시 화면 · 연동 설정 안내 ↗</a></p>
+<nav class="tabs" role="tablist" aria-label="주요 화면"><button id="tab-discover" data-view="discover" role="tab" aria-selected="true" class="active">발견</button><button id="tab-detail" data-view="detail" role="tab" aria-selected="false">기업 분석</button><button id="tab-system" data-view="system" role="tab" aria-selected="false">검증 · 설정</button></nav>
+<main>
+<section id="view-discover" class="view" role="tabpanel" aria-labelledby="tab-discover">
+ <div class="page-heading"><div><p class="eyebrow">어떤 종목부터 볼까요?</p><h2>무엇부터 살펴볼까요?</h2></div><div class="segmented" aria-label="투자 관점"><button class="active" data-mode="long">장기 가치</button><button data-mode="short">단기 기회</button></div></div>
+ <div class="market-groups" id="marketGroupsBar" role="group" aria-label="코스피 코스닥 나스닥 다우 분류"></div><p class="market-groups-note" id="marketGroupsNote">상장시장과 다우 지수 편입 여부를 구분해서 확인합니다.</p>
+ <div class="summary-grid" id="summary"></div>
+ <section id="todayBrief" aria-label="먼저 비교할 기업"><p class="brief-explain">후보별 투자 관점을 요약하는 중입니다.</p></section>
+ <div class="guide" id="actionGuide"><strong>가격 매력과 매수 준비는 다릅니다.</strong><span>점수가 높아도 공식 대조·위험 조건이 남아 있으면 분리해서 표시합니다.</span></div>
+ <div class="filterbar"><input id="search" type="search" placeholder="기업명 또는 종목코드" aria-label="기업 검색"><select id="market" aria-label="시장"><option value="ALL">한국 + 미국</option><option value="KR">한국</option><option value="US">미국</option></select><select id="size" aria-label="규모"><option value="ALL">모든 규모</option><option value="smid">중소형만</option><option value="big">대형·초대형</option><option value="expanded">새로 추가한 기업</option></select></div>
+ <div class="chips" id="filters" aria-label="조건 필터"><button data-filter="all" class="active">전체</button><button data-filter="potential">괜찮아 보이는 종목</button><button data-filter="ready">엄격 검증 통과</button><button data-filter="price">가격 대기</button><button data-filter="risk">위험 확인</button><button data-filter="star">★ 관심</button></div>
+ <div class="section-heading"><h3 id="listTitle">분석 우선순위</h3><span id="listCount"></span></div>
+ <p class="caption" id="rankNote">후보 내부의 조사 순서입니다. 점수는 성공확률·내재가치가 아닙니다.</p>
+ <div id="cards" class="cards"><div class="empty">확인 중…</div></div>
+ <button type="button" class="more" id="more" hidden>더 보기</button>
+ <details id="wideDirectory"><summary id="directoryTitle">더 넓게 찾기</summary><div class="details-inner"><p class="directory-note" id="directoryNote">기본 탐색과 정밀 분석은 구분합니다. 이 목록 자체는 매수 추천이 아닙니다.</p><div class="directory-controls"><input id="directorySearch" type="search" placeholder="넓은 목록에서 기업 검색" aria-label="전체 탐색 기업 검색"><select id="directoryMarket" aria-label="탐색 시장"><option value="ALL">전체 시장</option><option value="KR">한국</option><option value="US">미국</option></select></div><div class="directory-count" id="directoryCount"></div><div id="directoryRows">목록 확인 중…</div><button class="more" id="directoryMore" type="button" hidden>40개 더 보기</button></div></details>
+
+</section>
+<section id="view-detail" class="view" role="tabpanel" aria-labelledby="tab-detail" hidden>
+ <div class="detail-select"><button class="text-button" id="back">‹ 목록으로</button><select id="companySelect" aria-label="분석할 기업 선택"></select></div>
+ <div id="detailBody"><div class="empty">발견 화면에서 기업을 선택하세요.</div></div>
+</section>
+<section id="view-system" class="view" role="tabpanel" aria-labelledby="tab-system" hidden>
+ <div class="page-heading"><div><p class="eyebrow">DATA, NOT PROMISES</p><h2>무엇을 확인했나요?</h2></div></div>
+ <div id="systemBody"></div>
+ <div class="panel"><h3>훈련은 별도 위젯에서</h3><p>이 레이더는 자료 비교와 투자 판단용입니다. 모의 매매나 학습 입력란은 넣지 않았습니다.</p><a class="source-link" href="./stock-paper-investing.html" target="_blank" rel="noopener noreferrer">주식 모의투자 훈련 열기 ↗</a></div>
+</section>
+</main>
+<footer><strong>숫자로 설명하고, 모르는 것은 구분합니다.</strong><p>확정 실적·애널리스트 전망·가격 조건은 서로 다릅니다. 목표가와 점수는 수익 보장이 아니며, 주문을 실행하지 않습니다. 장기 사용·공개 재배포·상품화에는 데이터 제공처 이용 권한을 별도로 확인해야 합니다.</p></footer>
+</div>
+</body></html>
