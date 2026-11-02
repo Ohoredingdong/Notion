@@ -167,16 +167,102 @@ function fxStockPage(ctx){
  return `<div class="fx-intro"><div><h2>AI 종목 신호</h2><p>${pool.length}개 검색 결과 · 가격 방향 연구 분포이며 매수 추천이 아닙니다.</p></div><span class="fx-stamp">실시간 호가 아님</span></div><div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}`;
 }
 
-function fxDetail(ctx){
- const h=fxHelpers(),c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
- if(!c)return '<div class="fx-chart-empty">종목을 먼저 선택해 주세요.</div>';
- const forecast=c.forecasts||{},fact=[["다음 FY 예상 PER",fxN(forecast.next_fy_pe)===null?"—":fxNum(forecast.next_fy_pe,1)+"배"],["EPS 30일 수정",fxPct(forecast.eps_revision30_pct)],["20일 평균 거래량 대비",fxN(c.technical?.volume_ratio)===null?"—":fxNum(c.technical.volume_ratio,2)+"배"],["저장 종가 기준일",c.price_session||"확인 필요"]];
- return `<div class="fx-intro"><div><h2>${fxEscape(c.name)} 상세 분석</h2><p>가격·AI·재무·위험 정보를 구분해서 보고, 다음 단계로 넘어갑니다.</p></div><button class="fx-link" data-nr-screen="stocks">종목 다시 선택 ${h.I?.("arrow")||"›"}</button></div><div class="fx-detail-grid"><div class="fx-detail-mode">${fxFocus(ctx)}</div>
- <aside class="fx-detail-right"><section class="fx-panel"><div class="fx-panel-head"><h3>핵심 재무·시장 지표</h3></div><div class="fx-detail-metrics">${fact.map(([a,b])=>`<div><small>${fxEscape(a)}</small><strong>${fxEscape(b)}</strong></div>`).join("")}</div></section>
- <section class="fx-panel fx-side-card"><div class="fx-panel-head"><h3>투자 검증 포인트</h3></div>${fxRisk(ctx)}</section>
- <section class="fx-panel"><div class="fx-panel-head"><h3>더 깊게 확인하기</h3></div><div class="fx-detail-cta"><button class="fx-action-primary" data-fx-deep="${fxEscape(c.symbol)}">기존 심층 분석</button><button class="fx-action-secondary" data-nr-screen="scenario">시나리오 분석</button></div></section></aside></div>${fxSteps(ctx)}`;
+function fxAmount(v,c){
+ if(fxN(v)===null)return "—";
+ const n=Math.abs(v);
+ if(c==="KRW")return n>=1e12?fxNum(v/1e12,2)+"조원":n>=1e8?fxNum(v/1e8,1)+"억원":fxNum(v,0)+"원";
+ if(c==="USD")return n>=1e9?fxNum(v/1e9,2)+"B USD":n>=1e6?fxNum(v/1e6,2)+"M USD":fxMoney(v,c);
+ return fxMoney(v,c);
 }
 
+function fxSafeHref(v){
+ try{const u=new URL(String(v));return u.protocol==="https:"?u.href:""}catch{return""}
+}
+
+function fxSourceLinks(c){
+ const sources=c?.sources||{};
+ const opts=[["공식 공시·IR",sources.official],["가격·거래량",sources.history],["EPS·목표가",sources.estimates],["현금흐름",sources.cashflow],["재무상태",sources.balance]];
+ const active=opts.filter(([,href])=>fxSafeHref(href));
+ return `<div class="fx-d-source-links">${active.map(([label,href])=>`<a href="${fxEscape(fxSafeHref(href))}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`).join("")||'<span>공식 원문 연결이 확인되지 않았습니다.</span>'}</div>`;
+}
+
+function fxFact(label,value,note){
+ return `<div class="fx-d-fact"><span>${fxEscape(label)}</span><strong>${fxEscape(value)}</strong>${note?`<small>${fxEscape(note)}</small>`:""}</div>`;
+}
+
+function fxNewsFor(ctx,c){
+ const key=String(c?.symbol||"").replace(/\.(KS|KQ)$/,"");
+ const group=(ctx.data?.events?.companies||[]).find(x=>String(x.symbol||"").replace(/\.(KS|KQ)$/,"")===key);
+ const items=(group?.events||[]).filter(x=>x.sources?.some(a=>fxSafeHref(a.url))).sort((a,b)=>String(b.event_date||"").localeCompare(String(a.event_date||""))).slice(0,3);
+ return items.length?items.map((entry,i)=>{
+  const source=entry.sources.find(x=>fxSafeHref(x.url));
+  return `<div class="fx-d-news-row"><b>${i+1}</b><div><a href="${fxEscape(fxSafeHref(source.url))}" target="_blank" rel="noopener noreferrer">${fxEscape(entry.title||"제목 확인 필요")}</a><small>${fxEscape(entry.event_date||"날짜 미확인")} · ${fxEscape(source.publisher||"원문")} ${entry.auto_detected?"· 자동 탐지":""}</small></div></div>`;
+ }).join(""):'<p class="fx-d-empty">해당 기업의 확인 가능한 이벤트가 없습니다. 공식 공시에서 추가 확인이 필요합니다.</p>';
+}
+function fxDetail(ctx){
+ const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
+ if(!c)return `<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>`;
+ const f=c.forecasts||{},h=c.history||{},balance=c.balance||{},tech=c.technical||{},a=c.assessment||{},short=c.short||{};
+ const stateNames={ready:"제공처 기준 조건 충족",verify:"공식 대조 필요",price:"가격 조건 대기",risk:"위험 우선 확인",data:"자료 보강 필요"};
+ const state=stateNames[a.state]||"종합 실사 검토 전";
+ const downside=Array.isArray(a.risks)?a.risks:[],missing=Array.isArray(a.missing)?a.missing:[];
+ const asText=x=>typeof x==="string"?x:x?.text||x?.reason||x?.label||"";
+ const warnings=[...downside.map(asText),...missing.map(asText)].filter(Boolean).slice(0,4);
+ const disclaimer=ctx.data?.raw?.generated_at?"자료 수집: "+fxEscape(fxHelpers().T?.(ctx.data.raw.generated_at)||"시간 확인 중"):"저장 데이터 수집 시각 확인 전";
+ const priceCondition=a.price_condition||{};
+ const technicalLabel=N=>N;
+ return `<div class="fx-detail-v4">
+  <div class="fx-intro fx-detail-intro"><div><h2>${fxEscape(c.name)} · 상세 분석 통합</h2><p>${fxEscape(c.symbol)} · ${fxEscape(c.sector||"업종 확인 전")} · 가격 · 실적 · 현금흐름 · 위험 · 뉴스까지 한 화면에서 확인</p></div><span class="fx-stamp">${disclaimer}</span></div>
+  <div class="fx-detail-content">
+   <div class="fx-detail-upper">
+    <div class="fx-detail-primary">${fxFocus(ctx)}</div>
+    <section class="fx-panel fx-decision-panel"><div class="fx-panel-heading"><h3>투자 판단 현황</h3><span class="fx-d-status">${fxEscape(state)}</span></div>
+     <div class="fx-decision-company"><span>장기 관점</span><strong>${fxEscape(a.next_action||"공식 실사 및 가격 조건 확인 필요")}</strong></div>
+     <div class="fx-d-mini-grid">
+      ${fxFact("검토 상한가",fxMoney(priceCondition.ceiling,c.currency),"독립 적정가치 아님")}
+      ${fxFact("단기 방향",fxEscape(short.label||"단기 자료 없음"),"5~20거래일 연구")}
+      ${fxFact("가격 조건",priceCondition.price_condition_usable===false||a.price_condition_usable===false?"사용 보류":fxN(priceCondition.move_pct)===null?"미산출":fxPct(priceCondition.move_pct),"원문 대조 별도")}
+      ${fxFact("분석 우선점수",fxN(c.priority?.display_score??c.priority?.score)===null?"—":fxNum(c.priority?.display_score??c.priority?.score,0)+" / 100","투자 성공 확률 아님")}
+     </div><div class="fx-d-notice">AI 연구 예측과 종합 실사 판단은 서로 다른 근거입니다.</div>
+    </section>
+   </div>
+   <div class="fx-detail-mid">
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>가치평가 · 가격 부담</h3><span>애널리스트 집계</span></div>
+      <div class="fx-d-facts">
+       ${fxFact("다음 FY 예상 PER",fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,2)+"배","완료 종가 / 예상 EPS")}
+       ${fxFact("목표가 중앙값",fxMoney(c.targets?.median,c.currency),"적정가치 확정값 아님")}
+       ${fxFact("순차입금 / EBITDA",fxN(balance.net_debt_ebitda)===null?"—":fxNum(balance.net_debt_ebitda,2)+"배","기준 "+(balance.asof||"미확인"))}
+       ${fxFact("단기 20일 전고점",fxMoney(tech.prior_high20,c.currency),"지지·저항 추정값")}
+      </div></section>
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>EPS 전망 · 수정 추이</h3><span>회계연도 구분</span></div>
+      <div class="fx-d-facts">
+       ${fxFact("다음 FY 예상 EPS",fxMoney(f.next_fy?.avg,c.currency),fxN(f.analysts)===null?"기관 수 미확인":fxNum(f.analysts,0)+"개 집계")}
+       ${fxFact("EPS 30일 수정",fxPct(f.eps_revision30_pct),"동일 회계연도 비교")}
+       ${fxFact("다음 FY 예상 EPS 성장",fxPct(f.eps_growth_next_fy_pct),"추정치 간 비교")}
+       ${fxFact("20일 평균 거래량 대비",fxN(tech.volume_ratio)===null?"—":fxNum(tech.volume_ratio,2)+"배","저장 거래량 지표")}
+      </div></section>
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>실적 · 현금흐름</h3><span>${fxEscape(h.filing_period||"회계기간 확인 전")}</span></div>
+      <div class="fx-d-facts">
+       ${fxFact("매출",fxAmount(h.revenue,c.currency),h.basis||"보고 기간 확인")}
+       ${fxFact("영업이익",fxAmount(h.operating_income,c.currency))}
+       ${fxFact("당기순이익",fxAmount(h.net_income,c.currency))}
+       ${fxFact("잉여현금흐름 FCF",fxAmount(h.fcf,c.currency),"회계기간/투자지출 대조")}
+      </div></section>
+   </div>
+   <div class="fx-detail-lower">
+     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>투자 근거 · 단기/장기</h3></div>
+      <p class="fx-d-text">${fxEscape(c.business_summary||c.business_description||c.profile?.business||"사업 요약을 확인할 수 없어 공식 IR 확인이 필요합니다.")}</p>
+      <div class="fx-d-points">${[a.next_action,...(short.reasons||[]).slice(0,1)].filter(Boolean).map(x=>`<span>✓ ${fxEscape(asText(x))}</span>`).join("")||'<span>확정된 투자 근거는 원문을 확인해야 합니다.</span>'}</div>
+     </section>
+     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>리스크 · 무효화 조건</h3></div>
+      <div class="fx-d-points">${warnings.map(x=>`<span>! ${fxEscape(x)}</span>`).join("")||'<span>현재 실사·문서·금리 리스크를 별도 확인해야 합니다.</span>'}</div>
+     </section>
+     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>기업 뉴스 · 원문</h3><span>자동탐지 원문 재확인</span></div>
+       <div class="fx-d-news">${fxNewsFor(ctx,c)}</div>${fxSourceLinks(c)}
+     </section>
+   </div>
+  </div>${fxSteps(ctx)}</div>`;
+}
 function fxScenarioPlot(c){
  const t=c.targets||{},vals=[["상단",t.high,"#d65c74"],["중앙",t.median,"#417ed0"],["하단",t.low,"#2a9a70"],["현재",c.price,"#8493a9"]].filter(x=>fxN(x[1])!==null);
  if(vals.length<2)return '<div class="fx-chart-empty">비교 가능한 가격 구간 자료가 없습니다.</div>';
