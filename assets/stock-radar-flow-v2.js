@@ -207,10 +207,12 @@ function fxDetail(ctx){
  const state=stateNames[a.state]||"종합 실사 검토 전";
  const downside=Array.isArray(a.risks)?a.risks:[],missing=Array.isArray(a.missing)?a.missing:[];
  const asText=x=>typeof x==="string"?x:x?.text||x?.reason||x?.label||"";
+ const audit=c.extension_audit||{},auditFields=Array.isArray(audit.fields)?audit.fields:[],auditPeriodMatches=!!(h.filing_period&&audit.period&&h.filing_period===audit.period);
+ const auditOk=auditPeriodMatches&&audit.status==="compared"?auditFields.filter(x=>x.accepted===true).length:null;
+ const checks=Array.isArray(a.checks)?a.checks.slice(0,4):[];
  const warnings=[...downside.map(asText),...missing.map(asText)].filter(Boolean).slice(0,4);
  const disclaimer=ctx.data?.raw?.generated_at?"자료 수집: "+fxEscape(fxHelpers().T?.(ctx.data.raw.generated_at)||"시간 확인 중"):"저장 데이터 수집 시각 확인 전";
  const priceCondition=a.price_condition||{};
- const technicalLabel=N=>N;
  return `<div class="fx-detail-v4">
   <div class="fx-intro fx-detail-intro"><div><h2>${fxEscape(c.name)} · 상세 분석 통합</h2><p>${fxEscape(c.symbol)} · ${fxEscape(c.sector||"업종 확인 전")} · 가격 · 실적 · 현금흐름 · 위험 · 뉴스까지 한 화면에서 확인</p></div><span class="fx-stamp">${disclaimer}</span></div>
   <div class="fx-detail-content">
@@ -223,7 +225,7 @@ function fxDetail(ctx){
       ${fxFact("단기 방향",fxEscape(short.label||"단기 자료 없음"),"5~20거래일 연구")}
       ${fxFact("가격 조건",priceCondition.price_condition_usable===false||a.price_condition_usable===false?"사용 보류":fxN(priceCondition.move_pct)===null?"미산출":fxPct(priceCondition.move_pct),"원문 대조 별도")}
       ${fxFact("분석 우선점수",fxN(c.priority?.display_score??c.priority?.score)===null?"—":fxNum(c.priority?.display_score??c.priority?.score,0)+" / 100","투자 성공 확률 아님")}
-     </div><div class="fx-d-notice">AI 연구 예측과 종합 실사 판단은 서로 다른 근거입니다.</div>
+     </div><div class="fx-d-notice">AI 연구 예측과 종합 실사 판단은 서로 다른 근거입니다. 과거 공식 대조 ${auditOk===null?"기간·원문 미확인":auditOk+" / "+auditFields.length+"개 허용범위 대조"}</div>
     </section>
    </div>
    <div class="fx-detail-mid">
@@ -255,7 +257,7 @@ function fxDetail(ctx){
       <div class="fx-d-points">${[a.next_action,...(short.reasons||[]).slice(0,1)].filter(Boolean).map(x=>`<span>✓ ${fxEscape(asText(x))}</span>`).join("")||'<span>확정된 투자 근거는 원문을 확인해야 합니다.</span>'}</div>
      </section>
      <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>리스크 · 무효화 조건</h3></div>
-      <div class="fx-d-points">${warnings.map(x=>`<span>! ${fxEscape(x)}</span>`).join("")||'<span>현재 실사·문서·금리 리스크를 별도 확인해야 합니다.</span>'}</div>
+      <div class="fx-d-points">${checks.map(x=>`<span>${x.ok===true?"✓":"○"} ${fxEscape(x.label||"검증 내용 확인")}: ${x.ok===true?"입력 기준 통과":"확인 필요"}</span>`).join("")}${warnings.map(x=>`<span>! ${fxEscape(x)}</span>`).join("")||'<span>현재 실사·문서·금리 리스크를 별도 확인해야 합니다.</span>'}</div>
      </section>
      <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>기업 뉴스 · 원문</h3><span>자동탐지 원문 재확인</span></div>
        <div class="fx-d-news">${fxNewsFor(ctx,c)}</div>${fxSourceLinks(c)}
