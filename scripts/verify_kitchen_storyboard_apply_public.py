@@ -507,7 +507,16 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     review.locator('[type="submit"]').click()
     assert frame.evaluate('MiniKitchen.exportWorld()')==before,'Unchecked original verification cannot save'
     page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-single-review.png')),full_page=True)
-    review.locator('[name="confirmed"]').check();review.locator('[type="submit"]').click()
+    checkbox=review.locator('[name="confirmed"]')
+    checkbox.press('Escape')  # Dismiss the browser's native required-field popup.
+    expect(review).to_be_visible()
+    label=checkbox.locator('..');center(label)
+    confirmation_geometry=label.bounding_box()
+    (label.tap if touch else label.click)()
+    expect(checkbox).to_be_checked()
+    assert frame.evaluate('MiniKitchen.exportWorld()')==before,'Confirmation alone still must not save'
+    page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-confirmed-review.png')),full_page=True)
+    review.locator('[type="submit"]').click()
     frame.wait_for_function('!document.querySelector("#tray").open')
     after=frame.evaluate('MiniKitchen.exportWorld()')
     old_ids={i['id'] for i in before['items']};saved=[i for i in after['items'] if i['id'] not in old_ids]
@@ -523,7 +532,7 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-saved.png')),full_page=True)
     return {'executed':True,'expected_name_found':True,'expected_500mL_found':True,'expected_2026_11_30_found':True,
         'recognized_name_candidates':names,'recognized_quantity_candidates':quantities,'text':{'product':raw[0],'expiry':raw[1]},
-        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'one_item_saved_only_after_original_confirmation':True,
+        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'native_validation_popup_dismissed_then_actual_confirmation_label_tapped':True,'confirmation_label_geometry':confirmation_geometry,'one_item_saved_only_after_original_confirmation':True,
         'no_remote_photo_post_or_sync':True,'external_requests':sent,'dependency_responses':observed}
 
 
@@ -533,7 +542,7 @@ def publish_results():
         git('fetch','origin','refs/heads/'+RESULT_BRANCH)
     with tempfile.TemporaryDirectory(prefix='kitchen-flow-result-') as folder:
         env=dict(os.environ,GIT_INDEX_FILE=str(Path(folder)/'index'))
-        git('read-tree',parent[0] if parent else '--empty',env=env)
+        git('read-tree','--empty',env=env)  # Each evidence tree describes only this run; previous runs remain in history.
         for path in OUT.iterdir():
             if path.is_file() and path.suffix in ('.png','.json'):
                 blob=git('hash-object','-w',str(path))
@@ -551,6 +560,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source',required=True,help='Exact 40-character source commit containing built mobile previews')
     parser.add_argument('--publish-results',action='store_true',help='Publish only validation JSON/PNG to the dedicated result branch')
+    parser.add_argument('--ocr-phones-only',action='store_true',help='Rerun only the two OCR phone cases; retain earlier size-case evidence with explicit separate provenance')
     args=parser.parse_args()
     source=args.source
     if len(source)!=40 or any(c not in '0123456789abcdef' for c in source):
@@ -558,8 +568,10 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     run_id=os.environ.get('GITHUB_RUN_ID')
     repo=os.environ.get('GITHUB_REPOSITORY','Ohoredingdong/Notion')
-    result={'source':source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run_id}' if run_id else None,
-        'cases':[],'scope':'Approved 00–04 storyboard widget UI applied. Actual public HTTPS HTMLPreview execution in six fresh Chromium desktop/touch profiles; pinned raw source hashes; real on-device Korean/date OCR in app-phone and widget-phone through the original public CDN URLs. No network routing, mocks, TLS relaxation, physical-device, Safari, Notion or persistent-preview-storage claim.'}
+    profiles=[profile for profile in PROFILES if not args.ocr_phones_only or profile[0]=='phone']
+    expected_cases=2*len(profiles)
+    result={'source':source,'verifier_commit':os.environ.get('GITHUB_SHA'),'expected_case_count':expected_cases,'rerun_scope':'two failed OCR phone profiles only' if args.ocr_phones_only else 'all six profiles','run_url':f'https://github.com/{repo}/actions/runs/{run_id}' if run_id else None,
+        'cases':[],'scope':'Approved 00–04 storyboard widget UI applied. Actual public HTTPS HTMLPreview execution in the declared fresh Chromium desktop/touch profiles; pinned raw source hashes; real on-device Korean/date OCR in app-phone and widget-phone through the original public CDN URLs. No network routing, mocks, TLS relaxation, physical-device, Safari, Notion or persistent-preview-storage claim.'}
     try:
         with sync_playwright() as p:
             chrome=shutil.which('google-chrome') or shutil.which('chromium')
@@ -575,7 +587,7 @@ def main():
                 decoded=decoded_contract(expected_native)
                 template=re.search(r'<template id="kitchenSource">([\s\S]*?)</template>',expected_raw.decode())
                 assert template and html.unescape(template.group(1)).encode()==expected_native,'Inert text transport must reproduce pinned native bytes exactly'
-                for profile,width,height in PROFILES:
+                for profile,width,height in profiles:
                     label=mode+'-'+profile
                     case={'mode':mode,'profile':profile,'viewport':[width,height],'url':url,'passed':False}
                     touch=profile!='desktop'
@@ -708,7 +720,7 @@ def main():
     except Exception:
         result['setup_error']=traceback.format_exc()
     finally:
-        result['passed']=len(result['cases'])==6 and all(c['passed'] for c in result['cases'])
+        result['passed']=len(result['cases'])==expected_cases and all(c['passed'] for c in result['cases'])
         (OUT/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
         print(json.dumps(result,ensure_ascii=False,indent=2),flush=True)
         if args.publish_results:
