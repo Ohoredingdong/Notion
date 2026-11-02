@@ -145,15 +145,15 @@ function fxHome(ctx){
  const h=fxHelpers(),c=fxChosen(ctx),connected=!!(ctx.data?.toss?.enabled&&ctx.data.toss.api_base);
  return `<section class="fx-intro"><div><h2>시장 현황과 선택 기업을 한눈에</h2><p>AI 종목 신호 → 종목 분석 → 가격 시나리오 → 검증 흐름으로 연결됩니다.</p></div><span class="fx-stamp">자료 ${fxEscape(h.T?.(ctx.data?.raw?.generated_at)||"미확인")} · ${connected?"조회 설정됨 / 응답 미확인":"실시간 시세 미연결"}</span></section>
  <section class="fx-market-row" aria-label="시장 지수"><div class="nr-market-grid">${h.indices?.()||""}</div></section>
- <div class="fx-home-grid">${fxStockPanel(ctx,false)}${fxFocus(ctx)}<aside class="fx-aside">
- <section class="fx-panel fx-side-card"><div class="fx-panel-head"><h3 class="fx-card-label">${h.I?.("check")||""} 투자 체크</h3><button class="fx-link" data-nr-detail="${fxEscape(c?.symbol||"")}">자세히 ${h.I?.("arrow")||"›"}</button></div>${fxRisk(ctx)}</section>
+ <div class="fx-home-grid">${fxStockPanel(ctx,false)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div><aside class="fx-aside">
+ <section class="fx-panel fx-side-card"><div class="fx-panel-head"><h3 class="fx-card-label">${h.I?.("check")||""} 투자 체크</h3><button class="fx-link" data-nr-detail="${fxEscape(c?.symbol||"")}">자세히 ${h.I?.("arrow")||"›"}</button></div><div id="fx-risk-slot">${fxRisk(ctx)}</div></section>
  <section class="fx-panel fx-side-card"><div class="fx-panel-head"><h3 class="fx-card-label">${h.I?.("news")||""} 주요 뉴스</h3><button class="fx-link" data-nr-screen="news">더보기 ${h.I?.("arrow")||"›"}</button></div><div class="fx-side-news">${h.compactAlerts?.()||"<p>저장된 뉴스 없음</p>"}</div></section>
  <section class="fx-panel fx-side-card"><div class="fx-panel-head"><h3 class="fx-card-label">${h.I?.("chart")||""} 예측 검증 요약</h3><button class="fx-link" data-nr-screen="performance">자세히 ${h.I?.("arrow")||"›"}</button></div>${fxMiniScore(ctx)}</section></aside></div>${fxSteps(ctx)}`;
 }
 
 function fxStockPage(ctx){
  const pool=fxUniverse(ctx);
- return `<div class="fx-intro"><div><h2>AI 종목 신호</h2><p>${pool.length}개 검색 결과 · 가격 방향 연구 분포이며 매수 추천이 아닙니다.</p></div><span class="fx-stamp">실시간 호가 아님</span></div><div class="fx-page-grid">${fxStockPanel(ctx,true)}${fxFocus(ctx)}</div>${fxSteps(ctx)}`;
+ return `<div class="fx-intro"><div><h2>AI 종목 신호</h2><p>${pool.length}개 검색 결과 · 가격 방향 연구 분포이며 매수 추천이 아닙니다.</p></div><span class="fx-stamp">실시간 호가 아님</span></div><div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}`;
 }
 
 function fxDetail(ctx){
@@ -198,7 +198,7 @@ function fxPerformance(ctx){
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
  const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?h.renderNews?.():s==="settings"?h.renderSettings?.():fxHome(ctx);
- return `<div class="fx-root">${fxNav(ctx)}${body||""}</div>`;
+ return `<div class="fx-root">${fxNav(ctx)}<div class="fx-stage ${s==="home"?"fx-stage-home":"fx-stage-other"}" data-screen="${fxEscape(s)}">${body||""}</div></div>`;
 }
 
 function fxHandleClick(e){
@@ -221,7 +221,7 @@ function fxHandleInput(e){
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,version:'ux-flow-20261102-v2'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),version:'ux-flow-20261102-v3-viewport'};
 const fxBoot=()=>window.StockRadarV2Bridge?.render?.();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
