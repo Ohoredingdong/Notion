@@ -39,6 +39,14 @@ def quantity(value):
     return Fraction(match[1]), match[2]
 
 
+
+def reveal(locator):
+    """Open real optional-detail controls before interacting with their fields."""
+    for details in locator.locator('xpath=ancestor::details').all():
+        if details.get_attribute('open') is None:
+            details.locator('summary').first.click()
+    return locator
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True)
@@ -116,7 +124,10 @@ def main():
             if page:
                 control = frame.locator(f'[data-home-subtab="{page}"]')
                 if control.get_attribute('aria-selected') != 'true':
-                    control.click()
+                    if control.is_visible():
+                        control.click()
+                    else:
+                        frame.locator(f'[data-home-open="{page}"]:visible').first.click()
                 expect(control).to_have_attribute('aria-selected', 'true')
 
         def section(frame, selector):
@@ -145,7 +156,7 @@ def main():
 
         def facts(frame, values=FACTS, recipe_id='recipe-1'):
             recipe(frame, recipe_id)
-            frame.locator('#tray [data-wf="recipeFacts"]').click()
+            reveal(frame.locator('#tray [data-wf="recipeFacts"]')).click()
             form = frame.locator('[data-wf-form="facts"]')
             for name, value in values.items():
                 form.locator(f'[name="{name}"]').fill(value)
@@ -167,7 +178,7 @@ def main():
                         form = frame.locator('#ingredientForm')
                         form.locator('[name="quantity"]').fill(amount if index == 0 else '0'+quantity(amount)[1])
                         form.locator('[name="expiry"]').fill('2026-12-01')
-                        form.locator('[name="opened"]').fill(DAY)
+                        reveal(form.locator('[name="opened"]')).fill(DAY)
                         form.locator('[type="submit"]').click()
                 else:
                     tab(frame, 'fridge')
@@ -175,8 +186,8 @@ def main():
                     frame.locator('#tray [data-wf="manualAdd"]').click()
                     form = frame.locator('#addIngredientForm')
                     for key, value in {'name': name, 'quantity': amount, 'expiry': '2026-12-01', 'opened': DAY}.items():
-                        form.locator(f'[name="{key}"]').fill(value)
-                    form.locator('[name="kind"]').select_option('seasoning' if name in ('식용유', '간장') else 'food')
+                        reveal(form.locator(f'[name="{key}"]')).fill(value)
+                    reveal(form.locator('[name="kind"]')).select_option('seasoning' if name in ('식용유', '간장') else 'food')
                     form.locator('[name="zone"]').select_option('doorFreshRight' if name in ('식용유', '간장') else 'freshLeft')
                     form.locator('[type="submit"]').click()
                 actual = [row for row in envelope(frame)['world']['items'] if row['name'] == name]
@@ -336,11 +347,14 @@ def main():
                 if opaque:
                     section(frame, '#homeConnections')
                     assert frame.evaluate('KitchenJournal.status') == 'temporary'
-                    expect(frame.locator('#homeStorageNotice')).to_be_visible()
                     expect(frame.locator('#homeConnections .home-save-state')).to_contain_text('임시 세션')
+                    expect(frame.locator('#homeConnections [data-wf="backupTools"]')).to_be_visible()
+                    # The compact hub uses its own heading; session status and
+                    # backup remain explicit in settings and the fridge header.
                     # A trusted touch must leave the newly opened sheet alive
                     # after the compatibility click (the former retarget bug).
                     tab(frame, 'fridge')
+                    expect(frame.locator('#homeStorageNotice')).to_be_visible()
                     item = frame.locator('[data-item="spice0"]')
                     item.scroll_into_view_if_needed()
                     item.tap()
@@ -349,7 +363,7 @@ def main():
                     form = frame.locator('#ingredientForm')
                     form.locator('[name="quantity"]').fill('9작은술')
                     form.locator('[name="expiry"]').fill('2026-12-07')
-                    form.locator('[name="opened"]').fill(DAY)
+                    reveal(form.locator('[name="opened"]')).fill(DAY)
                     form.locator('[type="submit"]').tap()
                     item_data = next(i for i in envelope(frame)['world']['items'] if i['id'] == 'spice0')
                     assert (item_data['quantity'], item_data['expiry'], item_data['opened']) == ('9작은술', '2026-12-07', DAY)

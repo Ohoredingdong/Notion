@@ -4,6 +4,7 @@ import argparse
 import base64
 import gzip
 import hashlib
+import json
 from functools import lru_cache
 from html import escape
 import mimetypes
@@ -15,7 +16,25 @@ import subprocess
 
 
 DELIVERY_LIMIT = 1048576
+# The mobile opaque wrapper adds about 1.4KB to a packed native document.
+DELIVERY_RESERVE = 2048
 PACKED_MARKER = 'data-kitchen-packed="gzip-v1"'
+SAFE_BASE85_ALPHABET = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+                        '!#$%&()*+-;<=>?@^_`{|}~').translate(str.maketrans('&<>', '.,/'))
+BASE85_DECODER_JS = '''function decodeBase85(value){const alphabet=__ALPHABET__,digits=new Int16Array(128).fill(-1);for(let i=0;i<alphabet.length;i++)digits[alphabet.charCodeAt(i)]=i;if(value.length%5===1)throw new Error('Invalid kitchen base85 length');const padding=(5-value.length%5)%5,padded=value+'~'.repeat(padding),bytes=new Uint8Array(padded.length/5*4-padding);let offset=0;for(let i=0;i<padded.length;i+=5){let word=0;for(let j=0;j<5;j++){const code=padded.charCodeAt(i+j);if(code>127||digits[code]<0)throw new Error('Invalid kitchen base85 digit');word=word*85+digits[code];}if(word>4294967295)throw new Error('Invalid kitchen base85 value');for(let j=0;j<4;j++){if(offset<bytes.length)bytes[offset]=word>>>(24-j*8)&255;offset++;}}return bytes;}'''.replace('__ALPHABET__', json.dumps(SAFE_BASE85_ALPHABET))
+
+
+def encode_base85(data):
+    """RFC1924 base85 with three HTML-sensitive digits replaced losslessly."""
+    return base64.b85encode(data).decode('ascii').translate(str.maketrans('&<>', '.,/'))
+
+
+def decode_base85(value):
+    if len(value) % 5 == 1:
+        raise ValueError('Invalid kitchen base85 length')
+    if any(character not in SAFE_BASE85_ALPHABET for character in value):
+        raise ValueError('Invalid kitchen base85 digit')
+    return base64.b85decode(value.translate(str.maketrans('.,/', '&<>')))
 
 
 def unpack_document(content):
@@ -23,21 +42,25 @@ def unpack_document(content):
     if PACKED_MARKER not in content:
         return content
     match = re.search(
-        r'<template id="kitchenPacked" data-codec="gzip-base64" '
+        r'<template id="kitchenPacked" data-codec="(gzip-base64|gzip-base85)" '
         r'data-bytes="(\d+)" data-sha256="([0-9a-f]{64})">'
-        r'([A-Za-z0-9+/=]+)</template>', content)
+        r'([^<]*)</template>', content)
     if not match:
         raise ValueError('Invalid packed kitchen document')
     try:
-        raw = gzip.decompress(base64.b64decode(match[3], validate=True))
+        compressed = (base64.b64decode(match[4], validate=True) if match[1] == 'gzip-base64'
+                      else decode_base85(match[4]))
+        if not compressed.startswith(b'\x1f\x8b'):
+            raise ValueError('Missing gzip header')
+        raw = gzip.decompress(compressed)
     except (ValueError, OSError, EOFError) as error:
         raise ValueError('Invalid packed kitchen payload') from error
-    if len(raw) != int(match[1]) or hashlib.sha256(raw).hexdigest() != match[2]:
+    if len(raw) != int(match[2]) or hashlib.sha256(raw).hexdigest() != match[3]:
         raise ValueError('Packed kitchen document does not match its original')
     return raw.decode('utf-8')
 
 
-def pack_document(content, mode='app'):
+def pack_document(content, mode='app', *, codec='gzip-base64'):
     """Losslessly package HTML; every original image and script byte survives.
 
     The vendored synchronous decoder works without DecompressionStream or any
@@ -46,11 +69,15 @@ def pack_document(content, mode='app'):
     """
     if mode not in ('app', 'widget'):
         raise ValueError('Unknown presentation')
+    if codec not in ('gzip-base64', 'gzip-base85'):
+        raise ValueError('Unknown kitchen codec')
     if PACKED_MARKER in content:
         unpack_document(content)
         return content
     raw = content.encode('utf-8')
-    payload = base64.b64encode(gzip.compress(raw, compresslevel=9, mtime=0)).decode('ascii')
+    compressed = gzip.compress(raw, compresslevel=9, mtime=0)
+    payload = (base64.b64encode(compressed).decode('ascii') if codec == 'gzip-base64'
+               else encode_base85(compressed))
     decoder = (Path(__file__).resolve().parent/'vendor/fflate-gunzip-0.8.2.min.js').read_text()
     if '</script' in decoder.lower():
         raise ValueError('Unexpected decoder script terminator')
@@ -62,18 +89,22 @@ def pack_document(content, mode='app'):
 <meta name="theme-color" content="#f5eee3"><title>한끼의 부엌 · {label}</title>
 <style>html,body{{margin:0;min-height:100%;background:#f5eee3;color:#514331;font:15px/1.5 -apple-system,BlinkMacSystemFont,sans-serif}}body{{display:grid;place-items:center;min-height:100vh}}p{{padding:16px}}</style>
 </head><body><p role="status">부엌을 열고 있어요…</p>
-<template id="kitchenPacked" data-codec="gzip-base64" data-bytes="{len(raw)}" data-sha256="{digest}">{payload}</template>
+<template id="kitchenPacked" data-codec="{codec}" data-bytes="{len(raw)}" data-sha256="{digest}">{payload}</template>
 <script>{decoder}
-(()=>{{function openKitchen(){{try{{const node=document.getElementById('kitchenPacked'),encoded=node.content.textContent,compressed=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)),bytes=KitchenPackedDecoder.gunzipSync(compressed);if(bytes.length!==Number(node.dataset.bytes))throw new Error('Incomplete kitchen document');const html=new TextDecoder('utf-8',{{fatal:true,ignoreBOM:true}}).decode(bytes);document.open();document.write(html);document.close();}}catch(error){{document.body.textContent='화면을 열지 못했어요. 새로고침해 주세요.';document.body.setAttribute('role','alert');console.error(error);}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',openKitchen,{{once:true}});else openKitchen();}})();
+(()=>{{{BASE85_DECODER_JS}function openKitchen(){{try{{const node=document.getElementById('kitchenPacked'),encoded=node.content.textContent,compressed=node.dataset.codec==='gzip-base85'?decodeBase85(encoded):Uint8Array.from(atob(encoded),c=>c.charCodeAt(0)),bytes=KitchenPackedDecoder.gunzipSync(compressed);if(bytes.length!==Number(node.dataset.bytes))throw new Error('Incomplete kitchen document');const html=new TextDecoder('utf-8',{{fatal:true,ignoreBOM:true}}).decode(bytes);document.open();document.write(html);document.close();}}catch(error){{document.body.textContent='화면을 열지 못했어요. 새로고침해 주세요.';document.body.setAttribute('role','alert');console.error(error);}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',openKitchen,{{once:true}});else openKitchen();}})();
 </script></body></html>'''
 
 
 def fit_document(content, mode='app'):
-    """Keep small documents unchanged and package only oversized deliveries."""
-    if len(content.encode('utf-8')) <= DELIVERY_LIMIT:
+    """Fit native and opaque-wrapper delivery without changing decoded bytes."""
+    budget = DELIVERY_LIMIT - DELIVERY_RESERVE
+    if len(content.encode('utf-8')) <= budget:
         return content
-    packed = pack_document(content, mode)
-    if len(packed.encode('utf-8')) > DELIVERY_LIMIT:
+    original = unpack_document(content)
+    packed = pack_document(original, mode)
+    if len(packed.encode('utf-8')) > budget:
+        packed = pack_document(original, mode, codec='gzip-base85')
+    if len(packed.encode('utf-8')) > budget:
         raise ValueError('Lossless kitchen preview exceeds the 1 MiB delivery budget')
     return packed
 
@@ -82,9 +113,28 @@ def fit_document(content, mode='app'):
 # Unused atlas cells are omitted; source images and published apps stay untouched.
 COMPACT_SPRITES = {
     'assets/food-miniatures-v2.webp': ('sprites', (1254,1254),
-        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','onion','rice','kimchi','mushroom','chicken','garlic','potato','zucchini','oil','cheese','yogurt','lettuce','pepper','egg-rice','tofu-soup','chicken-salad','zucchini-fritters','egg-salad','tofu-steak','mushroom-tofu','omelette','ingredient')),
+        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','onion','rice','kimchi','mushroom','chicken','garlic','potato','zucchini','oil','cheese','yogurt','lettuce','pepper','ingredient')),
     'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
         ('soy','salt','gochujang','doenjang','jar')),
+}
+
+# Only the right-hand open interior remains in use. Keep its original source
+# coordinates and canvas size; the retired closed front and grey backdrop are
+# replaced by the new transparent FRONT asset in the approved composition.
+COMPACT_REGIONS = {
+    'designs/miniature-kitchen/assets/fridge-neutral-atlas.png':
+        ((1536, 1024), ((833, 10, 570, 994),)),
+}
+
+# New photo assets use pre-encoded full-resolution AVIF variants. Their PNG
+# originals remain the authoring source; the measured encoding settings and
+# WebP82 quality comparisons are recorded with the visual-fidelity evidence.
+# Existing miniature assets retain their previous formats and encoding levels.
+COMPACT_AVIF = {
+    'designs/miniature-kitchen/assets/kitchen-built-in-v1.png':
+        'designs/miniature-kitchen/assets/kitchen-built-in-v1.avif',
+    'designs/miniature-kitchen/assets/recipe-photos-v1.png':
+        'designs/miniature-kitchen/assets/recipe-photos-v1.avif',
 }
 
 
@@ -174,12 +224,18 @@ def build(root, mode, compact=False):
         # Chat previews must not depend on external image access or proxy thumbnails.
         data=path.read_bytes()
         if compact:
-            size,boxes=None,()
-            if reference in COMPACT_SPRITES:
-                name,size,keys=COMPACT_SPRITES[reference]
-                boxes=sprite_boxes(local('use-me-first-kitchen-art.js').read_text(),name,keys)
-            data=web_image(path,size,boxes)
-            mime='image/webp'
+            if reference in COMPACT_AVIF:
+                data=local(COMPACT_AVIF[reference]).read_bytes()
+                mime='image/avif'
+            else:
+                size,boxes=None,()
+                if reference in COMPACT_SPRITES:
+                    name,size,keys=COMPACT_SPRITES[reference]
+                    boxes=sprite_boxes(local('use-me-first-kitchen-art.js').read_text(),name,keys)
+                elif reference in COMPACT_REGIONS:
+                    size,boxes=COMPACT_REGIONS[reference]
+                data=web_image(path,size,boxes)
+                mime='image/webp'
         return 'data:'+mime+';base64,'+base64.b64encode(data).decode('ascii')
 
     scripts = []
@@ -206,7 +262,8 @@ def build(root, mode, compact=False):
         replacements = {
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/pantry-food-atlas.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
+            'story-art.js': [('RECIPE_PHOTOS','designs/miniature-kitchen/assets/recipe-photos-v1.png')],
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FRONT','designs/miniature-kitchen/assets/fridge-front-fidelity-v1.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/pantry-food-atlas.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"

@@ -22,6 +22,14 @@ class Quiet(SimpleHTTPRequestHandler):
         pass
 
 
+
+def reveal(locator):
+    """Open real optional-detail controls before interacting with their fields."""
+    for details in locator.locator('xpath=ancestor::details').all():
+        if details.get_attribute('open') is None:
+            details.locator('summary').first.click()
+    return locator
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True,
@@ -172,7 +180,7 @@ def main():
                 sizes = frame.locator('[data-balance] strong').evaluate_all('''nodes=>nodes.map(e=>{
                     const r=e.getBoundingClientRect();return parseFloat(getComputedStyle(e).fontSize)*(r.height/(e.offsetHeight||r.height));
                 })''')
-                assert all(size >= 19.5 for size in sizes), sizes  # Native-size 20px core values, allowing subpixel rounding.
+                assert all(size >= 16.5 for size in sizes), sizes  # Approved compact card keeps native17px+ core values, without whole-UI scaling.
                 actions = in_view_actions(frame)
                 frame.evaluate('window.scrollTo(0,document.documentElement.scrollHeight)')
                 in_view_actions(frame)
@@ -267,14 +275,21 @@ def main():
             expect(form).to_be_visible()
             form.locator('[name="quantity"]').fill('8개')
             form.locator('[name="expiry"]').fill('2026-11-12')
-            form.locator('[name="opened"]').fill('2026-11-01')
+            reveal(form.locator('[name="opened"]')).fill('2026-11-01')
             form.locator('[type="submit"]').click()
             egg = frame.evaluate('MiniKitchen.exportWorld().items.find(i=>i.id==="egg")')
             assert (egg['quantity'], egg['expiry'], egg['opened']) == ('8개', '2026-11-12', day)
-            expect(frame.locator('#kitchenProgress>span')).to_contain_text('계란')
-            expect(frame.locator('#selectedItemMeta')).to_contain_text('8개')
-            expect(frame.locator('#selectedItemMeta')).to_contain_text('2026-11-12')
-            assert frame.locator('#selectedItemMeta').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') >= 14
+            # The approved home uses selection badges and a detail sheet,
+            # rather than the former separate metadata strip beneath the scene.
+            read_before = frame.evaluate('KitchenJournal.getEnvelope()')
+            frame.locator('[data-item="egg"]').click()
+            form = frame.locator('#ingredientForm')
+            expect(form).to_be_visible()
+            expect(form.locator('[name="quantity"]')).to_have_value('8개')
+            expect(form.locator('[name="expiry"]')).to_have_value('2026-11-12')
+            assert form.locator('[name="quantity"]').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') >= 16
+            frame.locator('#closeTray').click()
+            assert frame.evaluate('KitchenJournal.getEnvelope()') == read_before
             source, target = frame.locator('[data-item="egg"]').bounding_box(), frame.locator('.fridge-interiors [data-zone="freshRight"]').bounding_box()
             page.mouse.move(source['x']+source['width']/2, source['y']+source['height']/2)
             page.mouse.down()
@@ -290,7 +305,7 @@ def main():
             passed('native ingredient edit, readable full metadata, drag and reload preserve exact values and all original app keys')
             context.close()
 
-            # A new fixed dock must never become a geometric shelf drop target.
+            # The anchored bottom navigation must never become a geometric shelf drop target.
             context, page, frame = new(width=320, height=660)
             before_drop = frame.evaluate('MiniKitchen.exportWorld()')
             for fraction in (.5, .25):
@@ -307,7 +322,7 @@ def main():
                 assert not frame.locator('#tray').is_visible()
                 expect(frame.locator('.home-shortcuts [data-home-tab="fridge"]')).to_have_attribute('aria-selected', 'true')
                 expect(frame.locator('.ghost,.item.is-dragging')).to_have_count(0)
-            passed('drag onto the fixed recipe navigation cancels without stock changes, opening a dialog or leaving a ghost')
+            passed('drag onto the anchored recipe navigation cancels without stock changes, opening a dialog or leaving a ghost')
             context.close()
 
             # Existing schemas allow long names and an unparsed quantity; native
@@ -350,7 +365,7 @@ def main():
                 expect(form).to_be_visible()
                 form.locator('[name="quantity"]').fill('175ml')
                 form.locator('[name="expiry"]').fill('2027-03-01')
-                form.locator('[name="opened"]').fill(day)
+                reveal(form.locator('[name="opened"]')).fill(day)
                 form.locator('[type="submit"]').tap()
                 frame.wait_for_function('!document.querySelector("#tray").open')
                 spice = frame.evaluate('MiniKitchen.exportWorld().items.find(i=>i.id==="spice0")')
@@ -379,7 +394,7 @@ def main():
 
             context, page, frame = new()
             frame.locator('[data-home-tab="kitchen"]').click()
-            frame.locator('[data-home-subtab="growth"]').click()
+            expect(frame.locator('[data-home-subtab="growth"]')).to_have_attribute('aria-selected','true')
             expect(frame.locator('#homeGrowth')).to_be_visible()
             before = frame.evaluate('KitchenJournal.getSnapshot()')
             frame.evaluate('''() => KitchenJournal.transact(({play:p})=>{

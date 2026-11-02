@@ -9,6 +9,14 @@ from playwright.sync_api import sync_playwright, expect
 class Quiet(SimpleHTTPRequestHandler):
     def log_message(self,*args):pass
 
+
+def reveal(locator):
+    """Open real optional-detail controls before interacting with their fields."""
+    for details in locator.locator('xpath=ancestor::details').all():
+        if details.get_attribute('open') is None:
+            details.locator('summary').first.click()
+    return locator
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
@@ -94,13 +102,13 @@ def main():
         source=f.locator('[data-item="egg"]').bounding_box();target=f.locator('.fridge-interiors [data-zone="freshRight"]').bounding_box()
         page.mouse.move(source['x']+source['width']/2,source['y']+source['height']/2);page.mouse.down();page.mouse.move(target['x']+target['width']*.5,target['y']+target['height']*.75,steps=16);page.mouse.up()
         assert f.evaluate('MiniKitchen.exportWorld().items.find(i=>i.id==="egg").zone')=='freshRight';passed('ingredient drag across cold compartments')
-        f.locator('[data-item="spice0"]').click();f.locator('#ingredientForm [name="expiry"]').fill('2027-03-01');f.locator('#ingredientForm [name="opened"]').fill('2026-10-31');f.locator('#ingredientForm [type="submit"]').click()
+        f.locator('[data-item="spice0"]').click();f.locator('#ingredientForm [name="expiry"]').fill('2027-03-01');reveal(f.locator('#ingredientForm [name="opened"]')).fill('2026-10-31');f.locator('#ingredientForm [type="submit"]').click()
         spice=f.evaluate('MiniKitchen.exportWorld().items.find(i=>i.id==="spice0")');assert spice['expiry']=='2027-03-01' and spice['opened']=='2026-10-31';passed('condiment expiry and opening date persist')
         show(f,'settings');form=f.locator('[data-wf-form="targets"]')
         form.locator('details.target-extras summary').click()
         for name,value in [('carb','230'),('protein','70'),('fat','60'),('calcium','700')]:form.locator(f'[name="{name}"]').fill(value)
         form.locator('[type="submit"]').click();assert f.evaluate('KitchenJournal.getSnapshot().targets.carb')==230
-        f.evaluate('KitchenWorkflows.show("recipes")');f.locator('#tray [data-wf="recipe"][data-arg="recipe-1"]').click();f.locator('#tray [data-wf="recipeFacts"]').click()
+        f.evaluate('KitchenWorkflows.show("recipes")');f.locator('#tray [data-wf="recipe"][data-arg="recipe-1"]').click();reveal(f.locator('#tray [data-wf="recipeFacts"]')).click()
         form=f.locator('[data-wf-form="facts"]')
         for name,value in [('kcal','458'),('carb','65'),('protein','18'),('fat','14'),('cost','2300'),('calcium','30')]:form.locator(f'[name="{name}"]').fill(value)
         form.locator('[name="source"]').fill('검사용 직접 입력 · 1회분');form.locator('[type="submit"]').click();passed('recipe nutrition/cost are explicit inputs, not fabricated data')
@@ -141,7 +149,7 @@ def main():
           assert f.evaluate('KitchenJournal.getEnvelope()')==photo_before
           if slot=='product':expect(f.locator('[data-wf="readPhotos"]')).to_be_disabled()
           else:expect(f.locator('[data-wf="readPhotos"]')).to_be_enabled()
-        f.locator('[data-wf="manualAdd"]').click();form=f.locator('[data-wf-form="add"]');form.locator('[name="name"]').fill('사진 확인 재료');form.locator('[name="quantity"]').fill('250g');form.locator('[name="expiry"]').fill('2026-11-12');form.locator('[name="picture"]').select_option('photo');form.locator('[type="submit"]').click()
+        f.locator('[data-wf="manualAdd"]').click();form=f.locator('[data-wf-form="add"]');form.locator('[name="name"]').fill('사진 확인 재료');form.locator('[name="quantity"]').fill('250g');form.locator('[name="expiry"]').fill('2026-11-12');reveal(form.locator('[name="picture"]')).select_option('photo');form.locator('[type="submit"]').click()
         photo_item=f.evaluate('MiniKitchen.exportWorld().items.find(i=>i.name==="사진 확인 재료")');assert photo_item['expiry']=='2026-11-12' and photo_item['photo'].startswith('data:image/jpeg;base64,') and photo_item['expiryPhoto'].startswith('data:image/jpeg;base64,')
         passed('two local photos require manual confirmation and can create a dated stock item with a compressed product photo')
         # Save, reload, and verify native persistence plus preservation of original app keys.

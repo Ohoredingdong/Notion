@@ -23,6 +23,14 @@ class Quiet(SimpleHTTPRequestHandler):
         pass
 
 
+
+def reveal(locator):
+    """Open real optional-detail controls before interacting with their fields."""
+    for details in locator.locator('xpath=ancestor::details').all():
+        if details.get_attribute('open') is None:
+            details.locator('summary').first.click()
+    return locator
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True)
@@ -72,12 +80,17 @@ def main():
             if sub:
                 control = frame.locator(f'[data-home-subtab="{sub}"]')
                 if control.get_attribute('aria-selected') != 'true':
-                    control.click()
+                    if control.is_visible():
+                        control.click()
+                    else:
+                        frame.locator(f'[data-home-open="{sub}"]:visible').first.click()
                 expect(control).to_have_attribute('aria-selected', 'true')
 
         def viewport(frame):
             metrics = frame.evaluate('''()=>({height:innerHeight,pageHeight:document.documentElement.scrollHeight,
                 width:innerWidth,pageWidth:document.documentElement.scrollWidth,scrollY,
+                shell:(()=>{const r=document.querySelector('.shell').getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height};})(),
+                nav:(()=>{const r=document.querySelector('.home-shortcuts').getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width};})(),
                 panels:[...document.querySelectorAll('.home-panel')].filter(e=>!e.hidden).map(e=>e.id),
                 tabs:[...document.querySelectorAll('.home-shortcuts button')].map(e=>{const r=e.getBoundingClientRect();return {
                     text:e.textContent.trim(),bottom:r.bottom,selected:e.getAttribute('aria-selected'),tabIndex:e.tabIndex,height:r.height,width:r.width,
@@ -96,7 +109,10 @@ def main():
                     assert action.evaluate('''e=>{const r=e.getBoundingClientRect();return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===e;}'''), selector
                 metrics['focused_decor_editor'] = True
                 return metrics
-            assert all(t['height'] >= 44 and t.get('bottom', metrics['height']) >= metrics['height']-44 for t in metrics['tabs']), metrics
+            # The approved widget is a compact component centered in a taller
+            # embed. Its navigation belongs to the component, not the viewport.
+            assert abs(metrics['nav']['bottom']-metrics['shell']['bottom']) <= 2, metrics
+            assert all(t['height'] >= 44 and metrics['shell']['bottom']-44 <= t['bottom'] <= metrics['shell']['bottom']+1 for t in metrics['tabs']), metrics
             assert all(t['inView'] and t['hit'] and t['height'] >= 44 for t in metrics['tabs']), metrics
             assert max(t['width'] for t in metrics['tabs'])-min(t['width'] for t in metrics['tabs']) <= 1, metrics
             assert sum(t['selected'] == 'true' for t in metrics['tabs']) == 1, metrics
@@ -126,7 +142,9 @@ def main():
         def small_shelf_labels(frame):
             result = frame.evaluate('''()=>{
                 const rows=[];for(const e of document.querySelectorAll('.fridge-interiors .shelf-label:not(.is-selected) b,.fridge-interiors .shelf-label:not(.is-selected) small')){
-                    const label=e.closest('.shelf-label'),range=new Range();range.selectNodeContents(e);
+                    const label=e.closest('.shelf-label'),style=getComputedStyle(label),glyphStyle=getComputedStyle(e);
+                    if(style.display==='none'||style.visibility!=='visible'||Number(style.opacity)===0||glyphStyle.display==='none'||glyphStyle.visibility!=='visible'||Number(glyphStyle.opacity)===0)continue;
+                    const range=new Range();range.selectNodeContents(e);
                     for(const r of range.getClientRects())if(r.width&&r.height)rows.push({id:label.dataset.forItem,text:e.textContent,left:r.left,right:r.right,top:r.top,bottom:r.bottom});
                 }
                 const overlaps=[];for(let i=0;i<rows.length;i++)for(let j=i+1;j<rows.length;j++){
@@ -134,11 +152,13 @@ def main():
                         overlaps.push([a.text,b.text]);
                 }
                 const visibleQuantities=[...document.querySelectorAll('.fridge-interiors .shelf-label:not(.is-selected) small')]
-                    .filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).length;
-                return {rows,overlaps,visibleQuantities};
+                    .filter(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e),p=getComputedStyle(e.closest('.shelf-label'));return r.width&&r.height&&s.visibility==='visible'&&s.display!=='none'&&Number(s.opacity)>0&&p.visibility==='visible'&&p.display!=='none'&&Number(p.opacity)>0;}).length;
+                const ingredientButtons=[...document.querySelectorAll('.fridge-interiors [data-item]')].map(e=>({id:e.dataset.item,name:e.getAttribute('aria-label')}));
+                return {rows,overlaps,visibleQuantities,ingredientButtons};
             }''')
             assert result['rows'], result
             assert not result['overlaps'], result
+            assert result['ingredientButtons'] and all(row['name'] for row in result['ingredientButtons']), result
             return result
 
         def drag_prop(page, frame):
@@ -173,7 +193,10 @@ def main():
                     if name not in ('fridge','records'):
                         expect(frame.locator('#dailyBalance')).not_to_be_visible()
                     if sub != 'decor':
-                        assert frame.locator('.home-shortcuts').bounding_box() == nav
+                        current_nav = frame.locator('.home-shortcuts').bounding_box()
+                        assert abs(current_nav['x']-nav['x']) <= 1 and abs(current_nav['width']-nav['width']) <= 1
+                        # Hubs may use a taller compact card than the fridge;
+                        # viewport() verifies the navigation follows its current component bottom.
                 assert frame.evaluate('KitchenJournal.getEnvelope()') == before
                 actual_fridge = frame.locator('.fridge-stage').bounding_box()
                 assert actual_fridge == fridge, (fridge, actual_fridge)
@@ -208,7 +231,7 @@ def main():
                 # Recipes lead to useful plan/meal forms in the meals context,
                 # rather than jumping to a picture-only counter scene.
                 choose(frame, 'meals', 'recommendation')
-                frame.locator('#homeRecommendation [data-home-recipe] [data-wf="recipe"]').click()
+                frame.locator('#homeRecommendation [data-home-recipe] .home-actions [data-wf="recipe"]').click()
                 expect(frame.locator('#tray')).to_be_visible()
                 expect(frame.locator('#tray .daily-balance')).to_have_count(0)
                 recipe_id = frame.locator('#tray [data-wf="planRecipe"]').get_attribute('data-arg')
@@ -243,7 +266,7 @@ def main():
                 viewport(frame)
                 frame.locator('.decor-footer [data-decor-cancel]').click()
                 expect(frame.locator('[data-home-subtab="growth"]')).to_have_attribute('aria-selected', 'true')
-                expect(frame.locator('[data-home-subtab="growth"]')).to_be_focused()
+                expect(frame.locator('#panel-kitchen > .hub-heading button').first).to_be_focused()
                 choose(frame, 'fridge')
                 expect(frame.locator('#fridgeSceneHost .room')).to_be_visible()
                 assert frame.evaluate('KitchenJournal.getEnvelope()') == opened
@@ -310,8 +333,8 @@ def main():
             expect(form.locator('[name="zone"]')).to_have_value('seasoning')
             form.locator('[name="quantity"]').fill('120mL')
             form.locator('[name="expiry"]').fill('2026-12-20')
-            form.locator('[name="opened"]').fill('2026-11-01')
-            form.locator('[name="expiryType"]').select_option('useBy')
+            reveal(form.locator('[name="opened"]')).fill('2026-11-01')
+            reveal(form.locator('[name="expiryType"]')).select_option('useBy')
             form.locator('[type="submit"]').click()
             expect(frame.locator('[data-home-tab="fridge"]')).to_have_attribute('aria-selected', 'true')
             expect(frame.locator('body')).to_have_attribute('data-camera', 'fridge')
@@ -348,7 +371,7 @@ def main():
 
 
             def theme_preview():
-                frame.locator('#homeDecor [data-workflow="decor"]').click()
+                frame.locator('#homeDecor .decor-actions').get_by_role('button',name='배경',exact=True).click()
                 form = frame.locator('[data-wf-form="theme"]')
                 form.locator('[name="background"]').select_option('stone')
                 form.locator('[name="labels"]').select_option('minimal')
@@ -357,14 +380,16 @@ def main():
                 expect(frame.locator('#decorStage .room')).to_be_visible()
 
             old_prop = next(item for item in after['world']['items'] if item['id'] == 'cup')
-            home_prop = frame.locator('#homeProps [data-home-prop="cup"]')
+            home_prop = frame.locator('#homeSceneDecor [data-home-prop="cup"]')
             old_home_left = home_prop.evaluate('e=>e.style.left')
+            old_home_top = home_prop.evaluate('e=>e.style.top')
             preview_prop = drag_prop(page, frame)
             theme_preview()
             assert (old_prop['x'],old_prop['y']) != (preview_prop['x'],preview_prop['y'])
             assert frame.evaluate('KitchenJournal.getEnvelope()') == after
             assert frame.evaluate('localStorage.getItem(KitchenJournal.storageKey)') == stored_before
             assert home_prop.evaluate('e=>e.style.left') == old_home_left
+            assert home_prop.evaluate('e=>e.style.top') == old_home_top
             expect(frame.locator('.decor-footer [data-decor-cancel]')).to_be_visible()
             frame.locator('.decor-footer [data-decor-cancel]').click()
             expect(frame.locator('[data-home-subtab="growth"]')).to_have_attribute('aria-selected','true')
@@ -385,11 +410,15 @@ def main():
             expected_flow['theme'] = {'background':'stone','labels':'minimal','organizer':True}
             assert moved['play'] == after['play'] and moved['workflow'] == expected_flow
             expect(frame.locator('#fridgeSceneHost .room')).to_be_visible()
-            home_prop = frame.locator('#homeProps [data-home-prop="cup"]')
+            home_prop = frame.locator('#homeSceneDecor [data-home-prop="cup"]')
             expect(home_prop.locator('svg.decor-art')).to_be_visible()
+            assert home_prop.evaluate('e=>e.checkVisibility({opacityProperty:true,visibilityProperty:true})'), 'Applied scene artwork cannot be hidden by CSS opacity or visibility'
             expected_left = max(12, min(88, new_prop['x'] * 100))
             assert abs(float(home_prop.evaluate('e=>e.style.left').rstrip('%'))-expected_left) < .001
+            expected_top = max(0, min(100, new_prop['y'] * 100))
+            assert abs(float(home_prop.evaluate('e=>e.style.top').rstrip('%'))-expected_top) < .001
             assert home_prop.evaluate('e=>e.style.left') != old_home_left
+            assert home_prop.evaluate('e=>e.style.top') != old_home_top
             assert home_prop.locator('image').get_attribute('href').startswith('data:image/'), 'Home must render the real committed prop artwork'
             choose(frame, 'kitchen', 'decor')
             assert frame.evaluate('KitchenJournal.getEnvelope()') == moved
@@ -425,7 +454,7 @@ def main():
                 form.locator('[name="name"]').fill('초안 검수 재료')
                 form.locator('[name="quantity"]').fill('250g')
                 form.locator('[name="expiry"]').fill('2026-11-12')
-                form.locator('[name="picture"]').select_option('photo')
+                reveal(form.locator('[name="picture"]')).select_option('photo')
                 return form
 
             form = photos_to_manual()

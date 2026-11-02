@@ -31,9 +31,11 @@ Prepend a `/*! ... */` comment containing the fflate version and full MIT licens
 The checked-in bundle's SHA256 is
 `924da5f88cb34410cf580a2ede9705c5369a511cbe6bf8dd6425829aa54a8ed5`.
 
-`pack_document` writes deterministic gzip/base64 plus original UTF-8 byte count
+`pack_document` writes deterministic gzip/base64 or HTML-safe gzip/base85 plus original UTF-8 byte count
 and SHA256 metadata. `unpack_document` validates that count and digest for build,
 review and verification tooling. The browser decoder checks the byte count,
 then restores the original HTML after the envelope document finishes parsing.
 It keeps the same browsing context, origin and iframe sandbox. No inventory,
 record, storage-key, image-resolution or input-document bytes are rewritten.
+
+The Base85 envelope uses RFC1924 digits with `&<>` replaced one-to-one by `.,/`. It carries exactly the same gzip bytes, supports partial groups, and requires no extra runtime library. Both codecs are supported by `unpack_document` and the embedded browser bootstrap.

@@ -11,8 +11,10 @@
 <link rel="stylesheet" href="designs/miniature-kitchen/journey.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/proportions.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/storyboard.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/fidelity.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
 <script defer src="designs/miniature-kitchen/catalog.js"></script>
+<script defer src="designs/miniature-kitchen/story-art.js"></script>
 <script defer src="designs/miniature-kitchen/play-model.js"></script>
 <script defer src="designs/miniature-kitchen/workflow-model.js"></script>
 <script defer src="designs/miniature-kitchen/journey-model.js"></script>
@@ -46,6 +48,8 @@
     <div class="seasoning-zone drop-zone" data-zone="seasoning" aria-label="양념 선반"></div>
     <div class="counter-zone drop-zone" data-zone="counter" aria-label="조리대"></div>
     </div>
+  <div id="homeSceneDecor" class="committed-scene-props" aria-hidden="true"></div>
+  <div class="home-worktop" id="homeWorktop"><button type="button" id="homeProps" hidden class="home-props" data-home-open="decor" aria-label="나의 부엌 소품을 보고 꾸미기"></button><button type="button" id="addFood" aria-label="재료 추가"><span data-icon="plus" aria-hidden="true"></span>재료 추가</button></div>
     <div class="fridge-displays" id="fridgeDisplays" role="group" aria-label="냉장고 디스플레이"></div>
     <div class="scene-note" id="sceneNote">재료를 누르면 살펴볼 수 있어요</div>
   </section>
@@ -53,9 +57,10 @@
   <div class="kitchen-progress" id="kitchenProgress"><span>우리 집 냉장고</span><small id="selectedItemMeta">재료를 눌러 수량과 기한을 확인해요</small><button type="button" id="openJournal">재료 목록</button></div>
   </div>
   </div>
-  <div class="home-worktop" id="homeWorktop"><button type="button" id="homeProps" class="home-props" data-home-open="decor" aria-label="나의 부엌 소품을 보고 꾸미기"></button><button type="button" id="addFood"><span data-icon="plus" aria-hidden="true"></span>재료 추가</button></div>
+
   </section>
   <section id="todayKitchen" class="home-panel today-kitchen" role="tabpanel" aria-labelledby="tab-meals" hidden>
+    <header class="hub-heading"><button type="button" data-camera="fridge" aria-label="냉장고로 돌아가기">‹</button><h2>레시피</h2></header>
     <nav class="panel-tabs" role="tablist" aria-label="레시피 보기">
       <button type="button" id="sub-recommendation" role="tab" data-home-subtab="recommendation" aria-controls="homeRecommendation" aria-selected="true">추천 레시피</button>
       <button type="button" id="sub-plans" role="tab" data-home-subtab="plans" aria-controls="homePlans" aria-selected="false" tabindex="-1">내 식단</button>
@@ -64,6 +69,7 @@
     <section class="home-plans home-card" id="homePlans" data-home-page="plans" role="tabpanel" aria-labelledby="sub-plans" hidden></section>
   </section>
   <section id="panel-records" class="home-panel" role="tabpanel" aria-labelledby="openRecords" hidden>
+    <header class="hub-heading"><button type="button" data-camera="fridge" aria-label="냉장고로 돌아가기">‹</button><h2>오늘의 기록</h2></header>
     <nav class="panel-tabs" role="tablist" aria-label="기록 보기">
       <button type="button" id="sub-nutrition" role="tab" data-home-subtab="nutrition" aria-controls="homeNutrition" aria-selected="true">영양</button>
       <button type="button" id="sub-budget" role="tab" data-home-subtab="budget" aria-controls="homeBudget" aria-selected="false" tabindex="-1">식비</button>
@@ -76,6 +82,7 @@
     <section id="homeMonthly" class="home-card" data-home-page="monthly" role="tabpanel" aria-labelledby="sub-monthly" hidden></section>
   </section>
   <section id="panel-kitchen" class="home-panel" role="tabpanel" aria-labelledby="tab-kitchen" hidden>
+    <header class="hub-heading"><button type="button" data-camera="fridge" aria-label="냉장고로 돌아가기">‹</button><h2>내 부엌</h2><button type="button" data-home-open="connections" aria-label="설정과 백업"><span data-icon="settings" aria-hidden="true"></span></button></header>
     <nav class="panel-tabs" role="tablist" aria-label="내 부엌 보기">
       <button type="button" id="sub-growth" role="tab" data-home-subtab="growth" aria-controls="homeGrowth" aria-selected="true">목표·도감</button>
       <button type="button" id="sub-decor" role="tab" data-home-subtab="decor" aria-controls="homeDecor" aria-selected="false" tabindex="-1">꾸미기</button>
@@ -84,8 +91,9 @@
     <section id="homeGrowth" class="home-card" data-home-page="growth" role="tabpanel" aria-labelledby="sub-growth"></section>
     <section id="homeDecor" class="decor-editor" data-home-page="decor" role="tabpanel" aria-labelledby="sub-decor" hidden>
       <header class="decor-heading"><div><h2>내 부엌 꾸미기</h2><p>소품을 옮긴 뒤 적용해 주세요.</p></div><button type="button" data-decor-cancel aria-label="꾸미기 취소">닫기</button></header>
-      <div class="decor-actions"><button type="button" id="propList">소품 고르기</button><button type="button" data-workflow="decor">배경·정리함</button><button type="button" data-workflow="rewards">모은 소품</button></div>
+      <div class="decor-actions"><button type="button" id="propList">소품</button><button type="button" data-workflow="decor">배경</button><button type="button" data-workflow="decor">정리함</button></div>
       <div id="decorStage"></div>
+      <div class="decor-selection-toolbar" role="toolbar" aria-label="선택한 소품 편집"><button type="button" data-decor-tool="back" disabled>↶ <span>뒤로</span></button><button type="button" data-decor-tool="front" disabled>↷ <span>앞으로</span></button><button type="button" data-decor-tool="remove" disabled>× <span>지우기</span></button><span id="decorSelectionName" class="sr-only" aria-live="polite"></span></div>
       <div class="decoration-tools" id="decorationTools" hidden><span>소품을 누르면 앞뒤 순서도 바꿀 수 있어요.</span></div>
       <div class="decor-footer"><button type="button" data-decor-cancel>취소</button><button type="button" class="primary" data-decor-apply>적용</button></div>
     </section>
