@@ -189,12 +189,22 @@ function fxScenario(ctx){
 
 function fxPerformance(ctx){
  const h=fxHelpers(),o=ctx.data?.learning?.overall||{},rec=o.recall||{};
- const facts=[["실제 예측 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["일치 / 평가",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
- return `<div class="fx-intro"><div><h2>AI 예측 검증</h2><p>실제 관측과 비교하여 모델이 얼마나 맞았는지 확인합니다.</p></div><span class="fx-stamp">검증 자료 ${fxEscape(h.T?.(ctx.data?.learning?.generated_at)||"확인 전")}</span></div>
- <div class="nr-performance-grid">${facts.map(([title,value])=>`<section class="nr-panel"><small>${title}</small><strong>${value}</strong></section>`).join("")}</div>
- <section class="nr-panel" style="margin-top:12px">${h.qualityHTML?.()||""}<div class="nr-validation-note"><b>검증 상태</b><p>실전 매매 타이밍의 유용성은 아직 입증되지 않았습니다.</p><p>이 일치율은 투자 수익률이나 미래의 성공 확률이 아닙니다.</p></div><button data-nr-forecast class="nr-action">전체 예측 성적표</button></section>${fxSteps(ctx)}`;
+ const facts=[["사후 방향 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["일치 / 평가",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["실제 상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["실제 하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
+ const utility=ctx.data?.autopilot?.timing_utility?.status, proven=utility==="proven";
+ return `<div class="fx-intro"><div><h2>AI 예측 검증</h2><p>실제 결과와 비교하되, 적중률과 매매 수익률을 구분합니다.</p></div><span class="fx-stamp">자료 ${fxEscape(h.T?.(ctx.data?.learning?.generated_at)||"확인 전")}</span></div>
+ <div class="nr-performance-grid">${facts.map(([label,n])=>`<section class="nr-panel"><small>${label}</small><strong>${n}</strong></section>`).join("")}</div>
+ <div class="fx-validation-grid">${fxOutcomes(ctx)}<section class="nr-panel fx-validation-aside">${h.qualityHTML?.()||""}<div class="nr-validation-note"><b>검증 판정</b><p>${proven?"검증된 범위 내 유용성 추가 확인 필요":"실전 매매 타이밍의 유용성은 아직 입증되지 않았습니다."}</p><p>확률은 연구 모델 분류값이며 미래 매수 성공률이 아닙니다.</p></div><button data-nr-forecast class="nr-action">전체 예측 성적표</button></section></div>${fxSteps(ctx)}`;
 }
-
+function fxOutcomes(ctx){
+ const h=fxHelpers(),input=Array.isArray(ctx.data?.outcomes)?ctx.data.outcomes:[],seen=new Set();
+ const rows=input.filter(r=>{
+  if(r.status!=="observed"||r.public_before_target_verified!==true)return false;
+  const key=String(r.id||[r.symbol,r.mode,r.issued_at,r.target?.start].join("|"));
+  if(seen.has(key))return false;seen.add(key);return true;
+ }).sort((a,b)=>Date.parse(b.evaluated_at||0)-Date.parse(a.evaluated_at||0)).slice(0,8);
+ const dir={up:"상승",down:"하락",flat:"횡보"};
+ return `<section class="nr-panel fx-audit-table"><div class="nr-head"><h3>최근 실제 관측 검증</h3><span class="nr-sub">발행 시점 검증 표본 · ${rows.length}건 표시</span></div><div class="fx-table-clip"><table class="fx-audit"><thead><tr><th>검증 시각</th><th>종목</th><th>예측</th><th>실제</th><th>결과</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${fxEscape(h.T?.(r.evaluated_at)||"시각 미확인")}</td><td>${fxEscape(r.symbol||"—")}</td><td>${fxEscape(dir[r.predicted]||r.predicted||"—")}</td><td>${fxEscape(dir[r.actual]||r.actual||"—")}</td><td><span class="fx-mark ${r.correct===true?'yes':'no'}">${r.correct===true?'일치':'불일치'}</span></td></tr>`).join(""):'<tr><td colspan="5">발행·평가 이력이 확인된 결과가 없습니다.</td></tr>'}</tbody></table></div><p class="fx-table-hint">실제 체결·수익 데이터가 아닌 가격 관측 기반의 사후 평가입니다.</p></section>`;
+}
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
  const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?h.renderNews?.():s==="settings"?h.renderSettings?.():fxHome(ctx);
