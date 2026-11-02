@@ -2,8 +2,8 @@
 
 # RADAR_V8_LEGACY_UI_GUARD
 from pathlib import Path as _V8Path
-if 'data-radar-version="8"' in _V8Path('stock-value-radar.html').read_text(encoding='utf-8'):
-    print('Standalone v8 owns the UI; legacy data collection remains unchanged.')
+if any(flag in _V8Path('stock-value-radar.html').read_text(encoding='utf-8') for flag in ('data-radar-version="8"', 'data-custom-radar-ui="flow-v3"')):
+    print('Independent dashboard owns its UI; legacy data collection remains unchanged.')
     raise SystemExit(0)
 
 from pathlib import Path
