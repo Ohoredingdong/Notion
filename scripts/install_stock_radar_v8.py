@@ -50,5 +50,8 @@ for name in ('scripts/install_stock_decision_ui.py','scripts/install_stock_audit
   code=''.join(lines[:at])+'\n'+guard+''.join(lines[at:])
   compile(code,name,'exec');path.write_text(code,encoding='utf-8')
 # Replace only the designated widget page. Training, financial values and key files are not modified.
-page.write_text(text,encoding='utf-8')
+if 'data-custom-radar-ui="flow-v3"' in page.read_text(encoding='utf-8'):
+ print('Custom radar dashboard preserved; legacy v8 asset validation completed.')
+else:
+ page.write_text(text,encoding='utf-8')
 print('v8 installed;',len(parser.ids),'unique DOM IDs;',len(text),'HTML characters; training unchanged')
