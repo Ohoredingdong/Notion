@@ -74,7 +74,7 @@ function fxStockPanel(ctx,expanded){
  const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
  return `<section class="fx-panel fx-list-panel"><div class="fx-panel-head"><div><h3>AI 종목 신호</h3><p>종목을 선택하면 분석이 바뀝니다.</p></div><button class="fx-link" type="button" data-nr-screen="stocks">${expanded?"목록":"전체"} ${h.I?.("arrow")||"›"}</button></div>
  <div class="fx-filters"><div class="fx-chips">${[["ALL","전체"],["KOSPI","코스피"],["KOSDAQ","코스닥"],["NASDAQ","나스닥"],["DOW","다우"]].map(([key,title])=>`<button type="button" data-rf-market="${key}" class="${ctx.market===key?"active":""}" aria-pressed="${ctx.market===key}">${title}</button>`).join("")}</div>
- ${expanded?`<div class="fx-chips direction">${[["all","전체"],["ai","AI 발행"],["up","상승"],["down","하락"],["star","관심"]].map(([key,title])=>`<button type="button" data-fx-filter="${key}" class="${fxLocal.filter===key?"active":""}" aria-pressed="${fxLocal.filter===key}">${title}</button>`).join("")}</div>`:""}
+ <div class="fx-chips direction">${[["all","전체"],["ai","AI 신호"],["up","상승"],["down","하락"],["star","★ 관심"]].map(([key,title])=>`<button type="button" data-fx-filter="${key}" class="${fxLocal.filter===key?"active":""}" aria-pressed="${fxLocal.filter===key}">${title}</button>`).join("")}</div>
  <label class="fx-search">${h.I?.("search")||"⌕"}<input id="fx-search-input" type="search" aria-label="종목명·코드로 검색" placeholder="종목명 · 코드 검색" value="${fxEscape(fxLocal.search)}"></label></div>
  <div class="fx-columns"><span>기업 / 시장</span><span>저장 종가</span><span>AI 방향</span></div>
  <div class="fx-results" id="fx-results">${fxStockRows(ctx,expanded)}</div>
@@ -171,8 +171,8 @@ function fxV5FocusItems(c,which){
  const assessment=c.assessment||{},s=c.short||{},h=c.history||{},t=c.technical||{},f=c.forecasts||{};
  const stringify=x=>typeof x==="string"?x:x?.text||x?.reason||x?.label||"";
  let items=which==="bull"?
-  [s.reasons?.[0],assessment.why?.[0],fxN(f.eps_revision30_pct)!==null?"최근 30일 EPS 추정 변화 "+fxPct(f.eps_revision30_pct):null,fxN(h.revenue_growth)!==null?"보고기간 매출 변화 "+fxPct(h.revenue_growth):null]:
-  [...(assessment.risks||[]).slice(0,3),...(assessment.missing||[]).slice(0,2)];
+  [assessment.why?.[0],fxN(f.eps_revision30_pct)!==null&&f.eps_revision30_pct>0?"EPS 추정 상향 "+fxPct(f.eps_revision30_pct):null,fxN(h.revenue_growth)!==null&&h.revenue_growth>0?"보고기간 매출 성장 "+fxPct(h.revenue_growth):null,fxN(h.fcf)!==null&&h.fcf>0?"보고된 잉여현금흐름 양수":null]:
+  [...(assessment.risks||[]).slice(0,3),...(assessment.missing||[]).slice(0,2),fxN(f.eps_revision30_pct)!==null&&f.eps_revision30_pct<0?"EPS 추정치 하향 "+fxPct(f.eps_revision30_pct):null];
  items=items.map(stringify).filter(Boolean).slice(0,3);
  if(!items.length)items=[which==="bull"?"공식 실적·사업 근거 대조 전":"최신 공시 및 위험 지표 추가 검증 필요"];
  return items.map(v=>`<div class="fx-v5-bullet ${which==='bull'?'good':'bad'}"><span>${which==='bull'?'○':'!'}</span><p>${fxEscape(v)}</p></div>`).join("");
