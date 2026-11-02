@@ -17,3 +17,12 @@ Run exactly **one existing** `scripts/test_stock_radar_flow_browser.py` suite in
 
 ## Stop conditions
 Record one execution result, error details and GitHub Action URL if obtainable. Do not merge if the full required regressions have not passed. Absence of a runnable action or infrastructure prerequisites means `not_verified`, not success. This branch is research-only.
+
+## One executed isolated trial (post-hypothesis, no test modification)
+
+- Research workflow source commit: `a68156aa2341feb9d1938d746741e0d87c104541`; [run 41464395687](https://github.com/Ohoredingdong/Notion/actions/runs/41464395687), job `125341349729`.
+- Browser dependency installation and JS/Python syntax checks passed. The pre-registered modern browser suite **ran for real** on the unmodified HTML/JS/data, and the job **failed** at `scripts/test_stock_radar_flow_browser.py:96`: `AssertionError: Market index cards`.
+- Fault isolation: the current code's `fxHome()` builds a section `.fx-v5-marketline` holding `.fx-v5-markets.nr-market-grid`, with market cards supplied by `StockRadarV2Bridge.helpers.indices()` (four index specifications). The unchanged test instead selects `.fx-market-row .nr-index`; `fx-market-row` is absent in the current flow script. This explains the false-negative selector expectation. It **does not prove** the actual four cards are rendered in a browser or any later navigation works. The test stopped at the first failed assertion after earlier layout checks, so its remaining controls were **not executed**.
+- Failure evidence is preserved as run logs and [research-modern-radar-flow-evidence artifact](https://github.com/Ohoredingdong/Notion/actions/runs/41464395687). Exactly **one** isolated execution, **zero** new model candidates and **zero** test/production code fixes in this trial. No green UI release claim.
+- Next engineering hypothesis, **not executed in this experiment**: on a separately reviewed branch adjust only obsolete selectors to the actual v5 DOM while preserving the four-card requirement and all other behavior/layout/security assertions. Run the full modern suite, legacy regressions, independent forecast audit and public check before any merge. Merely renaming a selector is not evidence of real functionality.
+- Original integrated CI remained red; independent trading/timing acceptance is still `not_proven`. Do not present this isolated experiment as a successful code repair.
