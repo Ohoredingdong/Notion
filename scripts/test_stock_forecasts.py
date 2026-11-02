@@ -181,5 +181,41 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(targets.iloc[25]['target_start']-bars.iloc[25]['end'], pd.Timedelta(minutes=POLICY['intraday_gap_minutes']))
         self.assertEqual(targets.iloc[25]['target_end']-targets.iloc[25]['target_start'], pd.Timedelta(minutes=30))
 
+
+    def test_kr_closing_auction_spanning_target_is_not_six_continuous_bars(self):
+        """Research RED: no manufactured 5m continuous candles across 15:20–15:30."""
+        kr = calendar('KR', 2026)
+        s = kr.date_to_session('2026-11-02', direction='none')
+        close = kr.session_close(s)
+        gap = pd.Timedelta(minutes=POLICY['intraday_gap_minutes'])
+        last_end = close - pd.Timedelta(minutes=30) - gap
+        target, reason = future_target({'end': last_end, 'session': '2026-11-02'},
+                                       'KR', 'intraday', last_end + pd.Timedelta(seconds=10))
+        self.assertIsNone(target)
+        self.assertEqual(reason, 'insufficient_regular_session_time')
+
+    def test_kr_auction_boundary_preserves_last_continuous_window(self):
+        kr = calendar('KR', 2026)
+        s = kr.date_to_session('2026-11-02', direction='none')
+        close = kr.session_close(s)
+        gap = pd.Timedelta(minutes=POLICY['intraday_gap_minutes'])
+        continuous_end = close - pd.Timedelta(minutes=10)
+        last_end = continuous_end - pd.Timedelta(minutes=30) - gap
+        target, reason = future_target({'end': last_end, 'session': '2026-11-02'},
+                                       'KR', 'intraday', last_end + pd.Timedelta(seconds=10))
+        self.assertIsNone(reason)
+        self.assertEqual(stamp(target['end']), continuous_end)
+
+    def test_us_regular_close_is_not_affected_by_kr_auction(self):
+        us = calendar('US', 2026)
+        s = us.date_to_session('2026-11-02', direction='none')
+        close = us.session_close(s)
+        gap = pd.Timedelta(minutes=POLICY['intraday_gap_minutes'])
+        last_end = close - pd.Timedelta(minutes=30) - gap
+        target, reason = future_target({'end': last_end, 'session': '2026-11-02'},
+                                       'US', 'intraday', last_end + pd.Timedelta(seconds=10))
+        self.assertIsNone(reason)
+        self.assertEqual(stamp(target['end']), close)
+
 if __name__ == '__main__':
     unittest.main()
