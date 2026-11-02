@@ -681,9 +681,73 @@ html,body{background:linear-gradient(140deg,#edf4ff,#f6f9ff 55%,#f4f8ff)!importa
 }
 @media(max-width:540px){.fx-v5-marketline{display:none!important}}
 
+
+/* 2026-11-03: precise market-card proportions + centered metric tile typography */
+@media (min-width: 1180px) {
+  /* Top sections now align with the same left/middle/right proportions as the research dashboard. */
+  .fx-v5-marketline {
+    display: grid !important;
+    grid-template-columns: minmax(210px, .95fr) minmax(0, 2.68fr) minmax(210px, .95fr) !important;
+    gap: 10px !important;
+    align-items: stretch;
+    min-width: 0;
+  }
+  .fx-v5-markettitle,
+  .fx-v5-sentiment {
+    width: 100%;
+    min-width: 0;
+    max-width: none !important;
+  }
+  .fx-v5-markets {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+    gap: 8px !important;
+  }
+  .fx-v5-markets .nr-index {
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+@media (min-width: 1180px) and (max-width: 1365px) {
+  .fx-v5-markets .nr-index .nr-num { font-size: 18px !important; }
+  .fx-v5-markets .nr-index .nr-mini-chart {
+    width: 47px !important;
+    right: 7px !important;
+    opacity: .7;
+  }
+  .fx-v5-markettitle h2 { font-size: 15px !important; }
+}
+/* Small financial tiles: labels and figures share the same centered visual axis. */
+.fx-v5-metricgrid > div,
+.fx-v5-bottom-facts > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 7px 5px;
+  gap: 4px;
+}
+.fx-v5-metricgrid > div > small,
+.fx-v5-metricgrid > div > b,
+.fx-v5-bottom-facts > div > small,
+.fx-v5-bottom-facts > div > strong {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+.fx-v5-datanote { display: block; text-align: center; }
+
 </style>
-<script defer src="./assets/stock-radar-clean-bridge.js?v=v5-dashboard-final-20261102-2"></script>
-<script defer src="./assets/stock-radar-flow-v2.js?v=v5-dashboard-final-20261102-2"></script>
+<script defer src="./assets/stock-radar-clean-bridge.js?v=v5-compact-center-20261103-1"></script>
+<script defer src="./assets/stock-radar-flow-v2.js?v=v5-compact-center-20261103-1"></script>
 </head>
 <body>
 <div class="app">
