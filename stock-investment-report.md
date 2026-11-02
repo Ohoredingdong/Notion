@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-02T03:25:04.221446+09:00
+- 계산일: 2026-11-02T20:00:24.012382+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [美 중간선거 뒤 코스피 평균 10.5% 상승…이번엔 금리·반도체가 승부 가른다 - OBC 뉴스](https://news.google.com/rss/articles/CBMiakFVX3lxTE13clZHSjJNYnc0TUU2ZFhramMyeXJRbURHbVppTDJyVFdCVV9FNHlQVlM1SkctVWZWY25MM21TSzRoZXBfOVdzbWM2dy14enhtbThONjAtOGNiX0F6c2IwVjB6QVdHVXNKZUE?oc=5)
-- [증시 급락했지만…"조정 마무리 단계" 바닥론도 - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE1LbW00Q2tIREQyelVJUnFidkNzOVUycTdLTXduY0xvSjJOaUc2Q1luQkZuLUp2aFNMMFc5NE12SFlSLVhpRUQwY3hZT3V2dEtENWEzaWJ1QXZHdw?oc=5)
-- [메모리 호황 속 HBM4 경쟁 새 국면…삼성 추격·SK하이닉스 수성 - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE1yeE80SmNvcWdnSThZUk1BY3lwTmFWakhWcWk2U2pvTk1ETkVfb0tYbFg1ZF9LMWktRGltOUR6NGtRMkpRN3phX3pfaDZ1dVdQb0ZBRTB3TXI0YUZuekxTbtIBYEFVX3lxTE1yeE80SmNvcWdnSThZUk1BY3lwTmFWakhWcWk2U2pvTk1ETkVfb0tYbFg1ZF9LMWktRGltOUR6NGtRMkpRN3phX3pfaDZ1dVdQb0ZBRTB3TXI0YUZuekxTbg?oc=5)
-- [SK하이닉스(000660)눌릴때마다 물량 모아둘 기회로 보이며 이후 전망 및 대응전략. - ThinkPool](https://news.google.com/rss/articles/CBMiXEFVX3lxTE9maFd3OXhGV0NzNmdWcnloOU5SSVl2WGhIbnUxcUZESXEyM0huVnVsRmdsMEJONUowS0w1aFloNkc2eHZfc3prUEdLLURhSkJLQTVjcGhIdzBDYkl0?oc=5)
+- [오늘의 프리미엄9 콘텐츠 다이제스트(11월 2일) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE1sODliZFdsenhlcWlDUVIwaFZYWVl3Y0RuYUxnckVMUFlsOTZucm8xZ3V4NlZSUXRUZG14cnRRdHdhUkc5ZUszWnE2V3BDVURfaHpLVjdIMkVTQQ?oc=5)
+- [AI가 끌어올린 수출, AI가 흔드는 증시... 한국 경제의 두 얼굴 - OhmyNews](https://news.google.com/rss/articles/CBMid0FVX3lxTE5GVUdjbWQ0alFmbTVwY3FrX3JSR0NCdkJLUmVJNllfRktTekJwYi1vWWRzWUwxOGM4eHNxWjdVaG5WMXpXVWZIQUNqblMwUXlpREtyM3BleHZhZkRtQmVjSHJhdmVHdWNzTGRid1p2U2N6eVJpdDVZ?oc=5)
+- [메모리반도체 호황 장기화에 외신 전망 낙관적, "SK하이닉스 독보적 수혜" - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTFBNeVd5YzNyNHJHOTNOZ205Rjh5Q1oxZTgwVkhRaTlueTZwSW1aQ2Z1cjRUTXAwb1drdEN3bFFCbEZlRzlqenkwSFFfNkZKUG5GUnI3WmxSbzJxMlNwNUEtWm8wejdtQjVFWWJTbWd6NHlFWW8?oc=5)
+- ["실기(失機)의 늪서 되찾은 HBM 초격차… '사즉생' 이재용, 1993년 프랑크푸르트의 DNA를 깨우다" - 뉴스톱](https://news.google.com/rss/articles/CBMib0FVX3lxTE1ONzJzVVVuNF9WN0J5VUE4cFlrRFIxbnZvTmdHWmg3U2oxOTJ6RkVmWWMzdm1FUkZJbWYzQmtIZnI1V0FpUExwNFhkdkpRU3BhOUhrbmo3LVFjUVdzejIwWHNEZnEyV1lTWlU0amJ1aw?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
