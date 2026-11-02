@@ -1,0 +1,37 @@
+name: Verify kitchen storyboard public image delivery
+on:
+  push:
+    branches: [delivery/verify-kitchen-storyboards-20261102]
+    paths:
+      - '.github/workflows/verify-kitchen-storyboards-preview.yml'
+      - 'scripts/verify_kitchen_storyboards_public.py'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-storyboards-public-verification
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Verify actual HTTPS viewer and five original image files
+        run: python scripts/verify_kitchen_storyboards_public.py --source b5f13a245a7e4003f0207c8cfc5fe802707b9854 --publish-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-storyboards-public-browser
+          path: /tmp/kitchen-storyboards-public/
+          retention-days: 3
