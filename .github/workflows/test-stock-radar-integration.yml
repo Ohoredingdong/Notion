@@ -10,6 +10,13 @@ on:
       - 'assets/stock-radar-clean-bridge.js'
       - 'assets/stock-radar-flow-v2.js'
       - 'scripts/test_stock_radar_flow_browser.py'
+      - 'scripts/publish_stock_opportunities.py'
+      - 'scripts/publish_stock_market_groups.py'
+      - 'scripts/publish_stock_investment_cases.py'
+      - 'scripts/install_stock_radar_v8.py'
+      - 'scripts/install_stock_decision_ui.py'
+      - 'scripts/install_stock_audit_ui.py'
+      - 'scripts/test_stock_radar_publish_protection.py'
       - 'assets/stock-radar-neutral.js'
       - 'assets/stock-radar-neutral.css'
       - 'assets/stock-radar-v8.js'
@@ -45,6 +52,7 @@ jobs:
           node --check assets/stock-radar-clean-bridge.js
           node --check assets/stock-radar-flow-v2.js
           python -m py_compile scripts/test_stock_radar_flow_browser.py
+          python scripts/test_stock_radar_publish_protection.py
           node --check assets/stock-recommendations.js
           node --check assets/stock-investment-cases.js
           node --check assets/stock-forecast.js
