@@ -1,10 +1,11 @@
 """Publish generated research on latest main; never force-push or rewrite raw data."""
+# Main stock-value-radar.html is user-designed and must not be published by collectors.
 from pathlib import Path
 from datetime import datetime,timezone
 import hashlib,subprocess,sys,tempfile,time,json
 ROOT=Path.cwd()
 OUTPUTS=['stock-opportunity-data.json','stock-opportunity-summary.json','stock-opportunity-tests.json','stock-opportunity-filing-tests.json','stock-opportunity-date-tests.json','stock-opportunity-extension-audit.json','stock-opportunity-discovery.json','stock-opportunity-discovery-tests.json']
-UI=['stock-value-radar.html','assets/stock-radar-v8.js','assets/stock-radar-v8.css','assets/stock-radar-v8.html','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
+UI=['assets/stock-radar-v8.js','assets/stock-radar-v8.css','assets/stock-radar-v8.html','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
 ENGINE=['stock-opportunity-universe.json','scripts/update_stock_opportunities.py','scripts/update_stock_decisions.py','scripts/finalize_stock_opportunities.py','scripts/validate_stock_opportunity_dates.py','scripts/discover_stock_candidates_v9.py','scripts/run_stock_research_v9.py','scripts/curate_stock_decisions_v9.py']
 def git(*args,cwd=ROOT,check=True):return subprocess.run(['git',*args],cwd=cwd,check=check,text=True,capture_output=True)
 def date(path):
