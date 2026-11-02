@@ -308,7 +308,7 @@ function fxScenario(ctx){
  return `<div class="fx-scenario-v4">
  <div class="fx-intro"><div><h2>${fxEscape(c.name)} · 시나리오 한눈에</h2><p>저장된 목표가 수준과 AI 방향 연구를 따로 비교합니다. 투자 전략의 조건은 최신 공시로 재확인해야 합니다.</p></div><span class="fx-stamp">${fxEscape(c.price_session||"기준일 미확인")} 종가 ${fxMoney(c.price,c.currency)}</span></div>
  <div class="fx-scenario-main">
-  <section class="fx-panel fx-scenario-chart-panel"><div class="fx-panel-heading"><div><h3>실제 종가와 3가지 목표가 구간</h3><p>애널리스트 집계 가격을 수준으로만 표시합니다.</p></div><span class="fx-mini-chip">가격 경로 예측 아님</span></div>
+  <section class="fx-panel fx-scenario-chart-panel"><div class="fx-panel-heading"><div><h3>실제 종가와 3가지 목표가 구간</h3><p>애널리스트 집계 가격을 수준으로만 표시합니다.</p></div><span class="fx-mini-chip">미래 경로 예측 아님 · 목표가만 비교</span></div>
     ${fxScenarioPlot(c)}<div class="fx-scenario-legend"><span><i style="background:#447ecf"></i>실제 일별 종가</span><span><i style="background:#d85876"></i>낙관 상단</span><span><i style="background:#377bd1"></i>중앙 기준</span><span><i style="background:#28a074"></i>비관 하단</span></div>
   </section>
   <section class="fx-panel fx-scenario-ai-panel"><div class="fx-panel-heading"><h3>AI 연구 방향 분포</h3><span class="fx-mini-chip">예측 확률 ≠ 목표가 확률</span></div><div class="fx-ai-card">${fxBars(c,ctx)}</div>
