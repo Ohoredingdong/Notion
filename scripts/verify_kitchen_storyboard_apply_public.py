@@ -3,6 +3,7 @@ import argparse
 import base64
 import hashlib
 import html
+import gzip
 import json
 import os
 import re
@@ -24,6 +25,21 @@ HUB_ROUTES = ('nutrition','plan','supplements','shopping','budget','monthly','bo
 
 def git(*args, env=None):
     return subprocess.run(['git',*args],env=env,check=True,capture_output=True,text=True).stdout.strip()
+
+
+def decoded_contract(native):
+    text=native.decode('utf-8')
+    if 'data-kitchen-packed="gzip-v1"' in text:
+        match=re.search(r'<template id="kitchenPacked" data-codec="gzip-base64" data-bytes="(\d+)" data-sha256="([0-9a-f]{64})">([A-Za-z0-9+/=]+)</template>',text)
+        assert match,'Missing pinned gzip payload'
+        decoded=gzip.decompress(base64.b64decode(match[3],validate=True))
+        assert len(decoded)==int(match[1]) and hashlib.sha256(decoded).hexdigest()==match[2],'Decoded HTML must match embedded exact byte count and SHA'
+    else:decoded=native
+    original=decoded.decode('utf-8')
+    scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',original)
+    styles=re.findall(r'<style(?:\s[^>]*)?>([\s\S]*?)</style>',original)
+    assert scripts and styles,'Decoded app must contain actual modules and styles'
+    return {'sha256':hashlib.sha256(decoded).hexdigest(),'bytes':len(decoded),'scripts':scripts,'styles':styles}
 
 
 def tap_door(page, frame, key, touch):
@@ -542,7 +558,7 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     run_id=os.environ.get('GITHUB_RUN_ID')
     repo=os.environ.get('GITHUB_REPOSITORY','Ohoredingdong/Notion')
-    result={'source':source,'run_url':f'https://github.com/{repo}/actions/runs/{run_id}' if run_id else None,
+    result={'source':source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run_id}' if run_id else None,
         'cases':[],'scope':'Approved 00–04 storyboard widget UI applied. Actual public HTTPS HTMLPreview execution in six fresh Chromium desktop/touch profiles; pinned raw source hashes; real on-device Korean/date OCR in app-phone and widget-phone through the original public CDN URLs. No network routing, mocks, TLS relaxation, physical-device, Safari, Notion or persistent-preview-storage claim.'}
     try:
         with sync_playwright() as p:
@@ -556,6 +572,7 @@ def main():
                 expected_raw=subprocess.run(['git','show',f'{source}:previews/mobile/{mode}.html'],check=True,capture_output=True).stdout
                 expected_hash=hashlib.sha256(expected_raw).hexdigest()
                 expected_native=subprocess.run(['git','show',f'{source}:previews/miniature-kitchen-{mode}.html'],check=True,capture_output=True).stdout
+                decoded=decoded_contract(expected_native)
                 template=re.search(r'<template id="kitchenSource">([\s\S]*?)</template>',expected_raw.decode())
                 assert template and html.unescape(template.group(1)).encode()==expected_native,'Inert text transport must reproduce pinned native bytes exactly'
                 for profile,width,height in PROFILES:
@@ -589,7 +606,12 @@ def main():
                         case['source_sha256']=hashlib.sha256(sources[0].body()).hexdigest()
                         assert case['source_sha256']==expected_hash
                         assert wrapper.get_attribute('srcdoc').encode()==expected_native,'Actual public iframe must execute exact native source'
+                        assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==decoded['scripts'],'Actual executed inline modules must equal decoded pinned HTML'
+                        assert frame.locator('style').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==decoded['styles'],'Actual styles must equal decoded pinned HTML'
                         case['native_sha256']=hashlib.sha256(expected_native).hexdigest()
+                        case['decoded_html_sha256']=decoded['sha256']
+                        case['decoded_html_bytes']=decoded['bytes']
+                        case['actual_decoded_inline_modules_and_styles_exact']=True
                         case['inert_template_decodes_to_exact_native_source']=True
                         case['dock']=check_dock(frame)
                         case['tab_navigation']=check_tabs(frame)
