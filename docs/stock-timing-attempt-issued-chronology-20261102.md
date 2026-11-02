@@ -21,3 +21,8 @@ Before code change, add a synthetic test moving an attempt's `checked_at` to two
 - Trial classification: engineering evidence-integrity hardening, **not** forecasting improvement, exchange quote validation, paper return, or human push delivery.
 - No shadow candidate promotion; no retrospective candidate creation; no actual orders; original event timing, acceptance thresholds, strict-green-1.0 and existing anomaly-monitoring automation remain unchanged.
 - Failure attempts (including intentional RED) and actual GitHub Actions/job results must be recorded here before any merge. If tests cannot be verified, keep the PR unmerged and mark blocked.
+
+## Actual RED trial (not a model result)
+- PR: https://github.com/Ohoredingdong/Notion/pull/99; intentional failing independent-audit run: https://github.com/Ohoredingdong/Notion/actions/runs/41369651007.
+- Job `125037164350`, 2026-11-02 00:54 UTC: 20 attempt-coverage tests; exactly one negative-control test failed as hypothesized: `AssertionError: 'attempt_forecast_not_yet_issued' not found in []`. The 50 ms legitimate-clock test passed. Other tests preceding the new control passed.
+- New audit logic guards the frozen referenced forecast's `issued_at` against scheduler `checked_at` with the preregistered one-second tolerance. This is an integrity alarm, not evidence of actual historical mis-issuance.
