@@ -1,6 +1,6 @@
 /* Operating radar home. No mock prices, order endpoints, or approval overrides. */
 (()=>{'use strict';
-const VERSION='neutral-production-1.0', $=s=>document.querySelector(s);
+const VERSION='intuitive-dashboard-2.0', $=s=>document.querySelector(s);
 const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const N=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
 const F=(v,d=2)=>N(v)===null?'—':v.toLocaleString('ko-KR',{maximumFractionDigits:d});
@@ -45,9 +45,15 @@ function macroHTML(){const m=data.macro?.indicators||{},fx=m.usdkrw||{},ten=m.us
 function opsHTML(){const reviews=data.greenReview?.companies||[],strictReady=reviews.filter(x=>x?.green_eligible===true).length,strictOK=data.greenReview?.version==='strict-green-1.0';const entry=data.entry||{},entryAligned=!!(entry.source_generated_at&&entry.source_generated_at===data.raw?.generated_at),entryReady=Number(entry.counts?.paper_candidate||0);const o=data.learning?.overall||{},rt=!!(data.toss?.enabled&&data.toss?.api_base),utility=data.autopilot?.timing_utility?.status;const autoOK=data.autopilot?.status==='research_cycle_verified';return`<div class="nr-head"><h3>운영 상태 · 투자 판단 문턱</h3><button class="nr-link" data-nr-view="system">전체 검증 ${I('arrow')}</button></div><div class="nr-ops-grid"><div class="nr-op"><small>엄격 초록 승인</small><strong>${strictOK?F(strictReady,0):'확인 필요'}<em>${strictOK?'개':''}</em></strong><span>strict-green-1.0 · ${T(data.greenReview?.generated_at)}</span></div><div class="nr-op"><small>진입 타이밍 계획</small><strong>${entryAligned?F(entryReady,0)+'개':'갱신 지연'}</strong><span>${entryAligned?'현재 원자료와 일치':'최신 원자료 재생성 필요'} · 주문 아님</span></div><div class="nr-op"><small>사전예측 평가</small><strong>${F(o.correct,0)} / ${F(o.samples,0)}</strong><span>${utility==='proven'?'유용성 확인 범위 있음':'타이밍 유용성 미입증'}</span></div><div class="nr-op"><small>토스 실시간 감시</small><strong>${rt?'연결 설정됨':'미연결'}</strong><span>${rt?'서버 상태는 별도 확인':'실시간 시세·조건 알림 비활성'}</span></div></div><div class="nr-op-actions"><button class="nr-link" data-nr-entry>진입 조건 상세 ${I('arrow')}</button><button class="nr-link" data-nr-forecast>예측 성적표 ${I('arrow')}</button><button class="nr-link" data-nr-live>실시간 상태 ${I('arrow')}</button></div><p class="nr-small-note">자동 개선 ${autoOK?'실행 확인':'확인 필요'} · 실행 성공과 예측력 입증은 별개입니다. 초록 후보 0개 자체는 오류가 아닙니다.</p>`}
 function qualityHTML(){const o=data.learning?.overall||{};return`<div class="nr-head"><h3>예측 검증</h3><button class="nr-link" data-nr-forecast>성적표 ${I('arrow')}</button></div><div class="nr-quality"><strong>${F(o.correct,0)} / ${F(o.samples,0)}</strong><span>일치 / 평가 표본<br>연구용 · 수익성 미검증</span></div><div class="nr-quality-note">${T(data.learning?.generated_at)} · 적중률은 주가 상승확률이 아닙니다.</div>`}
 function showDialog(title,body){let d=$('#nr-dialog');if(!d){d=document.createElement('dialog');d.id='nr-dialog';d.className='nr-modal';document.body.append(d)}d.innerHTML=`<h2>${E(title)}</h2><p>${E(body)}</p><button type="button">확인</button>`;d.querySelector('button').onclick=()=>d.close();d.showModal()}
-function view(v){if(['home','monitor','stocks','scenario','portfolio','news','performance','settings'].includes(v)){screen=v;homeActive=true;document.querySelectorAll('.view').forEach(e=>e.hidden=e.id!=='view-home');render();syncNav(v);window.scrollTo({top:0,behavior:'instant'});return}homeActive=false;$('#tab-'+v)?.click();syncNav(v);window.scrollTo({top:0,behavior:'instant'})}
+function view(v){if(['home','monitor','stocks','stockdetail','scenario','portfolio','news','performance','settings'].includes(v)){screen=v;homeActive=true;document.querySelectorAll('.view').forEach(e=>e.hidden=e.id!=='view-home');render();syncNav(v);window.scrollTo({top:0,behavior:'instant'});return}homeActive=false;$('#tab-'+v)?.click();syncNav(v);window.scrollTo({top:0,behavior:'instant'})}
 function syncNav(v){document.querySelectorAll('.nr-rail [data-nr-view]').forEach(b=>b.classList.toggle('active',b.dataset.nrView===v));document.querySelectorAll('.nr-rail [data-nr-screen]').forEach(b=>b.classList.toggle('active',b.dataset.nrScreen===v));homeActive=!$('#view-home')?.hidden}
-function fullDetail(id){const s=$('#companySelect');if(s&&[...s.options].some(o=>o.value===id)){s.value=id;s.dispatchEvent(new Event('change',{bubbles:true}));view('detail')}else{showDialog('상세 자료를 확인 중입니다','기존 기업 분석 자료가 아직 로드되지 않았습니다. 잠시 후 상세 분석을 다시 누르거나 새로고침해 주세요.')}}
+function fullDetail(id){
+ const c=company(id);if(!c){showDialog('기업을 찾을 수 없습니다','이 종목의 원자료를 확인하고 다시 시도하세요.');return}
+ selected=String(c.symbol);
+ const s=$('#companySelect');
+ if(s&&[...s.options].some(o=>o.value===id)){s.value=id;s.dispatchEvent(new Event('change',{bubbles:true}))}
+ view('stockdetail');
+}
 function chartHTML(){const d=pointData(compare,range);chartView=null;if(!d)return`<div class="nr-empty-chart">${I('chart')}<b>비교 가능한 가격 이력을 확인하고 있습니다.</b><p>선택 종목에 같은 거래일의 자료가 없으면 곡선을 만들지 않습니다.</p></div>`;const currencies=new Set(d.series.map(s=>s.currency));if(mode==='price'&&currencies.size>1){mode='return'}const ys=d.series.flatMap(s=>mode==='return'?s.returns:s.prices),min=Math.min(...ys),max=Math.max(...ys),pad=(max-min||Math.max(Math.abs(max)*.02,1))*.15,lo=min-pad,hi=max+pad,W=760,H=220,L=48,R=16,B=25,TOP=10;const x=i=>L+i*(W-L-R)/(d.dates.length-1),y=v=>TOP+(hi-v)*(H-B-TOP)/(hi-lo);chartView={...d,x,y,W,H,L,R,mode};const grid=Array.from({length:5},(_,i)=>{const v=lo+(hi-lo)*i/4;return`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#edf0f3"/><text x="${L-7}" y="${y(v)+4}" text-anchor="end">${mode==='return'?F(v,1)+'%':F(v,0)}</text>`}).join('');return`<svg id="nr-price-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${E(d.series.map(s=>s.name).join(', '))} ${E(d.dates[0])}부터 ${E(d.dates.at(-1))}까지의 실제 일별 종가 비교"><g>${grid}</g>${d.series.map((s,k)=>`<polyline data-series="${E(s.symbol)}" points="${(mode==='return'?s.returns:s.prices).map((v,i)=>`${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${COLORS[k]}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}<text x="${L}" y="${H-4}">${E(d.dates[0].slice(5))}</text><text x="${W-R}" y="${H-4}" text-anchor="end">${E(d.dates.at(-1).slice(5))}</text><g id="nr-cross" visibility="hidden"><line id="nr-cross-line" x1="0" y1="${TOP}" x2="0" y2="${H-B}" stroke="#adb8c3" stroke-dasharray="3 4"/>${d.series.map((s,i)=>`<circle id="nr-cross-${i}" r="3.5" fill="${COLORS[i]}" stroke="white" stroke-width="1.5"/>`).join('')}</g><rect x="${L}" y="0" width="${W-L-R}" height="${H-B}" fill="transparent" id="nr-chart-hit" tabindex="0" role="slider" aria-label="비교 거래일" aria-valuemin="0" aria-valuemax="${d.dates.length-1}" aria-valuenow="0"/></svg><div class="nr-chart-tooltip" id="nr-tooltip" hidden></div>`}
 function setCursor(i){const d=chartView;if(!d)return;i=Math.max(0,Math.min(d.dates.length-1,i));$('#nr-cross')?.setAttribute('visibility','visible');for(const k of['x1','x2'])$('#nr-cross-line')?.setAttribute(k,d.x(i));d.series.forEach((s,k)=>{const c=$('#nr-cross-'+k);c?.setAttribute('cx',d.x(i));c?.setAttribute('cy',d.y((d.mode==='return'?s.returns:s.prices)[i]))});const tip=$('#nr-tooltip');tip.hidden=false;tip.innerHTML=`<div class="nr-tooltip-date">${E(d.dates[i])} · 현지 종가 기준</div>${d.series.map((s,k)=>`<div class="nr-tooltip-row"><span><i class="nr-swatch" style="--series:${COLORS[k]}"></i>${E(s.name)}</span><b>${d.mode==='return'?P(s.returns[i]):money(s.prices[i],s.currency)}</b></div>`).join('')}`;$('#nr-chart-hit')?.setAttribute('aria-valuenow',i);$('#nr-chart-hit')?.setAttribute('aria-valuetext',d.dates[i]);}
 function bindChart(){const svg=$('#nr-price-svg'),hit=$('#nr-chart-hit');if(!svg||!chartView)return;const d=chartView;svg.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),v=(e.clientX-r.left)*d.W/r.width;setCursor(Math.round((v-d.L)/(d.W-d.L-d.R)*(d.dates.length-1)))});svg.addEventListener('pointerleave',()=>{$('#nr-tooltip').hidden=true;$('#nr-cross').setAttribute('visibility','hidden')});hit.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();let i=Number(hit.getAttribute('aria-valuenow'));i=e.key==='Home'?0:e.key==='End'?d.dates.length-1:i+(e.key==='ArrowRight'?1:-1);setCursor(i)})}
@@ -62,7 +68,9 @@ function normSymbol(v){return String(v||'').toUpperCase().replace(/\.(KS|KQ)$/,'
 function forecastOf(c,preferred='daily'){const key=normSymbol(c?.symbol),rs=data.direction?.records||[];return rs.find(r=>normSymbol(r.symbol)===key&&r.mode===preferred)||rs.find(r=>normSymbol(r.symbol)===key)||null}
 function forecastLabel(r){if(!r||r.status!=='research_prediction'||!r.probabilities)return{label:'예측 없음',prob:null,cls:'neutral'};const m={up:['상승',r.probabilities.up,'up'],flat:['횡보',r.probabilities.flat,'neutral'],down:['하락',r.probabilities.down,'down']}[r.direction]||['보류',null,'neutral'];return{label:m[0],prob:m[1],cls:m[2]}}
 function topResearch(n=6){return [...rows()].sort((a,b)=>(b.priority?.display_score??b.priority?.score??0)-(a.priority?.display_score??a.priority?.score??0)).slice(0,n)}
-function screenHead(title,sub,action=''){return `<div class="nr-screen-head"><div><h2>${E(title)}</h2><p>${E(sub)}</p></div>${action}</div>`}
+function screenHead(title,sub,action=''){
+ return `<div class="nr-screen-head rf-page-head"><div><div class="rf-breadcrumb"><button type="button" data-nr-screen="home">대시보드</button><span>›</span><span>${E(title)}</span></div><h2>${E(title)}</h2><p>${E(sub)}</p></div>${action}</div>`;
+}
 function homeQuick(){return `<div class="nr-home-actions">
 <button data-nr-screen="stocks">${I('search')}<span><b>AI 종목</b><small>연구용 후보 보기</small></span></button>
 <button data-nr-screen="monitor">${I('check')}<span><b>실시간 감시</b><small>연결·조건 확인</small></span></button>
@@ -75,7 +83,7 @@ function homeQuick(){return `<div class="nr-home-actions">
 function compactAlerts(){const seen=new Set(),items=[];for(const c of(data.events?.companies||[])){for(const e of(c.events||[])){const src=e.sources?.[0];if(!src?.url||seen.has(e.title))continue;seen.add(e.title);items.push({...e,name:c.name,source:src})}}items.sort((a,b)=>String(b.event_date).localeCompare(String(a.event_date)));return `<div class="nr-list-compact">${items.slice(0,4).map((e,i)=>`<article><span class="nr-list-num">${i+1}</span><div>${link(e.source.url,e.title,'')}<small>${E(e.name)} · ${E(e.event_date||'날짜 미확인')}</small></div></article>`).join('')||'<p class="nr-sub">저장된 기업 이슈가 없습니다.</p>'}</div>`}
 function homePicks(){return `<div class="nr-pick-grid">${topResearch(6).map(c=>{const f=forecastOf(c),x=forecastLabel(f),d=change(c);return `<button class="nr-pick-card" data-nr-detail="${E(c.symbol)}"><div><b>${E(c.name)}</b><small>${E(c.symbol)}</small></div><strong>${money(c.price,c.currency)}</strong><div class="nr-pick-bottom"><span class="${tone(d)}">${d===null?'—':P(d)}</span><em class="nr-signal ${x.cls}">${E(x.label)}${x.prob!==null?' '+F(x.prob*100,0)+'%':''}</em></div></button>`}).join('')}</div>`}
 
-let flowMarket='ALL',flowOnly='all';
+let flowMarket='ALL',flowOnly='all',flowDirection='all',flowRange='1M',flowLimit=15;
 function flowForecast(c) {
   if (!c) return null;
   const all=(data.direction?.records||[]).filter(r=>normSymbol(r.symbol)===normSymbol(c.symbol));
@@ -91,52 +99,52 @@ function flowState(f) {
   return {studied,expired,label:!studied?'예측 자료 없음':expired?'지난 예측 기록':f.mode==='intraday'?'장중 연구 신호':'일별 연구 신호'};
 }
 
-function flowCompanies() {
-  const pool=topResearch(Math.max(300,rows().length));
-  return pool.filter(c=>{
-    const matched=flowMarket==='ALL'||(window.RadarMarkets?.match?window.RadarMarkets.match(c,flowMarket):flowMarket===c.market);
-    if(!matched)return false;
-    if(flowOnly==='ai'&&!flowState(flowForecast(c)).studied)return false;
-    if(flowOnly==='star'&&!favorites.has(c.symbol))return false;
-    return !query||(c.name+' '+c.symbol).toLowerCase().includes(query.trim().toLowerCase());
-  });
+function flowCompanies(){
+ const pool=topResearch(Math.max(300,rows().length));
+ return pool.filter(c=>{
+  if(flowMarket!=='ALL'){
+   const match=window.RadarMarkets?.match;
+   if(typeof match==='function'){if(!match(c,flowMarket))return false}
+   else if(flowMarket==='KOSPI'){if(c.market!=='KR'||String(c.symbol).endsWith('.KQ'))return false}
+   else if(flowMarket==='KOSDAQ'){if(c.market!=='KR'||!String(c.symbol).endsWith('.KQ'))return false}
+   else if(flowMarket==='NASDAQ'){if(c.market!=='US')return false}
+   else if(flowMarket==='DOW')return false;
+  }
+  if(flowDirection==='star'&&!favorites.has(c.symbol))return false;
+  if(['up','down','flat'].includes(flowDirection)){
+   const f=flowForecast(c);
+   if(!flowState(f).studied||f.direction!==flowDirection)return false;
+  }
+  return !query||(c.name+' '+c.symbol).toLowerCase().includes(query.trim().toLowerCase());
+ });
 }
-
-function flowRows() {
-  const cs=flowCompanies();
-  if(!cs.length)return '<div class="rf-empty"><b>현재 조건에 맞는 종목이 없습니다.</b>시장·검색·신호 필터를 바꿔 확인하세요.</div>';
-  return cs.map(c=>{
-    const f=flowForecast(c),q=flowState(f),s=forecastLabel(f),delta=change(c);
-    const pill=q.studied?`<span class="rf-signal ${s.cls}">${E(s.label)} ${s.prob!==null?F(s.prob*100,0)+'%':''}</span>`:'<span class="rf-signal none">미산출</span>';
-    const market=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
-    return `<button type="button" class="rf-item ${String(c.symbol)===String(selected)?'active':''}" data-nr-select="${E(c.symbol)}" aria-label="${E(c.name)} 분석 선택">
-      <span class="rf-item-name"><strong>${E(c.name)}</strong><small>${E(c.symbol)} · ${E(market)}</small></span>
-      <span class="rf-item-price">${money(c.price,c.currency)}<small class="${tone(delta)}">${delta===null?'변화 미확인':P(delta)}</small></span>
-      ${pill}
-    </button>`;
-  }).join('');
+function flowRows(){
+ const all=flowCompanies(),cs=all.slice(0,flowLimit);
+ if(!cs.length)return '<div class="rf-empty"><b>조건에 맞는 종목이 없습니다.</b>시장·AI 방향 필터를 바꿔 보세요.</div>';
+ return cs.map((c,i)=>{
+  const f=flowForecast(c),st=flowState(f),signal=forecastLabel(f),delta=change(c);
+  const q=st.studied?`<span class="rf-signal ${signal.cls}">${signal.label} ${signal.prob===null?'':F(signal.prob*100,0)+'%'}</span><small class="rf-timing">${st.expired?'기간 종료':'연구용'}</small>`:`<span class="rf-signal none">미산출</span>`;
+  const market=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
+  return `<button type="button" class="rf-item ${String(c.symbol)===String(selected)?'active':''}" data-nr-select="${E(c.symbol)}" aria-pressed="${String(c.symbol)===String(selected)}" aria-label="${E(c.name)} 요약 보기">
+   <span class="rf-item-name"><strong><em class="rf-row-rank">${i+1}</em>${E(c.name)}</strong><small>${E(c.symbol)} · ${E(market)}</small></span>
+   <span class="rf-item-price">${money(c.price,c.currency)}<small class="${tone(delta)}">${delta===null?'변화 미확인':P(delta)}</small></span>
+   <span class="rf-item-signal">${q}</span>
+  </button>`;
+ }).join('');
 }
-
-function flowChart(c) {
-  const d=pointData([String(c.symbol)],'1M');
-  if(!d||!d.series[0]?.prices?.length)return '<div class="rf-chart-empty">일별 종가 차트를 확인할 수 없습니다.</div>';
-  const values=d.series[0].prices,W=480,H=124,L=8,R=8,T=10,B=15;
-  const low=Math.min(...values),high=Math.max(...values),pad=(high-low||Math.max(Math.abs(high)*.01,1))*.18;
-  const x=i=>L+i*(W-L-R)/Math.max(values.length-1,1);
-  const y=v=>T+(high+pad-v)*(H-B-T)/((high-low)+2*pad);
-  const points=values.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-  const first=values[0],last=values.at(-1),up=last>=first,stroke=up?'#d95d73':'#487fcc';
-  const area=`${L},${H-B} ${points} ${W-R},${H-B}`;
-  return `<svg class="rf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${E(c.name)}의 ${E(d.dates[0])}부터 ${E(d.dates.at(-1))}까지 실제 일별 종가">
-    <line x1="${L}" y1="32" x2="${W-R}" y2="32" stroke="#edf2f9" stroke-dasharray="3 4"/>
-    <line x1="${L}" y1="66" x2="${W-R}" y2="66" stroke="#edf2f9" stroke-dasharray="3 4"/>
-    <line x1="${L}" y1="100" x2="${W-R}" y2="100" stroke="#edf2f9" stroke-dasharray="3 4"/>
-    <polygon points="${area}" fill="${up?'#fff1f4':'#edf4ff'}" opacity=".8"/>
-    <polyline points="${points}" stroke="${stroke}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
-    <circle cx="${x(values.length-1)}" cy="${y(last)}" r="4" fill="${stroke}" stroke="#fff" stroke-width="2"/>
-  </svg><div class="rf-chart-labels"><span>${E(d.dates[0])}</span><span>1개월 · 확정 종가</span><span>${E(d.dates.at(-1))}</span></div>`;
+function flowChart(c){
+ const d=pointData([String(c.symbol)],flowRange);
+ if(!d||!d.series[0]?.prices?.length)return '<div class="rf-chart-empty">해당 기간의 실제 종가 이력이 없습니다.</div>';
+ const values=d.series[0].prices,W=620,H=180,L=8,R=14,T=12,B=18,low=Math.min(...values),high=Math.max(...values),pad=(high-low||Math.max(Math.abs(high)*.01,1))*.18;
+ const x=i=>L+i*(W-L-R)/Math.max(1,values.length-1),y=v=>T+(high+pad-v)*(H-B-T)/(high-low+2*pad);
+ const points=values.map((v,i)=>`${x(i).toFixed(2)},${y(v).toFixed(2)}`).join(' '),up=values.at(-1)>=values[0],stroke=up?'#e65a73':'#4280d6';
+ return `<svg class="rf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${E(c.name)} ${E(d.dates[0])}에서 ${E(d.dates.at(-1))}까지 확정된 일별 종가 추세">
+   ${[.2,.5,.8].map(k=>`<line x1="${L}" y1="${T+(H-B-T)*k}" x2="${W-R}" y2="${T+(H-B-T)*k}" stroke="#edf0f6" stroke-dasharray="4 4"/>`).join('')}
+   <polygon points="${L},${H-B} ${points} ${W-R},${H-B}" fill="${up?'#fff2f5':'#eaf2ff'}" opacity=".9"/>
+   <polyline points="${points}" fill="none" stroke="${stroke}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+   <circle cx="${x(values.length-1)}" cy="${y(values.at(-1))}" r="5" fill="${stroke}" stroke="white" stroke-width="3"/>
+  </svg><div class="rf-chart-labels"><span>${E(d.dates[0])}</span><span>실제 일별 종가</span><span>${E(d.dates.at(-1))}</span></div>`;
 }
-
 function flowReasonLines(c) {
   const k=caseOf(c),missing=Array.isArray(k?.missing)?k.missing:[],risk=Array.isArray(k?.risks)?k.risks:[];
   const textValue=x=>typeof x==='string'?x:x?.text||x?.label||x?.reason||'';
@@ -148,93 +156,133 @@ function flowReasonLines(c) {
   return out.slice(0,4);
 }
 
-function flowFocus() {
-  const c=current();
-  if(!c)return '<section class="rf-panel"><div class="rf-empty">종목 원자료를 불러오는 중입니다.</div></section>';
-  const f=flowForecast(c),s=forecastLabel(f),q=flowState(f),p=f?.probabilities||{},chg=change(c);
-  const bars=[['상승',p.up,'up'],['횡보',p.flat,'flat'],['하락',p.down,'down']].map(([label,value,type])=>
-    `<div class="rf-prob-row"><span>${label}</span><span class="rf-bar"><i class="${type}" style="--pct:${N(value)===null?0:Math.max(0,Math.min(100,value*100))}%"></i></span><b>${N(value)===null?'—':F(value*100,1)+'%'}</b></div>`).join('');
-  const why=flowReasonLines(c).slice(0,2);
-  return `<section class="rf-panel" aria-label="선택 종목 분석">
-    <div class="rf-focus-header">
-      <div class="rf-focus-title"><small>선택 종목 · ${E(window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market)}</small>
-        <strong>${E(c.name)}</strong><span>${E(c.symbol)} · ${E(c.sector||'업종 미확인')}</span>
-      </div>
-      <div class="rf-focus-actions">
-        <button type="button" data-nr-star="${E(c.symbol)}" class="rf-iconbtn ${favorites.has(c.symbol)?'on':''}" aria-label="${favorites.has(c.symbol)?'관심 해제':'관심 등록'}" title="관심 종목">${I('star')}</button>
-        <button type="button" data-nr-detail="${E(c.symbol)}" class="rf-iconbtn" aria-label="전체 상세 분석 열기" title="상세 분석">${I('arrow')}</button>
-      </div>
+function flowFocus(){
+ const c=current();
+ if(!c)return '<section class="rf-panel rf-focus-panel"><div class="rf-empty"><b>불러오는 중</b>자료를 확인하고 있습니다.</div></section>';
+ const f=flowForecast(c),st=flowState(f),prediction=forecastLabel(f),p=f?.probabilities||{},delta=change(c),tar=c.targets||{};
+ const bars=[["상승",p.up,"up"],["횡보",p.flat,"flat"],["하락",p.down,"down"]].map(([n,v,k])=>`<div class="rf-prob-row"><span>${n}</span><span class="rf-bar"><i class="${k}" style="--pct:${N(v)===null?0:Math.min(100,Math.max(0,v*100))}%"></i></span><b>${N(v)===null?'—':F(v*100,1)+'%'}</b></div>`).join('');
+ const scenarios=[["상단",tar.high,"up"],["중앙",tar.median,"mid"],["하단",tar.low,"down"]].map(([n,v,k])=>`<div class="rf-target ${k}"><span>${n}</span><strong>${N(v)===null?'—':money(v,c.currency)}</strong></div>`).join('');
+ return `<section class="rf-panel rf-focus-panel" aria-label="선택 종목 한눈에">
+   <div class="rf-focus-header"><div class="rf-focus-title"><small><span class="rf-circle-tag">2</span> 선택 종목 분석 <span class="rf-inline-venue">${E(window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market)}</span></small><strong>${E(c.name)} <span>${E(c.symbol)}</span></strong></div>
+    <div class="rf-focus-actions"><button type="button" class="rf-iconbtn ${favorites.has(c.symbol)?'on':''}" data-nr-star="${E(c.symbol)}" title="관심 등록 / 해제" aria-label="관심 등록 / 해제" aria-pressed="${favorites.has(c.symbol)}">${I('star')}</button><button class="rf-detail-btn" data-nr-detail="${E(c.symbol)}">상세 분석 ${I('arrow')}</button></div></div>
+   <div class="rf-price-line"><strong>${money(c.price,c.currency)}</strong><span class="${tone(delta)}">${delta===null?'등락 미확인':P(delta)}</span><small>저장 종가 · ${E(c.price_session||'기준일 미확인')}</small></div>
+   <div class="rf-analysis-split">
+    <div class="rf-chart-area"><div class="rf-box-cap"><b>가격 흐름</b><div class="rf-periods">${[['1W','1주'],['1M','1개월'],['3M','3개월'],['6M','6개월']].map(([v,t])=>`<button data-rf-range="${v}" type="button" class="${flowRange===v?'active':''}">${t}</button>`).join('')}</div></div><div class="rf-chart-wrap">${flowChart(c)}</div></div>
+    <div class="rf-ai-area"><div class="rf-box-cap"><b>AI 방향 신호</b><span class="rf-ai-tag">연구용</span></div>
+      <div class="rf-model-top">${st.studied?`<span class="rf-signal ${prediction.cls}">${prediction.label}</span><strong>${F(prediction.prob*100,1)}%</strong>`:'<strong>신호 미산출</strong>'}<small>${E(st.label)}</small></div>
+      ${st.studied?bars:'<div class="rf-chart-empty">이 종목의 방향 분포가 없습니다.</div>'}
+      <p class="rf-disclosure">※ 모델의 분류 확률이며 상승 수익률·매수 성공률이 아닙니다.${st.expired?' 종료된 목표 구간의 과거 예측입니다.':''}</p>
     </div>
-    <div class="rf-price-line"><strong>${money(c.price,c.currency)}</strong><span class="${tone(chg)}">${chg===null?'등락 미확인':P(chg)}</span><small>${E(c.price_session||'기준일 미확인')} 저장 종가</small></div>
-    <div class="rf-chart-wrap">${flowChart(c)}</div>
-    <div class="rf-ai-box">
-      <div class="rf-ai-head"><div><b>AI 방향 분석</b><small> · ${q.studied?(f.mode==='intraday'?'장중 30분 연구':'일별 연구'):'신호 미발행'}</small></div><span class="rf-ai-status ${q.expired?'aged':''}">${E(q.label)}</span></div>
-      ${q.studied?bars:'<div class="rf-empty" style="padding:9px">해당 종목의 검증 가능한 연구용 방향 분포가 없습니다.</div>'}
-      <p class="rf-ai-note">${q.studied?`연구 모델 최댓값은 ${E(s.label)} ${F(s.prob*100,1)}%입니다. `:''}${q.expired?'목표 구간이 끝난 과거 기록입니다. ':'추천·실현 확률이 아니며, 실거래 수익성은 검증되지 않았습니다.'}</p>
-      <p class="rf-ai-note">예측 발행 ${E(T(f?.issued_at))} · 목표 종료 ${E(f?.target?.end?T(f.target.end):'확인 전')}</p>
-    </div>
-    <div class="rf-takeaway"><h4>이 기업에서 우선 확인할 점</h4>${why.map(x=>`<div class="rf-takeaway-item"><i></i><span>${E(x)}</span></div>`).join('')}</div>
-    <div class="rf-focus-footer">
-      <button type="button" class="rf-primary" data-nr-detail="${E(c.symbol)}">${I('search')} 상세 기업 분석</button>
-      <button type="button" class="rf-outline" data-nr-screen="scenario">${I('chart')} 시나리오</button>
-    </div>
-  </section>`;
+   </div>
+   <div class="rf-scenario-preview"><div class="rf-scenario-header"><b><span class="rf-circle-tag">3</span> 가격 시나리오</b><small>애널리스트 목표가 범위 · AI와 별도</small><button type="button" data-nr-screen="scenario">자세히 ${I('arrow')}</button></div><div class="rf-targets">${scenarios}</div></div>
+   <div class="rf-focus-footer"><button type="button" class="rf-primary" data-nr-detail="${E(c.symbol)}">${I('search')} 기업 자세히 보기</button><button type="button" class="rf-outline" data-nr-screen="scenario">${I('chart')} 시나리오 분석</button></div>
+ </section>`;
+}
+function flowRisk(){
+ const c=current();if(!c)return '<div class="rf-empty">선택 종목이 없습니다.</div>';
+ const k=caseOf(c),risk=flowReasonLines(c);
+ const stateLabel={attractive:'엄격 검증 통과',conditional:'검증 과제 남음',price_wait:'가격 조건 대기',avoid:'위험 요인 검토',insufficient:'자료 보강 필요'};
+ const summary=k?stateLabel[k.state]||'실사 자료 확인 필요':'실사와 가격 자료의 시점 일치 확인 전';
+ return `<div class="rf-risks">
+  <div class="rf-risk featured"><span class="rf-risk-mark">!</span><span><b>${E(summary)}</b><small>실사 검증은 AI 방향 예측과 별도입니다.</small></span></div>
+  ${risk.slice(0,2).map(v=>`<div class="rf-risk"><span class="rf-risk-mark subtle">·</span><span><small>${E(v)}</small></span></div>`).join('')}
+ </div><p class="rf-source-note">${E(c.price_session||'가격 기준일 미확인')} 기준 · 출처와 최신 공시는 상세 화면에서 확인</p>`;
+}
+function flowNav(){
+ const items=[["home","홈","home"],["stocks","AI 종목","search"],["stockdetail","종목 분석","chart"],["monitor","감시","check"],["scenario","시나리오","chart"],["portfolio","내 종목","star"],["news","뉴스","news"],["performance","성과 검증","check"]];
+ const date=data.raw?.generated_at?T(data.raw.generated_at):'자료 확인 중';
+ const live=!!(data.toss?.enabled&&data.toss?.api_base);
+ return `<header class="rf-global">
+  <div class="rf-global-brand"><div class="rf-brandname"><span class="rf-brand-emblem">${I('chart')}</span><strong>투자 레이더</strong><span class="rf-brand-tag">AI RESEARCH</span></div>
+  <div class="rf-global-status"><span>저장 자료 · ${E(date)}</span><span class="rf-connection ${live?'configured':''}">${live?'조회 서버 설정됨 · 실시간 별도 확인':'실시간 시세 미연결'}</span><button type="button" data-nr-screen="settings" aria-label="설정">${I('settings')}</button></div></div>
+  <nav class="rf-topnav" aria-label="투자 레이더 기능">${items.map(([v,t,icon])=>`<button type="button" data-nr-screen="${v}" class="${screen===v?'active':''}" aria-current="${screen===v?'page':'false'}">${I(icon)}<span>${t}</span></button>`).join('')}</nav>
+ </header>`;
 }
 
-function flowRisk() {
-  const c=current();
-  if(!c)return '<div class="rf-empty">종목을 선택하면 체크 항목을 표시합니다.</div>';
-  const k=caseOf(c),risk=flowReasonLines(c),items=[];
-  items.push({label:'공식 검증 · 실사',value:k?.state?String(k.state):'동일 시점 실사 상태 확인 전',ok:false});
-  for(const x of risk.slice(0,3))items.push({label:'확인 항목',value:x,ok:false});
-  return `<div class="rf-risks">${items.map(item=>`<div class="rf-risk"><span class="rf-risk-mark ${item.ok?'ok':''}">${item.ok?'✓':'!'}</span><span><b>${E(item.label)}</b><small>${E(item.value)}</small></span></div>`).join('')}</div>
-    <p class="rf-source-note">${k?'데이터 스냅샷 일치 확인 · 실사 결과는 상세 자료 참고':'실사와 가격 데이터의 시점 일치가 확인되지 않아 보수적으로 표시합니다.'}</p>`;
+function flowSignalsTop(){
+ const research=rows().filter(c=>flowState(flowForecast(c)).studied).length;
+ const strict=data.greenReview?.version==='strict-green-1.0'?data.greenReview?.companies?.filter(c=>c?.green_eligible===true).length:null;
+ const o=data.learning?.overall||{},n=N(o.samples),good=N(o.correct);
+ return `<div class="rf-status-row" aria-label="핵심 운영 상태">
+  <button type="button" data-nr-screen="stocks"><span class="rf-status-icon blue">${I('search')}</span><span>분석 대상 <strong>${rows().length?F(rows().length,0)+'개':'확인 중'}</strong></span><small>종목 목록 보기 ${I('arrow')}</small></button>
+  <button type="button" data-nr-screen="stocks" data-rf-nav-ai="1"><span class="rf-status-icon violet">${I('chart')}</span><span>AI 분포 산출 <strong>${F(research,0)}개</strong></span><small>연구 신호만 ${I('arrow')}</small></button>
+  <button type="button" data-nr-view="discover"><span class="rf-status-icon yellow">${I('check')}</span><span>엄격 검증 통과 <strong>${strict===null?'확인 전':F(strict,0)+'개'}</strong></span><small>공식 자료 점검 ${I('arrow')}</small></button>
+  <button type="button" data-nr-screen="performance"><span class="rf-status-icon coral">${I('check')}</span><span>예측 검증 <strong>${n===null||good===null?'평가 전':F(good,0)+' / '+F(n,0)}</strong></span><small>실전 효용 미입증 ${I('arrow')}</small></button>
+ </div>`;
 }
 
-function renderFlowHome() {
-  const o=data.learning?.overall||{},n=N(o.samples),acc=N(o.accuracy),correct=N(o.correct);
-  const live=!!(data.toss?.enabled&&data.toss?.api_base);
-  const total=flowCompanies().length;
-  return `<div class="rf-shell">
-    <div class="rf-titlebar">
-      <div class="rf-title-text"><span class="rf-title-mark">${I('chart')}</span><div><h2>투자 레이더 <span style="color:#6180ad;font-size:13px;font-weight:700">통합 대시보드</span></h2><p>한 화면에서 시장 → AI 신호 → 기업 근거 → 위험 → 검증을 연결합니다.</p></div></div>
-      <div class="rf-title-meta"><span class="rf-meta-pill">자료 ${E(T(data.raw?.generated_at))}</span><span class="rf-meta-pill warn"><i class="rf-meta-dot"></i>${live?'조회 서버 설정됨 · 실시간 확인 별도':'실시간 감시 미연결 · 저장 자료'}</span></div>
-    </div>
-    <div class="rf-markets"><div class="nr-market-grid" aria-label="시장 지수 4개">${indices()}</div></div>
-    <div class="rf-work">
-      <section class="rf-panel" aria-label="AI 신호 종목 목록">
-        <div class="rf-panel-heading"><div><h3>AI 분석 신호 · 종목 탐색</h3><p>먼저 고른 종목이 오른쪽에서 즉시 분석됩니다.</p></div><span class="rf-heading-chip" id="rf-count">${total}개</span></div>
-        <div class="rf-filterbars">
-          <div class="rf-segments" aria-label="상장시장 필터">${[['ALL','전체'],['KOSPI','코스피'],['KOSDAQ','코스닥'],['NASDAQ','나스닥'],['DOW','다우']].map(([v,label])=>`<button type="button" data-rf-market="${v}" aria-pressed="${flowMarket===v}" class="${flowMarket===v?'active':''}">${label}</button>`).join('')}</div>
-          <div class="rf-segments secondary" aria-label="신호 필터">${[['all','전체 후보'],['ai','AI 산출'],['star','★ 관심']].map(([v,label])=>`<button type="button" data-rf-only="${v}" aria-pressed="${flowOnly===v}" class="${flowOnly===v?'active':''}">${label}</button>`).join('')}</div>
-          <label class="rf-search">${I('search')}<input id="nr-search" type="search" value="${E(query)}" placeholder="종목명 · 코드 검색" aria-label="종목 찾기"></label>
-        </div>
-        <div class="rf-list-head"><span>기업명 · 분류</span><span>저장 종가</span><span>AI 연구 분포</span></div>
-        <div class="rf-list" id="rf-list">${flowRows()}</div>
-        <div class="rf-list-foot"><span>신호값은 예측 분포이며 매수 확률이 아닙니다.</span><button data-nr-screen="stocks">전체 분석 보기 ${I('arrow')}</button></div>
-      </section>
-      ${flowFocus()}
-      <aside class="rf-aside">
-        <section class="rf-side-card" aria-label="기업 투자 체크"><div class="rf-side-head"><div><h3>투자 판단 체크</h3><p class="rf-sub">선택 기업의 확인이 필요한 근거</p></div><button type="button" data-nr-detail="${E(current()?.symbol||'')}">전체 보기</button></div>${flowRisk()}</section>
-        <section class="rf-side-card" aria-label="시장 이슈"><div class="rf-side-head"><div><h3>뉴스 & 주요 이슈</h3><p class="rf-sub">출처가 연결된 저장 이벤트</p></div><button data-nr-screen="news">전체</button></div><div class="rf-event-feed">${compactAlerts()}</div></section>
-        <section class="rf-validation" aria-label="AI 예측 성과 검증"><div><small>AI 사후검증 · 독립 평가 표본</small><b>${n===null||acc===null?'검증 대기':F(acc*100,1)+'%'} <span style="font-size:11px;color:#7d8ba0;font-weight:650">${n===null?'':F(correct,0)+'/'+F(n,0)+'건'}</span></b></div><div style="text-align:right"><em>유용성 미입증</em><br><button type="button" data-nr-screen="performance">검증 상세 ${I('arrow')}</button></div></section>
-      </aside>
-    </div>
-    <div class="rf-bottom"><div class="rf-process"><span>① 종목 탐색</span>${I('arrow')}<span>② AI·가격 분석</span>${I('arrow')}<span>③ 위험 확인</span>${I('arrow')}<span>④ 시나리오·검증</span></div><div class="rf-links"><button data-nr-screen="monitor">감시 상태</button><button data-nr-screen="scenario">시나리오</button><button data-nr-screen="performance">예측 검증</button><button data-nr-screen="portfolio">관심·모의투자</button></div></div>
-  </div>`;
+function flowControls(){
+ const markets=[["ALL","전체"],["KOSPI","코스피"],["KOSDAQ","코스닥"],["NASDAQ","나스닥"],["DOW","다우"]];
+ const dirs=[["all","전체"],["up","상승"],["down","하락"],["flat","횡보"],["star","관심"]];
+ return `<div class="rf-filterbars">
+   <div class="rf-segments" aria-label="시장 선택">${markets.map(([v,t])=>`<button type="button" data-rf-market="${v}" class="${flowMarket===v?'active':''}" aria-pressed="${flowMarket===v}">${t}</button>`).join('')}</div>
+   <div class="rf-filter-sub"><div class="rf-segments secondary" aria-label="AI 연구 방향 필터">${dirs.map(([v,t])=>`<button type="button" data-rf-direction="${v}" class="${flowDirection===v?'active':''}" aria-pressed="${flowDirection===v}">${t}</button>`).join('')}</div><span class="rf-help-inline">AI 분류 기준</span></div>
+   <label class="rf-search">${I('search')}<input id="nr-search" type="search" value="${E(query)}" placeholder="종목명 또는 코드 검색" aria-label="종목명 또는 코드 검색"></label>
+ </div>`;
 }
 
+function flowListPanel(){
+ const count=flowCompanies().length;
+ return `<section class="rf-panel rf-stock-panel" aria-label="종목 및 AI 신호 목록">
+  <div class="rf-panel-heading"><div><h3><span class="rf-circle-tag">1</span> AI 종목 신호</h3><p>종목을 누르면 옆에 분석이 바로 표시됩니다.</p></div><span class="rf-heading-chip" id="rf-count">${count}개</span></div>
+  ${flowControls()}
+  <div class="rf-list-head"><span>기업명 / 시장</span><span>저장 종가</span><span>AI 연구 방향</span></div>
+  <div class="rf-list" id="rf-list">${flowRows()}</div>
+  <div class="rf-list-foot"><span>${Math.min(count,flowLimit)} / ${count}개 표시 · 실시간 가격 아님</span>${count>flowLimit?'<button type="button" data-rf-more>더 보기 +</button>':'<button type="button" data-nr-screen="stocks">목록 화면 보기 ↗</button>'}</div>
+ </section>`;
+}
+
+function renderCompanyDetail(){
+ const c=current();if(!c)return screenHead('종목 상세','먼저 종목을 선택해 주세요.');
+ const k=caseOf(c),official=c.sources?.official, f=flowForecast(c),t=c.targets||{};
+ const facts=[['다음 회계연도 예상 PER',N(c.forecasts?.next_fy_pe)===null?'자료 없음':F(c.forecasts.next_fy_pe,1)+'배'],['EPS 30일 수정',P(c.forecasts?.eps_revision30_pct)],['평균 거래량 대비',N(c.technical?.volume_ratio)===null?'자료 없음':F(c.technical.volume_ratio,2)+'배'],['AI 예측 발행',f?.issued_at?T(f.issued_at):'신호 없음'],['현지 종가 기준일',c.price_session||'미확인'],['실사 근거',k?'자료 시점 일치':'최신 원자료 대조 필요']];
+ return screenHead('종목 상세 분석',`${c.name} · AI, 가격 흐름, 실사 근거를 따로 확인하세요.`,`<button class="nr-action" data-nr-view="detail">재무 심층 분석 ${I('arrow')}</button>`)+
+ `<div class="rf-detail-grid">${flowFocus()}<section class="rf-panel rf-detail-facts"><div class="rf-panel-heading"><div><h3>투자 판단 기본 지표</h3><p>값이 없다면 추정하여 채우지 않습니다.</p></div></div><div class="rf-fact-grid">${facts.map(([l,v])=>`<div><small>${E(l)}</small><strong>${E(v)}</strong></div>`).join('')}</div><div class="rf-detail-risks"><h3>반드시 확인할 위험</h3>${flowRisk()}</div><div class="rf-detail-actions">${validURL(official)?link(official,'기업 원문','rf-outline'):'<p>공식 원문 URL은 상세 자료에서 확인해야 합니다.</p>'}<button class="rf-primary" data-nr-view="detail">재무제표·사업·공시 심층 보기 ${I('arrow')}</button></div></section></div>`;
+}
+
+function flowSignalDetail(c){
+ const f=flowForecast(c),st=flowState(f),p=f?.probabilities||{},sig=forecastLabel(f);
+ return `<div class="rf-big-signal">${st.studied?`<span class="rf-signal ${sig.cls}">${E(sig.label)}</span><strong>${F(sig.prob*100,1)}%</strong>`:'<strong>방향 자료 미산출</strong>'}<small>${E(st.label)}</small></div><div class="rf-prob-block">${st.studied?[['상승',p.up,'up'],['횡보',p.flat,'flat'],['하락',p.down,'down']].map(([l,n,cls])=>`<div class="rf-prob-row"><span>${l}</span><span class="rf-bar"><i class="${cls}" style="--pct:${N(n)===null?0:Math.min(100,Math.max(0,n*100))}%"></i></span><b>${N(n)===null?'—':F(n*100,1)+'%'}</b></div>`).join(''):'<p>유효한 연구 분포가 없습니다.</p>'}</div>
+ <p class="rf-small-source">발행: ${E(f?.issued_at?T(f.issued_at):'미확인')} / 목표 종료: ${E(f?.target?.end?T(f.target.end):'미확인')}</p>`;
+}
+
+function renderFlowHome(){
+ const o=data.learning?.overall||{},n=N(o.samples),correct=N(o.correct),acc=N(o.accuracy),c=current();
+ return `<div class="rf-shell rf-home">
+  <div class="rf-section-title"><div><h2>오늘의 시장 한눈에 <span class="rf-title-note">시장 → 종목 → AI → 검증</span></h2><p>종목을 고르고, AI 방향과 실제 근거를 함께 확인하세요.</p></div><button type="button" data-nr-screen="monitor">감시 상태 ${I('arrow')}</button></div>
+  <div class="rf-markets"><div class="nr-market-grid" aria-label="코스피 코스닥 나스닥 S&P500">${indices()}</div></div>
+  ${flowSignalsTop()}
+  <div class="rf-work">${flowListPanel()}${flowFocus()}</div>
+  <div class="rf-bottom-grid">
+   <section class="rf-side-card"><div class="rf-side-head"><div><h3><span class="rf-circle-tag">4</span> ${E(c?.name||'선택 종목')} 투자 체크</h3><p class="rf-sub">지금 확인해야 할 핵심 조건</p></div><button type="button" data-nr-detail="${E(c?.symbol||'')}">더보기 ${I('arrow')}</button></div>${flowRisk()}</section>
+   <section class="rf-side-card"><div class="rf-side-head"><div><h3>오늘 주요 이슈</h3><p class="rf-sub">출처 확인된 기업 이벤트</p></div><button data-nr-screen="news">뉴스 보기 ${I('arrow')}</button></div><div class="rf-event-feed">${compactAlerts()}</div></section>
+   <section class="rf-side-card rf-verify-card"><div class="rf-side-head"><div><h3>AI 예측 사후검증</h3><p class="rf-sub">실제 결과와 비교한 기록</p></div><button data-nr-screen="performance">전체 보기 ${I('arrow')}</button></div>
+     <div class="rf-score"><div><small>검증 일치율</small><strong>${acc===null?'—':F(acc*100,1)+'%'}</strong></div><div><small>일치 / 평가 표본</small><strong>${correct===null||n===null?'—':F(correct,0)+' / '+F(n,0)}</strong></div></div>
+     <div class="rf-truth-note"><span>!</span>실거래 타이밍·수익성은 아직 입증되지 않았습니다.</div>
+   </section>
+  </div>
+ </div>`;
+}
 function renderHome() { return renderFlowHome(); }
 function monitorRows(){const list=[...rows()].sort((a,b)=>Math.abs(b.technical?.return20_pct||0)-Math.abs(a.technical?.return20_pct||0)).slice(0,10);return `<div class="nr-monitor-list">${list.map(c=>{const d=change(c);return `<button data-nr-detail="${E(c.symbol)}"><span>${E(c.name)}<small>${E(c.symbol)}</small></span><b>${money(c.price,c.currency)}</b><em class="${tone(d)}">${d===null?'기준 종가':P(d)}</em></button>`}).join('')}</div>`}
 function renderMonitor(){const live=!!(data.toss?.enabled&&data.toss?.api_base);return screenHead('실시간 감시','가격 움직임과 조건 변화를 보는 화면입니다.')+
 `<div class="nr-status-banner ${live?'ok':'warn'}"><b>${live?'토스 조회 연결 설정됨':'실시간 시세 연결 전'}</b><span>${live?'서버 응답 상태는 별도 확인이 필요합니다.':'현재는 저장된 종가·연구자료만 표시하며 실시간처럼 꾸미지 않습니다.'}</span><button data-nr-screen="settings">연결 설정</button></div>`+
 `<div class="nr-screen-grid"><section class="nr-panel"><div class="nr-head"><h3>감시 종목</h3><span class="nr-sub">저장 종가 기준</span></div>${monitorRows()}</section><section class="nr-panel"><div class="nr-head"><h3>관심 종목</h3><span class="nr-sub">${favorites.size}개</span></div>${watchTable()}</section></div>`}
 function stocksRows(){const list=topResearch(12);return `<div class="nr-stock-list">${list.map((c,i)=>{const f=forecastOf(c),x=forecastLabel(f),k=caseOf(c);return `<button data-nr-detail="${E(c.symbol)}"><span class="nr-rank">${i+1}</span><span class="nr-stock-name"><b>${E(c.name)}</b><small>${E(c.symbol)} · ${E(c.sector||c.market)}</small></span><span class="nr-stock-price">${money(c.price,c.currency)}</span><span class="nr-signal ${x.cls}">${E(x.label)}${x.prob!==null?' '+F(x.prob*100,0)+'%':''}</span><span class="nr-stock-state">${k?E(k.state||'실사 확인'):'스냅샷 확인'}</span></button>`}).join('')}</div>`}
-function renderStocks(){return screenHead('종목 리스트 & 신호 요약','AI 방향예측과 기업 실사 상태를 한 줄에서 비교합니다.')+
-`<section class="nr-panel"><div class="nr-screen-tabs"><span class="active">AI 관찰</span><span>강한 상승</span><span>상승 가능</span><span>주의</span><span>관심</span></div>${stocksRows()}<p class="nr-small-note">방향확률은 연구용 가격모델의 분포이며 매수 확률이 아닙니다. 엄격 실사와 별개입니다.</p></section>`}
+function renderStocks(){
+ const count=flowCompanies().length;
+ return screenHead('AI 종목 신호','종목·시장·모델 방향을 필터로 비교합니다. 상승은 매수 추천이 아닙니다.')+
+  `<div class="rf-work rf-stocks-work">${flowListPanel()}${flowFocus()}</div><div class="rf-page-note"><b>표시 기준</b> 신호가 발행된 시점과 실제 거래 가능 시점은 다릅니다. 목표 구간이 끝난 기록을 현재 매매 신호로 사용하지 마세요.</div>`;
+}
 function scenarioLine(values){const W=520,H=180,L=42,R=20,T=15,B=25,all=values.flatMap(x=>x.v),lo=Math.min(...all),hi=Math.max(...all),pad=(hi-lo||1)*.12,x=i=>L+i*(W-L-R)/4,y=v=>T+(hi+pad-v)*(H-B-T)/(hi-lo+2*pad||1);return `<svg viewBox="0 0 ${W} ${H}" class="nr-scenario-chart">${values.map((s,k)=>`<polyline points="${s.v.map((v,i)=>x(i)+','+y(v)).join(' ')}" fill="none" stroke="${['#df5661','#3475c4','#3a9b73'][k]}" stroke-width="2"/>`).join('')}</svg>`}
-function renderScenario(){const c=current();if(!c)return screenHead('시나리오 분석','종목을 먼저 선택해 주세요.');const f=forecastOf(c),x=forecastLabel(f),p=f?.probabilities||{},t=c.targets||{},cur=N(c.price)||0,high=N(t.high)??cur,mid=N(t.median)??cur,low=N(t.low)??cur,series=[{v:[cur,cur+(high-cur)*.25,cur+(high-cur)*.5,cur+(high-cur)*.75,high]},{v:[cur,cur+(mid-cur)*.25,cur+(mid-cur)*.5,cur+(mid-cur)*.75,mid]},{v:[cur,cur+(low-cur)*.25,cur+(low-cur)*.5,cur+(low-cur)*.75,low]}];const k=caseOf(c),checks=[...(k?.missing||[]),...(k?.risks||[]).map(r=>r.text||r)].filter(Boolean).slice(0,5);return screenHead('시나리오 분석',c.name+' · AI 단기 방향과 애널리스트 목표가 분포를 분리해서 봅니다.',`<button class="nr-link" data-nr-detail="${E(c.symbol)}">종목 상세 ${I('arrow')}</button>`)+
-`<div class="nr-screen-grid scenario"><section class="nr-panel"><div class="nr-head"><h3>가격 시나리오</h3><span class="nr-sub">목표가 분포 · AI 확률과 별개</span></div>${scenarioLine(series)}<div class="nr-scenario-cards"><div class="up"><b>낙관</b><strong>${money(high,c.currency)}</strong><small>애널리스트 상단</small></div><div class="base"><b>기준</b><strong>${money(mid,c.currency)}</strong><small>목표가 중앙값</small></div><div class="down"><b>비관</b><strong>${money(low,c.currency)}</strong><small>애널리스트 하단</small></div></div></section><section class="nr-panel"><div class="nr-head"><h3>AI 단기 방향</h3><span class="nr-signal ${x.cls}">${E(x.label)}</span></div><div class="nr-prob-bars">${[['상승',p.up,'up'],['횡보',p.flat,'neutral'],['하락',p.down,'down']].map(([n,v,cl])=>`<div><span>${n}</span><b>${N(v)===null?'—':F(v*100,1)+'%'}</b><i class="${cl}" style="--w:${N(v)===null?0:v*100}%"></i></div>`).join('')}</div><div class="nr-checkpoints"><h4>핵심 체크 포인트</h4>${checks.map((v,i)=>`<p><span>${i+1}</span>${E(v)}</p>`).join('')||'<p>현재 저장된 실사 체크포인트가 없습니다.</p>'}</div><p class="nr-small-note">AI 방향확률과 목표가 상·중·하단은 서로 다른 자료입니다. 결합해 목표수익률로 해석하지 않습니다.</p></section></div>`}
+function renderScenario(){
+ const c=current();if(!c)return screenHead('가격 시나리오','기업을 먼저 선택해 주세요.');
+ const t=c.targets||{},vals=[['낙관 상단',t.high,'up'],['기준 중앙',t.median,'mid'],['비관 하단',t.low,'down']];
+ const v=vals.filter(x=>N(x[1])!==null).map(x=>x[1]),vmin=Math.min(...v),vmax=Math.max(...v),valid=v.length>=2&&vmax>vmin;
+ return screenHead('가격 시나리오',`${c.name} · 애널리스트 목표가의 범위와 AI 단기 방향을 혼동하지 않도록 분리했습니다.`,`<button class="nr-action" data-nr-detail="${E(c.symbol)}">종목 상세 ${I('arrow')}</button>`)+
+ `<div class="rf-scenario-layout"><section class="rf-panel rf-scenario-main"><div class="rf-panel-heading"><div><h3>${E(c.name)} 목표가 구간 비교</h3><p>위아래 범위만 표현합니다. 미래 가격 궤적이 아닙니다.</p></div></div><div class="rf-big-targets">${vals.map(([l,n,cl])=>`<div class="${cl}"><span>${l}</span><strong>${N(n)===null?'확인 전':money(n,c.currency)}</strong>${N(n)!==null&&valid?`<span class="rf-target-meter"><i style="width:${Math.max(3,((n-vmin)/(vmax-vmin))*100)}%"></i></span>`:''}</div>`).join('')}</div><p class="rf-small-source">기준 저장 종가: ${money(c.price,c.currency)} (${E(c.price_session||'기준 미확인')}). 목표가 기간·집계 기준과 애널리스트 출처는 심층 자료에서 확인하세요.</p></section>
+ <section class="rf-panel rf-scenario-ai"><div class="rf-panel-heading"><div><h3>AI 단기 방향 · 별도 연구</h3><p>목표가 구간에 합산하지 않습니다.</p></div></div>${flowSignalDetail(c)}<div class="rf-scenario-caution">실거래 매수 시점과 수익성은 미검증입니다. 종목별 발행·목표 종료일을 확인하세요.</div></section></div>`;
+}
 function renderPortfolio(){return screenHead('포트폴리오 & 모의투자','실계좌 연결과 연습계좌를 분리합니다.')+
 `<div class="nr-screen-grid"><section class="nr-panel"><div class="nr-head"><h3>내 포트폴리오</h3><span class="nr-badge warn">미연결</span></div><div class="nr-empty-big"><b>실계좌 잔고를 불러오지 않습니다.</b><p>토스 읽기 전용 연결이 실제로 구성되기 전에는 보유금액·수익률을 만들지 않습니다.</p><button class="nr-action" data-nr-screen="settings">연결 상태 보기</button></div></section><section class="nr-panel"><div class="nr-head"><h3>모의투자</h3><span class="nr-sub">연습용</span></div><div class="nr-empty-big"><b>실제 돈 없이 판단을 연습합니다.</b><p>실제 레이더의 검증 상태와 모의매매 성과를 섞지 않습니다.</p><a class="nr-action primary" href="./stock-paper-investing.html" target="_blank" rel="noopener">모의투자 열기</a></div></section></div><section class="nr-panel" style="margin-top:12px"><div class="nr-head"><h3>내 관심 종목</h3><span class="nr-sub">${favorites.size}개</span></div>${watchTable()}</section>`}
 function renderNews(){return screenHead('뉴스 & 경제 브리핑','기업 이슈·실적 일정·금리·환율을 한 화면에 묶었습니다.',`<a class="nr-action" href="./news-link-hub-v3.html" target="_blank" rel="noopener">뉴스 허브 열기</a>`)+`<div class="nr-news-grid"><section class="nr-panel">${eventsHTML()}</section><section class="nr-panel">${calendarHTML()}</section><section class="nr-panel wide">${macroHTML()}</section></div>`}
@@ -242,14 +290,32 @@ function renderPerformance(){const o=data.learning?.overall||{},r=o.recall||{};r
 `<div class="nr-performance-grid"><section class="nr-panel"><small>전체 평가</small><strong>${F(o.correct,0)} / ${F(o.samples,0)}</strong><p>정답 / 평가 표본</p></section><section class="nr-panel"><small>상승 포착</small><strong>${N(r.up)===null?'—':F(r.up*100,1)+'%'}</strong><p>실제 상승 중 맞춘 비율</p></section><section class="nr-panel"><small>하락 포착</small><strong>${N(r.down)===null?'—':F(r.down*100,1)+'%'}</strong><p>실제 하락 중 맞춘 비율</p></section><section class="nr-panel"><small>균형 정확도</small><strong>${N(o.balanced_accuracy)===null?'—':F(o.balanced_accuracy*100,1)+'%'}</strong><p>방향별 불균형 보정</p></section></div><section class="nr-panel" style="margin-top:12px">${qualityHTML()}<div class="nr-validation-note"><b>현재 판정</b><p>${data.learning?.status==='forward_validation_in_progress'?'미래 구간 검증 진행 중':'상태 '+E(data.learning?.status||'미확인')}</p><p>표본이 적고 실시간 주문 성과가 아니므로 매수 근거로 사용하지 않습니다.</p></div><button class="nr-action" data-nr-forecast>전체 예측 성적표</button></section>`}
 function renderSettings(){const live=!!(data.toss?.enabled&&data.toss?.api_base);return screenHead('설정 & 연결 관리','계정·알림·데이터 연결은 투자 판단 화면과 분리합니다.')+
 `<div class="nr-screen-grid"><section class="nr-panel"><div class="nr-head"><h3>토스증권 연결</h3><span class="nr-badge ${live?'':'warn'}">${live?'설정됨':'미연결'}</span></div><div class="nr-setting-row"><b>읽기 전용 서버</b><span>${live?'등록됨':'등록 안 됨'}</span></div><div class="nr-setting-row"><b>자동 매매</b><span>꺼짐</span></div><div class="nr-setting-row"><b>비밀키</b><span>브라우저에 표시하지 않음</span></div><a class="nr-action" href="./toss-live-radar.html" target="_blank" rel="noopener">연결 안내 열기</a></section><section class="nr-panel">${opsHTML()}<button class="nr-action" data-nr-view="system">원자료 검증 화면 열기</button></section></div>`}
-function renderScreen(){if(screen==='monitor')return renderMonitor();if(screen==='stocks')return renderStocks();if(screen==='scenario')return renderScenario();if(screen==='portfolio')return renderPortfolio();if(screen==='news')return renderNews();if(screen==='performance')return renderPerformance();if(screen==='settings')return renderSettings();return renderHome()}
-
-function render(){const host=$('#nr-home-content');if(!host)return;host.innerHTML=renderScreen();if(screen==='home'){$('#nr-search')?.addEventListener('input',e=>{query=e.target.value;const list=$('#rf-list');if(list)list.innerHTML=flowRows();const count=$('#rf-count');if(count)count.textContent=flowCompanies().length+'개'})}bindChart();}
-
-async function read(name){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const r=await fetch('./'+name+'?neutral='+Date.now(),{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(timer)}}
-async function load(){if(busy)return;busy=true;try{const keys=Object.keys(FILES),values=await Promise.allSettled(keys.map(k=>read(FILES[k])));keys.forEach((k,i)=>{if(values[i].status==='fulfilled'){data[k]=values[i].value}else{delete data[k]}});if(!Array.isArray(data.raw?.companies))delete data.raw;if(rows().length){if(!company(selected))selected=String(rows()[0].symbol);compare=compare.filter(company);if(!compare.length)compare=[selected]}window.StockNeutral.snapshot={version:VERSION,source_generated_at:data.raw?.generated_at,company_count:rows().length,chart_count:Object.keys(data.charts?.series||{}).length,orders_enabled:false};}finally{busy=false;render()}}
+function renderScreen(){
+ const page=screen==='home'?renderFlowHome():screen==='stocks'?renderStocks():screen==='stockdetail'?renderCompanyDetail():screen==='monitor'?renderMonitor():screen==='scenario'?renderScenario():screen==='portfolio'?renderPortfolio():screen==='news'?renderNews():screen==='performance'?renderPerformance():screen==='settings'?renderSettings():renderFlowHome();
+ return flowNav()+page;
+}
+function render(){
+ const host=$('#nr-home-content');if(!host)return;
+ const before=$('#rf-list'),scroll=before?.scrollTop||0,oldScreen=host.dataset.renderedScreen;
+ host.innerHTML=renderScreen();
+ host.dataset.renderedScreen=screen;
+ if(oldScreen===screen){const after=$('#rf-list');if(after)after.scrollTop=scroll}
+ if(['home','stocks'].includes(screen)){
+  $('#nr-search')?.addEventListener('input',e=>{
+   query=e.target.value;flowLimit=screen==='home'?15:30;
+   const list=$('#rf-list');if(list)list.innerHTML=flowRows();
+   const count=$('#rf-count');if(count)count.textContent=flowCompanies().length+'개';
+   const foot=document.querySelector('.rf-list-foot span');if(foot)foot.textContent=Math.min(flowCompanies().length,flowLimit)+' / '+flowCompanies().length+'개 표시 · 실시간 가격 아님';
+  });
+ }
+ bindChart();
+}
 function init(){if(!document.querySelector('.app')||$('#view-home'))return;document.body.classList.add('neutral-ready');const rail=document.createElement('nav');rail.className='nr-rail';rail.setAttribute('aria-label','투자 레이더 주요 메뉴');rail.innerHTML=`<span class="nr-logo">IR</span><button data-nr-screen="home" class="active">${I('home')}홈</button><button data-nr-screen="stocks">${I('search')}종목</button><button data-nr-screen="monitor">${I('check')}감시</button><button data-nr-view="discover">${I('chart')}분석</button><button data-nr-screen="news" class="nr-secondary">${I('news')}뉴스</button><button data-nr-screen="performance" class="nr-secondary">${I('check')}검증</button><button data-nr-screen="settings" class="nr-last">${I('settings')}설정</button>`;document.body.append(rail);const section=document.createElement('section');section.id='view-home';section.className='view nr-dashboard';section.setAttribute('aria-label','투자 레이더 비교 대시보드');section.innerHTML='<div id="nr-home-content"></div>';document.querySelector('main').prepend(section);view('home');render();load();$('#reload')?.addEventListener('click',load);document.querySelectorAll('.tabs [data-view]').forEach(b=>b.addEventListener('click',()=>syncNav(b.dataset.view)));document.addEventListener('click',handle);document.addEventListener('radar:markets-ready',()=>{if(homeActive&&screen==='home')render()});document.addEventListener('change',e=>{if(e.target.dataset.nrCompare){const id=e.target.dataset.nrCompare;if(e.target.checked){if(compare.length>=3){e.target.checked=false;showDialog('세 종목까지 함께 비교합니다','비교 중인 종목의 ×를 눌러 하나를 제외한 뒤 추가해 주세요.');return}compare.push(id)}else{if(compare.length===1){e.target.checked=true;return}compare=compare.filter(x=>x!==id)}render()}});window.addEventListener('storage',e=>{if(e.key==='radar-v8-stars'){readFavorites();render()}});document.addEventListener('click',e=>{if(e.target.closest('[data-star]'))setTimeout(()=>{readFavorites();if(homeActive)render()},0)});setInterval(load,300000);}
-function handle(e){const b=e.target.closest('button');if(!b)return;const ds=b.dataset;if(ds.rfMarket){flowMarket=ds.rfMarket;const list=flowCompanies();if(list.length&&!list.some(c=>String(c.symbol)===String(selected)))selected=String(list[0].symbol);render();return}if(ds.rfOnly){flowOnly=ds.rfOnly;const list=flowCompanies();if(list.length&&!list.some(c=>String(c.symbol)===String(selected)))selected=String(list[0].symbol);render();return}if(ds.nrScreen){view(ds.nrScreen);return}if(ds.nrView){view(ds.nrView);return}if('nrSelect'in ds){selected=ds.nrSelect;if(screen==='scenario'||screen==='stocks'||screen==='monitor'||screen==='portfolio'||screen==='home')render();else{$('#nr-company')&&($('#nr-company').innerHTML=companyPanel());$('#nr-watch-panel')&&($('#nr-watch-panel').innerHTML=watchTable())}return}if(ds.nrDetail){fullDetail(ds.nrDetail);return}if(ds.nrRange){range=ds.nrRange;render();return}if(ds.nrMode){if(ds.nrMode==='price'&&new Set(compare.map(company).filter(Boolean).map(c=>c.currency)).size>1){showDialog('통화가 다른 가격은 겹쳐 비교하지 않습니다','원화와 달러는 크기가 달라 동일 시작점 대비 가격변화율로 비교합니다. 환율 변동이나 배당을 포함한 투자 수익률은 아닙니다.');return}mode=ds.nrMode;render();return}if(ds.nrRemove){if(compare.length<=1){showDialog('최소 한 종목을 남겨주세요','목록의 비교 체크로 다른 종목을 먼저 추가할 수 있습니다.');return}compare=compare.filter(x=>x!==ds.nrRemove);render();return}if(ds.nrStar){favorites.has(ds.nrStar)?favorites.delete(ds.nrStar):favorites.add(ds.nrStar);try{localStorage.setItem('radar-v8-stars',JSON.stringify([...favorites]))}catch{}document.dispatchEvent(new Event('radar:watchlist-changed'));render();return}if(ds.nrRegion){region=ds.nrRegion;$('#nr-watch-panel').innerHTML=watchTable();return}if('nrOnlyStars'in ds){onlyStars=!onlyStars;$('#nr-watch-panel').innerHTML=watchTable();return}if('nrWatch'in ds){onlyStars=true;view('portfolio');return}if('nrNews'in ds){view('news');return}if('nrAdd'in ds){view('home');onlyStars=false;region='ALL';render();$('#nr-watch-panel').scrollIntoView({block:'center'});$('#nr-search').focus({preventScroll:true});return}if('nrEntry'in ds){view('discover');setTimeout(()=>document.querySelector('.rec-root')?.scrollIntoView({block:'start'}),0);return}if('nrLive'in ds){if(data.toss?.enabled&&data.toss?.api_base){window.open('./toss-live-radar.html','_blank','noopener')}else{showDialog('실시간 감시는 아직 연결 전입니다','토스증권 읽기 전용 서버가 실제로 연결되기 전에는 실시간 시세나 조건 알림을 표시하지 않습니다. 현재 일별 원자료와 예측·검증 기능은 계속 사용할 수 있습니다.')}return}if('nrForecast'in ds){if(screen==='performance'){window.open('./stock-forecast.html','_blank','noopener')}else{view('performance')}return}}
+function handle(e){const b=e.target.closest('button');if(!b)return;const ds=b.dataset;if(ds.rfDirection){flowDirection=ds.rfDirection;flowLimit=screen==='home'?15:30;const list=flowCompanies();if(list.length&&!list.some(c=>String(c.symbol)===String(selected)))selected=String(list[0].symbol);render();return}
+if(ds.rfRange){flowRange=ds.rfRange;render();return}
+if('rfMore'in ds){flowLimit+=15;render();return}
+if(ds.rfNavAi){flowDirection='all';view('stocks');return}
+if(ds.rfMarket){flowMarket=ds.rfMarket;const list=flowCompanies();if(list.length&&!list.some(c=>String(c.symbol)===String(selected)))selected=String(list[0].symbol);render();return}if(ds.rfOnly){flowOnly=ds.rfOnly;const list=flowCompanies();if(list.length&&!list.some(c=>String(c.symbol)===String(selected)))selected=String(list[0].symbol);render();return}if(ds.nrScreen){view(ds.nrScreen);return}if(ds.nrView){view(ds.nrView);return}if('nrSelect'in ds){selected=ds.nrSelect;if(screen==='scenario'||screen==='stocks'||screen==='monitor'||screen==='portfolio'||screen==='home')render();else{$('#nr-company')&&($('#nr-company').innerHTML=companyPanel());$('#nr-watch-panel')&&($('#nr-watch-panel').innerHTML=watchTable())}return}if(ds.nrDetail){fullDetail(ds.nrDetail);return}if(ds.nrRange){range=ds.nrRange;render();return}if(ds.nrMode){if(ds.nrMode==='price'&&new Set(compare.map(company).filter(Boolean).map(c=>c.currency)).size>1){showDialog('통화가 다른 가격은 겹쳐 비교하지 않습니다','원화와 달러는 크기가 달라 동일 시작점 대비 가격변화율로 비교합니다. 환율 변동이나 배당을 포함한 투자 수익률은 아닙니다.');return}mode=ds.nrMode;render();return}if(ds.nrRemove){if(compare.length<=1){showDialog('최소 한 종목을 남겨주세요','목록의 비교 체크로 다른 종목을 먼저 추가할 수 있습니다.');return}compare=compare.filter(x=>x!==ds.nrRemove);render();return}if(ds.nrStar){favorites.has(ds.nrStar)?favorites.delete(ds.nrStar):favorites.add(ds.nrStar);try{localStorage.setItem('radar-v8-stars',JSON.stringify([...favorites]))}catch{}document.dispatchEvent(new Event('radar:watchlist-changed'));render();return}if(ds.nrRegion){region=ds.nrRegion;$('#nr-watch-panel').innerHTML=watchTable();return}if('nrOnlyStars'in ds){onlyStars=!onlyStars;$('#nr-watch-panel').innerHTML=watchTable();return}if('nrWatch'in ds){onlyStars=true;view('portfolio');return}if('nrNews'in ds){view('news');return}if('nrAdd'in ds){view('home');onlyStars=false;region='ALL';render();$('#nr-watch-panel').scrollIntoView({block:'center'});$('#nr-search').focus({preventScroll:true});return}if('nrEntry'in ds){view('discover');setTimeout(()=>document.querySelector('.rec-root')?.scrollIntoView({block:'start'}),0);return}if('nrLive'in ds){if(data.toss?.enabled&&data.toss?.api_base){window.open('./toss-live-radar.html','_blank','noopener')}else{showDialog('실시간 감시는 아직 연결 전입니다','토스증권 읽기 전용 서버가 실제로 연결되기 전에는 실시간 시세나 조건 알림을 표시하지 않습니다. 현재 일별 원자료와 예측·검증 기능은 계속 사용할 수 있습니다.')}return}if('nrForecast'in ds){if(screen==='performance'){window.open('./stock-forecast.html','_blank','noopener')}else{view('performance')}return}}
 window.StockNeutral={version:VERSION,pointData,load,snapshot:null};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
