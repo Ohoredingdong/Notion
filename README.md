@@ -8,7 +8,7 @@
 
 | 위젯 | 실행 링크 | 이번 점검 결과 |
 | --- | --- | --- |
-| 투자 레이더 | [열기](https://ohoredingdong.github.io/Notion/stock-value-radar.html) | 최신 기능 유지 · 공식 공시 미검증/기간 차이는 경고 유지 |
+| 투자 레이더 | [열기](https://ohoredingdong.github.io/Notion/stock-value-radar.html) | V5 한 화면 통합: 실제 저장 종가+이동평균, 연구용 AI 분포, 기업 근거·리스크·시나리오·예측 검증·모의 포트폴리오; 증권계좌 실시간 미연결 |
 | 주식 판단 연습 | [열기](https://ohoredingdong.github.io/Notion/stock-paper-investing.html) | 훈련 진행·기록 보존 확인 |
 | 부동산 판단 연습 | [열기](https://ohoredingdong.github.io/Notion/property-paper-investing.html) | 훈련 진행·기록 보존 확인 |
 | 냉장고 & 레시피 | [열기](https://ohoredingdong.github.io/Notion/use-me-first.html) | 화면 반복 갱신·레시피 버튼·사진·채소 점수·동기화 실패 수정 |
@@ -49,6 +49,15 @@
 
 Home Budget의 [넓은 화면](https://ohoredingdong.github.io/Notion/home-budget-wide-v4.html)도 별도 레이아웃으로 유지합니다.
 
+
+## 투자 레이더 V5 운영 기준
+
+- `stock-value-radar.html`: 승인된 정보밀도형 통합 홈(시세는 저장 종가이며 실시간 거래 호가는 미연결).
+- `stock-radar-dashboard.html`: 메인과 동일한 별도 진입 주소. 구형 사이드바·헤더는 로드하지 않음.
+- `stock-value-radar-advanced.html`: 이전 심층 분석 보존본. V5 상세 화면에는 재무, EPS, 리스크, 공시·원문을 직접 통합.
+- 모델의 방향 분류는 연구용이며 구매 추천·실제 체결 수익성으로 해석하지 않음.
+- `scripts/test_stock_radar_flow_browser.py`: 대시보드 가로 3영역 및 4개 사이드 카드, 데스크톱 한 화면·모바일 반응형, 메뉴·기록 유지 점검.
+- 자동 투자 데이터 수집 워크플로는 메인 HTML을 다시 설치하거나 덮어쓰지 않음.
 
 ## 갱신 방식과 확인 범위
 
