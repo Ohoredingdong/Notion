@@ -112,6 +112,7 @@ def main():
             target = {'#homeRecommendation': ('meals', 'recommendation'), '#homePlans': ('meals', 'plans'),
                       '#homeBudget': ('records', 'budget'), '#homeSupplements': ('records', 'supplements'),
                       '#homeMonthly': ('records', 'monthly'), '#homeGrowth': ('kitchen', 'growth'),
+                      '#homeDecor': ('kitchen', 'decor'),
                       '#homeConnections': ('kitchen', 'connections')}.get(selector, ('fridge', None))
             tab(frame, *target)
             expect(frame.locator(selector)).to_be_visible()
@@ -279,13 +280,18 @@ def main():
                     ('#homeMonthly', '[data-workflow="monthly"]', '.workflow-month'),
                     ('#homeGrowth', '[data-workflow="book"]', '#journalGoal'),
                     ('#homeGrowth', '[data-workflow="rewards"]', '[data-reward="tile"]'),
-                    ('#homeGrowth', '[data-workflow="decor"]', '[data-wf-form="theme"]'),
+                    ('#homeDecor', '[data-workflow="decor"]', '[data-wf-form="theme"]'),
                     ('#homeConnections', '[data-workflow="photos"]', '[data-wf="readPhotos"]')):
                     section(frame, selector)
                     frame.locator(selector+' '+button).first.click()
                     expect(frame.locator('#tray '+expected_selector)).to_be_visible()
                     no_overflow(frame)
                     close(frame)
+                section(frame, '#homeGrowth')
+                growth_before = envelope(frame)
+                frame.locator('#homeGrowth [data-home-open="decor"]').click()
+                expect(frame.locator('#decorStage .room')).to_be_visible()
+                assert envelope(frame) == growth_before
                 section(frame, '#homeConnections')
                 status = frame.locator('#homeConnections details.home-data-status')
                 status.locator('summary').click()

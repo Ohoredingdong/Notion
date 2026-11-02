@@ -73,9 +73,6 @@ body .home-panel.today-kitchen{display:block;margin:0;padding-top:0}
 body .fridge-panel{display:flex;flex-direction:column;padding:0 0 max(72px,calc(72px + env(safe-area-inset-bottom)));overflow:hidden}
 .fridge-panel .expiry-summary{flex-shrink:0}
 body .fridge-panel .kitchen-view{flex-shrink:0;min-height:0}
-body .fridge-panel .camera-tabs{flex-shrink:0;margin:4px 0 0;padding:3px;border:1px solid #dcd0be;border-radius:12px;background:#fffaf3}
-body .fridge-panel .camera-tabs button{min-height:44px;padding:5px 8px;border:0;background:none;font-size:13px;border-radius:8px}
-body .fridge-panel .camera-tabs button[aria-pressed="true"]{background:#e9dfcf;color:#3c3429}
 body .shell .worktop-actions{grid-template-columns:repeat(2,minmax(0,1fr));width:min(780px,100%);background:#fffdf8;backdrop-filter:none;box-shadow:none;border-color:#e0d5c7}
 body .worktop-actions .action{flex-direction:row;gap:8px;border-radius:12px}
 body .worktop-actions #addFood{background:#e9dfd0}
@@ -87,11 +84,9 @@ body .home-card,body .today-kitchen>.home-card{max-width:680px;margin:0 auto 12p
 body .home-card .home-block-heading h3{font-size:19px}
 body .home-card .home-recipe-copy h3{font-size:22px}
 body .home-card .home-data-status{margin-top:14px}
-body:not([data-home="fridge"]) .shell:before{background-image:none;background-color:#f5eee3}
+body:not([data-home="fridge"]):not([data-home-page="decor"]) .shell:before{background-image:none;background-color:#f5eee3}
 body .live-message{position:absolute;bottom:78px;left:16px;right:16px;z-index:110;pointer-events:none;margin:0}
 body .live-message:not(:empty){padding:9px 12px;border:1px solid #dacbb6;border-radius:12px;background:#fffdf5;box-shadow:0 3px 12px #5b452815}
-/* Sauce bottles have a single unboxed caption, with detail on selection. */
-body .seasoning-zone .sauce-label{position:absolute;top:88%;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(86px / var(--scene-scale,1));padding:0;background:none;border:0;border-radius:3px;box-shadow:none;text-shadow:none;pointer-events:none}
 body .door-storage .item-label.sauce-label{display:block!important;position:absolute;left:50%;top:69%;transform:translateX(-50%);width:max-content;max-width:100%;padding:0;border:0;background:none;box-shadow:none;border-radius:3px}
 body .sauce-label b{display:block;font-size:calc(9.5px / var(--scene-scale,1));font-weight:400;line-height:1.2;color:#4e4b45;text-align:center}
 body .sauce-label small{display:block;font-size:calc(8.5px / var(--scene-scale,1));font-weight:400;line-height:1.2;color:#71685e;text-align:center}
@@ -127,3 +122,23 @@ body .home-storage-notice button{min-width:44px;padding:4px;font-size:11px}
  body .fridge-interiors .shelf-label:not(.is-selected) small{display:none}
  body .fridge-interiors .shelf-label:not(.is-selected){gap:0}
 }
+/* Space switching is replaced by ingredient management and a focused decor editor. */
+.inventory-kind{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:3px;margin:12px 0;border:1px solid #ded3c3;border-radius:12px;background:#f4ede2}
+.inventory-kind button{min-height:44px;padding:8px;border:0;border-radius:8px;background:none;font-size:14px}
+.inventory-kind [aria-pressed="true"]{background:#fffdf8;box-shadow:0 1px 4px #59452e12;font-weight:550}
+body #panel-kitchen:has(#homeDecor:not([hidden])){display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+#panel-kitchen>.panel-tabs{flex-shrink:0}
+.decor-editor{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.decor-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px 9px;flex-shrink:0}
+.decor-heading h2{font-size:18px;margin:0 0 3px}
+.decor-heading p{font-size:12px;color:#6b6258;margin:0}
+.decor-heading button,.decor-actions button{min-height:44px;border:1px solid #d8c8b0;border-radius:10px;background:#fffaf1;color:#59442c;font-size:13px;padding:7px 10px}
+.decor-heading button{flex-shrink:0;background:#e9dcc7}
+.decor-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 0 8px;flex-shrink:0}
+.decor-actions button{padding:7px 3px}
+#decorStage{min-height:0}
+body .decor-editor .kitchen-view{display:block}
+body .decor-editor #desktopSummary,body .decor-editor #kitchenProgress,body .decor-editor .room-caption{display:none!important}
+body .decor-editor .counter-zone .item:not(.decor){display:none}
+body .decor-editor .counter-zone .item.decor{min-width:calc(44px / var(--scene-scale,1));min-height:calc(44px / var(--scene-scale,1))}
+body .decor-editor .decoration-tools{flex-shrink:0;margin:3px 0 0;padding:6px 9px;border:0;min-height:30px;font-size:12px;background:#fffaf1}

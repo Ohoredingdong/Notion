@@ -74,10 +74,10 @@
     room.style.removeProperty('--room-fit-width');
     let width=room.clientWidth||shell.clientWidth-28;
     const logicalHeight=document.body.dataset.camera==='fridge'?1000:1200;
-    const panel=$('#panel-fridge');
+    const panel=room.closest('.home-panel');
     if(panel){
       const box=room.getBoundingClientRect(),panelBox=panel.getBoundingClientRect(),dock=$('.worktop-actions');
-      const occupied=[panel.querySelector('.camera-tabs'),$('#kitchenProgress'),$('#decorationTools')].filter(node=>node&&node.getClientRects().length).reduce((sum,node)=>{const css=getComputedStyle(node);return sum+node.getBoundingClientRect().height+parseFloat(css.marginTop||0)+parseFloat(css.marginBottom||0);},0);
+      const occupied=[$('#kitchenProgress'),$('#decorationTools')].filter(node=>node&&node.getClientRects().length).reduce((sum,node)=>{const css=getComputedStyle(node);return sum+node.getBoundingClientRect().height+parseFloat(css.marginTop||0)+parseFloat(css.marginBottom||0);},0);
       const dockHeight=dock?.getClientRects().length?dock.getBoundingClientRect().height:0;
       const dockFixed=dock&&getComputedStyle(dock).position==='fixed';
       const bottom=Math.min(panelBox.bottom,innerHeight-(dockFixed?dockHeight:0));
@@ -95,10 +95,11 @@
     $('.kitchen-view').classList.toggle('is-compact',compact());positionBackground();renderDisplays();
   }
   function setCamera(camera) {
-    if($('#panel-fridge')?.hidden)window.KitchenHome?.showTab('fridge');
-    cleanup();document.body.dataset.camera=camera;
+    cleanup();camera=camera==='counter'?'counter':'fridge';document.body.dataset.camera=camera;
+    decorating=camera==='counter';document.body.classList.toggle('is-decorating',decorating);$('#decorationTools').hidden=!decorating;
+    window.KitchenHome?.showScene(camera);
     for(const b of document.querySelectorAll('.camera-tabs button'))b.setAttribute('aria-pressed',String(b.dataset.camera===camera));
-    $('#roomMessage').textContent={fridge:'냉장고 문을 열어, 우리 집 재료를 살펴봐요.',seasoning:'작은 양념병을 옮겨, 나만의 선반을 정리해요.',counter:'오늘의 한 끼와 좋아하는 소품을 놓아봐요.'}[camera];
+    $('#roomMessage').textContent={fridge:'냉장고 문을 열어, 우리 집 재료를 살펴봐요.',seasoning:'작은 양념병을 옮겨, 나만의 선반을 정리해요.',counter:'소품을 옮겨 나만의 부엌을 꾸며요.'}[camera];
     $('#sceneNote').textContent=camera==='seasoning'?'양념병을 누르면 수량·기한을 살펴볼 수 있어요.':decorating?'소품을 끌어 놓고, 누르면 앞뒤 순서도 바꿀 수 있어요.':'음식과 소품을 눌러 살펴봐요.';
     $('#sceneNote').hidden=camera!=='seasoning'||items.some(i=>i.zone==='seasoning'&&!i.depleted);if(camera==='seasoning'&&!items.some(i=>i.zone==='seasoning'&&!i.depleted))$('#sceneNote').textContent='문 안쪽의 양념은 재료 목록에서 양념 선반으로 옮길 수 있어요.';
     syncLayout();constrainItems();
@@ -301,7 +302,7 @@
   });
   const layoutObserver=new ResizeObserver(()=>{syncLayout();constrainItems();});
   layoutObserver.observe($('#dailyBalance'));layoutObserver.observe($('#kitchenMilestone'));
-  for(const node of [$('#homeStorageNotice'),$('#kitchenProgress'),$('.camera-tabs')])if(node)layoutObserver.observe(node);
+  for(const node of [$('#homeStorageNotice'),$('#kitchenProgress'),$('.decor-heading'),$('.decor-actions')])if(node)layoutObserver.observe(node);
   window.addEventListener('pointercancel',event=>{if(active&&event.pointerId===active.pointer)rememberItemPointer(event);cleanup();});window.addEventListener('blur',cleanup);window.addEventListener('resize',()=>{cleanup();syncLayout();constrainItems();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&active){event.preventDefault();cleanup();announce('이동을 취소했어요.');return;}const button=event.target.closest('.room .item');if(!button)return;const item=items.find(r=>r.id===button.dataset.item);if(!item)return;
@@ -319,7 +320,7 @@
     if(button.dataset.addProp){const key=button.dataset.addProp;items.push({id:'decor'+(++serial),kind:'decor',art:key,name:props[key].name,zone:'counter',x:.56,y:.98,z:++layer});setCamera('counter');render();closeTray();announce(props[key].name+'을 놓았어요. 끌어 원하는 자리에 놓아보세요.');}
     if(button.dataset.layer)moveLayer(button.dataset.id,button.dataset.layer);if(button.dataset.remove){const index=items.findIndex(r=>r.id===button.dataset.remove&&r.kind==='decor');if(index>=0){items.splice(index,1);selected=null;render();closeTray();announce('소품을 치웠어요.');}}
     if(button.dataset.recipe){items.find(r=>r.kind==='meal').name=button.dataset.recipe;setCamera('counter');render();closeTray();announce('조리대에 '+button.dataset.recipe+'을 놓았어요.');window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name:button.dataset.recipe}}));}
-    if(button.id==='help')openTray('작은 부엌을 만져봐요',`<ul class="help-list"><li>냉장고 문을 누르면 열리고, 열린 문을 다시 누르면 닫혀요.</li><li>재료·양념병은 누르면 수량·기한을 살펴보고, 끌어서 옮길 수 있어요.</li><li>다른 칸으로 옮길 때는 그 문을 먼저 열어주세요.</li><li>‘꾸미기’에서 소품을 놓고 끌어 배치해요.</li><li>재료와 소품은 겹쳐 놓을 수 있고, 방향키로도 움직여요.</li><li>작은 화면은 냉장고·양념 선반·조리대를 골라 크게 봐요.</li></ul><p class="tray-note">기존 앱과 분리된 시안이에요. 저장 가능한 브라우저에서는 재료·식사·꾸밈 기록을 보관해요. 임시 세션에서는 메뉴의 설정·백업에서 기록을 보관해 주세요. 영양은 직접 입력한 값으로 계산하며 사진 인식·자동 영양 추정·기존 앱 동기화는 연결 전이에요.</p>`);
+    if(button.id==='help')openTray('작은 부엌을 만져봐요',`<ul class="help-list"><li>냉장고 문을 누르면 열리고, 열린 문을 다시 누르면 닫혀요.</li><li>재료·양념병은 누르면 수량·기한을 살펴보고, 끌어서 옮길 수 있어요.</li><li>다른 칸으로 옮길 때는 그 문을 먼저 열어주세요.</li><li>‘꾸미기’에서 소품을 놓고 끌어 배치해요.</li><li>재료와 소품은 겹쳐 놓을 수 있고, 방향키로도 움직여요.</li><li>양념은 재료 목록의 양념 보기에서, 소품 배치는 내 부엌의 꾸미기에서 관리해요.</li></ul><p class="tray-note">기존 앱과 분리된 시안이에요. 저장 가능한 브라우저에서는 재료·식사·꾸밈 기록을 보관해요. 임시 세션에서는 메뉴의 설정·백업에서 기록을 보관해 주세요. 영양은 직접 입력한 값으로 계산하며 제품·기한 사진은 글자를 읽고 직접 검수해요. 전체 사진 재료 판별·자동 영양 추정·기존 앱 동기화는 연결 전이에요.</p>`);
   });
   $('#tray').addEventListener('click',event=>{if(event.target!==$('#tray'))return;const r=$('#tray').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeTray();});
   $('#tray').addEventListener('close',()=>{if($('#trayContent .display-inspector'))$('#trayContent').replaceChildren();});
