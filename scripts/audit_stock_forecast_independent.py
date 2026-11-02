@@ -58,6 +58,16 @@ def validate(r):
             raise ValueError('invalid_frozen_baseline_distribution')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
+    # An unofficial historical-price source and a reconstructed non-vintage
+    # series cannot assert exchange authentication or original point-in-time
+    # custody. An audit may certify these only with separately verified raw
+    # evidence; present flags must therefore remain literal false. Do not
+    # backfill optional claims into legacy frozen records.
+    for source_claim in ('provider_is_official_exchange',
+                         'history_is_point_in_time_vintage'):
+        if source_claim in r and r[source_claim] is not False:
+            raise ValueError('unsupported_ledger_source_claim_' + source_claim)
+
     # The published research-uncertainty flag is part of the frozen signal,
     # not a free-text display hint. Independently recompute it from the
     # applied three-class distribution using the *existing* 0.50/0.10 policy.
@@ -522,6 +532,37 @@ class SelfTests(unittest.TestCase):
                 self.assertTrue(any(
                     e['error'] == 'unsupported_human_receipt_claim'
                     for e in result['errors']))
+
+    def test_frozen_ledger_cannot_falsely_claim_exchange_or_point_in_time_source(self):
+        # Pre-registered RED: no independent official-exchange raw candles or
+        # original point-in-time provider history are evidenced by yfinance.
+        row = {'id': 'synthetic-only-source-claim', 'symbol': 'TEST',
+               'market': 'US', 'mode': 'intraday', 'status': 'research_prediction',
+               'observed_until': '2026-10-29T13:30:00Z',
+               'received_at': '2026-10-29T13:31:00Z',
+               'issued_at': '2026-10-29T13:36:00Z',
+               'target': {'start': '2026-10-29T14:00:00Z',
+                          'end': '2026-10-29T14:30:00Z'},
+               'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+               'direction': 'flat', 'neutral_band_pct': .3,
+               'source_type': 'provider_historical_prices',
+               'collector': 'yfinance',
+               'source_url': 'https://finance.yahoo.com/quote/TEST',
+               'provider_is_official_exchange': False,
+               'history_is_point_in_time_vintage': False}
+        self.assertIsNone(validate(row))
+        legacy = {k: v for k, v in row.items() if k not in (
+            'provider_is_official_exchange',
+            'history_is_point_in_time_vintage')}
+        self.assertIsNone(validate(legacy))
+        for field in ('provider_is_official_exchange',
+                      'history_is_point_in_time_vintage'):
+            for claim in (True, 'true', 1):
+                with self.subTest(field=field, claim=claim):
+                    forged = {**row, field: claim}
+                    with self.assertRaisesRegex(ValueError,
+                            'unsupported_ledger_source_claim'):
+                        validate(forged)
 
     def test_bands_fixed(self):
         self.assertEqual(classify(-.3, .3), 'flat')
