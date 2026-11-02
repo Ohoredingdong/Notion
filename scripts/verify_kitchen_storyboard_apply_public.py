@@ -493,6 +493,8 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     assert '500mL' in quantities,quantities
     assert len(raw)==2 and all(value.strip() for value in raw),raw
     expect(review.locator('[name="confirmed"]')).not_to_be_checked()
+    assert review.evaluate('e=>e.noValidate'),'Photo review uses inline Korean validation without a native popup'
+    assert review.locator('[name="confirmed"]').evaluate('e=>e.required'),'Original confirmation remains required'
     assert frame.evaluate('MiniKitchen.exportWorld()')==before, 'Unconfirmed UI review must not save stock'
     expect(review.locator('[name="expiry"]')).to_have_value('2026-11-30')
     assert '우유' in review.locator('[name="name"]').input_value()
@@ -506,9 +508,9 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     expect(review.locator('[name="confirmed"]')).not_to_be_checked()
     review.locator('[type="submit"]').click()
     assert frame.evaluate('MiniKitchen.exportWorld()')==before,'Unchecked original verification cannot save'
+    expect(frame.locator('#tray .workflow-feedback')).to_contain_text('원본')
     page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-single-review.png')),full_page=True)
     checkbox=review.locator('[name="confirmed"]')
-    checkbox.press('Escape')  # Dismiss the browser's native required-field popup.
     expect(review).to_be_visible()
     label=checkbox.locator('..');center(label)
     confirmation_geometry=label.bounding_box()
@@ -532,7 +534,7 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-saved.png')),full_page=True)
     return {'executed':True,'expected_name_found':True,'expected_500mL_found':True,'expected_2026_11_30_found':True,
         'recognized_name_candidates':names,'recognized_quantity_candidates':quantities,'text':{'product':raw[0],'expiry':raw[1]},
-        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'native_validation_popup_dismissed_then_actual_confirmation_label_tapped':True,'confirmation_label_geometry':confirmation_geometry,'one_item_saved_only_after_original_confirmation':True,
+        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'unchecked_save_shows_korean_inline_error_without_write':True,'one_actual_confirmation_label_tap_checks_required_box':True,'confirmation_label_geometry':confirmation_geometry,'one_item_saved_only_after_original_confirmation':True,
         'no_remote_photo_post_or_sync':True,'external_requests':sent,'dependency_responses':observed}
 
 
