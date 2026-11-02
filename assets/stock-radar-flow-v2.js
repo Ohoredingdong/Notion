@@ -45,8 +45,11 @@ function fxUniverse(ctx){
    else if(ctx.market==="DOW")return false;
   }
   if(fxLocal.filter==="star"&&!fav.has(c.symbol))return false;
-  if(["up","flat","down"].includes(fxLocal.filter)&&(!fxPrediction(c,ctx).active||fxRecord(c,ctx)?.direction!==fxLocal.filter))return false;
-  if(fxLocal.filter==="ai"&&!fxPrediction(c,ctx).active)return false;
+  if(["up","flat","down","ai"].includes(fxLocal.filter)){
+   const signal=fxPrediction(c,ctx);
+   if(!signal.active||signal.stale||signal.unknown)return false;
+   if(fxLocal.filter!=="ai"&&signal.r?.direction!==fxLocal.filter)return false;
+  }
   return !fxLocal.search||(String(c.name||"")+" "+String(c.symbol)).toLowerCase().includes(fxLocal.search.toLowerCase());
  });
 }
