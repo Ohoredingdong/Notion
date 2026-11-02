@@ -147,6 +147,13 @@ def main():
                     assert frame.locator('.home-shortcuts').bounding_box() == nav
                 assert frame.evaluate('KitchenJournal.getEnvelope()') == before
                 assert frame.locator('.fridge-stage').bounding_box() == fridge
+                if mode == 'app' and width >= 1000:
+                    desktop_before = frame.evaluate('KitchenJournal.getEnvelope()')
+                    frame.locator('#desktopSummary [data-home-open="decor"]').click()
+                    expect(frame.locator('[data-home-subtab="decor"]')).to_have_attribute('aria-selected', 'true')
+                    expect(frame.locator('#decorStage .room')).to_be_visible()
+                    assert frame.evaluate('KitchenJournal.getEnvelope()') == desktop_before
+                    choose(frame, 'fridge')
                 tab = frame.locator('[data-home-tab="fridge"]')
                 tab.focus()
                 for key, expected in [('ArrowRight', 'meals'), ('End', 'kitchen'), ('ArrowRight', 'fridge'),
@@ -251,6 +258,7 @@ def main():
             assert before['world'] == legacy_world
             frame.locator('.header-actions [data-workflow="inventory"]').click()
             frame.locator('#tray [data-wf="inventoryKind"][data-arg="seasoning"]').click()
+            expect(frame.locator('#tray .workflow-nav [aria-current="page"]')).to_have_text('부엌')
             expected_ids = sorted(item['id'] for item in legacy_world['items'] if item['kind'] == 'seasoning')
             actual_ids = sorted(frame.locator('#tray .inventory-row').evaluate_all('rows=>rows.map(e=>e.dataset.arg)'))
             assert actual_ids == expected_ids

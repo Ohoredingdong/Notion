@@ -15,6 +15,36 @@
 
 문·식재료/문 양념 드래그·식사 분량/차감·취소·예산·영양·도감·보상·사진 OCR 경로를 유지한다. 전체 사진 객체 판별·새 미니어처 생성·공식 영양/가격·개인 권장량·기기 간 동기화는 이번 UI 변경으로 구현된 기능이 아니다. 운영 진입점/main/Pages 설정은 바꾸지 않는다.
 
-## 검증
+## 최종 검증
 
-[생성물 크기와 SHA256](kitchen-purpose/generated-files.json)을 고정하고 같은8개 인코딩 이미지 바이트를 재사용했다. 제거한 보조 공간 탭/선반 전용의 사용하지 않는 스타일만 정리했다. 같은 envelope/Nov1/뷰포트/문4개 열림/선택 없음의 전후 캡처와 실제 사용 흐름을 검사한다. 최종 로컬/공개 검사 결과와 고정 소스 링크는 근거 커밋에 기록한다. 미실행 검사를 통과로 표시하지 않는다.
+고정 UI 소스는 `e0caf3e296a3cde73e1fb294e2c5db245712e437`다. 이후 근거 커밋은 생성 HTML을 변경하지 않는다. 검증은 예시 재고·테스트용 수동 기록으로 수행했다.
+
+| 검사 | 실제 결과와 근거 |
+| --- | --- |
+| 생성·전송 | 앱1,021,849B / 위젯1,021,852B, 모바일 wrapper1,047,625B / 1,047,634B. 각1MiB 이내이며 [크기·SHA256](kitchen-purpose/generated-files.json)과 실제 검사/공개 원문이 일치한다. 같은8개 인코딩 이미지 바이트를 보존했고 사용하지 않는 공간 탭·선반 스타일만 정리했다. 전송 단위검사2/2 통과. |
+| 브라우저 | **84/84 통과**, JS예외0. [요약](kitchen-purpose/summary.json), [탭/목적 흐름12](kitchen-purpose/tabs-results.json), [실제 식단·식사·예산22](kitchen-purpose/flow-results.json), [가독성23](kitchen-purpose/readability-results.json), [냉장고 회귀27](kitchen-purpose/regression-results.json). |
+| 새 실제 흐름 | 양념 전체/종류 필터와 ‘부엌’ 선택 표시, 기존 냉장고 밖 양념4묶음/음식 수정의 zone·좌표 유지, 레시피→실제 계획/식사 form, 꾸미기 진입/완료/재진입, 실제 소품 드래그 후 재로드 보존, PC 바로가기→같은 편집 화면을 검사했다. 화면만 이동할 때 envelope가 완전히 같다. |
+| 동일 상태 전후4개 | 앱/위젯390·1120, 같은 원본 envelope·Nov1·문4개 열림·선택 없음. 문서 높이844/1000px 유지·가로 넘침0·하단 겹침0. 냉장고 native 크기는390에서 **9.884%**,1120에서 **8.691% 증가**했고 원래 비율·중앙 배치·배경 바닥선을 유지한다. [비교](kitchen-purpose/comparison.json), [전 manifest](kitchen-purpose/before-manifest.json), [후](kitchen-purpose/after-manifest.json), [시각 검토/바닥선8개](kitchen-purpose/visual-review.json). |
+| 상황 화면5개 | 일반·opaque 및PC에서 실제 양념 필터, 요리 계획/기록 버튼, 내부엌 꾸미기, 완료/냉장고 복귀를 조작하고 기록/장면 복원을 확인했다. [실제 흐름](kitchen-purpose/context-results.json). |
+| 실제 공개 HTTPS | 앱/위젯×649×900·390×844·320×660 **6/6**, 원래CDN OCR **2/2** 통과. HTTP200·실제rawSHA256=고정git원문·JS0·터치/문/양념·식단·예산·사진 검수 경로를 확인했다. PC사이드바는1120×1000으로 실제 확장해 검사했다. [최종 공개 결과](kitchen-purpose/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41413081274). 앞선728339d2의 결과는 최종 결과로 재사용하지 않았다. |
+
+실기기·Safari·실제 Notion 호스트는 이번 브라우저 크기/공개 검사 범위와 구분한다. 기존 회귀의320×568처럼 매우 낮은 화면에서는 일부 재료명이 밀집해 보이며, 기능 통과를 모든 높이에서의 주석 가독성 보장으로 취급하지 않는다. 이 경우의 별도 축약 표시/확대 읽기는 후속 검토다. 공개 iframe은 임시 세션이므로 닫기 전에 헤더의 백업으로 기록을 보관한다.
+
+## 실제 화면
+
+[냉장고 변경 전](kitchen-purpose/app-390-before.png) / [변경 후](kitchen-purpose/app-390-after.png) · [위젯](kitchen-purpose/widget-390-after.png) · [PC](kitchen-purpose/app-1120-after.png) · [320px 공개 프레임](kitchen-purpose/app-320-opaque.png).
+
+| 양념 관리 | 실제 계획·식사 기록 | 내 부엌 꾸미기 |
+| --- | --- | --- |
+| ![양념](kitchen-purpose/seasonings.png) | ![요리 행동](kitchen-purpose/recipe-actions.png) | ![꾸미기](kitchen-purpose/decor-editor.png) |
+
+[PC 바로가기에서 연 같은 편집기](kitchen-purpose/desktop-decor.png).
+
+## 공개 확인과 반영 상태
+
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/e0caf3e296a3cde73e1fb294e2c5db245712e437/previews/mobile/app.html)
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/e0caf3e296a3cde73e1fb294e2c5db245712e437/previews/mobile/widget.html)
+
+`fix/kitchen-purpose-navigation`에 push했다. base `feat/kitchen-tab-navigation`로 PR 생성 시도는 GitHub GraphQL API403 Forbidden으로 실패했다. [PR 비교/작성](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-tab-navigation...fix/kitchen-purpose-navigation?expand=1).
+
+검증용 CI는 `delivery/verify-kitchen-purpose-20261102`, 결과는 `preview/kitchen-purpose-validation-20261102`에만 게시했다. main·Pages 설정·운영 진입점과 운영 데이터는 변경하지 않았다.
