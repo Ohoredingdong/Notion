@@ -8,7 +8,7 @@ function F(v,d=1){return N(v)===null?"—":v.toLocaleString("ko-KR",{maximumFrac
 
 function P(v){return N(v)===null?"—":(v>0?"+":"")+F(v,2)+"%";}
 
-function money(v,c){return N(v)===null?"—":F(v,c==="KRW"?0:2)+(c==="KRW"?"원":" "+(c||""));}
+function money(v,c){return N(v)===null?"—":v.toLocaleString("ko-KR",{minimumFractionDigits:c==="KRW"?0:2,maximumFractionDigits:c==="KRW"?0:2})+(c==="KRW"?"원":" "+(c||""));}
 
 function T(v){const d=new Date(v||"");return Number.isFinite(+d)?d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false})+" KST":"시각 미확인";}
 
