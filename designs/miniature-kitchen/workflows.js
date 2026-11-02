@@ -27,7 +27,7 @@ const button=(label,action,arg='',primary=false)=>`<button type="button" class="
 const hint=s=>`<p class="workflow-note">${s}</p>`;
 const error=s=>{const e=$('#trayContent .workflow-feedback');if(e)e.textContent=s;else K.announce(s);};
 function nav(section=route){
- const active=['recipe','recipes','recipeFacts','logMeal','plan','recipesReset'].includes(section)?'recipes':'hub';
+ const active=['recipe','recipes','recipeFacts','logMeal','plan','recipesReset'].includes(section)?'recipes':['inventory','item','add','photos','fridgePhoto','photoReview','manualAdd','seasoningAdd','wholeCandidates'].includes(section)?'home':'hub';
  return `<nav class="workflow-nav" aria-label="부엌의 기능">${[['home','부엌'],['recipes','요리'],['hub','기록']].map(([id,label])=>`<button type="button" ${id==='home'?'data-wf="home"':`data-workflow="${id}"`} ${active===id?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;
 }
 function open(title,html,next){if(next!==route){if(photoReadController)stopPhotoRead();if(['photos','fridgePhoto'].includes(route))photoOriginal={product:null,expiry:null,fridge:null};}route=next;K.showTray(title,nav()+html+'<div class="workflow-feedback" role="status"></div>','한끼의 부엌');}
