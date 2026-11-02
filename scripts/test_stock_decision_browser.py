@@ -50,7 +50,7 @@ STRICT_STATE_LABELS = {
     "avoid": "위험 신호의 원인을 먼저 확인해요",
     "insufficient": "자료가 부족해서 아직 판단할 수 없어요",
 }
-PUBLIC_URL = "https://ohoredingdong.github.io/Notion/stock-value-radar.html"
+PUBLIC_URL = "https://ohoredingdong.github.io/Notion/stock-value-radar-advanced.html"
 
 
 def arguments():
@@ -119,7 +119,7 @@ class RadarChecks:
                 "Captured strict-review evidence is already outside the raw-data freshness window.")
         self.report = {
             "cases": [], "errors": [],
-            "mode": "Real collected JSON + checked-out v9 widget; separate public HTML observation",
+            "mode": "Legacy deep analysis on archived advanced HTML; separate public HTML observation",
             "source": {
                 "root": str(root),
                 "generated_at": self.data["generated_at"],
@@ -127,7 +127,7 @@ class RadarChecks:
                 "companies": len(self.companies),
                 "directory_companies": len(self.directory["companies"]),
                 "sha256": {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-                           for name in ("stock-value-radar.html", *DATA_FILES)},
+                           for name in ("stock-value-radar-advanced.html", *DATA_FILES)},
             },
         }
 
@@ -188,7 +188,7 @@ class RadarChecks:
         errors, requests = [], []
         page.on("pageerror", lambda error: errors.append(str(error)))
         self.install_routes(page, origin, state, requests)
-        page.goto(origin + "/stock-value-radar.html", wait_until="networkidle")
+        page.goto(origin + "/stock-value-radar-advanced.html", wait_until="networkidle")
         return context, page, errors, requests
 
     def fresh(self, page):
@@ -557,7 +557,7 @@ class RadarChecks:
                     "status": response.status, "script_sources": refs,
                     "contains_v9": any("stock-radar-v9.js" in ref for ref in refs),
                     "sha256": hashlib.sha256(body).hexdigest(),
-                    "matches_checked_out_html": body == (self.root / "stock-value-radar.html").read_bytes(),
+                    "matches_checked_out_html": body == (self.root / "stock-value-radar-advanced.html").read_bytes(),
                     "x_frame_options": response.headers.get("X-Frame-Options"),
                     "scope": "Independent public HTML observation; UI interactions above use captured source.",
                 }
