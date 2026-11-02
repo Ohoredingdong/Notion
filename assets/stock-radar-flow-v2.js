@@ -7,7 +7,7 @@ function fxNum(v,d=1){return fxN(v)===null?"—":v.toLocaleString("ko-KR",{maxim
 
 function fxPct(v){return fxN(v)===null?"—":(v>0?"+":"")+fxNum(v,2)+"%";}
 
-function fxMoney(v,c){return fxN(v)===null?"—":fxNum(v,c==="KRW"?0:2)+(c==="KRW"?"원":" "+(c||""));}
+function fxMoney(v,c){return fxN(v)===null?"—":v.toLocaleString("ko-KR",{minimumFractionDigits:c==="KRW"?0:2,maximumFractionDigits:c==="KRW"?0:2})+(c==="KRW"?"원":" "+(c||""));}
 
 function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},selected:"",screen:"home",favorites:[],market:"ALL"};}
 
