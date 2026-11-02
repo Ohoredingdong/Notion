@@ -48,9 +48,10 @@ def main():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
 
-        def new(mode, width, height, opaque=False, init=None):
+        def new(mode, width, height, opaque=False, init=None, device_scale_factor=1):
             context = browser.new_context(viewport={'width': width, 'height': height}, timezone_id='Asia/Seoul',
-                                          reduced_motion='reduce', has_touch=opaque, is_mobile=opaque)
+                                          reduced_motion='reduce', has_touch=opaque, is_mobile=opaque,
+                                          device_scale_factor=device_scale_factor)
             page = context.new_page()
             page.on('pageerror', lambda error: errors.append(str(error)))
             if init:
@@ -463,7 +464,7 @@ def main():
 
             # Controlled reader response tests only the A4 review UI contract.
             # It deliberately makes no claim about OCR recognition accuracy.
-            context, page, frame = new('widget', 320, 568)
+            context, page, frame = new('widget', 390, 844, True, device_scale_factor=2)
             initial = frame.evaluate('KitchenJournal.getEnvelope()')
             frame.evaluate('''()=>{window.KitchenPhotoReader={read:async()=>({
                 nameCandidates:['OCR UI 후보'],quantityCandidates:['200g'],
@@ -485,6 +486,14 @@ def main():
             review.locator('[type="submit"]').click()
             assert frame.evaluate('KitchenJournal.getEnvelope()') == initial
             expect(review).to_be_visible()
+            expect(frame.locator('#tray .workflow-feedback')).to_contain_text('원본을 확인')
+            review.locator('[name="confirmed"]').locator('..').tap()
+            expect(review.locator('[name="confirmed"]')).to_be_checked()
+            assert frame.evaluate('KitchenJournal.getEnvelope()') == initial
+            review.locator('[name="name"]').fill('')
+            review.locator('[type="submit"]').click()
+            expect(frame.locator('#tray .workflow-feedback')).to_contain_text('재료 이름')
+            assert frame.evaluate('KitchenJournal.getEnvelope()') == initial
             review.locator('[name="name"]').fill('직접 검수한 재료')
             review.locator('[name="quantity"]').fill('225g')
             review.locator('[name="expiry"]').fill('2026-11-21')
@@ -516,7 +525,7 @@ def main():
             expect(frame.locator('#tray [data-wf="photos"]')).to_be_visible()
             expect(frame.locator('#addIngredientForm')).to_have_count(0)
             assert frame.evaluate('KitchenJournal.getEnvelope()') == committed
-            passed('controlled OCR-result UI only: A4 blocks unchecked save, retains manual edits across reread/photo replacement, resets confirmation, and commits once')
+            passed('controlled OCR-result UI only, opaque touch DSF2: A4 blocks unchecked/empty-name saves inline, one label tap recovers, edits survive reread and exactly one save commits')
             context.close()
 
             # A long list returns to its exact kind/location and scroll position.

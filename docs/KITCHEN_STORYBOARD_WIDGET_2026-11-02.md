@@ -21,6 +21,8 @@
 
 뒤로/닫기 후 다시 등록에 들어오면 선택 사진과 아직 저장하지 않은 수동 수정값을 유지한다. 사진 교체·재읽기는 최종 확인을 다시 받는다. `등록 취소`를 명시적으로 선택하고 확인한 경우에만 초안을 폐기하며, 확정 저장 후에는 그 초안이 다시 새 재료로 살아나지 않게 한다. 같은 이름도 기한·개봉일·단위가 다르면 별도 묶음이며 자동으로 합치지 않는다.
 
+공개 터치 검사에서 확인 체크 없이 저장한 뒤 브라우저의 기본 필수 입력 팝업이 터치를 삼키는 현상을 재현했다. 최종 사진 검수 form은 `novalidate`로 기본 팝업을 띄우지 않고 기존 명시적 확인 검사와 각 입력의 `validity`를 읽어 한국어 안내를 표시한다. 필수 이름·잘못 입력 중인 날짜는 저장을 막고 실제로 비운 선택 날짜와 모르는 수량 원문은 유지한다. 확인 전 저장은 원래 데이터를 바꾸지 않으며, 오류 뒤에도 체크를 한 번 누르고 정상 저장할 수 있다.
+
 목록의 `전체 / 식재료 / 양념`, 보관 위치, 검색과 스크롤을 상세 진입·뒤로가기에서 유지한다. 수정 저장 후에는 변경한 실제 수량·기한을 같은 목록 상태에 반영한다. 냉장고에서 연 상세를 닫으면 냉장고로 돌아온다. 등록·상세의 뒤로가기와 명시적 취소를 구분한다.
 
 ## 레시피의 계획과 먹은 기록
@@ -66,16 +68,18 @@ python -m unittest scripts/test_kitchen_mobile_transport.py
 
 ## 최종 검증
 
-고정 UI 소스는 `2634bea1e01cc3d913583b6629e383985db15ad7`다. 이후 문서·증거 커밋은 생성 HTML을 바꾸지 않는다. 예시 재고와 명시적인 테스트용 입력으로 검증했으며 이전 작업이나 중간 무압축 진단의 통과 수를 최종 전송물의 결과로 재사용하지 않았다.
+고정 UI 소스는 `3faf53841239e812a62ad8ca5091f3638bc54c41`다. 이후 문서·증거 커밋은 생성 HTML을 바꾸지 않는다. 예시 재고와 명시적인 테스트용 입력으로 검증했으며 이전 작업이나 중간 무압축 진단의 통과 수를 최종 전송물의 결과로 재사용하지 않았다.
 
 | 검사 | 현재 기록 |
 | --- | --- |
 | 고정 UI 소스·생성 SHA256 | 위 소스의 실제 전송4개 바이트·SHA256과 복원 원문 해시를 [생성 기록](kitchen-storyboard-widget/generated-files.json)에 보관했다. |
-| 크기·복원·전송 | 앱881,409B / 위젯881,416B, 모바일882,734B / 882,747B로 모두1MiB 이내. 복원 원문은 각각1,064,830B / 1,064,833B이며 기존8개 인코딩 이미지 바이트와 minify 모듈을 보존한다. 모바일 payload는 packed native와 정확히 같고 전송/압축 단위검사 **7/7 통과**. |
+| 크기·복원·전송 | 앱881,537B / 위젯881,544B, 모바일882,862B / 882,875B로 모두1MiB 이내. 복원 원문은 각각1,065,168B / 1,065,171B이며 기존8개 인코딩 이미지 바이트와 minify 모듈을 보존한다. 모바일 payload는 packed native와 정확히 같고 전송/압축 단위검사 **7/7 통과**. |
+| 무압축/포장 브라우저 비교 | 일반/opaque 앱·위젯×3크기 **12/12**와 특수문자·HTMLPreview4개 통과. `DecompressionStream`을 비활성화한 상태에서 복원 UTF-8·실제 CSS/좌표·텍스트·envelope·저장 원문이 같고 외부 요청/JS예외0이다. [실제 비교](kitchen-storyboard-widget/packed-browser-results.json), [고정4파일/8이미지](kitchen-storyboard-widget/encoded-assets.json). 캡처5개는 픽셀 동일하며 나머지는 안티앨리어싱5~80픽셀·최대7/255 채널값 차이(화면0.04401% 이하)로 구분해 기록했다. 모든 캡처가 바이트/픽셀 동일하다고 주장하지 않는다. |
 | 실제 브라우저 흐름 | 최종 packed 전송물로 **91/91 통과·JS0**. [요약](kitchen-storyboard-widget/summary.json), [탭/새 동작19](kitchen-storyboard-widget/tabs-results.json), [전체 흐름22](kitchen-storyboard-widget/flow-results.json), [가독성23](kitchen-storyboard-widget/readability-results.json), [회귀27](kitchen-storyboard-widget/regression-results.json). 등록 초안/저장 후 새 등록, 목록 필터·스크롤 복귀, 수량 전→후·실행 취소, 실제 기록/달력, 꾸미기 미리보기·적용/취소·동시 재고/보유권 보존 및 초점을 검사했다. OCR 제어 응답 검수와 실제 인식은 구분한다. |
+| 사진 검수 오류 회복 | opaque390×844·DSF2 실제 터치 **4/4**에서 확인 전 저장 차단→한국어 안내→실제 한 번의 label 탭→한 번 저장/정확히 한 묶음·빈 이름 차단을 확인했다. [터치 회복](kitchen-storyboard-widget/photo-touch-recovery.json). 실제 PC 키보드로 표시 기한/개봉일을 부분 삭제해 `badInput`인 날짜의 저장을 각각 막고, 유효한 날짜를 복구한 뒤 한 번 저장하는 [날짜 검사1/1](kitchen-storyboard-widget/photo-native-date-validation.json)도 통과했다. 모르는 수량 원문과 실제 빈 선택 날짜는 보존했다. |
 | 동일 상태 전후·시각 검토 | 앱/위젯×320×568·320×660·390×844·649×900·1120×1000 **10개**. 같은Nov1·원본 envelope·네 문 열림·선택 없음에서 데이터 완전 일치, 문서 높이=뷰포트, 가로 넘침0·하단 탭/장면 겹침0. [전후 비교](kitchen-storyboard-widget/comparison.json), [전 manifest](kitchen-storyboard-widget/before-manifest.json), [후](kitchen-storyboard-widget/after-manifest.json), [배경/발 위치10개](kitchen-storyboard-widget/background-geometry.json). 배경 바닥선 계산 오차0px, 프레임 발은 기존 의미대로 바닥선 아래8px. 320×568·390×844의 실제 글자/그림 및 집중 편집기 구도를 함께 검토했다. |
-| 실제 공개 HTTPS·원래 CDN OCR | **대기** — 고정 소스의 실제 HTTP 응답·SHA256·화면 실행과 OCR 엔진/원래 CDN을 쓴 사진 2장 경로를 확인할 것. 제어된 OCR 응답 검수 UI 통과와 실제 글자 인식을 구분한다. |
-| PR·공개 링크 | **대기** — feature 브랜치/PR 시도와 실제 검증한 앱·위젯 URL 및 공개 결과를 기록할 것. |
+| 실제 공개 HTTPS·원래 CDN OCR | 같은 소스3faf5384의 앱/위젯×649×900·390×844·320×660 **6/6**, 원래CDN OCR **2/2 통과**. HTTP200·고정 raw SHA·실제 srcdoc/native 일치·복원 SHA 및 DOM의 실제10모듈/5스타일 일치를 확인했다. 실제 제품/기한 두 사진을 읽고 수정525mL·Nov30 한 묶음을 원본 확인 뒤 한 번 저장했으며 사진의 외부 POST는 없다. [통합 결과/실행별 출처](kitchen-storyboard-widget/public-results.json). [최초 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41451929549)의4개 통과와 [사진 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41452688715)의2개 통과를 합산했다. 최초 사진 동작도 저장까지 통과했으나 닫힌 dialog의 원래 review DOM까지 없어져야 한다는 잘못된 검사로 실행 전체는 실패했다. 실제 닫힘/보이지 않음·두 번째 수동 form 부재로 검사만 수정했고 UI 소스는 바꾸지 않았다. [최초 실패 원문](kitchen-storyboard-widget/public-first-run.json), [최종 사진 결과](kitchen-storyboard-widget/public-phone-retry.json)를 구분해 보존한다. |
+| PR·공개 링크 | `feat/kitchen-storyboard-widget`에 push했다. base `design/kitchen-ux-storyboards`로 draft PR 생성을 시도했지만 GitHub GraphQL API403 Forbidden으로 생성되지 않았다. [PR 비교/작성](https://github.com/Ohoredingdong/Notion/compare/design/kitchen-ux-storyboards...feat/kitchen-storyboard-widget?expand=1). |
 
 실제 휴대폰·Safari·Notion 호스트 검증은 Chromium의 모바일 크기·터치 모방·공개 iframe 실행과 구분한다. 전체 냉장고 사진의 객체 자동 판별, 새 미니어처 생성, 공식 성분·가격 DB, 개인별 권장량/건강 조언, 기기 간 지속 저장·동기화와 운영 데이터 연결은 이번 UI 변경의 완료 범위가 아니다.
 
@@ -88,3 +92,12 @@ python -m unittest scripts/test_kitchen_mobile_transport.py
 | ![위젯](kitchen-storyboard-widget/widget-390-after.png) | ![레시피](kitchen-storyboard-widget/recipes.png) | ![식사 완료 테스트 입력](kitchen-storyboard-widget/meal-success-test-fixture.png) |
 
 [영양 화면의 테스트 입력](kitchen-storyboard-widget/nutrition-test-fixture.png) · [꾸미기 임시 배치의 테스트 입력](kitchen-storyboard-widget/decor-preview-test-fixture.png). 사진의 흰색1px 테스트 업로드를 실제 인식/표시 실패로 오인하지 않도록 제어 응답 A4 사진은 사용자용 화면 예시에서 제외한다.
+
+[공개 환경에서 실제 OCR로 읽은 검수 화면](kitchen-storyboard-widget/photo-actual-ocr-review.png) · [확인 후 한 번 저장한 결과](kitchen-storyboard-widget/photo-actual-ocr-saved.png). 인식용 사진과 수량 수정은 합성 테스트 입력이다.
+
+## 공개 검토 링크
+
+- [위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/3faf53841239e812a62ad8ca5091f3638bc54c41/previews/mobile/widget.html)
+- [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/3faf53841239e812a62ad8ca5091f3638bc54c41/previews/mobile/app.html)
+
+공개 iframe은 임시 세션이며 실제 화면의 백업 경로로 기록을 보관한다. 검증용 CI와 결과는 `delivery/verify-kitchen-storyboard-apply-20261102`, `preview/kitchen-storyboard-apply-validation-20261102`에만 게시한다.
