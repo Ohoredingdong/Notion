@@ -225,8 +225,14 @@ function fxHandleClick(e){
 function fxHandleInput(e){
  if(e.target?.id!=="fx-search-input")return;
  fxLocal.search=e.target.value;
- const ctx=fxContext(),list=document.getElementById?.("fx-results"),count=document.getElementById?.("fx-result-count"),expanded=ctx.screen==="stocks",pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
+ let ctx=fxContext(),pool=fxUniverse(ctx);
+ const bridge=window.StockRadarV2Bridge;
+ if(pool.length&&!pool.some(c=>String(c.symbol)===String(ctx.selected)))bridge?.setSelectedSilently?.(pool[0].symbol);
+ ctx=fxContext();
+ const list=document.getElementById?.("fx-results"),count=document.getElementById?.("fx-result-count"),focus=document.getElementById?.("fx-focus-slot"),risk=document.getElementById?.("fx-risk-slot"),expanded=ctx.screen==="stocks",cap=expanded?fxLocal.limit:9;
  if(list)list.innerHTML=fxStockRows(ctx,expanded);
+ if(focus)focus.innerHTML=fxFocus(ctx);
+ if(risk)risk.innerHTML=fxRisk(ctx);
  if(count)count.textContent=Math.min(pool.length,cap)+" / "+pool.length+"개 · AI 연구용";
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M'};
