@@ -58,6 +58,16 @@ def validate(r):
             raise ValueError('invalid_frozen_baseline_distribution')
     if r['direction'] not in CLASSES or abs(p[CLASSES.index(r['direction'])]-max(p)) > 1e-12:
         raise ValueError('direction_not_maximum_probability')
+    # An unofficial historical-price source and a reconstructed non-vintage
+    # series cannot assert exchange authentication or original point-in-time
+    # custody. An audit may certify these only with separately verified raw
+    # evidence; present flags must therefore remain literal false. Do not
+    # backfill optional claims into legacy frozen records.
+    for source_claim in ('provider_is_official_exchange',
+                         'history_is_point_in_time_vintage'):
+        if source_claim in r and r[source_claim] is not False:
+            raise ValueError('unsupported_ledger_source_claim_' + source_claim)
+
     # The published research-uncertainty flag is part of the frozen signal,
     # not a free-text display hint. Independently recompute it from the
     # applied three-class distribution using the *existing* 0.50/0.10 policy.
