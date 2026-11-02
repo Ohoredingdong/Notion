@@ -208,7 +208,7 @@ function fxOutcomes(ctx){
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
  const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?h.renderNews?.():s==="settings"?h.renderSettings?.():fxHome(ctx);
- return `<div class="fx-root">${fxNav(ctx)}<div class="fx-stage ${s==="home"?"fx-stage-home":"fx-stage-other"}" data-screen="${fxEscape(s)}">${body||""}</div></div>`;
+ return `<div class="fx-root">${fxNav(ctx)}<div id="source-status" class="fx-source-status" role="status" aria-live="polite">연구용 저장 자료 · 실시간 시세 아님</div><div class="fx-stage ${s==="home"?"fx-stage-home":"fx-stage-other"}" data-screen="${fxEscape(s)}">${body||""}</div></div>`;
 }
 
 function fxHandleClick(e){
