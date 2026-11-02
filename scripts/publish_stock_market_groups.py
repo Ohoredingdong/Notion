@@ -1,9 +1,10 @@
 """Publish categorization and its UI only, from current main without force push."""
+# Main stock-value-radar.html is user-designed and must not be published by collectors.
 from pathlib import Path
 from datetime import datetime,timezone
 import json,subprocess,tempfile,time,sys
 ROOT=Path.cwd();payload=(ROOT/'stock-market-groups.json').read_bytes()
-UI=['stock-market-groups.json','stock-value-radar.html','assets/stock-radar-v8.js','assets/stock-radar-v9.js','assets/stock-radar-v8.html','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
+UI=['stock-market-groups.json','assets/stock-radar-v8.js','assets/stock-radar-v9.js','assets/stock-radar-v8.html','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
 def git(*args,cwd=ROOT,check=True):return subprocess.run(['git',*args],cwd=cwd,check=check,text=True,capture_output=True)
 def generated(body):
  try:return datetime.fromisoformat(json.loads(body)['generated_at'])
