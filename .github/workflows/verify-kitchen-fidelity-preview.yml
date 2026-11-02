@@ -1,0 +1,37 @@
+name: Verify kitchen visual fidelity previews
+on:
+  push:
+    branches: [delivery/verify-kitchen-fidelity-20261103]
+    paths:
+      - '.github/workflows/verify-kitchen-fidelity-preview.yml'
+      - 'scripts/verify_kitchen_fidelity_public.py'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-fidelity-public-verification
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Verify six actual HTTPS visual profiles
+        run: python scripts/verify_kitchen_fidelity_public.py --source e1472f14904e33325049afbfb795ed773eb0c77c --publish-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-fidelity-public-browser
+          path: /tmp/kitchen-fidelity-public/
+          retention-days: 3
