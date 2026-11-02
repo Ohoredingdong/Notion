@@ -18,6 +18,11 @@ The independent forecast auditor recomputes actual direction, Brier and earliest
 - Change only `scripts/audit_stock_forecast_independent.py` and this document on a separate research branch; keep test fixture synthetic. Run intentional RED CI, minimal GREEN, standard audit/learning/attempt/acceptance regressions, and post-merge audit and public deployment as applicable. If any fails, leave candidate unmerged.
 - Do not alter actual forecasts, outcomes, learning, receipt claims, strict-green-1.0, model selection/promotion, shadow model, provider credentials, orders or unrelated workflows.
 
+## Actual synthetic RED trial (not operational data corruption)
+- Intentional failing pre-fix audit: [Actions 41377136850](https://github.com/Ohoredingdong/Notion/actions/runs/41377136850), job `125059725302` (2026-11-02 02:19 UTC). The single preregistered synthetic family produced **five expected failures**: both falsified execution/source claims, false and nonboolean public-before-target flags, and a supposedly timely flag without public proof. All returned `ledger_arithmetic_consistent` before the fix, rather than an integrity error. The positive valid row still passed. Failure count is fault cases, **not** five independent model trials.
+- Scope of observed flaw: the pre-fix read-only outcome auditor missed these forged optional claims. **No actual outcome flag was false or inconsistent** in the 69 historical rows checked; this is not a claim of live data tampering or a trading result.
+- Limited guard implemented only in `scripts/audit_stock_forecast_independent.py`: when present, execution/provider limitations must remain exact booleans `true`; the pre-target publication flag must equal `issued_at <= independently verified first-public time < target.start` in UTC. Missing legacy fields remain missing, not retroactively claimed.
+- The implementation has not yet been accepted until its GREEN independent CI and post-merge checks run successfully.
+
 ## Outcome and limits
-- Pending actual RED/GREEN trial and independent CI. This document alone is not a successful fix or predictive improvement.
 - Prior score remains 42/13 from frozen first issuance and nonoverlap. All 24 groups fall below 120 future targets and 20 observation days; exchange-authoritative quote/execution, human receipt, after-cost prospective paper edge and untouched follow-up remain unverified. Current usefulness: `not_proven`.
