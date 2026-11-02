@@ -5,6 +5,11 @@ on:
     branches: [main, 'fix/radar-feature-audit-20261030']
     paths:
       - 'stock-value-radar.html'
+      - 'stock-radar-dashboard.html'
+      - 'stock-value-radar-advanced.html'
+      - 'assets/stock-radar-clean-bridge.js'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'scripts/test_stock_radar_flow_browser.py'
       - 'assets/stock-radar-neutral.js'
       - 'assets/stock-radar-neutral.css'
       - 'assets/stock-radar-v8.js'
@@ -37,6 +42,9 @@ jobs:
       - name: Syntax checks
         run: |
           node --check assets/stock-radar-neutral.js
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python -m py_compile scripts/test_stock_radar_flow_browser.py
           node --check assets/stock-recommendations.js
           node --check assets/stock-investment-cases.js
           node --check assets/stock-forecast.js
@@ -49,6 +57,7 @@ jobs:
         run: |
           node tests/stock-entry-browser.cjs
           python scripts/test_stock_decision_browser.py
+          python scripts/test_stock_radar_flow_browser.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
