@@ -83,28 +83,50 @@ function fxStockPanel(ctx,expanded){
 
 function fxChart(c){
  const h=fxHelpers(),p=h.pointData?.([String(c.symbol)],fxLocal.period),line=p?.series?.[0],vals=line?.prices||[];
- if(vals.length<2)return '<div class="fx-chart-empty">비교할 수 있는 과거 종가 기록이 없습니다. 다른 기간을 선택하거나 수집 상태를 확인하세요.</div>';
- const W=700,H=230,L=59,R=63,T=14,B=31,lo=Math.min(...vals),hi=Math.max(...vals),pad=(hi-lo||Math.abs(hi)*.01||1)*.14;
- const x=i=>L+i*(W-L-R)/Math.max(1,vals.length-1),y=v=>T+(hi+pad-v)*(H-T-B)/(hi-lo+2*pad);
- const pts=vals.map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" "),rising=vals.at(-1)>=vals[0],stroke=rising?"#db5a76":"#3c77ca";
- const anchors=[0,.5,1].map(t=>{const v=lo+(hi-lo)*t;return `<line x1="${L}" x2="${W-R+3}" y1="${y(v)}" y2="${y(v)}" stroke="#e9eef7" stroke-dasharray="5 5"/><text x="${L-9}" y="${y(v)+4}" fill="#8c9fb7" font-size="12" text-anchor="end">${fxNum(v,0)}</text>`}).join("");
- const original=p?.sets?.[0];
+ if(vals.length<2)return '<div class="fx-chart-empty">비교 가능한 저장 종가가 없습니다. 기간을 바꾸거나 자료 상태를 확인해 주세요.</div>';
+ const original=p.sets?.[0],history=original?.bars||[];
+ const ma=n=>{
+  const map=new Map(),buf=[];let total=0;
+  for(const b of history){
+   const v=fxN(b.close);if(v===null)continue;
+   buf.push(v);total+=v;
+   if(buf.length>n)total-=buf.shift();
+   if(buf.length===n)map.set(b.date,total/n);
+  }
+  return p.dates.map(date=>map.get(date)??null);
+ };
+ const m20=ma(20),m60=ma(60),extra=[...m20,...m60].filter(v=>v!==null);
+ const W=700,H=230,L=58,R=64,T=14,B=31,low=Math.min(...vals,...extra),high=Math.max(...vals,...extra),pad=(high-low||Math.abs(high)*.01||1)*.14;
+ const x=i=>L+i*(W-L-R)/Math.max(1,vals.length-1),y=v=>T+(high+pad-v)*(H-T-B)/(high-low+2*pad);
+ const points=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" "),rising=vals.at(-1)>=vals[0],stroke=rising?"#d95574":"#3b78d0";
+ const maLine=(numbers,color)=>{
+  const parts=[],draw=[];for(let i=0;i<numbers.length;i++){
+   if(numbers[i]===null){if(parts.length>1)draw.push(`<polyline points="${parts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.15" opacity=".92"/>`);parts.length=0;continue}
+   parts.push(`${x(i).toFixed(1)},${y(numbers[i]).toFixed(1)}`);
+  }
+  if(parts.length>1)draw.push(`<polyline points="${parts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.15" opacity=".92"/>`);
+  return draw.join("");
+ };
+ const ticks=[0,.5,1].map(t=>{const v=low+(high-low)*t;return `<line x1="${L}" x2="${W-R+3}" y1="${y(v)}" y2="${y(v)}" stroke="#e9eff8" stroke-dasharray="4 5"/><text x="${L-8}" y="${y(v)+4}" fill="#8ea1bc" font-size="12" text-anchor="end">${fxNum(v,0)}</text>`}).join("");
  const latest=p.dates.at(-1),hist=original?.historical_end,additional=original?.chart_status==="snapshot_appended";
- const actual=original?.bars||[];
- const atDate=new Map(actual.map(b=>[b.date,b.volume]));
- const vol= p.dates.map(k=>fxN(atDate.get(k)));const max=Math.max(0,...vol.filter(v=>v!==null));
- const volumeColumns=max>0?vol.map((v,i)=>v===null?"":`<rect x="${x(i)-3}" y="${H-B-20*(v/max)}" width="6" height="${20*v/max}" fill="#b9c9e7" opacity=".72"/>`).join(""):"";
- const caution=additional?`과거 일봉 ${fxEscape(hist)} + 이후 저장 종가 ${fxEscape(latest)} (마지막 구간 점선·중간 호가는 미확인)`:
-  original?.chart_status==="aligned"?"실제 완료 거래일 종가":`차트 기준일 ${fxEscape(hist||"확인 전")} · 저장 종가와 날짜가 다를 수 있습니다`;
- return `<svg class="fx-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fxEscape(c.name)} ${fxEscape(p.dates[0])}부터 ${fxEscape(latest)}까지 검증된 실제 종가">
- <defs><linearGradient id="fx-price-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${stroke}" stop-opacity=".17"/><stop offset="1" stop-color="${stroke}" stop-opacity=".015"/></linearGradient></defs>
- ${anchors}<polygon points="${L},${H-B} ${pts} ${W-R},${H-B}" fill="url(#fx-price-fill)"/>
- ${volumeColumns}
- ${additional?`<polyline points="${vals.slice(0,-1).map((v,i)=>x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ")}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round"/><line x1="${x(vals.length-2)}" y1="${y(vals.at(-2))}" x2="${x(vals.length-1)}" y2="${y(vals.at(-1))}" stroke="${stroke}" stroke-width="3.1" stroke-dasharray="7 5"/>`:`<polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"/>`}
- <circle cx="${x(vals.length-1)}" cy="${y(vals.at(-1))}" r="5" fill="${stroke}" stroke="white" stroke-width="2.5"/>
- <rect x="${W-R+4}" y="${y(vals.at(-1))-13}" rx="6" width="${R-8}" height="25" fill="#274a78"/>
- <text x="${W-R+(R-8)/2+4}" y="${y(vals.at(-1))+5}" text-anchor="middle" fill="white" font-size="11.7" font-weight="700">${fxNum(vals.at(-1),0)}</text>
- </svg><div class="fx-chart-foot"><span>${fxEscape(p.dates[0])}</span><span>${fxEscape(caution)}</span><span>${fxEscape(latest)}</span></div>`;
+ const vol=new Map(history.map(b=>[b.date,b.volume])),numbers=p.dates.map(d=>fxN(vol.get(d)));
+ const max=Math.max(0,...numbers.filter(v=>v!==null));
+ const bars=max>0?numbers.map((v,i)=>v===null?"":`<rect x="${x(i)-3}" y="${H-B-18*v/max}" width="6" height="${18*v/max}" fill="#b8c9e8" opacity=".73"/>`).join(""):"";
+ const actualPoints=additional?vals.slice(0,-1).map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" "):points;
+ const final=additional?`<line x1="${x(vals.length-2)}" y1="${y(vals.at(-2))}" x2="${x(vals.length-1)}" y2="${y(vals.at(-1))}" stroke="${stroke}" stroke-width="3.2" stroke-dasharray="7 5"/>`:"";
+ const annotation=additional?`실제 일봉 ${fxEscape(hist)} · 이후 저장 종가 ${fxEscape(latest)} (마지막 선 점선)`:original?.chart_status==="aligned"?"완료 일봉 기준 종가":"차트 기준일 "+fxEscape(hist||"미확인");
+ return `<svg class="fx-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fxEscape(c.name)} 실제 저장된 종가 및 계산된 20일, 60일 이동평균선">
+ <defs><linearGradient id="fx-price-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${stroke}" stop-opacity=".18"/><stop offset="1" stop-color="${stroke}" stop-opacity=".018"/></linearGradient></defs>
+ ${ticks}<polygon points="${L},${H-B} ${points} ${W-R},${H-B}" fill="url(#fx-price-fill)"/>
+ ${bars}${maLine(m60,"#a994e9")}${maLine(m20,"#ecb94c")}
+ <polyline points="${actualPoints}" fill="none" stroke="${stroke}" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>
+ ${final}
+ <circle cx="${x(vals.length-1)}" cy="${y(vals.at(-1))}" r="4.5" fill="${stroke}" stroke="white" stroke-width="2"/>
+ <rect x="${W-R+5}" y="${Math.max(2,Math.min(H-30,y(vals.at(-1))-13))}" width="${R-9}" height="25" rx="7" fill="#284d7b"/>
+ <text x="${W-R+(R-9)/2+5}" y="${Math.max(2,Math.min(H-30,y(vals.at(-1))-13))+17}" text-anchor="middle" fill="#fff" font-size="11" font-weight="750">${fxNum(vals.at(-1),0)}</text>
+ </svg>
+ <div class="fx-v5-ma-legend"><span><i class="close"></i>종가</span>${m20.some(v=>v!==null)?'<span><i class="ma20"></i>MA20</span>':''}${m60.some(v=>v!==null)?'<span><i class="ma60"></i>MA60</span>':''}<span>거래량: 저장된 실제 일봉</span></div>
+ <div class="fx-chart-foot"><span>${fxEscape(p.dates[0])}</span><span>${fxEscape(annotation)}</span><span>${fxEscape(latest)}</span></div>`;
 }
 function fxBars(c,ctx){
  const sig=fxPrediction(c,ctx),r=sig.r;
