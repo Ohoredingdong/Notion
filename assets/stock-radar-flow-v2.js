@@ -64,7 +64,7 @@ function fxStockRows(ctx,expanded){
  return pool.slice(0,cap).map(c=>{
   const m=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
   const d=h.change?.(c);
-  return `<button type="button" data-nr-select="${fxEscape(c.symbol)}" class="fx-row ${String(c.symbol)===String(ctx.selected)?"active":""}" aria-label="${fxEscape(c.name)} 선택">
+  return `<button type="button" data-nr-select="${fxEscape(c.symbol)}" class="fx-row ${String(c.symbol)===String(fxChosen(ctx)?.symbol)?"active":""}" aria-label="${fxEscape(c.name)} 선택">
   <span class="fx-stock-name"><strong>${fxEscape(c.name)}</strong><small>${fxEscape(c.symbol)} · ${fxEscape(m||"분류 확인 전")}</small></span>
   <span class="fx-price">${fxMoney(c.price,c.currency)}<small class="${h.tone?.(d)||""}">${fxPct(d)}</small></span><span class="fx-signal-wrap">${fxSignalChip(c,ctx)}</span></button>`;
  }).join("");
@@ -78,7 +78,7 @@ function fxStockPanel(ctx,expanded){
  <label class="fx-search">${h.I?.("search")||"⌕"}<input id="fx-search-input" type="search" aria-label="종목명·코드로 검색" placeholder="종목명 · 코드 검색" value="${fxEscape(fxLocal.search)}"></label></div>
  <div class="fx-columns"><span>기업 / 시장</span><span>저장 종가</span><span>AI 방향</span></div>
  <div class="fx-results" id="fx-results">${fxStockRows(ctx,expanded)}</div>
- <div class="fx-list-footer"><span id="fx-result-count">${Math.min(pool.length,cap)} / ${pool.length}개 · AI 연구용</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-fx-filter="star">★ 관심만</button>'}</div></section>`;
+ <div class="fx-list-footer"><span id="fx-result-count">${Math.min(pool.length,cap)} / ${pool.length}개 · AI 연구용</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}</div></section>`;
 }
 
 function fxChart(c){
@@ -204,6 +204,7 @@ function fxRender(){
 function fxHandleClick(e){
  const button=e.target.closest?.("button");if(!button)return;
  const ds=button.dataset,bridge=window.StockRadarV2Bridge;if(!bridge)return;
+ if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36}
  if("fxRefresh" in ds){bridge.refresh();return}
  if(ds.fxPeriod){fxLocal.period=ds.fxPeriod;bridge.render();return}
  if(ds.fxFilter){fxLocal.filter=ds.fxFilter;fxLocal.limit=36;const c=fxChosen(fxContext());if(c)bridge.select(c.symbol);else bridge.render();return}
