@@ -94,7 +94,7 @@ with sync_playwright() as play:
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
         check("Market index cards",
-            page.locator(".fx-market-row .nr-index").count() == 4)
+            page.locator(".fx-v5-markets .nr-index").count() == 4)
         check("Signal probability labels",
             page.locator(".fx-list-panel .fx-row").count() > 0 and
             page.locator(".fx-v5-cockpit .fx-v5-ai").count() == 1)
