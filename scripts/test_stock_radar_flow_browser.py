@@ -53,11 +53,29 @@ with sync_playwright() as play:
             check(f"Desktop {width}x{height}: grid fits screen",
                 0 < info["grid"]["top"] < info["grid"]["bottom"] <= height - 18,
                 json.dumps(info,ensure_ascii=False))
+            check(f"Desktop {width}x{height}: genuine chart drawn",
+                page.locator(".fx-home-grid .fx-chart-svg polyline").count() > 0,
+                "Price chart should not disappear when the current snapshot is newer than the history file")
             check(f"Desktop {width}x{height}: panels rendered",
                 page.locator(".fx-home-grid .fx-list-panel").count() == 1 and
                 page.locator(".fx-home-grid .fx-focus").count() == 1 and
                 page.locator(".fx-home-grid .fx-aside").count() == 1)
             check(f"Desktop {width}x{height}: no page errors", not errors, str(errors))
+            for target, selector in [("detail", "stockdetail"),("scenario", "scenario")]:
+                page.locator(f'.fx-nav [data-nr-screen="{selector}"]').click()
+                bounds = page.evaluate("""() => ({
+                    html:document.documentElement.scrollHeight,
+                    body:document.body.scrollHeight,
+                    inner:innerHeight,
+                    visible:document.querySelector('.fx-stage-other')?.getBoundingClientRect().bottom,
+                    content:document.querySelector('.fx-detail-content,.fx-scenario-v4')?.getBoundingClientRect().bottom
+                })""")
+                check(f"Desktop {width}x{height}: {target} one-screen fit",
+                    bounds["html"] <= height + 3 and bounds["body"] <= height + 3 and
+                    0 < bounds["content"] <= height+3,
+                    json.dumps(bounds,ensure_ascii=False))
+                screenshot(page,f"radar-flow-{target}-{width}x{height}.png")
+            page.locator('.fx-nav [data-nr-screen="home"]').click()
             screenshot(page, f"radar-flow-{width}x{height}.png")
             page.close()
 
@@ -90,11 +108,23 @@ with sync_playwright() as play:
               symbol in page.locator(".fx-focus-head").inner_text())
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
         check("Details preserve selected ticker",
-            symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-grid").count()==1)
+            symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
+        check("Deep financial analysis now integrated",
+            page.locator(".fx-detail-mid .fx-panel").count() == 3 and
+            page.locator(".fx-detail-lower .fx-panel").count() == 3 and
+            page.locator(".fx-detail-v4").count() == 1)
+        check("Deep analysis uses actual price chart",
+            page.locator(".fx-detail-primary .fx-chart-svg polyline").count() >= 1)
+        screenshot(page, "radar-flow-integrated-research.png")
         page.locator('.fx-nav [data-nr-screen="scenario"]').click()
         check("Scenario appears without fake future curve",
-            page.locator(".fx-scenario-layout").count() == 1 and
-            "미래 날짜별 가격 경로" in page.locator(".fx-scenario-layout").inner_text())
+            page.locator(".fx-scenario-v4").count() == 1 and
+            "미래 경로" in page.locator(".fx-scenario-v4").inner_text() and
+            page.locator(".fx-scenario-option").count() == 3)
+        check("All three scenario alternatives and model probabilities",
+            page.locator(".fx-scenario-options .fx-scenario-option").count() == 3 and
+            page.locator(".fx-scenario-ai-panel .fx-ai-card").count() == 1)
+        screenshot(page, "radar-flow-three-scenarios.png")
         page.locator('.fx-nav [data-nr-screen="performance"]').click()
         check("Prediction outcome results visible",
             page.locator(".fx-audit").count() == 1)
