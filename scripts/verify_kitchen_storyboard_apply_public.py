@@ -523,7 +523,8 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     after=frame.evaluate('MiniKitchen.exportWorld()')
     old_ids={i['id'] for i in before['items']};saved=[i for i in after['items'] if i['id'] not in old_ids]
     assert len(saved)==1 and '우유' in saved[0]['name'] and saved[0]['quantity']=='525mL' and saved[0]['expiry']=='2026-11-30',saved
-    expect(frame.locator('#addIngredientForm')).to_have_count(0)
+    expect(review).not_to_be_visible()
+    expect(frame.locator('#addIngredientForm:not([data-photo-review="true"])')).to_have_count(0)
 
     sent=[r for r in requests[start:] if r['url'].startswith(('http://','https://'))]
     assert all(r['method'] in ('GET','HEAD','OPTIONS') and r['body_bytes']==0 for r in sent), sent
@@ -534,7 +535,7 @@ def check_actual_ocr(page, frame, touch, requests, responses):
     page.screenshot(path=str(OUT/('ocr-'+frame.locator('body').get_attribute('data-mode')+'-saved.png')),full_page=True)
     return {'executed':True,'expected_name_found':True,'expected_500mL_found':True,'expected_2026_11_30_found':True,
         'recognized_name_candidates':names,'recognized_quantity_candidates':quantities,'text':{'product':raw[0],'expiry':raw[1]},
-        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'unchecked_save_shows_korean_inline_error_without_write':True,'one_actual_confirmation_label_tap_checks_required_box':True,'confirmation_label_geometry':confirmation_geometry,'one_item_saved_only_after_original_confirmation':True,
+        'single_actual_native_review_and_save':True,'review_back_retains_correction':True,'unchecked_save_shows_korean_inline_error_without_write':True,'one_actual_confirmation_label_tap_checks_required_box':True,'confirmation_label_geometry':confirmation_geometry,'one_item_saved_only_after_original_confirmation':True,'tray_closed_without_second_manual_form':True,
         'no_remote_photo_post_or_sync':True,'external_requests':sent,'dependency_responses':observed}
 
 
