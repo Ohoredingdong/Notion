@@ -157,8 +157,10 @@ def check_purpose(page, frame):
     """Use the current purpose-based paths, preserving all stored lots and coordinates."""
     before=frame.evaluate('KitchenJournal.getEnvelope()')
     frame.locator('.header-actions [data-workflow="inventory"]').click()
+    expect(frame.locator('#tray .workflow-nav [aria-current="page"]')).to_have_text('부엌')
     frame.locator('[data-wf="inventoryKind"][data-arg="seasoning"]').click()
     expect(frame.locator('[data-wf="inventoryKind"][data-arg="seasoning"]')).to_have_attribute('aria-pressed','true')
+    expect(frame.locator('#tray .workflow-nav [aria-current="page"]')).to_have_text('부엌')
     ids=frame.locator('.inventory-row').evaluate_all('rows=>rows.map(r=>r.dataset.arg)')
     wanted=frame.evaluate('MiniKitchen.exportWorld().items.filter(i=>i.kind==="seasoning").map(i=>i.id)')
     assert sorted(ids)==sorted(wanted), (ids,wanted)
@@ -194,10 +196,38 @@ def check_purpose(page, frame):
     frame.locator('[data-home-tab="fridge"]').click()
     expect(frame.locator('#fridgeSceneHost #kitchen')).to_be_visible()
     assert frame.evaluate('KitchenJournal.getEnvelope()')==opened, 'Decor browsing must preserve every lot, meal and prop position'
-    return {'physical_space_tabs_removed':True,'seasoning_filter_all_lots_exact':True,'ingredient_filter_writes_no_records':True,
+    return {'physical_space_tabs_removed':True,'inventory_navigation_current_kitchen':True,'seasoning_filter_all_lots_exact':True,'ingredient_filter_writes_no_records':True,
         'recipes_lead_to_plan_and_meal_forms':True,'no_counter_preview_cta':True,'decor_is_dedicated_editor':True,
         'decor_hides_non_decor_art_without_removing_records':True,'decor_exit_reopen_preserves_exact_envelope':True,
         'fridge_scene_restored_to_fridge_host':True}
+
+
+def check_wide_decor_shortcut(page, frame):
+    """Exercise the actual wide app shortcut, then return to the declared profile."""
+    original=page.viewport_size
+    before=frame.evaluate('KitchenJournal.getEnvelope()')
+    mode=frame.locator('body').get_attribute('data-mode')
+    if mode!='app':
+        return {'executed':False,'reason':'The widget intentionally has no desktop summary sidebar'}
+    try:
+        page.set_viewport_size({'width':1120,'height':1000})
+        frame.locator('[data-home-tab="fridge"]').click()
+        shortcut=frame.locator('#desktopSummary [data-home-open="decor"]')
+        expect(shortcut).to_be_visible()
+        shortcut.click()
+        expect(frame.locator('#homeDecor')).to_be_visible()
+        expect(frame.locator('#decorStage #kitchen')).to_be_visible()
+        expect(frame.locator('#tray')).not_to_be_visible()
+        expect(frame.locator('[data-home-tab="kitchen"]')).to_have_attribute('aria-selected','true')
+        frame.locator('[data-decor-done]').click()
+        expect(frame.locator('#homeGrowth')).to_be_visible()
+        frame.locator('[data-home-tab="fridge"]').click()
+        assert frame.evaluate('KitchenJournal.getEnvelope()')==before
+        page.screenshot(path=str(OUT/'app-wide-decor-shortcut-return.png'),full_page=True)
+        return {'executed':True,'viewport':[1120,1000],'same_editor_no_theme_dialog':True,
+            'actual_click_returns_to_growth_and_fridge':True,'records_unchanged':True}
+    finally:
+        page.set_viewport_size(original)
 
 
 def check_home(page, frame, touch):
@@ -411,6 +441,7 @@ def main():
                         case['dock']=check_dock(frame)
                         case['tab_navigation']=check_tabs(frame)
                         case['purpose_navigation']=check_purpose(page,frame)
+                        if profile=='desktop':case['wide_decor_shortcut']=check_wide_decor_shortcut(page,frame)
                         case['live_home_overview']=check_home(page,frame,touch)
                         page.screenshot(path=str(OUT/(label+'-initial.png')),full_page=True)
                         check_independent_doors(page,frame,touch)
