@@ -6,7 +6,7 @@ const assert=require('node:assert/strict');
   for(const width of [1280,390]){
    const page=await browser.newPage({viewport:{width,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
-   await page.goto('http://127.0.0.1:8765/stock-value-radar.html',{waitUntil:'domcontentloaded'});
+   await page.goto('http://127.0.0.1:8765/stock-value-radar-advanced.html',{waitUntil:'domcontentloaded'});
    const neutral=page.locator('.nr-rail [data-nr-view="discover"]');
    if(await neutral.count()){await neutral.first().waitFor({timeout:45000});await neutral.first().click();}
    else if(await page.locator('#tab-discover').count()){await page.locator('#tab-discover').click();}
