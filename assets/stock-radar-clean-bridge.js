@@ -211,7 +211,15 @@ function forms(ev){
 }
 function snapshot(){return {screen,selected,data:D,favorites:[...favorites],market,rules:[...rules],paper:[...paper]};}
 
-function choose(id){const c=company(id);if(!c)return;selected=String(c.symbol);render();}
+function choose(id){
+ const c=company(id);if(!c)return;
+ selected=String(c.symbol);
+ if(screen==="home"||screen==="stocks"){
+  if(market!=="ALL"&&!isMarket(c,market))market="ALL";
+  window.StockRadarFlowV2?.ensureSelectedVisible?.(c);
+ }
+ render();
+}
 
 function goto(v){if(!["home","stocks","stockdetail","scenario","monitor","portfolio","news","performance","settings"].includes(v))return;screen=v;render();window.scrollTo({top:0,behavior:"instant"});}
 
