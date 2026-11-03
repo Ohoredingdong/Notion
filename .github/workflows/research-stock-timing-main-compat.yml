@@ -1,0 +1,53 @@
+name: Research-only current-main forecast timing compatibility
+on:
+  push:
+    branches:
+      - research/timing-main-compat-20261103
+    paths:
+      - 'scripts/test_stock_timing_main_compat_20261103.cjs'
+      - 'assets/stock-radar-flow-v2.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bounded-ui-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Frozen-clock evidence-first current-main compatibility
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node scripts/test_stock_timing_main_compat_20261103.cjs
+          node scripts/test_stock_forecast_ui.cjs
+      - name: Independent immutable evidence and non-promotion gates
+        if: success()
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - name: Real saved-data desktop browser regression, no orders
+        if: success()
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+          python -m http.server 8765 >/tmp/stock-research-compat-http.log 2>&1 &
+          python scripts/test_stock_radar_flow_browser.py
+      - name: Archive only research/test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-current-main-signal-integrity
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-timing-acceptance-guard.json
+            decision-browser-tests/*.png
+            decision-browser-tests/*.json
