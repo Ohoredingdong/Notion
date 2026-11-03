@@ -34,6 +34,16 @@ class LaunchCoverageNegativeControls(unittest.TestCase):
                 event("2026-11-03T13:17:00Z", name="Update Stock Decisions")]
         self.assertEqual(audit(rows, START, ASOF, complete=True)["observed_schedule_created_count"], 0)
 
+    def test_same_second_schedule_runs_do_not_crash_sort(self):
+        # GitHub created_at has one-second resolution. Distinct runs may tie.
+        a = event("2026-11-03T13:17:00Z", result="success")
+        b = event("2026-11-03T13:17:00Z", result="failure")
+        a["id"], b["id"] = 10001, 10002
+        report = audit([b, a], START, ASOF, complete=True)
+        self.assertEqual(report["observed_schedule_created_count"], 2)
+        self.assertEqual(report["conclusions_in_window"], {"success": 1, "failure": 1})
+        self.assertFalse(report["timing_utility_proven"])
+
     def test_failure_still_counts_creation_but_not_success(self):
         rows = [event("2026-11-03T13:30:00Z", result="failure")]
         x = audit(rows, START, ASOF, complete=True)
