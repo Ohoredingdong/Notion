@@ -307,10 +307,19 @@ function fxV5Side(ctx,c){
  </aside>`;
 }
 
+function fxSafeTargets(c){
+ const raw=c?.targets||{};
+ const value=k=>{const n=fxN(raw[k]);return n!==null&&n>0?n:null;};
+ const low=value("low"),median=value("median"),high=value("high");
+ const inverted=(low!==null&&median!==null&&low>median)||(median!==null&&high!==null&&median>high)||(low!==null&&high!==null&&low>high);
+ if(inverted)return {low:null,median:null,high:null,valid:false,reason:"목표가 상·중·하 순서 불일치"};
+ const complete=[low,median,high].every(v=>v!==null);
+ return {low,median,high,valid:complete,reason:complete?"":'목표가 집계 일부 누락'};
+}
 function fxV5Cockpit(ctx){
  const c=fxChosen(ctx),h=fxHelpers();
  if(!c)return `<section class="fx-panel fx-v5-cockpit"><div class="fx-chart-empty">조건에 맞는 기업이 없습니다. 시장·신호 필터를 변경해 주세요.</div></section>`;
- const f=c.forecasts||{},a=c.assessment||{},t=c.targets||{},b=c.balance||{},tech=c.technical||{},history=c.history||{},first=ctx.data?.charts?.series?.[c.symbol];
+ const f=c.forecasts||{},a=c.assessment||{},t=fxSafeTargets(c),b=c.balance||{},tech=c.technical||{},history=c.history||{},first=ctx.data?.charts?.series?.[c.symbol];
  const delta=h.change?.(c),market=window.RadarMarkets?.label?.(c)||c.market;
  const focus=fxV5Facts(c);
  const inputs=[
@@ -330,7 +339,7 @@ function fxV5Cockpit(ctx){
    <div class="fx-v5-ai"><div class="fx-v5-subhead"><h3>AI 방향 분석</h3><span class="fx-v5-ai-tag">연구용</span></div>${fxBars(c,ctx)}<div class="fx-v5-ai-disclaimer">${fxEscape(fxModelQuality(ctx).status)} · 모델 분류≠매수 성공률</div></div>
    <div class="fx-v5-targets"><div class="fx-v5-subhead"><h3>가격 시나리오</h3><button type="button" data-nr-screen="scenario">비교 ›</button></div>
     <div class="fx-v5-targetlist">${inputs.map(([title,n,cls])=>`<div class="fx-v5-targetrow ${cls}"><small>${title}</small><strong>${fxMoney(n,c.currency)}</strong><span>${fxN(n)===null||fxN(c.price)===null||!c.price?"목표 없음":fxPct((n/c.price-1)*100)}</span></div>`).join("")}</div>
-    <p>${fxEscape(extras)} · 실현확률 미산출</p>
+    <p>${fxEscape(t.reason||extras)} · 실현확률 미산출</p>
    </div>
  </div>
  <div class="fx-v5-middle">
@@ -466,7 +475,7 @@ function fxDetail(ctx){
     <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>가치평가 · 가격 부담</h3><span>애널리스트 집계</span></div>
       <div class="fx-d-facts">
        ${fxFact("다음 FY 예상 PER",fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,2)+"배","완료 종가 / 예상 EPS")}
-       ${fxFact("목표가 중앙값",fxMoney(c.targets?.median,c.currency),"적정가치 확정값 아님")}
+       ${fxFact("목표가 중앙값",fxMoney(fxSafeTargets(c).median,c.currency),"적정가치 확정값 아님")}
        ${fxFact("순차입금 / EBITDA",fxN(balance.net_debt_ebitda)===null?"—":fxNum(balance.net_debt_ebitda,2)+"배","기준 "+(balance.asof||"미확인"))}
        ${fxFact("단기 20일 전고점",fxMoney(tech.prior_high20,c.currency),"지지·저항 추정값")}
       </div></section>
@@ -500,7 +509,7 @@ function fxDetail(ctx){
   </div>${fxSteps(ctx)}</div>`;
 }
 function fxScenarioPlot(c){
- const t=c.targets||{},h=fxHelpers(),series=h.pointData?.([String(c.symbol)],"3M"),vals=series?.series?.[0]?.prices||[];
+ const t=fxSafeTargets(c),h=fxHelpers(),series=h.pointData?.([String(c.symbol)],"3M"),vals=series?.series?.[0]?.prices||[];
  const current=fxN(c.price),refs=[["상단 목표",t.high,"#d85876"],["중앙 목표",t.median,"#377bd1"],["하단 목표",t.low,"#28a074"]].filter(x=>fxN(x[1])!==null);
  if(current===null||refs.length===0)return '<div class="fx-chart-empty">저장 종가와 목표가를 비교할 데이터가 없습니다.</div>';
  const prices=[current,...refs.map(x=>x[1]),...vals],low=Math.min(...prices),high=Math.max(...prices),pad=(high-low||Math.abs(high)*.015||1)*.14;
@@ -525,7 +534,7 @@ function fxScenarioPlot(c){
 function fxScenario(ctx){
  const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
  if(!c)return '<section class="fx-empty-state">기업을 먼저 선택해 주세요.</section>';
- const t=c.targets||{},f=c.forecasts||{},a=c.assessment||{},tech=c.technical||{},current=fxN(c.price);
+ const t=fxSafeTargets(c),f=c.forecasts||{},a=c.assessment||{},tech=c.technical||{},current=fxN(c.price);
  const order=[["낙관 상단",t.high,"up","상단"],["중앙 기준",t.median,"base","중앙"],["비관 하단",t.low,"down","하단"]];
  const conditions=[
   ["EPS 추정치 상향·전고점 돌파 확인",fxN(tech.prior_high20)===null?"실적 발표·공시 재검증":`20일 전고점 ${fxMoney(tech.prior_high20,c.currency)} 재확인`],
@@ -542,7 +551,7 @@ function fxScenario(ctx){
  return `<div class="fx-scenario-v4">
  <div class="fx-intro"><div><h2>${fxEscape(c.name)} · 시나리오 한눈에</h2><p>저장된 목표가 수준과 AI 방향 연구를 따로 비교합니다. 투자 전략의 조건은 최신 공시로 재확인해야 합니다.</p></div><span class="fx-stamp">${fxEscape(c.price_session||"기준일 미확인")} 종가 ${fxMoney(c.price,c.currency)}</span></div>
  <div class="fx-scenario-main">
-  <section class="fx-panel fx-scenario-chart-panel"><div class="fx-panel-heading"><div><h3>실제 종가와 3가지 목표가 구간</h3><p>애널리스트 집계 가격을 수준으로만 표시합니다.</p></div><span class="fx-mini-chip">미래 경로 예측 아님 · 목표가만 비교</span></div>
+  <section class="fx-panel fx-scenario-chart-panel"><div class="fx-panel-heading"><div><h3>실제 종가와 3가지 목표가 구간</h3><p>${fxEscape(t.reason||"애널리스트 집계 가격을 수준으로만 표시합니다.")} · 미래 가격 경로 아님</p></div><span class="fx-mini-chip">미래 경로 예측 아님 · 목표가만 비교</span></div>
     ${fxScenarioPlot(c)}<div class="fx-scenario-legend"><span><i style="background:#447ecf"></i>실제 일별 종가</span><span><i style="background:#d85876"></i>낙관 상단</span><span><i style="background:#377bd1"></i>중앙 기준</span><span><i style="background:#28a074"></i>비관 하단</span></div>
   </section>
   <section class="fx-panel fx-scenario-ai-panel"><div class="fx-panel-heading"><h3>AI 연구 방향 분포</h3><span class="fx-mini-chip">예측 확률 ≠ 목표가 확률</span></div><div class="fx-ai-card">${fxBars(c,ctx)}</div>
