@@ -134,5 +134,35 @@ class PlainNoCallQualityGateTests(unittest.TestCase):
 
 
 
+class CollectorDependencyIsolationTests(unittest.TestCase):
+    def test_synthetic_safe_collector_does_not_load_heavy_source_reader(self):
+        # Reproduce the audit-only CI environment: no pandas/data reader installed.
+        import builtins
+        original_import = builtins.__import__
+
+        def independent_only_import(name, *args, **kwargs):
+            if name == "stock_forecast_sources" or name == "pandas" or name.startswith("pandas."):
+                raise AssertionError("independent audit must not import market data: " + name)
+            return original_import(name, *args, **kwargs)
+
+        def synthetic_processor(*_):
+            return {
+                "symbol": "SYNTH", "market": "US", "mode": "daily",
+                "status": "no_call",
+                "reason": "insufficient_regular_session_time",
+                "observed_until": FROZEN.isoformat(),
+                "received_at": FROZEN.isoformat(),
+            }, object()
+
+        collector = autopilot.SafeCollector(
+            synthetic_processor, {}, clock=lambda: FROZEN,
+            sleep=lambda _: None)
+        with patch("builtins.__import__", side_effect=independent_only_import):
+            record, bars = collector(SYMBOL, "daily")
+        self.assertIsNotNone(bars)
+        self.assertEqual(record["reason"], "insufficient_regular_session_time")
+        self.assertEqual(len(collector.events), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

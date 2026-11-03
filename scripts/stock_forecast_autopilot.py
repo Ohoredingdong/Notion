@@ -129,7 +129,7 @@ class SafeCollector:
                'probabilities':None,'direction':None,'recommendation':False}
             with self.lock: self.events.append({'symbol':symbol,'mode':mode,'attempt':0,'result':'rate_limit','history_received':False})
             return r,None
-        from stock_forecast_sources import external_source_retry_owner
+        from stock_forecast_retry_context import external_source_retry_owner
         for attempt in range(1,POLICY['maximum_source_attempts']+1):
             # The lower-level serialized reader must not multiply this limit.
             with external_source_retry_owner():

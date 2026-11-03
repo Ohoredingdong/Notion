@@ -4,30 +4,12 @@ Same unofficial provider, not an independent-source cross-check.
 from datetime import datetime, timezone
 import threading
 import time
-from contextlib import contextmanager
-from contextvars import ContextVar
+from stock_forecast_retry_context import outer_source_retry_owned
 import pandas as pd
 
 _CALENDAR_LOCK = threading.Lock()
 _HISTORY_LOCK = threading.Lock()
 _PREPARED_YEAR = None
-_EXTERNAL_RETRY_OWNER = ContextVar('stock_forecast_external_retry_owner', default=False)
-
-
-@contextmanager
-def external_source_retry_owner():
-    """Scope inner cache-lock retries to one attempt under SafeCollector.
-
-    The bounded outer controller owns the retry budget in this context.
-    Other source readers keep their existing standalone transient-lock retries.
-    ContextVar prevents different worker threads from sharing retry ownership.
-    """
-    token = _EXTERNAL_RETRY_OWNER.set(True)
-    try:
-        yield
-    finally:
-        _EXTERNAL_RETRY_OWNER.reset(token)
-
 
 
 def prepare_sessions(year=None):
@@ -68,7 +50,7 @@ def read_history_serially(fetcher):
     with _HISTORY_LOCK:
         # Each outer bounded attempt gets exactly one inner fetcher invocation.
         # Without an outer owner, preserve the earlier three-attempt lock guard.
-        max_attempts = 1 if _EXTERNAL_RETRY_OWNER.get() else 3
+        max_attempts = 1 if outer_source_retry_owned() else 3
         for attempt in range(max_attempts):
             try:
                 return fetcher()
