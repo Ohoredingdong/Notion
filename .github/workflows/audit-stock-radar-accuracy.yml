@@ -1,0 +1,52 @@
+name: Audit Stock Radar Accuracy
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "stock-forecast-learning.json"
+      - "stock-direction-forecast.json"
+      - "stock-forecast-outcomes.jsonl"
+      - "stock-market-context.json"
+      - "stock-radar-chart-data.json"
+      - "stock-opportunity-summary.json"
+      - "stock-investment-cases-summary.json"
+      - "stock-entry-plan-summary.json"
+      - "scripts/audit_stock_radar_accuracy.py"
+      - ".github/workflows/audit-stock-radar-accuracy.yml"
+  schedule:
+    # Local Seoul 09:15 and 17:30 KST; audit only, no trade decisions.
+    - cron: "15 0 * * 1-5"
+    - cron: "30 8 * * 1-5"
+permissions:
+  contents: write
+concurrency:
+  group: stock-radar-independent-accuracy-audit
+  cancel-in-progress: false
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify audit source syntax
+        run: python -m py_compile scripts/audit_stock_radar_accuracy.py
+      - name: Recompute independent model audit and integrity gates
+        run: python scripts/audit_stock_radar_accuracy.py
+      - name: Publish accuracy report only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- stock-radar-accuracy-audit.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "audit: refresh evidence-gated Stock Radar accuracy report"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt*3))
+          done
+          exit 1
