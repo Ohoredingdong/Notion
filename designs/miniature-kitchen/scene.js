@@ -28,16 +28,16 @@
   const doorForZone=z=>z.startsWith('door')?z.slice(4,5).toLowerCase()+z.slice(5):z;
   const isAvailable=z=>!panels[doorForZone(z)]||doors[doorForZone(z)];
   const items=[
-    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.5,y:.63,z:1},
-    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshRight',x:.25,y:.63,z:2},
-    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshRight',x:.45,y:.32,z:3},
-    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshLeft',x:.5,y:.95,z:4},
-    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(1),zone:'freshLeft',x:.5,y:.32,z:5},
+    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.25,y:.32,z:1},
+    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshRight',x:.75,y:.64,z:2},
+    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshLeft',x:.5,y:.95,z:3},
+    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshRight',x:.25,y:.32,z:4},
+    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(1),zone:'freshLeft',x:.75,y:.32,z:5},
     {id:'fish',kind:'food',name:'생선',quantity:'2조각',expiry:date(14),zone:'frozenLeft',x:.5,y:.66,z:6},
     ...['간장','고추장','된장','소금'].map((name,index)=>({id:'spice'+index,kind:'seasoning',name,quantity:index===0?'150ml':'',expiry:date(30+index*10),zone:index===0||index===3?'doorFreshLeft':'doorFreshRight',x:index%2?.3:.7,y:index<2?.45:.86,z:7+index})),
-    {id:'scallion',kind:'food',name:'대파',quantity:'1개',expiry:date(5),zone:'freshRight',x:.75,y:.63,z:11},
-    {id:'mushroom',kind:'food',name:'양송이버섯',quantity:'100g',expiry:date(5),zone:'freshRight',x:.25,y:.95,z:12},
-    {id:'kimchi',kind:'food',name:'김치',quantity:'200g',expiry:date(12),zone:'freshRight',x:.75,y:.95,z:13},
+    {id:'scallion',kind:'food',name:'대파',quantity:'1개',expiry:date(5),zone:'freshRight',x:.5,y:.95,z:11},
+    {id:'mushroom',kind:'food',name:'양송이버섯',quantity:'100g',expiry:date(5),zone:'freshLeft',x:.75,y:.64,z:12},
+    {id:'kimchi',kind:'food',name:'김치',quantity:'200g',expiry:date(12),zone:'freshLeft',x:.25,y:.64,z:13},
     {id:'beef',kind:'food',name:'소고기',quantity:'300g',expiry:date(12),zone:'frozenLeft',x:.5,y:.32,z:14},
     {id:'shrimp',kind:'food',name:'새우',quantity:'200g',expiry:date(30),zone:'frozenRight',x:.5,y:.32,z:15},
     {id:'dumplings',kind:'food',name:'만두',quantity:'1팩',expiry:date(18),zone:'frozenRight',x:.5,y:.66,z:16},
@@ -114,8 +114,9 @@
     if(item.kind==='seasoning')return A.seasoningArt(item.name,'food-art');
     return A.foodArt(A.foodIdForName(item.name));
   }
-  function announce(message){
+  function announce(message,visual=true){
     clearTimeout(announcementTimer);const output=$('#liveMessage'),text=String(message??'');output.textContent=text;
+    output.dataset.visual=String(visual);
     if(text)announcementTimer=setTimeout(()=>{if(output.textContent===text)output.textContent='';},3500);
   }
   function compact(){return mode==='widget'||$('.shell').clientWidth<960;}
@@ -129,11 +130,13 @@
     // asset contract instead of an unrelated counter or viewport-height guess.
     const setting=(name,fallback)=>{const value=parseFloat(settings.getPropertyValue(name));return Number.isFinite(value)&&value>0?value:fallback;};
     const aspect=setting('--room-bg-aspect',1.25),floorFraction=clamp(setting('--room-bg-floor',.95),.1,1),alcove=clamp(setting('--room-bg-alcove-width',.6),.1,1);
-    const scale=(room.clientWidth||1000)/1000,floor=stage.bottom-r.top-2*scale,roomBox=room.getBoundingClientRect(),center=stage.left-r.left+stage.width/2,coverWidth=2*Math.max(center-roomBox.left+r.left,roomBox.right-r.left-center),width=Math.max(stage.width/alcove,coverWidth),height=width/aspect;
+    const scale=(room.clientWidth||1000)/1000,floor=stage.bottom-r.top-2*scale,roomBox=room.getBoundingClientRect(),center=stage.left-r.left+stage.width/2,coverWidth=2*Math.max(center-roomBox.left+r.left,roomBox.right-r.left-center),width=Math.max(stage.width/alcove,coverWidth,r.width),height=width/aspect;
     shell.style.setProperty('--kitchen-floor-y',floor+'px');shell.style.setProperty('--bg-image-height',height+'px');shell.style.setProperty('--bg-image-width',width+'px');shell.style.setProperty('--bg-image-left',center-width/2+'px');shell.style.setProperty('--bg-image-top',floor-height*floorFraction+'px');
   }
   function syncLayout(){
     const room=$('.room'),shell=$('.shell');
+    const homeScale=Math.max(1,shell.clientWidth/390);
+    shell.style.setProperty('--home-ui-scale',String(homeScale));
     // Hidden tabs have no layout box. Keep the last visible scene geometry
     // until the fridge tab is shown again; records must never resize the art.
     if(!room.getClientRects().length)return;
@@ -152,6 +155,7 @@
       const available=Math.max(120,bottom-box.top-occupied-(document.body.dataset.camera==='fridge'?0:10));
       width=Math.min(width,available*1000/logicalHeight);
     }else if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.home-shortcuts')?.offsetHeight||66;width=Math.min(width,Math.max(240,innerHeight-top-dock-12));}
+    if(document.body.dataset.camera==='fridge')width=Math.min(width,294*homeScale);
     room.style.setProperty('--room-fit-width',width+'px');
     const scale=width/1000;
     shell.style.setProperty('--scene-scale',String(scale));
@@ -283,7 +287,8 @@
       const zone=button.parentElement,item=items.find(i=>i.id===button.dataset.item);if(!item)continue;
       let label=button.querySelector('.item-label')||zone.querySelector('[data-for-item="'+CSS.escape(item.id)+'"]');if(!label)continue;
       label.classList.add('shelf-label');label.classList.toggle('is-selected',selected===item.id);label.dataset.forItem=item.id;label.setAttribute('aria-hidden','true');
-      label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - '+18+'px / var(--scene-scale,1))';
+      label.dataset.foodName=item.name;
+      label.style.left=button.style.left;label.style.top='calc('+item.y*100+'% - 7px * var(--home-ui-scale,1) / var(--scene-scale,1))';
       label.style.zIndex=String(selected===item.id?20000002:20000001);zone.appendChild(label);
     }
   }
@@ -291,6 +296,15 @@
   function itemButton(item) {
     const b=document.createElement('button');b.type='button';b.className='item '+item.kind;b.dataset.item=item.id;if(item.art)b.dataset.art=item.art;
     if(item.kind==='food')b.dataset.foodName=item.name;
+    // Appearance follows available shelf space. This never rewrites a saved item.
+    if(item.kind==='food'){
+      const half=item.x<.4||item.x>.6;
+      if(item.zone==='freshLeft'&&half&&item.y>=.3&&['계란','토마토','김치','양송이버섯'].includes(item.name))b.dataset.foodProfile=({'계란':'eggs','토마토':'tomatoes','김치':'kimchi','양송이버섯':'mushrooms'})[item.name];
+      else if(item.zone==='freshLeft'&&!half&&item.y>=.4&&item.name==='두부')b.dataset.foodProfile='tofu';
+      else if(item.zone==='freshRight'&&item.x<.4&&item.y>=.25&&item.name==='브로콜리')b.dataset.foodProfile='broccoli';
+      else if(item.zone==='freshRight'&&item.x>.6&&item.y>=.6&&item.name==='우유')b.dataset.foodProfile='milk';
+      else if(item.zone==='freshRight'&&!half&&item.y>=.6&&item.name==='대파')b.dataset.foodProfile='scallion';
+    }
     if(item.id===highlightedItem&&Date.now()<highlightUntil)b.classList.add('is-new');
     // A sauce is one miniature with one annotation. The previous three
     // overlapping name/quantity badges made the small jars look like forms.
@@ -327,7 +341,7 @@
     for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item,.shelf-label'))child.remove();for(const item of sceneItems().filter(r=>r.zone===zone.dataset.zone&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();syncDecorToolbar();notifyChange(preview);
   }
   function finishClosing(key){clearTimeout(closingTimers.get(key));closingTimers.delete(key);if(closing.delete(key))renderDisplays();}
-  function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'));}
+  function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'),false);}
   function openTray(title,content,eyebrow='MY LITTLE KITCHEN') {
     delete $('#tray').dataset.workflowRoute;
     if(!$('#tray').open)previousFocus=document.activeElement===document.body?document.querySelector('.item.is-selected')||document.activeElement:document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;$('#trayTitle').tabIndex=-1;$('#trayTitle').focus({preventScroll:true});
@@ -372,8 +386,15 @@
     const before=window.scrollY;window.scrollBy(0,delta);
     if(window.scrollY!==before){highlightDrop(pointer.x,pointer.y);scrollFrame=requestAnimationFrame(scrollDrag);}
   }
+  function paintedFoodTarget(button,event){
+    if(!button.closest('.fridge-interiors'))return button;
+    const contains=rect=>rect&&rect.width>0&&rect.height>0&&event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;
+    if(contains(button.querySelector('.food-art')?.getBoundingClientRect()))return button;
+    const zone=button.closest('.drop-zone'),painted=[...zone.querySelectorAll(':scope>.item')].filter(node=>contains(node.querySelector('.food-art')?.getBoundingClientRect()));
+    return painted.sort((a,b)=>Number(b.style.zIndex)-Number(a.style.zIndex))[0]||button;
+  }
   document.addEventListener('pointerdown',event=>{
-    const button=event.target.closest('.room .item');if(!button||active||event.isPrimary===false||event.button!==0)return;const item=sceneItems().find(r=>r.id===button.dataset.item);if(!item)return;if(item.kind==='decor'&&!decorating)return;
+    let button=event.target.closest('.room .item');if(!button||active||event.isPrimary===false||event.button!==0)return;button=paintedFoodTarget(button,event);const item=sceneItems().find(r=>r.id===button.dataset.item);if(!item)return;if(item.kind==='decor'&&!decorating)return;
     const rect=button.getBoundingClientRect();active={item,button,pointer:event.pointerId,startX:event.clientX,startY:event.clientY,moved:false,w:rect.width,h:rect.height,ax:(event.clientX-rect.left)/rect.width,ay:(event.clientY-rect.top)/rect.height};button.focus({preventScroll:true});button.setPointerCapture?.(event.pointerId);event.preventDefault();
   });
   window.addEventListener('pointermove',event=>{
