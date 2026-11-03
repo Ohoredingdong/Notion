@@ -159,8 +159,24 @@ with sync_playwright() as play:
         check("Search shows selected ticker",page.locator(".fx-row[data-nr-select]").count() == 1 and
               symbol in page.locator(".fx-focus-head").inner_text())
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
-        check("Details preserve selected ticker",
-            symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
+        # Current UI renders the COMPANY NAME in h2, the selected SYMBOL in the
+        # adjacent subtitle. Check the bridge identity AND both displayed fields.
+        # Negative control: a different symbol must not pass this same predicate.
+        detail_identity = """symbol => {
+            const state = window.StockRadarV2Bridge?.snapshot();
+            const company = state?.data?.raw?.companies?.find(
+                c => String(c.symbol) === String(symbol));
+            const heading = document.querySelector('.fx-detail-intro h2')?.textContent?.trim() || '';
+            const subtitle = document.querySelector('.fx-detail-intro p')?.textContent?.trim() || '';
+            return !!company && String(state.selected) === String(symbol)
+                && heading.startsWith(String(company.name) + ' · 상세 분석 통합')
+                && subtitle.startsWith(String(symbol) + ' · ')
+                && document.querySelectorAll('.fx-detail-content').length === 1;
+        }"""
+        check("Details preserve selected ticker and company",
+            page.evaluate(detail_identity, symbol) is True and
+            page.evaluate(detail_identity, "__WRONG_SYMBOL__") is False,
+            "Bridge identity, saved-company title, symbol subtitle, and negative control required")
         check("Deep financial analysis now integrated",
             page.locator(".fx-detail-mid .fx-panel").count() == 3 and
             page.locator(".fx-detail-lower .fx-panel").count() == 3 and
