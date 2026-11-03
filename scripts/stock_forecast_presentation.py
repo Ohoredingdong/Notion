@@ -77,7 +77,7 @@ def prior_public_forecasts(ledger, deliveries, current_records, as_of):
         if abs(sum(probs[k] for k in ('up', 'down', 'flat')) - 1) > 1e-5:
             continue
         allowed = [(pub, snap) for pub, snap in proofs.get(r['id'], ())
-                   if issued <= snap <= pub <= cutoff and pub <= start]
+                   if issued <= snap <= pub <= cutoff and pub < start]
         if not allowed:
             continue
         verified_at = min(allowed)[0]
