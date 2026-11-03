@@ -67,7 +67,7 @@ function fxChosen(ctx){
 
 function fxSignalChip(c,ctx){
  const x=fxPrediction(c,ctx);
- return `<span class="fx-signal ${x.klass}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note">${x.stale?"기간 종료":x.unknown?"시점 확인":x.active?"연구용":"없음"}</small>`;
+ return `<span class="fx-signal ${x.klass}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note">${x.stale?"기간 종료":x.unknown?"시점 확인":x.active?"연구용":x.r?.status==="research_prediction"?"검증 오류":"발행 없음"}</small>`;
 }
 
 function fxStockRows(ctx,expanded){
@@ -142,7 +142,7 @@ function fxChart(c){
 }
 function fxBars(c,ctx){
  const sig=fxPrediction(c,ctx),r=sig.r;
- if(sig.value===null)return '<div class="fx-chart-empty">이 종목의 방향 연구 신호는 미발행입니다.</div>';
+ if(sig.value===null)return `<div class="fx-chart-empty">${fxEscape(sig.status||"유효한 연구 신호가 없습니다.")}</div>`;
  return `<div class="fx-ai-heading"><span class="fx-signal ${sig.klass}">${sig.label}</span><strong class="${sig.klass}">${fxNum(sig.value*100,1)}%</strong></div>
  ${[["상승","up"],["횡보","flat"],["하락","down"]].map(([n,k])=>{const v=fxN(r.probabilities?.[k]);return `<div class="fx-prob-row"><span>${n}</span><span class="fx-bar"><i class="${k}" style="width:${v===null?0:Math.max(0,Math.min(100,v*100))}%"></i></span><b>${v===null?"—":fxNum(v*100,1)+"%"}</b></div>`}).join("")}
  <p class="fx-footnote">${fxEscape(sig.status)}<br>${r.target?.end?"목표 종료 "+fxEscape(fxHelpers().T?.(r.target.end)):"목표 시점 미확인"} · 매수·수익률 확률 아님</p>`;
