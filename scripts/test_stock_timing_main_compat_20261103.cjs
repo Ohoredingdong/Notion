@@ -74,6 +74,19 @@ console.log('Near-future issuance negative control: not-yet-issued is never curr
 ctx.data.direction.records=[mk('AAPL','daily','up','2026-11-03T14:00:00Z','2026-11-03T14:30:00Z','2026-11-03T21:00:00Z')];
 ctx.data.direction.records[0].probabilities={up:0.9,down:0.6,flat:0.1};
 assert.equal(fxPrediction(stock,ctx).active,false,'invalid probability distribution cannot be current');
+// Bounded 2026-11-03 negative control: subtly non-normalized probabilities
+// must fail closed under the same 1e-6 contract as the frozen-source audit.
+ctx.data.direction.records=[mk('AAPL','daily','up','2026-11-03T14:00:00Z',
+  '2026-11-03T14:30:00Z','2026-11-03T21:00:00Z')];
+ctx.data.direction.records[0].probabilities={up:0.52,flat:0.27,down:0.23}; // sum=1.02
+const malformed=JSON.stringify(ctx.data.direction.records);
+const nearValid=fxPrediction(stock,ctx);
+assert.equal(nearValid.active,false,'2% probability-mass error cannot be current confidence');
+assert.equal(nearValid.value,null,'malformed distribution must not expose numerical confidence');
+assert.deepEqual(pick('ai'),[],'malformed forecast must be excluded from current AI filtering');
+assert.deepEqual(pick('all'),['AAPL'],'archived malformed record remains inspectable');
+assert.equal(JSON.stringify(ctx.data.direction.records),malformed,'synthetic record must not mutate');
+console.log('Near-normalized probability-mass rejection: 1.02-sum is not current evidence');
 ctx.data.direction.records=[daily,nocall];
 assert.equal(JSON.stringify(ctx.data.direction.records),saved,'immutable original evidence never rewritten');
 console.log('7/7: invalid distribution fails closed and real records remain untouched');
