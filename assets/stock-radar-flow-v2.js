@@ -23,7 +23,16 @@ function fxRecord(c,ctx){
   if(Number.isFinite(ta)&&!Number.isFinite(tb))return -1;
   return Number(b.mode==="intraday")-Number(a.mode==="intraday");
  });
- return records[0]||null;
+ // A later no-call cannot supersede an earlier still-valid prospective call.
+ // Keep existing daily preference and preserve old/no-call records as fallback history.
+ const now=Date.now();
+ const current=r=>{
+  if(r?.status!=="research_prediction"||!r.probabilities||!["down","flat","up"].includes(r.direction))return false;
+  const issued=Date.parse(r.issued_at||""),start=Date.parse(r.target?.start||""),end=Date.parse(r.target?.end||"");
+  return Number.isFinite(issued)&&Number.isFinite(start)&&Number.isFinite(end)&&
+   issued<start&&issued<=now+5*60*1000&&start<end&&end>=now;
+ };
+ return records.find(r=>r.mode==="daily"&&current(r))||records.find(current)||records[0]||null;
 }
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
@@ -46,13 +55,14 @@ function fxPrediction(c,ctx){
  const knownDirection=choices.includes(r?.direction);
  const val=validDistribution&&knownDirection?fxN(p[r.direction]):null;
  const active=r?.status==="research_prediction"&&val!==null;
- const until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
- const invalidDates=Number.isFinite(until)&&Number.isFinite(issued)&&until<issued;
+ const start=Date.parse(r?.target?.start||""),until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
+ const invalidDates=!Number.isFinite(start)||!Number.isFinite(issued)||
+  (Number.isFinite(until)&&(until<=start||issued>=start))||issued>=start;
  const futureIssued=Number.isFinite(issued)&&issued>Date.now()+5*60*1000;
- const usable=active&&!invalidDates&&!futureIssued;
- const stale=usable&&Number.isFinite(until)&&until<Date.now();
- const unknown=usable&&!Number.isFinite(until);
- const label=!usable?"미산출":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
+ const stale=active&&Number.isFinite(until)&&until<Date.now();
+ const unknown=active&&!Number.isFinite(until);
+ const usable=active&&!invalidDates&&!futureIssued&&!stale&&!unknown;
+ const label=!active?"미산출":stale?"지난 예측":unknown?"시간 미확인":!usable?"미산출":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
  const klass=!usable||stale||unknown?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
  const status=r?.status==="research_prediction"&&!usable?(futureIssued?"미래 발행 시각 오류 · 사용 불가":"분포·목표기간 오류 · 사용 불가"):
   !usable?"현재 연구 신호 없음":stale?"기간 종료 · 과거 기록":unknown?"기간 정보 미확인 · 연구용":"연구용 방향 분류";
