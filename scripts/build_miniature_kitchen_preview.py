@@ -118,23 +118,19 @@ COMPACT_SPRITES = {
         ('soy','salt','gochujang','doenjang','jar')),
 }
 
-# Only the right-hand open interior remains in use. Keep its original source
-# coordinates and canvas size; the retired closed front and grey backdrop are
-# replaced by the new transparent FRONT asset in the approved composition.
-COMPACT_REGIONS = {
-    'designs/miniature-kitchen/assets/fridge-neutral-atlas.png':
-        ((1536, 1024), ((833, 10, 570, 994),)),
-}
-
 # New photo assets use pre-encoded full-resolution AVIF variants. Their PNG
 # originals remain the authoring source; the measured encoding settings and
 # WebP82 quality comparisons are recorded with the visual-fidelity evidence.
 # Existing miniature assets retain their previous formats and encoding levels.
 COMPACT_AVIF = {
+    'designs/miniature-kitchen/assets/fridge-cabinet-tall-v1.png':
+        'designs/miniature-kitchen/assets/fridge-cabinet-tall-v1.avif',
     'designs/miniature-kitchen/assets/pantry-food-atlas.png':
-        'designs/miniature-kitchen/assets/pantry-food-atlas.avif',
+        'designs/miniature-kitchen/assets/pantry-food-atlas-v2.avif',
     'designs/miniature-kitchen/assets/food-milk-v1.png':
         'designs/miniature-kitchen/assets/food-milk-v1.avif',
+    'designs/miniature-kitchen/assets/food-broccoli-v1.png':
+        'designs/miniature-kitchen/assets/food-broccoli-v1.avif',
     'designs/miniature-kitchen/assets/kitchen-built-in-v1.png':
         'designs/miniature-kitchen/assets/kitchen-built-in-v1.avif',
     'designs/miniature-kitchen/assets/recipe-photos-v1.png':
@@ -236,8 +232,6 @@ def build(root, mode, compact=False):
                 if reference in COMPACT_SPRITES:
                     name,size,keys=COMPACT_SPRITES[reference]
                     boxes=sprite_boxes(local('use-me-first-kitchen-art.js').read_text(),name,keys)
-                elif reference in COMPACT_REGIONS:
-                    size,boxes=COMPACT_REGIONS[reference]
                 data=web_image(path,size,boxes)
                 mime='image/webp'
         return 'data:'+mime+';base64,'+base64.b64encode(data).decode('ascii')
@@ -267,7 +261,7 @@ def build(root, mode, compact=False):
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
             'story-art.js': [('RECIPE_PHOTOS','designs/miniature-kitchen/assets/recipe-photos-v1.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-neutral-atlas.png'),('FRONT','designs/miniature-kitchen/assets/fridge-front-fidelity-v1.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/pantry-food-atlas.png'),('MILK','designs/miniature-kitchen/assets/food-milk-v1.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-cabinet-tall-v1.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/pantry-food-atlas.png'),('MILK','designs/miniature-kitchen/assets/food-milk-v1.png'),('BROCCOLI','designs/miniature-kitchen/assets/food-broccoli-v1.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"
