@@ -15,7 +15,8 @@ function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
 function fxRecord(c,ctx){
  const sym=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
- const rs=(ctx.data?.direction?.records||[]).filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===sym);
+ const previous=ctx.data?.direction?.prior_public_forecasts||[];
+ const rs=[...(ctx.data?.direction?.records||[]),...previous].filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===sym);
  const matched=rs.filter(r=>r.status==="research_prediction"&&r.probabilities).sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
  return matched.find(r=>r.mode==="daily")||matched[0]||rs.find(r=>r.mode==="daily")||rs[0]||null;
 }
@@ -26,7 +27,8 @@ function fxPrediction(c,ctx){
  const until=Date.parse(r?.target?.end||""),stale=active&&Number.isFinite(until)&&until<Date.now(),unknown=active&&!Number.isFinite(until);
  const label=!active?"미발행":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
  const klass=stale||unknown?"stale":r?.direction==="up"?"up":r?.direction==="down"?"down":"flat";
- return {r,p,label,klass,value:active?value:null,stale,unknown,active,status:!active?"AI 자료 없음":stale?"기간 종료 · 과거 기록":unknown?"시점 미확인":"연구용 방향 예측"};
+ const previouslyPublic=r?.display_origin==="earlier_public_frozen_record";
+ return {r,p,label,klass,value:active?value:null,stale,unknown,active,status:!active?"AI 자료 없음":stale?"기간 종료 · 과거 기록":unknown?"시점 미확인":previouslyPublic?"기존 공개 연구 예측 · 새 발행 아님":"연구용 방향 예측"};
 }
 
 function fxUniverse(ctx){
