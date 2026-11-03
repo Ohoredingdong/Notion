@@ -49,7 +49,9 @@ def test(url='http://127.0.0.1:8770/stock-value-radar.html', public=False):
                     assert page.locator('.fx-v5-main .fx-v5-cockpit').count() == 1
                     assert page.locator('.fx-v5-main .fx-v5-aside').count() == 1
                     assert page.locator('.fx-v5-aside .fx-v5-sidecard').count() == 4
-                    assert '실시간 시세 아님' in page.locator('.fx-mode-badge').inner_text() or '실시간 시세 아님' in page.locator('#source-status').inner_text()
+                    disclosure = (page.locator('.fx-mode-badge').inner_text() + ' ' + page.locator('#source-status').inner_text())
+                    assert '연구용' in disclosure, 'Research-only source disclosure must remain visible'
+                    assert any(label in disclosure for label in ('실시간 시세 아님', '실시간 호가 아님')), 'Non-realtime price/quote disclosure must remain visible'
                     assert '연구용' in page.locator('.fx-v5-cockpit .fx-v5-ai').inner_text()
                     no_overflow(page)
                     page.screenshot(path=str(out / f'home-{width}.png'), full_page=True)
