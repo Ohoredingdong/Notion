@@ -70,6 +70,7 @@ class PriorPublicPresentationTests(unittest.TestCase):
     def test_missing_or_post_start_proof_rejected(self):
         self.assertEqual(self.call(proofs=[]), [])
         self.assertEqual(self.call(proofs=[public_proof(when="2026-11-03T00:01:00+00:00")]), [])
+        self.assertEqual(self.call(proofs=[public_proof(when=START)]), [])
         self.assertEqual(self.call(proofs=[public_proof(snapshot="2026-11-02T14:00:00+00:00",
                                                         when="2026-11-02T13:56:10+00:00")]), [])
         self.assertEqual(self.call(proofs=[public_proof(ids=["another-id"])]), [])
