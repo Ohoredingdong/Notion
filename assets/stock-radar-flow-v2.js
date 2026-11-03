@@ -25,11 +25,12 @@ function fxRecord(c,ctx){
 
 function fxPrediction(c,ctx){
  const r=fxRecord(c,ctx),p=r?.probabilities||{},raw=p[r?.direction],value=fxN(raw);
- const active=r?.status==="research_prediction"&&value!==null;
- const until=Date.parse(r?.target?.end||""),stale=active&&Number.isFinite(until)&&until<Date.now(),unknown=active&&!Number.isFinite(until);
- const label=!active?"미발행":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
+ const present=r?.status==="research_prediction"&&value!==null;
+ const until=Date.parse(r?.target?.end||""),stale=present&&Number.isFinite(until)&&until<Date.now(),unknown=present&&!Number.isFinite(until);
+ const active=present&&!stale&&!unknown;
+ const label=!present?"미발행":stale?"지난 예측":unknown?"시간 미확인":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
  const klass=stale||unknown?"stale":r?.direction==="up"?"up":r?.direction==="down"?"down":"flat";
- return {r,p,label,klass,value:active?value:null,stale,unknown,active,status:!active?"AI 자료 없음":stale?"기간 종료 · 과거 기록":unknown?"시점 미확인":"연구용 방향 예측"};
+ return {r,p,label,klass,value:active?value:null,stale,unknown,active,status:!present?"AI 자료 없음":stale?"기간 종료 · 과거 기록":unknown?"시점 미확인":"연구용 방향 예측"};
 }
 
 function fxUniverse(ctx){
