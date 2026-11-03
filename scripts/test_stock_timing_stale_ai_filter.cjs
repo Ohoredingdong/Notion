@@ -91,4 +91,37 @@ assert.equal(JSON.stringify(crossMode.data.direction.records[1]),
   JSON.stringify(JSON.parse(frozenCrossMode)[1]),'intraday original row is immutable');
 console.log('Cross-mode fixed-clock test: stale daily cannot hide usable intraday; fresh daily precedence preserved');
 
+// Predeclared 2026-11-03 no-call precedence negative control against real main's
+// stale status masking. These are synthetic records and never operational prices.
+now = Date.parse('2026-11-03T04:05:00Z');
+const noCallCtx = JSON.parse(JSON.stringify(ctx));
+noCallCtx.data.direction.records = [
+  {...rec('AAPL','down','2026-11-03T21:00:00Z'),mode:'daily',
+    issued_at:'2026-11-02T22:30:30Z',
+    target:{start:'2026-11-03T14:30:00Z',end:'2026-11-03T21:00:00Z'}},
+  {...rec('AAPL','flat',null,'no_call'),mode:'intraday',
+    issued_at:'2026-11-03T04:02:42Z',
+    reason:'insufficient_regular_session_time',target:null}
+];
+const frozenNoCall = JSON.stringify(noCallCtx.data.direction.records);
+const selectedDaily = fxPrediction(bySym('AAPL'),noCallCtx);
+assert.equal(selectedDaily.r.mode,'daily',
+  'a newer intraday no-call must not conceal the still-valid frozen daily forecast');
+assert.equal(selectedDaily.active,true,
+  'valid daily research forecast remains discoverable before its future target');
+fxLocal.filter='ai';
+assert.ok(Array.from(fxUniverse(noCallCtx),c=>c.symbol).includes('AAPL'),
+  'prospective daily research remains in the active research-only filter');
+now = Date.parse('2026-11-03T21:01:00Z');
+const expiredDaily = fxPrediction(bySym('AAPL'),noCallCtx);
+assert.equal(expiredDaily.active,false,
+  'daily research forecast expires without promoting the old no-call');
+assert.equal(expiredDaily.value,null,
+  'past daily numerical confidence must not be presented as current');
+assert.ok(!Array.from(fxUniverse(noCallCtx),c=>c.symbol).includes('AAPL'),
+  'expired daily plus no-call do not create a live AI signal');
+assert.equal(JSON.stringify(noCallCtx.data.direction.records),frozenNoCall,
+  'no-call precedence and expiry checks must never rewrite frozen records');
+console.log('No-call precedence fixed-clock test: valid daily remains visible until expiry without rewriting evidence');
+
 console.log('Research-only stale/unknown signal-filter tests all passed');
