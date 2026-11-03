@@ -317,6 +317,22 @@ def score_prediction(record, bars, now, delivery_at=None):
         return {'id': record['id'], 'status': 'invalid_time_contract'}
     if current < end:
         return {'id': record['id'], 'status': 'pending'}
+    if record.get('mode') == 'intraday':
+        # An observed 30m target requires every completed 5m candle, not just
+        # its first opening and final closing endpoints. The existing caller
+        # also checks continuity; retain this fail-closed invariant for direct
+        # scorer reuse and do not infer missing vendor candles.
+        step = pd.Timedelta(minutes=5)
+        expected_count = POLICY['intraday_target_minutes']//5
+        window = bars[(bars.start >= start) & (bars.start < end)].sort_values('start')
+        starts = list(pd.date_range(start, periods=expected_count, freq='5min'))
+        if (end-start != pd.Timedelta(minutes=POLICY['intraday_target_minutes']) or
+                len(window) != expected_count or
+                list(window.start) != starts or
+                list(window.end) != [t+step for t in starts] or
+                'session' not in window.columns or
+                window.session.isna().any() or window.session.nunique() != 1):
+            return {'id': record['id'], 'status': 'target_prices_missing'}
     first, final = bars[bars.start == start], bars[bars.end == end]
     if first.empty or final.empty:
         return {'id': record['id'], 'status': 'target_prices_missing'}
