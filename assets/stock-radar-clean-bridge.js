@@ -68,8 +68,27 @@ function url(u){try{const v=new URL(u);return v.protocol==="https:"?v.href:""}ca
 
 function link(u,label){const href=url(u);return href?`<a href="${E(href)}" target="_blank" rel="noopener noreferrer">${E(label)}</a>`:`<span>${E(label)} · 출처 확인 전</span>`;}
 
-function indices(){const specs=[["^KS11","코스피","kospi"],["^KQ11","코스닥","kosdaq"],["^IXIC","나스닥","nasdaq"],["^GSPC","S&P 500","sp500"]];return specs.map(([id,name,k])=>{const s=series(id),a=s?.bars,last=a?.at(-1),prev=a?.at(-2),m=D.macro?.indicators?.[k]||{},newer=last?.date&&(!m.date||last.date>m.date),v=newer?last.close:m.value,delta=newer&&N(prev?.close)!==null&&prev.close?(last.close/prev.close-1)*100:m.change_1d_pct,day=newer?last.date:m.date;return `<article class="nr-panel nr-index"><div class="nr-head" style="margin-bottom:0"><h3>${name}</h3>${link(s?.source_url||m.source_url,"출처")}</div><div class="nr-num">${F(v,2)}</div><div class="${tone(delta)}" style="font-size:12px;font-weight:750">${P(delta)}</div>${mini(s,delta)}<div class="nr-sub" style="margin-top:8px">${E(day||"기준일 미확인")} · 저장 일봉</div></article>`}).join("")}
-
+function indices(){
+ const configs=[["^KS11","코스피","kospi"],["^KQ11","코스닥","kosdaq"],["^IXIC","나스닥","nasdaq"],["^GSPC","S&P 500","sp500"]];
+ return configs.map(([id,name,key])=>{
+  const chart=series(id),items=chart?.bars||[],last=items.at(-1),previous=items.at(-2);
+  const macro=D.macro?.indicators?.[key]||{};
+  const chartDate=typeof last?.date==="string"?last.date:"",macroDate=typeof macro.date==="string"?macro.date:"";
+  const chartValid=N(last?.close)!==null&&/^\d{4}-\d{2}-\d{2}$/.test(chartDate);
+  const macroValid=N(macro.value)!==null&&/^\d{4}-\d{2}-\d{2}$/.test(macroDate);
+  const useMacro=macroValid&&(!chartValid||macroDate>=chartDate);
+  const value=useMacro?macro.value:chartValid?last.close:null;
+  const valueDate=useMacro?macroDate:chartValid?chartDate:"";
+  const delta=useMacro?N(macro.change_1d_pct):chartValid&&N(previous?.close)!==null&&previous.close!==0?(last.close/previous.close-1)*100:null;
+  const divergent=chartValid&&macroValid&&chartDate===macroDate&&Math.abs(last.close-macro.value)>Math.max(0.02,Math.abs(last.close)*.0001);
+  const olderChart=chartValid&&valueDate>chartDate;
+  const subtitle=(valueDate||"기준일 미확인")+" · "+(useMacro?"별도 지표 저장값":"차트 일봉")+ (olderChart?" · 추이 "+chartDate+"까지":"")+(divergent?" · 제공처 값 불일치":"");
+  const source=useMacro?macro.source_url||chart?.source_url:chart?.source_url||macro.source_url;
+  return `<article class="nr-panel nr-index" title="${E(subtitle)}"><div class="nr-head" style="margin-bottom:0"><h3>${name}</h3>${link(source,"출처")}</div>
+  <div class="nr-num">${F(value,2)}</div><div class="${tone(delta)}" style="font-size:12px;font-weight:750">${P(delta)}</div>
+  ${mini(chart,delta)}<div class="nr-sub" style="margin-top:8px">${E(subtitle)}</div></article>`;
+ }).join("");
+}
 function caseOf(c){const k=(D.cases?.companies||[]).find(x=>String(x.symbol)===String(c.symbol));return D.cases?.source_generated_at===D.raw?.generated_at&&k?.input_price===c.price&&k?.input_price_session===c.price_session&&k?.input_forecast_eps===c.forecasts?.next_fy?.avg?k:null;}
 
 function flowReasonLines(c){const k=caseOf(c),out=[];for(const v of k?.why||[])if(v?.text)out.push(v.text);for(const v of k?.risks||[])if(typeof v==="string")out.push(v);else if(v?.text)out.push(v.text);for(const v of k?.missing||[])if(typeof v==="string")out.push(v);if(!out.length)out.push("현재 공시·실적과 동일한 기준일의 공식 자료 대조가 필요합니다.");if(N(c.technical?.volume_ratio)!==null)out.push("20일 평균 거래량 대비 "+F(c.technical.volume_ratio,2)+"배");return [...new Set(out)].slice(0,4);}
