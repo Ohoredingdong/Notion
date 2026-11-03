@@ -575,6 +575,15 @@ function fxHandleClick(e){
  if(ds.fxDeep){bridge.deep(ds.fxDeep);return}
 }
 
+function fxEnsureSelectedVisible(c){
+ if(!c)return;
+ if(fxLocal.search&&!String(c.name+" "+c.symbol).toLowerCase().includes(fxLocal.search.trim().toLowerCase()))fxLocal.search="";
+ if(fxLocal.filter==="star"&&!fxContext().favorites?.includes(c.symbol))fxLocal.filter="all";
+ if(["up","down","flat","ai"].includes(fxLocal.filter)){
+  const forecast=fxPrediction(c,fxContext());
+  if(!forecast.active||(fxLocal.filter!=="ai"&&forecast.r?.direction!==fxLocal.filter))fxLocal.filter="all";
+ }
+}
 function fxHandleInput(e){
  if(e.target?.id!=="fx-search-input")return;
  fxLocal.search=e.target.value;
@@ -591,7 +600,7 @@ function fxHandleInput(e){
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),version:'ux-flow-20261102-v3-viewport'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261102-v3-viewport'};
 const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
