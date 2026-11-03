@@ -4,6 +4,7 @@
   const FRIDGE = './designs/miniature-kitchen/assets/fridge-neutral-atlas.png';
   const FRONT = './designs/miniature-kitchen/assets/fridge-front-fidelity-v1.png';
   const FOOD_SCENE = './designs/miniature-kitchen/assets/pantry-food-atlas.png';
+  const MILK = './designs/miniature-kitchen/assets/food-milk-v1.png';
   const INNER_DOORS = './designs/miniature-kitchen/assets/door-insides.png';
   const DECOR = './designs/miniature-kitchen/assets/decor-atlas.png';
   const A=window.UMFKitchenArt, $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -18,7 +19,7 @@
     frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.507,y:.547,w:.484,h:.418,zx:.538,zy:.573,zw:.415,zh:.342}
   };
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
-  let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null, decorEdit=null, announcementTimer=0;
+  let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null, decorEdit=null, announcementTimer=0, highlightedItem=null, highlightUntil=0;
   const closing=new Set(),closingTimers=new Map();
   const movingDisplays=new Map();
   let movingDisplayCSS;
@@ -105,6 +106,7 @@
   const decorArt=key=>crop(DECOR,props[key].crop,[1286,1223],'decor-art');
   function art(item) {
     if(item.photo&&item.photoAsIcon!==false)return `<img class="food-art product-photo" alt="" src="${esc(item.photo)}">`;
+    if(item.kind==='food'&&item.name==='우유')return crop(MILK,[0,0,396,846],[396,846],'food-art','xMidYMid meet');
     const foodBoxes={"계란":[43,97,298,184],"우유":[404,61,144,219],"두부":[615,89,282,189],"브로콜리":[914,92,284,187],"토마토":[1215,94,291,186],"생선":[30,349,320,176],"간장":[436,290,106,253],"고추장":[681,320,175,210],"된장":[971,321,176,210],"소금":[1290,331,151,196],"대파":[29,562,309,188],"양송이버섯":[359,561,270,194],"김치":[663,546,214,211],"소고기":[912,570,295,177],"새우":[1222,571,288,176],"만두":[32,789,302,187],"냉동 채소":[347,786,288,189],"밥":[661,782,224,190],"양파":[941,774,192,202],"당근":[1188,774,326,201]};
     if(['food','seasoning'].includes(item.kind)&&foodBoxes[item.name])return crop(FOOD_SCENE,foodBoxes[item.name],[1536,1024],'food-art','xMidYMid meet');
     if(item.kind==='decor')return decorArt(item.art);
@@ -288,6 +290,8 @@
   function constrainItems(){for(const button of document.querySelectorAll('.drop-zone>.item')){const item=sceneItems().find(r=>r.id===button.dataset.item),width=button.parentElement.clientWidth;if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;const half=Math.min(.5,button.offsetWidth/2/width);place(button,item);button.style.left=clamp(item.x,half,1-half)*100+'%';}syncShelfLabels();}
   function itemButton(item) {
     const b=document.createElement('button');b.type='button';b.className='item '+item.kind;b.dataset.item=item.id;if(item.art)b.dataset.art=item.art;
+    if(item.kind==='food')b.dataset.foodName=item.name;
+    if(item.id===highlightedItem&&Date.now()<highlightUntil)b.classList.add('is-new');
     // A sauce is one miniature with one annotation. The previous three
     // overlapping name/quantity badges made the small jars look like forms.
     b.innerHTML=art(item)+(item.kind==='seasoning'?'':(item.quantity?`<span class="quantity">${esc(item.quantity)}</span>`:'')+`<span class="item-name">${esc(item.name)}</span>`);
@@ -396,7 +400,7 @@
   document.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;if(button.dataset.door)toggle(button.dataset.door);if(button.dataset.camera)setCamera(button.dataset.camera);
     if(button.id==='addFood')showAdd();if(button.id==='recipes')showRecipes();if(button.id==='decorate'){if(window.KitchenWorkflows){window.KitchenWorkflows.decor();return;}if(decorating){decorating=false;selected=null;render();announce('소품 배치를 마쳤어요.');}else showDecor();}
-    if(button.hasAttribute('data-decor-apply')){try{const changed=applyDecorEdit();setCamera('fridge');announce(changed?'나의 부엌에 적용했어요.':'현재 배치를 확인했어요.');}catch(error){announce(error.message);}return;}
+    if(button.hasAttribute('data-decor-apply')){try{const changed=applyDecorEdit();for(const key of Object.keys(doors))doors[key]=false;selected=null;setCamera('fridge');render();announce(changed?'나의 부엌에 적용했어요.':'현재 배치를 확인했어요.');}catch(error){announce(error.message);}return;}
     if(button.hasAttribute('data-decor-cancel')){cancelDecorEdit();if(window.KitchenHome)window.KitchenHome.selectSubtab('growth',{focus:true});else setCamera('fridge');announce('편집 전 배치로 돌아왔어요.');return;}
     if(button.id==='propList')showDecor();
     if(button.dataset.decorTool){const item=sceneItems().find(i=>i.id===selected&&i.kind==='decor');if(!item||!decorating||!decorEdit)return;const tool=button.dataset.decorTool;if(tool==='remove')removeDecor(item.id,{close:false});else if(tool==='front'||tool==='back')moveLayer(item.id,tool,{close:false});return;}
@@ -420,6 +424,7 @@
     restoreWorld(world,preserveSelection=false){cleanup();if(!preserveSelection)decorEdit=null;items.splice(0,items.length,...JSON.parse(JSON.stringify(world.items)));for(const key of Object.keys(panels))doors[key]=world.doors[key];serial=world.serial;layer=world.layer;if(!preserveSelection)selected=null;decorating=Boolean(decorEdit)&&document.body.dataset.camera==='counter';render();},
     showTray:openTray,closeTray,refreshDisplays:renderDisplays,refreshLayout:()=>{syncLayout();constrainItems();},showItem:id=>{const item=sceneItems().find(r=>r.id===id);if(item)showItem(item);},setCamera,decorate:showDecor,render,announce,
     getArt:art,getFridgeArt:()=>frontArt('home-fridge-art'),beginDecorEdit,applyDecorEdit,cancelDecorEdit,hasDecorDraft:()=>Boolean(decorEdit),getDecorDraftState,setDecorThemeDraft,getDecorThemeDraft:()=>decorEdit?clone(decorEdit.theme):null,setDecorEquippedDraft,getDecorEquippedDraft:()=>decorEdit?clone(decorEdit.equipped):null,
+    highlightItem(id){const item=items.find(r=>r.id===id);if(!item)return;const key=doorForZone(item.zone);if(panels[key])doors[key]=true;selected=id;highlightedItem=id;highlightUntil=Date.now()+3500;render(true);setTimeout(()=>{for(const button of document.querySelectorAll('.item.is-new'))button.classList.remove('is-new');highlightedItem=null;},3500);},
     chooseRecipe(name){if(!window.KitchenCatalog.some(r=>r.name===name))return;items.find(r=>r.kind==='meal').name=name;setCamera('counter');render();closeTray();window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name}}));}
   });
 })();
