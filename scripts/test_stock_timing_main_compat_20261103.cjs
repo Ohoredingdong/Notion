@@ -60,6 +60,17 @@ assert.equal(fxPrediction(stock,ctx).active,false,'retroactively issued after ta
 ctx.data.direction.records=[mk('AAPL','daily','up','2026-11-04T12:00:00Z','2026-11-04T14:30:00Z','2026-11-04T21:00:00Z')];
 assert.equal(fxPrediction(stock,ctx).active,false,'future issue timestamp is not present evidence');
 console.log('6/7: chronology rejects retroactive or future issuance');
+// One preregistered fault: a forecast issued two minutes in the *future* does
+// not exist yet and must not be a current UI signal, regardless of 5m clock grace.
+ctx.data.direction.records=[mk('AAPL','daily','up',
+  '2026-11-03T16:02:00Z','2026-11-03T16:15:00Z','2026-11-03T21:00:00Z')];
+assert.equal(fxPrediction(stock,ctx).active,false,
+  'near-future issued_at cannot be an already-issued research signal');
+assert.deepEqual(pick('ai'),[],
+  'not-yet-issued call must not enter current AI signal filter');
+assert.equal(pick('all').length,1,
+  'synthetic archived record remains inspectable without backdating');
+console.log('Near-future issuance negative control: not-yet-issued is never current');
 ctx.data.direction.records=[mk('AAPL','daily','up','2026-11-03T14:00:00Z','2026-11-03T14:30:00Z','2026-11-03T21:00:00Z')];
 ctx.data.direction.records[0].probabilities={up:0.9,down:0.6,flat:0.1};
 assert.equal(fxPrediction(stock,ctx).active,false,'invalid probability distribution cannot be current');
