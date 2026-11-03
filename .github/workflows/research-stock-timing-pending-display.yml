@@ -1,0 +1,49 @@
+name: Research-only formerly published pending signal display
+on:
+  push:
+    branches:
+      - research/timing-pending-published-signal-20261103
+    paths:
+      - 'scripts/stock_forecast_presentation.py'
+      - 'scripts/run_stock_forecasts.py'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'scripts/test_stock_pending_signal_visibility.py'
+      - 'scripts/test_stock_pending_signal_visibility.cjs'
+      - '.github/workflows/research-stock-timing-pending-display.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pending-display-synthetic-and-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate prospective pending display negative and positive controls
+        run: |
+          PYTHONPATH=scripts python scripts/test_stock_pending_signal_visibility.py
+          node scripts/test_stock_pending_signal_visibility.cjs
+          node scripts/test_stock_timing_stale_ai_filter.cjs
+          node scripts/test_stock_forecast_ui.cjs
+          node --check assets/stock-radar-flow-v2.js
+      - name: Independent unchanged frozen-data arithmetic and timing guard
+        if: always()
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pending-published-signal-research-evidence
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-timing-acceptance-guard.json
