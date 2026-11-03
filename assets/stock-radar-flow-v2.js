@@ -29,12 +29,13 @@ function fxPrediction(c,ctx){
  const active=r?.status==="research_prediction"&&val!==null;
  const until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
  const invalidDates=Number.isFinite(until)&&Number.isFinite(issued)&&until<issued;
- const usable=active&&!invalidDates;
+ const futureIssued=Number.isFinite(issued)&&issued>Date.now()+5*60*1000;
+ const usable=active&&!invalidDates&&!futureIssued;
  const stale=usable&&Number.isFinite(until)&&until<Date.now();
  const unknown=usable&&!Number.isFinite(until);
  const label=!usable?"미산출":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
  const klass=!usable||stale||unknown?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
- const status=r?.status==="research_prediction"&&!usable?"분포·목표기간 오류 · 사용 불가":
+ const status=r?.status==="research_prediction"&&!usable?(futureIssued?"미래 발행 시각 오류 · 사용 불가":"분포·목표기간 오류 · 사용 불가"):
   !usable?"현재 연구 신호 없음":stale?"기간 종료 · 과거 기록":unknown?"기간 정보 미확인 · 연구용":"연구용 방향 분류";
  return {r,p,label,klass,value:usable?val:null,stale,unknown,active:usable,status};
 }
