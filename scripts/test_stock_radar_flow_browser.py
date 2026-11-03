@@ -249,6 +249,20 @@ with sync_playwright() as play:
         }""")
         check("Malformed model probability is blocked and explained",
             "분포·목표기간 오류" in page.locator(".fx-v5-ai").inner_text())
+        page.reload(wait_until="domcontentloaded")
+        page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
+        page.evaluate("window.StockRadarV2Bridge.select('NVDA')")
+        page.locator('[data-rf-market="NASDAQ"]').first.click()
+        page.reload(wait_until="domcontentloaded")
+        page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
+        check("Selected ticker and market survive reload",
+            page.evaluate("""() => {
+                const state=window.StockRadarV2Bridge.snapshot();
+                return state.selected==="NVDA" && state.market==="NASDAQ";
+            }"""))
+        check("Persisted ticker is shown in the visible cockpit",
+            "NVIDIA" in page.locator(".fx-v5-stocktitle").inner_text())
+
         check("Interaction no page exceptions",not errors,str(errors))
         screenshot(page, "radar-flow-functional-desktop.png")
         page.close()
