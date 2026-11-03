@@ -82,144 +82,160 @@ textarea{min-height:74px;resize:vertical}
 @media(max-width:1050px){.app{grid-template-columns:76px minmax(0,1fr)}.brand{justify-content:center;padding:8px 0 22px}.brand span:last-child{display:none}.nav button{justify-content:center;padding:12px}.nav button span:last-child{display:none}.grid.three{grid-template-columns:1fr 1fr}.grid.three>.hero{grid-column:1/-1}.backup-actions{grid-template-columns:1fr 1fr}.grid.four{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.app{display:block}.sidebar{display:none}.topbar{height:58px;padding:0 10px}.content{padding:12px 10px 80px}.top-actions .action-btn{display:none}.grid.two,.grid.three,.grid.four,.input-grid{grid-template-columns:1fr}.budget-summary{grid-template-columns:1fr 1fr}.summary-stat{padding:10px 0;border-left:0}.backup-actions{grid-template-columns:1fr}.goal-amounts{grid-template-columns:1fr 1fr}.mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(252,252,253,.94);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);padding:7px 5px 9px}.mobile-nav button{border:0;background:transparent;font-size:10px;color:#666}.mobile-nav button.active{color:#111;font-weight:760}.mobile-nav .mi{display:block;font-size:18px;margin-bottom:2px}}
 
-/* Desktop one-screen mode: keep each app view inside the viewport without page scrolling */
+/* Desktop one-screen mode: spacious, full-width, no page scroll */
 @media (min-width:761px){
   html,body{height:100%;overflow:hidden}
-  .app{height:100vh;min-height:0}
-  .sidebar{height:100vh;overflow:hidden}
+  .app{height:100vh;min-height:0;grid-template-columns:190px minmax(0,1fr)}
+  .sidebar{height:100vh;overflow:hidden;padding:18px 12px}
+  .brand{padding:7px 10px 22px;font-size:21px}
+  .nav{gap:5px}
+  .nav button{padding:11px 11px;font-size:14px}
+  .nav-icon{width:21px;font-size:17px}
+
   .main{height:100vh;min-height:0;overflow:hidden}
-  .topbar{height:58px;min-height:58px}
+  .topbar{height:58px;min-height:58px;padding:0 18px}
+  .icon-btn,.month-btn,.action-btn{height:38px}
   .content{
+    width:100%;
+    max-width:none;
+    margin:0;
     height:calc(100vh - 58px);
     max-height:calc(100vh - 58px);
     overflow:hidden;
-    padding:10px 16px 12px;
+    padding:11px 18px 13px;
   }
   .view.active{height:100%;min-height:0;overflow:hidden}
-  .card{padding:13px 14px;border-radius:15px}
-  .card-title{font-size:15px;margin-bottom:9px}
-  .big{font-size:25px}
-  .medium{font-size:19px}
-  .sub{font-size:11px;line-height:1.4}
-  .grid{gap:10px}
-  .grid.two,.grid.three,.grid.four{gap:10px}
-  th{padding:6px 8px;font-size:11px}
-  td{padding:6px 8px;font-size:11px}
-  .kpi{min-height:0;gap:4px}
-  .kpi .value{font-size:21px}
-  .progress{height:8px}
-  .split-meta{margin-top:9px;padding-top:9px}
-  .meta-label{font-size:10px}
-  .meta-value{font-size:12px}
-  .person-card,.hero{min-height:0}
-  .section-head{margin-bottom:9px}
-  .section-head h2{font-size:22px}
-  .input-grid{gap:8px}
-  input[type=text],input[type=number],input[type=month],select,textarea{padding:8px 9px}
-  textarea{min-height:58px}
+
+  .card{padding:15px 16px;border-radius:16px}
+  .card-title{font-size:16px;margin-bottom:10px}
+  .big{font-size:27px}
+  .medium{font-size:20px}
+  .sub{font-size:12px;line-height:1.45}
+  .grid,.grid.two,.grid.three,.grid.four{gap:11px}
+  th{padding:7px 9px;font-size:12px}
+  td{padding:7px 9px;font-size:12px}
+  .kpi{min-height:0;gap:5px}
+  .kpi .label{font-size:11.5px}
+  .kpi .value{font-size:22px}
+  .progress{height:9px}
+  .split-meta{margin-top:10px;padding-top:10px}
+  .meta-label{font-size:10.5px}
+  .meta-value{font-size:12.5px}
+  .section-head{margin-bottom:10px}
+  .section-head h2{font-size:23px}
+  .input-grid{gap:9px}
+  input[type=text],input[type=number],input[type=month],select,textarea{padding:8px 10px}
+  textarea{min-height:56px}
   .form-actions{margin-top:9px}
-  .budget-summary{gap:8px}
-  .goal-card{padding:14px}
-  .goal-amounts{margin:10px 0;gap:8px}
-  .backup-actions{gap:10px}
-  .backup-action{min-height:132px;padding:14px}
-  .backup-action .icon{font-size:24px;margin-bottom:12px}
-  .backup-action h3{font-size:17px;margin-bottom:6px}
-  .backup-action p{font-size:11px;line-height:1.45}
 
   #view-dashboard.active{
     display:grid;
-    grid-template-rows:minmax(0,1.05fr) minmax(0,1.35fr) minmax(0,1.5fr) minmax(86px,.7fr);
-    gap:10px;
+    grid-template-rows:174px 218px minmax(232px,1fr) 112px;
+    gap:11px;
   }
   #view-dashboard.active>div{margin-top:0!important;min-height:0}
   #view-dashboard .grid.three,
   #view-dashboard .grid.two,
   #view-dashboard .grid.four{height:100%;min-height:0}
-  #view-dashboard .grid.three{grid-template-columns:1.1fr .85fr .85fr!important}
-  #view-dashboard .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  #view-dashboard .grid.three{grid-template-columns:1.12fr .88fr .88fr!important}
+  #view-dashboard .grid.four{grid-template-columns:.78fr .78fr .86fr .92fr!important}
   #view-dashboard .card{height:100%;min-height:0;overflow:hidden}
-  #view-dashboard .chart-box{height:100%;min-height:145px}
-  #view-dashboard .suggestion li{font-size:10.5px;line-height:1.35;margin:4px 0}
-  #view-dashboard .hero .big{font-size:24px}
-  #view-dashboard .person-card .big{font-size:24px}
+  #view-dashboard .hero{justify-content:center;padding-left:20px}
+  #view-dashboard .hero .card-title{font-size:15px;margin-bottom:10px}
+  #view-dashboard .hero .big{font-size:25px;line-height:1.16}
+  #view-dashboard .hero .sub{font-size:12px;margin-top:10px!important}
+  #view-dashboard .person-card{padding:15px 17px}
+  #view-dashboard .person-card .big{font-size:26px}
+  #view-dashboard .person-name{font-size:17px}
+  #view-dashboard .person-card .sub{font-size:11px}
+  #view-dashboard .chart-box{height:100%;min-height:175px}
+  #view-dashboard .axis-text{font-size:10.5px}
+  #view-dashboard .suggestion li{font-size:11px;line-height:1.42;margin:5px 0}
+  #view-dashboard .empty-state{
+    height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:var(--sub);gap:8px;text-align:center
+  }
+  #view-dashboard .empty-state strong{font-size:13px;color:#3f3f43}
+  #view-dashboard .empty-state button{padding:7px 11px;font-size:11px}
 
   #view-budget.active{
     display:grid;
-    grid-template-rows:96px minmax(0,1fr) minmax(170px,.55fr);
-    gap:10px;
+    grid-template-rows:104px minmax(0,1fr) minmax(178px,.56fr);
+    gap:11px;
   }
   #view-budget.active>div{margin-top:0!important;min-height:0}
   #view-budget .card{min-height:0;overflow:hidden}
   #view-budget .grid.two{height:100%;min-height:0}
   #view-budget .grid.two>.grid{min-height:0}
-  #view-budget .bar-list{gap:10px}
-  #view-budget .bar-row .line{margin-bottom:4px}
-  #view-budget .suggestion li{font-size:10.5px;line-height:1.35;margin:4px 0}
+  #view-budget .bar-list{gap:11px}
+  #view-budget .bar-row .line{margin-bottom:5px}
 
   #view-savings.active{
     display:grid;
-    grid-template-rows:104px minmax(0,1.35fr) minmax(0,.85fr);
-    gap:10px;
+    grid-template-rows:108px minmax(0,1.34fr) minmax(0,.86fr);
+    gap:11px;
   }
   #view-savings.active>div{margin-top:0!important;min-height:0}
   #view-savings .card{min-height:0;overflow:hidden}
   #view-savings .grid.two{height:100%;min-height:0}
-  #view-savings .chart-box{height:100%;min-height:135px}
+  #view-savings .chart-box{height:100%;min-height:145px}
   #view-savings textarea{min-height:48px}
 
   #view-assets.active{
     display:grid;
-    grid-template-rows:104px minmax(0,1fr);
-    gap:10px;
+    grid-template-rows:108px minmax(0,1fr);
+    gap:11px;
   }
   #view-assets.active>div{margin-top:0!important;min-height:0}
   #view-assets .card{min-height:0;overflow:hidden}
   #view-assets .grid.two{height:100%;min-height:0}
   #view-assets .grid.two>.grid{min-height:0}
-  #view-assets .chart-box{height:calc(100% - 42px)!important;min-height:170px}
+  #view-assets .chart-box{height:calc(100% - 44px)!important;min-height:190px}
 
   #view-goals.active{
     display:grid;
-    grid-template-rows:44px minmax(0,1.05fr) minmax(0,.8fr) minmax(0,.9fr);
-    gap:10px;
+    grid-template-rows:46px minmax(0,1.05fr) minmax(0,.8fr) minmax(0,.9fr);
+    gap:11px;
   }
   #view-goals.active>div{margin-top:0!important;min-height:0}
   #view-goals .section-head{margin:0}
   #view-goals .card{min-height:0;overflow:hidden}
   #view-goals .grid.two{height:100%;min-height:0}
+  #view-goals .goal-card{padding:14px 15px}
+  #view-goals .goal-amounts{margin:10px 0;gap:8px}
   #view-goals .timeline{margin-top:8px}
   #view-goals .mile{padding-top:21px;font-size:10px}
   #view-goals .mile strong{font-size:11px}
 
   #view-backup.active{
     display:grid;
-    grid-template-rows:minmax(130px,.55fr) minmax(0,1fr);
-    gap:10px;
+    grid-template-rows:minmax(142px,.58fr) minmax(0,1fr);
+    gap:11px;
   }
   #view-backup.active>div{margin-top:0!important;min-height:0}
   #view-backup .card{min-height:0;overflow:hidden}
-  #view-backup .backup-actions{height:100%;min-height:0}
-  #view-backup .backup-action{height:100%;min-height:0}
+  #view-backup .backup-actions{height:100%;min-height:0;gap:11px}
+  #view-backup .backup-action{height:100%;min-height:0;padding:15px}
+  #view-backup .backup-action .icon{font-size:25px;margin-bottom:12px}
+  #view-backup .backup-action h3{font-size:17px;margin-bottom:6px}
+  #view-backup .backup-action p{font-size:11px;line-height:1.45}
 }
 
-/* Extra compaction for shorter laptop/Notion embed heights */
-@media (min-width:761px) and (max-height:850px){
+/* Short desktop: preserve readability, trim spacing before text size */
+@media (min-width:761px) and (max-height:820px){
   .topbar{height:52px;min-height:52px}
-  .content{height:calc(100vh - 52px);max-height:calc(100vh - 52px);padding:7px 12px 9px}
-  .card{padding:10px 11px;border-radius:13px}
-  .card-title{font-size:14px;margin-bottom:6px}
-  .big{font-size:22px}.medium{font-size:17px}
-  .sub{font-size:10px}
-  th,td{padding:4px 6px;font-size:10px}
-  .goal-card{padding:10px}
-  .backup-action{padding:10px;min-height:110px}
-  .backup-action .icon{font-size:20px;margin-bottom:7px}
-  .backup-action h3{font-size:15px;margin-bottom:4px}
-  .backup-action p{font-size:10px}
-  #view-dashboard .chart-box{min-height:115px}
-  #view-savings .chart-box{min-height:110px}
-  #view-assets .chart-box{min-height:145px}
+  .content{height:calc(100vh - 52px);max-height:calc(100vh - 52px);padding:8px 14px 9px}
+  .card{padding:12px 13px}
+  .grid,.grid.two,.grid.three,.grid.four{gap:8px}
+  #view-dashboard.active{grid-template-rows:154px 192px minmax(190px,1fr) 96px;gap:8px}
+  #view-dashboard .hero .big{font-size:23px}
+  #view-dashboard .person-card .big{font-size:24px}
+  #view-dashboard .chart-box{min-height:145px}
+  th,td{padding:5px 7px;font-size:11px}
+  .card-title{font-size:15px;margin-bottom:7px}
+  .sub{font-size:11px}
+  .kpi .value{font-size:20px}
+  #view-budget.active,#view-savings.active,#view-assets.active,#view-goals.active,#view-backup.active{gap:8px}
 }
 
 </style>
