@@ -27,18 +27,24 @@ def main():
     now_records = report["records"]
     kr_nocall = [r for r in now_records if r.get("market") == "KR"
                  and r.get("mode") == "daily" and r.get("status") == "no_call"]
-    assert len(kr_nocall) == 6, f"Frozen counterexample changed: {len(kr_nocall)}"
+    # The newest snapshot retains four individual KR daily calls; only the two indices are no-call.
+    assert len(kr_nocall) == 2, f"Frozen index no-call evidence changed: {len(kr_nocall)}"
+    assert {r["symbol"] for r in kr_nocall} == {"^KS11", "^KQ11"}
     retained = prior_public_forecasts(originals, proofs, now_records, AS_OF)
-    assert len(retained) == 6, f"Unseen carryover or missing public proof: {len(retained)}"
+    assert len(retained) == 2, f"Unexpected prior-public carryover set: {len(retained)}"
     assert all(r["market"] == "KR" and r["mode"] == "daily"
                and r["display_origin"] == "earlier_public_frozen_record"
                and not r["recommendation"] and not r["user_receipt_verified"] for r in retained)
     selected = {r["symbol"]: r["direction"] for r in retained}
     assert selected["^KS11"] == "up" and selected["^KQ11"] == "down"
-    assert len(set(r["id"] for r in retained)) == 6
+    assert len(set(r["id"] for r in retained)) == 2
+    assert set(selected) == {"^KS11", "^KQ11"}
+    current_active = {r["symbol"] for r in now_records if r.get("market")=="KR" and r.get("mode")=="daily" and r.get("status")=="research_prediction"}
+    assert current_active == {"000660.KS", "005930.KS", "035420.KS", "403870.KQ"}, current_active
     assert json.dumps(report, sort_keys=True) == before, "Current no-call evidence modified"
     print(json.dumps({"status": "research_only_disappearance_reproduced",
                       "frozen_main": PINNED, "valid_prior_public": len(retained),
+                      "unchanged_current_active_kr_companies": len(current_active),
                       "latest_snapshot_no_call": len(kr_nocall),
                       "prior_symbols_and_directions": selected,
                       "operating_display_changed": False,
