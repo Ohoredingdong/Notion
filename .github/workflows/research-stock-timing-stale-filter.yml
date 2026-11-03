@@ -1,0 +1,71 @@
+name: Research-only stale AI forecast filter
+on:
+  push:
+    branches:
+      - research/timing-stale-ai-filter-20261103
+    paths:
+      - 'scripts/test_stock_timing_stale_ai_filter.cjs'
+      - 'scripts/test_stock_timing_neutral_stale_signal.cjs'
+      - 'assets/stock-radar-neutral.js'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'scripts/test_stock_radar_flow_browser.py'
+      - 'scripts/test_stock_decision_browser.py'
+      - '.github/workflows/research-stock-timing-stale-filter.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  research-only-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run fixed-clock RED or GREEN and existing forecast UI checks
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node scripts/test_stock_timing_stale_ai_filter.cjs
+          node scripts/test_stock_timing_neutral_stale_signal.cjs
+          node scripts/test_stock_forecast_ui.cjs
+      - name: Recompute immutable forecast evidence and retain acceptance criteria
+        if: always()
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - name: Browser end-to-end flow test on unchanged saved JSON
+        if: success()
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+          python -m http.server 8765 >/tmp/stock-timing-research-http.log 2>&1 &
+          python scripts/test_stock_radar_flow_browser.py
+      - name: Additional unchanged main-wide browser regressions (release gate only)
+        if: success()
+        run: |
+          python -m pip install beautifulsoup4
+          npm install --no-save --package-lock=false @playwright/test@1.56.0
+          node tests/stock-entry-browser.cjs
+          python scripts/test_stock_decision_browser.py
+          python scripts/test_stock_radar_neutral.py --url 'http://127.0.0.1:8765/stock-value-radar.html'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-stale-signal-filter-evidence
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-timing-acceptance-guard.json
+            decision-browser-tests/ux-flow-report.json
+            decision-browser-tests/radar-flow-*.png
+            decision-browser-tests/*.png
+            decision-browser-tests/*.json
+            neutral-ui-evidence/*.png
+            neutral-ui-evidence/*.json
+            entry-*.png

@@ -343,9 +343,15 @@ class RadarChecks:
             if page.locator("#view-home").count():
                 expect(page.locator("#view-home")).to_be_visible()
                 expect(page.locator("#nr-home-content")).to_be_visible()
-                require(page.locator("#nr-market-overview,#nr-home-alerts,#nr-home-picks").count() == 3,
+                neutral_sections = (
+                    "#nr-home-content .rf-markets .nr-market-grid",
+                    "#nr-home-content .rf-event-feed",
+                    "#nr-home-content .rf-list",
+                )
+                require(all(page.locator(section).count() == 1 and
+                            page.locator(section).is_visible() for section in neutral_sections),
                         "Neutral home must expose market overview, alerts and research picks.")
-                require(page.locator(".nr-home-actions button").count() >= 6,
+                require(page.locator(".nr-rail [data-nr-screen]").count() >= 6,
                         "Neutral home must expose the primary screen entry points.")
                 self.record(label + " neutral home exposes market, alerts, picks and primary screen entry points")
                 page.locator('.nr-rail [data-nr-view="discover"]').click()

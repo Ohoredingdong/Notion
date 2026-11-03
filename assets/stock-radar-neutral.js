@@ -59,8 +59,9 @@ function statusStripHTML(){const reviews=data.greenReview?.companies||[],strict=
 
 
 function normSymbol(v){return String(v||'').toUpperCase().replace(/\.(KS|KQ)$/,'')}
-function forecastOf(c,preferred='daily'){const key=normSymbol(c?.symbol),rs=data.direction?.records||[];return rs.find(r=>normSymbol(r.symbol)===key&&r.mode===preferred)||rs.find(r=>normSymbol(r.symbol)===key)||null}
-function forecastLabel(r){if(!r||r.status!=='research_prediction'||!r.probabilities)return{label:'예측 없음',prob:null,cls:'neutral'};const m={up:['상승',r.probabilities.up,'up'],flat:['횡보',r.probabilities.flat,'neutral'],down:['하락',r.probabilities.down,'down']}[r.direction]||['보류',null,'neutral'];return{label:m[0],prob:m[1],cls:m[2]}}
+function usableForecast(r){const end=Date.parse(r?.target?.end||'');return !!(r?.status==='research_prediction'&&r.probabilities&&Number.isFinite(end)&&end>=Date.now())}
+function forecastOf(c,preferred='daily'){const key=normSymbol(c?.symbol),rs=(data.direction?.records||[]).filter(r=>normSymbol(r.symbol)===key);return rs.find(r=>r.mode===preferred&&usableForecast(r))||rs.find(usableForecast)||rs.find(r=>r.mode===preferred)||rs[0]||null}
+function forecastLabel(r){if(!r||r.status!=='research_prediction'||!r.probabilities)return{label:'예측 없음',prob:null,cls:'neutral'};const end=Date.parse(r.target?.end||'');if(!Number.isFinite(end))return{label:'대상 시간 미확인',prob:null,cls:'neutral'};if(end<Date.now())return{label:'지난 예측 기록',prob:null,cls:'neutral'};const m={up:['상승',r.probabilities.up,'up'],flat:['횡보',r.probabilities.flat,'neutral'],down:['하락',r.probabilities.down,'down']}[r.direction]||['보류',null,'neutral'];return{label:m[0],prob:m[1],cls:m[2]}}
 function topResearch(n=6){return [...rows()].sort((a,b)=>(b.priority?.display_score??b.priority?.score??0)-(a.priority?.display_score??a.priority?.score??0)).slice(0,n)}
 function screenHead(title,sub,action=''){return `<div class="nr-screen-head"><div><h2>${E(title)}</h2><p>${E(sub)}</p></div>${action}</div>`}
 function homeQuick(){return `<div class="nr-home-actions">
@@ -79,8 +80,10 @@ let flowMarket='ALL',flowOnly='all';
 function flowForecast(c) {
   if (!c) return null;
   const all=(data.direction?.records||[]).filter(r=>normSymbol(r.symbol)===normSymbol(c.symbol));
-  return all.find(r=>r.mode==='daily'&&r.status==='research_prediction'&&r.probabilities)
-    || all.find(r=>r.mode==='intraday'&&r.status==='research_prediction'&&r.probabilities)
+  return all.find(r=>r.mode==='daily'&&usableForecast(r))
+    || all.find(r=>r.mode==='intraday'&&usableForecast(r))
+    || all.find(r=>r.mode==='daily'&&r.status==='research_prediction'&&r.probabilities)
+    || all.find(r=>r.status==='research_prediction'&&r.probabilities)
     || all.find(r=>r.mode==='daily')||all[0]||null;
 }
 
@@ -88,7 +91,9 @@ function flowState(f) {
   const studied=!!(f?.status==='research_prediction'&&f.probabilities);
   const end=Date.parse(f?.target?.end||'');
   const expired=studied&&Number.isFinite(end)&&end<Date.now();
-  return {studied,expired,label:!studied?'예측 자료 없음':expired?'지난 예측 기록':f.mode==='intraday'?'장중 연구 신호':'일별 연구 신호'};
+  const unknown=studied&&!Number.isFinite(end);
+  const current=studied&&!expired&&!unknown;
+  return {studied,expired,unknown,current,label:!studied?'예측 자료 없음':unknown?'대상 시간 미확인':expired?'지난 예측 기록':f.mode==='intraday'?'장중 연구 신호':'일별 연구 신호'};
 }
 
 function flowCompanies() {
@@ -96,7 +101,7 @@ function flowCompanies() {
   return pool.filter(c=>{
     const matched=flowMarket==='ALL'||(window.RadarMarkets?.match?window.RadarMarkets.match(c,flowMarket):flowMarket===c.market);
     if(!matched)return false;
-    if(flowOnly==='ai'&&!flowState(flowForecast(c)).studied)return false;
+    if(flowOnly==='ai'&&!flowState(flowForecast(c)).current)return false;
     if(flowOnly==='star'&&!favorites.has(c.symbol))return false;
     return !query||(c.name+' '+c.symbol).toLowerCase().includes(query.trim().toLowerCase());
   });
@@ -107,7 +112,7 @@ function flowRows() {
   if(!cs.length)return '<div class="rf-empty"><b>현재 조건에 맞는 종목이 없습니다.</b>시장·검색·신호 필터를 바꿔 확인하세요.</div>';
   return cs.map(c=>{
     const f=flowForecast(c),q=flowState(f),s=forecastLabel(f),delta=change(c);
-    const pill=q.studied?`<span class="rf-signal ${s.cls}">${E(s.label)} ${s.prob!==null?F(s.prob*100,0)+'%':''}</span>`:'<span class="rf-signal none">미산출</span>';
+    const pill=q.current?`<span class="rf-signal ${s.cls}">${E(s.label)} ${s.prob!==null?F(s.prob*100,0)+'%':''}</span>`:q.studied?`<span class="rf-signal none">${E(q.label)}</span>`:'<span class="rf-signal none">미산출</span>';
     const market=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
     return `<button type="button" class="rf-item ${String(c.symbol)===String(selected)?'active':''}" data-nr-select="${E(c.symbol)}" aria-label="${E(c.name)} 분석 선택">
       <span class="rf-item-name"><strong>${E(c.name)}</strong><small>${E(c.symbol)} · ${E(market)}</small></span>
