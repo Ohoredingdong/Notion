@@ -3,7 +3,7 @@ import argparse,copy,hashlib,html,importlib.util,json,os,re,shutil,subprocess,te
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-OUT=Path('/tmp/kitchen-final-repair-public')
+OUT=Path('/tmp/kitchen-a5-fidelity-public')
 RESULT_BRANCH='preview/kitchen-fidelity-validation-20261103'
 PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900),('user-screenshot',801,782)]
 DOORS=('freshLeft','freshRight','frozenLeft','frozenRight')
@@ -21,7 +21,7 @@ def contract(native):
     scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',original)
     styles=re.findall(r'<style(?:\s[^>]*)?>([\s\S]*?)</style>',original)
     avifs=sorted(set(re.findall(r'data:image/avif;base64,[A-Za-z0-9+/=]+',original)))
-    assert len(scripts)==11 and len(styles)==13 and len(avifs)==6,(len(scripts),len(styles),len(avifs))
+    assert len(scripts)==11 and len(styles)==13 and len(avifs)==4,(len(scripts),len(styles),len(avifs))
     return {'decoded_sha256':hashlib.sha256(decoded).hexdigest(),'scripts':scripts,'styles':styles,'avifs':avifs}
 
 def touch(page,frame,node,is_touch):
@@ -45,7 +45,7 @@ def screenshot(page,label,suffix):
 
 def visual_case(page,frame,label,is_touch,data):
     images=frame.evaluate('async urls=>Promise.all(urls.map(async src=>{const i=new Image();i.src=src;await i.decode();return {width:i.naturalWidth,height:i.naturalHeight};}))',data['avifs'])
-    assert sorted((i['width'],i['height']) for i in images)==[(396,846),(604,815),(1024,1536),(1402,1122),(1536,1024),(1536,1024)],images
+    assert sorted((i['width'],i['height']) for i in images)==[(1024,1536),(1122,1402),(1402,1122),(1536,1024)],images
     frame.evaluate('async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}')
     before=frame.evaluate('KitchenJournal.getEnvelope()')
     assert frame.evaluate('KitchenJournal.storageKey')=='miniature-kitchen-preview-v1' and before['version']==1
@@ -64,17 +64,17 @@ def visual_case(page,frame,label,is_touch,data):
     assert abs(home_frame['height']-home_frame['configuredHeight'])<=1 and 0<home_frame['height']<=home_frame['viewportHeight']+1,home_frame
     composition=frame.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};return {viewport:[innerWidth,innerHeight],scale:Number(getComputedStyle(document.querySelector('.shell')).getPropertyValue('--home-ui-scale')),stage:box(document.querySelector('.fridge-stage')),stageLogical:{width:document.querySelector('.fridge-stage').offsetWidth,height:document.querySelector('.fridge-stage').offsetHeight},freshDoorFraction:parseFloat(document.querySelector('[data-door="freshLeft"]').style.height)/100,backgroundTop:parseFloat(document.querySelector('.shell').style.getPropertyValue('--bg-image-top')),masthead:box(document.querySelector('.masthead')),balance:box(document.querySelector('#dailyBalance')),nav:box(document.querySelector('.home-shortcuts')),brandFont:parseFloat(getComputedStyle(document.querySelector('.brand h1')).fontSize)};}''')
     assert abs(composition['nav']['height']-48*composition['scale'])<=2,composition
-    assert composition['stageLogical']=={'width':718,'height':800} and abs(composition['freshDoorFraction']-.602)<.0001,composition
-    assert abs(composition['stage']['width']/composition['stage']['height']-718/800)<.001 and composition['backgroundTop']<0,composition
+    assert composition['stageLogical']=={'width':711,'height':800} and abs(composition['freshDoorFraction']-.602)<.0001,composition
+    assert abs(composition['stage']['width']/composition['stage']['height']-711/800)<.001 and composition['backgroundTop']<0,composition
     if composition['viewport']==[801,782]:
         assert 365<=composition['stage']['width']<=390 and 405<=composition['stage']['height']<=435,composition
         assert 175<=composition['masthead']['height']+composition['balance']['height']<=200 and 82<=composition['nav']['height']<=94 and 23<=composition['brandFont']<=25,composition
-    food_art=frame.evaluate('''()=>[...document.querySelectorAll('.fridge-interiors .item.food')].map(e=>{const art=e.querySelector('.food-art'),r=art.getBoundingClientRect(),css=getComputedStyle(art);let point=null;for(const fy of [.5,.2,.8,.1,.9,.35,.65])for(const fx of [.5,.2,.8,.1,.9,.35,.65]){const x=r.x+r.width*fx,y=r.y+r.height*fy;if(x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&document.elementFromPoint(x,y)?.closest('[data-item]')===e){point={x,y};break;}}return {id:e.dataset.item,name:e.dataset.foodName,width:r.width,height:r.height,tapPoint:{x:r.x+r.width/2,y:r.y+r.height/2},visible:r.width>0&&r.height>0&&css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0,point};})''')
-    expected_food={'egg','milk','tofu','broccoli','tomato','fish','scallion','mushroom','kimchi','beef','shrimp','dumplings','mixveg'}
+    food_art=frame.evaluate('''()=>[...document.querySelectorAll('.room .item.food,.room .item.seasoning')].map(e=>{const art=e.querySelector('.food-art'),r=art.getBoundingClientRect(),css=getComputedStyle(art);let point=null;for(const fy of [.5,.2,.8,.1,.9,.35,.65])for(const fx of [.5,.2,.8,.1,.9,.35,.65]){const x=r.x+r.width*fx,y=r.y+r.height*fy;if(x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&document.elementFromPoint(x,y)?.closest('[data-item]')===e){point={x,y};break;}}return {id:e.dataset.item,name:MiniKitchen.getSnapshot().items.find(i=>i.id===e.dataset.item)?.name,width:r.width,height:r.height,tapPoint:{x:r.x+r.width/2,y:r.y+r.height/2},visible:r.width>0&&r.height>0&&css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0,point};})''')
+    expected_food={'egg','milk','tofu','broccoli','tomato','fish','scallion','mushroom','kimchi','beef','shrimp','dumplings','mixveg','spice0','spice1','spice2','spice3'}
     assert {row['id'] for row in food_art}==expected_food and all(row['visible'] for row in food_art),food_art
     home_scroll=no_page_scroll(frame);screenshot(page,label,'home')
-    # Transparent44px hit areas may overlap; actual pointer routing must open
-    # the painted food under the pointer, never its neighboring empty hit area.
+    # Transparent44px stock hit areas may overlap; actual pointer routing must open
+    # the painted food or seasoning under the pointer, never its neighboring empty hit area.
     food_taps=[]
     for food in food_art:
         offset=frame.frame_element().bounding_box();point=food['tapPoint']
@@ -180,7 +180,7 @@ def visual_case(page,frame,label,is_touch,data):
     progress=frame.locator('#homeFridgeProgress').bounding_box();assert progress and progress['height']>0
     no_page_scroll(frame);screenshot(page,label,'recorded-closed-progress')
 
-    return {'main_composition':composition,'default_thirteen_food_art':food_art,'all_thirteen_actual_art_center_taps':food_taps,'frozen_vegetables_open_correct_detail_not_add':True,'routine_door_announcement_aria_only':quiet_door,'opaque_session_header':header,'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
+    return {'main_composition':composition,'default_seventeen_stock_art':food_art,'default_thirteen_food_art':[row for row in food_art if not row['id'].startswith('spice')],'all_seventeen_actual_stock_art_center_taps':food_taps,'all_thirteen_actual_art_center_taps':[row for row in food_taps if not row['expectedId'].startswith('spice')],'frozen_vegetables_open_correct_detail_not_add':True,'routine_door_announcement_aria_only':quiet_door,'opaque_session_header':header,'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()

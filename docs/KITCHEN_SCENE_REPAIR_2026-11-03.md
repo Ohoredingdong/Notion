@@ -23,3 +23,15 @@
 [전달 파일 정보](kitchen-scene-repair/generated-files.json): 앱1,043,031B, 위젯1,043,040B, 모바일 앱1,044,378B, 모바일 위젯1,044,393B. 네 파일 모두1MiB 이내이며 무손실 전송 포장에서 원문 바이트가 복원되는 것을 확인했다. 외부 이미지 요청에 의존하지 않는다.
 
 작업 브랜치는 `fix/kitchen-storyboard-fidelity`다. 이전 PR 생성은 GitHub GraphQL403 Forbidden으로 차단됐으며 이 제한을 디자인 승인이나 배포 완료로 설명하지 않는다.
+
+## 최종 화면
+
+구현 커밋은 `8a98f3c3479894157765db35dae5fed4a7228396`이다. [801px 실제 열린 화면](kitchen-scene-repair/final-user.png), [390px](kitchen-scene-repair/final-phone.png), [320px](kitchen-scene-repair/final-small.png), [짧은649px](kitchen-scene-repair/final-short.png)을 동일 후보5에서 캡처했다. [닫힌 화면](kitchen-scene-repair/closed-801.png)과 [꾸미기](kitchen-scene-repair/decor-390.png)도 실제 HTML 실행이다. [후보별 QA 출처](kitchen-scene-repair/qa-summary.json)는 전체 행동 검사와 조리대 사진만 추가한 후속 화면 검사를 구분한다.649px 왼쪽 조리대에는 작은 사진 이음새가 남아 있다.
+
+## 실제 공개 실행
+
+[최종 HTTPS 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41605085797)은 구현 `8a98f3c3`, 검증 코드 `fadd03e77b02924e836b53e2a8a3a52cf6dcc9d8`, 결과 `2b39eab8e8e8fbc6569502fc9d11896011e98fcd`를 구분한다. 앱/위젯 각각320·390·649px와801×782 총8개가 통과했고 런타임 오류는0개다. 각 화면13개 음식의 실제 클릭104번이 올바른 A6 ID를 열었다. 배경 상단·새 본체/냉장칸 비율·헤더 겹침·조용한 이동/문 알림·추가 버튼·계획 보기·꾸미기 취소·자료 보존을 확인했다. [결과 원문](kitchen-scene-repair/public-status.json)에 각 검사 조건을 기록한다. 이 실행은 시안과 동일하다는 판단이나 사용자 승인을 대신하지 않는다.
+
+[수정된 위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/8a98f3c3479894157765db35dae5fed4a7228396/previews/mobile/widget.html). 작업 브랜치에 push했다. PR 생성은 기존 GitHub GraphQL403 제한으로 미완료이며 main/Pages를 변경하지 않았다.
+
+[실제 공개801px PNG](kitchen-scene-repair/widget-801x782-public.png)는 정상 TLS로 HTTP200·image/png·Git 원문 바이트 일치를 확인했다. [파일 확인](kitchen-scene-repair/public-fetch.json)은 공개 URL과 SHA를 기록한다.

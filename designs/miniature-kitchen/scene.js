@@ -1,10 +1,8 @@
 /* Miniature scene; the journal adapter persists only its separate preview key. */
 (() => {
   'use strict';
-  const FRIDGE = './designs/miniature-kitchen/assets/fridge-cabinet-tall-v1.png';
-  const FOOD_SCENE = './designs/miniature-kitchen/assets/pantry-food-atlas.png';
-  const MILK = './designs/miniature-kitchen/assets/food-milk-v1.png';
-  const BROCCOLI = './designs/miniature-kitchen/assets/food-broccoli-v1.png';
+  const FRIDGE = './designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png';
+  const FOOD_SCENE = './designs/miniature-kitchen/assets/food-shelf-coherent-v2.png';
   const INNER_DOORS = './designs/miniature-kitchen/assets/door-insides.png';
   const DECOR = './designs/miniature-kitchen/assets/decor-atlas.png';
   const A=window.UMFKitchenArt, $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,10 +12,10 @@
   const doorBoxes={"freshLeft":[69,63,407,751],"freshRight":[549,63,407,751],"frozenLeft":[69,890,407,535],"frozenRight":[549,890,407,535]};
   // Geometry is measured from the unwarped open cabinet, not the food positions.
   const panels={
-    freshLeft:{name:'냉장 왼쪽',kind:'냉장',x:.006,y:.004,w:.495,h:.602,zx:28/704,zy:31/785,zw:320/704,zh:434/785},
-    freshRight:{name:'냉장 오른쪽',kind:'냉장',x:.508,y:.004,w:.487,h:.602,zx:365/704,zy:31/785,zw:315/704,zh:434/785},
-    frozenLeft:{name:'냉동 왼쪽',kind:'냉동',x:.006,y:.614,w:.495,h:.350,zx:29/704,zy:495/785,zw:320/704,zh:246/785},
-    frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.508,y:.614,w:.487,h:.350,zx:366/704,zy:495/785,zw:314/704,zh:246/785}
+    freshLeft:{name:'냉장 왼쪽',kind:'냉장',x:.006,y:.004,w:.495,h:.602,zx:26/699,zy:31/787,zw:320/699,zh:433/787},
+    freshRight:{name:'냉장 오른쪽',kind:'냉장',x:.508,y:.004,w:.487,h:.602,zx:363/699,zy:31/787,zw:313/699,zh:433/787},
+    frozenLeft:{name:'냉동 왼쪽',kind:'냉동',x:.006,y:.614,w:.495,h:.350,zx:27/699,zy:495/787,zw:320/699,zh:246/787},
+    frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.508,y:.614,w:.487,h:.350,zx:364/699,zy:495/787,zw:312/699,zh:246/787}
   };
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null, decorEdit=null, announcementTimer=0, highlightedItem=null, highlightUntil=0;
@@ -102,14 +100,12 @@
     const id='mini-crop-'+(++cropSerial),[x,y,w,h]=box;
     return `<svg class="${cls}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs><image href="${asset}" x="0" y="0" width="${total[0]}" height="${total[1]}" clip-path="url(#${id})"/></svg>`;
   }
-  const frontArt=(cls='',panel=null)=>crop(FRIDGE,panel?[786+706*panel.x,130+785*panel.y,706*panel.w,785*panel.h]:[786,130,706,785],[1536,1024],cls);
+  const frontArt=(cls='',panel=null)=>crop(FRIDGE,panel?[788+701*panel.x,130+788*panel.y,701*panel.w,788*panel.h]:[788,130,701,788],[1536,1024],cls);
   const decorArt=key=>crop(DECOR,props[key].crop,[1286,1223],'decor-art');
   function art(item) {
     if(item.photo&&item.photoAsIcon!==false)return `<img class="food-art product-photo" alt="" src="${esc(item.photo)}">`;
-    if(item.kind==='food'&&item.name==='우유')return crop(MILK,[0,0,396,846],[396,846],'food-art','xMidYMid meet');
-    if(item.kind==='food'&&item.name==='브로콜리')return crop(BROCCOLI,[0,0,604,815],[604,815],'food-art','xMidYMid meet');
-    const foodBoxes={"계란":[43,97,298,184],"두부":[615,89,282,189],"토마토":[1215,94,291,186],"생선":[30,349,320,176],"간장":[436,290,106,253],"고추장":[681,320,175,210],"된장":[971,321,176,210],"소금":[1290,331,151,196],"대파":[29,562,309,188],"양송이버섯":[359,561,270,194],"김치":[663,546,214,211],"소고기":[912,570,295,177],"새우":[1222,571,288,176],"만두":[32,789,302,187],"냉동 채소":[347,786,288,189],"밥":[661,782,224,190],"양파":[941,774,192,202],"당근":[1188,774,326,201]};
-    if(['food','seasoning'].includes(item.kind)&&foodBoxes[item.name])return crop(FOOD_SCENE,foodBoxes[item.name],[1536,1024],'food-art','xMidYMid meet');
+    const foodBoxes={"계란":[23,134,258,160],"토마토":[299,141,255,154],"두부":[570,140,254,154],"브로콜리":[839,131,261,163],"우유":[81,358,144,242],"대파":[295,428,260,144],"양송이버섯":[569,427,257,144],"김치":[845,403,253,178],"소고기":[19,699,262,91],"생선":[297,699,259,91],"새우":[570,699,260,91],"만두":[843,699,261,91],"냉동 채소":[19,966,264,89],"간장":[372,879,103,243],"고추장":[595,915,193,191],"된장":[877,915,191,191],"소금":[57,1176,184,185]};
+    if(['food','seasoning'].includes(item.kind)&&foodBoxes[item.name])return crop(FOOD_SCENE,foodBoxes[item.name],[1122,1402],'food-art','xMidYMid meet');
     if(item.kind==='decor')return decorArt(item.art);
     if(item.kind==='meal')return window.KitchenStoryboardArt.dish({id:item.name});
     if(item.kind==='seasoning')return A.seasoningArt(item.name,'food-art');
@@ -132,7 +128,7 @@
     const setting=(name,fallback)=>{const value=parseFloat(settings.getPropertyValue(name));return Number.isFinite(value)&&value>0?value:fallback;};
     const aspect=setting('--room-bg-aspect',1.25),floorFraction=clamp(setting('--room-bg-floor',.95),.1,1),alcove=clamp(setting('--room-bg-alcove-width',.6),.1,1);
     const scale=(room.clientWidth||1000)/1000,floor=stage.bottom-r.top-2*scale,roomBox=room.getBoundingClientRect(),center=stage.left-r.left+stage.width/2,coverWidth=2*Math.max(center-roomBox.left+r.left,roomBox.right-r.left-center);
-    const counterRise=270/1122;
+    const counterRise=291/1122;
     const width=Math.max(stage.width/alcove,coverWidth,r.width,floor/floorFraction*aspect,stage.height*.43/counterRise*aspect),height=width/aspect;
     const surface=floor-height*counterRise-(roomBox.top-r.top);
     shell.style.setProperty('--kitchen-floor-y',floor+'px');shell.style.setProperty('--bg-image-height',height+'px');shell.style.setProperty('--bg-image-width',width+'px');shell.style.setProperty('--bg-image-left',center-width/2+'px');shell.style.setProperty('--bg-image-top',floor-height*floorFraction+'px');
@@ -281,7 +277,7 @@
       });
     }
   }
-  $('#cabinet').innerHTML=crop(FRIDGE,[47,130,704,785],[1536,1024]);
+  $('#cabinet').innerHTML=crop(FRIDGE,[49,130,699,787],[1536,1024]);
   const decorFridge=document.createElement('div');decorFridge.className='decor-fridge-backdrop';decorFridge.setAttribute('aria-hidden','true');decorFridge.inert=true;decorFridge.style.pointerEvents='none';decorFridge.innerHTML=frontArt('decor-fridge-art');$('.scene-world').appendChild(decorFridge);
   for(const [key,p] of Object.entries(panels)) {
     const zone=document.createElement('div');zone.className='drop-zone';zone.dataset.zone=key;zone.setAttribute('aria-label',p.name+' 재료');Object.assign(zone.style,{left:p.zx*100+'%',top:p.zy*100+'%',width:p.zw*100+'%',height:p.zh*100+'%'});$('#fridgeInteriors').appendChild(zone);
@@ -289,9 +285,9 @@
     const cargo=document.createElement('div');cargo.className='door-cargo'+(key.endsWith('Right')?' right':'');cargo.dataset.cargo=key;Object.assign(cargo.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});const inner=document.createElement('div');inner.className='door-storage drop-zone';inner.dataset.zone='door'+key[0].toUpperCase()+key.slice(1);inner.setAttribute('aria-label',p.name+' 문 선반');cargo.appendChild(inner);$('.fridge-stage').appendChild(cargo);
   }
   const glass=document.createElement('div');glass.className='freezer-glass-front';glass.setAttribute('aria-hidden','true');
-  const drawerEdges=[[93,647,291,94],[93,753,291,95],[425,640,287,58],[425,703,287,66],[425,774,287,74]];
+  const drawerEdges=[[93,645,291,96],[93,753,291,95],[425,638,287,60],[425,704,287,65],[425,775,287,73]];
   const rimId='drawer-rim-'+(++cropSerial),rimRects=drawerEdges.flatMap(([x,y,w,h])=>[[x,y,w,4],[x,y+h-6,w,6],[x,y,4,h],[x+w-4,y,4,h]]).map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('');
-  glass.innerHTML=`<svg viewBox="47 130 704 785" aria-hidden="true"><defs><clipPath id="${rimId}">${rimRects}</clipPath></defs><image href="${FRIDGE}" width="1536" height="1024" clip-path="url(#${rimId})"/></svg>`;$('#fridgeInteriors').appendChild(glass);
+  glass.innerHTML=`<svg viewBox="49 130 699 787" aria-hidden="true"><defs><clipPath id="${rimId}">${rimRects}</clipPath></defs><image href="${FRIDGE}" width="1536" height="1024" clip-path="url(#${rimId})"/></svg>`;$('#fridgeInteriors').appendChild(glass);
   function place(button,item){button.style.left=item.x*100+'%';button.style.top=item.y*100+'%';button.style.zIndex=String(item.z);}
   function syncShelfLabels(){
     // Keep annotations above neighboring food art without changing stored positions or food layers.
@@ -305,22 +301,24 @@
     }
   }
   function constrainItems(){
+    const shelves={freshLeft:[317,454,590],freshRight:[411,503,590],frozenLeft:[741,848],frozenRight:[698,769,848]};
     for(const button of document.querySelectorAll('.drop-zone>.item')){
       const item=sceneItems().find(r=>r.id===button.dataset.item),zone=button.parentElement,width=zone.clientWidth,height=zone.clientHeight;
       if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;
       place(button,item);
       if(button.dataset.foodProfile&&button.closest('.fridge-interiors')){
-        const css=getComputedStyle(button),w=parseFloat(css.getPropertyValue('--profile-width')),h=parseFloat(css.getPropertyValue('--profile-height')),base=parseFloat(css.getPropertyValue('--profile-base'));
-        // Fit to the compartment once; moving within it never changes scale.
-        const capacity={freshLeft:92,freshRight:370,frozenLeft:112,frozenRight:70}[item.zone]||height;
-        const fit=Math.min(1,width/w,height/(h+base),capacity/h);button.style.setProperty('--food-fit',String(fit));
-        const half=Math.min(.5,w*fit/2/width),minimum=Math.min(1,(h+base)*fit/height);
-        button.style.left=clamp(item.x,half,1-half)*100+'%';
-        const shelfPixels={freshLeft:[293,394,495,590],freshRight:[524,590],frozenLeft:[741,848],frozenRight:[698,769,848]}[item.zone],panel=panels[item.zone];
-        const supports=(shelfPixels||[]).map(y=>((y-130)/785-panel.zy)/panel.zh+base*fit/height).filter(y=>y>=minimum&&y<=1);
-        const anchor=supports.length?(item.zone.startsWith('frozen')?supports[clamp(Math.floor(item.y*supports.length),0,supports.length-1)]:supports.reduce((a,b)=>Math.abs(a-item.y)<=Math.abs(b-item.y)?a:b)):clamp(item.y,minimum,1);
-        // Project onto a real shelf without rewriting any saved record.
-        button.style.top=anchor*100+'%';
+        const css=getComputedStyle(button),w=parseFloat(css.getPropertyValue('--profile-width')),h=parseFloat(css.getPropertyValue('--profile-height'));
+        const tall=['milk','broccoli'].includes(button.dataset.foodProfile);
+        // Capacity belongs to the compartment and food type, never mutable x/y.
+        const capacity={freshLeft:130,freshRight:tall?240:82,frozenLeft:104,frozenRight:70}[item.zone]||height;
+        const fit=Math.min(1,width/w,height/h,capacity/h),visualWidth=w*fit,visualHeight=h*fit;
+        button.style.setProperty('--food-fit',String(fit));
+        const half=Math.min(.5,visualWidth/2/width),panel=panels[item.zone],floors=shelves[item.zone]||[];
+        const ceiling=item.zone.startsWith('frozen')?625:161;
+        const valid=floors.map((y,index)=>({index,anchor:((y-130)/787-panel.zy)/panel.zh,clearance:(y-(index?floors[index-1]:ceiling))*800/787})).filter(f=>f.clearance>=visualHeight-.5);
+        const preferred=clamp(Math.floor(item.y*floors.length),0,floors.length-1),support=valid.reduce((best,f)=>!best||Math.abs(f.index-preferred)<Math.abs(best.index-preferred)?f:best,null);
+        const anchor=support?support.anchor:clamp(item.y,Math.min(1,visualHeight/height),1);
+        button.style.left=clamp(item.x,half,1-half)*100+'%';button.style.top=anchor*100+'%';
       }else{const half=Math.min(.5,button.offsetWidth/2/width);button.style.left=clamp(item.x,half,1-half)*100+'%';}
     }
     syncShelfLabels();
