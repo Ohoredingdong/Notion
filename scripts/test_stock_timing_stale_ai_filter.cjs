@@ -42,6 +42,12 @@ const bySym=s=>ctx.data.raw.companies.find(c=>c.symbol===s);
 
 assert.equal(fxPrediction(bySym('AAPL'),ctx).stale,true,'expired frozen signal must be explicitly marked stale');
 assert.equal(fxPrediction(bySym('TSLA'),ctx).unknown,true,'missing target-end clock must be unknown');
+assert.equal(fxPrediction(bySym('AAPL'),ctx).active,false,'expired forecast is never an active actionable signal');
+assert.equal(fxPrediction(bySym('AAPL'),ctx).value,null,'expired forecast confidence cannot appear as a current pill');
+assert.equal(fxPrediction(bySym('TSLA'),ctx).active,false,'unknown target-end cannot be active');
+assert.equal(fxPrediction(bySym('TSLA'),ctx).value,null,'unknown target-end confidence cannot appear as current');
+assert.equal(fxPrediction(bySym('NVDA'),ctx).active,true,'nonexpired forward forecast must remain active');
+assert.equal(fxPrediction(bySym('NVDA'),ctx).value,0.60,'valid forward confidence is retained');
 assert.deepEqual(picks('all'),symbols,'historical and no-call entries must remain inspectable in all records');
 console.log('1/6: expired historical evidence remains in all-record view');
 assert.deepEqual(picks('ai'),['NVDA','AMD'],'AI signal filter must exclude elapsed, missing-clock, and no-call records');
