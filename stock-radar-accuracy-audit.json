@@ -1,0 +1,127 @@
+{
+  "version": "radar-accuracy-audit-v1",
+  "source": {
+    "learning_generated_at": "2026-11-03T04:02:47.124605+00:00",
+    "forecasts_generated_at": "2026-11-03T04:02:47.124605+00:00",
+    "opportunity_generated_at": "2026-11-03T03:48:12.449550+00:00",
+    "market_generated_at": "2026-11-03T03:57:07.860499+00:00",
+    "chart_generated_at": "2026-11-03T02:38:04.549587+00:00",
+    "chart_source_generated_at": "2026-11-02T22:33:03.140301+00:00",
+    "cases_generated_at": "2026-11-03T03:57:07.615966+00:00",
+    "entry_generated_at": "2026-11-03T04:05:03.473904+00:00"
+  },
+  "evaluation": {
+    "status": "forward_validation_in_progress",
+    "samples": 60,
+    "correct": 18,
+    "accuracy": 0.3,
+    "independent_calendar_days": 3,
+    "confidence_interval_95_wilson": [
+      0.1989816613876934,
+      0.4250870794691413
+    ],
+    "balanced_accuracy": 0.32443427409102465,
+    "recall": {
+      "down": 0.2631578947368421,
+      "flat": 0.6666666666666666,
+      "up": 0.043478260869565216
+    },
+    "actual_class_counts": {
+      "down": 19,
+      "flat": 18,
+      "up": 23
+    },
+    "confusion_matrix": [
+      [
+        5,
+        6,
+        8
+      ],
+      [
+        3,
+        12,
+        3
+      ],
+      [
+        2,
+        20,
+        1
+      ]
+    ],
+    "calibration_error": 0.14330018639922387,
+    "brier_loss": 0.6760001027265822,
+    "log_loss": 1.1120625975691825
+  },
+  "raw_ledger": {
+    "observed_events": 87,
+    "public_before_target_verified": 87,
+    "observed_correct": 26,
+    "raw_observed_accuracy_not_independent": 0.2988505747126437,
+    "note": "Raw ledger includes overlaps not present in the independent scored evaluation."
+  },
+  "paired_baseline": {
+    "samples": 48,
+    "model_correct": 14,
+    "baseline_correct": 12,
+    "model_accuracy": 0.2916666666666667,
+    "baseline_accuracy": 0.25,
+    "difference_percentage_points": 4.166666666666669,
+    "brier_improvement": 0.0027128517422840837,
+    "minimum_brier_improvement": 0.01,
+    "log_loss_improvement": 0.0051914290493093596,
+    "minimum_log_loss_improvement": 0.005,
+    "paired_baseline_comparison_is_not_proof": true
+  },
+  "promotion_gates": {
+    "required_scored_samples": 120,
+    "required_calendar_days": 20,
+    "observed_sample_requirement_met": false,
+    "observed_days_requirement_met": false,
+    "paired_brier_improvement_met": false,
+    "paired_log_loss_improvement_met": true,
+    "promotion_evidence_sufficient": false,
+    "live_profitability_proven": false,
+    "investment_use_approved": false
+  },
+  "investment": {
+    "opportunity_tracked": 104,
+    "strict_diligence_approved": 0,
+    "paper_candidates": 0,
+    "live_recommendations": 0,
+    "automatic_orders": false
+  },
+  "forecast_records": {
+    "status_counts": {
+      "no_call": 12,
+      "research_prediction": 12
+    },
+    "invalid_research_records": [],
+    "no_real_time_connection": true
+  },
+  "index_date_mismatch": [
+    {
+      "market": "KOSPI",
+      "index_snapshot": "2026-11-03",
+      "chart_history_through": "2026-11-02",
+      "policy": "display dates separately; do not claim history chart is current"
+    },
+    {
+      "market": "KOSDAQ",
+      "index_snapshot": "2026-11-03",
+      "chart_history_through": "2026-11-02",
+      "policy": "display dates separately; do not claim history chart is current"
+    }
+  ],
+  "data_integrity": {
+    "check_passed": true,
+    "errors": [],
+    "warnings": [
+      "Insufficient independent observations and/or sessions for promotion",
+      "Paired Brier gain below configured policy threshold",
+      "No independently proven live trading profitability",
+      "Upward-direction recall under 10%; not a trading signal",
+      "Market index snapshots have dates different from sparkline histories"
+    ],
+    "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
+  }
+}
