@@ -19,6 +19,9 @@ on:
       - 'scripts/install_stock_decision_ui.py'
       - 'scripts/install_stock_audit_ui.py'
       - 'scripts/test_stock_radar_publish_protection.py'
+      - 'scripts/audit_stock_radar_accuracy.py'
+      - 'stock-radar-accuracy-audit.json'
+      - '.github/workflows/audit-stock-radar-accuracy.yml'
       - 'assets/stock-radar-neutral.js'
       - 'assets/stock-radar-neutral.css'
       - 'assets/stock-radar-v8.js'
@@ -55,6 +58,8 @@ jobs:
           node --check assets/stock-radar-flow-v2.js
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py
+          python -m py_compile scripts/audit_stock_radar_accuracy.py
+          python scripts/audit_stock_radar_accuracy.py --check
           node --check assets/stock-recommendations.js
           node --check assets/stock-investment-cases.js
           node --check assets/stock-forecast.js
