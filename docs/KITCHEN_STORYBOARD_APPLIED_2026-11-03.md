@@ -25,4 +25,25 @@ HTML은 기존 무손실 gzip/base85 포장을 사용한다. 네 전달 파일 �
 
 확인한 로컬 검사: 모델 49개, 전달 포장 12개, 홈 화면 조작 32개, 워크플로 15개, 도감·소품 10개. 화면 비교는 동일한 명시적 예시 데이터로 진행한다. 사진 검수 화면을 여는 검사에는 브라우저 안의 인식 결과 예시를 사용했으며 실제 OCR 실행 증거가 아니다. Chromium의 모바일 크기 확인은 실제 휴대폰·Safari·Notion 검증을 뜻하지 않는다.
 
-최종 전달 화면의 캡처와 공개 HTTPS 실행 결과는 최종 고정 파일에 대한 후속 증거 기록에 구분해 추가한다.
+최종 구현은 `5d1c0a8f314294ba31c23be517f477b88ed7de24`다. 전달 크기는 앱 1,028,219B, 위젯 1,028,226B, 모바일 앱 1,029,566B, 모바일 위젯 1,029,579B다. [생성 파일의 SHA와 원문 복원](kitchen-storyboard-applied/generated-files.json)을 기록했다.
+
+## 실제 화면
+
+[수정한 위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/5d1c0a8f314294ba31c23be517f477b88ed7de24/previews/mobile/widget.html)
+
+[네 메뉴의 실제 실행 화면](kitchen-storyboard-applied/widget-updated.png)은 별도 예시 데이터의 최종 전달물(release5)을 캡처한 것이다. 계란 볶음밥 한 끼의 입력값 455kcal/60g/20g/15g과 목표 230g/70g/60g을 사용했으며 실제 사용자 데이터나 전후 비교 자료와 혼동하지 않는다. [소개용 캡처 출처](kitchen-storyboard-applied/showcase-manifest.json)를 별도로 둔다.
+
+| 흐름 | 선택한 실제 화면 |
+| --- | --- |
+| 재료 | [등록 방법](kitchen-storyboard-applied/A2-add.png), [사진 선택](kitchen-storyboard-applied/A3-selected.png), [검수 행과 안내](kitchen-storyboard-applied/A4-review.png), [담은 재료 강조](kitchen-storyboard-applied/A5-saved.png), [재료 상세](kitchen-storyboard-applied/A6-detail.png) |
+| 레시피·식사 | [상세](kitchen-storyboard-applied/B2-detail.png), [계획](kitchen-storyboard-applied/B3-plan.png), [차감 전후](kitchen-storyboard-applied/B4-eaten.png), [끼니별 계획](kitchen-storyboard-applied/B5-plans.png), [기록 완료](kitchen-storyboard-applied/B6-success.png) |
+| 기록·지출 | [영양제 상세](kitchen-storyboard-applied/C2-detail.png), [달력·도넛](kitchen-storyboard-applied/C3-month.png), [식비](kitchen-storyboard-applied/C4-budget.png), [장보기](kitchen-storyboard-applied/C5-shopping.png), [실제 구매](kitchen-storyboard-applied/C6-batch.png) |
+| 도감·꾸미기 | [도감](kitchen-storyboard-applied/D2-book.png), [첫 기록](kitchen-storyboard-applied/D3-first-record.png), [소품 선택](kitchen-storyboard-applied/D4-rewards.png), [배치](kitchen-storyboard-applied/D5-decor.png), [적용한 홈](kitchen-storyboard-applied/D6-applied.png) |
+
+기본 시각 자료는 동일한 예시 데이터의 기존 화면 19개와 수정 화면 27개(390×560), 작은 화면의 핵심 11개(320×568)를 비교했다. release3 캡처 뒤 바뀐 금색 강조·닫힌 홈은 release4에서 두 크기로 재확인했다. 마지막 release5에서는 기록이 있는 열린 홈의 추가 버튼과 닫힌 홈의 진행 카드를 실제 버튼으로 4개 조건 검사했다. [최종 추가 버튼/닫힌 홈 검사](kitchen-storyboard-applied/open-closed-controls.json), [홈 조작](kitchen-storyboard-applied/home-actions-results.json), [워크플로](kitchen-storyboard-applied/workflow-checked-results.json)에 결과를 구분한다. 과거 캡처를 최신 바이너리에서 다시 실행한 것으로 표시하지 않는다.
+
+공개 실행 결과는 [공개 HTTPS 검사](kitchen-storyboard-applied/public-status.json)에 기록한다. 실제 공개 링크에서 앱/위젯 각각 320·390·649px를 실행하고 원문·모듈·스타일·네 이미지와 실제 터치·문·입력·꾸미기 취소를 확인한다. 마지막 추가 버튼 회귀 검사는 각 임시 브라우저에 식사 한 끼 예시를 명시적으로 기록한 뒤 열린/닫힌 홈을 확인하며 실제 사용자 저장·OCR 검사와 구분한다.
+
+최종 소스 `5d1c0a8f`의 공개 검사 **6/6 통과**, 런타임 오류 0개다. [실제 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41582346737)의 검증 코드 `f31d1f8dc7bdf6d395973751219772cf160100d9`와 결과 커밋 `14b1ccf1d1782cdc6878a8c13dc5b0de43bf514d`를 구분한다. 이전 `e3048f3c` 공개 검사와 별개로 최종 추가 버튼 수정까지 확인했다.
+
+PR 생성은 `gh pr create --draft`의 GitHub GraphQL 요청이 `Forbidden`으로 차단되어 완료하지 못했다. 작업 브랜치와 공개 미리보기는 push했고 main/Pages는 변경하지 않았다. [브랜치 비교](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-storyboard-widget...fix/kitchen-storyboard-fidelity?expand=1)로 변경을 검토할 수 있다.
