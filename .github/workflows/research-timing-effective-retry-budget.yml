@@ -1,0 +1,57 @@
+name: Research-only effective source cache-lock retry budget
+on:
+  push:
+    branches:
+      - research/timing-effective-source-retry-budget-20261103
+    paths:
+      - 'scripts/test_stock_timing_effective_retry_budget.py'
+      - 'scripts/stock_forecast_sources.py'
+      - 'scripts/stock_forecast_autopilot.py'
+      - 'docs/experiments/timing-effective-source-retry-budget-20261103.md'
+      - '.github/workflows/research-timing-effective-retry-budget.yml'
+permissions:
+  contents: read
+concurrency:
+  group: effective-retry-budget-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  research-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PYTHONPATH: scripts
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned research dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Synthetic nested source-retry negative controls
+        run: python -m unittest -v test_stock_timing_effective_retry_budget
+      - name: Existing source, bounded-autopilot, forward and direction regressions
+        run: |
+          python scripts/stock_forecast_sources.py
+          python -m unittest -v test_stock_autopilot test_stock_forecasts test_stock_forecast_learning test_stock_forecast_directions
+      - name: Independent archived-evidence arithmetic, learning and acceptance guards
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: effective-source-retry-research-only
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-forecast-learning-audit.json
+            stock-forecast-attempt-coverage-audit.json
+            stock-timing-acceptance-guard.json
