@@ -9,7 +9,7 @@ const marker = 'window.StockRadarFlowV2={render:fxRender,';
 assert.equal(asset.includes(marker), true, 'review injection anchor before testing actual production JS');
 const instrumented = asset.replace(marker, 'window.__timingResearch={fxUniverse,fxPrediction,fxLocal};'+marker);
 
-const now = Date.parse('2026-11-02T22:00:00Z');
+let now = Date.parse('2026-11-02T22:00:00Z');
 class FrozenClock extends Date { static now() { return now; } }
 const rec = (symbol, direction, end, status='research_prediction')=>({
   symbol, market:'US', mode:'daily', status,
@@ -54,4 +54,35 @@ assert.equal(fxPrediction(bySym('MSFT'),ctx).active,false,'no-call must never be
 console.log('5/6: no-call remains non-actionable');
 assert.equal(JSON.stringify(ctx),original,'neither original records nor probabilities/targets can be rewritten');
 console.log('6/6: frozen synthetic evidence is not rewritten');
+
+// New fixed-clock cross-mode control. No exchange data or invented trading outcome.
+now = Date.parse('2026-11-03T15:30:00Z');
+const crossMode = JSON.parse(JSON.stringify(ctx));
+crossMode.data.direction.records = [
+  {...rec('NVDA','up','2026-11-02T21:00:00Z'),mode:'daily',
+    issued_at:'2026-10-30T22:38:20Z',
+    target:{start:'2026-11-02T14:30:00Z',end:'2026-11-02T21:00:00Z'}},
+  {...rec('NVDA','down','2026-11-03T15:45:00Z'),mode:'intraday',
+    issued_at:'2026-11-03T14:40:00Z',
+    target:{start:'2026-11-03T15:15:00Z',end:'2026-11-03T15:45:00Z'}}
+];
+const frozenCrossMode = JSON.stringify(crossMode.data.direction.records);
+assert.equal(fxPrediction(bySym('NVDA'),crossMode).r.mode,'intraday',
+  'stale daily must not mask usable intraday research forecast');
+fxLocal.filter='ai';
+assert.ok(Array.from(fxUniverse(crossMode),c=>c.symbol).includes('NVDA'),
+  'valid intraday must remain visible in current AI filter');
+fxLocal.filter='down';
+assert.ok(Array.from(fxUniverse(crossMode),c=>c.symbol).includes('NVDA'),
+  'valid intraday DOWN must remain visible in corresponding direction filter');
+// Preserve the existing fresh-daily preference where both rows are still valid.
+crossMode.data.direction.records[0].target = {
+  start:'2026-11-03T14:30:00Z',end:'2026-11-03T21:00:00Z'
+};
+assert.equal(fxPrediction(bySym('NVDA'),crossMode).r.mode,'daily',
+  'current daily still takes precedence over current intraday');
+assert.equal(JSON.stringify(crossMode.data.direction.records[1]),
+  JSON.stringify(JSON.parse(frozenCrossMode)[1]),'intraday original row is immutable');
+console.log('Cross-mode fixed-clock test: stale daily cannot hide usable intraday; fresh daily precedence preserved');
+
 console.log('Research-only stale/unknown signal-filter tests all passed');
