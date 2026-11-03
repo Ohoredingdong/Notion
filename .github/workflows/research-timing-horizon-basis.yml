@@ -1,0 +1,46 @@
+name: Research-only forecast horizon basis UI
+on:
+  push:
+    branches:
+      - research/timing-horizon-basis-20261104
+    paths:
+      - 'assets/stock-radar-flow-v2.js'
+      - 'scripts/test_stock_timing_horizon_basis.cjs'
+      - '.github/workflows/research-timing-horizon-basis.yml'
+      - 'docs/experiments/timing-horizon-basis-20261104.md'
+permissions:
+  contents: read
+jobs:
+  horizon-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic horizon wording and existing prediction-validity regression
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-forecast.js
+          node scripts/test_stock_timing_horizon_basis.cjs
+          node scripts/test_stock_forecast_ui.cjs
+      - name: Independent archived evidence and acceptance (even if RED)
+        if: always()
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: horizon-basis-research-only
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-forecast-learning-evidence.json
+            stock-forecast-attempt-coverage-audit.json
+            stock-timing-acceptance-guard.json
