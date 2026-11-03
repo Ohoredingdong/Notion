@@ -181,7 +181,7 @@ function fxBars(c,ctx){
  if(sig.value===null)return `<div class="fx-chart-empty">${fxEscape(sig.status||"유효한 연구 신호가 없습니다.")}</div>`;
  return `<div class="fx-ai-heading"><span class="fx-signal ${sig.klass}">${sig.label}</span><strong class="${sig.klass}">${fxNum(sig.value*100,1)}%</strong></div>
  ${[["상승","up"],["횡보","flat"],["하락","down"]].map(([n,k])=>{const v=fxN(r.probabilities?.[k]);return `<div class="fx-prob-row"><span>${n}</span><span class="fx-bar"><i class="${k}" style="width:${v===null?0:Math.max(0,Math.min(100,v*100))}%"></i></span><b>${v===null?"—":fxNum(v*100,1)+"%"}</b></div>`}).join("")}
- <p class="fx-footnote">${fxEscape(sig.status)}<br>${r.target?.end?"목표 종료 "+fxEscape(fxHelpers().T?.(r.target.end)):"목표 시점 미확인"} · 매수·수익률 확률 아님${stockQuality?`<br>${fxEscape(stockQuality.mode==="intraday"?"단기":"일간")} 종목별 사후 관측 ${fxNum(stockQuality.correct,0)}/${fxNum(stockQuality.samples,0)}건 · ${stockQuality.enough?"추가 검증 필요":"표본 매우 부족"}`:""}</p>`;
+ <p class="fx-footnote">${fxEscape(sig.status)}<br>방향 판정: 대상 구간 시작 시가 → 종료 종가 · 횡보 기준 ±${fxNum(r.neutral_band_pct,2)}% · 전일 종가 대비 등락과 다름<br>${r.target?.end?"목표 종료 "+fxEscape(fxHelpers().T?.(r.target.end)):"목표 시점 미확인"} · 매수·수익률 확률 아님${stockQuality?`<br>${fxEscape(stockQuality.mode==="intraday"?"단기":"일간")} 종목별 사후 관측 ${fxNum(stockQuality.correct,0)}/${fxNum(stockQuality.samples,0)}건 · ${stockQuality.enough?"추가 검증 필요":"표본 매우 부족"}`:""}</p>`;
 }
 
 function fxFocus(ctx){
@@ -597,7 +597,7 @@ function fxOutcomes(ctx){
  <div class="fx-table-clip"><table class="fx-audit"><thead><tr><th>관측 시각</th><th>종목</th><th>예측</th><th>실제</th><th>일치 여부</th></tr></thead><tbody>
  ${visible.length?visible.map(r=>`<tr><td>${fxEscape(h.T?.(r.evaluated_at)||"시각 미확인")}</td><td>${fxEscape(r.symbol||"—")}</td><td>${fxEscape(dir[r.predicted]||r.predicted||"—")}</td><td>${fxEscape(dir[r.actual]||r.actual||"—")}</td><td><span class="fx-mark ${r.correct===true?'yes':'no'}">${r.correct===true?'일치':'불일치'}</span></td></tr>`).join(""):'<tr><td colspan="5">발행·관측이 확인된 기록이 없습니다.</td></tr>'}
  </tbody></table></div>
- <p class="fx-table-hint">이 표는 원시 관측 기록이고, 위의 정확도는 ${independent===null?"별도 정책으로 선별된":"중복·겹침 등을 제외한 독립 평가 "+fxNum(independent,0)+"건"} 기준입니다. 두 모수는 다를 수 있습니다. 실제 체결·수익 기록이 아닙니다.</p></section>`;
+ <p class="fx-table-hint">방향 판정: 대상 구간 시작 시가 → 종료 종가. 예측마다 고정된 판정 폭으로 상승·횡보·하락을 분류하며 전일 종가 대비 등락과 다릅니다.<br>이 표는 원시 관측 기록이고, 위의 정확도는 ${independent===null?"별도 정책으로 선별된":"중복·겹침 등을 제외한 독립 평가 "+fxNum(independent,0)+"건"} 기준입니다. 두 모수는 다를 수 있습니다. 실제 체결·수익 기록이 아닙니다.</p></section>`;
 }
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
