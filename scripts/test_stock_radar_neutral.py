@@ -1,111 +1,148 @@
-"""Exercise the actual reference-structured operating radar using repository snapshots."""
-import argparse,json,os
+"""Browser acceptance gate for the current clean-bridge/flow-v2 operating radar.
+
+Runs on four real-data viewport widths. Does NOT prove trading usefulness, source
+exchange authenticity, user receipt, or filled orders. Replaces the retired
+StockNeutral/.nr-rail selectors with assertions against the actual deployed
+page contract; keeps source, safety, navigation and layout coverage.
+"""
+import argparse
+import json
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-def test(url='http://127.0.0.1:8770/stock-value-radar.html',public=False):
-    root=Path(__file__).resolve().parents[1]
-    out=root/'neutral-ui-evidence';out.mkdir(exist_ok=True)
-    reports=[]
-    with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH'))
-        for width in [1440,1280,768,390]:
-            context=browser.new_context(viewport={'width':width,'height':1000},reduced_motion='reduce')
-            page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-            if not public:
-                def source(route):
-                    path=route.request.url.split('/main/',1)[-1].split('?',1)[0]
-                    file=root/path
-                    if file.exists():
-                        route.fulfill(path=str(file),content_type='application/json' if path.endswith('.json') else 'text/plain')
-                    else:
-                        route.fulfill(status=404,body='not included')
-                page.route('https://raw.githubusercontent.com/Ohoredingdong/Notion/main/**',source)
 
-            page.goto(url,wait_until='domcontentloaded')
-            page.wait_for_function('window.StockNeutral?.snapshot?.company_count > 0',timeout=60000)
-            assert page.locator('#view-home').is_visible()
-            assert page.locator('.nr-index').count()==4
-            assert page.locator('.nr-home-actions button').count()>=7
-            assert page.locator('#nr-home-alerts').count()==1
-            assert page.locator('#nr-home-picks').count()==1
-            assert not page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
-            data=page.evaluate('window.StockNeutral.snapshot');assert data['orders_enabled'] is False
-            page.screenshot(path=str(out/f'home-{width}.png'),full_page=True)
+def test(url='http://127.0.0.1:8770/stock-value-radar.html', public=False):
+    root = Path(__file__).resolve().parents[1]
+    out = root / 'neutral-ui-evidence'
+    out.mkdir(exist_ok=True)
+    reports = []
+    with sync_playwright() as play:
+        browser = play.chromium.launch(
+            headless=True,
+            executable_path=os.environ.get('CHROMIUM_PATH')
+        )
+        try:
+            for width in (1440, 1280, 768, 390):
+                context = browser.new_context(
+                    viewport={'width': width, 'height': 1000},
+                    reduced_motion='reduce'
+                )
+                page = context.new_page()
+                errors = []
+                page.on('pageerror', lambda e: errors.append(str(e)))
+                try:
+                    page.goto(url, wait_until='domcontentloaded')
+                    page.locator('.fx-topbar').wait_for(timeout=25000)
+                    page.wait_for_function(
+                        "() => !!(window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length)",
+                        timeout=35000
+                    )
+                    data = page.evaluate("window.StockRadarV2Bridge.snapshot()")
+                    assert len(data['data']['raw']['companies']) > 0
+                    assert data['data']['autopilot']['orders_enabled'] is False
+                    assert data['data']['direction']['policy']['live_order_enabled'] is False
+                    assert page.locator('#view-home').is_visible()
+                    assert page.locator('.fx-v5-markets .nr-index').count() == 4
+                    assert page.locator('.fx-nav [data-nr-screen]').count() >= 7
+                    assert page.locator('.fx-v5-main .fx-list-panel').count() == 1
+                    assert page.locator('.fx-v5-main .fx-v5-cockpit').count() == 1
+                    assert page.locator('.fx-v5-main .fx-v5-aside').count() == 1
+                    assert page.locator('.fx-v5-aside .fx-v5-sidecard').count() == 4
+                    assert '실시간 시세 아님' in page.locator('.fx-mode-badge').inner_text() or '실시간 시세 아님' in page.locator('#source-status').inner_text()
+                    assert '연구용' in page.locator('.fx-v5-cockpit .fx-v5-ai').inner_text()
+                    no_overflow(page)
+                    page.screenshot(path=str(out / f'home-{width}.png'), full_page=True)
 
-            # Stock list -> deep company detail
-            page.locator('.nr-rail [data-nr-screen="stocks"]').click()
-            assert page.locator('.nr-stock-list').is_visible()
-            first=page.locator('.nr-stock-list [data-nr-detail]').first
-            symbol=first.get_attribute('data-nr-detail')
-            assert symbol
-            first.click()
-            assert page.locator('#view-detail').is_visible()
-            assert page.locator('#detailBody').inner_text().strip()
-            assert not page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
+                    # Stock list: changing selection updates the matching focus.
+                    nav(page, 'stocks')
+                    rows = page.locator('.fx-page-grid .fx-row[data-nr-select]')
+                    assert rows.count() > 0
+                    first = rows.first
+                    ticker = first.get_attribute('data-nr-select')
+                    assert ticker
+                    first.click()
+                    assert ticker in page.locator('.fx-focus-head').inner_text()
+                    page.locator('.fx-focus-actions [data-nr-detail]').click()
+                    assert page.locator('.fx-stage[data-screen="stockdetail"]').count() == 1
+                    assert page.locator('.fx-detail-content').is_visible()
+                    no_overflow(page)
 
-            # Monitoring screen
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('.nr-rail [data-nr-screen="monitor"]').click()
-            assert page.locator('.nr-status-banner').is_visible()
-            assert page.locator('.nr-monitor-list').is_visible()
+                    nav(page, 'monitor')
+                    assert page.locator('#radar-rule-form').is_visible()
+                    assert '실시간' in page.locator('.fx-stage').inner_text()
+                    no_overflow(page)
 
-            # Scenario screen from the home action
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('.nr-home-actions [data-nr-screen="scenario"]').click()
-            assert page.locator('.nr-scenario-cards').is_visible()
-            assert page.locator('.nr-prob-bars').is_visible()
+                    nav(page, 'scenario')
+                    assert page.locator('.fx-scenario-v4').is_visible()
+                    assert page.locator('.fx-scenario-option').count() == 3
+                    no_overflow(page)
 
-            # Portfolio/paper screen
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('.nr-home-actions [data-nr-screen="portfolio"]').click()
-            assert '포트폴리오' in page.locator('#nr-home-content').inner_text()
-            assert '모의투자' in page.locator('#nr-home-content').inner_text()
+                    nav(page, 'portfolio')
+                    assert '모의' in page.locator('.fx-stage').inner_text()
+                    assert page.locator('.nr-screen-head').is_visible()
+                    no_overflow(page)
 
-            # News and macro
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('.nr-home-actions [data-nr-screen="news"]').click()
-            assert '뉴스 & 경제 브리핑' in page.locator('#nr-home-content').inner_text()
-            assert page.locator('.nr-news-grid').is_visible()
+                    page.locator('.fx-nav-tools [data-nr-screen="news"]').click()
+                    assert page.locator('.nr-news-grid').is_visible()
+                    no_overflow(page)
 
-            # Forecast performance
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            page.locator('.nr-home-actions [data-nr-screen="performance"]').click()
-            assert '성과 검증' in page.locator('#nr-home-content').inner_text()
-            assert page.locator('.nr-performance-grid').is_visible()
+                    nav(page, 'performance')
+                    assert page.locator('.nr-performance-grid').count() == 1
+                    assert page.locator('.nr-performance-grid .nr-panel').count() == 4
+                    assert '미입증' in page.locator('.fx-stage').inner_text()
+                    no_overflow(page)
 
-            # Settings -> source verification
-            page.locator('.nr-rail [data-nr-screen="settings"]').click()
-            assert '설정 & 연결 관리' in page.locator('#nr-home-content').inner_text()
-            page.get_by_role('button',name='원자료 검증 화면 열기').click()
-            assert page.locator('#view-system').is_visible()
-            assert '수집 시각과 기준' in page.locator('#systemBody').inner_text()
+                    page.locator('.fx-nav-tools [data-nr-screen="settings"]').click()
+                    assert page.locator('.nr-setting-row').count() >= 3
+                    settings = page.locator('.fx-stage').inner_text()
+                    assert '자동 주문' in settings and '비활성' in settings
+                    assert page.locator('a[href="./stock-value-radar-advanced.html"]').count() >= 1
+                    no_overflow(page)
 
-            # Legacy research remains reachable.
-            page.locator('.nr-rail [data-nr-view="discover"]').click()
-            assert page.locator('#view-discover').is_visible()
-            page.locator('.nr-rail [data-nr-screen="home"]').click()
-            assert page.locator('#view-home').is_visible()
+                    nav(page, 'home')
+                    assert page.locator('.fx-v5-cockpit').is_visible()
+                    no_overflow(page)
+                    assert not errors, errors
+                    reports.append({
+                        'width': width,
+                        'operating_home': True,
+                        'loaded_companies': len(data['data']['raw']['companies']),
+                        'navigation': 'pass',
+                        'screens': [
+                            'home', 'stocks', 'stockdetail', 'monitor',
+                            'scenario', 'portfolio', 'news', 'performance',
+                            'settings', 'advanced-link'
+                        ],
+                        'orders_enabled': False,
+                        'errors': errors
+                    })
+                finally:
+                    context.close()
+        finally:
+            browser.close()
+    (out / 'checks.json').write_text(
+        json.dumps({'url': url, 'public': public, 'checks': reports},
+                   ensure_ascii=False, indent=2)
+    )
+    assert len(reports) == 4, 'Every required viewport must pass the same assertions'
+    print('CURRENT_CLEAN_BRIDGE_RADAR_UI_PASS', reports)
 
-            assert not page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
-            assert not errors,errors
-            reports.append({
-                'width':width,
-                'operating_home':True,
-                'source':data,
-                'navigation':'pass',
-                'screens':['home','stocks','detail','monitor','scenario','portfolio','news','performance','settings','system'],
-                'orders_enabled':False,
-                'errors':errors
-            })
-            context.close()
-        browser.close()
-    (out/'checks.json').write_text(json.dumps({'url':url,'public':public,'checks':reports},ensure_ascii=False,indent=2))
-    print('ACTUAL_REFERENCE_STRUCTURED_RADAR_UI_PASS',reports)
 
-if __name__=='__main__':
-    a=argparse.ArgumentParser()
-    a.add_argument('--url',default='http://127.0.0.1:8770/stock-value-radar.html')
-    a.add_argument('--public',action='store_true')
-    x=a.parse_args()
-    test(x.url,x.public)
+def nav(page, screen):
+    page.locator(f'.fx-nav [data-nr-screen="{screen}"]').click()
+    assert page.locator(f'.fx-stage[data-screen="{screen}"]').count() == 1
+
+
+def no_overflow(page):
+    assert page.evaluate(
+        'document.documentElement.scrollWidth <= innerWidth + 1 && document.body.scrollWidth <= innerWidth + 1'
+    ), 'Horizontal overflow is not permitted at this width or screen'
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--url', default='http://127.0.0.1:8770/stock-value-radar.html')
+    parser.add_argument('--public', action='store_true')
+    args = parser.parse_args()
+    test(args.url, args.public)
