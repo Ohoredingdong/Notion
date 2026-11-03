@@ -31,3 +31,11 @@
 [실제 포인터 검사](kitchen-a5-fidelity/actual-pointer-cancel.json)는17종×16개 래퍼 상태272/272, 우유 윗부분/뚜껑48/48, 편집 후 취소16/16을 통과했다. [native 저장·이동](kitchen-a5-fidelity/visible-movement-reload.json)16/16은 실제 그림 이동량 최소11.32px, 크기 유지·이동 뒤 새로고침 위치·원문 저장 자료 보존을 확인했다. [가림/조리대 검사](kitchen-a5-fidelity/overlay-and-surfaces.json)에서 냉동 사진14,440개 표본에 추가 버튼·메뉴·헤더 가림이 없고, 닫힌 문/꾸미기의 가구 발과 소품 지지가 연결된다. JavaScript 오류는0개다. [최종 QA 요약](kitchen-a5-fidelity/qa-summary.json)은 모든 결과를 전달 파일 SHA로 묶는다.
 
 시안의 긴 잎채소와 현재 브로콜리의 모양, 원본 예시와 실제 재고 수에 따른 밀도는 차이가 남는다. 이는 픽셀 일치나 사용자 승인으로 보고하지 않는다. 작업 브랜치는 `fix/kitchen-storyboard-fidelity`이며 기존 PR 생성은 GitHub GraphQL403 제한으로 미완료다.
+
+## 최종 공개 실행
+
+구현은 `3afe3d62545a562f15612d71739bf3cfb664379c`, 검증 코드는 `7bb48624ea0ddbbf8a05c4d20e1f2877390fd901`, 공개 결과는 `df4ba497d26127ceba47d0cb74a9a5aea11ac481`이다. [실제 HTTPS 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41640053039)은 앱/위젯 각각320·390·649px 및801×782의8개 상태를 통과했다. 음식/양념17개의 실제 포인터 선택136번이 올바른 상세ID를 열고 세계/기록을 유지했다. 런타임 오류는0개이며 헤더·추가 버튼·알림·계획 보기·꾸미기 취소·기록 후 열린 화면/닫힌 화면도 확인했다. [공개 결과](kitchen-a5-fidelity/public-status.json)는 source/verifier와 각 검사 조건을 기록한다.
+
+[공개801px 실제 PNG](kitchen-a5-fidelity/public-widget-801.png)는 정상 TLS로 HTTP200·image/png·Git 원문 바이트 일치를 확인했다. [공개 파일 확인](kitchen-a5-fidelity/public-fetch.json)에 URL과 SHA를 남긴다. 이는 Chromium 크기별 실행이며 실기기·Safari·실제 Notion 임베드·OCR 검증을 뜻하지 않는다.
+
+[수정본 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/3afe3d62545a562f15612d71739bf3cfb664379c/previews/mobile/widget.html). 작업 브랜치에 push했으며 main/Pages는 변경하지 않았다.
