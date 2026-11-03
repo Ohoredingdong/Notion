@@ -4,11 +4,30 @@ Same unofficial provider, not an independent-source cross-check.
 from datetime import datetime, timezone
 import threading
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 import pandas as pd
 
 _CALENDAR_LOCK = threading.Lock()
 _HISTORY_LOCK = threading.Lock()
 _PREPARED_YEAR = None
+_EXTERNAL_RETRY_OWNER = ContextVar('stock_forecast_external_retry_owner', default=False)
+
+
+@contextmanager
+def external_source_retry_owner():
+    """Scope inner cache-lock retries to one attempt under SafeCollector.
+
+    The bounded outer controller owns the retry budget in this context.
+    Other source readers keep their existing standalone transient-lock retries.
+    ContextVar prevents different worker threads from sharing retry ownership.
+    """
+    token = _EXTERNAL_RETRY_OWNER.set(True)
+    try:
+        yield
+    finally:
+        _EXTERNAL_RETRY_OWNER.reset(token)
+
 
 
 def prepare_sessions(year=None):
@@ -47,13 +66,16 @@ def regular_grid(frame, mode):
 def read_history_serially(fetcher):
     """yfinance shares a SQLite cookie/timezone cache; serialize its I/O only."""
     with _HISTORY_LOCK:
-        for attempt in range(3):
+        # Each outer bounded attempt gets exactly one inner fetcher invocation.
+        # Without an outer owner, preserve the earlier three-attempt lock guard.
+        max_attempts = 1 if _EXTERNAL_RETRY_OWNER.get() else 3
+        for attempt in range(max_attempts):
             try:
                 return fetcher()
             except Exception as exc:
                 # Only retry this observed transient cache lock. Never retry a
                 # missing-data error by returning an old or synthetic snapshot.
-                if 'database is locked' not in str(exc).lower() or attempt == 2:
+                if 'database is locked' not in str(exc).lower() or attempt == max_attempts - 1:
                     raise
                 time.sleep(.25*(attempt+1))
 

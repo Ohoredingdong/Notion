@@ -44,6 +44,48 @@ class EffectiveRetryBudgetTests(TestCase):
         # Predeclared policy is two effective fetcher calls; baseline has six.
         self.assertLessEqual(len(fetcher_calls), autopilot.POLICY["maximum_source_attempts"])
 
+    def test_transient_lock_success_consumes_at_most_two_outer_fetches(self):
+        calls = []
+        def fetcher():
+            calls.append(1)
+            if len(calls) == 1:
+                raise RuntimeError("database is locked")
+            return "synthetic_complete"
+
+        def process(*_):
+            try:
+                got = source.read_history_serially(fetcher)
+            except RuntimeError:
+                return simulated_failure()
+            self.assertEqual(got, "synthetic_complete")
+            return {"status": "no_call", "reason": "insufficient_regular_session_time",
+                    "symbol": "SYNTHETIC", "market": "US", "mode": "daily"}, object()
+
+        collector = autopilot.SafeCollector(
+            process, {}, clock=lambda: NOW, sleep=lambda _: None)
+        with patch.object(source.time, "sleep", lambda _: None):
+            record, bars = collector(SPEC, "daily")
+        self.assertIsNotNone(bars)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(len(collector.events), 2)
+
+    def test_context_resets_even_if_processor_raises(self):
+        def processor(*_):
+            raise ValueError("unexpected synthetic processor error")
+        collector = autopilot.SafeCollector(
+            processor, {}, clock=lambda: NOW, sleep=lambda _: None)
+        with self.assertRaisesRegex(ValueError, "unexpected synthetic"):
+            collector(SPEC, "daily")
+        calls = []
+        def fetcher():
+            calls.append(1)
+            if len(calls) < 3:
+                raise RuntimeError("database is locked")
+            return "standalone_after_error"
+        with patch.object(source.time, "sleep", lambda _: None):
+            self.assertEqual(source.read_history_serially(fetcher), "standalone_after_error")
+        self.assertEqual(len(calls), 3)
+
     def test_standalone_reader_retains_local_transient_cache_lock_recovery(self):
         calls = []
         def fetcher():
