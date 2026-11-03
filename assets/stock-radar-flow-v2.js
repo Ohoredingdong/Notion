@@ -21,14 +21,23 @@ function fxRecord(c,ctx){
 }
 
 function fxPrediction(c,ctx){
- const r=fxRecord(c,ctx),p=r?.probabilities||{},raw=p[r?.direction],value=fxN(raw);
- const active=r?.status==="research_prediction"&&value!==null;
- const until=Date.parse(r?.target?.end||""),stale=active&&Number.isFinite(until)&&until<Date.now(),unknown=active&&!Number.isFinite(until);
- const label=!active?"미발행":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
- const klass=stale||unknown?"stale":r?.direction==="up"?"up":r?.direction==="down"?"down":"flat";
- return {r,p,label,klass,value:active?value:null,stale,unknown,active,status:!active?"AI 자료 없음":stale?"기간 종료 · 과거 기록":unknown?"시점 미확인":"연구용 방향 예측"};
+ const r=fxRecord(c,ctx),p=r?.probabilities||{};
+ const choices=["up","flat","down"],numbers=choices.map(k=>fxN(p[k]));
+ const validDistribution=numbers.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(numbers.reduce((a,b)=>a+b,0)-1)<=0.025;
+ const knownDirection=choices.includes(r?.direction);
+ const val=validDistribution&&knownDirection?fxN(p[r.direction]):null;
+ const active=r?.status==="research_prediction"&&val!==null;
+ const until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
+ const invalidDates=Number.isFinite(until)&&Number.isFinite(issued)&&until<issued;
+ const usable=active&&!invalidDates;
+ const stale=usable&&Number.isFinite(until)&&until<Date.now();
+ const unknown=usable&&!Number.isFinite(until);
+ const label=!usable?"미산출":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
+ const klass=!usable||stale||unknown?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
+ const status=r?.status==="research_prediction"&&!usable?"분포·목표기간 오류 · 사용 불가":
+  !usable?"현재 연구 신호 없음":stale?"기간 종료 · 과거 기록":unknown?"기간 정보 미확인 · 연구용":"연구용 방향 분류";
+ return {r,p,label,klass,value:usable?val:null,stale,unknown,active:usable,status};
 }
-
 function fxUniverse(ctx){
  const h=fxHelpers(),fav=new Set(ctx.favorites||[]);
  const data=[...(ctx.data?.raw?.companies||[])];
