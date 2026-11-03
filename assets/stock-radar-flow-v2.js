@@ -316,15 +316,34 @@ function fxV5Cockpit(ctx){
 }
 
 function fxV5Sentiment(ctx){
- const d=ctx.data?.sentiment||{},score=fxN(d.headline?.score),t=d.source_timestamp||d.headline?.timestamp;
- const valid=d.market==="us"&&score!==null&&score>=0&&score<=100&&t&&Number.isFinite(Date.parse(t));
- const rating=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"지표 확인 전";
- const size=valid?Math.max(0,Math.min(100,score)):0;
- const color=size<45?"#e37a64":size<55?"#d4b15e":"#33aa7b";
- return `<section class="fx-v5-sentiment" title="CNN 미국 공포·탐욕 지수. 해외시장 지표이며 국내 증시를 대표하지 않습니다.">
- <div><strong>미국 공포·탐욕</strong><small>${valid?fxEscape(rating):"데이터 미확인"}</small></div>
- <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?"미국 공포·탐욕 "+fxNum(score,0)+"점":"미국 공포·탐욕 지표 미확인"}" style="--sentiment:${size}%;--sentiment-color:${color}"><span>${valid?fxNum(score,0):"—"}</span></div>
- <small class="fx-v5-sentiment-date">${valid?fxEscape(new Date(t).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"numeric",day:"numeric"})):"출처 시각 미확인"} · CNN</small>
+ const korea=fxLocal.sentimentMarket==="kr";
+ const us=ctx.data?.sentiment||{},kr=ctx.data?.koreaSentiment||{};
+ const time=String(kr.date||"");
+ const validKorea=kr.market==="kr"&&/^\d{4}-\d{2}-\d{2}$/.test(time)&&Number.isFinite(Date.parse(time+"T00:00:00Z"))&&fxN(kr.kospi?.index)!==null&&kr.kospi.index>=0&&kr.kospi.index<=100;
+ const usScore=fxN(us.headline?.score),usTime=us.source_timestamp||us.headline?.timestamp;
+ const validUS=us.market==="us"&&usScore!==null&&usScore>=0&&usScore<=100&&Number.isFinite(Date.parse(usTime||""));
+ const valid=korea?validKorea:validUS;
+ const score=korea?(validKorea?kr.kospi.index:null):(validUS?usScore:null);
+ const label=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"지표 확인 전";
+ const percent=score===null?0:Math.max(0,Math.min(100,score)),color=percent<45?"#e17c65":percent<55?"#d5b15c":"#32a981";
+ const sourceDate=korea?time:(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"}):"");
+ const formattedDate=korea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2"):sourceDate;
+ const kosdaq=fxN(kr.kosdaq?.index);
+ const sub=valid?(korea?`코스피 · ${label}`:label):"데이터 미확인";
+ const secondary=korea&&validKorea&&kosdaq!==null?`코스닥 ${fxNum(kosdaq,1)} · ${fxEscape(kr.kosdaq?.label||"지표")}`:"";
+ const sourceLabel=korea?"출처: 한국 공포탐욕지수":"CNN Fear & Greed";
+ const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
+ const next=korea?"미국 CNN 공포·탐욕 보기":"한국 코스피 공포·탐욕 보기";
+ return `<section class="fx-v5-sentiment ${korea?"is-korea":"is-us"}" aria-label="${korea?"한국 코스피":"미국 CNN"} 공포·탐욕 지수" title="${korea?"한국 코스피·코스닥 기반 민간 산출 지수. CNN과 산출 방식이 다릅니다.":"미국 CNN 공포·탐욕 지수. 한국 시장 심리를 나타내지 않습니다."}">
+  <div class="fx-v5-sentiment-copy"><div class="fx-v5-sentiment-title"><strong>${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
+  <button type="button" data-fx-sentiment-next aria-label="${next}" title="${next}">›</button></div>
+  <small class="fx-v5-sentiment-reading">${fxEscape(sub)}</small></div>
+  <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?(korea?"한국 코스피":"미국 CNN")+" 공포·탐욕 "+fxNum(score,1)+"점":"지수 데이터 확인 전"}"
+    style="--sentiment:${percent}%;--sentiment-color:${color}"><span>${valid?fxNum(score,korea?1:0):"—"}</span></div>
+  <small class="fx-v5-sentiment-date"><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="${sourceLabel}">${sourceLabel} ↗</a>
+    <span>${valid?fxEscape(formattedDate)+" 장 마감":"기준일 확인 전"}</span>
+    ${secondary?`<span title="한국 코스닥 공포·탐욕 지수">${secondary}</span>`:""}
+  </small>
  </section>`;
 }
 function fxHome(ctx){
@@ -533,6 +552,7 @@ function fxHandleClick(e){
  const button=e.target.closest?.("button");if(!button)return;
  const ds=button.dataset,bridge=window.StockRadarV2Bridge;if(!bridge)return;
  if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36;return}
+ if("fxSentimentNext" in ds){fxLocal.sentimentMarket=fxLocal.sentimentMarket==="us"?"kr":"us";try{localStorage.setItem("radar-sentiment-market",fxLocal.sentimentMarket)}catch{}bridge.render();return}
  if("fxRefresh" in ds){bridge.refresh();return}
  if(ds.fxPeriod){fxLocal.period=ds.fxPeriod;bridge.render();return}
  if(ds.fxFilter){fxLocal.filter=ds.fxFilter;fxLocal.limit=36;const c=fxChosen(fxContext());if(c)bridge.select(c.symbol);else bridge.render();return}
@@ -554,9 +574,9 @@ function fxHandleInput(e){
  else if(risk)risk.innerHTML=fxRisk(ctx);
  if(count)count.textContent=Math.min(pool.length,cap)+" / "+pool.length+"개 · AI 연구용";
 }
-const fxLocal={filter:'all',search:'',limit:36,period:'1M'};
+const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
 window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),version:'ux-flow-20261102-v3-viewport'};
-const fxBoot=()=>window.StockRadarV2Bridge?.render?.();
+const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
