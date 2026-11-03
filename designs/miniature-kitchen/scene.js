@@ -149,7 +149,7 @@
       const occupied=(host?[$('#kitchenProgress')]:[$('#decorationTools'),$('.decor-footer')]).filter(node=>node&&node.getClientRects().length).reduce((sum,node)=>{const css=getComputedStyle(node);return sum+node.getBoundingClientRect().height+(parseFloat(css.marginTop)||0)+(parseFloat(css.marginBottom)||0);},0);
       let bottom=Math.min(panelBox.bottom,innerHeight);
       for(const bar of document.querySelectorAll('.home-shortcuts,.worktop-actions'))if(bar.getClientRects().length&&getComputedStyle(bar).position==='fixed')bottom=Math.min(bottom,bar.getBoundingClientRect().top);
-      const available=Math.max(120,bottom-box.top-occupied-10);
+      const available=Math.max(120,bottom-box.top-occupied-(document.body.dataset.camera==='fridge'?0:10));
       width=Math.min(width,available*1000/logicalHeight);
     }else if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.home-shortcuts')?.offsetHeight||66;width=Math.min(width,Math.max(240,innerHeight-top-dock-12));}
     room.style.setProperty('--room-fit-width',width+'px');
