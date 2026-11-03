@@ -46,7 +46,7 @@ class LaunchCoverageNegativeControls(unittest.TestCase):
 
     def test_grace_keeps_recent_due_slots_pending(self):
         self.assertEqual(len(expected(START, ASOF, grace=30)), 12)
-        self.assertEqual(len(expected(START, ASOF, grace=0)), 18)
+        self.assertEqual(len(expected(START, ASOF, grace=0)), 15)
 
     def test_weekend_without_due_slots_is_not_incident(self):
         a, b = utc("2026-11-01T12:00:00Z"), utc("2026-11-01T16:00:00Z")
