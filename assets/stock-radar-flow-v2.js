@@ -160,12 +160,28 @@ function fxChart(c){
  <div class="fx-v5-ma-legend"><span><i class="close"></i>종가</span>${m20.some(v=>v!==null)?'<span><i class="ma20"></i>MA20</span>':''}${m60.some(v=>v!==null)?'<span><i class="ma60"></i>MA60</span>':''}<span>거래량: 저장된 실제 일봉</span></div>
  <div class="fx-chart-foot"><span>${fxEscape(p.dates[0])}</span><span>${fxEscape(annotation)}</span><span>${fxEscape(latest)}</span></div>`;
 }
+function fxStockGroupQuality(c,ctx){
+ const symbol=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
+ const mode=fxRecord(c,ctx)?.mode;
+ if(!mode)return null;
+ const candidates=Object.entries(ctx.data?.learning?.groups||{}).filter(([key,value])=>{
+  const parts=key.toUpperCase().split("|");
+  return parts[0].replace(/\.(KS|KQ)$/,"")===symbol&&parts[1]?.toLowerCase()===mode&&fxN(value?.metrics?.samples)!==null;
+ }).sort((a,b)=>{
+  const provider=key=>key.includes("provider-latency-30m-v1")?1:0;
+  return provider(b[0])-provider(a[0])||(b[1].metrics.samples-a[1].metrics.samples);
+ });
+ const found=candidates[0];
+ if(!found)return null;
+ const m=found[1].metrics||{};
+ return {mode,samples:m.samples,correct:fxN(m.correct),accuracy:fxN(m.accuracy),sessions:fxN(m.calendar_days),enough:m.samples>=120&&m.calendar_days>=20};
+}
 function fxBars(c,ctx){
- const sig=fxPrediction(c,ctx),r=sig.r;
+ const sig=fxPrediction(c,ctx),r=sig.r,stockQuality=fxStockGroupQuality(c,ctx);
  if(sig.value===null)return `<div class="fx-chart-empty">${fxEscape(sig.status||"유효한 연구 신호가 없습니다.")}</div>`;
  return `<div class="fx-ai-heading"><span class="fx-signal ${sig.klass}">${sig.label}</span><strong class="${sig.klass}">${fxNum(sig.value*100,1)}%</strong></div>
  ${[["상승","up"],["횡보","flat"],["하락","down"]].map(([n,k])=>{const v=fxN(r.probabilities?.[k]);return `<div class="fx-prob-row"><span>${n}</span><span class="fx-bar"><i class="${k}" style="width:${v===null?0:Math.max(0,Math.min(100,v*100))}%"></i></span><b>${v===null?"—":fxNum(v*100,1)+"%"}</b></div>`}).join("")}
- <p class="fx-footnote">${fxEscape(sig.status)}<br>${r.target?.end?"목표 종료 "+fxEscape(fxHelpers().T?.(r.target.end)):"목표 시점 미확인"} · 매수·수익률 확률 아님</p>`;
+ <p class="fx-footnote">${fxEscape(sig.status)}<br>${r.target?.end?"목표 종료 "+fxEscape(fxHelpers().T?.(r.target.end)):"목표 시점 미확인"} · 매수·수익률 확률 아님${stockQuality?`<br>${fxEscape(stockQuality.mode==="intraday"?"단기":"일간")} 종목별 사후 관측 ${fxNum(stockQuality.correct,0)}/${fxNum(stockQuality.samples,0)}건 · ${stockQuality.enough?"추가 검증 필요":"표본 매우 부족"}`:""}</p>`;
 }
 
 function fxFocus(ctx){
