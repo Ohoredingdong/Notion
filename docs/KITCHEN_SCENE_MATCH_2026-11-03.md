@@ -15,3 +15,21 @@
 시안의 약 60/40 냉장·냉동 분할과 현재 자산의 약 54/46 분할, 얕은 여러 식사 용기, 긴 잎채소, 통합된 조명은 여전히 다르다. 이번 결과는 크기 위계·구도·재료 표현을 고친 실제 실행 화면이며, 시안과 같은 그림이거나 사용자가 승인한 결과로 설명하지 않는다.
 
 검사 원본과 중간 후보는 작업 폴더 `kitchen-scene-match-20261103`에 구분했다. 선택한 전후 화면·복원 검사·최종 공개 실행 증거는 `docs/kitchen-scene-match/`에 기록한다. 화면 크기 검사는 Chromium 실행이며 실기기·Safari·Notion·OCR 검증은 아니다.
+
+## 실제 화면과 출처
+
+- [사용자 크기 801×782의 실제 수정 화면](kitchen-scene-match/widget-801x782.png)
+- [저장된 시안·이전 실제·수정 실제 비교](kitchen-scene-match/reference-before-after.png): 프레임 폭만 균일하게 축소한다. 저장된 시안은 이전 버전이며 예시 수치와 등록 상태가 다르다. [이미지·잘라보기 출처](kitchen-scene-match/reference-crops.json)를 함께 기록한다.
+- [최종 실제 캡처 정보](kitchen-scene-match/final-capture.json): 최종 `b865dbba9dd0e7a326beeccb70d0c005db87e2d5`와 같은 전달 파일을 임시 세션 래퍼에서 실행했다. 식사/목표 값은 입력되지 않은 상태이며 예시 섭취량으로 채우지 않는다.
+
+최종 전달 파일은 앱 1,034,157B, 위젯 1,034,165B, 모바일 앱 1,035,504B, 모바일 위젯 1,035,518B다. [원문과 전달물 SHA](kitchen-scene-match/generated-files.json)에 네 파일을 구분했다.
+
+## 실행 확인
+
+모델 검사 49개를 통과했다. 중간 C 후보의 [39개 실제 음식 클릭](kitchen-scene-match/food-taps.json)은 그 파일 해시를 기록했고 최종 실행으로 바꿔 부르지 않는다. 최종 `release-public` 파일의 [기존 자료 복원 검사](kitchen-scene-match/existing-data-restore.json)는 801·390px에서 기존 세계/좌표·워크플로·기록·저장 원문이 로드 전후와 상세 조회 전후 모두 동일함을 확인했다.
+
+최종 소스의 [실제 공개 HTTPS 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41594212399)은 **8/8 통과, 런타임 오류 0개**다. 앱/위젯 각각 320·390·649px와 사용자가 보낸 **801×782**를 포함한다. 각 화면의 13개 음식 그림을 실제 클릭해 **104번 모두 올바른 A6 ID**가 열리고 데이터가 유지됨을 확인했다. 작은 화면에서 원래 DOM 히트가 이웃 버튼인 경우도 실제 포인터 연결 결과를 검사했으며, DOM 소유권이 모두 자기 버튼이라는 주장으로 대체하지 않는다.
+
+[공개 결과](kitchen-scene-match/public-status.json)의 구현 `b865dbba`, 검증 코드 `a5f0b914b210503454e0b8721422b875ce27e4b4`, 결과 `34d7ca3c17c32cd88295c5b86b0a413696840f44`를 구분한다. [공개 PNG 확인](kitchen-scene-match/public-fetch.json)도 일반 TLS로 HTTP 200·이미지 형식·Git 바이트 일치를 확인했다. 실행 통과는 시안과의 시각적 일치나 사용자 승인을 뜻하지 않는다.
+
+[수정한 위젯](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/b865dbba9dd0e7a326beeccb70d0c005db87e2d5/previews/mobile/widget.html). 작업 브랜치에 push했으며 main/Pages는 변경하지 않았다. PR 생성은 앞서 확인한 GitHub GraphQL `Forbidden` 제한으로 미완료다.
