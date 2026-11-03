@@ -1,5 +1,5 @@
 (()=>{'use strict';
-let D={},selected='005930',screen='home',market='ALL',favorites=[],rules=[],paper=[],busy=false,errors=[];
+let D={},selected='005930',screen='home',market='ALL',favorites=[],rules=[],paper=[],busy=false,errors=[],storageError=false;
 function E(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 function N(v){return typeof v==="number"&&Number.isFinite(v)?v:null;}
@@ -186,7 +186,7 @@ function marketLabel(c){const k=c.source_symbol||c.symbol,info=D.markets?.member
 
 function loadValue(key){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a:[]}catch{return []}}
 
-function storeValue(key,a){try{localStorage.setItem(key,JSON.stringify(a))}catch{}}
+function storeValue(key,a){try{localStorage.setItem(key,JSON.stringify(a));storageError=false;return true}catch{storageError=true;return false}}
 
 function forms(ev){
  const id=ev.target?.id;if(!["radar-rule-form","radar-paper-form"].includes(id))return;
@@ -234,11 +234,11 @@ function goto(v){
  render();window.scrollTo({top:0,behavior:"instant"});
 }
 
-function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];try{localStorage.setItem("radar-v8-stars",JSON.stringify(favorites))}catch{}render();}
+function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];storeValue("radar-v8-stars",favorites);render();}
 
 function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(id)),"_blank","noopener");}
 
-function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(busy?"데이터 갱신 중 · ":"")+(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 주의: "+errors.join(" / "):"") + " · 실시간 호가 아님";}
+function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(busy?"데이터 갱신 중 · ":"")+(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 주의: "+errors.join(" / "):"") + (storageError?" · 브라우저 저장 실패: 재접속 시 관심·감시·모의 기록이 사라질 수 있습니다":"") + " · 실시간 호가 아님";}
 
 function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;const c=window.StockRadarFlowV2?.pick?.();if(c)selected=String(c.symbol);render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
