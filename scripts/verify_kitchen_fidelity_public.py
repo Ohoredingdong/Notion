@@ -50,6 +50,13 @@ def visual_case(page,frame,label,is_touch,data):
     before=frame.evaluate('KitchenJournal.getEnvelope()')
     assert frame.evaluate('KitchenJournal.storageKey')=='miniature-kitchen-preview-v1' and before['version']==1
     expect(frame.locator('[data-home-tab="meals"]')).to_have_text('레시피')
+    header=frame.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};},notice=document.querySelector('#homeStorageNotice'),inventory=document.querySelector('.masthead .header-actions [data-workflow="inventory"]'),brand=document.querySelector('.masthead .brand h1'),range=document.createRange();range.selectNodeContents(inventory);const label=range.getBoundingClientRect(),x=(label.left+label.right)/2,y=(label.top+label.bottom)/2,hit=document.elementFromPoint(x,y);return {noticeVisible:!!notice.getClientRects().length,notice:box(notice),inventory:box(inventory),brand:box(brand),inventoryLabel:{x,y,width:label.width,height:label.height},inventoryLabelPainted:hit?.closest('button')===inventory};}''')
+    def overlaps(a,b):return min(a['right'],b['right'])>max(a['left'],b['left'])+1 and min(a['bottom'],b['bottom'])>max(a['top'],b['top'])+1
+    if header['noticeVisible']:
+        assert not overlaps(header['notice'],header['inventory']),header
+        assert not overlaps(header['notice'],header['brand']),header
+    assert not overlaps(header['brand'],header['inventory']),header
+    assert header['inventoryLabelPainted'],'Inventory label center is covered: '+str(header)
     add=target(frame.locator('#homeWorktop #addFood'))
     macro=frame.locator('#dailyBalance').evaluate('e=>({height:e.getBoundingClientRect().height,values:[...e.querySelectorAll(".balance-number strong")].map(n=>({text:n.textContent,font:parseFloat(getComputedStyle(n).fontSize)})),names:[...e.querySelectorAll(".balance-name")].map(n=>n.textContent)})')
     assert len(macro['values'])==3 and all(v['font']>=16 for v in macro['values']) and macro['height']>50,macro
@@ -148,7 +155,7 @@ def visual_case(page,frame,label,is_touch,data):
     progress=frame.locator('#homeFridgeProgress').bounding_box();assert progress and progress['height']>0
     no_page_scroll(frame);screenshot(page,label,'recorded-closed-progress')
 
-    return {'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
+    return {'opaque_session_header':header,'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()
