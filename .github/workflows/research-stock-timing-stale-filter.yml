@@ -5,6 +5,8 @@ on:
       - research/timing-stale-ai-filter-20261103
     paths:
       - 'scripts/test_stock_timing_stale_ai_filter.cjs'
+      - 'scripts/test_stock_timing_neutral_stale_signal.cjs'
+      - 'assets/stock-radar-neutral.js'
       - 'assets/stock-radar-flow-v2.js'
       - 'scripts/test_stock_radar_flow_browser.py'
       - '.github/workflows/research-stock-timing-stale-filter.yml'
@@ -27,6 +29,7 @@ jobs:
         run: |
           node --check assets/stock-radar-flow-v2.js
           node scripts/test_stock_timing_stale_ai_filter.cjs
+          node scripts/test_stock_timing_neutral_stale_signal.cjs
           node scripts/test_stock_forecast_ui.cjs
       - name: Recompute immutable forecast evidence and retain acceptance criteria
         if: always()
