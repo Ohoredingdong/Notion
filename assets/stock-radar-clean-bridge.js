@@ -221,7 +221,18 @@ function choose(id){
  render();
 }
 
-function goto(v){if(!["home","stocks","stockdetail","scenario","monitor","portfolio","news","performance","settings"].includes(v))return;screen=v;render();window.scrollTo({top:0,behavior:"instant"});}
+function goto(v){
+ if(!["home","stocks","stockdetail","scenario","monitor","portfolio","news","performance","settings"].includes(v))return;
+ screen=v;
+ if(v==="home"||v==="stocks"){
+  const c=company(selected);
+  if(c){
+   if(market!=="ALL"&&!isMarket(c,market))market="ALL";
+   window.StockRadarFlowV2?.ensureSelectedVisible?.(c);
+  }
+ }
+ render();window.scrollTo({top:0,behavior:"instant"});
+}
 
 function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];try{localStorage.setItem("radar-v8-stars",JSON.stringify(favorites))}catch{}render();}
 
