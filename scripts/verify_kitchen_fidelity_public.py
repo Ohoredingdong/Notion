@@ -3,7 +3,7 @@ import argparse,copy,hashlib,html,importlib.util,json,os,re,shutil,subprocess,te
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-OUT=Path('/tmp/kitchen-scene-match-public')
+OUT=Path('/tmp/kitchen-final-repair-public')
 RESULT_BRANCH='preview/kitchen-fidelity-validation-20261103'
 PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900),('user-screenshot',801,782)]
 DOORS=('freshLeft','freshRight','frozenLeft','frozenRight')
@@ -21,7 +21,7 @@ def contract(native):
     scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',original)
     styles=re.findall(r'<style(?:\s[^>]*)?>([\s\S]*?)</style>',original)
     avifs=sorted(set(re.findall(r'data:image/avif;base64,[A-Za-z0-9+/=]+',original)))
-    assert len(scripts)==11 and len(styles)==12 and len(avifs)==4,(len(scripts),len(styles),len(avifs))
+    assert len(scripts)==11 and len(styles)==13 and len(avifs)==6,(len(scripts),len(styles),len(avifs))
     return {'decoded_sha256':hashlib.sha256(decoded).hexdigest(),'scripts':scripts,'styles':styles,'avifs':avifs}
 
 def touch(page,frame,node,is_touch):
@@ -45,7 +45,7 @@ def screenshot(page,label,suffix):
 
 def visual_case(page,frame,label,is_touch,data):
     images=frame.evaluate('async urls=>Promise.all(urls.map(async src=>{const i=new Image();i.src=src;await i.decode();return {width:i.naturalWidth,height:i.naturalHeight};}))',data['avifs'])
-    assert sorted((i['width'],i['height']) for i in images)==[(396,846),(1024,1536),(1402,1122),(1536,1024)],images
+    assert sorted((i['width'],i['height']) for i in images)==[(396,846),(604,815),(1024,1536),(1402,1122),(1536,1024),(1536,1024)],images
     frame.evaluate('async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}')
     before=frame.evaluate('KitchenJournal.getEnvelope()')
     assert frame.evaluate('KitchenJournal.storageKey')=='miniature-kitchen-preview-v1' and before['version']==1
@@ -62,10 +62,12 @@ def visual_case(page,frame,label,is_touch,data):
     assert len(macro['values'])==3 and all(v['font']>=16 for v in macro['values']) and macro['height']>50,macro
     home_frame=frame.locator('.shell').evaluate('e=>{const r=e.getBoundingClientRect(),probe=document.createElement("div");probe.style.cssText="position:fixed;visibility:hidden;pointer-events:none;height:var(--fridge-frame-height);width:1px";document.body.appendChild(probe);const configuredHeight=probe.getBoundingClientRect().height;probe.remove();return {width:r.width,height:r.height,configuredHeight,viewportHeight:innerHeight};}')
     assert abs(home_frame['height']-home_frame['configuredHeight'])<=1 and 0<home_frame['height']<=home_frame['viewportHeight']+1,home_frame
-    composition=frame.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};return {viewport:[innerWidth,innerHeight],scale:Number(getComputedStyle(document.querySelector('.shell')).getPropertyValue('--home-ui-scale')),stage:box(document.querySelector('.fridge-stage')),masthead:box(document.querySelector('.masthead')),balance:box(document.querySelector('#dailyBalance')),nav:box(document.querySelector('.home-shortcuts')),brandFont:parseFloat(getComputedStyle(document.querySelector('.brand h1')).fontSize)};}''')
+    composition=frame.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};return {viewport:[innerWidth,innerHeight],scale:Number(getComputedStyle(document.querySelector('.shell')).getPropertyValue('--home-ui-scale')),stage:box(document.querySelector('.fridge-stage')),stageLogical:{width:document.querySelector('.fridge-stage').offsetWidth,height:document.querySelector('.fridge-stage').offsetHeight},freshDoorFraction:parseFloat(document.querySelector('[data-door="freshLeft"]').style.height)/100,backgroundTop:parseFloat(document.querySelector('.shell').style.getPropertyValue('--bg-image-top')),masthead:box(document.querySelector('.masthead')),balance:box(document.querySelector('#dailyBalance')),nav:box(document.querySelector('.home-shortcuts')),brandFont:parseFloat(getComputedStyle(document.querySelector('.brand h1')).fontSize)};}''')
     assert abs(composition['nav']['height']-48*composition['scale'])<=2,composition
+    assert composition['stageLogical']=={'width':718,'height':800} and abs(composition['freshDoorFraction']-.602)<.0001,composition
+    assert abs(composition['stage']['width']/composition['stage']['height']-718/800)<.001 and composition['backgroundTop']<0,composition
     if composition['viewport']==[801,782]:
-        assert 360<=composition['stage']['width']<=380 and 424<=composition['stage']['height']<=445,composition
+        assert 365<=composition['stage']['width']<=390 and 405<=composition['stage']['height']<=435,composition
         assert 175<=composition['masthead']['height']+composition['balance']['height']<=200 and 82<=composition['nav']['height']<=94 and 23<=composition['brandFont']<=25,composition
     food_art=frame.evaluate('''()=>[...document.querySelectorAll('.fridge-interiors .item.food')].map(e=>{const art=e.querySelector('.food-art'),r=art.getBoundingClientRect(),css=getComputedStyle(art);let point=null;for(const fy of [.5,.2,.8,.1,.9,.35,.65])for(const fx of [.5,.2,.8,.1,.9,.35,.65]){const x=r.x+r.width*fx,y=r.y+r.height*fy;if(x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&document.elementFromPoint(x,y)?.closest('[data-item]')===e){point={x,y};break;}}return {id:e.dataset.item,name:e.dataset.foodName,width:r.width,height:r.height,tapPoint:{x:r.x+r.width/2,y:r.y+r.height/2},visible:r.width>0&&r.height>0&&css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0,point};})''')
     expected_food={'egg','milk','tofu','broccoli','tomato','fish','scallion','mushroom','kimchi','beef','shrimp','dumplings','mixveg'}
@@ -227,7 +229,7 @@ def main():
                         assert iframe.get_attribute('srcdoc').encode()==native
                         assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['scripts']
                         assert frame.locator('style').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['styles']
-                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_12_styles_exact':True})
+                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_13_styles_exact':True})
                         case['visual']=visual_case(page,frame,label,name in ('small-phone','phone'),data);assert not errors,errors;case['passed']=True
                     except Exception as error:
                         case.update({'error':str(error),'trace':traceback.format_exc()});screenshot(page,label,'failure')
