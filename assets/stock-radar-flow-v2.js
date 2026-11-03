@@ -551,7 +551,7 @@ function fxRender(){
 function fxHandleClick(e){
  const button=e.target.closest?.("button");if(!button)return;
  const ds=button.dataset,bridge=window.StockRadarV2Bridge;if(!bridge)return;
- if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36;return}
+ if(ds.nrScreen==="home"){fxLocal.search="";fxLocal.filter="all";fxLocal.limit=36;bridge.render();return}
  if("fxSentimentNext" in ds){fxLocal.sentimentMarket=fxLocal.sentimentMarket==="us"?"kr":"us";try{localStorage.setItem("radar-sentiment-market",fxLocal.sentimentMarket)}catch{}bridge.render();return}
  if("fxRefresh" in ds){bridge.refresh();return}
  if(ds.fxPeriod){fxLocal.period=ds.fxPeriod;bridge.render();return}
