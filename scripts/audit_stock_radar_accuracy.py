@@ -136,6 +136,36 @@ def report():
             forecast_issues.append({"symbol": pred.get("symbol"), "mode": pred.get("mode"), "status": "invalid research record"})
     fail_if(bool(forecast_issues), "Published research forecast contains invalid probabilities or dates", errors)
 
+    chart_series_issues = []
+    chart_ok = 0
+    for symbol, series in (chart.get("series") or {}).items():
+        bars = series.get("bars") or []
+        prev = None
+        if series.get("status") == "ok":
+            chart_ok += 1
+        if not bars:
+            chart_series_issues.append({"symbol": symbol, "issue": "missing bars"})
+            continue
+        for row in bars:
+            if not isinstance(row, dict) or not isinstance(row.get("date"), str):
+                chart_series_issues.append({"symbol": symbol, "issue": "invalid daily bar"})
+                break
+            value = number(row.get("close"))
+            if value is None or value <= 0:
+                chart_series_issues.append({"symbol": symbol, "issue": "nonpositive or missing close"})
+                break
+            if prev is not None and row["date"] <= prev:
+                chart_series_issues.append({"symbol": symbol, "issue": "duplicate or unordered date"})
+                break
+            volume = number(row.get("volume"))
+            if volume is not None and volume < 0:
+                chart_series_issues.append({"symbol": symbol, "issue": "negative volume"})
+                break
+            prev = row["date"]
+        if series.get("price_session") != bars[-1].get("date"):
+            chart_series_issues.append({"symbol": symbol, "issue": "price session and daily bar endpoint differ"})
+    fail_if(bool(chart_series_issues), "Invalid stored daily price series", errors)
+
     chart_differences = []
     for key, title, symbol in [
         ("kospi", "KOSPI", "^KS11"), ("kosdaq", "KOSDAQ", "^KQ11"),
@@ -226,6 +256,13 @@ def report():
             "status_counts": statuses,
             "invalid_research_records": forecast_issues,
             "no_real_time_connection": forecasts.get("real_time_connected") is not True,
+        },
+        "chart_integrity": {
+            "series_checked": len(chart.get("series") or {}),
+            "provider_status_ok": chart_ok,
+            "invalid_series": chart_series_issues,
+            "date_order_and_price_values_valid": not chart_series_issues,
+            "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote.",
         },
         "index_date_mismatch": chart_differences,
         "data_integrity": {
