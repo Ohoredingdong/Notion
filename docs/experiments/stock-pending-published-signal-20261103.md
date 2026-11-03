@@ -1,0 +1,29 @@
+# Research only: previously public pending signals disappear under newer no-call snapshots
+
+Status: preregistered engineering hypothesis, frozen **before** any RED/GREEN trial or source modification. Date: 2026-11-03 KST. Not a timing-performance, strategy, or buy approval.
+
+## Provenance and existing related work
+
+Pinned operating main `910f8dfb0503c59cc989c67f31cdc7da56ee7762`; its three unmodified contracts were read in full: `docs/stock-timing-acceptance-20261029.md` (blob `69526101025c0394b13a55bfb73b9be5240e5fca`), `docs/stock-direction-specialists.md` (`6d5498666cd6da4d4528c46a4f1cb911715e90bd`), and `docs/stock-bounded-autopilot.md` (`a5176f6aa075c49a090e6a3ec01b64fb323420ed`). Frozen main evidence blobs: ledger `d2f831805000f78725a664a22732a02941e4b014`, results `4d59d17afb9f542ab80f7342aa91730572def365`, public-verification log `23fd20dddc574e9a59cb08704cd04b35a4b4a16d`, direction JSON `38ad1de1b9399ccaf8f92797e6e65a0004693caf`.
+
+Existing #82 covered no-call attempt-window interpretation (Nov 1), #102 covers **expired/unknown** signal filtering and remains unmerged due a separate main-wide browser regression. #103 addresses bounded Pages propagation verification and remains draft. This is a *different, opposite* UI presentation failure: an already published, still-future forecast becoming invisible when a later run returns `no_call`. This research branch is based on #102 head `bcf5873d8a562393deadb660ffe10d09186b404d` so that it inherits the tested stale/unknown filter and changes neither that earlier PR nor main. A dependent draft PR must not be merged before its parent and all downstream checks.
+
+## Fixed reproducible observation (no outcome data used to choose the fix)
+
+The pinned main ledger contains six KR daily research forecasts first issued at ~2026-11-02T13:54:46Z, with target 2026-11-03T00:00:00Z–06:30:00Z. The prior verified public snapshot at 2026-11-02T13:56:10.844029Z includes those six IDs before the target. But the newer `stock-direction-forecast.json` generated 2026-11-02T22:30:30.782013Z has six KR daily `no_call` rows in its `records`. The primary radar uses only `direction.records` in `assets/stock-radar-flow-v2.js:fxRecord`, so it cannot display the six originally published pending predictions at that newer snapshot time. The append-only ledger still has those earlier predictions. A new `no_call` is legitimate and **must remain** a no-call in current attempts, not be converted to a new model prediction. Public web response is not human notification receipt.
+
+## One predetermined candidate and controls
+
+Add a **separate presentation-only** `prior_public_forecasts` array to the generated direction report. Select, without future prices/outcomes, at most one formerly issued and actually public-verified still-unexpired original per exact symbol + market + mode. Require complete target bounds, chronological observation ≤ receipt ≤ issuance < target start < target end; exact ID membership in a recorded `public_verified` event whose snapshot timestamp is after issuance, public verification is after issuance but before target start and by the report cutoff. Reject unverified, later-public, invalid-clock, ended, malformed, different-market, or duplicate future records. Preserve original direction/probabilities/target/ID. Explicitly mark it as **previously published, not reissued**, with `user_receipt_verified=false` and `recommendation=false`. Do not mutate the current `records`/no-call rows, attempt log, frozen ledger, labels, learning, strict-green-1.0, or policy.
+
+Modify only the research UI's record selection to consider this separately documented array, preferring an actually newer current valid prediction over a carried earlier record; retain the parent #102 stale/unknown filter and historic all-record views. Existing snapshot lacking the new optional field must continue to work. This is a display improvement, **not** proof that the user received or could have traded a signal.
+
+Pre-fixed synthetic negative controls: (1) previously published pending signal remains discoverable despite newer same-group no-call, (2) no public proof => unavailable, (3) public after target start => unavailable, (4) expired end => unavailable, (5) invalid source/issue timestamps => unavailable, (6) first-issue duplicate/future and cross-market isolation, (7) original data/no-call and baseline remain immutable, (8) current newer valid signal takes priority, (9) stale/unknown filter inherited from #102 still excludes invalid signals, (10) no human-receipt, model-accuracy, or buy-approval claims.
+
+## Gates and experiment accounting
+
+Run exactly one initial RED CI before implementation, then a narrow GREEN candidate with standalone Python and actual radar-JS VM controls, existing stale filter tests, stored-price independent audit/unchanged acceptance guard, and existing relevant browser regression where feasible. Count both failed and passed runs. Do not train/tune/choose a model, lower thresholds, backdate a public proof, or create a retroactive outcome. Do not auto-merge or deploy: parent #102 is still blocked by its separate main-wide regression; independent whole-pipeline browser and public parity after any reviewed merge remain required.
+
+Baseline independent audit of this unchanged 113-row main ledger: 21 duplicate target issuances, 8 overlapping targets, 84 nonoverlapping; 60 scored / 18 correct, three-class mean Brier 0.6760001027265823, 12 matured missing and 12 future waiting at pinned evidence time. 0 of 24 groups has 120 nonoverlapping outcomes and 20 observation dates. External exchange candles/executable quotes, human receipt, after-cost prospective paper strategy, and untouched follow-up remain unverified. `timing_utility=not_proven`.
+
+No actual orders, deposits, paid services, account/API authentication, secret writes, strict-green changes, model/shadow promotions, or other automations.
