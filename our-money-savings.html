@@ -320,7 +320,7 @@ function persist(){localStorage.setItem(K,JSON.stringify(d))}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function monthShift(m,n){const p=m.split('-').map(Number),dt=new Date(p[0],p[1]-1+n,1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')}
 function rec(m){const r=d.records[m];if(!r)return null;return Object.assign({month:m,myTarget:r.myTarget!=null?r.myTarget:r.mySave||d.mySave,hisTarget:r.hisTarget!=null?r.hisTarget:r.hisSave||d.hisSave,myActual:r.myActual!=null?r.myActual:r.mySave||0,hisActual:r.hisActual!=null?r.hisActual:r.hisSave||0,jointActual:r.jointActual||0},r)}
-function currentSavings(){const r=rec(selectedMonth);return r?{my:r.myActual,his:r.hisActual,joint:r.jointActual||0,myT:r.myTarget,hisT:r.hisTarget,jointT:r.jointTarget||0}:{my:0,his:0,joint:0,myT:d.mySave,hisT:d.hisSave,jointT:0}}
+function currentSavings(){const r=rec(selectedMonth);return r?{recorded:true,my:r.myActual,his:r.hisActual,joint:r.jointActual||0,myT:r.myTarget,hisT:r.hisTarget,jointT:r.jointTarget||0}:{recorded:false,my:0,his:0,joint:0,myT:d.mySave,hisT:d.hisSave,jointT:0}}
 function expenseActualByCategory(name){
   const tx=d.transactions.filter(function(t){return t.type==='expense'&&String(t.date||'').slice(0,7)===selectedMonth});
   const lower=name.toLowerCase();
@@ -366,27 +366,37 @@ function lineChart(months,series){
 function setView(v){currentView=v;document.querySelectorAll('.view').forEach(function(x){x.classList.toggle('active',x.id==='view-'+v)});document.querySelectorAll('[data-view]').forEach(function(x){x.classList.toggle('active',x.dataset.view===v)});render()}
 function renderHeader(){document.getElementById('monthLabel').textContent=ymLabel(selectedMonth)}
 function renderDashboard(){
-  const s=currentSavings(),target=s.myT+s.hisT+s.jointT,actual=s.my+s.his+s.joint,diff=actual-target;
+  const s=currentSavings(),hasRecord=s.recorded,target=s.myT+s.hisT+s.jointT,actual=s.my+s.his+s.joint,diff=actual-target;
   const rb=budgetRows(),tb=rb.reduce(function(a,x){return a+x.budget},0),ta=rb.reduce(function(a,x){return a+x.actual},0);
   const ms=historyMonths(6),myVals=ms.map(function(m){return assetsAtMonth('my',m)}),hisVals=ms.map(function(m){return assetsAtMonth('his',m)});
-  const msg=!rec(selectedMonth)?'이번 달 실제 저축을 아직 기록하지 않았어요.':diff>=0?'목표보다 '+man(diff)+' 더 저축했어요':'목표보다 '+man(-diff)+' 부족';
-  const msgClass=diff<0?'danger':'';
+  const recordedMonths=ms.filter(function(m){return !!rec(m)});
+  const hasAssetHistory=recordedMonths.length>=2;
+  const msg=!hasRecord?'이번 달 실제 저축을 아직 기록하지 않았어요.':diff>=0?'목표보다 '+man(diff)+' 더 저축했어요':'목표보다 '+man(-diff)+' 부족';
+  const msgClass=hasRecord&&diff<0?'danger':'';
+  const heroSub=!hasRecord?'저축 기록 탭에서 이번 달 실제 금액을 입력해주세요.':diff<0?'식비·쇼핑 등 조정 가능한 지출부터 확인해보세요.':'현재 저축 흐름을 유지해보세요.';
   const rows=rb.map(function(x){const df=x.actual-x.budget;return '<tr><td>'+esc(x.name)+'</td><td>'+man(x.budget)+'</td><td>'+man(x.actual)+'</td><td class="'+(df>0?'neg':df<0?'pos':'')+'">'+(df>0?'+':'')+man(df)+'</td></tr>'}).join('');
-  const rmonths=historyMonths(6).map(function(m){const r=rec(m);if(!r)return '';const t=N(r.myTarget)+N(r.hisTarget)+N(r.jointTarget),a=N(r.myActual)+N(r.hisActual)+N(r.jointActual),df=a-t;return '<tr class="'+(m===selectedMonth?'current-row':'')+'"><td>'+ymLabel(m).replace('년 ','년 ')+'</td><td>'+man(t)+'</td><td>'+man(a)+'</td><td class="'+(df<0?'neg':df>0?'pos':'')+'">'+(df>0?'+':'')+man(df)+'</td><td>'+pct(a,t).toFixed(1)+'%</td></tr>'}).join('');
+  const rmonths=ms.map(function(m){const r=rec(m);if(!r)return '';const t=N(r.myTarget)+N(r.hisTarget)+N(r.jointTarget),a=N(r.myActual)+N(r.hisActual)+N(r.jointActual),df=a-t;return '<tr class="'+(m===selectedMonth?'current-row':'')+'"><td>'+ymLabel(m)+'</td><td>'+man(t)+'</td><td>'+man(a)+'</td><td class="'+(df<0?'neg':df>0?'pos':'')+'">'+(df>0?'+':'')+man(df)+'</td><td>'+pct(a,t).toFixed(1)+'%</td></tr>'}).join('');
+  const assetBody=hasAssetHistory?'<div class="chart-box">'+lineChart(ms,[{values:myVals,cls:'line-j',point:'j'},{values:hisVals,cls:'line-c',point:'c'}])+'</div>':'<div class="empty-state"><strong>자산 추이를 만들 기록이 아직 부족합니다.</strong><span>저축 기록이 2개월 이상 쌓이면 월별 자산 변화가 표시됩니다.</span><button class="secondary" data-empty-jump="savings">저축 기록 입력</button></div>';
+  const monthlyBody=rmonths?'<div class="table-wrap"><table><thead><tr><th>월</th><th>목표 저축</th><th>실제 저축</th><th>차이</th><th>달성률</th></tr></thead><tbody>'+rmonths+'</tbody></table></div>':'<div class="empty-state"><strong>아직 저장된 저축 기록이 없습니다.</strong><span>이번 달 실제 저축액을 저장하면 목표 대비 추이가 시작됩니다.</span><button class="secondary" data-empty-jump="savings">이번 달 기록 입력</button></div>';
+  const saveRows=saveRow('지은',s.myT,s.my,'yellow',hasRecord)+saveRow('찬영',s.hisT,s.his,'green',hasRecord)+saveRow('공동',s.jointT,s.joint,'pink',hasRecord);
+  const totalActual=hasRecord?man(actual):'—', totalDiff=hasRecord?((diff>0?'+':'')+man(diff)):'—';
+  const actualKpi=hasRecord?man(actual):'미기록', actualSub=hasRecord?'목표 대비 '+pct(actual,target).toFixed(1)+'%':'이번 달 실제 저축 입력 필요';
+  const proposal=hasRecord?suggestions(rb,diff):'<li>이번 달 실제 저축액을 입력하면 목표 대비 분석이 시작됩니다.</li><li>예산 초과 항목은 실제 지출 기준으로 계속 확인할 수 있습니다.</li>';
+
   document.getElementById('view-dashboard').innerHTML=
-  '<div class="grid three"><div class="card hero"><div class="card-title">이번 달 결론</div><div class="big '+msgClass+'">'+msg+'</div><div class="sub" style="margin-top:13px">'+(diff<0?'식비·쇼핑 등 조정 가능한 지출부터 확인해보세요.':'현재 저축 흐름을 유지해보세요.')+'</div></div>'+
+  '<div class="grid three"><div class="card hero"><div class="card-title">이번 달 결론</div><div class="big '+msgClass+'">'+msg+'</div><div class="sub" style="margin-top:13px">'+heroSub+'</div></div>'+
   personCard('지은',d.myAssets,d.mySave,'yellow')+personCard('찬영',d.hisAssets,d.hisSave,'green')+'</div>'+
   '<div class="grid two" style="margin-top:14px"><div class="card"><div class="card-title">▱ 이번 달 저축 현황</div><div class="table-wrap"><table><thead><tr><th>구분</th><th>목표 저축</th><th>실제 저축</th><th>차이</th></tr></thead><tbody>'+
-  saveRow('지은',s.myT,s.my,'yellow')+saveRow('찬영',s.hisT,s.his,'green')+saveRow('공동',s.jointT,s.joint,'pink')+
-  '<tr class="total-row"><td>합계</td><td>'+man(target)+'</td><td>'+man(actual)+'</td><td class="'+(diff<0?'neg':diff>0?'pos':'')+'">'+(diff>0?'+':'')+man(diff)+'</td></tr></tbody></table></div></div>'+
+  saveRows+'<tr class="total-row"><td>합계</td><td>'+man(target)+'</td><td>'+totalActual+'</td><td class="'+(hasRecord?(diff<0?'neg':diff>0?'pos':''):'neutral')+'">'+totalDiff+'</td></tr></tbody></table></div></div>'+
   '<div class="card"><div class="card-title">⌂ 공동생활비 (예산 vs 실제)</div><div class="table-wrap"><table><thead><tr><th>항목</th><th>예산</th><th>실제</th><th>차이</th></tr></thead><tbody>'+rows+
   '<tr class="total-row"><td>합계</td><td>'+man(tb)+'</td><td>'+man(ta)+'</td><td class="'+(ta>tb?'neg':'pos')+'">'+(ta-tb>0?'+':'')+man(ta-tb)+'</td></tr></tbody></table></div></div></div>'+
-  '<div class="grid two" style="margin-top:14px"><div class="card"><div class="card-title">↗ 자산 추이</div><div class="chart-box">'+lineChart(ms,[{values:myVals,cls:'line-j',point:'j'},{values:hisVals,cls:'line-c',point:'c'}])+'</div></div>'+
-  '<div class="card"><div class="card-title">□ 월별 저축 및 목표 대비</div><div class="table-wrap"><table><thead><tr><th>월</th><th>목표 저축</th><th>실제 저축</th><th>차이</th><th>달성률</th></tr></thead><tbody>'+ (rmonths||'<tr><td colspan="5" class="empty">저축 기록을 저장하면 여기에 표시됩니다.</td></tr>') +'</tbody></table></div></div></div>'+
-  '<div class="grid four" style="margin-top:14px"><div class="card kpi"><div class="label">◎ 목표 저축</div><div class="value">'+man(target)+'</div></div><div class="card kpi"><div class="label">▱ 실제 저축</div><div class="value">'+man(actual)+'</div><div class="sub">목표 대비 '+pct(actual,target).toFixed(1)+'%</div></div><div class="card kpi"><div class="label">▤ 합산 자산</div><div class="value">'+man(N(d.myAssets)+N(d.hisAssets))+'</div></div><div class="card suggestion"><div class="card-title">이번 달 제안</div><ul>'+suggestions(rb,diff)+'</ul></div></div>';
+  '<div class="grid two" style="margin-top:14px"><div class="card"><div class="card-title">↗ 자산 추이</div>'+assetBody+'</div>'+
+  '<div class="card"><div class="card-title">□ 월별 저축 및 목표 대비</div>'+monthlyBody+'</div></div>'+
+  '<div class="grid four" style="margin-top:14px"><div class="card kpi"><div class="label">◎ 목표 저축</div><div class="value">'+man(target)+'</div></div><div class="card kpi"><div class="label">▱ 실제 저축</div><div class="value">'+actualKpi+'</div><div class="sub">'+actualSub+'</div></div><div class="card kpi"><div class="label">▤ 합산 자산</div><div class="value">'+man(N(d.myAssets)+N(d.hisAssets))+'</div></div><div class="card suggestion"><div class="card-title">이번 달 제안</div><ul>'+proposal+'</ul></div></div>';
+  document.querySelectorAll('[data-empty-jump]').forEach(function(b){b.onclick=function(){setView(b.dataset.emptyJump)}});
 }
 function personCard(name,assets,monthly,color){return '<div class="card person-card"><div class="person-head"><div class="person-name"><span class="dot '+color+'"></span>'+name+'</div><span class="pill">목표 1억원</span></div><div><div class="big">'+man(assets)+'</div><div class="sub" style="margin-top:4px">1억원 중 '+pct(assets,GOAL).toFixed(1)+'%</div></div><div><div class="progress '+color+'"><span style="width:'+Math.min(100,pct(assets,GOAL))+'%"></span></div><div class="split-meta"><div><div class="meta-label">월 목표 저축</div><div class="meta-value">'+man(monthly)+'</div></div><div><div class="meta-label">예상 달성일</div><div class="meta-value">'+expectedDate(assets,monthly,GOAL)+'</div></div></div></div></div>'}
-function saveRow(name,t,a,color){const df=N(a)-N(t);return '<tr><td><span class="dot '+color+'" style="margin-right:7px"></span>'+name+'</td><td>'+man(t)+'</td><td>'+man(a)+'</td><td class="'+(df<0?'neg':df>0?'pos':'')+'">'+(df>0?'+':'')+man(df)+'</td></tr>'}
+function saveRow(name,t,a,color,recorded){if(!recorded)return '<tr><td><span class="dot '+color+'" style="margin-right:7px"></span>'+name+'</td><td>'+man(t)+'</td><td>—</td><td class="neutral">—</td></tr>';const df=N(a)-N(t);return '<tr><td><span class="dot '+color+'" style="margin-right:7px"></span>'+name+'</td><td>'+man(t)+'</td><td>'+man(a)+'</td><td class="'+(df<0?'neg':df>0?'pos':'')+'">'+(df>0?'+':'')+man(df)+'</td></tr>'}
 function suggestions(rows,diff){const over=rows.filter(function(x){return x.actual>x.budget}).sort(function(a,b){return (b.actual-b.budget)-(a.actual-a.budget)});let out='';over.slice(0,2).forEach(function(x){out+='<li>'+esc(x.name)+' 지출이 예산보다 '+man(x.actual-x.budget)+' 많습니다.</li>'});if(diff<0)out+='<li>저축 목표까지 '+man(-diff)+' 추가 확보가 필요합니다.</li>';if(!out)out='<li>현재 예산과 저축 흐름이 계획 범위 안입니다.</li>';return out}
 function renderBudget(){
   const rows=budgetRows(),tb=rows.reduce(function(a,x){return a+x.budget},0),ta=rows.reduce(function(a,x){return a+x.actual},0),gap=tb-ta;
