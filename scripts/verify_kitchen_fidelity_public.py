@@ -120,7 +120,26 @@ def visual_case(page,frame,label,is_touch,data):
     touch(page,frame,frame.locator('#closeTray'),is_touch);expect(frame.locator('#tray')).not_to_be_visible()
     assert frame.evaluate('KitchenJournal.getEnvelope()')==before
 
-    return {'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
+    # Explicit isolated example, after all original no-write checks above.
+    # The opaque frame is a temporary browser context, never a personal account.
+    inventory_before=frame.evaluate('MiniKitchen.exportWorld().items')
+    fixture=frame.evaluate('''()=>{const d=new Date(),day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');KitchenJournal.transact(({play})=>play.record({day,name:'공개 화면 확인용 예시 식사',portion:'1회분',recipeId:'recipe-1',nutrients:{kcal:455,carb:60,protein:20,fat:15,fiber:null,water:null}}));KitchenHome.showTab('fridge');return {day,recipeId:'recipe-1',name:'공개 화면 확인용 예시 식사',scope:'synthetic browser-only view fixture'};}''')
+    assert frame.evaluate('MiniKitchen.exportWorld().items')==inventory_before,'Example view fixture must not change actual inventory'
+    assert all(frame.evaluate('MiniKitchen.getSnapshot().doors').values())
+    expect(frame.locator('#homeWorktop #addFood')).to_be_visible()
+    recorded_add=target(frame.locator('#homeWorktop #addFood'))
+    screenshot(page,label,'recorded-open-home')
+    touch(page,frame,frame.locator('#homeWorktop #addFood'),is_touch)
+    expect(frame.locator('#tray .registration-methods')).to_be_visible()
+    touch(page,frame,frame.locator('#closeTray'),is_touch)
+    for key in DOORS:touch(page,frame,frame.locator(f'[data-door="{key}"]'),is_touch)
+    assert not any(frame.evaluate('MiniKitchen.getSnapshot().doors').values())
+    expect(frame.locator('#homeFridgeProgress')).to_be_visible()
+    expect(frame.locator('#homeWorktop #addFood')).not_to_be_visible()
+    progress=frame.locator('#homeFridgeProgress').bounding_box();assert progress and progress['height']>0
+    no_page_scroll(frame);screenshot(page,label,'recorded-closed-progress')
+
+    return {'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()
@@ -138,7 +157,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',required=True);parser.add_argument('--publish-results',action='store_true');parser.add_argument('--local-root',type=Path);args=parser.parse_args()
     assert re.fullmatch('[0-9a-f]{40}',args.source)
     OUT.mkdir(parents=True,exist_ok=True);run=os.environ.get('GITHUB_RUN_ID');repo=os.environ.get('GITHUB_REPOSITORY','Ohoredingdong/Notion')
-    result={'source':args.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run}' if run else None,'cases':[],'scope':'Six actual HTTPS app/widget visual and native-control profiles. No OCR execution, model setup, record writes, physical-device, Safari, Notion or persistent-storage claim.'}
+    result={'source':args.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run}' if run else None,'cases':[],'scope':'Six actual HTTPS app/widget visual and native-control profiles; original navigation and Cancel checks preserve data. One explicit isolated browser-only synthetic meal per profile then checks open-home Add and closed-home progress. No OCR, real-user write, physical-device, Safari, Notion or persistent-storage claim.'}
     server=None
     try:
         if args.local_root:
