@@ -17,7 +17,10 @@ function fxRecord(c,ctx){
  const sym=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
  const rs=(ctx.data?.direction?.records||[]).filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===sym);
  const matched=rs.filter(r=>r.status==="research_prediction"&&r.probabilities).sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
- return matched.find(r=>r.mode==="daily")||matched[0]||rs.find(r=>r.mode==="daily")||rs[0]||null;
+ // Keep daily preference only while that target is still valid; never let
+ // an expired daily row conceal a live intraday research row for the same ticker.
+ const usable=r=>Number.isFinite(Date.parse(r?.target?.end||""))&&Date.parse(r.target.end)>=Date.now();
+ return matched.find(r=>r.mode==="daily"&&usable(r))||matched.find(usable)||matched.find(r=>r.mode==="daily")||matched[0]||rs.find(r=>r.mode==="daily")||rs[0]||null;
 }
 
 function fxPrediction(c,ctx){
