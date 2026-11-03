@@ -257,7 +257,7 @@ function fxV5Side(ctx,c){
  <section class="fx-panel fx-v5-sidecard fx-v5-sidevalidation">
  <div class="fx-v5-sidehead"><h3>${h.I?.('chart')||"▣"} AI 예측 사후검증</h3><button data-nr-screen="performance" type="button">검증 ›</button></div>
  <div class="fx-v5-accuracy"><div class="fx-v5-ring" style="--percent:${acc===null?0:Math.max(0,Math.min(100,acc*100))}%"><div>${acc===null?"—":fxNum(acc*100,1)+"%"}</div></div>
- <div class="fx-v5-scorebreak"><small>연구용 방향 분류</small><strong>${correct===null||sample===null?"평가 전":fxNum(correct,0)+" / "+fxNum(sample,0)+"건"}</strong><span>실전 매매 수익성 미입증</span></div></div>
+ <div class="fx-v5-scorebreak"><small>독립 평가 기준 · 연구용</small><strong>${correct===null||sample===null?"평가 전":fxNum(correct,0)+" / "+fxNum(sample,0)+"건"}</strong><span>실전 매매 수익성 미입증</span></div></div>
  </section>
  <section class="fx-panel fx-v5-sidecard fx-v5-sideportfolio">
  <div class="fx-v5-sidehead"><h3>${h.I?.('star')||"☆"} 내 모의 포트폴리오</h3><button data-nr-screen="portfolio" type="button">전체 보기 ›</button></div>
@@ -527,7 +527,7 @@ function fxScenario(ctx){
 }
 function fxPerformance(ctx){
  const h=fxHelpers(),o=ctx.data?.learning?.overall||{},rec=o.recall||{};
- const facts=[["사후 방향 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["일치 / 평가",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["실제 상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["실제 하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
+ const facts=[["사후 방향 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["독립 평가 일치 / 표본",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["실제 상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["실제 하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
  const utility=ctx.data?.autopilot?.timing_utility?.status, proven=utility==="proven";
  return `<div class="fx-intro"><div><h2>AI 예측 검증</h2><p>실제 결과와 비교하되, 적중률과 매매 수익률을 구분합니다.</p></div><span class="fx-stamp">자료 ${fxEscape(h.T?.(ctx.data?.learning?.generated_at)||"확인 전")}</span></div>
  <div class="nr-performance-grid">${facts.map(([label,n])=>`<section class="nr-panel"><small>${label}</small><strong>${n}</strong></section>`).join("")}</div>
@@ -535,13 +535,19 @@ function fxPerformance(ctx){
 }
 function fxOutcomes(ctx){
  const h=fxHelpers(),input=Array.isArray(ctx.data?.outcomes)?ctx.data.outcomes:[],seen=new Set();
- const rows=input.filter(r=>{
+ const eligible=input.filter(r=>{
   if(r.status!=="observed"||r.public_before_target_verified!==true)return false;
-  const key=String(r.id||[r.symbol,r.mode,r.issued_at,r.target?.start].join("|"));
-  if(seen.has(key))return false;seen.add(key);return true;
- }).sort((a,b)=>Date.parse(b.evaluated_at||0)-Date.parse(a.evaluated_at||0)).slice(0,8);
+  const id=String(r.id||[r.symbol,r.mode,r.issued_at,r.target?.start].join("|"));
+  if(seen.has(id))return false;seen.add(id);return true;
+ });
+ const visible=eligible.slice().sort((a,b)=>Date.parse(b.evaluated_at||0)-Date.parse(a.evaluated_at||0)).slice(0,8);
+ const independent=fxN(ctx.data?.learning?.evaluation_counts?.eligible_scored)??fxN(ctx.data?.learning?.overall?.samples);
  const dir={up:"상승",down:"하락",flat:"횡보"};
- return `<section class="nr-panel fx-audit-table"><div class="nr-head"><h3>최근 실제 관측 검증</h3><span class="nr-sub">발행 시점 검증 표본 · ${rows.length}건 표시</span></div><div class="fx-table-clip"><table class="fx-audit"><thead><tr><th>검증 시각</th><th>종목</th><th>예측</th><th>실제</th><th>결과</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${fxEscape(h.T?.(r.evaluated_at)||"시각 미확인")}</td><td>${fxEscape(r.symbol||"—")}</td><td>${fxEscape(dir[r.predicted]||r.predicted||"—")}</td><td>${fxEscape(dir[r.actual]||r.actual||"—")}</td><td><span class="fx-mark ${r.correct===true?'yes':'no'}">${r.correct===true?'일치':'불일치'}</span></td></tr>`).join(""):'<tr><td colspan="5">발행·평가 이력이 확인된 결과가 없습니다.</td></tr>'}</tbody></table></div><p class="fx-table-hint">실제 체결·수익 데이터가 아닌 가격 관측 기반의 사후 평가입니다.</p></section>`;
+ return `<section class="nr-panel fx-audit-table"><div class="nr-head"><h3>최근 관측 기록</h3><span class="nr-sub">관측 ${eligible.length}건 중 최근 ${visible.length}건</span></div>
+ <div class="fx-table-clip"><table class="fx-audit"><thead><tr><th>관측 시각</th><th>종목</th><th>예측</th><th>실제</th><th>일치 여부</th></tr></thead><tbody>
+ ${visible.length?visible.map(r=>`<tr><td>${fxEscape(h.T?.(r.evaluated_at)||"시각 미확인")}</td><td>${fxEscape(r.symbol||"—")}</td><td>${fxEscape(dir[r.predicted]||r.predicted||"—")}</td><td>${fxEscape(dir[r.actual]||r.actual||"—")}</td><td><span class="fx-mark ${r.correct===true?'yes':'no'}">${r.correct===true?'일치':'불일치'}</span></td></tr>`).join(""):'<tr><td colspan="5">발행·관측이 확인된 기록이 없습니다.</td></tr>'}
+ </tbody></table></div>
+ <p class="fx-table-hint">이 표는 원시 관측 기록이고, 위의 정확도는 ${independent===null?"별도 정책으로 선별된":"중복·겹침 등을 제외한 독립 평가 "+fxNum(independent,0)+"건"} 기준입니다. 두 모수는 다를 수 있습니다. 실제 체결·수익 기록이 아닙니다.</p></section>`;
 }
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
