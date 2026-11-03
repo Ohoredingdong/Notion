@@ -39,7 +39,7 @@ body[data-home="fridge"] .live-message:not(:empty):before{content:'✓';display:
 body .fridge-interiors .item.is-new{outline:calc(3px / var(--scene-scale,1)) solid #efbb53;outline-offset:calc(2px / var(--scene-scale,1));border-radius:9px;filter:drop-shadow(0 0 7px #ffe5a0)}
 body .fridge-interiors .item.is-new:after{content:'';position:absolute;right:calc(-14px / var(--scene-scale,1));top:calc(-14px / var(--scene-scale,1));width:calc(24px / var(--scene-scale,1));height:calc(24px / var(--scene-scale,1));border:0;border-radius:0;box-shadow:none;background:linear-gradient(#e6ac3e,#e6ac3e) 50% 0/calc(2px / var(--scene-scale,1)) calc(9px / var(--scene-scale,1)) no-repeat,linear-gradient(#e6ac3e,#e6ac3e) 100% 55%/calc(9px / var(--scene-scale,1)) calc(2px / var(--scene-scale,1)) no-repeat;transform:rotate(25deg);pointer-events:none}
 body #homeFridgeProgress{background:#fffdf9}
-body[data-home="fridge"]:has(#homeFridgeProgress:not([hidden])) #homeWorktop{display:none}
+body[data-home="fridge"]:has(#homeFridgeProgress:not([hidden])):not(:has(.door.is-open)) #homeWorktop{display:none}
 body[data-mode="widget"] .tray{width:min(720px,100%);height:min(100svh,calc(100vw * 1.5));max-height:900px;margin:auto;border:1px solid #e7ded2;border-radius:12px;padding:10px 16px 16px}
 body[data-mode="widget"] .tray[data-workflow-route="item"]{inset:auto 0 calc(max(0px,(100svh - min(100svh,100vw * 1.12)) / 2));height:auto;max-height:min(86svh,calc(100vw * 1.03));margin:0 auto;border-radius:18px 18px 10px 10px}
 body .decor-heading{display:flex;justify-content:flex-start;gap:8px;height:42px;min-height:42px;padding:0 9px}
