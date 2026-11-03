@@ -9,6 +9,7 @@ on:
       - 'assets/stock-radar-flow-v2.js'
       - 'scripts/test_stock_pending_signal_visibility.py'
       - 'scripts/test_stock_pending_signal_visibility.cjs'
+      - 'scripts/test_stock_pending_signal_real_snapshot.py'
       - '.github/workflows/research-stock-timing-pending-display.yml'
   workflow_dispatch:
 permissions:
@@ -32,6 +33,17 @@ jobs:
           node scripts/test_stock_timing_stale_ai_filter.cjs
           node scripts/test_stock_forecast_ui.cjs
           node --check assets/stock-radar-flow-v2.js
+      - name: Validate six missing KR pending signals against pinned real main snapshot
+        run: |
+          git fetch --depth=1 origin 910f8dfb0503c59cc989c67f31cdc7da56ee7762
+          PYTHONPATH=scripts python scripts/test_stock_pending_signal_real_snapshot.py
+      - name: Existing main radar end-to-end Chromium regression
+        if: success()
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+          python -m http.server 8765 >/tmp/pending-radar-http.log 2>&1 &
+          python scripts/test_stock_radar_flow_browser.py
       - name: Independent unchanged frozen-data arithmetic and timing guard
         if: always()
         run: |
