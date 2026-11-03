@@ -246,21 +246,17 @@ function fxV5StockNews(ctx,c){
 }
 
 function fxV5Checks(c,ctx){
- const a=c.assessment||{},checks=Array.isArray(a.checks)?a.checks:[],past=c.extension_audit||{},period=c.history?.filing_period;
- const checkPairs=checks.slice(0,4).map(item=>({label:String(item.label||"검증 항목"),pass:item.ok===true,known:item.ok===true||item.ok===false}));
- const fallback=[
-  {label:"실적·회계기간 공식 원문 확인",pass:false,known:false},
-  {label:"현금흐름 및 부채 구조 검토",pass:false,known:false},
-  {label:"EPS·실적 수정사항 검토",pass:false,known:false},
-  {label:"가격·거래량 조건 점검",pass:false,known:false}
- ];
- const items=checkPairs.length?checkPairs:fallback;
- const properAudit=period&&past.period===period&&past.status==="compared";
- const passed=items.filter(x=>x.pass).length;
+ const assessment=c.assessment||{},checks=Array.isArray(assessment.checks)?assessment.checks:[],audit=c.extension_audit||{};
+ const period=c.history?.filing_period,listed=checks.slice(0,4).map(x=>({label:String(x.label||"사전 점검"),pass:x.ok===true}));
+ const fallback=[{label:"최신 공시·회계기간 공식 확인",pass:false},{label:"FCF·부채 항목 원문 대조",pass:false},{label:"EPS 추정치·가격 시점 검토",pass:false},{label:"거래량·가격 위험 점검",pass:false}];
+ const items=listed.length?listed:fallback,passed=items.filter(x=>x.pass).length;
+ const summary=ctx.data?.caseSummary;
+ const validSummary=summary?.source_generated_at===ctx.data?.raw?.generated_at&&fxN(summary.counts?.attractive)!==null;
+ const positive=validSummary&&Array.isArray(summary.positive_companies)&&summary.positive_companies.some(x=>String(x.symbol||x)===String(c.symbol));
+ const sourceAudit=!!period&&audit.period===period&&audit.status==="compared";
  return `<div class="fx-v5-checklist">${items.map(x=>`<div class="fx-v5-checkrow"><span class="${x.pass?'yes':'todo'}">${x.pass?'✓':'!'}</span><span>${fxEscape(x.label)}</span></div>`).join("")}</div>
- <div class="fx-v5-footnote">${passed}/${items.length}개 입력 상태 통과 · ${properAudit?"공식 대조 항목 별도 확인":"공식 검증 별도 대조 필요"}</div>`;
+ <div class="fx-v5-footnote">${passed}/${items.length}개 내부 체크 · ${validSummary?(positive?"엄격 실사 후보 별도 확인":'전체 엄격 실사 승인 '+fxNum(summary.counts.attractive,0)+'건'):"엄격 실사 최신 검증 필요"} · ${sourceAudit?"일부 회계기간 대조":"원문 대조 별도"} · 매수 승인 아님</div>`;
 }
-
 function fxV5Portfolio(ctx){
  const holdings=(ctx.paper||[]).filter(x=>fxN(x.qty)!==null&&x.qty>0&&fxN(x.cost)!==null);
  if(!holdings.length)return `<div class="fx-v5-noholding"><b>모의 보유종목 없음</b><span>포트폴리오에서 수기 등록할 수 있습니다.</span></div>
@@ -273,7 +269,7 @@ function fxV5Portfolio(ctx){
 }
 
 function fxV5Side(ctx,c){
- const h=fxHelpers(),overall=ctx.data?.learning?.overall||{},acc=fxN(overall.accuracy),sample=fxN(overall.samples),correct=fxN(overall.correct);
+ const h=fxHelpers(),quality=fxModelQuality(ctx),overall=ctx.data?.learning?.overall||{},acc=fxN(overall.accuracy),sample=fxN(overall.samples),correct=fxN(overall.correct);
  return `<aside class="fx-v5-aside" id="fx-risk-slot">
  <section class="fx-panel fx-v5-sidecard fx-v5-sidecheck">
  <div class="fx-v5-sidehead"><h3>${h.I?.('check')||"☑"} 투자 체크리스트</h3><button data-nr-detail="${fxEscape(c?.symbol||'')}" type="button">자세히 ›</button></div>
@@ -286,7 +282,7 @@ function fxV5Side(ctx,c){
  <section class="fx-panel fx-v5-sidecard fx-v5-sidevalidation">
  <div class="fx-v5-sidehead"><h3>${h.I?.('chart')||"▣"} AI 예측 사후검증</h3><button data-nr-screen="performance" type="button">검증 ›</button></div>
  <div class="fx-v5-accuracy"><div class="fx-v5-ring" style="--percent:${acc===null?0:Math.max(0,Math.min(100,acc*100))}%"><div>${acc===null?"—":fxNum(acc*100,1)+"%"}</div></div>
- <div class="fx-v5-scorebreak"><small>독립 평가 기준 · 연구용</small><strong>${correct===null||sample===null?"평가 전":fxNum(correct,0)+" / "+fxNum(sample,0)+"건"}</strong><span>실전 매매 수익성 미입증</span></div></div>
+ <div class="fx-v5-scorebreak"><small>독립 평가 기준 · 연구용</small><strong>${correct===null||sample===null?"평가 전":fxNum(correct,0)+" / "+fxNum(sample,0)+"건"}</strong><span>${quality.days===null?"검증 기간 미확인":`평가 ${fxNum(quality.days,0)}/${fxNum(quality.minDays,0)}일 · 상승 포착 ${quality.up===null?"—":fxNum(quality.up*100,1)+"%"}`} · 실전 미입증</span></div></div>
  </section>
  <section class="fx-panel fx-v5-sidecard fx-v5-sideportfolio">
  <div class="fx-v5-sidehead"><h3>${h.I?.('star')||"☆"} 내 모의 포트폴리오</h3><button data-nr-screen="portfolio" type="button">전체 보기 ›</button></div>
@@ -315,7 +311,7 @@ function fxV5Cockpit(ctx){
  </div>
  <div class="fx-v5-toptrio">
    <div class="fx-v5-chart"><div class="fx-v5-subhead"><h3>${h.I?.('chart')||"↗"} 실제 주가 흐름</h3><div class="fx-periods">${[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]].map(([key,label])=>`<button type="button" data-fx-period="${key}" class="${fxLocal.period===key?'active':''}">${label}</button>`).join("")}</div></div><div class="fx-v5-chartarea">${fxChart(c)}</div></div>
-   <div class="fx-v5-ai"><div class="fx-v5-subhead"><h3>AI 방향 분석</h3><span class="fx-v5-ai-tag">연구용</span></div>${fxBars(c,ctx)}<div class="fx-v5-ai-disclaimer">모델의 방향 분류이며 매수 성공률이 아닙니다.</div></div>
+   <div class="fx-v5-ai"><div class="fx-v5-subhead"><h3>AI 방향 분석</h3><span class="fx-v5-ai-tag">연구용</span></div>${fxBars(c,ctx)}<div class="fx-v5-ai-disclaimer">${fxEscape(fxModelQuality(ctx).status)} · 모델 분류≠매수 성공률</div></div>
    <div class="fx-v5-targets"><div class="fx-v5-subhead"><h3>가격 시나리오</h3><button type="button" data-nr-screen="scenario">비교 ›</button></div>
     <div class="fx-v5-targetlist">${inputs.map(([title,n,cls])=>`<div class="fx-v5-targetrow ${cls}"><small>${title}</small><strong>${fxMoney(n,c.currency)}</strong><span>${fxN(n)===null||fxN(c.price)===null||!c.price?"목표 없음":fxPct((n/c.price-1)*100)}</span></div>`).join("")}</div>
     <p>${fxEscape(extras)} · 실현확률 미산출</p>
@@ -555,12 +551,12 @@ function fxScenario(ctx){
  </div>`;
 }
 function fxPerformance(ctx){
- const h=fxHelpers(),o=ctx.data?.learning?.overall||{},rec=o.recall||{};
+ const h=fxHelpers(),o=ctx.data?.learning?.overall||{},rec=o.recall||{},quality=fxModelQuality(ctx);
  const facts=[["사후 방향 일치율",fxN(o.accuracy)===null?"—":fxNum(o.accuracy*100,1)+"%"],["독립 평가 일치 / 표본",fxNum(o.correct,0)+" / "+fxNum(o.samples,0)],["실제 상승 포착률",fxN(rec.up)===null?"—":fxNum(rec.up*100,1)+"%"],["실제 하락 포착률",fxN(rec.down)===null?"—":fxNum(rec.down*100,1)+"%"]];
  const utility=ctx.data?.autopilot?.timing_utility?.status, proven=utility==="proven";
  return `<div class="fx-intro"><div><h2>AI 예측 검증</h2><p>실제 결과와 비교하되, 적중률과 매매 수익률을 구분합니다.</p></div><span class="fx-stamp">자료 ${fxEscape(h.T?.(ctx.data?.learning?.generated_at)||"확인 전")}</span></div>
  <div class="nr-performance-grid">${facts.map(([label,n])=>`<section class="nr-panel"><small>${label}</small><strong>${n}</strong></section>`).join("")}</div>
- <div class="fx-validation-grid">${fxOutcomes(ctx)}<section class="nr-panel fx-validation-aside">${h.qualityHTML?.()||""}<div class="nr-validation-note"><b>검증 판정</b><p>${proven?"검증된 범위 내 유용성 추가 확인 필요":"실전 매매 타이밍의 유용성은 아직 입증되지 않았습니다."}</p><p>확률은 연구 모델 분류값이며 미래 매수 성공률이 아닙니다.</p></div><button data-nr-forecast class="nr-action">전체 예측 성적표</button></section></div>${fxSteps(ctx)}`;
+ <div class="fx-validation-grid">${fxOutcomes(ctx)}<section class="nr-panel fx-validation-aside">${h.qualityHTML?.()||""}<div class="nr-validation-note"><b>검증 판정: ${fxEscape(quality.status)}</b><p>독립 평가 ${quality.n===null?"—":fxNum(quality.n,0)}/${fxNum(quality.minN,0)}건 · ${quality.days===null?"—":fxNum(quality.days,0)}/${fxNum(quality.minDays,0)}일 · 상승 포착 ${quality.up===null?"—":fxNum(quality.up*100,1)+"%"}</p><p>Brier 개선 ${quality.brier===null?"—":fxNum(quality.brier,4)} / 최소 ${fxNum(quality.threshold,3)} · ${quality.hasBrier?"기준 충족":"기준 미달"} · 매매 타이밍·수익성 미입증</p><p>AI 분류 확률은 향후 매수 성공률이 아니며, 평가 표본 수를 늘려 독립적으로 검증해야 합니다.</p></div><button data-nr-forecast class="nr-action">전체 예측 성적표</button></section></div>${fxSteps(ctx)}`;
 }
 function fxOutcomes(ctx){
  const h=fxHelpers(),input=Array.isArray(ctx.data?.outcomes)?ctx.data.outcomes:[],seen=new Set();
