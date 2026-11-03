@@ -51,7 +51,7 @@ function fxModelQuality(ctx){
 function fxPrediction(c,ctx){
  const r=fxRecord(c,ctx),p=r?.probabilities||{};
  const choices=["up","flat","down"],numbers=choices.map(k=>fxN(p[k]));
- const validDistribution=numbers.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(numbers.reduce((a,b)=>a+b,0)-1)<=0.025;
+ const validDistribution=numbers.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(numbers.reduce((a,b)=>a+b,0)-1)<=1e-6;
  const knownDirection=choices.includes(r?.direction);
  const val=validDistribution&&knownDirection?fxN(p[r.direction]):null;
  const active=r?.status==="research_prediction"&&val!==null;
