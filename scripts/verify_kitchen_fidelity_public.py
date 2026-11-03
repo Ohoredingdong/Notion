@@ -1,9 +1,9 @@
 """Small actual-HTTPS visual verifier for the approved kitchen composition; no OCR run."""
-import argparse,hashlib,html,importlib.util,json,os,re,shutil,subprocess,tempfile,traceback
+import argparse,copy,hashlib,html,importlib.util,json,os,re,shutil,subprocess,tempfile,traceback
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-OUT=Path('/tmp/kitchen-fidelity-public')
+OUT=Path('/tmp/kitchen-storyboard-public')
 RESULT_BRANCH='preview/kitchen-fidelity-validation-20261103'
 PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900)]
 DOORS=('freshLeft','freshRight','frozenLeft','frozenRight')
@@ -21,7 +21,7 @@ def contract(native):
     scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',original)
     styles=re.findall(r'<style(?:\s[^>]*)?>([\s\S]*?)</style>',original)
     avifs=sorted(set(re.findall(r'data:image/avif;base64,[A-Za-z0-9+/=]+',original)))
-    assert len(scripts)==11 and len(styles)==6 and len(avifs)==2,(len(scripts),len(styles),len(avifs))
+    assert len(scripts)==11 and len(styles)==10 and len(avifs)==4,(len(scripts),len(styles),len(avifs))
     return {'decoded_sha256':hashlib.sha256(decoded).hexdigest(),'scripts':scripts,'styles':styles,'avifs':avifs}
 
 def touch(page,frame,node,is_touch):
@@ -45,7 +45,7 @@ def screenshot(page,label,suffix):
 
 def visual_case(page,frame,label,is_touch,data):
     images=frame.evaluate('async urls=>Promise.all(urls.map(async src=>{const i=new Image();i.src=src;await i.decode();return {width:i.naturalWidth,height:i.naturalHeight};}))',data['avifs'])
-    assert sorted((i['width'],i['height']) for i in images)==[(1024,1536),(1402,1122)],images
+    assert sorted((i['width'],i['height']) for i in images)==[(396,846),(1024,1536),(1402,1122),(1536,1024)],images
     frame.evaluate('async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}')
     before=frame.evaluate('KitchenJournal.getEnvelope()')
     assert frame.evaluate('KitchenJournal.storageKey')=='miniature-kitchen-preview-v1' and before['version']==1
@@ -65,7 +65,13 @@ def visual_case(page,frame,label,is_touch,data):
     fits=frame.locator('#todayKitchen').evaluate('e=>e.scrollHeight<=e.clientHeight+1')
     if fits:assert all(row['fullyVisible'] for row in card_visibility),card_visibility
     no_page_scroll(frame);screenshot(page,label,'recipes')
-    plan=frame.locator('#homeRecommendation .home-featured-recipe [data-wf="planRecipe"]');target(plan);touch(page,frame,plan,is_touch)
+    recipe=frame.locator('#homeRecommendation .home-featured-recipe [data-wf="recipe"]').first;recipe_id=recipe.get_attribute('data-arg');touch(page,frame,recipe,is_touch)
+    discovered=frame.evaluate('KitchenJournal.getEnvelope()');expected=copy.deepcopy(before)
+    if recipe_id not in expected['play']['discovered']:expected['play']['discovered'].append(recipe_id)
+    assert discovered==expected,'Opening a recipe may only retain its existing discovered-ID behavior'
+    before=discovered
+    expect(frame.locator('#tray [data-wf="planRecipe"]')).to_be_visible()
+    plan=frame.locator('#tray [data-wf="planRecipe"]');target(plan);touch(page,frame,plan,is_touch)
     expect(frame.locator('#tray [data-wf-form="plan"]')).to_be_visible()
     assert frame.evaluate('KitchenJournal.getEnvelope()')==before
     touch(page,frame,frame.locator('#closeTray'),is_touch);expect(frame.locator('#tray')).not_to_be_visible()
@@ -114,7 +120,7 @@ def visual_case(page,frame,label,is_touch,data):
     touch(page,frame,frame.locator('#closeTray'),is_touch);expect(frame.locator('#tray')).not_to_be_visible()
     assert frame.evaluate('KitchenJournal.getEnvelope()')==before
 
-    return {'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'hero_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'actual_cancel_and_all_navigation_preserve_exact_envelope':True}
+    return {'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()
@@ -162,7 +168,7 @@ def main():
                         assert iframe.get_attribute('srcdoc').encode()==native
                         assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['scripts']
                         assert frame.locator('style').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['styles']
-                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_6_styles_exact':True})
+                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_10_styles_exact':True})
                         case['visual']=visual_case(page,frame,label,name!='desktop',data);assert not errors,errors;case['passed']=True
                     except Exception as error:
                         case.update({'error':str(error),'trace':traceback.format_exc()});screenshot(page,label,'failure')

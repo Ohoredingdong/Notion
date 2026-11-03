@@ -381,14 +381,14 @@ def main():
 
             old_prop = next(item for item in after['world']['items'] if item['id'] == 'cup')
             home_prop = frame.locator('#homeSceneDecor [data-home-prop="cup"]')
-            old_home_left = home_prop.evaluate('e=>e.style.left')
+            old_home_left = home_prop.evaluate('e=>e.style.getPropertyValue("--prop-x")')
             old_home_top = home_prop.evaluate('e=>e.style.top')
             preview_prop = drag_prop(page, frame)
             theme_preview()
             assert (old_prop['x'],old_prop['y']) != (preview_prop['x'],preview_prop['y'])
             assert frame.evaluate('KitchenJournal.getEnvelope()') == after
             assert frame.evaluate('localStorage.getItem(KitchenJournal.storageKey)') == stored_before
-            assert home_prop.evaluate('e=>e.style.left') == old_home_left
+            assert home_prop.evaluate('e=>e.style.getPropertyValue("--prop-x")') == old_home_left
             assert home_prop.evaluate('e=>e.style.top') == old_home_top
             expect(frame.locator('.decor-footer [data-decor-cancel]')).to_be_visible()
             frame.locator('.decor-footer [data-decor-cancel]').click()
@@ -413,12 +413,16 @@ def main():
             home_prop = frame.locator('#homeSceneDecor [data-home-prop="cup"]')
             expect(home_prop.locator('svg.decor-art')).to_be_visible()
             assert home_prop.evaluate('e=>e.checkVisibility({opacityProperty:true,visibilityProperty:true})'), 'Applied scene artwork cannot be hidden by CSS opacity or visibility'
-            expected_left = max(12, min(88, new_prop['x'] * 100))
-            assert abs(float(home_prop.evaluate('e=>e.style.left').rstrip('%'))-expected_left) < .001
+            expected_left = new_prop['x'] * 100
+            assert abs(float(home_prop.evaluate('e=>e.style.getPropertyValue("--prop-x")').rstrip('%'))-expected_left) < .001
             expected_top = max(0, min(100, new_prop['y'] * 100))
             assert abs(float(home_prop.evaluate('e=>e.style.top').rstrip('%'))-expected_top) < .001
-            assert home_prop.evaluate('e=>e.style.left') != old_home_left
+            assert home_prop.evaluate('e=>e.style.getPropertyValue("--prop-x")') != old_home_left
             assert home_prop.evaluate('e=>e.style.top') != old_home_top
+            rendered_anchor = home_prop.evaluate('e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return {x:r.x+r.width/2,y:r.bottom,parentLeft:p.left,parentTop:p.top,parentWidth:p.width,parentHeight:p.height,halfWidth:r.width/2};}')
+            expected_x = rendered_anchor['parentLeft'] + max(rendered_anchor['halfWidth'], min(rendered_anchor['parentWidth']-rendered_anchor['halfWidth'], new_prop['x']*rendered_anchor['parentWidth']))
+            expected_y = rendered_anchor['parentTop'] + max(0,min(1,new_prop['y']))*rendered_anchor['parentHeight']
+            assert abs(rendered_anchor['x']-expected_x) <= 1 and abs(rendered_anchor['y']-expected_y) <= 1, rendered_anchor
             assert home_prop.locator('image').get_attribute('href').startswith('data:image/'), 'Home must render the real committed prop artwork'
             choose(frame, 'kitchen', 'decor')
             assert frame.evaluate('KitchenJournal.getEnvelope()') == moved
@@ -620,7 +624,8 @@ def main():
             latest_food = frame.evaluate('KitchenJournal.getEnvelope()')
             assert next(item for item in latest_food['world']['items'] if item['id']=='egg')['quantity']=='7개'
             assert frame.evaluate('MiniKitchen.getSnapshot().items.find(i=>i.id==="cup")') == draft_prop
-            frame.locator('#homeDecor [data-workflow="rewards"]').click()
+            frame.locator('#homeDecor .decor-actions').get_by_role('button',name='배경',exact=True).click()
+            frame.locator('#tray [data-wf="rewards"]').click()
             frame.locator('#tray [data-reward="tile"]').click()
             latest = frame.evaluate('KitchenJournal.getEnvelope()')
             assert latest['play']['owned']==['tile']

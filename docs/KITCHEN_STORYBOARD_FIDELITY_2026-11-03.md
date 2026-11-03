@@ -47,20 +47,30 @@
 
 AVIF 이미지 표시는 Chrome85+·Firefox93+·Safari16+ 등 해당 플랫폼에서 AVIF 디코딩을 지원하는 브라우저가 필요하다. Safari의 버전·운영체제 조합별 지원과 실제 기기 동작은 별도 확인 대상이다. 원본 PNG를 보존하지만 이를 오래된 브라우저의 자동 런타임 fallback이라고 주장하지 않는다. 이번 실제 확인 범위는 아래에 기록할 브라우저로 한정하며 실기기 Safari·Notion 호스트 검증으로 확대하지 않는다. 이 호환성 사항은 구현 기록에 두며 제품의 기본 화면에 기술 안내를 반복하지 않는다.
 
-## 최종 검증 — 고정 후보 확인 대기
+## 최종 검증
 
-수정 전 기준은 이전 위젯 전송물의 같은 날짜·원본 envelope·문 상태로 보관했다. 준비한 비교 규격은 기본10개, 명시적 입력4개, 상황8개다. 이 규격과 중간 `candidate-visual1`의 실행은 새 앞면을 포함한 최종 후보의 통과 수가 아니다. 최종 소스·전송물4개를 고정한 뒤 루트가 아래 표를 실제 결과로 채운다.
+수정 전 기준은 이전 위젯 전송물의 같은 날짜·원본 envelope·문 상태로 보관했다. 준비한 비교 규격은 기본10개, 명시적 입력4개, 상황8개다. 이 규격과 중간 `candidate-visual1`의 실행은 새 앞면을 포함한 최종 후보의 통과 수가 아니다. 최종 UI 소스는 `e1472f14904e33325049afbfb795ed773eb0c77c`이며 이후 증거 커밋은 생성 HTML을 바꾸지 않는다. [통합 요약](kitchen-fidelity/summary.json)에 같은 고정 전송물의 결과를 기록했다.
 
 | 검사 | 확인 규격 | 최종 상태 |
 | --- | --- | --- |
-| 소스·생성물 고정 | 최종 후보의 source commit, 앱/위젯·mobile wrapper4개 크기/SHA, 복원 원문, 사용 이미지 해시 | **대기** |
-| 기본 동일 조건 전후10개 | 앱·위젯×320×568·390×560·390×844·649×600·1120×1000. 2026-11-03 Asia/Seoul·같은 원본 envelope·네 문 열림·선택 없음 | **대기** |
-| 입력된 기록4개 | 앱·위젯×390×560·390×844. 명시적인 합성 fixture의 탄100/단35/지20g·720kcal·목표230/70/60g을 표시하고 envelope 그대로 보존 | **대기** |
-| 상황 비교8개 | 앱·위젯×닫힌 냉장고·선택 재료·레시피·꾸미기, 390×844·같은 날짜/진입 상태 | **대기** |
-| 승인 이미지와 실제 구도 | A1의 넓은 본체·요약/추가 버튼·선반 가독성, B1의 사진+두 카드, D1/D5의 실제 가구/앞면/소품·도구·적용/취소. 전체 뷰포트와 실제 컴포넌트를 각각 비교 | **대기** |
-| 기능·데이터·조작 | 재료/문/라벨의 실제 hit target·차폐, 목록/초안 복귀, 추가 입력 오류, 계획/기록/취소, 실제 지출, 편집/보상·데이터 보존과 키보드 초점 | **대기** |
-| 코덱·포장·전송 | 최종 새 앞면까지 포함한 해상도/품질 근거·각1MiB·gzip 복원·일반/opaque 실행과 실제 그림 로드 | **대기** |
-| 공개 HTTPS·이미지 표시 | 같은 고정 소스의 HTTP·raw/decoded SHA·실제 srcdoc/모듈/스타일·일반 크기/터치와 실제 AVIF/WebP 표시. 이번 공개 시각 검사는 OCR 엔진을 실행하지 않으며 제어 응답 검수 UI와 실제 문자 인식을 구분 | **대기** |
-| 링크·브랜치·PR | 최종 확인한 앱/위젯·화면 이미지 URL, 작업 브랜치와 PR 생성/외부 차단 여부 | **대기** |
+| 소스·생성물 고정 | 최종 후보의 source commit, 앱/위젯·mobile wrapper4개 크기/SHA, 복원 원문, 사용 이미지 해시 | 고정 UI 위 소스, [4파일·원문 해시](kitchen-fidelity/generated-files.json). native 앱1,008,259B/위젯1,008,265B, mobile1,009,606B/1,009,618B로 모두1MiB 이내. |
+| 기본 동일 조건 전후10개 | 앱·위젯×320×568·390×560·390×844·649×600·1120×1000. 2026-11-03 Asia/Seoul·같은 원본 envelope·네 문 열림·선택 없음 | **10/10**. 원본 envelope 완전 일치·페이지 스크롤/가로 넘침/냉장고-내비게이션 겹침0. [전](kitchen-fidelity/before-manifest.json)/[후](kitchen-fidelity/after-manifest.json). |
+| 입력된 기록4개 | 앱·위젯×390×560·390×844. 명시적인 합성 fixture의 탄100/단35/지20g·720kcal·목표230/70/60g을 표시하고 envelope 그대로 보존 | **4/4** 같은 fixture 완전 일치. [입력 비교](kitchen-fidelity/entered-manifest.json). 예시 기록을 원래 기본값으로 넣지 않았다. |
+| 상황 비교8개 | 앱·위젯×닫힌 냉장고·선택 재료·레시피·꾸미기, 390×844·같은 날짜/진입 상태 | **8/8**, 각 진입 전후 envelope 완전 일치, JS0. [상황](kitchen-fidelity/contexts-manifest.json). |
+| 승인 이미지와 실제 구도 | A1의 넓은 본체·요약/추가 버튼·선반 가독성, B1의 사진+두 카드, D1/D5의 실제 가구/앞면/소품·도구·적용/취소. 전체 뷰포트와 실제 컴포넌트를 각각 비교 | A1/B1/D5의 실제 PNG와 원본 시안을 대조했다. 넓은 본체·바로 이어지는 요약·사진/두 카드·가구/평평한 앞면·선택 도구를 확인했다. 픽셀 동일 아트나 사용자 최종 승인으로 주장하지 않는다. [검토 요약](kitchen-fidelity/qa-summary.json). |
+| 기능·데이터·조작 | 재료/문/라벨의 실제 hit target·차폐, 목록/초안 복귀, 추가 입력 오류, 계획/기록/취소, 실제 지출, 편집/보상·데이터 보존과 키보드 초점 | **91/91·JS0**: [탭19](kitchen-fidelity/tabs-results.json), [흐름22](kitchen-fidelity/flow-results.json), [가독성23](kitchen-fidelity/readability-results.json), [회귀27](kitchen-fidelity/regression-results.json). 추가 [장면4](kitchen-fidelity/scene-results.json)·[앞면/알림3](kitchen-fidelity/front-toast-results.json)·[실제 재료 터치](kitchen-fidelity/food-hit-results.json)·[PC 소품 그림6](kitchen-fidelity/prop-projection-results.json) 통과. |
+| 코덱·포장·전송 | 최종 새 앞면까지 포함한 해상도/품질 근거·각1MiB·gzip 복원·일반/opaque 실행과 실제 그림 로드 | 전송 단위검사 **12/12**. [자산 품질·정확한 앞면 알파·사용처/해시](kitchen-fidelity/codec-report.json). 최종 공개 브라우저에서도 실제 raw/native/srcdoc·복원 SHA와11모듈/6스타일이 정확히 일치하고 AVIF2개가 원본 해상도로 디코딩됐다. |
+| 공개 HTTPS·이미지 표시 | 같은 고정 소스의 HTTP·raw/decoded SHA·실제 srcdoc/모듈/스타일·일반 크기/터치와 실제 AVIF/WebP 표시. 이번 공개 시각 검사는 OCR 엔진을 실행하지 않으며 제어 응답 검수 UI와 실제 문자 인식을 구분 | **6/6·JS0**, 앱/위젯×649×900·390×844·320×660. [실제 공개 결과](kitchen-fidelity/public-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41485292680). 한 번의 새 실행이며 OCR은 실행하지 않았다. 현재 사진 검수 UI 검증과 앞선 원래CDN 실제 인식 결과를 혼동하지 않는다. |
+| 링크·브랜치·PR | 최종 확인한 앱/위젯·화면 이미지 URL, 작업 브랜치와 PR 생성/외부 차단 여부 | `fix/kitchen-storyboard-fidelity`에 push. base `feat/kitchen-storyboard-widget`로 draft PR 생성 시도는 GitHub GraphQL API403 Forbidden으로 실패했다. [PR 비교/작성](https://github.com/Ohoredingdong/Notion/compare/feat/kitchen-storyboard-widget...fix/kitchen-storyboard-fidelity?expand=1). main/Pages 설정은 바꾸지 않았다. |
 
 기능 검사 통과와 사용자 디자인 승인은 별개다. 최종 검토에서는 이전 결과와 나란히 보아 시안의 외형에 가까워졌는지 먼저 판정하고, 기능·저장·공개 실행 결과를 그 근거와 함께 제시한다.
+
+## 실제 수정 화면과 링크
+
+[위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/e1472f14904e33325049afbfb795ed773eb0c77c/previews/mobile/widget.html) · [앱 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/e1472f14904e33325049afbfb795ed773eb0c77c/previews/mobile/app.html). 공개 프레임은 임시 세션이며 기록은 화면의 백업 기능으로 보관한다.
+
+[같은 예시 기록의 변경 전](kitchen-fidelity/widget-before-entered.png) / [변경 후 실제 컴포넌트](kitchen-fidelity/widget-home-entered.png). 아래 숫자는 시각 비교용 합성 입력이며 소스 기본값이나 실제 사용자 기록이 아니다.
+
+![수정한 위젯 실제 화면](kitchen-fidelity/widget-home-entered.png)
+
+[레시피](kitchen-fidelity/recipes.png) · [닫힌 문](kitchen-fidelity/closed.png) · [꾸미기](kitchen-fidelity/decor.png) · [320px](kitchen-fidelity/widget-320.png) · [PC](kitchen-fidelity/app-wide.png).
