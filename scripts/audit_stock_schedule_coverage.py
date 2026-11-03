@@ -72,11 +72,14 @@ def check_workflow(source):
 
 def audit(runs, start, as_of, *, complete, grace=30):
     due_slots = expected(start, as_of, grace)
-    all_visible = sorted(
+    all_visible = [
         (utc(r["created_at"]), r) for r in runs
         if r.get("name") == NAME and r.get("event") == "schedule"
         and utc(r["created_at"]) <= as_of
-    )
+    ]
+    # GitHub timestamps have second precision; equal instants must not cause
+    # Python to compare run dictionaries while sorting.
+    all_visible.sort(key=lambda pair: pair[0])
     begun = [(t, r) for t, r in all_visible if start <= t <= as_of]
     if not complete:
         status = "history_incomplete"
