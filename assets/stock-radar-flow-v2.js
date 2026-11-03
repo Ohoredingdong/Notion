@@ -597,7 +597,7 @@ function fxEnsureSelectedVisible(c){
  if(fxLocal.filter==="star"&&!fxContext().favorites?.includes(c.symbol))fxLocal.filter="all";
  if(["up","down","flat","ai"].includes(fxLocal.filter)){
   const forecast=fxPrediction(c,fxContext());
-  if(!forecast.active||(fxLocal.filter!=="ai"&&forecast.r?.direction!==fxLocal.filter))fxLocal.filter="all";
+  if(!forecast.active||forecast.stale||forecast.unknown||(fxLocal.filter!=="ai"&&forecast.r?.direction!==fxLocal.filter))fxLocal.filter="all";
  }
 }
 function fxHandleInput(e){
