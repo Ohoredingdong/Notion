@@ -3,7 +3,7 @@ import argparse,copy,hashlib,html,importlib.util,json,os,re,shutil,subprocess,te
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-OUT=Path('/tmp/kitchen-storyboard-public')
+OUT=Path('/tmp/kitchen-ratio-public')
 RESULT_BRANCH='preview/kitchen-fidelity-validation-20261103'
 PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900)]
 DOORS=('freshLeft','freshRight','frozenLeft','frozenRight')
@@ -53,11 +53,17 @@ def visual_case(page,frame,label,is_touch,data):
     add=target(frame.locator('#homeWorktop #addFood'))
     macro=frame.locator('#dailyBalance').evaluate('e=>({height:e.getBoundingClientRect().height,values:[...e.querySelectorAll(".balance-number strong")].map(n=>({text:n.textContent,font:parseFloat(getComputedStyle(n).fontSize)})),names:[...e.querySelectorAll(".balance-name")].map(n=>n.textContent)})')
     assert len(macro['values'])==3 and all(v['font']>=16 for v in macro['values']) and macro['height']>50,macro
+    home_frame=frame.locator('.shell').evaluate('e=>{const r=e.getBoundingClientRect(),probe=document.createElement("div");probe.style.cssText="position:fixed;visibility:hidden;pointer-events:none;height:var(--fridge-frame-height);width:1px";document.body.appendChild(probe);const configuredHeight=probe.getBoundingClientRect().height;probe.remove();return {width:r.width,height:r.height,configuredHeight,viewportHeight:innerHeight};}')
+    assert abs(home_frame['height']-home_frame['configuredHeight'])<=1 and 0<home_frame['height']<=home_frame['viewportHeight']+1,home_frame
     home_scroll=no_page_scroll(frame);screenshot(page,label,'home')
 
     touch(page,frame,frame.locator('[data-home-tab="meals"]'),is_touch)
     expect(frame.locator('#homeRecommendation')).to_be_visible()
+    recipe_frame=frame.locator('.shell').evaluate('e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};}')
+    assert abs(recipe_frame['width']-home_frame['width'])<=1,(home_frame,recipe_frame)
     photos=frame.locator('#homeRecommendation .recipe-photo');expect(photos).to_have_count(3)
+    photo_fits=photos.evaluate_all('nodes=>nodes.map(n=>n.getAttribute("preserveAspectRatio"))')
+    assert all(value=='xMidYMid slice' for value in photo_fits),photo_fits
     assert all(value in data['avifs'] for value in photos.locator('image').evaluate_all('nodes=>nodes.map(n=>n.getAttribute("href"))'))
     cards=frame.locator('#homeRecommendation .home-small-recipe');expect(cards).to_have_count(2)
     card_visibility=cards.evaluate_all('nodes=>nodes.map(e=>{const r=e.getBoundingClientRect(),p=document.querySelector("#todayKitchen").getBoundingClientRect(),nav=document.querySelector(".home-shortcuts").getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height,availableTop:p.top,availableBottom:Math.min(p.bottom,nav.top),fullyVisible:r.top>=p.top-1&&r.bottom<=Math.min(p.bottom,nav.top)+1};})')
@@ -73,6 +79,9 @@ def visual_case(page,frame,label,is_touch,data):
     expect(frame.locator('#tray [data-wf="planRecipe"]')).to_be_visible()
     plan=frame.locator('#tray [data-wf="planRecipe"]');target(plan);touch(page,frame,plan,is_touch)
     expect(frame.locator('#tray [data-wf-form="plan"]')).to_be_visible()
+    plan_frame=frame.locator('#tray').evaluate('e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};}')
+    assert abs(plan_frame['width']-home_frame['width'])<=1,(home_frame,plan_frame)
+    assert abs(plan_frame['height']-recipe_frame['height'])<=1,(recipe_frame,plan_frame)
     assert frame.evaluate('KitchenJournal.getEnvelope()')==before
     touch(page,frame,frame.locator('#closeTray'),is_touch);expect(frame.locator('#tray')).not_to_be_visible()
 
@@ -139,7 +148,7 @@ def visual_case(page,frame,label,is_touch,data):
     progress=frame.locator('#homeFridgeProgress').bounding_box();assert progress and progress['height']>0
     no_page_scroll(frame);screenshot(page,label,'recorded-closed-progress')
 
-    return {'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
+    return {'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()

@@ -28,10 +28,10 @@ jobs:
       - name: Install browser driver
         run: python -m pip install 'playwright==1.56.0'
       - name: Verify six actual HTTPS visual profiles
-        run: python scripts/verify_kitchen_fidelity_public.py --source 5d1c0a8f314294ba31c23be517f477b88ed7de24 --publish-results
+        run: python scripts/verify_kitchen_fidelity_public.py --source 72f4134b133b9ab7712d4260dd2a5e731995560a --publish-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: kitchen-fidelity-public-browser
-          path: /tmp/kitchen-storyboard-public/
+          path: /tmp/kitchen-ratio-public/
           retention-days: 3

@@ -57,3 +57,28 @@ body .decor-selection-toolbar button{min-height:44px}
 @media(min-width:560px){body[data-mode="widget"][data-home="fridge"] .shell{height:min(100svh,700px)}body[data-mode] .masthead{height:36px!important;min-height:36px}body .daily-balance{padding-block:5px 10px}body .decor-heading h2{font-size:16px}}
 @media(max-width:360px){body .brand p#todayStamp{font-size:8px}body .brand>div{gap:5px}body .balance-number strong{font-size:17px}body .masthead,body .daily-balance{margin-inline:9px}body .daily-balance{width:calc(100% - 18px)}body .decor-actions button{padding-inline:6px}body #addFood{display:grid;place-items:center;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;max-height:44px;flex-shrink:0;gap:0;padding:0;font-size:0;line-height:0;border-radius:50%;white-space:nowrap}body #addFood .icon{display:block;width:22px;height:22px}}
 @media(max-width:360px){body[data-mode="widget"] .tray{width:100vw;max-width:100vw;height:100svh;max-height:100svh;margin:0 auto;border-radius:0}body[data-mode="widget"] .tray[data-workflow-route="item"]{height:auto;max-height:min(86svh,440px);margin:0 auto;border-radius:18px 18px 10px 10px}}
+/* Shared frame widths; the fridge follows the near-square reference. */
+:root{--widget-frame-width:min(100vw,720px);--widget-frame-height:min(100svh,max(568px,calc(100vw * 1.44)),700px);--sheet-gutter:16px}
+:root{--fridge-frame-height:min(100svh,max(360px,calc(min(100vw,720px) * 1.01)))}
+body[data-mode] .shell,body[data-mode][data-home="fridge"] .shell,body[data-mode]:not([data-home="fridge"]):not([data-home-page="decor"]) .shell,body[data-mode][data-home-page="decor"] .shell{width:var(--widget-frame-width);max-width:100vw;height:var(--widget-frame-height);max-height:var(--widget-frame-height);margin:auto;padding:8px 0 54px;border-radius:12px}
+body[data-mode][data-home-page="decor"] .shell{padding:0}
+body[data-mode][data-home="fridge"] .shell{height:var(--fridge-frame-height);max-height:var(--fridge-frame-height);padding-bottom:48px}
+body[data-home="fridge"] .home-shortcuts{min-height:48px;height:48px;padding-block:1px}
+body[data-home="fridge"] .home-shortcuts button{min-height:44px;padding-block:2px}
+body[data-mode] .kitchen-view{display:block!important;grid-template-columns:1fr!important}
+body[data-mode] .desktop-summary{display:none!important}
+body[data-mode] .tray:not([data-workflow-route="item"]){width:var(--widget-frame-width);max-width:var(--widget-frame-width);height:var(--widget-frame-height);max-height:var(--widget-frame-height);margin:auto;inset:0;padding:10px var(--sheet-gutter) 16px;border-radius:12px}
+body[data-mode] .tray[data-workflow-route="item"]{width:var(--widget-frame-width);max-width:var(--widget-frame-width);inset:auto 0 calc((100svh - var(--widget-frame-height)) / 2);height:auto;max-height:min(86svh,440px);margin:0 auto;padding-inline:var(--sheet-gutter)}
+body[data-mode][data-home="fridge"] .tray[data-workflow-route="item"]{bottom:calc((100svh - var(--fridge-frame-height)) / 2)}
+body[data-mode][data-home="fridge"] .masthead{width:84%;margin-inline:8%;height:28px!important;min-height:28px;padding-inline:8px}
+body[data-mode][data-home="fridge"] .header-actions button{height:28px;min-height:28px}
+body[data-mode][data-home="fridge"] .daily-balance{width:84%;margin-inline:8%;padding:2px 8px 6px}
+body[data-home="fridge"] .balance-head{margin-bottom:2px;line-height:1.25}
+body[data-home="fridge"] .balance-name{line-height:1.2;margin-bottom:1px}
+body[data-home="fridge"] .balance-number{line-height:1.2;min-height:20px}
+body[data-home="fridge"] .balance-meter{line-height:1}
+body .room .fridge-stage{bottom:35px!important}
+body[data-home="fridge"] .room .fridge-stage{left:160px!important;bottom:5px!important;width:680px!important;height:800px!important}
+body[data-home-page="decor"] .decor-fridge-backdrop{width:calc(740px * 1007 / 1300);height:740px;left:calc((1000px - 740px * 1007 / 1300) / 2)}
+body #homeGrowth{overflow:hidden}
+@media(max-width:360px){:root{--sheet-gutter:14px}body[data-mode] .tray:not([data-workflow-route="item"]){border-radius:0}}
