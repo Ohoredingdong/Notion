@@ -87,7 +87,7 @@ function fxStockPanel(ctx,expanded){
 function fxChart(c){
  const h=fxHelpers(),p=h.pointData?.([String(c.symbol)],fxLocal.period),line=p?.series?.[0],vals=line?.prices||[];
  if(vals.length<2)return '<div class="fx-chart-empty">비교 가능한 저장 종가가 없습니다. 기간을 바꾸거나 자료 상태를 확인해 주세요.</div>';
- const original=p.sets?.[0],history=original?.bars||[];
+ const original=p.sets?.[0],history=(original?.bars||[]).filter(b=>b?.origin!=="latest_research_snapshot"&&b?.not_interpolated!==true);
  const ma=n=>{
   const map=new Map(),buf=[];let total=0;
   for(const b of history){
