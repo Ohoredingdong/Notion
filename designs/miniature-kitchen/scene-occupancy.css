@@ -1,0 +1,18 @@
+/* Food belongs inside its shelf bay. Keep stored anchors and touch surfaces. */
+body .fridge-interiors .item{min-width:calc(44px / var(--scene-scale,1));min-height:calc(44px / var(--scene-scale,1));--food-width:64%;--food-height:64%;--food-base:0px}
+body .fridge-interiors .item>.food-art,body .fridge-interiors [data-zone^="frozen"] .item>.food-art{width:var(--food-width);height:var(--food-height);max-height:none;left:50%;bottom:var(--food-base);transform:translateX(-50%);filter:drop-shadow(0 2px 1px #584b3720)}
+body .fridge-interiors [data-zone="freshRight"] .item{--food-width:70%;--food-height:70%}
+body .fridge-interiors .item[data-food-name="두부"]{--food-width:70%;--food-height:74%}
+body .fridge-interiors .item[data-food-name="우유"]{--food-width:82%;--food-height:82%;--food-base:8px}
+body .fridge-interiors .item[data-food-name="대파"]{--food-width:76%;--food-height:70%;--food-base:8px}
+body .fridge-interiors .item[data-food-name="계란"]{--food-base:8px}
+body .fridge-interiors .item[data-food-name="브로콜리"]{--food-width:72%;--food-height:82%;--food-base:28px}
+body .fridge-interiors .item[data-food-name="양송이버섯"],body .fridge-interiors .item[data-food-name="김치"]{--food-base:24px}
+body .fridge-interiors .shelf-label:not(.is-selected){display:flex;align-items:center;justify-content:center;gap:calc(2px / var(--scene-scale,1));padding:calc(1px / var(--scene-scale,1)) calc(3px / var(--scene-scale,1))!important;max-width:calc(76px / var(--scene-scale,1));background:#fffdf1e8;box-shadow:none}
+body .fridge-interiors .shelf-label:not(.is-selected) b{font-size:calc(7.5px / var(--scene-scale,1));font-weight:400;line-height:1.1}
+body .fridge-interiors .shelf-label:not(.is-selected) small{display:block;font-size:calc(7px / var(--scene-scale,1));line-height:1.1}
+body .fridge-interiors .shelf-label:not(.is-selected) .label-deadline{display:none}
+body .door-storage .item>.food-art{transform:scale(.48);transform-origin:center bottom}
+/* Drawer fronts sit in front of the food, with no pointer surface of their own. */
+body[data-home="fridge"] .fridge-interiors [data-zone^="frozen"]:after{content:'';position:absolute;inset:0 4%;z-index:10000000;pointer-events:none;background:linear-gradient(to bottom,transparent 0 62%,#f8ffff18 63% 90%,#f0fafa80 95%,#899b9b55 98%,transparent 99%) left top/100% 33.333333% repeat-y}
+body .fridge-interiors [data-zone^="frozen"] .item>svg.food-art{clip-path:inset(0 0 4% round 4px)}

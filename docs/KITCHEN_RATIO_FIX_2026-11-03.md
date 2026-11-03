@@ -11,3 +11,15 @@
 앱·위젯 공유 소스와 기존 저장 키/v1·재료 좌표·기록·거래·보상을 보존한다. 새 이미지나 예시 수치를 기본 사용자 데이터에 추가하지 않았다. 원본 시안은 프레임별 크기가 다른 설계 이미지이므로, 실행 화면은 하나의 앱 프레임 안에서 원본 사진과 물체 비율을 보존하는 기준으로 검토한다.
 
 같은 예시 데이터·뷰포트의 수정 전후 이미지, 실제 요소 크기와 최종 공개 실행 증거는 `docs/kitchen-ratio/`에 기록한다. Chromium의 모바일 크기 검사이며 실기기·Safari·Notion·OCR 재실행을 뜻하지 않는다.
+
+## 실제 비교와 결과
+
+[사진·부엌 수정 전후](kitchen-ratio/ratio-before-after.png), [냉장고 수정 전후](kitchen-ratio/fridge-before-after.png)는 같은 390×560 뷰포트와 같은 예시 데이터의 실제 실행 화면이다. 외부 여백을 잘라 서로 다른 높이로 맞추거나 사진을 다시 늘린 합성 시안이 아니다.
+
+고정 캡처 `72f4134b`의 [12개 배치 검사](kitchen-ratio/ratio-results.json)에서 오류 0개다. 390px 냉장고 몸체 200.1×235.4px, 위쪽 위치 110.0px은 저장된 시안의 약 199.5×235.8px/109px과 2px 이내다. 같은 비율의 320·649px, 추가 버튼과 네 문, 사진 비율, 넓은 화면의 제목/설정을 확인했다. 이후 최종 `0eb635ee`는 임시 세션 안내가 상단 재료 목록 글씨를 가리지 않도록 위치만 추가 수정했다.
+
+최종 네 전달 파일은 각각 1MiB 미만이다. 앱 1,030,499B, 위젯 1,030,504B, 모바일 앱 1,031,846B, 모바일 위젯 1,031,857B이며 [바이트·원문 SHA](kitchen-ratio/generated-files.json)를 기록했다.
+
+최종 소스 `0eb635ee38b2a9c2819c0018a5058ba9d7688924`의 [공개 HTTPS 검사](kitchen-ratio/public-status.json)는 **6/6 통과, 런타임 오류 0개**다. 앱/위젯 각각 320·390·649px에서 실제 문/추가/꾸미기 취소, 공통 너비와 지정 높이, 늘어나지 않는 사진, 임시 안내·브랜드·재료 목록의 겹침 방지와 실제 글씨의 터치 지점을 확인했다. [실행 기록](https://github.com/Ohoredingdong/Notion/actions/runs/41587511323)의 검증 코드 `4e9d7ee387d1e6df25c59b95c1c22340fd640250`, 결과 `9b31529e9df62adfd872dcdc0007469057dd6b26`은 구현 커밋과 구분한다. 캡처 출처와 공개 검사를 한 실행으로 합쳐 표시하지 않는다.
+
+[최종 위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/0eb635ee38b2a9c2819c0018a5058ba9d7688924/previews/mobile/widget.html). 기존 작업 브랜치에만 push했고 main/Pages는 변경하지 않았다. PR 생성은 기존 GitHub GraphQL `Forbidden` 제한으로 미완료다.

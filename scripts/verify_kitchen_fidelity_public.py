@@ -3,9 +3,9 @@ import argparse,copy,hashlib,html,importlib.util,json,os,re,shutil,subprocess,te
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 
-OUT=Path('/tmp/kitchen-ratio-public')
+OUT=Path('/tmp/kitchen-scene-match-public')
 RESULT_BRANCH='preview/kitchen-fidelity-validation-20261103'
-PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900)]
+PROFILES=[('small-phone',320,660),('phone',390,844),('desktop',649,900),('user-screenshot',801,782)]
 DOORS=('freshLeft','freshRight','frozenLeft','frozenRight')
 
 def git(*args,env=None):
@@ -21,7 +21,7 @@ def contract(native):
     scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',original)
     styles=re.findall(r'<style(?:\s[^>]*)?>([\s\S]*?)</style>',original)
     avifs=sorted(set(re.findall(r'data:image/avif;base64,[A-Za-z0-9+/=]+',original)))
-    assert len(scripts)==11 and len(styles)==10 and len(avifs)==4,(len(scripts),len(styles),len(avifs))
+    assert len(scripts)==11 and len(styles)==12 and len(avifs)==4,(len(scripts),len(styles),len(avifs))
     return {'decoded_sha256':hashlib.sha256(decoded).hexdigest(),'scripts':scripts,'styles':styles,'avifs':avifs}
 
 def touch(page,frame,node,is_touch):
@@ -62,7 +62,28 @@ def visual_case(page,frame,label,is_touch,data):
     assert len(macro['values'])==3 and all(v['font']>=16 for v in macro['values']) and macro['height']>50,macro
     home_frame=frame.locator('.shell').evaluate('e=>{const r=e.getBoundingClientRect(),probe=document.createElement("div");probe.style.cssText="position:fixed;visibility:hidden;pointer-events:none;height:var(--fridge-frame-height);width:1px";document.body.appendChild(probe);const configuredHeight=probe.getBoundingClientRect().height;probe.remove();return {width:r.width,height:r.height,configuredHeight,viewportHeight:innerHeight};}')
     assert abs(home_frame['height']-home_frame['configuredHeight'])<=1 and 0<home_frame['height']<=home_frame['viewportHeight']+1,home_frame
+    composition=frame.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};return {viewport:[innerWidth,innerHeight],scale:Number(getComputedStyle(document.querySelector('.shell')).getPropertyValue('--home-ui-scale')),stage:box(document.querySelector('.fridge-stage')),masthead:box(document.querySelector('.masthead')),balance:box(document.querySelector('#dailyBalance')),nav:box(document.querySelector('.home-shortcuts')),brandFont:parseFloat(getComputedStyle(document.querySelector('.brand h1')).fontSize)};}''')
+    assert abs(composition['nav']['height']-48*composition['scale'])<=2,composition
+    if composition['viewport']==[801,782]:
+        assert 360<=composition['stage']['width']<=380 and 424<=composition['stage']['height']<=445,composition
+        assert 175<=composition['masthead']['height']+composition['balance']['height']<=200 and 82<=composition['nav']['height']<=94 and 23<=composition['brandFont']<=25,composition
+    food_art=frame.evaluate('''()=>[...document.querySelectorAll('.fridge-interiors .item.food')].map(e=>{const art=e.querySelector('.food-art'),r=art.getBoundingClientRect(),css=getComputedStyle(art);let point=null;for(const fy of [.5,.2,.8,.1,.9,.35,.65])for(const fx of [.5,.2,.8,.1,.9,.35,.65]){const x=r.x+r.width*fx,y=r.y+r.height*fy;if(x>=0&&y>=0&&x<innerWidth&&y<innerHeight&&document.elementFromPoint(x,y)?.closest('[data-item]')===e){point={x,y};break;}}return {id:e.dataset.item,name:e.dataset.foodName,width:r.width,height:r.height,tapPoint:{x:r.x+r.width/2,y:r.y+r.height/2},visible:r.width>0&&r.height>0&&css.display!=='none'&&css.visibility!=='hidden'&&Number(css.opacity)>0,point};})''')
+    expected_food={'egg','milk','tofu','broccoli','tomato','fish','scallion','mushroom','kimchi','beef','shrimp','dumplings','mixveg'}
+    assert {row['id'] for row in food_art}==expected_food and all(row['visible'] for row in food_art),food_art
     home_scroll=no_page_scroll(frame);screenshot(page,label,'home')
+    # Transparent44px hit areas may overlap; actual pointer routing must open
+    # the painted food under the pointer, never its neighboring empty hit area.
+    food_taps=[]
+    for food in food_art:
+        offset=frame.frame_element().bounding_box();point=food['tapPoint']
+        (page.touchscreen.tap if is_touch else page.mouse.click)(point['x']+offset['x'],point['y']+offset['y'])
+        detail=frame.locator('#ingredientForm[data-id="'+food['id']+'"]');expect(detail).to_be_visible()
+        assert frame.locator('#tray').get_attribute('data-workflow-route')=='item'
+        expect(frame.locator('#tray .registration-methods')).not_to_be_visible()
+        food_taps.append({'expectedId':food['id'],'actualId':detail.get_attribute('data-id'),'name':food['name'],'artCenterTap':point})
+        touch(page,frame,frame.locator('#closeTray'),is_touch)
+        assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Food-art tap must not change stock: '+food['id']
+
 
     touch(page,frame,frame.locator('[data-home-tab="meals"]'),is_touch)
     expect(frame.locator('#homeRecommendation')).to_be_visible()
@@ -118,6 +139,8 @@ def visual_case(page,frame,label,is_touch,data):
         after=frame.evaluate('MiniKitchen.getSnapshot().doors');assert after=={**prior,key:False},after
         touch(page,frame,frame.locator(f'[data-door="{key}"]'),is_touch)
         assert frame.evaluate('MiniKitchen.getSnapshot().doors')==prior
+    quiet_door=frame.locator('#liveMessage').evaluate('e=>{const r=e.getBoundingClientRect(),c=getComputedStyle(e);return {text:e.textContent,visual:e.dataset.visual,role:e.getAttribute("role"),live:e.getAttribute("aria-live"),width:r.width,height:r.height,clip:c.clipPath,overflow:c.overflow};}')
+    assert quiet_door['visual']=='false' and quiet_door['text'] and quiet_door['role']=='status' and quiet_door['live']=='polite' and quiet_door['width']<=1.1 and quiet_door['height']>0 and '50%' in quiet_door['clip'] and quiet_door['overflow']=='hidden',quiet_door
     # Pause a real opening transition at its first painted frame and hit-test the food center.
     touch(page,frame,frame.locator('[data-door="freshLeft"]'),is_touch)
     page.emulate_media(reduced_motion='no-preference')
@@ -155,7 +178,7 @@ def visual_case(page,frame,label,is_touch,data):
     progress=frame.locator('#homeFridgeProgress').bounding_box();assert progress and progress['height']>0
     no_page_scroll(frame);screenshot(page,label,'recorded-closed-progress')
 
-    return {'opaque_session_header':header,'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
+    return {'main_composition':composition,'default_thirteen_food_art':food_art,'all_thirteen_actual_art_center_taps':food_taps,'frozen_vegetables_open_correct_detail_not_add':True,'routine_door_announcement_aria_only':quiet_door,'opaque_session_header':header,'shared_frame_sizes':{'home':home_frame,'recipes':recipe_frame,'plan':plan_frame},'recipe_photo_fit':photo_fits,'synthetic_recorded_open_add_target':recorded_add,'synthetic_recorded_closed_progress':progress,'synthetic_fixture':fixture,'inline_avif_decoded_dimensions':images,'home_add_target':add,'macro_native':macro,'home_no_page_scroll':home_scroll,'four_actual_door_buttons':True,'opening_first_frame_occludes_food':True,'ingredient_native_input_fonts':fonts,'recipe_actual_photos':3,'secondary_cards':card_visibility,'recipe_component_fits_content':fits,'recipe_detail_then_plan_opens_native_form_without_write':True,'D1_gear_and_D5_actual_controls':True,'D5_targets':toolbar,'recipe_view_only_discovers_actual_recipe_id':True,'plan_and_cancel_and_remaining_navigation_preserve_exact_envelope':True}
 
 def publish_results():
     previous=git('ls-remote','--heads','origin','refs/heads/'+RESULT_BRANCH).decode().split()
@@ -170,10 +193,11 @@ def publish_results():
         git('push','origin',commit+':refs/heads/'+RESULT_BRANCH);return commit
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',required=True);parser.add_argument('--publish-results',action='store_true');parser.add_argument('--local-root',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',required=True);parser.add_argument('--publish-results',action='store_true');parser.add_argument('--local-root',type=Path);parser.add_argument('--profiles',nargs='+',choices=[row[0] for row in PROFILES]);args=parser.parse_args();profiles=[row for row in PROFILES if not args.profiles or row[0] in args.profiles]
+    assert args.local_root or not args.profiles,'Public proof must run all four profiles'
     assert re.fullmatch('[0-9a-f]{40}',args.source)
     OUT.mkdir(parents=True,exist_ok=True);run=os.environ.get('GITHUB_RUN_ID');repo=os.environ.get('GITHUB_REPOSITORY','Ohoredingdong/Notion')
-    result={'source':args.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run}' if run else None,'cases':[],'scope':'Six actual HTTPS app/widget visual and native-control profiles; original navigation and Cancel checks preserve data. One explicit isolated browser-only synthetic meal per profile then checks open-home Add and closed-home progress. No OCR, real-user write, physical-device, Safari, Notion or persistent-storage claim.'}
+    result={'source':args.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/{repo}/actions/runs/{run}' if run else None,'cases':[],'scope':'Eight actual HTTPS app/widget visual and native-control profiles, including the user supplied 801x782 viewport; original navigation and Cancel checks preserve data. One explicit isolated browser-only synthetic meal per profile then checks open-home Add and closed-home progress. No OCR, real-user write, physical-device, Safari, Notion or persistent-storage claim.'}
     server=None
     try:
         if args.local_root:
@@ -192,9 +216,9 @@ def main():
                 data=contract(native)
                 raw_url=f'http://127.0.0.1:{server.server_port}/mobile/{mode}.html' if server else f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{args.source}/previews/mobile/{mode}.html'
                 url=raw_url if server else 'https://htmlpreview.github.io/?'+raw_url
-                for name,width,height in PROFILES:
+                for name,width,height in profiles:
                     case={'mode':mode,'profile':name,'viewport':[width,height],'url':url,'passed':False};label=mode+'-'+name
-                    ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=name!='desktop',is_mobile=name!='desktop',device_scale_factor=2,reduced_motion='reduce',locale='ko-KR',timezone_id='Asia/Seoul')
+                    ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=name in ('small-phone','phone'),is_mobile=name in ('small-phone','phone'),device_scale_factor=2,reduced_motion='reduce',locale='ko-KR',timezone_id='Asia/Seoul')
                     page=ctx.new_page();errors=[];sources=[];page.on('pageerror',lambda error,b=errors:b.append(str(error)));page.on('response',lambda response,b=sources,target=raw_url:b.append(response) if response.url==target else None)
                     try:
                         response=page.goto(url,wait_until='domcontentloaded',timeout=45000);case['http_status']=response.status;assert response.status==200
@@ -203,8 +227,8 @@ def main():
                         assert iframe.get_attribute('srcdoc').encode()==native
                         assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['scripts']
                         assert frame.locator('style').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['styles']
-                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_10_styles_exact':True})
-                        case['visual']=visual_case(page,frame,label,name!='desktop',data);assert not errors,errors;case['passed']=True
+                        case.update({'raw_sha256':hashlib.sha256(raw).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'actual_11_modules_12_styles_exact':True})
+                        case['visual']=visual_case(page,frame,label,name in ('small-phone','phone'),data);assert not errors,errors;case['passed']=True
                     except Exception as error:
                         case.update({'error':str(error),'trace':traceback.format_exc()});screenshot(page,label,'failure')
                     finally:
@@ -213,7 +237,7 @@ def main():
     except Exception:result['setup_error']=traceback.format_exc()
     finally:
         if server:server.shutdown()
-        result['passed']=len(result['cases'])==6 and all(case['passed'] for case in result['cases']);(OUT/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+        result['passed']=len(result['cases'])==2*len(profiles) and all(case['passed'] for case in result['cases']);(OUT/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
         print(json.dumps({'passed':result['passed'],'source':args.source,'run_url':result['run_url'],'setup_error':result.get('setup_error')},ensure_ascii=False),flush=True)
         if args.publish_results:
             assert not args.local_root,'Never publish local calibration as public evidence'
