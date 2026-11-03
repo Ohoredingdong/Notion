@@ -14,12 +14,31 @@ function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},se
 function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
 function fxRecord(c,ctx){
- const sym=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
- const rs=(ctx.data?.direction?.records||[]).filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===sym);
- const matched=rs.filter(r=>r.status==="research_prediction"&&r.probabilities).sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
- return matched.find(r=>r.mode==="daily")||matched[0]||rs.find(r=>r.mode==="daily")||rs[0]||null;
+ const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
+ const records=(ctx.data?.direction?.records||[]).filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ records.sort((a,b)=>{
+  const ta=Date.parse(a.issued_at||""),tb=Date.parse(b.issued_at||"");
+  if(Number.isFinite(ta)&&Number.isFinite(tb)&&ta!==tb)return tb-ta;
+  if(Number.isFinite(tb)&&!Number.isFinite(ta))return 1;
+  if(Number.isFinite(ta)&&!Number.isFinite(tb))return -1;
+  return Number(b.mode==="intraday")-Number(a.mode==="intraday");
+ });
+ return records[0]||null;
 }
-
+function fxModelQuality(ctx){
+ const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
+ const audit=ctx.data?.accuracyAudit||null;
+ const aligned=!!audit&&audit.source?.learning_generated_at===learning.generated_at&&audit.source?.forecasts_generated_at===ctx.data?.direction?.generated_at;
+ const n=fxN(overall.samples),correct=fxN(overall.correct),days=fxN(overall.calendar_days),acc=fxN(overall.accuracy),up=fxN(overall.recall?.up);
+ const minN=fxN(policy.minimum_paired_targets)??120,minDays=fxN(policy.minimum_sessions)??20;
+ const paired=learning.baseline_paired||{};
+ const brier=fxN(paired.baseline?.brier_loss)!==null&&fxN(paired.model?.brier_loss)!==null?paired.baseline.brier_loss-paired.model.brier_loss:null;
+ const threshold=fxN(policy.minimum_brier_gain)??.01;
+ const hasEnough=n!==null&&n>=minN&&days!==null&&days>=minDays;
+ const hasBrier=brier!==null&&brier>=threshold;
+ const accepted=aligned&&hasEnough&&hasBrier&&audit?.promotion_gates?.promotion_evidence_sufficient===true&&audit?.promotion_gates?.live_profitability_proven===true;
+ return {status:!hasEnough?"표본·기간 부족":!hasBrier?"확률 품질 개선 미달":accepted?"검증 범위 제한 확인":"실전 효용 미입증",accepted,aligned,n,correct,days,acc,up,minN,minDays,brier,threshold,hasEnough,hasBrier};
+}
 function fxPrediction(c,ctx){
  const r=fxRecord(c,ctx),p=r?.probabilities||{};
  const choices=["up","flat","down"],numbers=choices.map(k=>fxN(p[k]));
@@ -55,8 +74,8 @@ function fxUniverse(ctx){
    else if(ctx.market==="DOW")return false;
   }
   if(fxLocal.filter==="star"&&!fav.has(c.symbol))return false;
-  if(["up","flat","down"].includes(fxLocal.filter)&&(!fxPrediction(c,ctx).active||fxRecord(c,ctx)?.direction!==fxLocal.filter))return false;
-  if(fxLocal.filter==="ai"&&!fxPrediction(c,ctx).active)return false;
+  if(["up","flat","down"].includes(fxLocal.filter)){const sig=fxPrediction(c,ctx);if(!sig.active||sig.stale||sig.unknown||sig.r?.direction!==fxLocal.filter)return false;}
+  if(fxLocal.filter==="ai"){const sig=fxPrediction(c,ctx);if(!sig.active||sig.stale||sig.unknown)return false;}
   return !fxLocal.search||(String(c.name||"")+" "+String(c.symbol)).toLowerCase().includes(fxLocal.search.toLowerCase());
  });
 }
@@ -87,7 +106,7 @@ function fxStockPanel(ctx,expanded){
  const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
  return `<section class="fx-panel fx-list-panel"><div class="fx-panel-head"><div><h3>AI 종목 신호</h3><p>종목을 선택하면 분석이 바뀝니다.</p></div><button class="fx-link" type="button" data-nr-screen="stocks">${expanded?"목록":"전체"} ${h.I?.("arrow")||"›"}</button></div>
  <div class="fx-filters"><div class="fx-chips">${[["ALL","전체"],["KOSPI","코스피"],["KOSDAQ","코스닥"],["NASDAQ","나스닥"],["DOW","다우"]].map(([key,title])=>`<button type="button" data-rf-market="${key}" class="${ctx.market===key?"active":""}" aria-pressed="${ctx.market===key}">${title}</button>`).join("")}</div>
- <div class="fx-chips direction">${[["all","전체"],["ai","AI 신호"],["up","상승"],["down","하락"],["star","★ 관심"]].map(([key,title])=>`<button type="button" data-fx-filter="${key}" class="${fxLocal.filter===key?"active":""}" aria-pressed="${fxLocal.filter===key}">${title}</button>`).join("")}</div>
+ <div class="fx-chips direction">${[["all","전체"],["ai","기간 유효"],["up","상승"],["down","하락"],["star","★ 관심"]].map(([key,title])=>`<button type="button" data-fx-filter="${key}" class="${fxLocal.filter===key?"active":""}" aria-pressed="${fxLocal.filter===key}">${title}</button>`).join("")}</div>
  <label class="fx-search">${h.I?.("search")||"⌕"}<input id="fx-search-input" type="search" aria-label="종목명·코드로 검색" placeholder="종목명 · 코드 검색" value="${fxEscape(fxLocal.search)}"></label></div>
  <div class="fx-columns"><span>기업 / 시장</span><span>저장 종가</span><span>AI 방향</span></div>
  <div class="fx-results" id="fx-results">${fxStockRows(ctx,expanded)}</div>
