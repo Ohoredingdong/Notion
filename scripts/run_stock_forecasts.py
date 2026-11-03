@@ -16,6 +16,7 @@ from stock_forecast_model import (VERSION, POLICY, normalise_history, fit_model,
                                   make_prediction, score_prediction, stamp, digest)
 import stock_forecast_learning as learning
 import stock_forecast_directions as directions
+import stock_forecast_presentation as presentation
 UTC = timezone.utc
 DEFAULT = [
     ('^KS11', '코스피', 'KR'), ('^KQ11', '코스닥', 'KR'),
@@ -182,6 +183,8 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday'), processor=None)
         attempts.append(attempt)
     ready.sort(key=lambda r:(r['mode'],r['market'],r['symbol']))
     frozen = freeze(ledger, ready)
+    # Read-only display projection; never overwrite the current no-call rows or ledger.
+    prior_public = presentation.prior_public_forecasts(list(frozen.values()), deliveries, ready, now)
     attempts_by_id = learning.append_unique(root/learning.ATTEMPTS_FILE, attempts)
     learning.append_unique(root/learning.EVENTS_FILE, events)
     state.update(revision=state['revision']+1, updated_at=stamp(datetime.now(UTC)).isoformat(),
@@ -211,7 +214,8 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday'), processor=None)
               'status':'research_only', 'real_time_connected':False,
               'refresh_mode':'scheduled_best_effort_not_realtime',
               'coverage':len(specs), 'counts':dict(Counter(r['status'] for r in ready)),
-              'records':ready,'forward_evaluation':summary,
+              'records':ready,'prior_public_forecasts':prior_public,
+              'forward_evaluation':summary,
               'learning_evaluation':{'version':learning.VERSION,'training_updates':state['training_updates'],
                   'adaptive_groups':evaluation['learning']['adaptive_groups'],'report':learning.REPORT_FILE},
               'disclosures':['실제 과거 OHLC로 학습한 모델 추정치',
