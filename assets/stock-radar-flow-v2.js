@@ -30,7 +30,7 @@ function fxRecord(c,ctx){
   if(r?.status!=="research_prediction"||!r.probabilities||!["down","flat","up"].includes(r.direction))return false;
   const issued=Date.parse(r.issued_at||""),start=Date.parse(r.target?.start||""),end=Date.parse(r.target?.end||"");
   return Number.isFinite(issued)&&Number.isFinite(start)&&Number.isFinite(end)&&
-   issued<start&&issued<=now+5*60*1000&&start<end&&end>=now;
+   issued<start&&issued<=now&&start<end&&end>=now;
  };
  return records.find(r=>r.mode==="daily"&&current(r))||records.find(current)||records[0]||null;
 }
@@ -58,7 +58,7 @@ function fxPrediction(c,ctx){
  const start=Date.parse(r?.target?.start||""),until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
  const invalidDates=!Number.isFinite(start)||!Number.isFinite(issued)||
   (Number.isFinite(until)&&(until<=start||issued>=start))||issued>=start;
- const futureIssued=Number.isFinite(issued)&&issued>Date.now()+5*60*1000;
+ const futureIssued=Number.isFinite(issued)&&issued>Date.now();
  const stale=active&&Number.isFinite(until)&&until<Date.now();
  const unknown=active&&!Number.isFinite(until);
  const usable=active&&!invalidDates&&!futureIssued&&!stale&&!unknown;
