@@ -1,0 +1,52 @@
+name: Research-only KR late-session missing outcome provenance
+on:
+  push:
+    branches:
+      - research/timing-kr-late-session-source-20261103
+    paths:
+      - 'scripts/diagnose_stock_timing_kr_late_session.py'
+      - 'scripts/test_stock_timing_kr_late_session.py'
+      - 'docs/experiments/timing-kr-late-session-source-20261103.md'
+      - '.github/workflows/research-timing-kr-late-session-source.yml'
+permissions:
+  contents: read
+concurrency:
+  group: kr-late-session-source-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  read-only-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONPATH: scripts
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing pinned unofficial source reader dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Synthetic missing-bar and future/duplicate negative controls
+        run: python -m unittest -v test_stock_timing_kr_late_session
+      - name: Compare frozen first-issue missing cohorts without writing outcomes
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+          python scripts/diagnose_stock_timing_kr_late_session.py --cutoff 2026-11-03T13:25:16+00:00
+      - name: Single-provider 5m timestamp-only diagnostic (no price export)
+        run: python scripts/diagnose_stock_timing_kr_late_session.py --cutoff 2026-11-03T13:25:16+00:00 --probe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kr-late-session-read-only-evidence
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-timing-acceptance-guard.json
+            stock-timing-kr-late-session-source-research.json
