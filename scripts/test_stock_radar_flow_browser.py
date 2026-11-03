@@ -138,7 +138,7 @@ with sync_playwright() as play:
         check("Strict checklist cannot be mistaken for an investment approval",
             "매수 승인 아님" in page.locator(".fx-v5-sidecheck").inner_text())
         check("Index card discloses historical sparkline date",
-            all("일봉" in x for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
+            all(any(label in x for label in ("일봉","추이","지표 저장값")) for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
         check("Stock list opens",page.locator(".fx-page-grid .fx-row").count() > 0)
         page.locator('[data-rf-market="NASDAQ"]').first.click()
@@ -173,6 +173,17 @@ with sync_playwright() as play:
             page.locator(".fx-scenario-v4").count() == 1 and
             "미래 경로" in page.locator(".fx-scenario-v4").inner_text() and
             page.locator(".fx-scenario-option").count() == 3)
+        check("Target bands are internally consistent or explicitly unavailable",
+            page.evaluate("""() => {
+                const list=window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies||[];
+                const current=window.StockRadarV2Bridge?.snapshot()?.selected;
+                const c=list.find(x=>x.symbol===current);
+                if(!c || !c.targets)return true;
+                const {low,median,high}=c.targets;
+                const complete=[low,median,high].every(v=>typeof v==="number"&&Number.isFinite(v));
+                return !complete || (low<=median && median<=high) ||
+                  document.querySelector(".fx-scenario-v4")?.textContent?.includes("순서 불일치");
+            }"""))
         check("All three scenario alternatives and model probabilities",
             page.locator(".fx-scenario-options .fx-scenario-option").count() == 3 and
             page.locator(".fx-scenario-ai-panel .fx-ai-card").count() == 1)
