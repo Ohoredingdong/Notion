@@ -167,7 +167,7 @@ async function read(name){
 async function load(){
  if(busy)return;
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -181,6 +181,9 @@ async function load(){
    if(okay&&key==="outcomes")okay=Array.isArray(val);
    if(okay&&key==="koreaSentiment")okay=val?.market==="kr"&&typeof val?.date==="string"&&N(val.kospi?.index)!==null&&N(val.kosdaq?.index)!==null;
    if(okay&&key==="sentiment")okay=val?.market==="us"&&N(val.headline?.score)!==null;
+   if(okay&&key==="accuracyAudit")okay=val?.version==="radar-accuracy-audit-v1"&&!!val.evaluation&&!!val.promotion_gates;
+   if(okay&&key==="opportunitySummary")okay=!!val?.counts&&N(val.counts.tracked)!==null;
+   if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
    if(okay){
     const beforeTime=Date.parse(updated[key]?.generated_at||"");
     const afterTime=Date.parse(val?.generated_at||"");
