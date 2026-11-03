@@ -134,10 +134,52 @@ function renderNews(){const m=D.macro?.indicators||{},f=m.usdkrw||{},ten=m.us_10
 
 function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
 
-async function read(name){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),22000);try{const r=await fetch("./"+name+"?v="+Date.now(),{cache:"no-store",signal:ac.signal});if(!r.ok)throw Error("HTTP "+r.status);return name.endsWith(".jsonl")?(await r.text()).split("\n").filter(Boolean).map(v=>{try{return JSON.parse(v)}catch{return null}}).filter(Boolean):await r.json()}finally{clearTimeout(t)}}
+async function read(name){
+ const ac=new AbortController(),timeout=setTimeout(()=>ac.abort(),22000);
+ try{
+  const response=await fetch("./"+name+"?v="+Date.now(),{cache:"no-store",signal:ac.signal});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  if(!name.endsWith(".jsonl"))return await response.json();
+  const lines=(await response.text()).split("\n").map(v=>v.trim()).filter(Boolean);
+  return lines.map((line,index)=>{try{return JSON.parse(line)}catch{throw Error(name+" invalid JSONL line "+(index+1))}});
+ }finally{clearTimeout(timeout)}
+}
 
-async function load(){if(busy)return;busy=true;const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json"};const keys=Object.keys(files),results=await Promise.allSettled(keys.map(k=>read(files[k])));errors=[];keys.forEach((k,i)=>{if(results[i].status==="fulfilled")D[k]=results[i].value;else{errors.push(k);delete D[k]}});if(!Array.isArray(D.raw?.companies)){errors.push("종목 원자료");delete D.raw}if(!company(selected)&&rows().length)selected=String(rows()[0].symbol);busy=false;render();}
-
+async function load(){
+ if(busy)return;
+ busy=true;render();
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json"};
+ const keys=Object.keys(files),updated={...D},problems=[];
+ try{
+  const results=await Promise.allSettled(keys.map(key=>read(files[key])));
+  keys.forEach((key,index)=>{
+   let okay=results[index].status==="fulfilled";
+   const val=okay?results[index].value:null;
+   if(okay&&key==="raw")okay=!!val&&Array.isArray(val.companies)&&val.companies.length>0;
+   if(okay&&key==="charts")okay=!!val?.series&&typeof val.series==="object";
+   if(okay&&key==="direction")okay=Array.isArray(val?.records);
+   if(okay&&key==="learning")okay=val?.overall&&typeof val.overall==="object";
+   if(okay&&key==="outcomes")okay=Array.isArray(val);
+   if(okay&&key==="koreaSentiment")okay=val?.market==="kr"&&typeof val?.date==="string"&&N(val.kospi?.index)!==null&&N(val.kosdaq?.index)!==null;
+   if(okay&&key==="sentiment")okay=val?.market==="us"&&N(val.headline?.score)!==null;
+   if(okay){
+    const beforeTime=Date.parse(updated[key]?.generated_at||"");
+    const afterTime=Date.parse(val?.generated_at||"");
+    if(Number.isFinite(beforeTime)&&Number.isFinite(afterTime)&&afterTime<beforeTime){
+     problems.push(key+" 이전 시점 응답 · 현재 자료 유지");
+    }else updated[key]=val;
+   }else if(updated[key]!=null)problems.push(key+" 조회 실패 · 직전 정상 자료 유지");
+   else problems.push(key+" 조회 실패");
+  });
+  D=updated;
+  if(!Array.isArray(D.raw?.companies)||!D.raw.companies.length)problems.push("종목 원자료 이용 불가");
+  if(!company(selected)&&rows().length)selected=String(rows()[0].symbol);
+ }catch(err){
+  problems.push("자료 갱신 처리 실패");
+ }finally{
+  errors=problems;busy=false;render();
+ }
+}
 function isMarket(c,m){if(m==="ALL")return true;const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];const venue=info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])||"UNKNOWN";if(m==="DOW")return D.markets?.dow?.status==="current"&&D.markets?.dow?.symbols?.includes(k);return venue===m;}
 
 function marketLabel(c){const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];return info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])|| (c.market==="KR"?"한국 · 세부시장 확인 전":c.market==="US"?"미국 · 세부시장 확인 전":"미확인");}
@@ -177,7 +219,7 @@ function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favor
 
 function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(id)),"_blank","noopener");}
 
-function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 수집 오류: "+errors.join(", "):"") + " · 실시간 호가 아님";}
+function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(busy?"데이터 갱신 중 · ":"")+(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 주의: "+errors.join(" / "):"") + " · 실시간 호가 아님";}
 
 function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;const c=window.StockRadarFlowV2?.pick?.();if(c)selected=String(c.symbol);render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
