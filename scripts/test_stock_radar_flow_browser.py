@@ -93,6 +93,9 @@ with sync_playwright() as play:
         check("No legacy UI rail",
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
+        check("Only two active runtime scripts on main URL",
+            page.locator("script[src]").count()==2,
+            "No legacy research-injection scripts should run on the V5 dashboard")
         check("Market index cards",
             page.locator(".fx-v5-markets .nr-index").count() == 4)
         check("Market strip has separate spacing before analysis",
@@ -137,6 +140,12 @@ with sync_playwright() as play:
         page.locator('[data-rf-market="NASDAQ"]').first.click()
         check("NASDAQ filter yields at least one stock",
             page.locator(".fx-row[data-nr-select]").count() > 0)
+        page.evaluate("window.StockRadarV2Bridge.select('005930')")
+        check("Cross-market selection automatically reveals chosen ticker",
+            page.locator('.fx-row[data-nr-select="005930"]').count()==1 and
+            page.locator('[data-rf-market="ALL"].active').count()==1,
+            "Explicit selection must clear incompatible NASDAQ market filter")
+        page.locator('[data-rf-market="NASDAQ"]').first.click()
         first = page.locator(".fx-row[data-nr-select]").first
         symbol = first.get_attribute("data-nr-select")
         first.click()
@@ -169,6 +178,9 @@ with sync_playwright() as play:
             page.locator(".fx-audit").count() == 1)
         check("Evaluation disclaimer",
             "실전 매매" in page.locator(".fx-validation-grid").inner_text())
+        check("Independent evaluated sample distinguished from raw outcomes",
+            "독립 평가" in page.locator(".fx-table-hint").inner_text() and
+            "두 모수" in page.locator(".fx-table-hint").inner_text())
 
         page.locator('.fx-nav [data-nr-screen="monitor"]').click()
         check("Manual condition form present",page.locator("#radar-rule-form").count() == 1)
@@ -193,6 +205,14 @@ with sync_playwright() as play:
         check("Paper holdings recorded",
             page.locator(".nr-table tbody tr").count()>=1 and
             page.locator(".nr-paper-overview").count()==1)
+        page.locator("#radar-paper-qty").fill("3")
+        page.locator("#radar-paper-cost").fill("120")
+        page.locator("#radar-paper-form button[type=submit]").click()
+        check("Repeated paper buys use weighted average cost",
+            page.evaluate("""() => {
+                const values=JSON.parse(localStorage.getItem("radar-paper-holdings-v2") || "[]");
+                return values.length===1 && values[0].qty===5 && Math.abs(values[0].cost-112)<1e-6;
+            }"""))
         page.locator("[data-nr-paper-remove]").click()
         check("Paper holdings removed",
             page.locator(".nr-paper-overview").count()==0)
@@ -200,6 +220,35 @@ with sync_playwright() as play:
         check("Home round-trip and reset",
             page.locator(".fx-v5-main").count()==1 and
             page.locator("#fx-search-input").input_value()=="")
+        # Fail a data endpoint and confirm refresh remains usable with last known-good snapshot.
+        page.route("**/stock-opportunity-data.json*", lambda route: route.abort())
+        page.locator("[data-fx-refresh]").click()
+        page.wait_for_function(
+            "() => (document.querySelector('#source-status')?.textContent || '').includes('직전 정상 자료 유지')",
+            timeout=25000,
+        )
+        check("Failed refresh keeps the last valid market snapshot",
+            page.locator(".fx-v5-cockpit").count()==1 and
+            page.locator(".fx-row[data-nr-select]").count()>0)
+        check("Failed refresh visibly warns about incomplete data",
+            "raw 조회 실패" in page.locator("#source-status").inner_text())
+        page.unroute("**/stock-opportunity-data.json*")
+        page.evaluate("""() => {
+            const snap=window.StockRadarV2Bridge.snapshot();
+            snap.data.raw.companies.push({
+                symbol:"TEST-BAD",name:"Bad Forecast Sample",market:"US",
+                currency:"USD",price:100,price_session:"2026-11-02"
+            });
+            snap.data.direction.records.push({
+                symbol:"TEST-BAD",mode:"daily",status:"research_prediction",
+                direction:"up",issued_at:"2026-11-02T01:00:00Z",
+                target:{end:"2026-11-05T01:00:00Z"},
+                probabilities:{up:0.9,flat:0.8,down:0.7}
+            });
+            window.StockRadarV2Bridge.select("TEST-BAD");
+        }""")
+        check("Malformed model probability is blocked and explained",
+            "분포·목표기간 오류" in page.locator(".fx-v5-ai").inner_text())
         check("Interaction no page exceptions",not errors,str(errors))
         screenshot(page, "radar-flow-functional-desktop.png")
         page.close()
