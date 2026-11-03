@@ -135,6 +135,10 @@ with sync_playwright() as play:
             page.locator(".fx-v5-chartarea .fx-chart-svg polyline").count()>=2)
         check("Research status labelled honestly",
             "연구용" in page.locator(".fx-v5-cockpit .fx-v5-ai").inner_text())
+        check("Strict checklist cannot be mistaken for an investment approval",
+            "매수 승인 아님" in page.locator(".fx-v5-sidecheck").inner_text())
+        check("Index card discloses historical sparkline date",
+            all("일봉" in x for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
         check("Stock list opens",page.locator(".fx-page-grid .fx-row").count() > 0)
         page.locator('[data-rf-market="NASDAQ"]').first.click()
@@ -177,7 +181,12 @@ with sync_playwright() as play:
         check("Prediction outcome results visible",
             page.locator(".fx-audit").count() == 1)
         check("Evaluation disclaimer",
-            "실전 매매" in page.locator(".fx-validation-grid").inner_text())
+            "수익성 미입증" in page.locator(".fx-validation-grid").inner_text() and
+            "매수 성공률" in page.locator(".fx-validation-grid").inner_text())
+        check("Evidence thresholds and source-audit state are explicit",
+            page.locator(".fx-validation-grid .nr-validation-note").count() == 1 and
+            "Brier 개선" in page.locator(".fx-validation-grid").inner_text() and
+            "정확도 감사" in page.locator(".fx-validation-grid").inner_text())
         check("Independent evaluated sample distinguished from raw outcomes",
             "독립 평가" in page.locator(".fx-table-hint").inner_text() and
             "두 모수" in page.locator(".fx-table-hint").inner_text())
