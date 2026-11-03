@@ -94,7 +94,29 @@ with sync_playwright() as play:
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
         check("Market index cards",
-            page.locator(".fx-market-row .nr-index").count() == 4)
+            page.locator(".fx-v5-markets .nr-index").count() == 4)
+        check("Market strip has separate spacing before analysis",
+            page.evaluate("""() => {
+                const upper=document.querySelector('.fx-v5-marketline')?.getBoundingClientRect();
+                const lower=document.querySelector('.fx-v5-main')?.getBoundingClientRect();
+                return upper && lower && lower.top-upper.bottom>=10;
+            }"""), "Expected visible vertical gap between index strip and AI/research panels")
+        check("Initial sentiment card is sourced",
+            page.locator(".fx-v5-sentiment .fx-v5-sentiment-date a").count()==1)
+        page.locator('[data-fx-sentiment-next]').click()
+        check("Arrow switches to Korean market sentiment",
+            page.locator(".fx-v5-sentiment.is-korea").count()==1 and
+            "코스닥" in page.locator(".fx-v5-sentiment.is-korea").inner_text())
+        check("Korean sentiment source attribution and after-close date",
+            "koreafeargreed.com" in (page.locator(".fx-v5-sentiment.is-korea a").get_attribute("href") or "") and
+            page.locator(".fx-v5-sentiment-date").count()==1)
+        page.reload(wait_until="domcontentloaded")
+        page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
+        check("Korean choice persists after reload",
+            page.locator(".fx-v5-sentiment.is-korea").count()==1)
+        page.locator('[data-fx-sentiment-next]').click()
+        check("Arrow switches back to US CNN sentiment",
+            page.locator(".fx-v5-sentiment.is-us").count()==1)
         check("Signal probability labels",
             page.locator(".fx-list-panel .fx-row").count() > 0 and
             page.locator(".fx-v5-cockpit .fx-v5-ai").count() == 1)
