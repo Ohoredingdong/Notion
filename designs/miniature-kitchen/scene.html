@@ -19,6 +19,11 @@
 <link rel="stylesheet" href="designs/miniature-kitchen/scene-occupancy.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/scene-composition.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/food-shapes.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/fullflow-20261104.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/ingredients-20261104.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/meals-20261104.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/records-20261104.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/growth-20261104.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
 <script defer src="designs/miniature-kitchen/catalog.js"></script>
 <script defer src="designs/miniature-kitchen/story-art.js"></script>
@@ -30,15 +35,15 @@
 <script defer src="designs/miniature-kitchen/play-ui.js"></script>
 <script defer src="designs/miniature-kitchen/workflows.js"></script>
 <script defer src="designs/miniature-kitchen/home.js"></script>
+<script defer src="designs/miniature-kitchen/fullflow-ui.js"></script>
 </head>
 <body data-mode="app" data-camera="fridge" data-home="fridge">
 <a class="skip" href="#kitchen">부엌으로 이동</a>
 <main class="shell">
   <header class="masthead">
-    <div class="brand"><span class="story-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="m3 10 9-7 9 7v11H3Z"/><path d="M9 21V11h6v10"/></svg></span><div><h1>한끼의 부엌</h1><p id="todayStamp">오늘의 작은 부엌</p></div></div>
-    <div class="header-actions"><button type="button" data-workflow="inventory" aria-label="재료 목록">재료 목록</button></div>
+    <div class="brand"><span class="story-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 12a4 4 0 0 1-1-8 4 4 0 0 1 7-1 4 4 0 0 1 7 1 4 4 0 0 1-1 8v9H6Z"/><path d="M6 17h12"/></svg></span><div><h1>한끼의 부엌</h1><p id="todayStamp">오늘의 작은 부엌</p></div></div>
+    <div class="header-actions"><button type="button" data-workflow="inventory" aria-label="재료와 기한 알림"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4M12 1v1"/></svg><span class="sr-only">재료 목록</span></button></div>
   </header>
-  <button class="daily-balance" id="dailyBalance" type="button" data-workflow="nutrition" aria-label="오늘의 균형과 영양 기록"></button>
   <div id="homeStorageNotice" class="home-storage-notice" hidden></div>
   <section id="panel-fridge" class="home-panel fridge-panel" role="tabpanel" aria-labelledby="tab-fridge">
   <div class="expiry-summary" id="expirySummary" aria-live="polite"></div>
@@ -63,6 +68,7 @@
   <div class="kitchen-progress" id="kitchenProgress"><span>우리 집 냉장고</span><small id="selectedItemMeta">재료를 눌러 수량과 기한을 확인해요</small><button type="button" id="openJournal">재료 목록</button></div>
   </div>
   </div>
+  <button class="daily-balance" id="dailyBalance" type="button" data-workflow="nutrition" aria-label="오늘의 균형과 영양 기록"></button>
   <div class="home-worktop" id="homeWorktop"><button type="button" id="homeProps" hidden class="home-props" data-home-open="decor" aria-label="나의 부엌 소품을 보고 꾸미기"></button><button type="button" id="addFood" aria-label="재료 추가"><span data-icon="plus" aria-hidden="true"></span>재료 추가</button></div>
   </section>
   <section id="todayKitchen" class="home-panel today-kitchen" role="tabpanel" aria-labelledby="tab-meals" hidden>
@@ -78,9 +84,9 @@
     <header class="hub-heading"><button type="button" data-camera="fridge" aria-label="냉장고로 돌아가기">‹</button><h2>오늘의 기록</h2></header>
     <nav class="panel-tabs" role="tablist" aria-label="기록 보기">
       <button type="button" id="sub-nutrition" role="tab" data-home-subtab="nutrition" aria-controls="homeNutrition" aria-selected="true">영양</button>
-      <button type="button" id="sub-budget" role="tab" data-home-subtab="budget" aria-controls="homeBudget" aria-selected="false" tabindex="-1">식비</button>
       <button type="button" id="sub-supplements" role="tab" data-home-subtab="supplements" aria-controls="homeSupplements" aria-selected="false" tabindex="-1">영양제</button>
       <button type="button" id="sub-monthly" role="tab" data-home-subtab="monthly" aria-controls="homeMonthly" aria-selected="false" tabindex="-1">월간</button>
+      <button type="button" id="sub-budget" role="tab" data-home-subtab="budget" aria-controls="homeBudget" aria-selected="false" tabindex="-1">식비</button>
     </nav>
     <section id="homeNutrition" class="home-card" data-home-page="nutrition" role="tabpanel" aria-labelledby="sub-nutrition"></section>
     <section id="homeBudget" class="home-card" data-home-page="budget" role="tabpanel" aria-labelledby="sub-budget" hidden></section>
@@ -110,7 +116,7 @@
   </section>
   <nav class="home-shortcuts" role="tablist" aria-label="부엌 메뉴">
     <button type="button" id="tab-fridge" role="tab" data-home-tab="fridge" aria-controls="panel-fridge" aria-selected="true"><span class="nav-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 11h14M9 5v3m0 6v3"/></svg></span><span>냉장고</span></button>
-    <button type="button" id="tab-meals" role="tab" data-home-tab="meals" aria-controls="todayKitchen" aria-selected="false" tabindex="-1"><span class="nav-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7m3-7v7m3-7v7M8 10v11M18 3v18m0-18c-4 3-4 8 0 8"/></svg></span><span>레시피</span></button>
+    <button type="button" id="tab-meals" role="tab" data-home-tab="meals" aria-controls="todayKitchen" aria-selected="false" tabindex="-1"><span class="nav-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12a4 4 0 0 1-1-8 4 4 0 0 1 7-1 4 4 0 0 1 7 1 4 4 0 0 1-1 8v9H6Z"/><path d="M6 17h12"/></svg></span><span>레시피</span></button>
     <button type="button" id="openRecords" role="tab" data-home-tab="records" aria-controls="panel-records" aria-selected="false" tabindex="-1"><span class="nav-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 2v5m6-5v5M9 11h6m-6 4h6m-6 4h4"/></svg></span><span>기록</span></button>
     <button type="button" id="tab-kitchen" role="tab" data-home-tab="kitchen" aria-controls="panel-kitchen" aria-selected="false" tabindex="-1"><span class="nav-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8v10H3Z"/><path d="M9 21v-8h6v8"/></svg></span><span>내 부엌</span></button>
   </nav>

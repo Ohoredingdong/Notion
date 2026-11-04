@@ -1,0 +1,103 @@
+{
+  "checkedAt": "2026-11-04T07:54:43.464478+00:00",
+  "cwd": "/workspace/Notion",
+  "versions": {
+    "node": "v24.19.0",
+    "python": "3.12.14"
+  },
+  "results": {
+    "node": {
+      "tests": 100,
+      "pass": 100,
+      "fail": 0,
+      "skipped": 0,
+      "files": {
+        "tests/fridge-kitchen-state.test.cjs": 28,
+        "tests/kitchen-play.test.cjs": 8,
+        "tests/kitchen-journey.test.cjs": 33,
+        "tests/kitchen-workflows.test.cjs": 8,
+        "tests/kitchen-photo-reader.test.cjs": 9,
+        "tests/kitchen-growth-rewards.test.cjs": 4,
+        "tests/kitchen-meal-receipts.test.cjs": 4,
+        "tests/kitchen-receipts.test.cjs": 6
+      }
+    },
+    "transport": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "skipped": 0
+    },
+    "syntax": {
+      "checks": 16,
+      "pass": 16,
+      "fail": 0
+    },
+    "diffCheck": {
+      "exit": 0
+    },
+    "candidate2Artifacts": [
+      {
+        "path": "/workspace/.notion-cloud/kitchen-fullflow-1104/candidate2/miniature-kitchen-app.html",
+        "bytes": 987179,
+        "sha256": "90d4113c786b90ed013f30d25d057f579bd288b392af0c9e1fee60c6d188c6c4",
+        "decodedSha256": "3513f32234c9ac0336fe88d6b783ca06400a00838a65430d90202dd62c971cb6",
+        "status": "PASS"
+      },
+      {
+        "path": "/workspace/.notion-cloud/kitchen-fullflow-1104/candidate2/mobile/app.html",
+        "bytes": 988526,
+        "sha256": "d6537fb9a0a540b0e454c8c870173e5befc490526d421e7fef628267b5290d32",
+        "decodedSha256": "3513f32234c9ac0336fe88d6b783ca06400a00838a65430d90202dd62c971cb6",
+        "status": "PASS"
+      },
+      {
+        "path": "/workspace/.notion-cloud/kitchen-fullflow-1104/candidate2/miniature-kitchen-widget.html",
+        "bytes": 987182,
+        "sha256": "0595d86044af625f9575219a56af47ec171b335a119b60f3e19d9a2ecd24ac39",
+        "decodedSha256": "477a28837dc4e8f101be6495264948d52374cc75bcae2784c1fe409e23188b09",
+        "status": "PASS"
+      },
+      {
+        "path": "/workspace/.notion-cloud/kitchen-fullflow-1104/candidate2/mobile/widget.html",
+        "bytes": 988535,
+        "sha256": "c6d0e0ae40e5c8f0bf1400a1fb2386f5172c39d2bafef05928b7a9b54cbce962",
+        "decodedSha256": "477a28837dc4e8f101be6495264948d52374cc75bcae2784c1fe409e23188b09",
+        "status": "PASS"
+      }
+    ]
+  },
+  "commands": {
+    "models": "source /workspace/.notion-cloud/activate.sh\nnode --test tests/fridge-kitchen-state.test.cjs tests/kitchen-play.test.cjs tests/kitchen-journey.test.cjs tests/kitchen-workflows.test.cjs tests/kitchen-photo-reader.test.cjs tests/kitchen-growth-rewards.test.cjs tests/kitchen-meal-receipts.test.cjs tests/kitchen-receipts.test.cjs",
+    "transport": "source /workspace/.notion-cloud/activate.sh\nPYTHONPATH=\"$PWD:$PWD/scripts\" PYTHONPYCACHEPREFIX=/tmp/notion-pycache python -m unittest discover -s scripts -p 'test_kitchen_mobile_transport.py' -v",
+    "javascriptSyntax": [
+      "node --check designs/miniature-kitchen/catalog.js",
+      "node --check designs/miniature-kitchen/fullflow-ui.js",
+      "node --check designs/miniature-kitchen/home.js",
+      "node --check designs/miniature-kitchen/journey-model.js",
+      "node --check designs/miniature-kitchen/photo-reader.js",
+      "node --check designs/miniature-kitchen/play-model.js",
+      "node --check designs/miniature-kitchen/play-ui.js",
+      "node --check designs/miniature-kitchen/scene.js",
+      "node --check designs/miniature-kitchen/story-art.js",
+      "node --check designs/miniature-kitchen/workflow-model.js",
+      "node --check designs/miniature-kitchen/workflows.js",
+      "node --check use-me-first-kitchen-state.js",
+      "node --check use-me-first-kitchen-art.js"
+    ],
+    "pythonSyntax": [
+      "py_compile.compile('scripts/build_miniature_kitchen_preview.py', doraise=True)",
+      "py_compile.compile('scripts/build_kitchen_mobile_preview.py', doraise=True)",
+      "py_compile.compile('scripts/test_kitchen_mobile_transport.py', doraise=True)"
+    ],
+    "diff": "git diff --check"
+  },
+  "logs": [
+    "models.tap",
+    "transport.log",
+    "syntax.log",
+    "syntax.json"
+  ],
+  "sourceEdits": false,
+  "sourceSnapshotStableAfterChecks": true
+}

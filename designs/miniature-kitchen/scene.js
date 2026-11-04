@@ -5,6 +5,7 @@
   const FOOD_SCENE = './designs/miniature-kitchen/assets/food-shelf-coherent-v2.png';
   const INNER_DOORS = './designs/miniature-kitchen/assets/door-insides.png';
   const DECOR = './designs/miniature-kitchen/assets/decor-atlas.png';
+  const ROOM_PROPS = './designs/miniature-kitchen/assets/room-props-fullflow-v1.png';
   const A=window.UMFKitchenArt, $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const mode=document.body.dataset.mode==='widget'?'widget':'app';
@@ -17,7 +18,7 @@
     frozenLeft:{name:'냉동 왼쪽',kind:'냉동',x:.006,y:.614,w:.495,h:.350,zx:27/699,zy:495/787,zw:320/699,zh:246/787},
     frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.508,y:.614,w:.487,h:.350,zx:364/699,zy:495/787,zw:312/699,zh:246/787}
   };
-  const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]}};
+  const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]},frame:{name:'우드 액자',crop:[48,15,550,648]},basket:{name:'바구니',crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null, decorEdit=null, announcementTimer=0, highlightedItem=null, highlightUntil=0;
   const closing=new Set(),closingTimers=new Map();
   const movingDisplays=new Map();
@@ -43,25 +44,41 @@
     {id:'dumplings',kind:'food',name:'만두',quantity:'1팩',expiry:date(18),zone:'frozenRight',x:.5,y:.585,z:16},
     {id:'mixveg',kind:'food',name:'냉동 채소',quantity:'200g',expiry:date(25),zone:'frozenRight',x:.5,y:.907,z:17},
     {id:'meal',kind:'meal',name:'계란 볶음밥',zone:'counter',x:.46,y:.96,z:18},
-    {id:'flowers',kind:'decor',art:'flowers',name:props.flowers.name,zone:'counter',x:.93,y:.91,z:19},
     {id:'cup',kind:'decor',art:'cup',name:props.cup.name,zone:'counter',x:.075,y:.98,z:20}
   ];
   const clone=value=>JSON.parse(JSON.stringify(value));
   const sceneItems=()=>{if(!decorEdit)return items;const pending=new Map(decorEdit.items.map(i=>[i.id,i])),visible=[];for(const item of items){if(item.kind!=='decor')visible.push(item);else if(pending.has(item.id)){visible.push(pending.get(item.id));pending.delete(item.id);}}return [...visible,...pending.values()];};
   const differs=(a,b)=>JSON.stringify(a)!==JSON.stringify(b);
-  const decorDirty=()=>Boolean(decorEdit&&(differs(decorEdit.items,decorEdit.base)||differs(decorEdit.theme,decorEdit.baseTheme)||differs(decorEdit.equipped,decorEdit.baseEquipped)));
+  const decorDirty=()=>Boolean(decorEdit&&(differs(decorEdit.items,decorEdit.base)||differs(decorEdit.theme,decorEdit.baseTheme)||differs(decorEdit.equipped,decorEdit.baseEquipped)||pendingDecorRewards(decorEdit).length));
   function notifyChange(preview=false){window.dispatchEvent(new CustomEvent('mini-kitchen:change',{detail:{preview}}));}
-  function beginDecorEdit(){
-    if(!decorEdit){const base=clone(items.filter(i=>i.kind==='decor')),theme=window.KitchenJournal?.getWorkflow().theme||null,equipped=window.KitchenJournal?.getSnapshot().equipped||null;decorEdit={base,items:clone(base),baseTheme:clone(theme),theme:clone(theme),baseEquipped:clone(equipped),equipped:clone(equipped),serial,layer,selectedBefore:selected};}
+  function beginDecorEdit(options={}){
+    if(!decorEdit){const base=clone(items.filter(i=>i.kind==='decor')),theme=window.KitchenJournal?.getWorkflow().theme||null,equipped=window.KitchenJournal?.getSnapshot().equipped||null;decorEdit={base,items:clone(base),baseTheme:clone(theme),theme:clone(theme),baseEquipped:clone(equipped),equipped:clone(equipped),serial,layer,selectedBefore:selected,pendingRewards:[],returnTo:options.returnTo||'growth'};}
+    if(options.returnTo)decorEdit.returnTo=options.returnTo;
     decorating=true;return getDecorDraftState();
   }
-  function getDecorDraftState(){return {active:Boolean(decorEdit),dirty:decorDirty()};}
+  function pendingDecorRewards(edit=decorEdit){return edit?[...new Set(edit.pendingRewards||[])].filter(id=>{const r=window.KitchenPlayModel?.REWARDS[id];return r?.kind==='room'?edit.items.some(i=>i.art===r.art):Object.values(edit.equipped||{}).includes(id);}):[];}
+  function decorRewardCost(edit=decorEdit){const M=window.KitchenPlayModel,s=window.KitchenJournal?.getSnapshot();if(!edit||!M||!s)return 0;return pendingDecorRewards(edit).reduce((cost,id)=>{const r=M.REWARDS[id],owned=r.kind==='room'?M.ownsRoomReward(s,{items:edit.base},id):s.owned.includes(id);return cost+(owned?0:r.cost);},0);}
+  function getDecorDraftState(){return {active:Boolean(decorEdit),dirty:decorDirty(),pendingRewards:pendingDecorRewards(),cost:decorRewardCost(),returnTo:decorEdit?.returnTo||'growth'};}
+  function queueDecorReward(id){
+    const M=window.KitchenPlayModel,J=window.KitchenJournal,r=M?.REWARDS[id];if(!r||!J)throw new Error('소품 기록을 불러온 뒤 다시 골라 주세요.');
+    const s=J.getSnapshot(),owned=r.kind==='room'?M.ownsRoomReward(s,{items:decorEdit?.base||items},id):s.owned.includes(id),already=pendingDecorRewards().includes(id),cost=decorRewardCost()+(owned||already?0:r.cost);
+    if(J.summary().tickets<cost)throw new Error('꾸밈권이 더 필요해요. 적용 전에 다른 소품을 골라 주세요.');
+    beginDecorEdit({returnTo:'rewards'});if(!owned&&!decorEdit.pendingRewards.includes(id))decorEdit.pendingRewards.push(id);return r;
+  }
+  function previewDecorReward(id,options={}){
+    const r=queueDecorReward(id);
+    if(r.kind!=='room'){setDecorEquippedDraft(options.slot||'frozenLeft',id);setCamera('counter');render(true);closeTray();return;}
+    const existing=decorEdit.items.find(i=>i.art===r.art);if(existing)selected=existing.id;
+    else{if(items.filter(i=>i.kind!=='decor').length+decorEdit.items.length>=2000)throw new Error('소품을 더 놓기 전에 기존 소품을 정리해 주세요.');let itemId;do{itemId='decor'+(++decorEdit.serial);}while(items.some(i=>i.id===itemId)||decorEdit.items.some(i=>i.id===itemId));const item={id:itemId,kind:'decor',art:r.art,name:r.name,zone:'counter',x:r.art==='cup'?.12:.87,y:.98,z:nextItemLayer({kind:'decor'})};decorEdit.items.push(item);selected=item.id;}
+    setCamera('counter');render(true);closeTray();announce('배치 미리보기예요. 적용하면 저장해요.',false);
+  }
   function setDecorThemeDraft(theme){
     if(!theme||!['linen','stone'].includes(theme.background)||!['standard','minimal'].includes(theme.labels)||typeof theme.organizer!=='boolean')throw new Error('부엌 분위기 설정을 확인해 주세요.');
     beginDecorEdit();decorEdit.theme={...decorEdit.theme,background:theme.background,labels:theme.labels,organizer:theme.organizer};notifyChange(true);
   }
   function setDecorEquippedDraft(slot,id){
-    if(!['frozenLeft','frozenRight'].includes(slot)||id!==null&&!window.KitchenJournal?.getSnapshot().owned.includes(id))throw new Error('가지고 있는 소품을 골라 주세요.');
+    if(!['frozenLeft','frozenRight'].includes(slot)||id!==null&&(!window.KitchenPlayModel?.REWARDS[id]||window.KitchenPlayModel.REWARDS[id].kind==='room'))throw new Error('문에 붙일 소품을 골라 주세요.');
+    if(id)queueDecorReward(id);
     beginDecorEdit();if(!decorEdit.equipped)throw new Error('소품 기록을 불러온 뒤 다시 골라 주세요.');
     if(id)for(const key of Object.keys(decorEdit.equipped))if(decorEdit.equipped[key]===id)decorEdit.equipped[key]=null;
     decorEdit.equipped[slot]=id;notifyChange(true);
@@ -74,9 +91,11 @@
   }
   function applyDecorEdit(){
     if(!decorEdit)return false;
-    const edit=decorEdit,changed=decorDirty();
+    const edit=decorEdit,changed=decorDirty()||Object.values(doors).some(Boolean);
     if(changed){
       const merge=({world,flow,play})=>{
+        if(differs(world.items.filter(i=>i.kind==='decor'),edit.base))throw new Error('소품 기록이 바뀌었어요. 취소한 뒤 현재 배치에서 다시 꾸며 주세요.');
+        if(play)for(const id of pendingDecorRewards(edit)){const M=window.KitchenPlayModel,r=M.REWARDS[id],s=play.state(),owned=r.kind==='room'?M.ownsRoomReward(s,{items:edit.base},id):s.owned.includes(id);if(!owned)play.buy(id);}
         if(differs(edit.items,edit.base)){
           if(differs(world.items.filter(i=>i.kind==='decor'),edit.base))throw new Error('소품 기록이 바뀌었어요. 취소한 뒤 현재 배치에서 다시 꾸며 주세요.');
           const pending=new Map(edit.items.map(i=>[i.id,clone(i)])),next=[];
@@ -89,6 +108,7 @@
           for(const key of Object.keys(edit.equipped))play.equip(key,null);
           for(const [key,id] of Object.entries(edit.equipped))if(id)play.equip(key,id);
         }
+        for(const key of Object.keys(world.doors))world.doors[key]=false;
       };
       if(window.KitchenJournal)window.KitchenJournal.transact(merge);
       else{const world={items:clone(items),doors:clone(doors),serial,layer};merge({world});items.splice(0,items.length,...world.items);serial=world.serial;layer=world.layer;}
@@ -101,15 +121,20 @@
     return `<svg class="${cls}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs><image href="${asset}" x="0" y="0" width="${total[0]}" height="${total[1]}" clip-path="url(#${id})"/></svg>`;
   }
   const frontArt=(cls='',panel=null)=>crop(FRIDGE,panel?[788+701*panel.x,130+788*panel.y,701*panel.w,788*panel.h]:[788,130,701,788],[1536,1024],cls);
-  const decorArt=key=>crop(DECOR,props[key].crop,[1286,1223],'decor-art');
+  const roomPropBoxes={"flowers":[78,44,492,567],"cup":[656,159,514,439],"frame":[96,701,412,464],"basket":[647,699,540,469]};
+  const decorArt=key=>roomPropBoxes[key]?crop(ROOM_PROPS,roomPropBoxes[key],[1254,1254],'decor-art','xMidYMax meet'):crop(DECOR,props[key].crop,[1286,1223],'decor-art','xMidYMax meet');
+  const stockNameById={egg:'계란',milk:'우유',tofu:'두부',broccoli:'브로콜리',tomato:'토마토',fish:'생선',scallion:'대파',kimchi:'김치',mushroom:'양송이버섯'};
+  const retainedFoodIds=new Set(['chicken','onion','carrot','rice','potato','zucchini','oil','cheese','yogurt','lettuce','garlic','pepper','ingredient']);
   function art(item) {
     if(item.photo&&item.photoAsIcon!==false)return `<img class="food-art product-photo" alt="" src="${esc(item.photo)}">`;
     const foodBoxes={"계란":[23,134,258,160],"토마토":[299,141,255,154],"두부":[570,140,254,154],"브로콜리":[839,131,261,163],"우유":[81,358,144,242],"대파":[295,428,260,144],"양송이버섯":[569,427,257,144],"김치":[845,403,253,178],"소고기":[19,699,262,91],"생선":[297,699,259,91],"새우":[570,699,260,91],"만두":[843,699,261,91],"냉동 채소":[19,966,264,89],"간장":[372,879,103,243],"고추장":[595,915,193,191],"된장":[877,915,191,191],"소금":[57,1176,184,185]};
-    if(['food','seasoning'].includes(item.kind)&&foodBoxes[item.name])return crop(FOOD_SCENE,foodBoxes[item.name],[1122,1402],'food-art','xMidYMid meet');
+    const spice=item.kind==='seasoning'?(/고추장|쌈장/.test(item.name)?'고추장':/된장/.test(item.name)?'된장':/소금/.test(item.name)?'소금':/간장|액젓|참치액/.test(item.name)?'간장':null):null;
+    const pictured=foodBoxes[item.name]?item.name:spice||stockNameById[A.foodIdForName(item.name)];
+    if(['food','seasoning'].includes(item.kind)&&pictured&&foodBoxes[pictured])return crop(FOOD_SCENE,foodBoxes[pictured],[1122,1402],'food-art','xMidYMid meet');
     if(item.kind==='decor')return decorArt(item.art);
     if(item.kind==='meal')return window.KitchenStoryboardArt.dish({id:item.name});
-    if(item.kind==='seasoning')return A.seasoningArt(item.name,'food-art');
-    return A.foodArt(A.foodIdForName(item.name));
+    if(item.kind==='seasoning')return A.seasoningArt('기타 양념','food-art');
+    const id=A.foodIdForName(item.name);return A.foodArt(retainedFoodIds.has(id)?id:'ingredient');
   }
   function announce(message,visual=true){
     clearTimeout(announcementTimer);const output=$('#liveMessage'),text=String(message??'');output.textContent=text;
@@ -120,7 +145,7 @@
   function positionBackground(){
     const room=$('.room');if(!room.getClientRects().length)return;
     const shell=$('.shell'),settings=getComputedStyle(shell),r=shell.getBoundingClientRect();
-    const anchor=$(document.body.dataset.camera==='counter'?'.decor-fridge-backdrop':'.fridge-stage'),stage=anchor?.getBoundingClientRect();
+    const anchor=$(document.body.dataset.camera==='counter'||$('#panel-fridge').dataset.screenId==='D6'?'.decor-fridge-backdrop':'.fridge-stage'),stage=anchor?.getBoundingClientRect();
     if(!stage||stage.width<=0||stage.height<=0)return;
     // The furniture is installed around the same live fridge in both views.
     // Its photograph may change; alcove and floor metadata belong to the CSS
@@ -159,7 +184,7 @@
       const available=Math.max(120,bottom-box.top-occupied-(document.body.dataset.camera==='fridge'?0:10));
       width=Math.min(width,available*1000/logicalHeight);
     }else if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.home-shortcuts')?.offsetHeight||66;width=Math.min(width,Math.max(240,innerHeight-top-dock-12));}
-    if(document.body.dataset.camera==='fridge')width=Math.min(width,285*homeScale);
+    if(document.body.dataset.camera==='fridge')width=Math.min(width,360*homeScale);
     room.style.setProperty('--room-fit-width',width+'px');
     const scale=width/1000;
     shell.style.setProperty('--scene-scale',String(scale));
@@ -344,6 +369,11 @@
     const item=sceneItems().find(i=>i.id===selected&&i.kind==='decor'),enabled=Boolean(decorating&&decorEdit&&item);
     for(const button of document.querySelectorAll('[data-decor-tool]'))button.disabled=!enabled;
     const label=$('#decorSelectionName');if(label)label.textContent=enabled?item.name:'소품을 선택해 주세요';
+    for(const handles of document.querySelectorAll('.decor-selection-handles'))handles.remove();
+    if(enabled)document.querySelector('.room [data-item="'+CSS.escape(item.id)+'"]')?.insertAdjacentHTML('beforeend','<span class="decor-selection-handles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>');
+    const editor=$('#homeDecor');if(editor)editor.dataset.screenId='D5';
+    const title=$('#homeDecor .decor-heading h2');if(title)title.textContent='배치 미리보기';
+    const note=$('#decorationTools');if(note){note.hidden=!(decorating&&decorEdit);const cost=decorRewardCost();note.innerHTML=cost?'<span class="decor-pending-purchase">'+(window.KitchenJournal?.giftIcon?.()||'')+' 꾸밈권 '+cost+' · 적용할 때 사용</span>':'<span>보유 소품 · 배치 미리보기</span>';}
   }
   function selectCanvasItem(item){
     if(item.kind==='decor'&&decorating&&document.body.dataset.homePage==='decor'){
@@ -365,14 +395,14 @@
     for(const zone of document.querySelectorAll('.drop-zone')){for(const child of zone.querySelectorAll('.item,.shelf-label'))child.remove();for(const item of sceneItems().filter(r=>r.zone===zone.dataset.zone&&!r.depleted&&window.KitchenWorkflowModel?.parseQuantity(r.quantity)?.baseAmount!==0))zone.appendChild(itemButton(item));}constrainItems();renderDisplays();syncDecorToolbar();notifyChange(preview);
   }
   function finishClosing(key){clearTimeout(closingTimers.get(key));closingTimers.delete(key);if(closing.delete(key))renderDisplays();}
-  function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'),false);}
+  function toggle(key){cleanup();finishClosing(key);const willClose=doors[key];if(willClose&&!matchMedia('(prefers-reduced-motion: reduce)').matches){closing.add(key);closingTimers.set(key,setTimeout(()=>finishClosing(key),650));}doors[key]=!doors[key];if(doors[key]){delete document.body.dataset.fridgeState;$('#panel-fridge').dataset.screenId='A1';}render();announce(panels[key].name+' 문을 '+(doors[key]?'열었어요.':'닫았어요.'),false);}
   function openTray(title,content,eyebrow='MY LITTLE KITCHEN') {
     delete $('#tray').dataset.workflowRoute;
     if(!$('#tray').open)previousFocus=document.activeElement===document.body?document.querySelector('.item.is-selected')||document.activeElement:document.activeElement;$('#trayTitle').textContent=title;$('#trayEyebrow').textContent=eyebrow;$('#trayContent').innerHTML=content;if(!$('#tray').open)$('#tray').showModal();$('#tray').scrollTop=0;$('#trayTitle').tabIndex=-1;$('#trayTitle').focus({preventScroll:true});
   }
   function restoreTrayFocus(){const target=previousFocus?.isConnected?previousFocus:previousFocus?.dataset.item?document.querySelector('[data-item="'+CSS.escape(previousFocus.dataset.item)+'"]'):previousFocus?.id?document.getElementById(previousFocus.id):null;(target!==document.body&&target?.getClientRects().length?target:document.querySelector('.home-shortcuts [aria-selected="true"]'))?.focus({preventScroll:true});}
   function closeTray(){$('#tray').close();restoreTrayFocus();}
-  function showAdd(){if(window.KitchenWorkflows)return window.KitchenWorkflows.add();openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${A.foodArt(A.foodIdForName(name))}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
+  function showAdd(){if(window.KitchenWorkflows)return window.KitchenWorkflows.add();openTray('부엌에 재료를 담아봐요',`<p class="tray-note">시안용 재료예요. 고른 재료는 열린 냉장칸에 놓이고, 눌러서 수량과 기한을 바꿀 수 있어요.</p><div class="palette">${['계란','우유','두부','브로콜리','토마토','대파','당근','생선'].map(name=>`<button type="button" data-add-food="${esc(name)}">${art({kind:'food',name})}<strong>${esc(name)}</strong><small>부엌에 담기</small></button>`).join('')}</div>`);}
   function showDecor() {
     beginDecorEdit();setCamera('counter');render(true);openTray('마음에 드는 소품을 놓아봐요',`<p class="tray-note">소품을 골라 조리대에 놓고 자유롭게 옮겨요. 소품을 누르면 앞뒤 순서와 배치를 바꿀 수 있어요.</p><div class="palette">${Object.entries(props).map(([key,p])=>`<button type="button" data-add-prop="${key}">${decorArt(key)}<strong>${p.name}</strong><small>${sceneItems().some(r=>r.art===key)?'이미 놓았어요 · 하나 더 놓기':'조리대에 놓기'}</small></button>`).join('')}</div><h3 class="placed-title">놓아둔 소품</h3><p class="tray-note">뒤에 가려진 소품도 여기서 고를 수 있어요.</p><div class="placed-props">${sceneItems().filter(r=>r.kind==='decor').map(r=>`<button type="button" data-select-prop="${esc(r.id)}">${art(r)}<span>${esc(r.name)}<br>선택해서 배치 바꾸기</span></button>`).join('')}</div><div class="tray-actions"><button type="button" class="small-action primary" data-close>부엌에서 옮겨보기</button></div>`);
   }
@@ -445,15 +475,15 @@
   document.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;if(button.dataset.door)toggle(button.dataset.door);if(button.dataset.camera)setCamera(button.dataset.camera);
     if(button.id==='addFood')showAdd();if(button.id==='recipes')showRecipes();if(button.id==='decorate'){if(window.KitchenWorkflows){window.KitchenWorkflows.decor();return;}if(decorating){decorating=false;selected=null;render();announce('소품 배치를 마쳤어요.');}else showDecor();}
-    if(button.hasAttribute('data-decor-apply')){try{const changed=applyDecorEdit();for(const key of Object.keys(doors))doors[key]=false;selected=null;setCamera('fridge');render();announce(changed?'나의 부엌에 적용했어요.':'현재 배치를 확인했어요.');}catch(error){announce(error.message);}return;}
-    if(button.hasAttribute('data-decor-cancel')){cancelDecorEdit();if(window.KitchenHome)window.KitchenHome.selectSubtab('growth',{focus:true});else setCamera('fridge');announce('편집 전 배치로 돌아왔어요.');return;}
-    if(button.id==='propList')showDecor();
+    if(button.hasAttribute('data-decor-apply')){try{const changed=applyDecorEdit();for(const key of Object.keys(doors))doors[key]=false;selected=null;setCamera('fridge');render(true);$('#panel-fridge').dataset.screenId='D6';syncLayout();window.dispatchEvent(new CustomEvent('mini-kitchen:decor-applied'));announce(changed?'나의 부엌에 적용했어요.':'현재 배치를 확인했어요.');}catch(error){announce(error.message);}return;}
+    if(button.hasAttribute('data-decor-cancel')){const returnTo=decorEdit?.returnTo||'growth';cancelDecorEdit();setCamera('fridge');if(window.KitchenHome)window.KitchenHome.selectSubtab('growth',{focus:returnTo!=='rewards'});if(returnTo==='rewards')window.KitchenJournal?.show('rewards');announce('편집 전 배치와 꾸밈권을 유지했어요.',false);return;}
+    if(button.id==='propList'){if(window.KitchenJournal)window.KitchenJournal.show('rewards');else showDecor();}
     if(button.dataset.decorTool){const item=sceneItems().find(i=>i.id===selected&&i.kind==='decor');if(!item||!decorating||!decorEdit)return;const tool=button.dataset.decorTool;if(tool==='remove')removeDecor(item.id,{close:false});else if(tool==='front'||tool==='back')moveLayer(item.id,tool,{close:false});return;}
     if(button.id==='expandDisplays')openTray('냉장고 디스플레이',`<div class="display-inspector">${renderDisplays(true)}</div><p class="tray-note">현재 기록의 확대 화면이에요. 기한별 숫자는 재료·양념 기록 건수이며, 재료 기록률은 이름 기준으로 수량의 충분함을 확인한 값은 아니에요.</p>`,'OUR KITCHEN');
     if(button.dataset.selectProp){const item=sceneItems().find(r=>r.id===button.dataset.selectProp&&r.kind==='decor');if(item)showItem(item);}
     if(button.id==='closeTray'||button.hasAttribute('data-close'))closeTray();
     if(button.dataset.addFood){const id='added'+(++serial),name=button.dataset.addFood;items.push({id,kind:'food',name,quantity:'1개',expiry:date(3),zone:'freshLeft',x:.5,y:.63,z:++layer});doors.freshLeft=true;setCamera('fridge');selected=id;render();closeTray();announce(name+'을 시안 냉장고에 담았어요.');}
-    if(button.dataset.addProp){const key=button.dataset.addProp;if(!Object.hasOwn(props,key))return;beginDecorEdit();if(items.filter(i=>i.kind!=='decor').length+decorEdit.items.length>=2000){announce('소품을 더 놓기 전에 기존 소품을 정리해 주세요.');return;}let id;decorEdit.serial=Math.max(serial,decorEdit.serial);do{id='decor'+(++decorEdit.serial);}while(items.some(i=>i.id===id)||decorEdit.items.some(i=>i.id===id));decorEdit.items.push({id,kind:'decor',art:key,name:props[key].name,zone:'counter',x:.56,y:.98,z:nextItemLayer({kind:'decor'})});setCamera('counter');render(true);closeTray();announce(props[key].name+'을 미리 놓았어요. 적용을 누르면 저장해요.');}
+    if(button.dataset.addProp){const key=button.dataset.addProp;if(!Object.hasOwn(props,key))return;const reward=Object.entries(window.KitchenPlayModel?.REWARDS||{}).find(([,r])=>r.kind==='room'&&r.art===key);if(reward){try{previewDecorReward(reward[0]);}catch(error){announce(error.message);}return;}beginDecorEdit();if(items.filter(i=>i.kind!=='decor').length+decorEdit.items.length>=2000){announce('소품을 더 놓기 전에 기존 소품을 정리해 주세요.');return;}let id;decorEdit.serial=Math.max(serial,decorEdit.serial);do{id='decor'+(++decorEdit.serial);}while(items.some(i=>i.id===id)||decorEdit.items.some(i=>i.id===id));decorEdit.items.push({id,kind:'decor',art:key,name:props[key].name,zone:'counter',x:.56,y:.98,z:nextItemLayer({kind:'decor'})});selected=id;setCamera('counter');render(true);closeTray();announce(props[key].name+'을 미리 놓았어요. 적용을 누르면 저장해요.');}
     if(button.dataset.layer)moveLayer(button.dataset.id,button.dataset.layer);if(button.dataset.remove)removeDecor(button.dataset.remove);
     if(button.dataset.recipe){items.find(r=>r.kind==='meal').name=button.dataset.recipe;setCamera('counter');render();closeTray();announce('조리대에 '+button.dataset.recipe+'을 놓았어요.');window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name:button.dataset.recipe}}));}
     if(button.id==='help')openTray('작은 부엌을 만져봐요',`<ul class="help-list"><li>냉장고 문을 누르면 열리고, 열린 문을 다시 누르면 닫혀요.</li><li>재료·양념병은 누르면 수량·기한을 살펴보고, 끌어서 옮길 수 있어요.</li><li>다른 칸으로 옮길 때는 그 문을 먼저 열어주세요.</li><li>‘꾸미기’에서 소품을 놓고 끌어 배치해요.</li><li>재료와 소품은 겹쳐 놓을 수 있고, 방향키로도 움직여요.</li><li>양념은 재료 목록의 양념 보기에서, 소품 배치는 내 부엌의 꾸미기에서 관리해요.</li></ul><p class="tray-note">기존 앱과 분리된 시안이에요. 저장 가능한 브라우저에서는 재료·식사·꾸밈 기록을 보관해요. 임시 세션에서는 메뉴의 설정·백업에서 기록을 보관해 주세요. 영양은 직접 입력한 값으로 계산하며 제품·기한 사진은 글자를 읽고 직접 검수해요. 전체 사진 재료 판별·자동 영양 추정·기존 앱 동기화는 연결 전이에요.</p>`);
@@ -468,8 +498,9 @@
     exportWorld:()=>JSON.parse(JSON.stringify({items,doors,serial,layer})),
     restoreWorld(world,preserveSelection=false){cleanup();if(!preserveSelection)decorEdit=null;items.splice(0,items.length,...JSON.parse(JSON.stringify(world.items)));for(const key of Object.keys(panels))doors[key]=world.doors[key];serial=world.serial;layer=world.layer;if(!preserveSelection)selected=null;decorating=Boolean(decorEdit)&&document.body.dataset.camera==='counter';render();},
     showTray:openTray,closeTray,refreshDisplays:renderDisplays,refreshLayout:()=>{syncLayout();constrainItems();},showItem:id=>{const item=sceneItems().find(r=>r.id===id);if(item)showItem(item);},setCamera,decorate:showDecor,render,announce,
-    getArt:art,getFridgeArt:()=>frontArt('home-fridge-art'),beginDecorEdit,applyDecorEdit,cancelDecorEdit,hasDecorDraft:()=>Boolean(decorEdit),getDecorDraftState,setDecorThemeDraft,getDecorThemeDraft:()=>decorEdit?clone(decorEdit.theme):null,setDecorEquippedDraft,getDecorEquippedDraft:()=>decorEdit?clone(decorEdit.equipped):null,
-    highlightItem(id){const item=items.find(r=>r.id===id);if(!item)return;const key=doorForZone(item.zone);if(panels[key])doors[key]=true;selected=id;highlightedItem=id;highlightUntil=Date.now()+3500;render(true);setTimeout(()=>{for(const button of document.querySelectorAll('.item.is-new'))button.classList.remove('is-new');highlightedItem=null;},3500);},
+    getArt:art,getFridgeArt:()=>frontArt('home-fridge-art'),beginDecorEdit,applyDecorEdit,cancelDecorEdit,previewDecorReward,hasDecorDraft:()=>Boolean(decorEdit),getDecorDraftState,setDecorThemeDraft,getDecorThemeDraft:()=>decorEdit?clone(decorEdit.theme):null,setDecorEquippedDraft,getDecorEquippedDraft:()=>decorEdit?clone(decorEdit.equipped):null,
+    highlightItem(id){const item=items.find(r=>r.id===id);if(!item)return;document.body.dataset.fridgeState='saved';$('#panel-fridge').dataset.screenId='A5';const key=doorForZone(item.zone);if(panels[key])doors[key]=true;selected=id;highlightedItem=id;highlightUntil=Date.now()+3500;render(true);setTimeout(()=>{for(const button of document.querySelectorAll('.item.is-new'))button.classList.remove('is-new');highlightedItem=null;},3500);},
     chooseRecipe(name){if(!window.KitchenCatalog.some(r=>r.name===name))return;items.find(r=>r.kind==='meal').name=name;setCamera('counter');render();closeTray();window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name}}));}
   });
+  window.KitchenSceneArt=Object.freeze({...A,foodArt(id,cls=''){const name=stockNameById[id];return name?art({kind:'food',name}):A.foodArt(retainedFoodIds.has(id)?id:'ingredient',cls);},seasoningArt(name){return art({kind:'seasoning',name});}});
 })();

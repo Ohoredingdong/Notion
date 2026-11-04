@@ -113,16 +113,22 @@ def fit_document(content, mode='app'):
 # Unused atlas cells are omitted; source images and published apps stay untouched.
 COMPACT_SPRITES = {
     'assets/food-miniatures-v2.webp': ('sprites', (1254,1254),
-        ('egg','milk','tofu','broccoli','tomato','fish','scallion','carrot','onion','rice','kimchi','mushroom','chicken','garlic','potato','zucchini','oil','cheese','yogurt','lettuce','pepper','ingredient')),
+        ('carrot','onion','rice','chicken','garlic','potato','zucchini','oil','cheese','yogurt','lettuce','pepper','ingredient')),
     'assets/seasoning-miniatures-v1.png': ('seasoningSprites', (1448,1086),
-        ('soy','salt','gochujang','doenjang','jar')),
+        ('jar',)),
 }
+
+# Legacy tools/jars retain their original cropped pixels and encoding level.
+COMPACT_REGIONS = {'designs/miniature-kitchen/assets/decor-atlas.png':
+    ((1286,1223),((48,15,550,648),(773,675,445,504)))}
 
 # New photo assets use pre-encoded full-resolution AVIF variants. Their PNG
 # originals remain the authoring source; the measured encoding settings and
 # WebP82 quality comparisons are recorded with the visual-fidelity evidence.
 # Existing miniature assets retain their previous formats and encoding levels.
 COMPACT_AVIF = {
+    'designs/miniature-kitchen/assets/room-props-fullflow-v1.png':
+        'designs/miniature-kitchen/assets/room-props-fullflow-v1.avif',
     'designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png':
         'designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.avif',
     'designs/miniature-kitchen/assets/food-shelf-coherent-v2.png':
@@ -228,6 +234,8 @@ def build(root, mode, compact=False):
                 if reference in COMPACT_SPRITES:
                     name,size,keys=COMPACT_SPRITES[reference]
                     boxes=sprite_boxes(local('use-me-first-kitchen-art.js').read_text(),name,keys)
+                elif reference in COMPACT_REGIONS:
+                    size,boxes=COMPACT_REGIONS[reference]
                 data=web_image(path,size,boxes)
                 mime='image/webp'
         return 'data:'+mime+';base64,'+base64.b64encode(data).decode('ascii')
@@ -257,7 +265,7 @@ def build(root, mode, compact=False):
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
             'story-art.js': [('RECIPE_PHOTOS','designs/miniature-kitchen/assets/recipe-photos-v1.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/food-shelf-coherent-v2.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/food-shelf-coherent-v2.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png'),('ROOM_PROPS','designs/miniature-kitchen/assets/room-props-fullflow-v1.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"
