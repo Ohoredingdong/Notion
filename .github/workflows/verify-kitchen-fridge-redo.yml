@@ -1,0 +1,37 @@
+name: Verify fridge redo actual widget screenshots
+on:
+  push:
+    branches: [delivery/verify-kitchen-fridge-redo-20261104]
+    paths:
+      - '.github/workflows/verify-kitchen-fridge-redo.yml'
+      - 'scripts/verify_kitchen_fridge_redo_public.py'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-fridge-redo-verification-20261104
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Verify three actual HTTPS widget profiles and focused fridge views
+        run: python scripts/verify_kitchen_fridge_redo_public.py --source 42aee04a4dbf2f8e44380c3debc192b90c93821f --publish-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-fidelity-public-browser
+          path: /tmp/kitchen-fridge-redo-public/
+          retention-days: 3
