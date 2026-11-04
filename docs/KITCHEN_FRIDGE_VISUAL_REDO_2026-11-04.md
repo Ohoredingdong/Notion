@@ -45,3 +45,5 @@ final-v3에서 같은 자료16개 화면은 저장 envelope가 모두 전후와 
 전송12개 테스트와 scene.js문법 및 git diff --check를 통과했다. 7개 상태/거래/사진/흐름 모듈은 수정 전과 같다. 과거 모델 검사/OCR 통과를 이번 시각 검수로 다시 집계하지 않았다.
 
 구현은 로컬 브랜치 `feat/kitchen-fridge-visual-redo-20261104`, 커밋 `42aee04a4dbf2f8e44380c3debc192b90c93821f`에 저장했다. 원격 push는 `could not read Username for https://github.com` 오류로 실패했다. 당시 현재 런타임의 outbound identities와 identity manifest connections는 비어 있었고 credential helper도 없으며 `gh auth status`는 현재 GH_TOKEN 인증이 유효하지 않다고 보고했다. 값은 읽거나 기록하지 않았다. 따라서 새 공개 링크·공개 HTTPS 실행·PR 생성은 완료하지 않았고, 이전 e982 링크를 이번 수정본으로 전달하지 않는다. 환경 설정 초안은 변경하지 않았다. GitHub 연결 복구가 공개 업로드의 남은 조건이다.
+
+원격 인증이 막힌 뒤, 공개용으로 준비한 검사를 **로컬 HTTP에서만** 최종 파일에 실행했다. 위젯320×568·390×844·801×782의3/3, 실행 오류0이며 각 초기 A1/A5/D1/D5/D6의15개 실제 프레임 PNG를 생성했다. 네 영역 조회의 envelope 무변경과 격리 상태에서의 실제 저장/적용도 확인했다. [로컬 전송·화면 검사](kitchen-fridge-redo-20261104/local-status.json)와 [공개 미실행 상태](kitchen-fridge-redo-20261104/local-publication-status.json)를 분리한다. [초기 상태의 실제 냉장고 화면](kitchen-fridge-redo-20261104/default-A1.png)을 남긴다. 이를 공개 HTTPS 성공으로 보고하지 않는다.
