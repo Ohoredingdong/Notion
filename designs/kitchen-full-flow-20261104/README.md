@@ -13,3 +13,11 @@
 새 설계 시안이며 이미지의 수치·재료·영양·지출·보상은 일관된 설명용 예시다. 실제 사용자 기록을 변경하거나 현재 앱이 이 동작을 구현했다고 주장하지 않는다. 특히 적용 시 소품 획득·꾸밈권 차감·배치를 함께 확정하는 방식은 새 제안이다. 앱/위젯 소스·운영 HTML·기존 미리보기·저장 키·main/Pages는 변경하지 않았다.
 
 모든 이미지는 image_gen으로 생성하고 선택한 원본 PNG 바이트를 그대로 보존했다. [manifest.json](manifest.json)은 각 파일의 크기·SHA·실제 이미지 해상도를 기록한다. 가변 해상도에 맞춰 [새 탭 뷰어](../../previews/kitchen-full-flow-20261104.html)에서 한 장씩 확대한다. 공개 주소와 실제 표시 결과는 게시 후 추가한다.
+
+## 공개 보기와 표시 확인
+
+[전체·재료·식단·기록·성장 탭으로 보기/확대](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/9c509c90d4aa7a699b48e484f431b78fb0094049/previews/kitchen-full-flow-20261104.html). 이미지 고정본은 `64ad8fd93e131985e71f8338076ec898153e6a8e`, 뷰어 고정본은 `9c509c90d4aa7a699b48e484f431b78fb0094049`다.
+
+[실제 공개 표시 검사](https://github.com/Ohoredingdong/Notion/actions/runs/41789156698)는390×844/1120×1000/320×568에서5장씩15회 모두 그려지고, 각 이미지의 원본 크기 확대15회도 통과했다. 탭/원본 링크44px 조작, 첫 이미지1개 요청, 가로 넘침 없음, JavaScript 오류0을 확인했다. [결과](display-public-results.json)의 검증 코드는 `0a65ed6469854eb62777f920355cdd1c30bc9c94`, 결과 고정본은 `aff1d12638c4245ab1d867b327dbb2394a57baf0`다. [원본 PNG 확인](originals-public-fetch.json)은5개 모두 정상 TLS·HTTP200·image/png·커밋 바이트/해시 일치다. 채팅 클라이언트 자체의 표시나 실기기/Safari/Notion 테스트와는 구분한다.
+
+작업 브랜치는 `design/kitchen-full-flow-20261104`다. main/Pages와 앱은 변경하지 않았다. PR 자동 생성은 앞서 확인한 GitHub GraphQL403 제한으로 미완료이며 [비교/PR 작성](https://github.com/Ohoredingdong/Notion/compare/fix/kitchen-storyboard-fidelity...design/kitchen-full-flow-20261104?expand=1) 경로를 남긴다.
