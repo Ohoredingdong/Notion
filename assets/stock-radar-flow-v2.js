@@ -374,26 +374,35 @@ function fxV5Sentiment(ctx){
  const validUS=us.market==="us"&&usScore!==null&&usScore>=0&&usScore<=100&&Number.isFinite(Date.parse(usTime||""));
  const valid=korea?validKorea:validUS;
  const score=korea?(validKorea?kr.kospi.index:null):(validUS?usScore:null);
- const label=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"지표 확인 전";
- const percent=score===null?0:Math.max(0,Math.min(100,score)),color=percent<45?"#e17c65":percent<55?"#d5b15c":"#32a981";
+ const label=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"정보 확인 전";
+ const percent=score===null?0:Math.max(0,Math.min(100,score));
+ const color=score===null?"#b6c4d5":percent<45?"#d67e6f":percent<55?"#b39a58":"#389a78";
  const sourceDate=korea?time:(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"}):"");
  const formattedDate=korea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2"):sourceDate;
+ const dateText=valid?formattedDate+" "+(korea?"장 마감":us.source_cadence==="intraday"?"발표":"기준"):"일자 확인 전";
  const kosdaq=fxN(kr.kosdaq?.index);
- const sub=valid?(korea?`코스피 · ${label}`:label):"데이터 미확인";
- const secondary=korea&&validKorea&&kosdaq!==null?`코스닥 ${fxNum(kosdaq,1)} · ${fxEscape(kr.kosdaq?.label||"지표")}`:"";
- const sourceLabel=korea?"출처: 한국 공포탐욕지수":"CNN Fear & Greed";
+ const kosdaqValid=korea&&validKorea&&kosdaq!==null&&kosdaq>=0&&kosdaq<=100;
+ const sourceLabel=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
  const next=korea?"미국 CNN 공포·탐욕 보기":"한국 코스피 공포·탐욕 보기";
- return `<section class="fx-v5-sentiment ${korea?"is-korea":"is-us"}" aria-label="${korea?"한국 코스피":"미국 CNN"} 공포·탐욕 지수" title="${korea?"한국 코스피·코스닥 기반 민간 산출 지수. CNN과 산출 방식이 다릅니다.":"미국 CNN 공포·탐욕 지수. 한국 시장 심리를 나타내지 않습니다."}">
-  <div class="fx-v5-sentiment-copy"><div class="fx-v5-sentiment-title"><strong>${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
-  <button type="button" data-fx-sentiment-next aria-label="${next}" title="${next}">›</button></div>
-  <small class="fx-v5-sentiment-reading">${fxEscape(sub)}</small></div>
-  <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?(korea?"한국 코스피":"미국 CNN")+" 공포·탐욕 "+fxNum(score,1)+"점":"지수 데이터 확인 전"}"
-    style="--sentiment:${percent}%;--sentiment-color:${color}"><span>${valid?fxNum(score,korea?1:0):"—"}</span></div>
-  <small class="fx-v5-sentiment-date"><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="${sourceLabel}">${sourceLabel} ↗</a>
-    <span>${valid?fxEscape(formattedDate)+" "+(korea?"장 마감":us.source_cadence==="intraday"?"발표 시점":"발표 기준"):"기준일 확인 전"}</span>
-    ${secondary?`<span title="한국 코스닥 공포·탐욕 지수">${secondary}</span>`:""}
-  </small>
+ const peer=kosdaqValid?`<div class="fx-v5-sentiment-peer"><span>코스닥</span><strong>${fxNum(kosdaq,1)}</strong><em>${fxEscape(kr.kosdaq?.label||"상태 확인 전")}</em></div>`: 
+   `<div class="fx-v5-sentiment-peer fx-v5-sentiment-peernote">${korea?"코스닥 자료 확인 전":"미국 시장 심리 · 0–100 지수"}</div>`;
+ return `<section class="fx-v5-sentiment ${korea?"is-korea":"is-us"}" style="--sentiment:${percent}%;--sentiment-color:${color}" aria-label="${korea?"한국 코스피":"미국 CNN"} 공포·탐욕 지수" title="${korea?"한국 코스피·코스닥 기반 민간 산출 지수. CNN과 산출 방식이 다릅니다.":"미국 CNN 공포·탐욕 지수. 한국 시장 심리를 나타내지 않습니다."}">
+  <div class="fx-v5-sentiment-top">
+    <strong>${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
+    <button type="button" class="fx-v5-sentiment-switch" data-fx-sentiment-next aria-label="${next}" title="${next}">›</button>
+  </div>
+  <div class="fx-v5-sentiment-main">
+    <div class="fx-v5-sentiment-left">
+      <div class="fx-v5-sentiment-current"><span>${korea?"코스피":"미국 지수"}</span><b>${fxEscape(label)}</b></div>
+      ${peer}
+    </div>
+    <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?(korea?"한국 코스피":"미국 CNN")+" 공포·탐욕 "+fxNum(score,1)+"점":"지수 데이터 확인 전"}"><span>${valid?fxNum(score,korea?1:0):"—"}</span></div>
+  </div>
+  <div class="fx-v5-sentiment-bottom">
+    <span>${fxEscape(dateText)}</span>
+    <a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="출처: ${sourceLabel}">${sourceLabel} ↗</a>
+  </div>
  </section>`;
 }
 function fxHome(ctx){
