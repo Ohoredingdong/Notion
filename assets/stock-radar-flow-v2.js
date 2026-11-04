@@ -391,7 +391,7 @@ function fxV5Sentiment(ctx){
   <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?(korea?"한국 코스피":"미국 CNN")+" 공포·탐욕 "+fxNum(score,1)+"점":"지수 데이터 확인 전"}"
     style="--sentiment:${percent}%;--sentiment-color:${color}"><span>${valid?fxNum(score,korea?1:0):"—"}</span></div>
   <small class="fx-v5-sentiment-date"><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="${sourceLabel}">${sourceLabel} ↗</a>
-    <span>${valid?fxEscape(formattedDate)+" 장 마감":"기준일 확인 전"}</span>
+    <span>${valid?fxEscape(formattedDate)+" "+(korea?"장 마감":us.source_cadence==="intraday"?"발표 시점":"발표 기준"):"기준일 확인 전"}</span>
     ${secondary?`<span title="한국 코스닥 공포·탐욕 지수">${secondary}</span>`:""}
   </small>
  </section>`;
