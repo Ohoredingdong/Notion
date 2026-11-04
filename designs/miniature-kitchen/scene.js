@@ -1,7 +1,8 @@
 /* Miniature scene; the journal adapter persists only its separate preview key. */
 (() => {
   'use strict';
-  const FRIDGE = './designs/miniature-kitchen/assets/fridge-white-redo-v1.png';
+  const FRIDGE = './designs/miniature-kitchen/assets/fridge-front-reference-v1.png';
+  const CABINET_PHOTO = './designs/miniature-kitchen/assets/fridge-open-reference-v1.png';
   const ROOM_FRIDGE = './designs/miniature-kitchen/assets/fridge-slim-white-v2.png';
   const FOOD_SCENE = './designs/miniature-kitchen/assets/food-organizers-redo-v1.png';
   const INNER_DOORS = './designs/miniature-kitchen/assets/door-insides.png';
@@ -14,10 +15,10 @@
   const doorBoxes={"freshLeft":[69,63,407,751],"freshRight":[549,63,407,751],"frozenLeft":[69,890,407,535],"frozenRight":[549,890,407,535]};
   // Geometry is measured from the unwarped open cabinet, not the food positions.
   const panels={
-    freshLeft:{name:'냉장 왼쪽',kind:'냉장',x:.006,y:.004,w:.495,h:.602,zx:26/699,zy:31/787,zw:320/699,zh:433/787},
-    freshRight:{name:'냉장 오른쪽',kind:'냉장',x:.508,y:.004,w:.487,h:.602,zx:363/699,zy:31/787,zw:313/699,zh:433/787},
-    frozenLeft:{name:'냉동 왼쪽',kind:'냉동',x:.006,y:.614,w:.495,h:.350,zx:27/699,zy:495/787,zw:320/699,zh:246/787},
-    frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.508,y:.614,w:.487,h:.350,zx:364/699,zy:495/787,zw:312/699,zh:246/787}
+    freshLeft:{name:'냉장 왼쪽',kind:'냉장',x:.004,y:0,w:.494,h:.665,zx:47/699,zy:74/828,zw:299/699,zh:437/828},
+    freshRight:{name:'냉장 오른쪽',kind:'냉장',x:.502,y:0,w:.494,h:.665,zx:358/699,zy:74/828,zw:298/699,zh:437/828},
+    frozenLeft:{name:'냉동 왼쪽',kind:'냉동',x:.004,y:.674,w:.494,h:.301,zx:32/699,zy:567/828,zw:314/699,zh:220/828},
+    frozenRight:{name:'냉동 오른쪽',kind:'냉동',x:.502,y:.674,w:.494,h:.301,zx:358/699,zy:567/828,zw:313/699,zh:220/828}
   };
   const props={utensils:{name:'도자기 도구통',crop:[48,15,550,648]},flowers:{name:'데이지 유리병',crop:[735,25,510,640]},cup:{name:'우드 트레이와 찻잔',crop:[24,685,694,495]},cookies:{name:'쿠키 유리병',crop:[773,675,445,504]},frame:{name:'우드 액자',crop:[48,15,550,648]},basket:{name:'바구니',crop:[773,675,445,504]}};
   let serial=20, layer=20, cropSerial=0, decorating=false, selected=null, active=null, previousFocus=null, decorEdit=null, announcementTimer=0, highlightedItem=null, highlightUntil=0;
@@ -30,20 +31,20 @@
   const doorForZone=z=>z.startsWith('door')?z.slice(4,5).toLowerCase()+z.slice(5):z;
   const isAvailable=z=>!panels[doorForZone(z)]||doors[doorForZone(z)];
   const items=[
-    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.25,y:.32,z:1},
-    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshRight',x:.75,y:.891,z:2},
-    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshLeft',x:.5,y:.77,z:3},
-    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshRight',x:.25,y:.855,z:4},
-    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(1),zone:'freshLeft',x:.75,y:.32,z:5},
+    {id:'egg',kind:'food',name:'계란',quantity:'6개',expiry:date(),zone:'freshLeft',x:.75,y:.15,z:1},
+    {id:'milk',kind:'food',name:'우유',quantity:'500ml',expiry:date(1),zone:'freshRight',x:.5,y:.5,z:2},
+    {id:'tofu',kind:'food',name:'두부',quantity:'1모',expiry:date(3),zone:'freshLeft',x:.75,y:.5,z:3},
+    {id:'broccoli',kind:'food',name:'브로콜리',quantity:'1개',expiry:date(2),zone:'freshRight',x:.5,y:.15,z:4},
+    {id:'tomato',kind:'food',name:'토마토',quantity:'3개',expiry:date(1),zone:'freshLeft',x:.25,y:.15,z:5},
     {id:'fish',kind:'food',name:'생선',quantity:'2조각',expiry:date(14),zone:'frozenLeft',x:.5,y:.907,z:6},
     ...['간장','고추장','된장','소금'].map((name,index)=>({id:'spice'+index,kind:'seasoning',name,quantity:index===0?'150ml':'',expiry:date(30+index*10),zone:index===0||index===3?'doorFreshLeft':'doorFreshRight',x:index%2?.3:.7,y:index<2?.45:.86,z:7+index})),
-    {id:'scallion',kind:'food',name:'대파',quantity:'1개',expiry:date(5),zone:'freshRight',x:.5,y:.99,z:11},
-    {id:'mushroom',kind:'food',name:'양송이버섯',quantity:'100g',expiry:date(5),zone:'freshLeft',x:.75,y:.64,z:12},
-    {id:'kimchi',kind:'food',name:'김치',quantity:'200g',expiry:date(12),zone:'freshLeft',x:.25,y:.64,z:13},
+    {id:'scallion',kind:'food',name:'대파',quantity:'1개',expiry:date(5),zone:'freshRight',x:.5,y:.85,z:11},
+    {id:'mushroom',kind:'food',name:'양송이버섯',quantity:'100g',expiry:date(5),zone:'freshLeft',x:.5,y:.85,z:12},
+    {id:'kimchi',kind:'food',name:'김치',quantity:'200g',expiry:date(12),zone:'freshLeft',x:.25,y:.5,z:13},
     {id:'beef',kind:'food',name:'소고기',quantity:'300g',expiry:date(12),zone:'frozenLeft',x:.5,y:.472,z:14},
     {id:'shrimp',kind:'food',name:'새우',quantity:'200g',expiry:date(30),zone:'frozenRight',x:.5,y:.297,z:15},
-    {id:'dumplings',kind:'food',name:'만두',quantity:'1팩',expiry:date(18),zone:'frozenRight',x:.5,y:.585,z:16},
-    {id:'mixveg',kind:'food',name:'냉동 채소',quantity:'200g',expiry:date(25),zone:'frozenRight',x:.5,y:.907,z:17},
+    {id:'dumplings',kind:'food',name:'만두',quantity:'1팩',expiry:date(18),zone:'frozenRight',x:.25,y:1,z:16},
+    {id:'mixveg',kind:'food',name:'냉동 채소',quantity:'200g',expiry:date(25),zone:'frozenRight',x:.75,y:1,z:17},
     {id:'meal',kind:'meal',name:'계란 볶음밥',zone:'counter',x:.46,y:.96,z:18},
     {id:'cup',kind:'decor',art:'cup',name:props.cup.name,zone:'counter',x:.075,y:.98,z:20}
   ];
@@ -121,7 +122,20 @@
     const id='mini-crop-'+(++cropSerial),[x,y,w,h]=box;
     return `<svg class="${cls}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs><image href="${asset}" x="0" y="0" width="${total[0]}" height="${total[1]}" clip-path="url(#${id})"/></svg>`;
   }
-  const frontArt=(cls='',panel=null)=>crop(FRIDGE,panel?[788+701*panel.x,130+788*panel.y,701*panel.w,788*panel.h]:[788,130,701,788],[1536,1024],cls);
+  const frontArt=(cls='',panel=null)=>{
+    const fresh=panel?panel.y<.5:null,box=!panel?[808,115,620,828]:[808+620*panel.x,fresh?115:646,620*panel.w,fresh?531:297];
+    return crop(FRIDGE,box,[1536,1024],cls,fresh?'xMidYMax slice':'xMidYMin slice');
+  };
+  // Hardware bands retain their native aspect. Only blank wall/flat frame
+  // texture stretches, as a nine-slice UI surface, to the measured reference.
+  function cabinetArt(){
+    const scale=699/1002,bands=[[172,48,0,48*scale],[220,238,48*scale,197.63-48*scale],[458,24,197.63,24*scale],[482,153,214.3725,358.43-214.3725],[635,24,358.43,24*scale],[659,158,375.1725,501.92-375.1725],[817,20,501.92,20*scale],[837,13,515.8721,550.62-515.8721],[850,194,550.62,194*scale],[1044,2,685.9553,2*scale],[1060,153,687.3505,153*scale],[1213,20,794.084,20*scale],[1256,28,808.0361,19.9639]];
+    const regions=bands.flatMap(([sy,sh,dy,dh],band)=>{
+      const xs=sy>=220&&sy<837?[[60,488,0,349.5],[580,482,349.5,349.5]]:[[60,1002,0,699]];
+      return xs.map(([sx,sw,dx,dw],part)=>({sy,sh,dy,dh,sx,sw,dx,dw,id:'cabinet-band-'+band+'-'+part}));
+    });
+    return `<svg class="cabinet-photo" viewBox="0 0 699 828" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>${regions.map(r=>`<clipPath id="${r.id}"><rect x="${r.dx}" y="${r.dy}" width="${r.dw+.25}" height="${r.dh+.25}"/></clipPath>`).join('')}</defs>${regions.map(r=>`<image href="${CABINET_PHOTO}" width="${1122*r.dw/r.sw}" height="${1402*r.dh/r.sh}" x="${r.dx-r.sx*r.dw/r.sw}" y="${r.dy-r.sy*r.dh/r.sh}" clip-path="url(#${r.id})"/>`).join('')}</svg>`;
+  }
   const roomFridgeArt=(cls='')=>crop(ROOM_FRIDGE,[106,115,812,1344],[1024,1536],cls,'xMidYMax meet');
   const roomCamera=()=>document.body.dataset.camera==='counter'||$('#panel-fridge').dataset.screenId==='D6';
   const roomPropBoxes={"flowers":[78,44,492,567],"cup":[656,159,514,439],"frame":[96,701,412,464],"basket":[647,699,540,469]};
@@ -181,7 +195,7 @@
     if(!room.getClientRects().length)return;
     room.style.removeProperty('--room-fit-width');
     let width=room.clientWidth||shell.clientWidth-28;
-    const inRoom=roomCamera(),logicalHeight=inRoom?500:800;
+    const inRoom=roomCamera(),logicalHeight=inRoom?500:828;
     const panel=room.closest('.home-panel');
     if(panel){
       const host=$(document.body.dataset.camera==='fridge'?'#fridgeSceneHost':'#decorStage'),box=(host||room).getBoundingClientRect(),panelBox=(host||panel).getBoundingClientRect();
@@ -195,7 +209,7 @@
       width=Math.min(width,available*1000/logicalHeight);
     }else if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.home-shortcuts')?.offsetHeight||66;width=Math.min(width,Math.max(240,innerHeight-top-dock-12));}
     if(inRoom)width=($(document.body.dataset.camera==='counter'?'#decorStage':'#fridgeSceneHost')?.clientWidth||shell.clientWidth);
-    else width=Math.min(width,318*homeScale);
+    else width=Math.min(width,302*homeScale);
     room.style.setProperty('--room-fit-width',width+'px');
     const scale=width/1000;
     shell.style.setProperty('--scene-scale',String(scale));
@@ -313,7 +327,7 @@
       });
     }
   }
-  $('#cabinet').innerHTML=crop(FRIDGE,[49,130,699,787],[1536,1024]);
+  $('#cabinet').innerHTML=cabinetArt();
   const decorFridge=document.createElement('div');decorFridge.className='decor-fridge-backdrop';decorFridge.setAttribute('aria-hidden','true');decorFridge.inert=true;decorFridge.style.pointerEvents='none';decorFridge.innerHTML=roomFridgeArt('decor-fridge-art');$('.scene-world').appendChild(decorFridge);
   for(const [key,p] of Object.entries(panels)) {
     const zone=document.createElement('div');zone.className='drop-zone';zone.dataset.zone=key;zone.setAttribute('aria-label',p.name+' 재료');Object.assign(zone.style,{left:p.zx*100+'%',top:p.zy*100+'%',width:p.zw*100+'%',height:p.zh*100+'%'});$('#fridgeInteriors').appendChild(zone);
@@ -321,9 +335,8 @@
     const cargo=document.createElement('div');cargo.className='door-cargo'+(key.endsWith('Right')?' right':'');cargo.dataset.cargo=key;Object.assign(cargo.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});const inner=document.createElement('div');inner.className='door-storage drop-zone';inner.dataset.zone='door'+key[0].toUpperCase()+key.slice(1);inner.setAttribute('aria-label',p.name+' 문 선반');cargo.appendChild(inner);$('.fridge-stage').appendChild(cargo);
   }
   const glass=document.createElement('div');glass.className='freezer-glass-front';glass.setAttribute('aria-hidden','true');
-  const drawerEdges=[[93,645,291,96],[93,753,291,95],[425,638,287,60],[425,704,287,65],[425,775,287,73]];
-  const rimId='drawer-rim-'+(++cropSerial),rimRects=drawerEdges.flatMap(([x,y,w,h])=>[[x,y,w,4],[x,y+h-6,w,6],[x,y,4,h],[x+w-4,y,4,h]]).map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('');
-  glass.innerHTML=`<svg viewBox="49 130 699 787" aria-hidden="true"><defs><clipPath id="${rimId}">${rimRects}</clipPath></defs><image href="${FRIDGE}" width="1536" height="1024" clip-path="url(#${rimId})"/></svg>`;$('#fridgeInteriors').appendChild(glass);
+  const drawerRims=[[32,576,314,103],[32,688,314,99],[358,576,313,103],[358,688,313,99]];
+  glass.innerHTML=`<svg viewBox="0 0 699 828" aria-hidden="true">${drawerRims.map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="none" stroke="#fff8e3" stroke-opacity=".55" stroke-width="3"/>`).join('')}</svg>`;$('#fridgeInteriors').appendChild(glass);
   function place(button,item){button.style.left=item.x*100+'%';button.style.top=item.y*100+'%';button.style.zIndex=String(item.z);}
   function syncShelfLabels(){
     // Keep annotations above neighboring food art without changing stored positions or food layers.
@@ -337,26 +350,71 @@
     }
   }
   function constrainItems(){
-    const shelves={freshLeft:[317,454,590],freshRight:[411,503,590],frozenLeft:[741,848],frozenRight:[698,769,848]};
+    const shelves={freshLeft:[206,367,511],freshRight:[206,367,511],frozenLeft:[679,787],frozenRight:[679,787]},groups=new Map();
     for(const button of document.querySelectorAll('.drop-zone>.item')){
       const item=sceneItems().find(r=>r.id===button.dataset.item),zone=button.parentElement,width=zone.clientWidth,height=zone.clientHeight;
       if(!item||!width||getComputedStyle(button).visibility!=='visible')continue;
       place(button,item);
       if(button.dataset.foodProfile&&button.closest('.fridge-interiors')){
         const css=getComputedStyle(button),w=parseFloat(css.getPropertyValue('--profile-width')),h=parseFloat(css.getPropertyValue('--profile-height'));
-        const tall=['milk','broccoli'].includes(button.dataset.foodProfile);
-        // Capacity belongs to the compartment and food type, never mutable x/y.
-        const capacity={freshLeft:130,freshRight:tall?240:82,frozenLeft:104,frozenRight:70}[item.zone]||height;
+        const capacity={freshLeft:130,freshRight:130,frozenLeft:92,frozenRight:92}[item.zone]||height;
         const fit=Math.min(1,width/w,height/h,capacity/h),visualWidth=w*fit,visualHeight=h*fit;
         button.style.setProperty('--food-fit',String(fit));
-        const half=Math.min(.5,visualWidth/2/width),panel=panels[item.zone],floors=shelves[item.zone]||[];
-        const ceiling=item.zone.startsWith('frozen')?625:161;
-        const valid=floors.map((y,index)=>({index,anchor:((y-130)/787-panel.zy)/panel.zh,clearance:(y-(index?floors[index-1]:ceiling))*800/787})).filter(f=>f.clearance>=visualHeight-.5);
-        const preferred=clamp(Math.floor(item.y*floors.length),0,floors.length-1),support=valid.reduce((best,f)=>!best||Math.abs(f.index-preferred)<Math.abs(best.index-preferred)?f:best,null);
-        const anchor=support?support.anchor:clamp(item.y,Math.min(1,visualHeight/height),1);
-        button.style.left=clamp(item.x,half,1-half)*100+'%';button.style.top=anchor*100+'%';
+        const panel=panels[item.zone],floors=shelves[item.zone]||[],ceiling=item.zone.startsWith('frozen')?567:74;
+        const valid=floors.map((y,index)=>({index,anchor:(y/828-panel.zy)/panel.zh,clearance:y-(index?floors[index-1]:ceiling)})).filter(f=>f.clearance>=visualHeight-.5);
+        const preferred=valid.reduce((best,f)=>!best||Math.abs(f.anchor-item.y)<Math.abs(best.anchor-item.y)?f:best,null)?.index||0;
+        const fresh=item.zone.startsWith('fresh'),group=fresh?'fresh':zone,offset=fresh?panel.zx*699-47:0,packWidth=fresh?609:width,preferredX=(offset+item.x*width)/packWidth;
+        if(!groups.has(group))groups.set(group,[]);
+        groups.get(group).push({button,item,width:packWidth,zoneWidth:width,offset,preferredX,height,visualWidth,visualHeight,valid,preferred});
       }else{const half=Math.min(.5,button.offsetWidth/2/width);button.style.left=clamp(item.x,half,1-half)*100+'%';}
     }
+    // Project saved normalized coordinates onto the new shelves. Only DOM
+    // positions change: existing v1 records and deliberate drag coordinates
+    // remain intact, while two old rows can no longer obscure each other.
+    for(const entries of groups.values()){
+      const gap=2,width=entries[0].width,priority=entries.reduce((best,e)=>!best||e.item.z>best.item.z?e:best,null);
+      const pack=pinned=>{
+        const bins=[],floors=[...new Set(entries.flatMap(e=>e.valid.map(f=>f.index)))].sort((a,b)=>a-b);
+        const center=clamp(priority.preferredX*width,priority.visualWidth/2,width-priority.visualWidth/2);
+        for(const row of floors){
+          const ranges=pinned&&row===priority.preferred?[[0,center-priority.visualWidth/2-gap],[center+priority.visualWidth/2+gap,width]]:[[0,width]];
+          for(const [start,end] of ranges)if(end>start)bins.push({row,start,end,remaining:end-start+gap,items:[]});
+        }
+        const pending=entries.filter(e=>!pinned||e!==priority).sort((a,b)=>b.visualWidth-a.visualWidth||a.item.y-b.item.y||b.item.z-a.item.z||a.item.id.localeCompare(b.item.id)),failed=new Set();let visits=0;
+        const search=index=>{
+          if(index===pending.length)return true;
+          if(++visits>50000)return false;
+          const key=index+':'+bins.map(bin=>bin.remaining.toFixed(3)).join(',');if(failed.has(key))return false;
+          const entry=pending[index],needed=entry.visualWidth+gap;
+          const options=bins.filter(bin=>bin.remaining+.001>=needed&&entry.valid.some(f=>f.index===bin.row)).sort((a,b)=>{
+            const score=bin=>Math.abs(bin.row-entry.preferred)*width+Math.abs(clamp(entry.preferredX*width,bin.start+entry.visualWidth/2,bin.end-entry.visualWidth/2)-entry.preferredX*width)+(bin.remaining-needed)*.001;
+            return score(a)-score(b);
+          });
+          for(const bin of options){bin.items.push(entry);bin.remaining-=needed;if(search(index+1))return true;bin.remaining+=needed;bin.items.pop();}
+          failed.add(key);return false;
+        };
+        if(!search(0))return null;
+        return {bins,pinned,center};
+      };
+      const layout=pack(true)||pack(false);
+      if(!layout){
+        // An arbitrarily full compartment still keeps every record and its
+        // inventory-list access; never erase data to make the picture fit.
+        for(const entry of entries){const support=entry.valid.find(f=>f.index===entry.preferred)||entry.valid[0];if(!support)continue;entry.button.style.left=(clamp(entry.preferredX*width,entry.visualWidth/2,width-entry.visualWidth/2)-entry.offset)/entry.zoneWidth*100+'%';entry.button.style.top=support.anchor*100+'%';}
+        continue;
+      }
+      const placeEntry=(entry,center,row)=>{entry.button.style.left=(center-entry.offset)/entry.zoneWidth*100+'%';entry.button.style.top=entry.valid.find(f=>f.index===row).anchor*100+'%';};
+      if(layout.pinned)placeEntry(priority,layout.center,priority.preferred);
+      for(const bin of layout.bins){
+        bin.items.sort((a,b)=>a.preferredX-b.preferredX||b.item.z-a.item.z||a.item.id.localeCompare(b.item.id));
+        let edge=bin.start;
+        for(const entry of bin.items){const half=entry.visualWidth/2;entry.center=Math.max(clamp(entry.preferredX*width,bin.start+half,bin.end-half),edge+half);edge=entry.center+half+gap;}
+        edge=bin.end;
+        for(const entry of [...bin.items].reverse()){const half=entry.visualWidth/2;entry.center=Math.min(entry.center,edge-half);edge=entry.center-half-gap;}
+        for(const entry of bin.items)placeEntry(entry,entry.center,bin.row);
+      }
+    }
+
     syncShelfLabels();
   }
 
@@ -442,7 +500,7 @@
     if(samePointer&&performance.now()-p.at<650&&Math.hypot(event.clientX-p.x,event.clientY-p.y)<8){event.preventDefault();event.stopImmediatePropagation();}
   },true);
   function cleanup(){cancelAnimationFrame(scrollFrame);scrollFrame=0;pointer=null;if(active){active.button.classList.remove('is-dragging');try{active.button.releasePointerCapture(active.pointer);}catch(_){}active=null;}ghost?.remove();ghost=null;for(const zone of document.querySelectorAll('.is-over'))zone.classList.remove('is-over');}
-  function dropAt(x,y){const hit=document.elementFromPoint(x,y);if(hit?.closest('.home-shortcuts,#homeWorktop,.fridge-add,#addFood,.decor-footer,.decor-toolbar,.worktop-actions,.kitchen-milestone,.kitchen-progress,.scene-tools,.room-caption,.tray'))return null;const direct=hit?.closest('.drop-zone');if(direct&&isAvailable(direct.dataset.zone))return direct;return [...document.querySelectorAll('.drop-zone')].reverse().find(z=>{if(!isAvailable(z.dataset.zone)||z.hidden||getComputedStyle(z).visibility!=='visible')return false;const r=z.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;})||null;}
+  function dropAt(x,y){const hit=document.elementFromPoint(x,y);if(hit?.closest('.home-shortcuts,#homeWorktop,.fridge-add,#addFood,.decor-footer,.decor-toolbar,.worktop-actions,.kitchen-milestone,.kitchen-progress,.scene-tools,.room-caption,.tray'))return null;const direct=hit?.closest('.drop-zone');if(direct&&isAvailable(direct.dataset.zone)){const r=direct.getBoundingClientRect();if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return direct;}return [...document.querySelectorAll('.drop-zone')].reverse().find(z=>{if(!isAvailable(z.dataset.zone)||z.hidden||getComputedStyle(z).visibility!=='visible')return false;const r=z.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;})||null;}
   function highlightDrop(x,y){for(const z of document.querySelectorAll('.is-over'))z.classList.remove('is-over');const target=dropAt(x,y);if(active&&target&&isAvailable(target.dataset.zone)&&(active.item.kind!=='decor'||target.dataset.zone==='counter'))target.classList.add('is-over');}
   function scrollDrag(){
     scrollFrame=0;if(!active?.moved||!pointer)return;

@@ -1,40 +1,56 @@
-/* The actual A1/A5 appliance and the panoramic D1/D5/D6 room use different cameras. */
-:root{--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.36));--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)))}
+/* Reference-sized home chrome; the scene and controls share one composition. */
+:root{--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.36));--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)));--fullflow-nav:calc(60px * var(--home-ui-scale,1))}
 body[data-mode]{align-items:flex-start;padding-top:8px}
 body[data-mode] .shell{margin:0 auto!important}
 body[data-mode] #tray{top:8px;bottom:auto;left:50%;right:auto;margin:0;transform:translateX(-50%)}
 body[data-mode] #tray[data-workflow-route="item"],body[data-mode] #tray[data-workflow-route="supplementDetail"]{top:auto;bottom:calc(100svh - 8px - var(--widget-frame-height))}
-body[data-mode] .shell:before{background-image:none;background-color:#fffaf4}
+body[data-mode] .shell:before{background-image:none;background-color:#fbf5ed}
 body .fitted-side-counters{display:none!important}
-body[data-home="fridge"] .masthead{background:#fffdfa;border-radius:0}
-body[data-home="fridge"] #panel-fridge{padding-inline:14px;gap:7px}
-body[data-home="fridge"] #fridgeSceneHost{background:linear-gradient(#faf8f4,#f5f0e8);border:1px solid #ece6dc;border-radius:10px;overflow:hidden}
-body[data-home="fridge"] #dailyBalance{padding:9px 10px 10px;border-radius:10px;box-shadow:none}
-body[data-home="fridge"] #dailyBalance .balance-head{margin-bottom:7px}
-body[data-home="fridge"] #dailyBalance .balance-head b{font-size:calc(13px * var(--home-ui-scale))}
-body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:calc(9px * var(--home-ui-scale))}
-body[data-home="fridge"] #dailyBalance .balance-name{font-size:calc(10px * var(--home-ui-scale));margin-bottom:4px}
-body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:calc(18px * var(--home-ui-scale));font-weight:650}
-body[data-home="fridge"] #dailyBalance .balance-value[data-empty="true"] .balance-number strong{font-size:calc(16px * var(--home-ui-scale));font-weight:450}
-body[data-home="fridge"] #dailyBalance .balance-number strong small,body[data-home="fridge"] #dailyBalance .balance-number>span{font-size:calc(10px * var(--home-ui-scale))}
-body[data-home="fridge"] #dailyBalance .balance-track{height:calc(6px * var(--home-ui-scale))!important;margin-top:5px}
-body[data-home="fridge"] #addFood{border-radius:9px;font-size:calc(14px * var(--home-ui-scale));box-shadow:none}
-body[data-home="fridge"] #homeStorageNotice{width:50px!important;left:12px!important;top:4px!important}
-body[data-home="fridge"] #homeStorageNotice>span{display:none}
-body[data-home="fridge"] #homeStorageNotice button{font-size:10px;color:#8d7e70;min-width:44px}
-body .door-inside-art{filter:saturate(.65) brightness(1.07)}
-body .item[data-food-profile="eggs"]{--profile-width:145px;--profile-height:91px}
-body .item[data-food-profile="tomatoes"]{--profile-width:145px;--profile-height:90px}
-body .item[data-food-profile="tofu"]{--profile-width:190px;--profile-height:119px}
-body .item[data-food-profile="broccoli"]{--profile-width:160px;--profile-height:102px}
+body[data-mode][data-home="fridge"] .masthead{height:calc(44px * var(--home-ui-scale))!important;min-height:calc(44px * var(--home-ui-scale));background:none;border-radius:0}
+body[data-mode][data-home="fridge"] .brand h1{font-size:calc(20px * var(--home-ui-scale));font-weight:700;color:#60351e}
+body[data-home="fridge"] .story-mark{width:calc(25px * var(--home-ui-scale));height:calc(25px * var(--home-ui-scale));color:#6d4024}
+body[data-home="fridge"] .header-actions svg{width:calc(25px * var(--home-ui-scale));height:calc(25px * var(--home-ui-scale));color:#71492c}
+body[data-home="fridge"] #panel-fridge{padding-inline:12px;gap:0;padding-bottom:0}
+body[data-home="fridge"] #fridgeSceneHost{background:none;border:0;border-radius:0;overflow:hidden}
+body[data-home="fridge"] .room .fridge-stage{left:150.5px!important;bottom:0!important;width:699px!important;height:828px!important}
+body[data-home="fridge"] #dailyBalance{padding:10px 12px 9px;border:0;border-radius:14px;background:#fffdf8;box-shadow:0 1px 4px #7657341c}
+body[data-home="fridge"] #dailyBalance .balance-head{min-height:25px;margin-bottom:5px}
+body[data-home="fridge"] #dailyBalance .balance-head b{font-size:calc(18px * var(--home-ui-scale));font-weight:700}
+body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:calc(12px * var(--home-ui-scale));color:#584b3e}
+body[data-home="fridge"] #dailyBalance .balance-name{display:flex;align-items:center;gap:4px;font-size:calc(14px * var(--home-ui-scale));font-weight:600;margin-bottom:3px;white-space:nowrap}
+body[data-home="fridge"] #dailyBalance .balance-name:before{display:none}
+.balance-symbol{display:block;width:calc(18px * var(--home-ui-scale));height:calc(21px * var(--home-ui-scale));flex:none;color:#ed9b17}
+[data-balance="protein"] .balance-symbol{color:#e6a126}[data-balance="fat"] .balance-symbol{color:#ff6844}
+body[data-home="fridge"] #dailyBalance .balance-number{min-height:26px;gap:3px;flex-wrap:nowrap}
+body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:calc(19px * var(--home-ui-scale));font-weight:650;letter-spacing:-.5px}
+body[data-home="fridge"] #dailyBalance .balance-value[data-empty="true"] .balance-number strong{font-size:calc(18px * var(--home-ui-scale));font-weight:450}
+body[data-home="fridge"] #dailyBalance .balance-number strong small,body[data-home="fridge"] #dailyBalance .balance-number>span{font-size:calc(12px * var(--home-ui-scale));color:#645446;white-space:nowrap}
+body[data-home="fridge"] #dailyBalance .balance-track{height:calc(9px * var(--home-ui-scale))!important;margin-top:3px;background:#eae3dc}
+body[data-home="fridge"] #homeWorktop{height:44px;min-height:44px;margin:0}
+body[data-home="fridge"] #addFood{position:relative;isolation:isolate;height:44px;min-height:44px;border:0;border-radius:0;background:none;box-shadow:none;font-size:calc(19px * var(--home-ui-scale));font-weight:550}
+body[data-home="fridge"] #addFood:before{content:'';position:absolute;z-index:-1;inset:6px 0;border:1px solid #ffccb6;border-radius:99px;background:linear-gradient(90deg,#ff653a,#ff4e29);box-shadow:inset 0 1px 2px #ffffff40}
+body[data-home="fridge"] #addFood .icon{width:23px;height:23px}
+body[data-home="fridge"] #homeStorageNotice[data-storage-status="temporary"]{display:none!important}
+body .fridge-interiors .drop-zone[data-zone^="fresh"]{pointer-events:none}
+body .door-inside-art{filter:sepia(.16) saturate(.8) brightness(1.035)}
+body .item[data-food-profile="eggs"]{--profile-width:148px;--profile-height:94px}
+body .item[data-food-profile="tomatoes"]{--profile-width:148px;--profile-height:93px}
+body .item[data-food-profile="tofu"]{--profile-width:148px;--profile-height:94px}
+body .item[data-food-profile="broccoli"]{--profile-width:210px;--profile-height:134px}
 body .item[data-food-profile="milk"]{--profile-width:83px;--profile-height:141px}
-body .item[data-food-profile="scallion"]{--profile-width:195px;--profile-height:112px}
-body .item[data-food-profile="mushrooms"]{--profile-width:145px;--profile-height:85px}
+body .item[data-food-profile="scallion"]{--profile-width:235px;--profile-height:135px}
+body .item[data-food-profile="mushrooms"]{--profile-width:205px;--profile-height:121px}
 body .item[data-food-profile="kimchi"]{--profile-width:145px;--profile-height:100px}
-body .item[data-food-profile="tray"]{--profile-width:245px;--profile-height:90px}
-body .item[data-food-profile="frozen-small"]{--profile-width:225px;--profile-height:84px}
-body[data-home="fridge"] .room .shelf-label[data-tone="today"],body[data-home="fridge"] .room .shelf-label[data-tone="tomorrow"],body[data-home="fridge"] .room .shelf-label.is-selected{border:1px solid #eee3d7;background:#fffdf6f2;box-shadow:0 1px 2px #38230d12}
-body[data-home="fridge"] .room .shelf-label:not(.is-selected) b,body[data-home="fridge"] .room .shelf-label:not(.is-selected) small{font-size:calc(8px * var(--home-ui-scale) / var(--scene-scale,1));font-weight:500}
+body .item[data-food-profile="tray"]{--profile-width:260px;--profile-height:95px}
+body .item[data-food-profile="generic"]{--profile-width:110px;--profile-height:75.625px}
+body .item[data-food-profile="frozen-small"]{--profile-width:145px;--profile-height:55px}
+body[data-home="fridge"] .room .shelf-label:not(.is-selected){opacity:0}
+body[data-home="fridge"] .room .shelf-label.is-selected{background:#fffdf6f2;box-shadow:0 1px 2px #38230d12}
+body[data-mode] .shell .home-shortcuts{height:var(--fullflow-nav);min-height:var(--fullflow-nav);padding:3px 8px;border-top:1px solid #eee2d5;background:#fffaf3}
+body[data-mode] .shell .home-shortcuts button{font-size:calc(14px * var(--home-ui-scale));font-weight:550;color:#65472d!important;border-radius:0;background:none!important;gap:3px}
+body[data-mode] .shell .home-shortcuts .nav-art{width:calc(26px * var(--home-ui-scale));height:calc(26px * var(--home-ui-scale))}
+body[data-mode] .shell .home-shortcuts [aria-selected="true"]{color:#ff542b!important;background:none!important;box-shadow:none!important}
+body[data-mode] .shell #tab-fridge[aria-selected="true"] svg{fill:#ff5b31;stroke:#fff;stroke-width:1.5}
 /* Wide view: the background fits by width; its real cabinet feet anchor the appliance. */
 body[data-home-page="decor"] .shell{height:min(100svh,calc(190px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;max-height:100svh}
 body[data-home-page="decor"] #homeDecor{gap:0;overflow:hidden}
@@ -86,4 +102,13 @@ body[data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) #liveMessage{wi
 body.theme-stone[data-home-page="decor"] .room,body.theme-stone[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .room,body.theme-stone[data-home-page="growth"] .growth-preview{filter:saturate(.65)}
 body.theme-stone[data-home="fridge"] #fridgeSceneHost{background-color:#f1f1ef}
 body #tray[data-workflow-route="add"] .registration-method-hero{background-position:0% 60%;background-size:310% auto}
-@media(max-width:360px){body[data-home="fridge"] #panel-fridge{padding-inline:10px}body[data-home="fridge"] #dailyBalance{padding:8px}body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:8px}body[data-home="fridge"] #dailyBalance .balance-name{font-size:9px}body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:17px}body[data-home="fridge"] #dailyBalance .balance-number>span,body[data-home="fridge"] #dailyBalance .balance-number strong small{font-size:9px}body[data-home-page="decor"] .decor-heading{padding-right:104px}body[data-home-page="decor"] .decor-heading h2{font-size:14px}}
+@media(max-width:360px){body[data-home="fridge"] #panel-fridge{padding-inline:9px}body[data-mode][data-home="fridge"] .brand h1{font-size:18px}body[data-home="fridge"] #dailyBalance{padding:9px}body[data-home="fridge"] #dailyBalance .balance-head b{font-size:16px}body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:10px}body[data-home="fridge"] #dailyBalance .balance-name{font-size:12px;gap:2px}body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:17px}body[data-home="fridge"] #dailyBalance .balance-number>span,body[data-home="fridge"] #dailyBalance .balance-number strong small{font-size:10px}.balance-symbol{width:16px;height:19px}body[data-mode] .shell .home-shortcuts button{font-size:12px}body[data-mode] .shell .home-shortcuts .nav-art{width:24px;height:24px}body[data-home-page="decor"] .decor-heading{padding-right:104px}body[data-home-page="decor"] .decor-heading h2{font-size:14px}}
+/* Focused record details use their existing back header, as drawn in the reference. */
+body[data-home-page="monthly"] .shell{height:min(calc(100svh - 16px),500px)!important;padding-bottom:0!important}
+body[data-home-page="budget"] .shell{height:auto!important;max-height:calc(100svh - 16px);padding-bottom:0!important}
+body[data-home-page="budget"] #panel-records{flex:none}
+body[data-home-page="monthly"] .home-shortcuts,body[data-home-page="budget"] .home-shortcuts{display:none!important}
+body[data-home-page="nutrition"] .shell{height:min(calc(100svh - 16px),max(480px,calc(var(--widget-frame-width) * 1.23)))!important}
+body[data-home-page="recommendation"] .shell{height:min(calc(100svh - 16px),max(480px,calc(var(--widget-frame-width) * 1.23)))!important}
+body[data-home-page="plans"] .shell{height:min(calc(100svh - 16px),max(530px,calc(var(--widget-frame-width) * 1.36)))!important}
+@media(max-width:360px){body[data-home-page="recommendation"] .shell,body[data-home-page="nutrition"] .shell{height:min(calc(100svh - 16px),500px)!important}}
