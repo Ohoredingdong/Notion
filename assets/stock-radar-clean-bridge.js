@@ -190,7 +190,7 @@ async function load(){
  if(busy)return;
  lastLoadStartedAt=Date.now();
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -208,6 +208,7 @@ async function load(){
    if(okay&&key==="opportunitySummary")okay=!!val?.counts&&N(val.counts.tracked)!==null;
    if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
    if(okay&&key==="newsLink")okay=Array.isArray(val?.items)&&Number.isFinite(Date.parse(val?.generated_at||""));
+   if(okay&&key==="eventOutlook")okay=val?.version==="stock-event-outlook-v1"&&Array.isArray(val?.events)&&val.research_only===true&&val.automatic_orders===false;
    if(okay){
     const beforeTime=Date.parse(updated[key]?.generated_at||"");
     const afterTime=Date.parse(val?.generated_at||"");

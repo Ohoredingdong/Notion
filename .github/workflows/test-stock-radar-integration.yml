@@ -1,6 +1,16 @@
 name: Test Stock Radar Integrated UI
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'stock-radar-dashboard.html'
+      - 'stock-event-outlook.json'
+      - 'assets/stock-radar-clean-bridge.js'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'scripts/build_stock_event_outlook.py'
+      - 'stock-event-calendar-seed.json'
+      - '.github/workflows/test-stock-radar-integration.yml'
   push:
     branches: [main, 'fix/radar-feature-audit-20261030']
     paths:
@@ -55,6 +65,7 @@ jobs:
         run: |
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
           node --check assets/stock-radar-flow-v2.js
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py

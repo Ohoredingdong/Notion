@@ -2,10 +2,21 @@ name: Update Market Events
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/build_stock_event_outlook.py"
+      - "scripts/test_stock_event_outlook.py"
+      - "scripts/test_stock_event_ui.cjs"
+      - "stock-event-calendar-seed.json"
+      - ".github/workflows/update-market-events.yml"
   push:
     branches: [main]
     paths:
       - "scripts/update-market-events.py"
+      - "scripts/build_stock_event_outlook.py"
+      - "scripts/test_stock_event_outlook.py"
+      - "stock-event-calendar-seed.json"
       - "scripts/ensure-bok-market-events.py"
       - ".github/workflows/update-market-events.yml"
   schedule:
@@ -28,7 +39,16 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
       - run: python scripts/update-market-events.py
+        if: github.event_name != 'pull_request'
       - run: python scripts/ensure-bok-market-events.py
+        if: github.event_name != 'pull_request'
+      - name: Verify event outlook has no retroactive or fabricated trade signals
+        run: python -m unittest discover -s scripts -p "test_stock_event_outlook.py" -v
+      - name: Verify that events are shown only when truly upcoming
+        run: node scripts/test_stock_event_ui.cjs
+      - name: Build time-aware conditional sector scenarios
+        run: python scripts/build_stock_event_outlook.py
       - name: Publish data on current main
+        if: github.ref == 'refs/heads/main'
         run: >-
-          python scripts/publish_widget_data.py --message "data: update market events" market-events-data.json
+          python scripts/publish_widget_data.py --message "data: update market events" market-events-data.json stock-event-outlook.json

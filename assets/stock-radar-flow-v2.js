@@ -264,6 +264,31 @@ function fxV5StockNews(ctx,c){
  const matched=events.find(x=>String(x.symbol||"").replace(/\.(KS|KQ)$/,"")===id);
  const seen=new Set();
  const list=[];
+ // Surface a future, sourced event before backward-looking headlines; never a trading signal.
+ const outlook=ctx.data?.eventOutlook||{};
+ const outlookAt=Date.parse(outlook.generated_at||"");
+ const freshOutlook=outlook.version==="stock-event-outlook-v1"&&outlook.research_only===true&&
+   outlook.automatic_orders===false&&Number.isFinite(outlookAt)&&outlookAt<=now+300000&&now-outlookAt<=24*3600000;
+ if(freshOutlook){
+  const scenarios={rate:"매파적 결과: 성장주·차입 부담 / 완화적: 금리 부담 완화 가능",
+    inflation:"물가 예상 상회: 금리 부담 / 하회: 성장주에 우호적일 가능성",
+    jobs:"고용 강세: 성장·금리 효과 혼재 / 약세: 경기둔화 위험",
+    growth:"경기 예상 상회: 경기민감주 주목 / 하회: 경기둔화 위험",
+    policy:"정책 기대 대비 지원·규제 강도를 확인 · 선반영 주의"};
+  const upcoming=(outlook.events||[]).filter(e=>{
+   if(!e||!["official_policy_schedule","economic_calendar"].includes(e.kind)||!fxSafeHref(e.source_url))return false;
+   const at=Date.parse(e.event_at||"");
+   return Number.isFinite(at)&&at<=now+45*86400000&&(e.time_precision==="date_only"?at>=now-24*3600000:at>now);
+  }).sort((a,b)=>Date.parse(a.event_at)-Date.parse(b.event_at));
+  if(upcoming.length){
+   const e=upcoming[0],at=Date.parse(e.event_at);
+   const when=e.time_precision==="date_only"?String(e.event_date||"날짜 확인 필요")+" (현지 날짜)":
+     new Date(at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false});
+   list.push({title:"[예정] "+when+" · "+String(e.title||"중요 경제 발표"),
+     url:fxSafeHref(e.source_url),
+     note:"사전 시나리오 · "+(scenarios[e.category]||"실제 결과와 예상의 차이를 확인")+" · 매수 신호 아님"});
+  }
+ }
  for(const item of macro){
   const href=fxSafeHref(item.url);if(seen.has(href))continue;seen.add(href);
   const at=Date.parse(item.published_at);
