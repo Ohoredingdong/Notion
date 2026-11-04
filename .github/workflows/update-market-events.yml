@@ -7,6 +7,7 @@ on:
     paths:
       - "scripts/build_stock_event_outlook.py"
       - "scripts/test_stock_event_outlook.py"
+      - "scripts/test_stock_event_ui.cjs"
       - "stock-event-calendar-seed.json"
       - ".github/workflows/update-market-events.yml"
   push:
@@ -43,6 +44,8 @@ jobs:
         if: github.event_name != 'pull_request'
       - name: Verify event outlook has no retroactive or fabricated trade signals
         run: python -m unittest discover -s scripts -p "test_stock_event_outlook.py" -v
+      - name: Verify that events are shown only when truly upcoming
+        run: node scripts/test_stock_event_ui.cjs
       - name: Build time-aware conditional sector scenarios
         run: python scripts/build_stock_event_outlook.py
       - name: Publish data on current main
