@@ -1,5 +1,5 @@
 (()=>{'use strict';
-let D={},selected='005930',screen='home',market='ALL',favorites=[],rules=[],paper=[],busy=false,errors=[],storageError=false;
+let D={},selected='005930',screen='home',market='ALL',favorites=[],rules=[],paper=[],busy=false,errors=[],storageError=false,lastLoadStartedAt=0;
 function E(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 function N(v){return typeof v==="number"&&Number.isFinite(v)?v:null;}
@@ -166,8 +166,9 @@ async function read(name){
 
 async function load(){
  if(busy)return;
+ lastLoadStartedAt=Date.now();
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -184,6 +185,7 @@ async function load(){
    if(okay&&key==="accuracyAudit")okay=val?.version==="radar-accuracy-audit-v1"&&!!val.evaluation&&!!val.promotion_gates;
    if(okay&&key==="opportunitySummary")okay=!!val?.counts&&N(val.counts.tracked)!==null;
    if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
+   if(okay&&key==="newsLink")okay=Array.isArray(val?.items)&&Number.isFinite(Date.parse(val?.generated_at||""));
    if(okay){
     const beforeTime=Date.parse(updated[key]?.generated_at||"");
     const afterTime=Date.parse(val?.generated_at||"");
@@ -261,10 +263,35 @@ function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favor
 
 function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(id)),"_blank","noopener");}
 
-function render(){const host=document.getElementById("nr-home-content");if(!host)return;host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';const status=document.getElementById("source-status");if(status)status.textContent=(busy?"데이터 갱신 중 · ":"")+(D.raw?.generated_at?"저장 데이터 "+T(D.raw.generated_at):"원자료 확인 중")+(errors.length?" · 주의: "+errors.join(" / "):"") + (storageError?" · 브라우저 저장 실패: 재접속 시 관심·감시·모의 기록이 사라질 수 있습니다":"") + " · 실시간 호가 아님";if(status)status.title=status.textContent;}
+function ageMinutes(value){const d=Date.parse(value||"");return Number.isFinite(d)?Math.max(0,Math.round((Date.now()-d)/60000)):null}
+function render(){
+ const host=document.getElementById("nr-home-content");if(!host)return;
+ host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';
+ const status=document.getElementById("source-status");if(!status)return;
+ const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),warnings=[];
+ if(p!==null&&p>480)warnings.push("종목 자료 "+Math.round(p/60)+"시간 전");
+ if(m!==null&&m>360)warnings.push("시장 지표 "+Math.round(m/60)+"시간 전");
+ if(n===null)warnings.push("뉴스 수집 확인 전");
+ else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
+ if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
+ if(storageError)warnings.push("브라우저 저장 실패");
+ status.textContent=(busy?"자료 재조회 중 · ":"")+
+ (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
+ (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
+ (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
+ (warnings.length?" · 주의: "+warnings.join(" / "):"")+
+ " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
+ status.title=status.textContent;
+}
+function autoRefreshIfDue(){
+ if(busy||Date.now()-lastLoadStartedAt<300000||document.visibilityState==="hidden")return;
+ const el=document.activeElement;
+ if(el&&(el.matches?.("input,textarea,select")||el.isContentEditable))return;
+ load();
+}
 
 function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;storeValue("radar-last-market-v5",market);const c=window.StockRadarFlowV2?.pick?.();if(c){selected=String(c.symbol);storeValue("radar-last-symbol-v5",selected)}render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
-function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);try{const savedSymbol=JSON.parse(localStorage.getItem("radar-last-symbol-v5")||"null");const savedMarket=JSON.parse(localStorage.getItem("radar-last-market-v5")||"null");if(typeof savedSymbol==="string"&&savedSymbol.length<80)selected=savedSymbol;if(["ALL","KOSPI","KOSDAQ","NASDAQ","DOW"].includes(savedMarket))market=savedMarket}catch{}document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id)){selected=String(id);storeValue("radar-last-symbol-v5",selected)}},deep,helpers:{I,change,pointData,chartFor,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();}
+function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);try{const savedSymbol=JSON.parse(localStorage.getItem("radar-last-symbol-v5")||"null");const savedMarket=JSON.parse(localStorage.getItem("radar-last-market-v5")||"null");if(typeof savedSymbol==="string"&&savedSymbol.length<80)selected=savedSymbol;if(["ALL","KOSPI","KOSDAQ","NASDAQ","DOW"].includes(savedMarket))market=savedMarket}catch{}document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id)){selected=String(id);storeValue("radar-last-symbol-v5",selected)}},deep,helpers:{I,change,pointData,chartFor,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();window.setInterval(autoRefreshIfDue,300000);document.addEventListener('visibilitychange',autoRefreshIfDue);window.addEventListener('focus',autoRefreshIfDue);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
