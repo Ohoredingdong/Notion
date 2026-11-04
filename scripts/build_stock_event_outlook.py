@@ -76,7 +76,7 @@ def valid_url(value: str, official: bool = False) -> bool:
 
 def hypotheses(category: str) -> dict:
     row = CONDITIONS.get(category, CONDITIONS["policy"])
-    return {**row, "probability": None, "interpretation": "조건부 가설 · 투자 신호 아님"}
+    return {**row, "probability": None, "interpretation": "조건부 가설 · 매매 신호 아님"}
 
 
 def make_calendar_events(data: dict, now: datetime) -> tuple[list, bool]:
