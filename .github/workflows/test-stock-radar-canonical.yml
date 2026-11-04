@@ -1,0 +1,41 @@
+name: Verify Canonical Stock Radar Layout
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'stock-radar-dashboard.html'
+      - 'stock-value-radar.html'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'assets/stock-radar-clean-bridge.js'
+      - 'scripts/test_stock_radar_canonical_browser.py'
+      - '.github/workflows/test-stock-radar-canonical.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'stock-radar-dashboard.html'
+      - 'stock-value-radar.html'
+      - 'scripts/test_stock_radar_canonical_browser.py'
+      - '.github/workflows/test-stock-radar-canonical.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-visual-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Serve canonical pages
+        run: |
+          python -m http.server 8765 >/tmp/radar-canonical.log 2>&1 &
+      - name: Confirm duplicate URL redirects and panels stay within bounds
+        run: python scripts/test_stock_radar_canonical_browser.py
