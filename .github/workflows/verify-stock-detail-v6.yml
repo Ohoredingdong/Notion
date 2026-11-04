@@ -1,0 +1,36 @@
+name: Verify Stock Detail V6
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/stock-radar-flow-v2.js'
+      - 'stock-value-radar.html'
+      - 'scripts/test_stock_detail_v6.py'
+      - '.github/workflows/verify-stock-detail-v6.yml'
+permissions:
+  contents: read
+jobs:
+  detail-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'playwright==1.56.0'
+      - run: python -m playwright install chromium
+      - name: Check JS source and load the real saved data locally
+        run: |
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python -m http.server 8765 >/tmp/stock-detail-v6-http.log 2>&1 &
+      - name: Verify layout, explanations and working period buttons
+        run: python scripts/test_stock_detail_v6.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detail-v6-browser-evidence
+          path: detail-v6-artifacts/
+          retention-days: 5
