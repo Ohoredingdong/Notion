@@ -402,7 +402,9 @@ function fxV5Sentiment(ctx){
  const secondLabel=korea&&typeof kr.kosdaq?.label==="string"&&kr.kosdaq.label?kr.kosdaq.label:grade(secondScore);
  const color=score===null?"#aebed1":score<45?"#ef8b80":score<55?"#d5ad67":"#49b78a";
  const sweep=(score===null?0:Math.max(0,Math.min(100,score))*2.7).toFixed(1)+"deg";
- const dateText=korea?(validKorea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2")+" 장 마감":"기준일 미확인"):(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"})+" "+(us.source_cadence==="intraday"?"발표":"기준"):"기준일 미확인");
+ const todayKst=new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"});
+ const priorKoreaSession=validKorea&&time<todayKst;
+ const dateText=korea?(validKorea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2")+(priorKoreaSession?" 이전 장 마감":" 장 마감"):"기준일 미확인"):(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"})+" "+(us.source_cadence==="intraday"?"발표":"기준"):"기준일 미확인");
  const sourceName=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
  const description=korea?"한국 코스피·코스닥의 민간 산출 심리지수이며, 미국 CNN 지수와 산출법이 다릅니다. 매매 신호가 아닙니다.":"미국 CNN 공포·탐욕 지수입니다. 한국 지수와 산출법이 다르며 매매 신호가 아닙니다.";
@@ -452,7 +454,7 @@ function fxV5Sentiment(ctx){
 function fxHome(ctx){
  const h=fxHelpers(),c=fxChosen(ctx),connected=!!(ctx.data?.toss?.enabled&&ctx.data.toss.api_base);
  return `<div class="fx-v5-home">
-  <section class="fx-v5-marketline"><div class="fx-v5-markettitle"><h2>시장 현황</h2><p>저장된 최근 완료 지수</p></div><div class="fx-v5-markets nr-market-grid">${h.indices?.()||""}</div>${fxV5Sentiment(ctx)}</section>
+  <section class="fx-v5-marketline"><div class="fx-v5-markettitle"><h2>시장 현황</h2><p>제공처 저장 지수 · 기준일 확인</p></div><div class="fx-v5-markets nr-market-grid">${h.indices?.()||""}</div>${fxV5Sentiment(ctx)}</section>
   <div class="fx-v5-main">${fxStockPanel(ctx,false)}
    <div class="fx-v5-central" id="fx-focus-slot">${fxV5Cockpit(ctx)}</div>${fxV5Side(ctx,c)}
   </div>
