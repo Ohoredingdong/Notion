@@ -1,0 +1,37 @@
+name: Verify actual implementation screen gallery
+on:
+  push:
+    branches: [delivery/verify-kitchen-fullflow-gallery-20261104]
+    paths:
+      - '.github/workflows/verify-kitchen-fullflow-gallery.yml'
+      - 'scripts/verify_kitchen_gallery_public.py'
+permissions:
+  contents: write
+concurrency:
+  group: kitchen-fullflow-gallery-verification-20261104
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Install browser driver
+        run: python -m pip install 'playwright==1.56.0'
+      - name: Verify actual HTTPS gallery and24unchanged captures
+        run: python scripts/verify_kitchen_gallery_public.py --source 6dae4af0d13ec7140696057e6e0901fe4737c765 --images-source 295b2fa0d248e019ce90b8440fb0b0edbd874b1e --publish-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kitchen-full-flow-public-browser
+          path: /tmp/kitchen-fullflow-gallery-public/
+          retention-days: 3
