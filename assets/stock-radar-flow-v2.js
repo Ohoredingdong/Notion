@@ -369,39 +369,50 @@ function fxV5Sentiment(ctx){
  const korea=fxLocal.sentimentMarket==="kr";
  const us=ctx.data?.sentiment||{},kr=ctx.data?.koreaSentiment||{};
  const time=String(kr.date||"");
- const validKorea=kr.market==="kr"&&/^\d{4}-\d{2}-\d{2}$/.test(time)&&Number.isFinite(Date.parse(time+"T00:00:00Z"))&&fxN(kr.kospi?.index)!==null&&kr.kospi.index>=0&&kr.kospi.index<=100;
- const usScore=fxN(us.headline?.score),usTime=us.source_timestamp||us.headline?.timestamp;
+ const krScore=fxN(kr.kospi?.index);
+ const usScore=fxN(us.headline?.score);
+ const usTime=us.source_timestamp||us.headline?.timestamp;
+ const validKorea=kr.market==="kr"&&/^\d{4}-\d{2}-\d{2}$/.test(time)&&Number.isFinite(Date.parse(time+"T00:00:00Z"))&&krScore!==null&&krScore>=0&&krScore<=100;
  const validUS=us.market==="us"&&usScore!==null&&usScore>=0&&usScore<=100&&Number.isFinite(Date.parse(usTime||""));
- const valid=korea?validKorea:validUS;
- const score=korea?(validKorea?kr.kospi.index:null):(validUS?usScore:null);
- const label=valid?(score<25?"극단적 공포":score<45?"공포":score<55?"중립":score<75?"탐욕":"극단적 탐욕"):"정보 확인 전";
- const percent=score===null?0:Math.max(0,Math.min(100,score));
- const color=score===null?"#b6c4d5":percent<45?"#d67e6f":percent<55?"#b39a58":"#389a78";
- const sourceDate=korea?time:(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"}):"");
- const formattedDate=korea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2"):sourceDate;
- const dateText=valid?formattedDate+" "+(korea?"장 마감":us.source_cadence==="intraday"?"발표":"기준"):"일자 확인 전";
- const kosdaq=fxN(kr.kosdaq?.index);
- const kosdaqValid=korea&&validKorea&&kosdaq!==null&&kosdaq>=0&&kosdaq<=100;
- const sourceLabel=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
+ const valid=korea?validKorea:validUS,score=valid?(korea?krScore:usScore):null;
+ const clamp=v=>v===null?null:v>=0&&v<=100?v:null;
+ const grade=v=>v===null?"정보 없음":v<25?"극단적 공포":v<45?"공포":v<55?"중립":v<75?"탐욕":"극단적 탐욕";
+ const tone=v=>v===null?"missing":v<25?"extreme-fear":v<45?"fear":v<55?"neutral":v<75?"greed":"extreme-greed";
+ const label=korea&&validKorea&&typeof kr.kospi?.label==="string"&&kr.kospi.label?kr.kospi.label:grade(score);
+ const secondScore=korea?(validKorea?clamp(fxN(kr.kosdaq?.index)):null):clamp(fxN(us.headline?.previous_1_week));
+ const secondLabel=korea&&typeof kr.kosdaq?.label==="string"&&kr.kosdaq.label?kr.kosdaq.label:grade(secondScore);
+ const color=score===null?"#aebed1":score<45?"#ef8b80":score<55?"#d5ad67":"#49b78a";
+ const sweep=(score===null?0:Math.max(0,Math.min(100,score))*2.7).toFixed(1)+"deg";
+ const dateText=korea?(validKorea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2")+" 장 마감":"기준일 미확인"):(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"})+" "+(us.source_cadence==="intraday"?"발표":"기준"):"기준일 미확인");
+ const sourceName=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
- const next=korea?"미국 CNN 공포·탐욕 보기":"한국 코스피 공포·탐욕 보기";
- const peer=kosdaqValid?`<div class="fx-v5-sentiment-peer"><span>코스닥</span><strong>${fxNum(kosdaq,1)}</strong><em>${fxEscape(kr.kosdaq?.label||"상태 확인 전")}</em></div>`: 
-   `<div class="fx-v5-sentiment-peer fx-v5-sentiment-peernote">${korea?"코스닥 자료 확인 전":"미국 시장 심리 · 0–100 지수"}</div>`;
- return `<section class="fx-v5-sentiment ${korea?"is-korea":"is-us"}" style="--sentiment:${percent}%;--sentiment-color:${color}" aria-label="${korea?"한국 코스피":"미국 CNN"} 공포·탐욕 지수" title="${korea?"한국 코스피·코스닥 기반 민간 산출 지수. CNN과 산출 방식이 다릅니다.":"미국 CNN 공포·탐욕 지수. 한국 시장 심리를 나타내지 않습니다."}">
-  <div class="fx-v5-sentiment-top">
-    <strong>${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
-    <button type="button" class="fx-v5-sentiment-switch" data-fx-sentiment-next aria-label="${next}" title="${next}">›</button>
+ const description=korea?"한국 코스피·코스닥의 민간 산출 심리지수이며, 미국 CNN 지수와 산출법이 다릅니다. 매매 신호가 아닙니다.":"미국 CNN 공포·탐욕 지수입니다. 한국 지수와 산출법이 다르며 매매 신호가 아닙니다.";
+ const switchText=korea?"미국 보기":"한국 보기";
+ const switchTitle=korea?"미국 CNN 공포·탐욕 지수 보기":"한국 코스피·코스닥 공포·탐욕 지수 보기";
+ const row=(name,value,state)=>`<div class="fx-sent-v6-row">
+   <span class="fx-sent-v6-rowicon" aria-hidden="true">⌁</span>
+   <span class="fx-sent-v6-market">${name}</span>
+   <span class="fx-sent-v6-pill is-${tone(value)}">${fxEscape(state)}</span>
+   <strong class="fx-sent-v6-rowvalue">${value===null?"—":fxNum(value,1)}</strong>
+  </div>`;
+ return `<section class="fx-v5-sentiment fx-sent-v6 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
+  <div class="fx-sent-v6-head">
+   <span class="fx-sent-v6-flag" aria-hidden="true">${korea?"🇰🇷":"🇺🇸"}</span>
+   <strong class="fx-sent-v6-title">${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
+   <span class="fx-sent-v6-info" role="img" tabindex="0" aria-label="${description}" title="${description}">ⓘ</span>
+   <button type="button" class="fx-sent-v6-switch" data-fx-sentiment-next aria-label="${switchTitle}" title="${switchTitle}"><span>${switchText}</span><span aria-hidden="true">›</span></button>
   </div>
-  <div class="fx-v5-sentiment-main">
-    <div class="fx-v5-sentiment-left">
-      <div class="fx-v5-sentiment-current"><span>${korea?"코스피":"미국 지수"}</span><b>${fxEscape(label)}</b></div>
-      ${peer}
-    </div>
-    <div class="fx-v5-sentiment-meter" role="img" aria-label="${valid?(korea?"한국 코스피":"미국 CNN")+" 공포·탐욕 "+fxNum(score,1)+"점":"지수 데이터 확인 전"}"><span>${valid?fxNum(score,korea?1:0):"—"}</span></div>
-  </div>
-  <div class="fx-v5-sentiment-bottom">
-    <span>${fxEscape(dateText)}</span>
-    <a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="출처: ${sourceLabel}">${sourceLabel} ↗</a>
+  <div class="fx-sent-v6-content">
+   <div class="fx-sent-v6-gauge" role="img" aria-label="${score===null?"유효한 지수 자료 없음":(korea?"코스피":"미국")+" 공포·탐욕 "+fxNum(score,1)+"점 "+label}">
+    <div class="fx-sent-v6-arc" aria-hidden="true"></div>
+    <strong class="fx-sent-v6-score">${score===null?"—":fxNum(score,1)}</strong>
+    <span class="fx-sent-v6-mainpill is-${tone(score)}">${fxEscape(label)}</span>
+   </div>
+   <div class="fx-sent-v6-detail">
+    ${row(korea?"코스피":"미국 지수",score,label)}
+    ${row(korea?"코스닥":"1주 전",secondScore,secondLabel)}
+    <div class="fx-sent-v6-foot"><span>${fxEscape(dateText)}</span><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="출처: ${sourceName}">${sourceName} ↗</a></div>
+   </div>
   </div>
  </section>`;
 }
