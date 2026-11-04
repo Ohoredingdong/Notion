@@ -1,5 +1,5 @@
 """Actual HTTPS display of the 24 captured implementation screens; no app writes."""
-import argparse,hashlib,json,os,re,shutil,struct,subprocess,tempfile,traceback
+import argparse,hashlib,html,json,os,re,shutil,struct,subprocess,tempfile,traceback
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 OUT=Path('/tmp/kitchen-fullflow-gallery-public');RESULT_BRANCH='preview/kitchen-fullflow-gallery-20261104';BASE='previews/kitchen-full-flow-actual-20261104/';PROFILES=[('phone',390,844),('desktop',1120,1000),('small-phone',320,568)]
@@ -19,7 +19,7 @@ def metrics(f):
  d=f.evaluate('''()=>({width:innerWidth,height:innerHeight,docWidth:document.documentElement.scrollWidth,docHeight:document.documentElement.scrollHeight,imageCount:document.querySelectorAll('#stage img').length,focus:document.querySelector('#stage').classList.contains('focus'),tabs:[...document.querySelectorAll('[data-group]')].map(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height,reachable:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')===e};})})''');assert d['docWidth']<=d['width']+1 and d['docHeight']<=d['height']+1,d;assert len(d['tabs'])==4 and all(t['width']>=44 and t['height']>=44 and t['reachable']for t in d['tabs']),d;return d
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--source',required=True);p.add_argument('--images-source',required=True);p.add_argument('--publish-results',action='store_true');a=p.parse_args();assert all(re.fullmatch('[0-9a-f]{40}',v)for v in[a.source,a.images_source]);OUT.mkdir(exist_ok=True);raw=f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{a.source}/{BASE}index.html';url='https://htmlpreview.github.io/?'+raw;expected=git('show',a.source+':'+BASE+'index.html');data=json.loads(re.search(r'<script id="galleryData" type="application/json">([\s\S]*?)</script>',expected.decode())[1]);screens={s['id']:s for s in data['screens']};assert set(screens)=={g+str(n)for g in'ABCD'for n in range(1,7)};assert [g['id']for g in data['groups']]==list('ABCD');assert data['assetBase']==f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{a.images_source}/{BASE}'
+ p=argparse.ArgumentParser();p.add_argument('--source',required=True);p.add_argument('--images-source',required=True);p.add_argument('--publish-results',action='store_true');a=p.parse_args();assert all(re.fullmatch('[0-9a-f]{40}',v)for v in[a.source,a.images_source]);OUT.mkdir(exist_ok=True);raw=f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{a.source}/{BASE}index.html';url='https://htmlpreview.github.io/?'+raw;expected=git('show',a.source+':'+BASE+'index.html');metadata=re.search(r'<template id="galleryData"[^>]*>([\s\S]*?)</template>',expected.decode());payload=html.unescape(metadata[1])if metadata else re.search(r'<script id="galleryData" type="application/json">([\s\S]*?)</script>',expected.decode())[1];data=json.loads(payload);screens={s['id']:s for s in data['screens']};assert set(screens)=={g+str(n)for g in'ABCD'for n in range(1,7)};assert [g['id']for g in data['groups']]==list('ABCD');assert data['assetBase']==f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{a.images_source}/{BASE}'
  for s in screens.values():
   b=git('show',a.images_source+':'+BASE+s['file']);assert b[:8]==b'\x89PNG\r\n\x1a\n'and struct.unpack('>II',b[16:24])==(s['width'],s['height'])and len(b)==s['bytes']and hashlib.sha256(b).hexdigest()==s['sha256']
  run=os.environ.get('GITHUB_RUN_ID');result={'source':a.source,'images_source':a.images_source,'verifier':os.environ.get('GITHUB_SHA'),'url':url,'run_url':f'https://github.com/Ohoredingdong/Notion/actions/runs/{run}'if run else None,'scope':'Actual HTTPS image gallery only, 24 unchanged captured PNGs. Captures contain clearly labelled example data; this test does not run or write application records.','cases':[]}
@@ -29,7 +29,12 @@ def main():
    for name,w,h in PROFILES:
     c=b.new_context(viewport={'width':w,'height':h},has_touch=w<900,is_mobile=w<900,reduced_motion='reduce',locale='ko-KR');page=c.new_page();page.set_default_timeout(30000);errors=[];responses=[];page.on('pageerror',lambda e,q=errors:q.append(str(e)));page.on('response',lambda r,q=responses:q.append(r));case={'profile':name,'viewport':[w,h],'passed':False,'images':[],'groups':[]}
     try:
-     response=page.goto(url,wait_until='domcontentloaded',timeout=45000);assert response.status==200;page.wait_for_timeout(300);f=next((f for f in page.frames if f.locator('#galleryData').count()),None);assert f;f.wait_for_function('document.querySelector("#stage img")&&document.querySelector("#stage img").complete&&document.querySelector("#stage img").naturalWidth>0',timeout=45000);got=[r for r in responses if r.url==raw];assert got and got[-1].status==200 and got[-1].body()==expected;case['viewer_sha256']=hashlib.sha256(expected).hexdigest()
+     response=page.goto(url,wait_until='domcontentloaded',timeout=45000);assert response.status==200;f=None
+     for _ in range(450):
+      f=next((candidate for candidate in page.frames if candidate.locator('#galleryData').count()),None)
+      if f:break
+      page.wait_for_timeout(100)
+     assert f; f.wait_for_function('document.querySelector("#stage img")&&document.querySelector("#stage img").complete&&document.querySelector("#stage img").naturalWidth>0',timeout=45000);got=[r for r in responses if r.url==raw];assert got and got[-1].status==200 and got[-1].body()==expected;case['viewer_sha256']=hashlib.sha256(expected).hexdigest()
      for group in'ABCD':
       f.locator(f'[data-group="{group}"]').click();expected_count=1 if w<900 else 6;expect(f.locator('#stage img')).to_have_count(expected_count);d=metrics(f);assert d['imageCount']==expected_count and d['focus']==(w<900),d;case['groups'].append({'id':group,'geometry':d})
       batches=[[group+str(n)]for n in range(1,7)]if w<900 else[[group+str(n)for n in range(1,7)]]

@@ -7,3 +7,5 @@
 A4 등 사진 검수에 표시된 인식값은 캡처의 검토용 예시이며 OCR 정확도 실행 증거와 구분합니다. 원래 QA 범위와 원본 해시는 `manifest.json`을 참고하세요.
 
 공개 HTMLPreview에서도 같은 PNG를 열도록 이미지 경로는 `295b2fa0d248e019ce90b8440fb0b0edbd874b1e`의 원본 파일에 고정했다. 갤러리 HTML과 PNG의 버전 차이는 경로 고정만이며 이미지 바이트는 같다.
+
+HTMLPreview가 JSON script 블록까지 JavaScript로 실행하는 문제를 피하도록 갤러리 데이터는 HTML-escape한 inert template에 보관한다. 화면 이미지와 동작 데이터 값은 바꾸지 않았다.
