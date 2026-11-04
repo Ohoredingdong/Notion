@@ -33,3 +33,37 @@
 같은 저장 자료와 뷰포트의 전후 실제 화면을 비교한다. 핵심 기준은 열린 냉장고 주변 여백, 방 너비28.5%인 슬림 앞면, 양쪽 조리대와 액자/창문이 보이는2:1구도, 흰색/밝은 우드 색감, 실제 음식 정리함 크기와 읽을 수 있는 요약, 적용 전후 소품의 같은 조리대 관계다. 캡처 수나 모델 검사 통과만으로 사용자 디자인 승인을 대신하지 않는다.
 
 기본 검증은 320×568·390×560·801×782의 A1/A5/D1/D5/D6과390×844 첫 화면, 상세 시트·등록/도감/소품 화면의 위치, 실제 이동·취소·적용·새로고침이다. 전송12개 검사와 JS 문법도 확인한다. 기능 모델과 OCR 엔진 코드는 이번 외형 수정에서 바꾸지 않았고 OCR을 재실행하지 않는다. 공개 Chromium과 실제 Safari/Notion 검증은 구분한다.
+
+## 최종 실제 실행과 전달 상태
+
+final-v3에서 같은 자료16개 화면은 저장 envelope가 모두 전후와 같고, 모든 새 이미지가 디코드됐다. 독립 시각 검토는320·390·801px의 열린 냉장고 여백·흰 정리함·밝은 요약과 D1/D5/D6의 슬림 냉장고/양쪽 조리대/2:1사진·완료 행을 직접 확인했다. 최종 판단은 기능 수치와 별도로 기록했다.
+
+실제 터치320/390과 마우스801, 구버전390의 이동·취소·적용·문 열기·새로고침68개 단언을 통과했다. 취소 후 저장 원문이 같고, 적용은 선택한 x/y/z를 저장하며 재고·식사·지출은 바뀌지 않았다. D5와 D6의 실제 소품 위치 차이는0.03px미만이다. 처음320에서 SVG가44px터치 박스를 따라 커지던 문제는 그림 폭과 터치 영역을 분리해 수정했으며 단언을 완화하지 않았다.
+
+390×844에서 재료 추가 화면 위쪽8px와 재료 상세 아래 시트의 메인 프레임 바닥 정렬도 확인했다. 도감/보상/소품6화면의 주 조작과 저장 무변경도 통과했다. 최종 final-v4는 A2 배경 크롭만 바꾸며12개 JS모듈이 final-v3와 바이트가 같다. final-v4의 A2 창문/식물/도구통 크롭은 실제 화면으로 별도 확인했다. [최종 QA](kitchen-fridge-redo-20261104/qa-report-final.json), [동작/위치](kitchen-fridge-redo-20261104/native-move-cancel-apply-reload.json), [같은 자료 비교](kitchen-fridge-redo-20261104/same-fixture-comparison.json), [전송/원문](kitchen-fridge-redo-20261104/final-byte-and-module-check.json)을 분리해 기록한다.
+
+전송12개 테스트와 scene.js문법 및 git diff --check를 통과했다. 7개 상태/거래/사진/흐름 모듈은 수정 전과 같다. 과거 모델 검사/OCR 통과를 이번 시각 검수로 다시 집계하지 않았다.
+
+구현은 로컬 브랜치 `feat/kitchen-fridge-visual-redo-20261104`, 커밋 `42aee04a4dbf2f8e44380c3debc192b90c93821f`에 저장했다. 원격 push는 `could not read Username for https://github.com` 오류로 실패했다. 당시 현재 런타임의 outbound identities와 identity manifest connections는 비어 있었고 credential helper도 없으며 `gh auth status`는 현재 GH_TOKEN 인증이 유효하지 않다고 보고했다. 값은 읽거나 기록하지 않았다. 따라서 새 공개 링크·공개 HTTPS 실행·PR 생성은 완료하지 않았고, 이전 e982 링크를 이번 수정본으로 전달하지 않는다. 환경 설정 초안은 변경하지 않았다. GitHub 연결 복구가 공개 업로드의 남은 조건이다.
+
+원격 인증이 막힌 뒤, 공개용으로 준비한 검사를 **로컬 HTTP에서만** 최종 파일에 실행했다. 위젯320×568·390×844·801×782의3/3, 실행 오류0이며 각 초기 A1/A5/D1/D5/D6의15개 실제 프레임 PNG를 생성했다. 네 영역 조회의 envelope 무변경과 격리 상태에서의 실제 저장/적용도 확인했다. [로컬 전송·화면 검사](kitchen-fridge-redo-20261104/local-status.json)와 [공개 미실행 상태](kitchen-fridge-redo-20261104/local-publication-status.json)를 분리한다. [초기 상태의 실제 냉장고 화면](kitchen-fridge-redo-20261104/default-A1.png)을 남긴다. 이를 공개 HTTPS 성공으로 보고하지 않는다.
+
+## 공개 링크 전달 정정
+
+사용자가 작업 공간 링크를 열 수 없다고 정정했다. `/workspace` 파일 경로는 이 클라이언트의 외부 다운로드 URL이 아니며, 앞선 전달 방법이 잘못됐다. 실제 이미지는 도구를 통해 대화에 직접 표시하고, 공유 링크는 공개 HTTPS 파일로 교체한다.
+
+Git 업로드는 정상 GitHub CLI 인증을 Git credential helper로 연결하자 성공했다. `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin feat/kitchen-fridge-visual-redo-20261104`로 저장된 수정본을 실제 원격에 올렸다. 이후 이 저장소에 한해 표준 helper를 설정했다. 토큰 값을 읽거나 새 토큰을 받지 않았다. 앞선 'GitHub 연결 복구가 필요하다'는 판단은 정정한다. 현재 API의 `gh auth status` 메시지만으로 native Git 업로드 가능 여부를 단정할 수 없었다.
+
+구현 고정 커밋 `42aee04a`, 실제 초기 화면 커밋 `5d943ba8`은 공개 원격에 있다. 모바일 HTML과 A1/D5 원본 PNG는 각각 HTTPS200 및 해당 Git 바이트 일치까지 확인했다. [공개 파일 검증](kitchen-fridge-redo-20261104/public-link-repair.json)을 기록한다. 실제 HTMLPreview 화면 실행은 별도3개 크기의 단일 CI 검사를 수행한다.
+
+- [새 냉장고 위젯](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/42aee04a4dbf2f8e44380c3debc192b90c93821f/previews/mobile/widget.html)
+- [공개 냉장고 실제 화면](https://raw.githubusercontent.com/Ohoredingdong/Notion/5d943ba8f61039e1c4c66eb0648befded68337d3/docs/kitchen-fridge-redo-20261104/default-A1.png)
+- [공개 꾸미기 실제 화면](https://raw.githubusercontent.com/Ohoredingdong/Notion/5d943ba8f61039e1c4c66eb0648befded68337d3/docs/kitchen-fridge-redo-20261104/after-D5.png)
+
+공개 재검증은320×568·390×844·801×782의3/3 통과, 실행 오류0이다. 실제 HTMLPreview에서 고정 모바일 원문,12모듈·19스타일·6AVIF가 일치하고 네 영역 조회 전후 envelope가 같았다. 별도 격리 예시의 A5실제저장과 D5소품선택/적용→D6도 확인했다. 공개 프레임 PNG15장은 브라우저의 실제 요소 캡처이며 이미지 편집이 아니다. 일반 HTTPS에서 A1/D5/D6 PNG의 HTTP200·image/png·고정 바이트 일치를 확인했다.
+
+- [검증 실행 성공](https://github.com/Ohoredingdong/Notion/actions/runs/41824904967)
+- [고정 공개 증거](https://github.com/Ohoredingdong/Notion/tree/d16193c961fea1ccd0af64d44dd87f9159a4e601)
+- [공개 실행 결과](kitchen-fridge-redo-20261104/public-status.json)
+
+새 공개 링크는 이번 수정본을 연다. 이전/workspace링크와e982버전을 재사용하지 않는다. 실제 기기Safari/Notion 검증을 주장하지 않는다.
