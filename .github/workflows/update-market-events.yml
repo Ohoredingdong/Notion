@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - "scripts/update-market-events.py"
+      - "scripts/build_stock_event_outlook.py"
+      - "scripts/test_stock_event_outlook.py"
+      - "stock-event-calendar-seed.json"
       - "scripts/ensure-bok-market-events.py"
       - ".github/workflows/update-market-events.yml"
   schedule:
@@ -29,6 +32,10 @@ jobs:
       - run: pip install requests
       - run: python scripts/update-market-events.py
       - run: python scripts/ensure-bok-market-events.py
+      - name: Verify event outlook has no retroactive or fabricated trade signals
+        run: python -m unittest discover -s scripts -p "test_stock_event_outlook.py" -v
+      - name: Build time-aware conditional sector scenarios
+        run: python scripts/build_stock_event_outlook.py
       - name: Publish data on current main
         run: >-
-          python scripts/publish_widget_data.py --message "data: update market events" market-events-data.json
+          python scripts/publish_widget_data.py --message "data: update market events" market-events-data.json stock-event-outlook.json
