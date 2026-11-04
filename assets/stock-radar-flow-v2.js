@@ -387,7 +387,7 @@ function fxV5Sentiment(ctx){
  const sourceName=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
  const description=korea?"한국 코스피·코스닥의 민간 산출 심리지수이며, 미국 CNN 지수와 산출법이 다릅니다. 매매 신호가 아닙니다.":"미국 CNN 공포·탐욕 지수입니다. 한국 지수와 산출법이 다르며 매매 신호가 아닙니다.";
- const flagArt=korea?`<svg class="fx-sent-v6-flag-svg" viewBox="0 0 36 25" fill="none" aria-hidden="true" focusable="false">
+ const flagArt=korea?`<svg class="fx-sent-v9-flag-svg" viewBox="0 0 36 25" fill="none" aria-hidden="true" focusable="false">
   <rect x=".5" y=".5" width="35" height="24" rx="3" fill="white" stroke="#E6EBF4"/>
   <defs><clipPath id="kr-flag-circle"><circle cx="18" cy="12.5" r="6"/></clipPath></defs>
   <g clip-path="url(#kr-flag-circle)"><rect x="12" y="6.5" width="12" height="6" fill="#CD2E3A"/><rect x="12" y="12.5" width="12" height="6" fill="#0047A0"/><circle cx="15" cy="12.5" r="3" fill="#0047A0"/><circle cx="21" cy="12.5" r="3" fill="#CD2E3A"/></g>
@@ -395,7 +395,7 @@ function fxV5Sentiment(ctx){
   <g fill="#171B26" transform="translate(29.5 19.6) rotate(-35)"><rect x="-3.5" y="-2.6" width="7" height="1"/><rect x="-3.5" y="-.5" width="7" height="1"/><rect x="-3.5" y="1.6" width="7" height="1"/></g>
   <g fill="#171B26" transform="translate(29.4 5.4) rotate(35)"><rect x="-3.5" y="-2.6" width="3" height="1"/><rect x=".5" y="-2.6" width="3" height="1"/><rect x="-3.5" y="-.5" width="7" height="1"/><rect x="-3.5" y="1.6" width="3" height="1"/><rect x=".5" y="1.6" width="3" height="1"/></g>
   <g fill="#171B26" transform="translate(6.5 19.6) rotate(35)"><rect x="-3.5" y="-2.6" width="7" height="1"/><rect x="-3.5" y="-.5" width="3" height="1"/><rect x=".5" y="-.5" width="3" height="1"/><rect x="-3.5" y="1.6" width="7" height="1"/></g>
- </svg>`:`<svg class="fx-sent-v6-flag-svg" viewBox="0 0 36 25" aria-hidden="true" focusable="false">
+ </svg>`:`<svg class="fx-sent-v9-flag-svg" viewBox="0 0 36 25" aria-hidden="true" focusable="false">
   <rect width="36" height="25" rx="3" fill="#fff"/>
   <g fill="#CE3343"><path d="M0 0H36V2H0ZM0 4H36V6H0ZM0 8H36V10H0ZM0 12H36V14H0ZM0 16H36V18H0ZM0 20H36V22H0ZM0 24H36V25H0Z"/></g>
   <rect width="15" height="12" fill="#2D4B89"/>
@@ -403,29 +403,29 @@ function fxV5Sentiment(ctx){
  </svg>`;
  const switchText=korea?"미국 보기":"한국 보기";
  const switchTitle=korea?"미국 CNN 공포·탐욕 지수 보기":"한국 코스피·코스닥 공포·탐욕 지수 보기";
- const row=(name,value,state)=>`<div class="fx-sent-v6-row">
-   <span class="fx-sent-v6-rowicon" aria-hidden="true"><svg class="fx-sent-v7-trendicon" viewBox="0 0 20 20" focusable="false"><polyline points="2,13 7,8 11,11 17,4"/></svg></span>
-   <span class="fx-sent-v6-market">${name}</span>
-   <span class="fx-sent-v6-pill is-${tone(value)}">${fxEscape(state)}</span>
-   <strong class="fx-sent-v6-rowvalue">${value===null?"—":fxNum(value,1)}</strong>
+ const row=(name,value,state)=>`<div class="fx-sent-v9-row">
+   <span class="fx-sent-v9-rowicon" aria-hidden="true"><svg class="fx-sent-v9-trendicon" viewBox="0 0 20 20" focusable="false"><polyline points="2,13 7,8 11,11 17,4"/></svg></span>
+   <span class="fx-sent-v9-market">${name}</span>
+   <span class="fx-sent-v9-pill is-${tone(value)}">${fxEscape(state)}</span>
+   <strong class="fx-sent-v9-rowvalue">${value===null?"—":fxNum(value,1)}</strong>
   </div>`;
- return `<section class="fx-v5-sentiment fx-sent-v6 fx-sent-v7 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
-  <div class="fx-sent-v6-head">
-   <span class="fx-sent-v6-flag" aria-hidden="true">${flagArt}</span>
-   <strong class="fx-sent-v6-title">${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
-   <span class="fx-sent-v6-info" role="img" tabindex="0" aria-label="${description}" title="${description}">ⓘ</span>
-   <button type="button" class="fx-sent-v6-switch" data-fx-sentiment-next aria-label="${switchTitle}" title="${switchTitle}"><span>${switchText}</span><span aria-hidden="true">›</span></button>
+ return `<section class="fx-sent-v9 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
+  <div class="fx-sent-v9-head">
+   <span class="fx-sent-v9-flag" aria-hidden="true">${flagArt}</span>
+   <strong class="fx-sent-v9-title">${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
+   <span class="fx-sent-v9-info" role="img" tabindex="0" aria-label="${description}" title="${description}">ⓘ</span>
+   <button type="button" class="fx-sent-v9-switch" data-fx-sentiment-next aria-label="${switchTitle}" title="${switchTitle}"><span>${switchText}</span><span aria-hidden="true">›</span></button>
   </div>
-  <div class="fx-sent-v6-content">
-   <div class="fx-sent-v6-gauge" role="img" aria-label="${score===null?"유효한 지수 자료 없음":(korea?"코스피":"미국")+" 공포·탐욕 "+fxNum(score,1)+"점 "+label}">
-    <svg class="fx-sent-v7-arc" viewBox="0 0 132 118" aria-hidden="true" focusable="false"><path class="fx-sent-v7-track" d="M 14 99 A 55 55 0 1 1 118 99"/><path class="fx-sent-v7-progress" d="M 14 99 A 55 55 0 1 1 118 99" pathLength="100" stroke-dasharray="${score===null?0:score} 100"/></svg>
-    <strong class="fx-sent-v6-score">${score===null?"—":fxNum(score,1)}</strong>
-    <span class="fx-sent-v6-mainpill is-${tone(score)}">${fxEscape(label)}</span>
+  <div class="fx-sent-v9-content">
+   <div class="fx-sent-v9-gauge" role="img" aria-label="${score===null?"유효한 지수 자료 없음":(korea?"코스피":"미국")+" 공포·탐욕 "+fxNum(score,1)+"점 "+label}">
+    <svg class="fx-sent-v9-arc" viewBox="0 0 132 118" aria-hidden="true" focusable="false"><path class="fx-sent-v9-track" d="M 14 99 A 55 55 0 1 1 118 99"/><path class="fx-sent-v9-progress" d="M 14 99 A 55 55 0 1 1 118 99" pathLength="100" stroke-dasharray="${score===null?0:score} 100"/></svg>
+    <strong class="fx-sent-v9-score">${score===null?"—":fxNum(score,1)}</strong>
+    <span class="fx-sent-v9-mainpill is-${tone(score)}">${fxEscape(label)}</span>
    </div>
-   <div class="fx-sent-v6-detail">
+   <div class="fx-sent-v9-detail">
     ${row(korea?"코스피":"미국 지수",score,label)}
     ${row(korea?"코스닥":"1주 전",secondScore,secondLabel)}
-    <div class="fx-sent-v6-foot"><span>${fxEscape(dateText)}</span><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="출처: ${sourceName}">${sourceName} ↗</a></div>
+    <div class="fx-sent-v9-foot"><span>${fxEscape(dateText)}</span><a href="${sourceHref}" target="_blank" rel="noopener noreferrer" title="출처: ${sourceName}">${sourceName} ↗</a></div>
    </div>
   </div>
  </section>`;
