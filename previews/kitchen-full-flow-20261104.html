@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f2eb">
+<title>한끼의 부엌 · 전체 동선과 상세 화면</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#f7f2eb;color:#352e28;font:15px/1.5 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}button,a{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #a35e46;outline-offset:2px}[hidden]{display:none!important}main{max-width:1500px;height:100svh;margin:auto;padding:12px;display:flex;flex-direction:column;gap:9px;overflow:hidden}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}h1{font-size:19px;margin:0}header p{font-size:12px;color:#74675b;margin:2px 0 0}.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;flex-shrink:0}.tabs button{min-height:44px;padding:6px 3px;border:1px solid #ddcdbd;border-radius:10px;background:#fffdf9;font-size:14px;line-height:1.3}.tabs [aria-selected="true"]{background:#eadbcb;border-color:#b59273;font-weight:600}.tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;flex-shrink:0}.tools button,.tools a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 12px;border:1px solid #d8c6b4;border-radius:9px;background:#fffdf9;text-decoration:none;font-size:14px}.tools button[aria-pressed="true"]{background:#e9dbc9}#imageStatus{font-size:12px;color:#6d5b4c;margin:0;flex-shrink:0;min-height:18px;overflow-wrap:anywhere}.canvas{min-width:0;min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;display:grid;place-items:center;border:1px solid #ded4c8;border-radius:12px;background:#fff;touch-action:pan-x pan-y pinch-zoom}.canvas img{display:block;width:100%;height:100%;min-width:0;min-height:0;object-fit:contain}.canvas.zoomed{display:block;place-items:start}.canvas.zoomed img{width:var(--board-width,1448px);height:var(--board-height,1086px);max-width:none;max-height:none;object-fit:initial;justify-self:start;align-self:start;margin:0}.note{font-size:11px;color:#786858;margin:0;flex-shrink:0}@media(max-width:420px){main{padding:8px;gap:7px}.tabs button{font-size:12px}h1{font-size:17px}.tools button,.tools a{font-size:13px;padding:7px 10px}header p{font-size:11px}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>한끼의 부엌 · 전체 동선과 상세 화면</h1><p>누르는 버튼과 다음 화면을 화살표로 연결했습니다.</p></div></header>
+<nav class="tabs" role="tablist" aria-label="화면 설계 시안">
+<button type="button" id="tab-0" role="tab" data-board="0" aria-controls="boardPanel" aria-selected="true">00 전체</button>
+<button type="button" id="tab-1" role="tab" data-board="1" aria-controls="boardPanel" aria-selected="false" tabindex="-1">01 재료</button>
+<button type="button" id="tab-2" role="tab" data-board="2" aria-controls="boardPanel" aria-selected="false" tabindex="-1">02 식단</button>
+<button type="button" id="tab-3" role="tab" data-board="3" aria-controls="boardPanel" aria-selected="false" tabindex="-1">03 기록</button>
+<button type="button" id="tab-4" role="tab" data-board="4" aria-controls="boardPanel" aria-selected="false" tabindex="-1">04 성장</button>
+</nav>
+<div class="tools"><button type="button" id="zoomImage" aria-pressed="false">크게 보기</button><a id="openOriginal" target="_blank" rel="noopener">원본 열기 ↗</a><button type="button" id="retryImage" hidden>다시 불러오기</button></div>
+<p id="imageStatus" role="status" aria-live="polite">이미지를 준비하고 있어요.</p>
+<section class="canvas" id="boardPanel" role="tabpanel" aria-labelledby="tab-0" tabindex="0"><img id="boardImage" alt="전체 동선 시안" decoding="async" hidden></section>
+<p class="note">새 동작 설계 시안 · 수치·사진은 예시입니다. 확대 후 그림 안에서 좌우·위아래로 이동할 수 있어요.</p>
+</main>
+<script>
+(()=>{'use strict';
+const base='https://raw.githubusercontent.com/Ohoredingdong/Notion/64ad8fd93e131985e71f8338076ec898153e6a8e/designs/kitchen-full-flow-20261104/';
+const boards=[['00-overview.png','00 전체 동선'],['01-ingredients.png','01 재료 등록'],['02-meals.png','02 식단·식사'],['03-records.png','03 영양·영양제·식비'],['04-growth.png','04 도감·보상·꾸미기']];
+const image=document.getElementById('boardImage'),status=document.getElementById('imageStatus'),panel=document.getElementById('boardPanel'),original=document.getElementById('openOriginal'),zoom=document.getElementById('zoomImage'),retry=document.getElementById('retryImage'),tabs=[...document.querySelectorAll('[data-board]')];let active=0;
+function fit(){panel.classList.remove('zoomed');zoom.setAttribute('aria-pressed','false');zoom.textContent='크게 보기';panel.scrollTo(0,0);}
+function show(index){active=index;fit();const [file,title]=boards[index];image.hidden=true;retry.hidden=true;status.textContent=title+' · 불러오는 중…';image.alt=title+' 화면 설계 시안';original.href=base+file;panel.setAttribute('aria-labelledby','tab-'+index);tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;});image.src=original.href;}
+image.addEventListener('load',()=>{if(!image.naturalWidth){image.dispatchEvent(new Event('error'));return;}image.style.setProperty('--board-width',image.naturalWidth+'px');image.style.setProperty('--board-height',image.naturalHeight+'px');image.hidden=false;retry.hidden=true;status.textContent=boards[active][1]+' · '+image.naturalWidth+'×'+image.naturalHeight;});
+image.addEventListener('error',()=>{image.hidden=true;retry.hidden=false;status.textContent='불러오지 못했어요. 다시 불러오거나 위의 원본 열기를 눌러 주세요.';});
+for(const tab of tabs){tab.addEventListener('click',()=>show(Number(tab.dataset.board)));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?4:(active+(event.key==='ArrowRight'?1:-1)+5)%5;show(next);tabs[next].focus({preventScroll:true});});}
+zoom.addEventListener('click',()=>{if(image.hidden)return;const enlarged=panel.classList.toggle('zoomed');zoom.setAttribute('aria-pressed',String(enlarged));zoom.textContent=enlarged?'화면에 맞추기':'크게 보기';panel.scrollTo(0,0);});retry.addEventListener('click',()=>show(active));
+show(0);
+})();
+</script>
+</body>
+</html>
