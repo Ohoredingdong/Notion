@@ -40,3 +40,23 @@ D5와 D6에는 같은 닫힌 냉장고 폭과 부엌 배경 기준을 사용해 
 - 초기 OCR 실행은 Chromium의 환경 프록시 CA 신뢰 부족으로 엔진 로딩 전에 실패했다. 관리 환경의 해당 CA를 신뢰한 재실행에서 성공했다. 제품 소스나 모델 응답을 교체하지 않았다.
 
 공개 휴대폰용 미리보기는 공유 출처의 저장을 격리하는 opaque iframe이므로 임시 세션이다. 원본 standalone HTML은 기존 v1 로컬 저장·백업/불러오기를 유지한다. 실제 기기 Safari/Notion 임베드 검증과 main/Pages 병합은 이번 Chromium 실행과 구분한다.
+
+## 고정 검토 링크
+
+- [실제 위젯 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/e982abf6062a28938a40a47c90e3f80b99dbc95e/previews/mobile/widget.html)
+- [실제 구현 화면 24장](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/03ba7b932c970d9584e74f2709ef42311ee4dae3/previews/kitchen-full-flow-actual-20261104/index.html)
+- [새 시안 5장](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/9c509c90d4aa7a699b48e484f431b78fb0094049/previews/kitchen-full-flow-20261104.html)
+
+구현 고정 커밋은 `e982abf6`, 실제 화면/동일 자료 비교는 `295b2fa0`, 갤러리의 공개 이미지 경로 고정은 `6dae4af0`, 외부 렌더러 데이터 실행 오류 수정은 `03ba7b93`이다. 이후 증거 기록 커밋으로 이 파일들의 바이트를 바꾸지 않는다. 브랜치는 `feat/kitchen-full-flow-20261104`이며 main/운영 HTML/Pages는 유지한다. GitHub PR API의 기존 접근 제한(HTTP403) 때문에 자동 PR 생성은 완료하지 못했으며, 원격 작업 브랜치와 [PR 작성 경로](https://github.com/Ohoredingdong/Notion/pull/new/feat/kitchen-full-flow-20261104)를 보존한다.
+
+## 실제 공개 실행
+
+고정 구현 커밋 `e982abf6`의 일반 HTTPS 경로에서 앱·위젯 각각 320×568·390×844·801×782를 열어 6/6 통과했다. 네 영역의 66개 실제 화면을 캡처했고, 실행 오류는0이었다. 응답 파일과 프레임 원문,12개 인라인 모듈·18개 스타일·5개 AVIF가 고정 전달물과 같으며, 조회/취소 전후 envelope도 같았다. 공개 점검에서는 식사/지출/보상을 저장하거나 OCR을 다시 실행하지 않았다.
+
+- [공개 점검 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41797136392)
+- [공개 실행 보고서·원본 화면](https://github.com/Ohoredingdong/Notion/tree/26aff039b81fa95a2fdc789949b33c3ce162621e)
+- 저장소의 [선별 공개 실행 결과](kitchen-fullflow-applied-20261104/public-app-widget-results.json)
+
+공개 갤러리의 첫 검사는24장 PNG가 모두 표시됐지만 HTMLPreview가 JSON `script`까지 JavaScript로 실행해 런타임 오류가 생겼다. 해당 [실패 결과](kitchen-fullflow-applied-20261104/public-gallery-initial-renderer-failure.json)를 보존한다. `03ba7b93`에서 데이터를 escape한 inert `template`으로 바꾸고 `.content.textContent`로 읽도록 고쳤다. JSON 값과24장 PNG는 그대로다. 전체 위젯을 다시 검사한 것으로 중복 집계하지 않고 갤러리만 재검사한다.
+
+수정 갤러리 `03ba7b93`의 공개 재검사는 **3/3 통과·런타임 오류0**이다. 320×568·390×844·1120×1000 각각에서24장 PNG를 고정 이미지 커밋과 SHA 비교하고 실제 디코드를 확인했다. 네 탭과 모바일1장/데스크톱6장 표시, 가로/세로 넘침 없음도 통과했다. [공개 갤러리 결과](kitchen-fullflow-applied-20261104/public-gallery-results.json), [실행](https://github.com/Ohoredingdong/Notion/actions/runs/41798462597), [원본 증거](https://github.com/Ohoredingdong/Notion/tree/4361df212743b3594a5747708729fa3af0e7fff5)를 남긴다. 앞선 갤러리 실패와 위젯6/6 통과는 별도 결과로 유지한다.
