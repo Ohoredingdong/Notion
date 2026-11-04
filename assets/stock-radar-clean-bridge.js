@@ -149,7 +149,29 @@ function renderPortfolio(){
  <div class="nr-table-scroll"><table class="nr-table"><thead><tr><th>종목</th><th>수량</th><th>가상 원가</th><th>평가액</th><th>장부상 손익</th><th></th></tr></thead><tbody>${list||'<tr><td colspan="6">등록된 종목이 없습니다.</td></tr>'}</tbody></table></div>
  <p class="nr-small-note">저장된 최종 종가 기준 단순 평가입니다. 세금·수수료·배당·실제 체결가는 포함되지 않습니다.</p></section></div>`;
 }
-function renderNews(){const m=D.macro?.indicators||{},f=m.usdkrw||{},ten=m.us_10y||{},bok=m.bok_policy||{};return `<div class="nr-screen-head"><div><h2>뉴스 · 경제 브리핑</h2><p>기업 이벤트는 원문 확인이 필요한 자동 탐지 결과를 포함합니다.</p></div><a class="nr-action" href="./news-link-hub-v3.html" target="_blank" rel="noopener">뉴스 원문 허브</a></div><div class="nr-news-grid"><section class="nr-panel"><h3>공시·이벤트 탐지</h3>${compactAlerts()}</section><section class="nr-panel"><h3>경제 지표</h3><div class="nr-ops-grid"><div class="nr-op"><small>원/달러 · ${E(f.date||"—")}</small><strong>${F(f.value,2)}원</strong></div><div class="nr-op"><small>미국 10년물 · ${E(ten.date||"—")}</small><strong>${F(ten.value,2)}%</strong></div><div class="nr-op"><small>한국은행 기준금리 · ${E(bok.date||"—")}</small><strong>${F(bok.value,2)}%</strong></div></div></section></div>`;}
+function policyDigest(){
+ const feed=D.newsLink||{},items=Array.isArray(feed.items)?feed.items:[],now=Date.now(),stamp=Date.parse(feed.generated_at||"");
+ const delayed=!Number.isFinite(stamp)||now-stamp>90*60000||feed.stale===true;
+ const relevant=/중간선거|개표|선거|투표|미국.*의회|상원|하원|관세|제재|규제|정책|연준|금리|환율|midterm|election|congress|tariff|federal reserve/i;
+ const matches=items.filter(x=>{
+  if(!x||x.tab==="opinion"||!["A","B","OFFICIAL"].includes(x.source_tier)||!url(x.url))return false;
+  const at=Date.parse(x.published_at||"");
+  return Number.isFinite(at)&&at<=now+5*60000&&now-at<=36*3600000&&relevant.test(x.title||"");
+ }).sort((a,b)=>{
+  const pri=x=>x.event_type==="politics_policy"||/중간선거|개표|선거|midterm|election/i.test(x.title||"")?1:0;
+  return pri(b)-pri(a)||Date.parse(b.published_at)-Date.parse(a.published_at);
+ }).slice(0,4);
+ const html=matches.length?matches.map((x,i)=>'<article><span class="nr-list-num">'+(i+1)+'</span><div>'+link(x.url,x.title)+
+  '<small>'+E(x.source||"언론")+' · '+T(x.published_at)+' · 보도 제목(원문 확인)</small></div></article>').join(""):"<p class='nr-sub'>확인 가능한 최근 선거·정책 뉴스가 없습니다.</p>";
+ const note=(delayed?"뉴스 갱신 지연 · ":"최근 수집 · ")+T(feed.generated_at)+" · 보도와 정부 공식 발표는 구분해야 합니다.";
+ return {html,note};
+}
+function renderNews(){
+ const m=D.macro?.indicators||{},f=m.usdkrw||{},ten=m.us_10y||{},bok=m.bok_policy||{},policy=policyDigest();
+ return '<div class="nr-screen-head"><div><h2>뉴스 · 경제 브리핑</h2><p>선거·정책 보도와 기업 이벤트를 구분하며, 방향 예측은 하지 않습니다.</p></div><a class="nr-action" href="./news-link-hub-v3.html" target="_blank" rel="noopener">뉴스 원문 허브</a></div>'+
+ '<div class="nr-news-grid"><section class="nr-panel"><h3>미국 선거 · 정책 · 시장 뉴스</h3><div class="nr-list-compact">'+policy.html+'</div><p class="nr-small-note">'+E(policy.note)+'</p><div class="nr-head"><h3>공시·기업 이벤트 탐지</h3></div>'+compactAlerts()+'</section>'+
+ '<section class="nr-panel"><h3>경제 지표</h3><div class="nr-ops-grid"><div class="nr-op"><small>원/달러 · '+E(f.date||"—")+'</small><strong>'+F(f.value,2)+'원</strong></div><div class="nr-op"><small>미국 10년물 · '+E(ten.date||"—")+'</small><strong>'+F(ten.value,2)+'%</strong></div><div class="nr-op"><small>한국은행 기준금리 · '+E(bok.date||"—")+'</small><strong>'+F(bok.value,2)+'%</strong></div></div><p class="nr-small-note">위 지표는 마지막으로 저장된 관측값입니다. 실시간 호가나 투자 추천이 아닙니다.</p></section></div>';
+}
 
 function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
 
