@@ -1,0 +1,92 @@
+"""Focused browser regression for the user-approved detailed stock analysis.
+Uses the real repository JSON over a local HTTP server. Never places orders.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+
+OUT = Path("detail-v6-artifacts")
+OUT.mkdir(exist_ok=True)
+BASE = "http://127.0.0.1:8765/stock-value-radar.html"
+REPORT = {"screenshots": [], "checks": []}
+
+
+def require(name: str, condition: bool, detail: object = "") -> None:
+    REPORT["checks"].append({"name": name, "pass": bool(condition), "detail": detail})
+    if not condition:
+        raise AssertionError(f"{name}: {detail}")
+
+
+with sync_playwright() as play:
+    browser = play.chromium.launch(headless=True)
+    try:
+        for width, height in [(1366, 768), (1440, 900), (1920, 1080), (390, 844)]:
+            page = browser.new_page(viewport={"width": width, "height": height})
+            errors = []
+            page.on("pageerror", lambda err: errors.append(str(err)))
+            page.goto(BASE, wait_until="domcontentloaded")
+            page.wait_for_function(
+                "() => (window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length || 0) > 0",
+                timeout=50000,
+            )
+            home_cards = page.locator(".fx-v5-markets .nr-index").count()
+            require(f"{width}: home index cards unchanged", home_cards == 4, home_cards)
+            page.locator('.fx-nav [data-nr-screen="stockdetail"]').first.click()
+            page.locator(".fx-detail-v6").wait_for(timeout=20000)
+            require(f"{width}: three top cards",
+                    page.locator(".fx-detail-v6 .fx-detail-upper > .fx-panel").count() == 3)
+            require(f"{width}: three metric cards",
+                    page.locator(".fx-detail-v6 .fx-detail-mid > .fx-panel").count() == 3)
+            require(f"{width}: three bottom cards",
+                    page.locator(".fx-detail-v6 .fx-detail-lower > .fx-panel").count() == 3)
+            require(f"{width}: all 16 indicator definitions",
+                    page.locator(".fx-detail-v6 .fx-d-help").count() == 16 and
+                    page.locator(".fx-detail-v6 .fx-d-plain").count() == 16)
+            require(f"{width}: original-source price chart present",
+                    page.locator(".fx-detail-v6 .fx-detail-primary .fx-chart-svg").count() == 1)
+            require(f"{width}: stock identity and price preserved",
+                    page.locator(".fx-detail-v6 .fx-d-security strong").count() == 1 and
+                    bool(page.locator(".fx-detail-v6 .fx-d-quote strong").inner_text().strip()))
+            geometry = page.evaluate("""() => {
+                const rect = s => [...document.querySelectorAll(s)].map(n => {
+                  const b=n.getBoundingClientRect();
+                  return {left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height};
+                });
+                return {
+                  pageWidth:document.documentElement.scrollWidth, viewportWidth:innerWidth,
+                  pageHeight:document.documentElement.scrollHeight, viewportHeight:innerHeight,
+                  upper:rect('.fx-detail-v6 .fx-detail-upper > .fx-panel'),
+                  mid:rect('.fx-detail-v6 .fx-detail-mid > .fx-panel'),
+                  lower:rect('.fx-detail-v6 .fx-detail-lower > .fx-panel'),
+                  footer:rect('.fx-detail-v6 > .fx-flowbar')
+                };
+            }""")
+            require(f"{width}: no horizontal page overflow",
+                    geometry["pageWidth"] <= width + 3, geometry)
+            require(f"{width}: visible panels have meaningful width",
+                    all(x["width"] > 180 for x in geometry["upper"]), geometry)
+            if width >= 1180:
+                require(f"{width}: top cards in one row",
+                        max(x["top"] for x in geometry["upper"]) -
+                        min(x["top"] for x in geometry["upper"]) < 3, geometry)
+                require(f"{width}: detail fits one viewport",
+                        geometry["pageHeight"] <= height + 3 and
+                        geometry["lower"][-1]["bottom"] <= height + 2, geometry)
+            page.locator('.fx-detail-v6 [data-fx-period="1W"]').click()
+            require(f"{width}: chart period control works",
+                    "active" in (page.locator('.fx-detail-v6 [data-fx-period="1W"]').get_attribute("class") or ""))
+            page.locator('.fx-detail-v6 [data-fx-period="1M"]').click()
+            require(f"{width}: period returns to one month",
+                    "active" in (page.locator('.fx-detail-v6 [data-fx-period="1M"]').get_attribute("class") or ""))
+            require(f"{width}: no JavaScript runtime error", not errors, errors)
+            screenshot = OUT / f"stock-detail-v6-{width}x{height}.png"
+            page.screenshot(path=str(screenshot), full_page=True)
+            REPORT["screenshots"].append(str(screenshot))
+            page.close()
+    finally:
+        browser.close()
+
+(OUT / "report.json").write_text(json.dumps(REPORT, ensure_ascii=False, indent=2), encoding="utf-8")
+print(f"Stock detail V6 browser acceptance: {len(REPORT['checks'])} checks passed")
