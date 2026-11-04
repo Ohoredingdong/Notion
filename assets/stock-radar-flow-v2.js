@@ -249,18 +249,37 @@ function fxV5FocusItems(c,which){
 }
 
 function fxV5StockNews(ctx,c){
- const data=ctx.data?.events?.companies||[],id=String(c.symbol).replace(/\.(KS|KQ)$/,"");
- const matched=data.find(x=>String(x.symbol||"").replace(/\.(KS|KQ)$/,"")===id);
- let items=[];
- const visit=(owner,x)=>{const first=(x.sources||[]).find(y=>fxSafeHref(y?.url));if(first)items.push({...x,owner,source:first})};
- (matched?.events||[]).forEach(x=>visit(matched.name||c.name,x));
- if(items.length<3)for(const company of data)for(const x of company.events||[]){if(items.length>=6)break;visit(company.name,x)}
+ const now=Date.now(),feed=ctx.data?.newsLink||{},articles=Array.isArray(feed.items)?feed.items:[],collected=Date.parse(feed.generated_at||"");
+ const delayed=!Number.isFinite(collected)||now-collected>90*60000||feed.stale===true;
+ const topic=/중간선거|개표|선거|투표|상원|하원|의회|관세|규제|제재|연준|금리|환율|midterm|election|congress|tariff|regulation|federal reserve/i;
+ const macro=articles.filter(x=>{
+  const published=Date.parse(x?.published_at||"");
+  return x&&x.tab!=="opinion"&&["A","B","OFFICIAL"].includes(x.source_tier)&&fxSafeHref(x.url)&&
+    Number.isFinite(published)&&published<=now+5*60000&&now-published<=36*3600000&&topic.test(x.title||"");
+ }).sort((a,b)=>{
+  const pri=x=>/중간선거|개표|선거|midterm|election/i.test(x.title||"")?1:0;
+  return pri(b)-pri(a)||Date.parse(b.published_at)-Date.parse(a.published_at);
+ }).slice(0,2);
+ const events=ctx.data?.events?.companies||[],id=String(c?.symbol||"").replace(/\.(KS|KQ)$/,"");
+ const matched=events.find(x=>String(x.symbol||"").replace(/\.(KS|KQ)$/,"")===id);
  const seen=new Set();
- items=items.filter(x=>{const key=x.source.url;if(seen.has(key))return false;seen.add(key);return true})
-  .sort((a,b)=>String(b.event_date||"").localeCompare(String(a.event_date||""))).slice(0,3);
- return items.map((x,i)=>`<div class="fx-v5-newsrow"><span class="fx-v5-newsindex">${i+1}</span><div><a href="${fxEscape(fxSafeHref(x.source.url))}" rel="noopener noreferrer" target="_blank">${fxEscape(x.title||"기업 이슈 확인")}</a><small>${fxEscape(x.owner||"기업")} · ${fxEscape(x.event_date||"일자 확인 전")} · ${x.auto_detected?"키워드 자동 탐지":fxEscape(x.source.publisher||"원문")}</small></div></div>`).join("")||`<p class="fx-v5-empty">연결된 기업 이벤트가 없습니다.</p>`;
+ const list=[];
+ for(const item of macro){
+  const href=fxSafeHref(item.url);if(seen.has(href))continue;seen.add(href);
+  const at=Date.parse(item.published_at);
+  const when=Number.isFinite(at)?new Date(at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}):"시간 미확인";
+  list.push({title:item.title||"시장·정책 기사",url:href,note:"정책·시장 보도 · "+(item.source||"언론")+" · "+when+(delayed?" · 수집 지연":"")});
+ }
+ for(const event of (matched?.events||[]).slice().sort((a,b)=>String(b.event_date||"").localeCompare(String(a.event_date||"")))){
+  const source=(event.sources||[]).find(x=>fxSafeHref(x?.url));
+  if(!source||seen.has(fxSafeHref(source.url)))continue;
+  seen.add(fxSafeHref(source.url));
+  list.push({title:event.title||"기업 이벤트 원문 확인",url:fxSafeHref(source.url),note:"기업 이벤트 · "+(event.event_date||"날짜 미확인")+" · "+(source.publisher||"원문")+(event.auto_detected?" · 제목 기반 탐지":"")});
+  if(list.length>=3)break;
+ }
+ return list.slice(0,3).map((x,i)=>'<div class="fx-v5-newsrow"><span class="fx-v5-newsindex">'+(i+1)+'</span><div><a href="'+fxEscape(x.url)+'" rel="noopener noreferrer" target="_blank">'+fxEscape(x.title)+'</a><small>'+fxEscape(x.note)+'</small></div></div>').join("")||
+  '<p class="fx-v5-empty">최근 확인 가능한 시장·기업 뉴스가 없습니다. 자료 수집 시각을 확인해 주세요.</p>';
 }
-
 function fxV5Checks(c,ctx){
  const assessment=c.assessment||{},checks=Array.isArray(assessment.checks)?assessment.checks:[],audit=c.extension_audit||{};
  const period=c.history?.filing_period,listed=checks.slice(0,4).map(x=>({label:String(x.label||"사전 점검"),pass:x.ok===true}));
@@ -292,7 +311,7 @@ function fxV5Side(ctx,c){
  ${c?fxV5Checks(c,ctx):'<div class="fx-v5-empty">종목 선택 후 확인</div>'}
  </section>
  <section class="fx-panel fx-v5-sidecard fx-v5-sidenews">
- <div class="fx-v5-sidehead"><h3>${h.I?.('news')||"▤"} 주요 기업 뉴스</h3><button data-nr-screen="news" type="button">전체 보기 ›</button></div>
+ <div class="fx-v5-sidehead"><h3>${h.I?.('news')||"▤"} 주요 시장·기업 뉴스</h3><button data-nr-screen="news" type="button">전체 보기 ›</button></div>
  <div class="fx-v5-newsfeed">${c?fxV5StockNews(ctx,c):'<p class="fx-v5-empty">뉴스 없음</p>'}</div>
  </section>
  <section class="fx-panel fx-v5-sidecard fx-v5-sidevalidation">
