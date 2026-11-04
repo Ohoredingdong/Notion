@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="designs/miniature-kitchen/meals-20261104.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/records-20261104.css">
 <link rel="stylesheet" href="designs/miniature-kitchen/growth-20261104.css">
+<link rel="stylesheet" href="designs/miniature-kitchen/fridge-redo-20261104.css">
 <script defer src="use-me-first-kitchen-art.js"></script>
 <script defer src="designs/miniature-kitchen/catalog.js"></script>
 <script defer src="designs/miniature-kitchen/story-art.js"></script>
@@ -46,6 +47,7 @@
   </header>
   <div id="homeStorageNotice" class="home-storage-notice" hidden></div>
   <section id="panel-fridge" class="home-panel fridge-panel" role="tabpanel" aria-labelledby="tab-fridge">
+  <p id="appliedRoomMessage" aria-hidden="true"><span>✓</span>나의 부엌에 적용했어요</p>
   <div class="expiry-summary" id="expirySummary" aria-live="polite"></div>
 
   <div id="fridgeSceneHost"><div class="kitchen-view">
@@ -103,7 +105,7 @@
     <section id="homeGrowth" class="home-card" data-home-page="growth" role="tabpanel" aria-labelledby="sub-growth"></section>
     <section id="homeDecor" class="decor-editor" data-home-page="decor" role="tabpanel" aria-labelledby="sub-decor" hidden>
       <header class="decor-heading"><button type="button" data-decor-cancel aria-label="꾸미기 취소하고 돌아가기">‹</button><div><h2>내 부엌 꾸미기</h2><p>소품을 옮긴 뒤 적용해 주세요.</p></div></header>
-      <div class="decor-actions"><button type="button" id="propList">소품</button><button type="button" data-workflow="decor">배경</button><button type="button" data-workflow="decor">정리함</button></div>
+      <div class="decor-actions"><button type="button" id="propList">소품</button><button type="button" data-workflow="decor" aria-label="배경과 정리함 설정">설정</button></div>
       <div id="decorStage"></div>
       <div class="decor-selection-toolbar" role="toolbar" aria-label="선택한 소품 편집"><button type="button" data-decor-tool="back" disabled>↶ <span>뒤로</span></button><button type="button" data-decor-tool="front" disabled>↷ <span>앞으로</span></button><button type="button" data-decor-tool="remove" disabled>× <span>지우기</span></button><span id="decorSelectionName" class="sr-only" aria-live="polite"></span></div>
       <div class="decoration-tools" id="decorationTools" hidden><span>소품을 누르면 앞뒤 순서도 바꿀 수 있어요.</span></div>

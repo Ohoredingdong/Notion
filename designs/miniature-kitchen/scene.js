@@ -1,8 +1,9 @@
 /* Miniature scene; the journal adapter persists only its separate preview key. */
 (() => {
   'use strict';
-  const FRIDGE = './designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png';
-  const FOOD_SCENE = './designs/miniature-kitchen/assets/food-shelf-coherent-v2.png';
+  const FRIDGE = './designs/miniature-kitchen/assets/fridge-white-redo-v1.png';
+  const ROOM_FRIDGE = './designs/miniature-kitchen/assets/fridge-slim-white-v2.png';
+  const FOOD_SCENE = './designs/miniature-kitchen/assets/food-organizers-redo-v1.png';
   const INNER_DOORS = './designs/miniature-kitchen/assets/door-insides.png';
   const DECOR = './designs/miniature-kitchen/assets/decor-atlas.png';
   const ROOM_PROPS = './designs/miniature-kitchen/assets/room-props-fullflow-v1.png';
@@ -121,13 +122,15 @@
     return `<svg class="${cls}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs><image href="${asset}" x="0" y="0" width="${total[0]}" height="${total[1]}" clip-path="url(#${id})"/></svg>`;
   }
   const frontArt=(cls='',panel=null)=>crop(FRIDGE,panel?[788+701*panel.x,130+788*panel.y,701*panel.w,788*panel.h]:[788,130,701,788],[1536,1024],cls);
+  const roomFridgeArt=(cls='')=>crop(ROOM_FRIDGE,[106,115,812,1344],[1024,1536],cls,'xMidYMax meet');
+  const roomCamera=()=>document.body.dataset.camera==='counter'||$('#panel-fridge').dataset.screenId==='D6';
   const roomPropBoxes={"flowers":[78,44,492,567],"cup":[656,159,514,439],"frame":[96,701,412,464],"basket":[647,699,540,469]};
   const decorArt=key=>roomPropBoxes[key]?crop(ROOM_PROPS,roomPropBoxes[key],[1254,1254],'decor-art','xMidYMax meet'):crop(DECOR,props[key].crop,[1286,1223],'decor-art','xMidYMax meet');
   const stockNameById={egg:'계란',milk:'우유',tofu:'두부',broccoli:'브로콜리',tomato:'토마토',fish:'생선',scallion:'대파',kimchi:'김치',mushroom:'양송이버섯'};
   const retainedFoodIds=new Set(['chicken','onion','carrot','rice','potato','zucchini','oil','cheese','yogurt','lettuce','garlic','pepper','ingredient']);
   function art(item) {
     if(item.photo&&item.photoAsIcon!==false)return `<img class="food-art product-photo" alt="" src="${esc(item.photo)}">`;
-    const foodBoxes={"계란":[23,134,258,160],"토마토":[299,141,255,154],"두부":[570,140,254,154],"브로콜리":[839,131,261,163],"우유":[81,358,144,242],"대파":[295,428,260,144],"양송이버섯":[569,427,257,144],"김치":[845,403,253,178],"소고기":[19,699,262,91],"생선":[297,699,259,91],"새우":[570,699,260,91],"만두":[843,699,261,91],"냉동 채소":[19,966,264,89],"간장":[372,879,103,243],"고추장":[595,915,193,191],"된장":[877,915,191,191],"소금":[57,1176,184,185]};
+    const foodBoxes={"계란":[19,138,263,165],"토마토":[291,139,264,164],"두부":[566,139,262,164],"브로콜리":[838,135,264,168],"우유":[79,355,147,249],"대파":[288,423,269,155],"양송이버섯":[565,423,263,155],"김치":[839,404,260,180],"소고기":[15,701,269,98],"생선":[291,701,265,98],"새우":[565,701,265,98],"만두":[838,700,270,99],"냉동 채소":[13,967,274,102],"간장":[370,873,107,253],"고추장":[586,910,201,201],"된장":[867,909,203,202],"소금":[53,1172,191,191]};
     const spice=item.kind==='seasoning'?(/고추장|쌈장/.test(item.name)?'고추장':/된장/.test(item.name)?'된장':/소금/.test(item.name)?'소금':/간장|액젓|참치액/.test(item.name)?'간장':null):null;
     const pictured=foodBoxes[item.name]?item.name:spice||stockNameById[A.foodIdForName(item.name)];
     if(['food','seasoning'].includes(item.kind)&&pictured&&foodBoxes[pictured])return crop(FOOD_SCENE,foodBoxes[pictured],[1122,1402],'food-art','xMidYMid meet');
@@ -145,6 +148,13 @@
   function positionBackground(){
     const room=$('.room');if(!room.getClientRects().length)return;
     const shell=$('.shell'),settings=getComputedStyle(shell),r=shell.getBoundingClientRect();
+    if(roomCamera()){
+      const box=room.getBoundingClientRect(),scale=room.clientWidth/1000,height=box.width*1122/1402,floor=box.height-14*scale,top=floor-height*(1074/1122),counter=floor-height*((1074-828)/1122);
+      room.style.setProperty('--room-photo-top',top+'px');room.style.setProperty('--room-photo-height',height+'px');
+      shell.style.setProperty('--counter-surface-y-room',counter+'px');shell.style.setProperty('--counter-world-y',counter/scale+'px');shell.style.setProperty('--kitchen-floor-y',box.top-r.top+floor+'px');
+      return;
+    }
+
     const anchor=$(document.body.dataset.camera==='counter'||$('#panel-fridge').dataset.screenId==='D6'?'.decor-fridge-backdrop':'.fridge-stage'),stage=anchor?.getBoundingClientRect();
     if(!stage||stage.width<=0||stage.height<=0)return;
     // The furniture is installed around the same live fridge in both views.
@@ -171,7 +181,7 @@
     if(!room.getClientRects().length)return;
     room.style.removeProperty('--room-fit-width');
     let width=room.clientWidth||shell.clientWidth-28;
-    const logicalHeight=800;
+    const inRoom=roomCamera(),logicalHeight=inRoom?500:800;
     const panel=room.closest('.home-panel');
     if(panel){
       const host=$(document.body.dataset.camera==='fridge'?'#fridgeSceneHost':'#decorStage'),box=(host||room).getBoundingClientRect(),panelBox=(host||panel).getBoundingClientRect();
@@ -184,7 +194,8 @@
       const available=Math.max(120,bottom-box.top-occupied-(document.body.dataset.camera==='fridge'?0:10));
       width=Math.min(width,available*1000/logicalHeight);
     }else if(innerWidth>=560&&document.body.dataset.camera==='fridge'){const top=room.getBoundingClientRect().top+scrollY,dock=$('.home-shortcuts')?.offsetHeight||66;width=Math.min(width,Math.max(240,innerHeight-top-dock-12));}
-    if(document.body.dataset.camera==='fridge')width=Math.min(width,360*homeScale);
+    if(inRoom)width=($(document.body.dataset.camera==='counter'?'#decorStage':'#fridgeSceneHost')?.clientWidth||shell.clientWidth);
+    else width=Math.min(width,318*homeScale);
     room.style.setProperty('--room-fit-width',width+'px');
     const scale=width/1000;
     shell.style.setProperty('--scene-scale',String(scale));
@@ -303,7 +314,7 @@
     }
   }
   $('#cabinet').innerHTML=crop(FRIDGE,[49,130,699,787],[1536,1024]);
-  const decorFridge=document.createElement('div');decorFridge.className='decor-fridge-backdrop';decorFridge.setAttribute('aria-hidden','true');decorFridge.inert=true;decorFridge.style.pointerEvents='none';decorFridge.innerHTML=frontArt('decor-fridge-art');$('.scene-world').appendChild(decorFridge);
+  const decorFridge=document.createElement('div');decorFridge.className='decor-fridge-backdrop';decorFridge.setAttribute('aria-hidden','true');decorFridge.inert=true;decorFridge.style.pointerEvents='none';decorFridge.innerHTML=roomFridgeArt('decor-fridge-art');$('.scene-world').appendChild(decorFridge);
   for(const [key,p] of Object.entries(panels)) {
     const zone=document.createElement('div');zone.className='drop-zone';zone.dataset.zone=key;zone.setAttribute('aria-label',p.name+' 재료');Object.assign(zone.style,{left:p.zx*100+'%',top:p.zy*100+'%',width:p.zw*100+'%',height:p.zh*100+'%'});$('#fridgeInteriors').appendChild(zone);
     const door=document.createElement('button');door.type='button';door.className='door'+(key.endsWith('Right')?' right':'')+(key.startsWith('frozen')?' frozen':'');door.dataset.door=key;Object.assign(door.style,{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});$('#fridgeDoors').appendChild(door);door.addEventListener('transitionend',event=>{if(event.target===door&&event.propertyName==='transform')finishClosing(key);});
@@ -498,7 +509,7 @@
     exportWorld:()=>JSON.parse(JSON.stringify({items,doors,serial,layer})),
     restoreWorld(world,preserveSelection=false){cleanup();if(!preserveSelection)decorEdit=null;items.splice(0,items.length,...JSON.parse(JSON.stringify(world.items)));for(const key of Object.keys(panels))doors[key]=world.doors[key];serial=world.serial;layer=world.layer;if(!preserveSelection)selected=null;decorating=Boolean(decorEdit)&&document.body.dataset.camera==='counter';render();},
     showTray:openTray,closeTray,refreshDisplays:renderDisplays,refreshLayout:()=>{syncLayout();constrainItems();},showItem:id=>{const item=sceneItems().find(r=>r.id===id);if(item)showItem(item);},setCamera,decorate:showDecor,render,announce,
-    getArt:art,getFridgeArt:()=>frontArt('home-fridge-art'),beginDecorEdit,applyDecorEdit,cancelDecorEdit,previewDecorReward,hasDecorDraft:()=>Boolean(decorEdit),getDecorDraftState,setDecorThemeDraft,getDecorThemeDraft:()=>decorEdit?clone(decorEdit.theme):null,setDecorEquippedDraft,getDecorEquippedDraft:()=>decorEdit?clone(decorEdit.equipped):null,
+    getArt:art,getFridgeArt:()=>roomFridgeArt('home-fridge-art'),beginDecorEdit,applyDecorEdit,cancelDecorEdit,previewDecorReward,hasDecorDraft:()=>Boolean(decorEdit),getDecorDraftState,setDecorThemeDraft,getDecorThemeDraft:()=>decorEdit?clone(decorEdit.theme):null,setDecorEquippedDraft,getDecorEquippedDraft:()=>decorEdit?clone(decorEdit.equipped):null,
     highlightItem(id){const item=items.find(r=>r.id===id);if(!item)return;document.body.dataset.fridgeState='saved';$('#panel-fridge').dataset.screenId='A5';const key=doorForZone(item.zone);if(panels[key])doors[key]=true;selected=id;highlightedItem=id;highlightUntil=Date.now()+3500;render(true);setTimeout(()=>{for(const button of document.querySelectorAll('.item.is-new'))button.classList.remove('is-new');highlightedItem=null;},3500);},
     chooseRecipe(name){if(!window.KitchenCatalog.some(r=>r.name===name))return;items.find(r=>r.kind==='meal').name=name;setCamera('counter');render();closeTray();window.dispatchEvent(new CustomEvent('mini-kitchen:recipe',{detail:{name}}));}
   });

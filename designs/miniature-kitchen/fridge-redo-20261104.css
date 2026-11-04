@@ -1,0 +1,89 @@
+/* The actual A1/A5 appliance and the panoramic D1/D5/D6 room use different cameras. */
+:root{--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.36));--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)))}
+body[data-mode]{align-items:flex-start;padding-top:8px}
+body[data-mode] .shell{margin:0 auto!important}
+body[data-mode] #tray{top:8px;bottom:auto;left:50%;right:auto;margin:0;transform:translateX(-50%)}
+body[data-mode] #tray[data-workflow-route="item"],body[data-mode] #tray[data-workflow-route="supplementDetail"]{top:auto;bottom:calc(100svh - 8px - var(--widget-frame-height))}
+body[data-mode] .shell:before{background-image:none;background-color:#fffaf4}
+body .fitted-side-counters{display:none!important}
+body[data-home="fridge"] .masthead{background:#fffdfa;border-radius:0}
+body[data-home="fridge"] #panel-fridge{padding-inline:14px;gap:7px}
+body[data-home="fridge"] #fridgeSceneHost{background:linear-gradient(#faf8f4,#f5f0e8);border:1px solid #ece6dc;border-radius:10px;overflow:hidden}
+body[data-home="fridge"] #dailyBalance{padding:9px 10px 10px;border-radius:10px;box-shadow:none}
+body[data-home="fridge"] #dailyBalance .balance-head{margin-bottom:7px}
+body[data-home="fridge"] #dailyBalance .balance-head b{font-size:calc(13px * var(--home-ui-scale))}
+body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:calc(9px * var(--home-ui-scale))}
+body[data-home="fridge"] #dailyBalance .balance-name{font-size:calc(10px * var(--home-ui-scale));margin-bottom:4px}
+body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:calc(18px * var(--home-ui-scale));font-weight:650}
+body[data-home="fridge"] #dailyBalance .balance-value[data-empty="true"] .balance-number strong{font-size:calc(16px * var(--home-ui-scale));font-weight:450}
+body[data-home="fridge"] #dailyBalance .balance-number strong small,body[data-home="fridge"] #dailyBalance .balance-number>span{font-size:calc(10px * var(--home-ui-scale))}
+body[data-home="fridge"] #dailyBalance .balance-track{height:calc(6px * var(--home-ui-scale))!important;margin-top:5px}
+body[data-home="fridge"] #addFood{border-radius:9px;font-size:calc(14px * var(--home-ui-scale));box-shadow:none}
+body[data-home="fridge"] #homeStorageNotice{width:50px!important;left:12px!important;top:4px!important}
+body[data-home="fridge"] #homeStorageNotice>span{display:none}
+body[data-home="fridge"] #homeStorageNotice button{font-size:10px;color:#8d7e70;min-width:44px}
+body .door-inside-art{filter:saturate(.65) brightness(1.07)}
+body .item[data-food-profile="eggs"]{--profile-width:145px;--profile-height:91px}
+body .item[data-food-profile="tomatoes"]{--profile-width:145px;--profile-height:90px}
+body .item[data-food-profile="tofu"]{--profile-width:190px;--profile-height:119px}
+body .item[data-food-profile="broccoli"]{--profile-width:160px;--profile-height:102px}
+body .item[data-food-profile="milk"]{--profile-width:83px;--profile-height:141px}
+body .item[data-food-profile="scallion"]{--profile-width:195px;--profile-height:112px}
+body .item[data-food-profile="mushrooms"]{--profile-width:145px;--profile-height:85px}
+body .item[data-food-profile="kimchi"]{--profile-width:145px;--profile-height:100px}
+body .item[data-food-profile="tray"]{--profile-width:245px;--profile-height:90px}
+body .item[data-food-profile="frozen-small"]{--profile-width:225px;--profile-height:84px}
+body[data-home="fridge"] .room .shelf-label[data-tone="today"],body[data-home="fridge"] .room .shelf-label[data-tone="tomorrow"],body[data-home="fridge"] .room .shelf-label.is-selected{border:1px solid #eee3d7;background:#fffdf6f2;box-shadow:0 1px 2px #38230d12}
+body[data-home="fridge"] .room .shelf-label:not(.is-selected) b,body[data-home="fridge"] .room .shelf-label:not(.is-selected) small{font-size:calc(8px * var(--home-ui-scale) / var(--scene-scale,1));font-weight:500}
+/* Wide view: the background fits by width; its real cabinet feet anchor the appliance. */
+body[data-home-page="decor"] .shell{height:min(100svh,calc(190px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;max-height:100svh}
+body[data-home-page="decor"] #homeDecor{gap:0;overflow:hidden}
+body[data-home-page="decor"] #decorStage{flex:none;min-height:0;align-items:flex-start}
+body[data-home-page="decor"] .shell .kitchen-view .room,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .room{background:#f6f0e6 var(--kitchen-room-art) center var(--room-photo-top,0px)/100% var(--room-photo-height,auto) no-repeat;overflow:hidden}
+body[data-home-page="decor"] .scene-world,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .scene-world{height:500px}
+body[data-home-page="decor"] .decor-fridge-backdrop,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .decor-fridge-backdrop{left:360.5px;bottom:14px;width:285px;height:auto;aspect-ratio:812 / 1344;filter:drop-shadow(0 2px 2px #7053381a)}
+body[data-home-page="decor"] .decor-heading{position:relative;height:calc(44px * var(--home-ui-scale));min-height:calc(44px * var(--home-ui-scale));padding:0 110px 0 7px;flex:none}
+body[data-home-page="decor"] .decor-heading h2{font-size:calc(15px * var(--home-ui-scale));white-space:nowrap}
+body[data-home-page="decor"] .decor-actions{position:absolute;top:0;right:6px;gap:3px;margin:0;padding:0;z-index:5;background:none}
+body[data-home-page="decor"] .decor-actions button{height:44px;min-height:44px;min-width:44px;padding:4px 9px;border:0;border-radius:0;background:none!important;color:#8b684b!important;font-size:11px}
+body[data-home-page="decor"] .decor-actions button:before{display:none}
+body[data-home-page="decor"] .decor-selection-toolbar{height:calc(50px * var(--home-ui-scale));padding:4px 14px;gap:8px;flex:none}
+body[data-home-page="decor"] .decor-selection-toolbar button{min-height:42px;background:#fffdf9;border:1px solid #e9dfd2;box-shadow:none}
+body[data-home-page="decor"] .decor-editor #decorationTools{height:calc(32px * var(--home-ui-scale));min-height:calc(32px * var(--home-ui-scale));margin:0 14px;padding:4px 9px;flex:none}
+body[data-home-page="decor"] .decor-footer{height:calc(64px * var(--home-ui-scale));padding:9px 14px 11px;flex:none}
+body[data-home-page="decor"] .decor-footer button{min-height:44px;border-radius:8px}
+body[data-home-page="decor"] .decor-editor .counter-zone .item.decor{width:120px;height:150px}
+body[data-home-page="decor"] .decor-editor .counter-zone .item.decor>.decor-art{position:absolute;left:50%;bottom:0;width:120px;height:150px;max-width:none;transform:translateX(-50%)}
+body[data-home-page="decor"] .decor-editor .counter-zone .item.decor[data-art="cup"]>.decor-art{height:90px}
+/* The applied view shares the exact same room/prop projection as the editor. */
+body[data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) .shell{height:min(100svh,calc(146px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;padding-top:0}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"]{padding:0;gap:0}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeFridgeProgress{margin:9px 12px;width:calc(100% - 24px);min-height:44px;box-shadow:none}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #fridgeSceneHost{flex:none;border:0;border-radius:0;background:none}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini{width:calc(120px * var(--scene-scale));height:calc(150px * var(--scene-scale));min-width:0;min-height:0}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini[data-home-art="cup"],body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini[data-home-art="cup"]>.decor-art{height:calc(90px * var(--scene-scale))}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #growthFridgeOpen{bottom:8px;min-height:44px;height:44px;padding:6px 14px;font-size:12px}
+/* The goal page uses the same width-based panoramic photograph. */
+body[data-home-page="growth"] .shell{height:min(100svh,calc(260px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important}
+body[data-home-page="growth"]:has(.growth-first-record-link) .shell{height:min(100svh,calc(296px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important}
+body[data-home-page="growth"] #homeGrowth{gap:8px;padding-top:6px}
+body[data-home-page="growth"] #homeGrowth .growth-preview.home-kitchen-scene{flex:none;aspect-ratio:2 / 1;container-type:inline-size;background-size:100% auto;background-position:center 93.26%;padding:0;margin-top:0}
+body[data-home-page="growth"] #homeGrowth .growth-preview .home-fridge-art{left:50.3%;top:auto;bottom:1.4cqw;width:28.5%;height:auto;max-width:none;aspect-ratio:812 / 1344;transform:translateX(-50%)}
+body[data-home-page="growth"] #growthSceneDecor{left:2%;top:calc(62.12% - 3.84cqw);width:96%;height:4cqw;min-height:0;padding:0;background:none;display:block}
+body[data-home-page="growth"] #growthSceneDecor .home-prop-mini{width:12cqw;height:15cqw;left:clamp(6cqw,var(--prop-x),calc(100% - 6cqw))!important}
+body[data-home-page="growth"] #growthSceneDecor .home-prop-mini[data-home-art="cup"]{height:9cqw}
+body[data-home-page="growth"] .growth-preview-callout{display:none}
+/* Fit the room pages to their contents rather than leaving a second floor-colored row. */
+body[data-mode][data-home-page="decor"] .shell,body[data-mode][data-home-page="growth"] .shell,body[data-mode][data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) .shell{height:auto!important;max-height:calc(100svh - 16px)}
+body[data-home-page="decor"] #panel-kitchen,body[data-home-page="growth"] #panel-kitchen,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"]{flex:none}
+body[data-home-page="growth"] #homeGrowth{flex:none;gap:8px;padding-bottom:0}
+body[data-home-page="growth"] #homeGrowth .growth-first-goal{margin-bottom:0}
+#appliedRoomMessage{display:none}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #appliedRoomMessage{display:flex;align-items:center;justify-content:center;gap:7px;order:-2;min-height:36px;margin:8px 12px 5px;font-size:12px;color:#584532}
+#appliedRoomMessage>span{display:grid;place-items:center;width:20px;height:20px;background:#e9f4e4;color:#4d853a;border-radius:50%;font-weight:750}
+body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeFridgeProgress{margin-top:0}
+body[data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) #liveMessage{width:1px!important;height:1px!important;min-height:0!important;min-width:0!important;padding:0!important;border:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
+body.theme-stone[data-home-page="decor"] .room,body.theme-stone[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .room,body.theme-stone[data-home-page="growth"] .growth-preview{filter:saturate(.65)}
+body.theme-stone[data-home="fridge"] #fridgeSceneHost{background-color:#f1f1ef}
+body #tray[data-workflow-route="add"] .registration-method-hero{background-position:0% 60%;background-size:310% auto}
+@media(max-width:360px){body[data-home="fridge"] #panel-fridge{padding-inline:10px}body[data-home="fridge"] #dailyBalance{padding:8px}body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:8px}body[data-home="fridge"] #dailyBalance .balance-name{font-size:9px}body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:17px}body[data-home="fridge"] #dailyBalance .balance-number>span,body[data-home="fridge"] #dailyBalance .balance-number strong small{font-size:9px}body[data-home-page="decor"] .decor-heading{padding-right:104px}body[data-home-page="decor"] .decor-heading h2{font-size:14px}}

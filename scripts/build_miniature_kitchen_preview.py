@@ -127,14 +127,16 @@ COMPACT_REGIONS = {'designs/miniature-kitchen/assets/decor-atlas.png':
 # WebP82 quality comparisons are recorded with the visual-fidelity evidence.
 # Existing miniature assets retain their previous formats and encoding levels.
 COMPACT_AVIF = {
+    'designs/miniature-kitchen/assets/fridge-slim-white-v2.png':
+        'designs/miniature-kitchen/assets/fridge-slim-white-v2.avif',
     'designs/miniature-kitchen/assets/room-props-fullflow-v1.png':
         'designs/miniature-kitchen/assets/room-props-fullflow-v1.avif',
-    'designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png':
-        'designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.avif',
-    'designs/miniature-kitchen/assets/food-shelf-coherent-v2.png':
-        'designs/miniature-kitchen/assets/food-shelf-coherent-v2.avif',
-    'designs/miniature-kitchen/assets/kitchen-built-in-v2.png':
-        'designs/miniature-kitchen/assets/kitchen-built-in-v2.avif',
+    'designs/miniature-kitchen/assets/fridge-white-redo-v1.png':
+        'designs/miniature-kitchen/assets/fridge-white-redo-v1.avif',
+    'designs/miniature-kitchen/assets/food-organizers-redo-v1.png':
+        'designs/miniature-kitchen/assets/food-organizers-redo-v1.avif',
+    'designs/miniature-kitchen/assets/kitchen-room-wide-neutral-1104-v2.png':
+        'designs/miniature-kitchen/assets/kitchen-room-wide-neutral-1104-v2.avif',
     'designs/miniature-kitchen/assets/recipe-photos-v1.png':
         'designs/miniature-kitchen/assets/recipe-photos-v1.avif',
 }
@@ -265,7 +267,7 @@ def build(root, mode, compact=False):
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
             'story-art.js': [('RECIPE_PHOTOS','designs/miniature-kitchen/assets/recipe-photos-v1.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-cabinet-a1-v2.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/food-shelf-coherent-v2.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png'),('ROOM_PROPS','designs/miniature-kitchen/assets/room-props-fullflow-v1.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-white-redo-v1.png'),('ROOM_FRIDGE','designs/miniature-kitchen/assets/fridge-slim-white-v2.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/food-organizers-redo-v1.png'),('INNER_DOORS','designs/miniature-kitchen/assets/door-insides.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png'),('ROOM_PROPS','designs/miniature-kitchen/assets/room-props-fullflow-v1.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"
