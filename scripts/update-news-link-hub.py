@@ -23,6 +23,7 @@ QUERIES = [
     # Track election counts and market-relevant policy changes as reported, not predicted.
     ('realtime', 'us', '미국 중간선거 개표 상원 하원 선거 결과 경제 영향 when:1d'),
     ('realtime', 'us', 'US election Congress midterms tariff regulation markets when:1d'),
+    ('realtime', 'us', '(site:reuters.com OR site:apnews.com) US midterm election Congress markets when:1d'),
     ('news', 'global', '미국 의회 법안 관세 무역 제재 AI 규제 정책 금융시장 when:2d'),
     ('article', 'kr', '경제 분석 증시 전망 투자 전략 when:2d'),
     ('article', 'global', '글로벌 경제 시장 분석 금리 인플레이션 when:2d'),
