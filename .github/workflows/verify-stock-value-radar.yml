@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "stock-value-radar.html"
+      - "assets/stock-radar-clean-bridge.js"
+      - "assets/stock-radar-flow-v2.js"
+      - "scripts/update-news-link-hub.py"
       - "scripts/build-stock-investment-intelligence.py"
       - "scripts/monitor-stock-value-radar.py"
       - "scripts/update-stock-value-radar.py"
@@ -42,19 +45,35 @@ jobs:
           assert m.rank({"revenue_growth":None,"operating_margin":20})["score"] is None
           print("PASS data validation and negative test cases")
           PY
-      - name: Validate embedded JavaScript syntax and required UI
+      - name: Verify deployed V5 UI, data provenance and script syntax
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          html=Path("stock-value-radar.html").read_text()
-          srcs=re.findall(r'<script\s+src="([^"]+)"',html)
-          for asset in ("stock-radar-v8.js","stock-radar-v9.js","stock-green-review.js","stock-recommendations.js","stock-investment-cases.js"):
-            assert any(asset in src for src in srcs), asset
-          for element in ("todayBrief","view-discover","view-detail","view-system","cards","companySelect","marketGroupsBar","liveStatus"):
-            assert 'id="'+element+'"' in html,element
-          assert 'href="./toss-live-radar.html"' in html
-          print("Current radar UI anchors, scripts and Toss watch link PASS")
+          import json,re
+          html=Path("stock-value-radar.html").read_text(encoding="utf-8")
+          bridge=Path("assets/stock-radar-clean-bridge.js").read_text(encoding="utf-8")
+          flow=Path("assets/stock-radar-flow-v2.js").read_text(encoding="utf-8")
+          rss=Path("scripts/update-news-link-hub.py").read_text(encoding="utf-8")
+          sources=re.findall(r'<script(?:\s+defer)?\s+src="([^"]+)"',html)
+          assert len(sources)==len(set(x.split("?")[0] for x in sources)), "duplicate runtime scripts"
+          for name in ("stock-radar-clean-bridge.js","stock-radar-flow-v2.js"):
+              assert sum(name in x for x in sources)==1, name
+          for required in ('id="nr-home-content"','id="view-home"','class="fx-root"','v9: one isolated fear/greed component'):
+              assert required in html, required
+          assert "function fxHome(ctx)" in flow and 'fx-v5-markets nr-market-grid' in flow
+          assert "function fxV5StockNews(ctx,c)" in flow and 'ctx.data?.newsLink' in flow
+          assert 'newsLink:"news-link-data.json"' in bridge
+          assert "function policyDigest()" in bridge and "function autoRefreshIfDue()" in bridge
+          assert "실시간 호가 아님" in bridge
+          assert "politics_policy" in rss and "midterms" in rss
+          data=json.loads(Path("news-link-data.json").read_text(encoding="utf-8"))
+          assert isinstance(data.get("items"),list) and data.get("generated_at")
+          for x in data["items"][:20]:
+              assert x.get("url","").startswith("https://")
+              assert x.get("source") and x.get("published_at")
+          print("V5 radar current UI, policy data, time metadata, 5-minute refresh PASS")
           PY
-          for f in assets/stock-radar-v8.js assets/stock-radar-v9.js assets/stock-green-review.js assets/stock-recommendations.js assets/stock-investment-cases.js; do node --check "$f"; done
-          echo "JavaScript syntax PASS"
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python -m py_compile scripts/update-news-link-hub.py
+          echo "Updated radar script syntax PASS"
