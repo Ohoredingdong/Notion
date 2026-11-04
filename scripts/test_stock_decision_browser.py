@@ -343,11 +343,16 @@ class RadarChecks:
             if page.locator("#view-home").count():
                 expect(page.locator("#view-home")).to_be_visible()
                 expect(page.locator("#nr-home-content")).to_be_visible()
-                require(page.locator("#nr-market-overview,#nr-home-alerts,#nr-home-picks").count() == 3,
-                        "Neutral home must expose market overview, alerts and research picks.")
-                require(page.locator(".nr-home-actions button").count() >= 6,
-                        "Neutral home must expose the primary screen entry points.")
-                self.record(label + " neutral home exposes market, alerts, picks and primary screen entry points")
+                # Current research home uses flow markup rather than the retired #nr-home-* ids.
+                # Preserve the semantic gates (market, AI candidates, news/risk and audited
+                # outcomes) and insist they render before continuing to legacy analysis.
+                expect(page.locator(".rf-markets .nr-index")).to_have_count(4)
+                expect(page.locator('section.rf-panel[aria-label="AI 신호 종목 목록"]')).to_be_visible()
+                expect(page.locator('section.rf-side-card[aria-label="시장 이슈"]')).to_be_visible()
+                expect(page.locator('section.rf-validation[aria-label="AI 예측 성과 검증"]')).to_be_visible()
+                require(page.locator('.nr-rail button[data-nr-screen]').count() >= 6,
+                        "Neutral home must expose navigation to the primary research screens.")
+                self.record(label + " flow home exposes market, research signals, news, audited results and primary navigation")
                 page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
