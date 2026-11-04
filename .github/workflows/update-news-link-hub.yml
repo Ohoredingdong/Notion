@@ -7,7 +7,8 @@ on:
       - "scripts/update-news-link-hub.py"
       - ".github/workflows/update-news-link-hub.yml"
   schedule:
-    - cron: "7,37 * * * *"
+    # About every 15 minutes; GitHub Actions schedules may be delayed.
+    - cron: "7,22,37,52 * * * *"
 permissions:
   contents: write
 concurrency:
