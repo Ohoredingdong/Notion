@@ -387,6 +387,20 @@ function fxV5Sentiment(ctx){
  const sourceName=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
  const description=korea?"한국 코스피·코스닥의 민간 산출 심리지수이며, 미국 CNN 지수와 산출법이 다릅니다. 매매 신호가 아닙니다.":"미국 CNN 공포·탐욕 지수입니다. 한국 지수와 산출법이 다르며 매매 신호가 아닙니다.";
+ const flagArt=korea?`<svg class="fx-sent-v6-flag-svg" viewBox="0 0 36 25" fill="none" aria-hidden="true" focusable="false">
+  <rect x=".5" y=".5" width="35" height="24" rx="3" fill="white" stroke="#E6EBF4"/>
+  <defs><clipPath id="kr-flag-circle"><circle cx="18" cy="12.5" r="6"/></clipPath></defs>
+  <g clip-path="url(#kr-flag-circle)"><rect x="12" y="6.5" width="12" height="6" fill="#CD2E3A"/><rect x="12" y="12.5" width="12" height="6" fill="#0047A0"/><circle cx="15" cy="12.5" r="3" fill="#0047A0"/><circle cx="21" cy="12.5" r="3" fill="#CD2E3A"/></g>
+  <g fill="#171B26" transform="translate(6.5 5.4) rotate(-35)"><rect x="-3.5" y="-2.6" width="7" height="1"/><rect x="-3.5" y="-.5" width="7" height="1"/><rect x="-3.5" y="1.6" width="7" height="1"/></g>
+  <g fill="#171B26" transform="translate(29.5 19.6) rotate(-35)"><rect x="-3.5" y="-2.6" width="7" height="1"/><rect x="-3.5" y="-.5" width="7" height="1"/><rect x="-3.5" y="1.6" width="7" height="1"/></g>
+  <g fill="#171B26" transform="translate(29.4 5.4) rotate(35)"><rect x="-3.5" y="-2.6" width="3" height="1"/><rect x=".5" y="-2.6" width="3" height="1"/><rect x="-3.5" y="-.5" width="7" height="1"/><rect x="-3.5" y="1.6" width="3" height="1"/><rect x=".5" y="1.6" width="3" height="1"/></g>
+  <g fill="#171B26" transform="translate(6.5 19.6) rotate(35)"><rect x="-3.5" y="-2.6" width="7" height="1"/><rect x="-3.5" y="-.5" width="3" height="1"/><rect x=".5" y="-.5" width="3" height="1"/><rect x="-3.5" y="1.6" width="7" height="1"/></g>
+ </svg>`:`<svg class="fx-sent-v6-flag-svg" viewBox="0 0 36 25" aria-hidden="true" focusable="false">
+  <rect width="36" height="25" rx="3" fill="#fff"/>
+  <g fill="#CE3343"><path d="M0 0H36V2H0ZM0 4H36V6H0ZM0 8H36V10H0ZM0 12H36V14H0ZM0 16H36V18H0ZM0 20H36V22H0ZM0 24H36V25H0Z"/></g>
+  <rect width="15" height="12" fill="#2D4B89"/>
+  <g fill="white"><circle cx="3" cy="2.4" r=".8"/><circle cx="7.5" cy="2.4" r=".8"/><circle cx="12" cy="2.4" r=".8"/><circle cx="5" cy="5.8" r=".8"/><circle cx="10" cy="5.8" r=".8"/><circle cx="3" cy="9" r=".8"/><circle cx="7.5" cy="9" r=".8"/><circle cx="12" cy="9" r=".8"/></g>
+ </svg>`;
  const switchText=korea?"미국 보기":"한국 보기";
  const switchTitle=korea?"미국 CNN 공포·탐욕 지수 보기":"한국 코스피·코스닥 공포·탐욕 지수 보기";
  const row=(name,value,state)=>`<div class="fx-sent-v6-row">
@@ -397,7 +411,7 @@ function fxV5Sentiment(ctx){
   </div>`;
  return `<section class="fx-v5-sentiment fx-sent-v6 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
   <div class="fx-sent-v6-head">
-   <span class="fx-sent-v6-flag" aria-hidden="true">${korea?"🇰🇷":"🇺🇸"}</span>
+   <span class="fx-sent-v6-flag" aria-hidden="true">${flagArt}</span>
    <strong class="fx-sent-v6-title">${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
    <span class="fx-sent-v6-info" role="img" tabindex="0" aria-label="${description}" title="${description}">ⓘ</span>
    <button type="button" class="fx-sent-v6-switch" data-fx-sentiment-next aria-label="${switchTitle}" title="${switchTitle}"><span>${switchText}</span><span aria-hidden="true">›</span></button>
