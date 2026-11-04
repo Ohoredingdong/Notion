@@ -509,8 +509,13 @@ function fxSourceLinks(c){
  return `<div class="fx-d-source-links">${active.map(([label,href])=>`<a href="${fxEscape(fxSafeHref(href))}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`).join("")||'<span>공식 원문 연결이 확인되지 않았습니다.</span>'}</div>`;
 }
 
-function fxFact(label,value,note){
- return `<div class="fx-d-fact"><span>${fxEscape(label)}</span><strong>${fxEscape(value)}</strong>${note?`<small>${fxEscape(note)}</small>`:""}</div>`;
+function fxFact(label,value,note,meaning){
+ const desc=meaning||note||label;
+ return `<div class="fx-d-fact"><div class="fx-d-fact-label">
+  <span>${fxEscape(label)}</span>
+  ${meaning?`<small class="fx-d-plain">${fxEscape(meaning)}</small>`:""}
+  <span class="fx-d-help" tabindex="0" role="img" title="${fxEscape(desc)}" aria-label="${fxEscape(label+": "+desc)}">ⓘ</span>
+ </div><strong>${fxEscape(value)}</strong>${note?`<small class="fx-d-note">${fxEscape(note)}</small>`:""}</div>`;
 }
 
 function fxNewsFor(ctx,c){
@@ -524,9 +529,10 @@ function fxNewsFor(ctx,c){
 }
 function fxDetail(ctx){
  const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
- if(!c)return `<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>`;
+ if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
  const f=c.forecasts||{},h=c.history||{},balance=c.balance||{},tech=c.technical||{},a=c.assessment||{},short=c.short||{};
- const stateNames={ready:"제공처 기준 조건 충족",verify:"공식 대조 필요",price:"가격 조건 대기",risk:"위험 우선 확인",data:"자료 보강 필요"};
+ const helper=fxHelpers(),periods=[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]];
+ const stateNames={ready:"제공처 조건 검토",verify:"공식 대조 필요",price:"가격 조건 대기",risk:"위험 우선 확인",data:"자료 보강 필요"};
  const state=stateNames[a.state]||"종합 실사 검토 전";
  const downside=Array.isArray(a.risks)?a.risks:[],missing=Array.isArray(a.missing)?a.missing:[];
  const asText=x=>typeof x==="string"?x:x?.text||x?.reason||x?.label||"";
@@ -534,59 +540,86 @@ function fxDetail(ctx){
  const auditOk=auditPeriodMatches&&audit.status==="compared"?auditFields.filter(x=>x.accepted===true).length:null;
  const checks=Array.isArray(a.checks)?a.checks.slice(0,4):[];
  const warnings=[...downside.map(asText),...missing.map(asText)].filter(Boolean).slice(0,4);
- const disclaimer=ctx.data?.raw?.generated_at?"자료 수집: "+fxEscape(fxHelpers().T?.(ctx.data.raw.generated_at)||"시간 확인 중"):"저장 데이터 수집 시각 확인 전";
- const priceCondition=a.price_condition||{};
- return `<div class="fx-detail-v4">
-  <div class="fx-intro fx-detail-intro"><div><h2>${fxEscape(c.name)} · 상세 분석 통합</h2><p>${fxEscape(c.symbol)} · ${fxEscape(c.sector||"업종 확인 전")} · 가격 · 실적 · 현금흐름 · 위험 · 뉴스까지 한 화면에서 확인</p></div><span class="fx-stamp">${disclaimer}</span></div>
+ const disclaimer=ctx.data?.raw?.generated_at?"자료 수집: "+fxEscape(helper.T?.(ctx.data.raw.generated_at)||"시간 확인 중"):"저장 데이터 수집 시각 확인 전";
+ const priceCondition=a.price_condition||{},delta=helper.change?.(c);
+ const signal=fxPrediction(c,ctx),hasSignal=signal.active&&!signal.stale&&!signal.unknown;
+ const ai=hasSignal?fxBars(c,ctx):`<div class="fx-d-ai-empty">
+  <span class="fx-d-ai-icon" aria-hidden="true">${helper.I?.("chart")||"◇"}</span>
+  <strong>${fxEscape(signal.status==="현재 연구 신호 없음"?"현재 연구 신호 없음":signal.status||"검증된 최신 신호 없음")}</strong>
+  <p>유효한 목표 기간과 예측 자료가 확인될 때 표시합니다. 과거 확률은 매수 근거가 아닙니다.</p>
+ </div>`;
+ const ticker=String(c.symbol||"—").replace(/\.(KS|KQ)$/,""),badge=ticker.replace(/[^A-Za-z0-9]/g,"").slice(0,3)||"STK";
+ return `<div class="fx-detail-v4 fx-detail-v6">
+  <div class="fx-intro fx-detail-intro"><div><h2>${fxEscape(c.name)} · 상세 분석 통합</h2><p>가격·기업 가치·실적·전망·위험을 한눈에 비교하고, 용어는 바로 옆에서 확인할 수 있습니다.</p></div><span class="fx-stamp">${disclaimer}</span></div>
+  <section class="fx-d-securitybar" aria-label="현재 선택 종목 및 마지막 저장 종가">
+   <div class="fx-d-security"><span class="fx-d-ticker">${fxEscape(badge)}</span><div><strong>${fxEscape(c.name)}</strong><small>${fxEscape(c.symbol)} · ${fxEscape(window.RadarMarkets?.label?.(c)||c.market||"시장 확인 전")} · ${fxEscape(c.sector||"업종 확인 전")}</small></div></div>
+   <div class="fx-d-quote"><strong>${fxMoney(c.price,c.currency)}</strong><span class="${helper.tone?.(delta)||"nr-neutral"}">${fxPct(delta)}</span><small>${fxEscape(c.price_session||"기준일 미확인")} 저장 종가</small></div>
+   <div class="fx-d-security-actions"><button type="button" class="fx-d-star" data-nr-star="${fxEscape(c.symbol)}" title="관심종목 저장" aria-label="관심종목 저장">${ctx.favorites?.includes(c.symbol)?"★":"☆"}</button><button type="button" data-nr-screen="stocks" class="fx-d-back" title="종목 목록으로" aria-label="종목 목록으로">‹</button></div>
+  </section>
   <div class="fx-detail-content">
    <div class="fx-detail-upper">
-    <div class="fx-detail-primary">${fxFocus(ctx)}</div>
-    <section class="fx-panel fx-decision-panel"><div class="fx-panel-heading"><h3>투자 판단 현황</h3><span class="fx-d-status">${fxEscape(state)}</span></div>
-     <div class="fx-decision-company"><span>장기 관점</span><strong>${fxEscape(a.next_action||"공식 실사 및 가격 조건 확인 필요")}</strong></div>
+    <section class="fx-panel fx-detail-primary fx-d-hero fx-d-chart-panel">
+     <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"↗"} 주가 흐름</h3><small>실제 저장 종가가 어떻게 움직였는지 보여줍니다.</small></div><span>저장된 가격 기준</span></div>
+     <div class="fx-d-periods fx-periods">${periods.map(([key,label])=>`<button type="button" data-fx-period="${key}" class="${fxLocal.period===key?"active":""}" aria-pressed="${fxLocal.period===key}">${label}</button>`).join("")}</div>
+     <div class="fx-d-chart-body">${fxChart(c)}</div>
+    </section>
+    <section class="fx-panel fx-d-hero fx-d-ai-panel">
+     <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} AI 방향 분석</h3><small>상승·횡보·하락을 추정한 연구 결과입니다.</small></div><span class="fx-d-ai-badge">연구용</span></div>
+     <div class="fx-d-ai-body">${ai}</div>
+     <p class="fx-d-research-note">연구 확률은 수익률·매수 성공률이 아닙니다.</p>
+    </section>
+    <section class="fx-panel fx-decision-panel fx-d-hero">
+     <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>이 종목을 검토할 때 먼저 확인할 조건입니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
+     <div class="fx-decision-company"><span>장기 관점 · 실사 우선</span><strong>${fxEscape(a.next_action||"공식 실사와 가격 조건을 확인해야 합니다.")}</strong></div>
      <div class="fx-d-mini-grid">
-      ${fxFact("검토 상한가",fxMoney(priceCondition.ceiling,c.currency),"독립 적정가치 아님")}
-      ${fxFact("단기 방향",fxEscape(short.label||"단기 자료 없음"),"5~20거래일 연구")}
-      ${fxFact("가격 조건",priceCondition.price_condition_usable===false||a.price_condition_usable===false?"사용 보류":fxN(priceCondition.move_pct)===null?"미산출":fxPct(priceCondition.move_pct),"원문 대조 별도")}
-      ${fxFact("분석 우선점수",fxN(c.priority?.display_score??c.priority?.score)===null?"—":fxNum(c.priority?.display_score??c.priority?.score,0)+" / 100","투자 성공 확률 아님")}
-     </div><div class="fx-d-notice">AI 연구 예측과 종합 실사 판단은 서로 다른 근거입니다. 과거 공식 대조 ${auditOk===null?"기간·원문 미확인":auditOk+" / "+auditFields.length+"개 허용범위 대조"}</div>
+      ${fxFact("검토 상한가",fxMoney(priceCondition.ceiling,c.currency),"독립 적정가치 아님","연구상 확인할 가격 기준, 매수가 확정 아님")}
+      ${fxFact("단기 방향",short.label||"단기 자료 없음","5~20거래일 연구","최근 가격 흐름을 바탕으로 본 단기 경향")}
+      ${fxFact("가격 조건",priceCondition.price_condition_usable===false||a.price_condition_usable===false?"사용 보류":fxN(priceCondition.move_pct)===null?"미산출":fxPct(priceCondition.move_pct),"원문 대조 별도","저장 종가와 연구 가격 기준 사이 차이")}
+      ${fxFact("분석 우선점수",fxN(c.priority?.display_score??c.priority?.score)===null?"—":fxNum(c.priority?.display_score??c.priority?.score,0)+" / 100","투자 성공 확률 아님","추가로 살펴볼 우선순위 점수")}
+     </div>
+     <div class="fx-d-notice">AI 신호와 기업 실사는 서로 다른 근거입니다. 공식 대조: ${auditOk===null?"기간·원문 미확인":auditOk+" / "+auditFields.length+"개 항목 대조"}</div>
     </section>
    </div>
    <div class="fx-detail-mid">
-    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>가치평가 · 가격 부담</h3><span>애널리스트 집계</span></div>
-      <div class="fx-d-facts">
-       ${fxFact("다음 FY 예상 PER",fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,2)+"배","완료 종가 / 예상 EPS")}
-       ${fxFact("목표가 중앙값",fxMoney(fxSafeTargets(c).median,c.currency),"적정가치 확정값 아님")}
-       ${fxFact("순차입금 / EBITDA",fxN(balance.net_debt_ebitda)===null?"—":fxNum(balance.net_debt_ebitda,2)+"배","기준 "+(balance.asof||"미확인"))}
-       ${fxFact("단기 20일 전고점",fxMoney(tech.prior_high20,c.currency),"지지·저항 추정값")}
-      </div></section>
-    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>EPS 전망 · 수정 추이</h3><span>회계연도 구분</span></div>
-      <div class="fx-d-facts">
-       ${fxFact("다음 FY 예상 EPS",fxMoney(f.next_fy?.avg,c.currency),fxN(f.analysts)===null?"기관 수 미확인":fxNum(f.analysts,0)+"개 집계")}
-       ${fxFact("EPS 30일 수정",fxPct(f.eps_revision30_pct),"동일 회계연도 비교")}
-       ${fxFact("다음 FY 예상 EPS 성장",fxPct(f.eps_growth_next_fy_pct),"추정치 간 비교")}
-       ${fxFact("20일 평균 거래량 대비",fxN(tech.volume_ratio)===null?"—":fxNum(tech.volume_ratio,2)+"배","저장 거래량 지표")}
-      </div></section>
-    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading"><h3>실적 · 현금흐름</h3><span>${fxEscape(h.filing_period||"회계기간 확인 전")}</span></div>
-      <div class="fx-d-facts">
-       ${fxFact("매출",fxAmount(h.revenue,c.currency),h.basis||"보고 기간 확인")}
-       ${fxFact("영업이익",fxAmount(h.operating_income,c.currency))}
-       ${fxFact("당기순이익",fxAmount(h.net_income,c.currency))}
-       ${fxFact("잉여현금흐름 FCF",fxAmount(h.fcf,c.currency),"회계기간/투자지출 대조")}
-      </div></section>
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} 가치평가 요약</h3><small>주가가 이익·현금창출력 대비 비싼지 살펴봅니다.</small></div><span>애널리스트 집계</span></div>
+     <div class="fx-d-facts">
+      ${fxFact("예상 PER",fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,2)+"배","저장 주가 ÷ 예상 주당순이익","이익에 비해 주가가 몇 배인지")}
+      ${fxFact("목표가",fxMoney(fxSafeTargets(c).median,c.currency),"적정가치 확정값 아님","증권사 전망 가격의 중간값")}
+      ${fxFact("순차입금 / EBITDA",fxN(balance.net_debt_ebitda)===null?"—":fxNum(balance.net_debt_ebitda,2)+"배","기준 "+(balance.asof||"미확인"),"현금 차감 후 빚을 영업이익·상각비와 비교")}
+      ${fxFact("20일 전고점",fxMoney(tech.prior_high20,c.currency),"과거 고점 · 지지선 확정 아님","최근 20거래일의 직전 최고가")}
+     </div>
+    </section>
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} EPS 전망 요약</h3><small>주당순이익(EPS) 예상치의 변화입니다.</small></div><span>회계연도 구분</span></div>
+     <div class="fx-d-facts">
+      ${fxFact("예상 EPS",fxMoney(f.next_fy?.avg,c.currency),fxN(f.analysts)===null?"집계 기관 미확인":fxNum(f.analysts,0)+"개 기관 집계","다음 회계연도 주식 한 주당 예상 순이익")}
+      ${fxFact("EPS 30일 수정",fxPct(f.eps_revision30_pct),"동일 회계연도 기준","최근 30일 이익 전망의 상향·하향")}
+      ${fxFact("예상 EPS 성장",fxPct(f.eps_growth_next_fy_pct),"예상치 간 비교","다음 회계연도 주당이익 성장 전망")}
+      ${fxFact("20일 거래량 배수",fxN(tech.volume_ratio)===null?"—":fxNum(tech.volume_ratio,2)+"배","저장 거래량 기준","최근 거래량이 20일 평균의 몇 배인지")}
+     </div>
+    </section>
+    <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} 실적 · 현금흐름</h3><small>사업이 만든 이익과 실제 현금의 흐름입니다.</small></div><span>${fxEscape(h.filing_period||"회계기간 확인 전")}</span></div>
+     <div class="fx-d-facts">
+      ${fxFact("매출",fxAmount(h.revenue,c.currency),h.basis||"회계기간 확인","제품·서비스를 판매해 벌어들인 돈")}
+      ${fxFact("영업이익",fxAmount(h.operating_income,c.currency),"본업의 이익","본업에서 비용을 제외한 이익")}
+      ${fxFact("당기순이익",fxAmount(h.net_income,c.currency),"세금·이자 반영","세금·이자 등을 반영한 최종 이익")}
+      ${fxFact("FCF",fxAmount(h.fcf,c.currency),"현금흐름·설비투자 대조","영업현금흐름에서 설비투자를 뺀 돈")}
+     </div>
+    </section>
    </div>
    <div class="fx-detail-lower">
-     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>투자 근거 · 단기/장기</h3></div>
-      <p class="fx-d-text">${fxEscape(c.business_summary||c.business_description||c.profile?.business||"사업 요약을 확인할 수 없어 공식 IR 확인이 필요합니다.")}</p>
-      <div class="fx-d-points">${[a.next_action,...(short.reasons||[]).slice(0,1)].filter(Boolean).map(x=>`<span>✓ ${fxEscape(asText(x))}</span>`).join("")||'<span>확정된 투자 근거는 원문을 확인해야 합니다.</span>'}</div>
-     </section>
-     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>리스크 · 무효화 조건</h3></div>
-      <div class="fx-d-points">${checks.map(x=>`<span>${x.ok===true?"✓":"○"} ${fxEscape(x.label||"검증 내용 확인")}: ${x.ok===true?"입력 기준 통과":"확인 필요"}</span>`).join("")}${warnings.map(x=>`<span>! ${fxEscape(x)}</span>`).join("")||'<span>현재 실사·문서·금리 리스크를 별도 확인해야 합니다.</span>'}</div>
-     </section>
-     <section class="fx-panel fx-d-summary"><div class="fx-panel-heading"><h3>기업 뉴스 · 원문</h3><span>자동탐지 원문 재확인</span></div>
-       <div class="fx-d-news">${fxNewsFor(ctx,c)}</div>${fxSourceLinks(c)}
-     </section>
+    <section class="fx-panel fx-d-summary"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"○"} 투자 근거</h3><small>왜 관심을 둘지, 아직 무엇이 미확인인지 살펴봅니다.</small></div></div>
+     <p class="fx-d-text">${fxEscape(c.business_summary||c.business_description||c.profile?.business||"사업 요약을 확인할 수 없어 공식 IR 확인이 필요합니다.")}</p>
+     <div class="fx-d-points">${[a.next_action,...(short.reasons||[]).slice(0,2)].filter(Boolean).map(x=>`<span>• ${fxEscape(asText(x))}</span>`).join("")||'<span>확인된 투자 근거는 공식 원문 대조가 필요합니다.</span>'}</div>
+    </section>
+    <section class="fx-panel fx-d-summary"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"!"} 리스크 · 점검 조건</h3><small>투자를 재검토할 원인과 미확인 항목입니다.</small></div></div>
+     <div class="fx-d-points">${checks.map(x=>`<span>${x.ok===true?"✓":"○"} ${fxEscape(x.label||"검증 내용 확인")}: ${x.ok===true?"입력 기준 통과":"확인 필요"}</span>`).join("")}${warnings.map(x=>`<span>! ${fxEscape(x)}</span>`).join("")||'<span>실사·공시·금리 리스크를 별도 확인해야 합니다.</span>'}</div>
+    </section>
+    <section class="fx-panel fx-d-summary"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("news")||"▤"} 기업 뉴스 · 원문</h3><small>기사 요약보다 공시·공식 원문을 우선합니다.</small></div><span>원문 재확인</span></div>
+     <div class="fx-d-news">${fxNewsFor(ctx,c)}</div>${fxSourceLinks(c)}
+    </section>
    </div>
-  </div>${fxSteps(ctx)}</div>`;
+  </div>${fxSteps(ctx)}
+ </div>`;
 }
 function fxScenarioPlot(c){
  const t=fxSafeTargets(c),h=fxHelpers(),series=h.pointData?.([String(c.symbol)],"3M"),vals=series?.series?.[0]?.prices||[];
