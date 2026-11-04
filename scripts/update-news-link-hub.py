@@ -20,6 +20,10 @@ UA = {'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 Chrome/124 Safari/537.36'}
 QUERIES = [
     ('news', 'kr', '한국 경제 증시 금리 환율 반도체 when:1d'),
     ('news', 'us', '미국 경제 연준 금리 인플레이션 증시 when:1d'),
+    # Track election counts and market-relevant policy changes as reported, not predicted.
+    ('realtime', 'us', '미국 중간선거 개표 상원 하원 선거 결과 경제 영향 when:1d'),
+    ('realtime', 'us', 'US election Congress midterms tariff regulation markets when:1d'),
+    ('news', 'global', '미국 의회 법안 관세 무역 제재 AI 규제 정책 금융시장 when:2d'),
     ('article', 'kr', '경제 분석 증시 전망 투자 전략 when:2d'),
     ('article', 'global', '글로벌 경제 시장 분석 금리 인플레이션 when:2d'),
     ('realtime', 'kr', '경제 속보 증시 속보 환율 속보 when:1d'),
@@ -95,6 +99,8 @@ def source_profile(source: str) -> dict:
 
 def topic_for(title: str) -> tuple[str, str]:
     t = title.lower()
+    if any(k in t for k in ['중간선거', '선거', '개표', '투표', '상원', '하원', '의회', '법안', '관세', '제재', '행정명령', '규제', 'midterm', 'election', 'congress', 'tariff', 'sanction', 'legislation']):
+        return ('정책·선거', 'policy')
     if any(k in t for k in ['연준', 'fed', 'fomc', '금리']):
         return ('미 연준', '')
     if any(k in t for k in ['코스피', '코스닥', '나스닥', '증시', '주가']):
@@ -135,6 +141,8 @@ def parse_feed(tab: str, region: str, q: str) -> list[dict]:
             'region': region,
             'topic': topic,
             'topic_class': cls,
+            'event_type': 'politics_policy' if cls == 'policy' else 'economy',
+            'verification_note': 'RSS headline; original article must be checked before treating a claim as confirmed',
             'title': title,
             'snippet': desc or source,
             'url': link,
@@ -210,6 +218,14 @@ def ranking_score(x: dict) -> float:
         score += 35
     if x.get('cross_confirmed'):
         score += 28 + min(12, 4 * (int(x.get('cross_count') or 2) - 2))
+    # Prioritize timely, trusted policy/election reporting; do not score parties or candidates.
+    if x.get('event_type') == 'politics_policy' and x.get('trusted_source') and x.get('tab') != 'opinion':
+        try:
+            age = (datetime.now(KST) - datetime.fromisoformat(x['published_at'])).total_seconds()
+            if 0 <= age <= 12 * 3600:
+                score += 14
+        except (ValueError, TypeError, KeyError):
+            pass
     return score
 
 
