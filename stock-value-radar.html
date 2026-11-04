@@ -1007,6 +1007,7 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 
 /* 2026-11-04: approved gauge / two-index sentiment UI — screenshot-matched responsive card. */
 .fx-v5-sentiment.fx-sent-v6{
+  align-items:stretch!important;width:100%!important;
   display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
   padding:10px 12px!important;gap:7px!important;min-width:0;min-height:126px!important;
   background:#fff!important;border:1px solid #e2e9f3!important;
@@ -1014,6 +1015,7 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
   overflow:hidden;
 }
 .fx-v5-sentiment.fx-sent-v6>.fx-sent-v6-head{
+  width:100%!important;align-self:stretch!important;min-width:0!important;
   display:flex!important;align-items:center;justify-content:space-between;
   gap:6px;flex:0 0 auto;min-width:0;min-height:26px!important;
 }
@@ -1022,8 +1024,9 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
   border:1px solid #e5ebf5;background:#f9fbfe;border-radius:9px;
   font-size:16px;line-height:1;
 }
+.fx-sent-v6-flag-svg{display:block;width:23px;height:17px;max-width:100%;}
 .fx-v5-sentiment .fx-sent-v6-title{
-  color:#1e304b!important;font-weight:850!important;font-size:12px!important;
+  color:#1e304b!important;font-weight:850!important;font-size:13px!important;
   letter-spacing:-.27px;line-height:1.25;min-width:0;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;
 }
@@ -1042,14 +1045,15 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 .fx-sent-v6-switch:hover{background:#ebf2fc!important;border-color:#cedced!important}
 .fx-sent-v6-switch:focus-visible{outline:2px solid #4f87cb;outline-offset:2px}
 .fx-v5-sentiment.fx-sent-v6>.fx-sent-v6-content{
-  display:grid!important;grid-template-columns:minmax(92px,.82fr) minmax(0,1.58fr)!important;
+  width:100%!important;align-self:stretch!important;min-width:0!important;
+  display:grid!important;grid-template-columns:minmax(92px,.90fr) minmax(0,1.55fr)!important;
   gap:9px;align-items:stretch;flex:1 1 auto;min-height:0;min-width:0;
 }
 .fx-sent-v6-gauge{position:relative;align-self:center;justify-self:center;min-width:0;
-  width:102px;height:84px;max-width:100%;overflow:hidden}
+  width:108px;height:86px;max-width:100%;overflow:hidden}
 .fx-sent-v6-arc{
   position:absolute;top:-4px;left:50%;transform:translateX(-50%);
-  width:101px;height:101px;max-width:100%;border-radius:50%;
+  width:108px;height:108px;max-width:100%;border-radius:50%;
   background:conic-gradient(from 225deg,
     var(--sentiment-color) 0deg var(--sentiment-angle),
     #e8edf4 var(--sentiment-angle) 270deg,
@@ -1059,7 +1063,7 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 }
 .fx-v5-sentiment .fx-sent-v6-score{
   position:absolute;top:37px;left:50%;transform:translate(-50%,-50%);
-  font-size:23px!important;line-height:1!important;font-weight:870!important;
+  font-size:25px!important;line-height:1!important;font-weight:870!important;
   font-variant-numeric:tabular-nums;letter-spacing:-.7px;color:#18283d!important;
 }
 .fx-sent-v6-mainpill{
@@ -1111,7 +1115,7 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
  .fx-stage-home>.fx-v5-home>.fx-v5-marketline{
   height:clamp(128px,15dvh,145px)!important;flex:0 0 clamp(128px,15dvh,145px)!important;
  }
- .fx-v5-sentiment.fx-sent-v6{height:100%;min-height:0!important}
+ .fx-v5-sentiment.fx-sent-v6{height:100%;min-height:0!important;align-items:stretch!important}
  .fx-v5-markets .nr-index{height:100%;min-height:0!important}
 }
 @media(min-width:1180px) and (max-height:780px){
@@ -1156,7 +1160,7 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 
 </style>
 <script defer src="./assets/stock-radar-clean-bridge.js?v=v5-accuracy-reviewed-20261103-5"></script>
-<script defer src="./assets/stock-radar-flow-v2.js?v=v5-sentiment-approved-20261104-2"></script>
+<script defer src="./assets/stock-radar-flow-v2.js?v=v5-sentiment-ratio-fix-20261104-3"></script>
 <script src="./assets/stock-forecast.js?v=direction-forecast-1.0" defer></script>
 <script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>
 <script src="./assets/stock-forecast-directions.js?v=direction-specialists-1.0" defer></script>
