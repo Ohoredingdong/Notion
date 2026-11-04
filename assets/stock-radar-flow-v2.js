@@ -404,12 +404,12 @@ function fxV5Sentiment(ctx){
  const switchText=korea?"미국 보기":"한국 보기";
  const switchTitle=korea?"미국 CNN 공포·탐욕 지수 보기":"한국 코스피·코스닥 공포·탐욕 지수 보기";
  const row=(name,value,state)=>`<div class="fx-sent-v6-row">
-   <span class="fx-sent-v6-rowicon" aria-hidden="true">⌁</span>
+   <span class="fx-sent-v6-rowicon" aria-hidden="true"><svg class="fx-sent-v7-trendicon" viewBox="0 0 20 20" focusable="false"><polyline points="2,13 7,8 11,11 17,4"/></svg></span>
    <span class="fx-sent-v6-market">${name}</span>
    <span class="fx-sent-v6-pill is-${tone(value)}">${fxEscape(state)}</span>
    <strong class="fx-sent-v6-rowvalue">${value===null?"—":fxNum(value,1)}</strong>
   </div>`;
- return `<section class="fx-v5-sentiment fx-sent-v6 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
+ return `<section class="fx-v5-sentiment fx-sent-v6 fx-sent-v7 ${korea?"is-korea":"is-us"}" style="--sentiment-angle:${sweep};--sentiment-color:${color}" aria-label="${korea?"한국":"미국"} 공포·탐욕 지수" title="${description}">
   <div class="fx-sent-v6-head">
    <span class="fx-sent-v6-flag" aria-hidden="true">${flagArt}</span>
    <strong class="fx-sent-v6-title">${korea?"한국 공포·탐욕":"미국 공포·탐욕"}</strong>
@@ -418,7 +418,7 @@ function fxV5Sentiment(ctx){
   </div>
   <div class="fx-sent-v6-content">
    <div class="fx-sent-v6-gauge" role="img" aria-label="${score===null?"유효한 지수 자료 없음":(korea?"코스피":"미국")+" 공포·탐욕 "+fxNum(score,1)+"점 "+label}">
-    <div class="fx-sent-v6-arc" aria-hidden="true"></div>
+    <svg class="fx-sent-v7-arc" viewBox="0 0 132 118" aria-hidden="true" focusable="false"><path class="fx-sent-v7-track" d="M 14 99 A 55 55 0 1 1 118 99"/><path class="fx-sent-v7-progress" d="M 14 99 A 55 55 0 1 1 118 99" pathLength="100" stroke-dasharray="${score===null?0:score} 100"/></svg>
     <strong class="fx-sent-v6-score">${score===null?"—":fxNum(score,1)}</strong>
     <span class="fx-sent-v6-mainpill is-${tone(score)}">${fxEscape(label)}</span>
    </div>
