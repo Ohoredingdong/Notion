@@ -52,6 +52,29 @@ check('Error-only record is not financial coverage',()=>{
 check('Previously verified values expose latest refresh failure',()=>{
   assert.match(ui.statementPanel(issuer,context({...record,last_refresh_error:'HTTP 403'})),/최근 재수집 실패/);
 });
+check('Partial coverage reports failure only when the current run actually failed',()=>{
+  const ctx=context();
+  ctx.data.financial.refresh_status='partial';ctx.data.financial.current_run_failed=false;
+  assert.match(ui.panel(ctx),/법인 대조 재무 1개 · 일부 미확인/);
+  assert.doesNotMatch(ui.panel(ctx),/일부 수집 실패/);
+  ctx.data.financial.current_run_failed=true;
+  assert.match(ui.panel(ctx),/법인 대조 재무 1개 · 일부 수집 실패/);
+});
+check('Financial amounts preserve reported currencies without implying a USD conversion',()=>{
+  for(const currency of ['USD','CNY','JPY','GBP','EUR','HKD']) {
+    const panel=ui.statementPanel(issuer,context({...record,currency,metrics:{revenue:1000000,reported_eps:1.25}}));
+    assert.ok(panel.includes('1M '+currency));assert.ok(panel.includes('1.25 '+currency+'/주'));
+    if(currency!=='USD')assert.doesNotMatch(panel,/ USD/);
+  }
+  assert.match(ui.statementPanel(issuer,context({...record,currency:'KRW',metrics:{revenue:100000000}})),/1억 원/);
+  assert.match(ui.statementPanel(issuer,context({...record,currency:'JPY',metrics:{revenue:-1000000}})),/−1M JPY/);
+});
+check('Missing or unrecognized currency is unconfirmed rather than defaulting to USD',()=>{
+  for(const currency of [undefined,null,'','unknown','ZZZ','XXX']) {
+    const panel=ui.statementPanel(issuer,context({...record,currency,metrics:{revenue:1000000,reported_eps:1.25}}));
+    assert.match(panel,/통화 미확인/);assert.doesNotMatch(panel,/ USD|undefined\/주|null\/주|ZZZ\/주|XXX\/주/);
+  }
+});
 check('US statement requires exact ticker plus SEC CIK',()=>{
   const us={country:'US',symbol:'FN',name:'Fabrinet'},row={...record,country:'US',symbol:'FN',catalog_name:'Fabrinet',cik:'0012345678'};
   const ctx=context();ctx.data.catalog.items=[us];ctx.data.financial.records={'US:FN':row};

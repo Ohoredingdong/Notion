@@ -4,6 +4,8 @@
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const n=v=>typeof v==="number"&&Number.isFinite(v)?v.toLocaleString("ko-KR"):"—";
  const normalized=v=>String(v??"").toUpperCase().replace(/\.(KS|KQ)$/,"");
+ const currencies=new Set(Intl.supportedValuesOf?.("currency")||["KRW","USD","CNY","JPY","GBP","EUR","HKD"]);
+ const financialCurrency=v=>currencies.has(v)?v:null;
  function data(ctx){const c=ctx.data?.catalog;return c?.identifier_policy==="kr-six-character-alphanumeric-v2"&&Array.isArray(c?.items)?c.items:[];}
  function tracked(ctx){return new Map((ctx.data?.raw?.companies||[]).map(c=>[(c.market==="KR"?"KR:":"US:")+normalized(c.symbol),c]));}
  function statement(x,ctx){
@@ -19,18 +21,19 @@
  function verifiedCount(ctx){return data(ctx).reduce((sum,x)=>{const f=statement(x,ctx);return sum+(f&&["available","partial","stale"].includes(f.status)?1:0)},0);}
  function financeAmount(v,currency){
   if(typeof v!=="number"||!Number.isFinite(v))return "미수집·미확인";
+  if(!financialCurrency(currency))return "통화 미확인";
   const sign=v<0?"−":"";const a=Math.abs(v);
   if(currency==="KRW")return sign+(a>=1e12?n(a/1e12)+"조 원":a>=1e8?n(a/1e8)+"억 원":n(a)+"원");
-  return sign+(a>=1e9?n(a/1e9)+"B USD":a>=1e6?n(a/1e6)+"M USD":n(a)+" USD");
+  return sign+(a>=1e9?n(a/1e9)+"B":a>=1e6?n(a/1e6)+"M":n(a))+" "+currency;
  }
  function statementPanel(x,ctx){
   const f=statement(x,ctx);
   if(!f||!["available","partial","stale"].includes(f.status))
    return `<div class="fx-catalog-preview-info"><b>공식 재무제표: 아직 미확인</b>
      <p>${esc(ctx.data?.financial?.refresh_status==="blocked"?"최근 공식 자료 수집이 중단됐습니다.":x.country==="US"&&ctx.data?.financial?.financial_available?.US===0?"미국 공식 재무자료는 아직 수집되지 않았습니다.":"해당 종목과 공식 공시 법인의 연결·회계 자료를 확인하는 중입니다.")} 연결이 검증되지 않은 값과 임의 EPS는 표시하지 않습니다.</p></div>`;
-  const m=f.metrics||{},key=[["매출액","revenue"],["영업이익","operating_income"],["순이익","net_income"],["자산","assets"],["부채","liabilities"],["자본","equity"],["영업현금흐름","cash_from_operations"],["FCF","free_cash_flow"],["공시 EPS","reported_eps"]];
+  const m=f.metrics||{},currency=financialCurrency(f.currency),key=[["매출액","revenue"],["영업이익","operating_income"],["순이익","net_income"],["자산","assets"],["부채","liabilities"],["자본","equity"],["영업현금흐름","cash_from_operations"],["FCF","free_cash_flow"],["공시 EPS","reported_eps"]];
   const cells=key.map(([name,field])=>`<div class="fx-catalog-finance-cell">
-    <small>${name}</small><strong>${field==="reported_eps"&&typeof m[field]==="number"?esc(n(m[field])+" "+f.currency+"/주"):esc(financeAmount(m[field],f.currency))}</strong></div>`).join("");
+    <small>${name}</small><strong>${field==="reported_eps"&&typeof m[field]==="number"?esc(currency?n(m[field])+" "+currency+"/주":"통화 미확인"):esc(financeAmount(m[field],f.currency))}</strong></div>`).join("");
   const date=f.period_end||f.period_end_label||"보고기간 미확인";
   const src=String(f.source_url||"");const link=/^https:\/\//.test(src)?
     `<a href="${esc(src)}" target="_blank" rel="noopener noreferrer">공식 재무 원문 확인</a>`:"";
@@ -78,7 +81,7 @@
   const catalog=ctx.data?.catalog||{},total=data(ctx).length,kr=total?catalog.counts?.KR:0,us=total?catalog.counts?.US:0,financeTotal=verifiedCount(ctx),refresh=ctx.data?.financial?.refresh_status;
   return `<section class="fx-panel fx-catalog" aria-label="국내외 전체 상장종목 검색">
    <div class="fx-catalog-head"><div><h3>전체 상장종목 찾기</h3>
-     <small>한국 ${n(kr)}개 · 미국 ${n(us)}개 · 명부 ${n(total)}개 · 법인 대조 재무 ${n(financeTotal)}개${refresh==="blocked"?" · 최근 수집 중단":refresh==="partial"?" · 일부 수집 실패":""}</small></div>
+     <small>한국 ${n(kr)}개 · 미국 ${n(us)}개 · 명부 ${n(total)}개 · 법인 대조 재무 ${n(financeTotal)}개${refresh==="blocked"?" · 최근 수집 중단":refresh==="partial"?(ctx.data?.financial?.current_run_failed===true?" · 일부 수집 실패":" · 일부 미확인"):""}</small></div>
      <small>${esc(catalog.generated_at?"출처 확인 "+new Date(catalog.generated_at).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul"}):"출처 수집 전")}</small></div>
    <div class="fx-catalog-toolbar"><input id="fx-catalog-search" type="search" value="${esc(state.query)}"
       aria-label="전체 상장종목 이름이나 종목코드 검색" placeholder="회사명·종목코드로 8천여 종목 검색"/>

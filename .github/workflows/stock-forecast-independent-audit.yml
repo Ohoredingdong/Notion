@@ -6,6 +6,8 @@ on:
       - '.github/workflows/stock-forecast-independent-audit.yml'
       - '.github/workflows/stock-forecasts.yml'
       - 'scripts/test_stock_timing_audit_handoff.py'
+      - 'scripts/audit_stock_timing_trigger.py'
+      - 'scripts/test_stock_timing_trigger.py'
       - 'scripts/stock_forecast_autopilot.py'
       - 'scripts/test_stock_timing_transaction_rollback.py'
       - 'scripts/test_stock_timing_workflow_provenance.py'
@@ -32,6 +34,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/audit_stock_timing_trigger.py'
+      - 'scripts/test_stock_timing_trigger.py'
       - 'scripts/audit_stock_forecast_independent.py'
       - 'scripts/test_stock_timing_source_asof.py'
       - 'scripts/test_stock_timing_band_audit.py'
@@ -53,6 +57,7 @@ on:
     - cron: '33 * * * *'
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: stock-independent-forecast-evidence
   cancel-in-progress: false
@@ -68,9 +73,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Identify an observed gate-only news run
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id }}
+          UPSTREAM_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        shell: bash
+        run: |
+          jobs="$RUNNER_TEMP/stock-forecast-upstream-jobs.json"
+          if [[ "$GITHUB_EVENT_NAME" == 'workflow_run' ]]; then
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${UPSTREAM_RUN_ID}/attempts/${UPSTREAM_ATTEMPT}/jobs?per_page=100" > "$jobs"
+          else
+            printf '{"total_count":0,"jobs":[]}\n' > "$jobs"
+          fi
+          python scripts/audit_stock_timing_trigger.py --event "$GITHUB_EVENT_PATH" --jobs "$jobs"
       - name: Test audit independently of model code
+        if: steps.upstream.outputs.audit_required == 'true'
         run: |
           python scripts/test_stock_timing_audit_handoff.py -v
+          python scripts/test_stock_timing_trigger.py -v
           node scripts/stock_autopilot_recovery.cjs
           python scripts/test_stock_timing_transaction_rollback.py -v
           python scripts/test_stock_timing_workflow_provenance.py -v
@@ -85,7 +107,7 @@ jobs:
           PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_public_payload_fingerprint.py -v
       - name: Verify initiating forecast run provenance (workflow_run only)
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'workflow_run' && steps.upstream.outputs.audit_required == 'true'
         env:
           EXPECTED_FORECAST_RUN_ID: ${{ github.event.workflow_run.id }}
           EXPECTED_FORECAST_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -94,19 +116,23 @@ jobs:
             --expected-run-id "$EXPECTED_FORECAST_RUN_ID" \
             --expected-head-sha "$EXPECTED_FORECAST_HEAD_SHA"
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
+        if: steps.upstream.outputs.audit_required == 'true'
         run: python scripts/audit_stock_forecast_independent.py
       - name: Independently verify immutable learning-event chronology and replay guards
+        if: steps.upstream.outputs.audit_required == 'true'
         run: |
           python scripts/audit_stock_learning_evidence.py --self-test
           python scripts/audit_stock_learning_evidence.py
       - name: Independently reconcile no-call and issue-attempt coverage
+        if: steps.upstream.outputs.audit_required == 'true'
         run: python scripts/audit_stock_forecast_attempt_coverage.py
       - name: Refuse unverified timing-usefulness completion claims
+        if: steps.upstream.outputs.audit_required == 'true'
         run: |
           PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
           python scripts/audit_stock_timing_acceptance_guard.py
       - name: Summarize evidence without declaring trading readiness
-        if: always()
+        if: always() && steps.upstream.outputs.audit_required == 'true'
         run: |
           python - <<'PY'
           import json,os
@@ -125,7 +151,7 @@ jobs:
               out.write('\nA workflow success means audit execution succeeded, not that the model predicts well. Repeated testing does not prove perfect future accuracy.\n')
           PY
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.upstream.outputs.audit_required == 'true'
         with:
           name: independent-forecast-evidence
           retention-days: 30
@@ -134,3 +160,4 @@ jobs:
             stock-forecast-learning-evidence.json
             stock-forecast-attempt-coverage-audit.json
             stock-timing-acceptance-guard.json
+
