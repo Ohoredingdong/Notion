@@ -1,5 +1,9 @@
 (() => {
   'use strict';
+  function apiRequest(path, options) {
+    if (!window.MuseService) throw new Error('생성 서비스 연결 기능을 불러오지 못했습니다. 새로고침해주세요.');
+    return window.MuseService.request(path, options);
+  }
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const assets = './assets/editorial-studio/';
@@ -8,7 +12,7 @@
   const state = {
     mode: 'editorial', aspectRatio: '3:4', identity: { face: null, body: null },
     references: [{ id: 'reference-demo', name: 'The quiet muse', url: assets + 'editorial.jpg', dataUrl: null, demo: true }],
-    layers: [], selectedLayer: null, selectedReference: 'reference-demo', configured: false,
+    layers: [], selectedLayer: null, selectedReference: 'reference-demo', configured: false, authRequired: false,
     shots: [], jobId: null, polling: null, favorites: new Set(), filterFavorites: false, view: 'board', jobAspectRatio: '3:4'
   };
   const outputCache = new Map();
@@ -254,10 +258,18 @@
     grid.innerHTML = shots.map((shot, index) => `<article class="result-card ${shot.status === 'completed' ? 'is-complete' : ''}" data-shot-id="${escape(shot.id)}">${shot.dataUrl ? `<button type="button" class="result-image" data-action="preview-shot" data-id="${escape(shot.id)}" aria-label="${index + 1}번 컷 크게 보기"><img src="${escape(shot.dataUrl)}" alt="${shot.origin === 'manual' ? '외부에서 가져온 화보' : '생성된 화보'} ${index + 1}번 컷"></button>` : `<div class="result-placeholder"><span>${shot.status === 'failed' ? '!' : shot.status === 'cancelled' ? '—' : '✳'}</span><p>${{ queued: '촬영 대기', running: '장면을 만들고 있어요', failed: '생성 실패', cancelled: '취소됨', 'manual-pending': '외부 결과 가져오기 대기' }[shot.status] || '대기 중'}</p>${shot.error ? `<small>${escape(shot.error)}</small>` : ''}</div>`}<div class="result-meta"><span>SHOT ${String(index + 1).padStart(2, '0')}</span>${shot.origin === 'manual' ? '<small class="result-origin">외부 생성 · 수동 검증</small>' : ''}${shot.dataUrl ? `<button type="button" data-action="favorite-shot" data-id="${escape(shot.id)}" aria-label="${state.favorites.has(shot.id) ? '선택 해제' : '마음에 드는 컷 선택'}" aria-pressed="${state.favorites.has(shot.id)}">${state.favorites.has(shot.id) ? '♥' : '♡'}</button><button type="button" data-action="download-shot" data-id="${escape(shot.id)}" aria-label="${index + 1}번 컷 다운로드">↓</button>` : ''}</div></article>`).join('');
   }
   async function checkConnection() {
-    try { const response = await fetch('/api/studio/status', { signal: AbortSignal.timeout(4500) }); if (!response.ok) throw new Error(); const data = await response.json(); state.configured = data.configured === true; }
-    catch { state.configured = false; }
-    if ($('#connection-status')) { $('#connection-status').textContent = state.configured ? '생성 설정 있음' : '미리보기 모드'; $('#connection-status').classList.toggle('is-connected', state.configured); }
-    if ($('#studio-generation-notice')) $('#studio-generation-notice').hidden = state.configured;
+    state.authRequired = false;
+    try {
+      const response = await apiRequest('/api/studio/status', { signal: AbortSignal.timeout(4500) });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) { state.configured = false; state.authRequired = true; }
+      else { if (!response.ok) throw new Error(); state.configured = data.configured === true; state.authRequired = data.authRequired === true; }
+    } catch { state.configured = false; }
+    if ($('#connection-status')) { $('#connection-status').textContent = state.authRequired && !window.MuseService?.session().authenticated ? '스튜디오 로그인 필요' : state.configured ? '생성 설정 있음' : '미리보기 모드'; $('#connection-status').classList.toggle('is-connected', state.configured); }
+    if ($('#studio-generation-notice')) {
+      $('#studio-generation-notice').hidden = state.configured;
+      $('#studio-generation-notice').textContent = state.authRequired && !window.MuseService.session().authenticated ? '이미지 생성 서비스를 사용하려면 스튜디오에 로그인해주세요. 이 기기의 사진은 그대로 유지됩니다.' : '사진 정리·배치·제작자료 저장을 사용할 수 있어요. AI 이미지 생성은 아직 연결되지 않았습니다.';
+    }
     syncControls();
     window.dispatchEvent(new CustomEvent('muse:connection', { detail: { configured: state.configured } }));
     return state.configured;
@@ -296,7 +308,7 @@
     outputCache.clear();
     try {
       const { json } = preflightGeneration();
-      const response = await fetch('/api/studio/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: json });
+      const response = await apiRequest('/api/studio/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: json });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || data.error || '이미지 생성을 시작하지 못했습니다. 잠시 후 다시 시도해주세요.');
       state.jobId = data.jobId; state.shots = shots.map(shot => ({ ...shot, status: 'queued' }));
@@ -307,7 +319,7 @@
     if (!state.jobId) return;
     const jobId = state.jobId;
     try {
-      const response = await fetch(`/api/studio/jobs/${encodeURIComponent(jobId)}`, { signal: AbortSignal.timeout(15000) });
+      const response = await apiRequest(`/api/studio/jobs/${encodeURIComponent(jobId)}`, { signal: AbortSignal.timeout(15000) });
       if (response.status === 404) {
         state.jobId = null; clearTimeout(state.polling);
         state.shots = state.shots.map(shot => ['queued', 'running'].includes(shot.status) ? { ...shot, status: 'failed', error: '생성 세션이 만료되었거나 서버가 재시작되었습니다.' } : shot);
@@ -347,7 +359,7 @@
   }
   async function cancelJob() {
     if (!state.jobId) return;
-    try { const response = await fetch(`/api/studio/jobs/${encodeURIComponent(state.jobId)}`, { method: 'DELETE' }); if (!response.ok) throw new Error(); toast('남은 컷의 생성을 중단하고 있어요.'); } catch { toast('취소 요청을 전송하지 못했습니다. 다시 시도해주세요.'); }
+    try { const response = await apiRequest(`/api/studio/jobs/${encodeURIComponent(state.jobId)}`, { method: 'DELETE' }); if (!response.ok) throw new Error(); toast('남은 컷의 생성을 중단하고 있어요.'); } catch { toast('취소 요청을 전송하지 못했습니다. 다시 시도해주세요.'); }
   }
   function help() {
     modal('아이디어에서 나만의 화보까지', '<div class="help-steps"><article><span>01</span><div><h3>나의 모델을 준비해요</h3><p>필터 없는 선명한 얼굴 사진과 몸 전체가 보이는 전신 사진을 각각 올려주세요. 본인 또는 사용 권한을 가진 사진을 사용해 주세요.</p></div></article><article><span>02</span><div><h3>마음에 드는 무드를 모아요</h3><p>화보·광고·웨딩 사진이나 영상의 한 장면을 최대 3개 추가하세요. 의상과 액세서리는 원본을 그대로 복제하지 않고 새롭게 해석합니다.</p></div></article><article><span>03</span><div><h3>직접 배치하고 방향을 정해요</h3><p>보드 위 사진을 드래그해 배치하거나 방향키로 미세 조절하세요. 더블클릭하면 크기와 각도를 바꿀 수 있어요. Delete 키로 지울 수 있습니다.</p></div></article><article><span>04</span><div><h3>같은 무드, 다른 10개의 장면</h3><p>생성 서비스 연결 후 시안마다 포즈·시선·구도가 다른 이미지를 생성해요. 얼굴과 체형 유지를 요청하며 결과마다 직접 확인할 수 있습니다. 영상은 레퍼런스 입력으로만 사용합니다.</p></div></article></div><p class="dialog-note">사진은 생성 요청 전까지 브라우저 안에서만 사용됩니다. 모델 기준 시트에 등록한 사진·승인 시트는 이 브라우저에 저장됩니다. 모델 키트로 내려받아 다음 작업에서 불러올 수 있어요. 화보 화면에서 직접 올린 사진은 임시로 사용합니다.</p>');
@@ -355,6 +367,19 @@
   function settings() {
     modal('생성 서비스', `<div class="connection-card"><span class="connection-dot ${state.configured ? 'is-connected' : ''}"></span><strong>${state.configured ? '이미지 생성 설정이 있어요' : '구성 미리보기 모드입니다'}</strong><p>${state.configured ? '서버에 이미지 생성 설정이 있습니다. 실제 인증과 사용 가능 여부는 생성 요청 시 확인합니다. 완성된 이미지는 페이지를 닫기 전에 다운로드해주세요.' : '사진 업로드·시안 보드·촬영 플랜을 먼저 사용할 수 있어요. 실제 이미지를 만들려면 서버의 이미지 생성 서비스 연결이 필요합니다. 연결 정보는 브라우저에 입력하거나 저장하지 않습니다.'}</p></div><button type="button" class="dialog-primary" id="recheck-connection">설정 상태 다시 확인</button><p class="dialog-note">예시 사진은 화면 구성을 설명하기 위한 샘플이며 생성 결과가 아닙니다. AI 생성 특성상 얼굴·체형의 완전한 일치를 보장하지 않으므로 완성된 컷을 확인해주세요.</p>`);
     $('#recheck-connection').addEventListener('click', async () => { await checkConnection(); settings(); toast(state.configured ? '서버의 생성 설정을 확인했어요.' : '아직 생성 서비스 설정이 없어요.'); });
+    if (state.authRequired) {
+      const session = window.MuseService.session();
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'dialog-primary';
+      button.id = session.authenticated ? 'studio-signout-button' : 'studio-signin-button';
+      button.textContent = session.authenticated ? '스튜디오 로그아웃' : '스튜디오 로그인';
+      $('#dialog-body').append(button);
+      button.addEventListener('click', async () => {
+        if (!session.authenticated) { closeModal(); window.MuseService.signIn(); return; }
+        button.disabled = true;
+        try { await window.MuseService.signOut(); closeModal(); toast('로그아웃했어요. 이 기기에 저장한 모델 사진은 유지됩니다.'); }
+        catch (error) { toast(error.message); button.disabled = false; }
+      });
+    }
   }
 
   $('#face-upload')?.addEventListener('change', event => { uploadIdentity('face', event.target.files[0]); event.target.value = ''; });
@@ -532,6 +557,7 @@
     updateModelBadge();
   });
   window.addEventListener('muse:navigate', event => { if (['model','board','results'].includes(event.detail?.view)) setView(event.detail.view); });
+  window.addEventListener('muse:service-session', () => { checkConnection(); });
   // Model inputs never persist in localStorage. Only non-image direction settings do.
   applyPreferences(); renderReferences();
   if (state.mode === 'wedding' && $('#stage-main')) $('#stage-main').src = assets + 'bridal.jpg';

@@ -5,6 +5,7 @@ Collection happens in the Actions checkout. Publication uses a fresh worktree
 and a normal fast-forward push, so unrelated widget jobs cannot be overwritten.
 """
 import argparse
+import hashlib
 import json
 import random
 import subprocess
@@ -12,6 +13,63 @@ import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+# Only these current opportunity-derived schemas declare a direct binding to
+# the raw opportunity snapshot. Audit/health/news reports are deliberately not
+# inferred from nested metadata, and untouched derived files are not validated
+# when a raw-only update starts the existing downstream rebuild sequence.
+OPPORTUNITY_SOURCE = "stock-opportunity-data.json"
+OPPORTUNITY_BINDINGS = {
+    "stock-opportunity-summary.json": ("generated_at", False),
+    "stock-radar-chart-data.json": ("source_generated_at", False),
+    "stock-investment-cases.json": ("source_generated_at", True),
+    "stock-investment-cases-summary.json": ("source_generated_at", False),
+    "stock-reading-depth.json": ("source_generated_at", True),
+    "stock-reading-depth-summary.json": ("source_generated_at", False),
+    "stock-green-review.json": ("source_generated_at", False),
+    "stock-green-review-summary.json": ("source_generated_at", False),
+    "stock-decision-guide.json": ("source_generated_at", True),
+    "stock-decision-guide-summary.json": ("source_generated_at", False),
+    "stock-event-risks.json": ("source_generated_at", False),
+    "stock-recommendations.json": ("source_generated_at", True),
+    "stock-recommendations-summary.json": ("source_generated_at", False),
+    "stock-entry-plan.json": ("source_generated_at", True),
+    "stock-entry-plan-summary.json": ("source_generated_at", True),
+}
+
+
+def verify_source_bindings(worktree, payload):
+    """Check changed derived files against the actual selected candidate raw.
+
+    A full coherent bundle may replace both raw and derived data. A derived-only
+    publication must instead match the latest destination worktree, never the
+    collector checkout. This runs again on each publication retry, before writes.
+    It does not update timestamps, hashes, historical ledgers or stored reports.
+    """
+    bound = set(payload).intersection(OPPORTUNITY_BINDINGS)
+    if not bound:
+        return
+    source_path = Path(worktree) / OPPORTUNITY_SOURCE
+    raw_bytes = payload.get(OPPORTUNITY_SOURCE)
+    if raw_bytes is None:
+        if not source_path.is_file():
+            raise RuntimeError("publication_source_missing: " + OPPORTUNITY_SOURCE)
+        raw_bytes = source_path.read_bytes()
+    raw = json.loads(raw_bytes)
+    generated = raw.get("generated_at") if isinstance(raw, dict) else None
+    if not isinstance(generated, str) or not generated:
+        raise RuntimeError("publication_source_generation_missing: " + OPPORTUNITY_SOURCE)
+    raw_sha256 = hashlib.sha256(raw_bytes).hexdigest()
+    for name in sorted(bound):
+        derived = json.loads(payload[name])
+        generation_field, require_hash = OPPORTUNITY_BINDINGS[name]
+        if not isinstance(derived, dict) or derived.get(generation_field) != generated:
+            raise RuntimeError("publication_source_generation_mismatch: " + name)
+        # Generation-only summaries retain their existing schema. When a hash
+        # is present it must also match; full reports require their usual hash.
+        if (require_hash or "source_sha256" in derived) and derived.get("source_sha256") != raw_sha256:
+            raise RuntimeError("publication_source_hash_mismatch: " + name)
 
 
 def git(root, *args, check=True):
@@ -110,6 +168,9 @@ def publish(root, names, message, attempts=12, branch='main', append_ledgers=())
                 if theirs >= ours:
                     print(f"A newer snapshot of {name} is already published; preserving the complete current bundle.")
                     return None
+            # Keep the all-or-preserve decision above: never skip an older raw
+            # file and publish only its derived results against a newer source.
+            verify_source_bindings(worktree, payload)
             for name, body in payload.items():
                 target = worktree / name
                 target.parent.mkdir(parents=True, exist_ok=True)

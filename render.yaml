@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: muse-editorial-studio
+    runtime: docker
+    repo: https://github.com/Ohoredingdong/Notion
+    branch: main
+    plan: free
+    dockerfilePath: ./services/editorial-studio/Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"
+      - key: STUDIO_DAILY_IMAGE_LIMIT
+        value: "50"
+      - key: STUDIO_IMAGE_API_KEY
+        sync: false
+      - key: STUDIO_ACCESS_PASSWORD
+        sync: false

@@ -4,6 +4,7 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, createHash } from 'node:crypto';
 import promptCore from '../../assets/editorial-prompt-core.js';
+import { createStudioAuth } from './auth.mjs';
 
 const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const MAX_OUTPUT_BASE64 = 12 * 1024 * 1024;
@@ -28,7 +29,16 @@ async function readJson(req, maxBytes = MAX_BODY) {
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw new RequestError(400, 'JSON 요청을 읽을 수 없습니다.'); }
 }
 
-export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.STUDIO_IMAGE_API_KEY || process.env.OPENAI_API_KEY || '', model = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1', fetchImpl = fetch, retentionMs = 30 * 60 * 1000 } = {}) {
+export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.STUDIO_IMAGE_API_KEY || process.env.OPENAI_API_KEY || '', model = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1', fetchImpl = fetch, retentionMs = 30 * 60 * 1000, production = process.env.NODE_ENV === 'production', authPassword = process.env.STUDIO_ACCESS_PASSWORD || '', dailyImageLimit = Number(process.env.STUDIO_DAILY_IMAGE_LIMIT || (production ? 50 : 0)) } = {}) {
+  if (production && (!apiKey || authPassword.length < 16)) throw new Error('실제 서버에는 STUDIO_IMAGE_API_KEY와 16자 이상의 STUDIO_ACCESS_PASSWORD를 설정해주세요.');
+  if (!Number.isSafeInteger(dailyImageLimit) || dailyImageLimit < 0 || dailyImageLimit > 10000 || (production && !dailyImageLimit)) throw new Error('STUDIO_DAILY_IMAGE_LIMIT는 1~10000 사이의 정수로 설정해주세요.');
+  const auth = createStudioAuth({ password: authPassword, production });
+  let usageDay = '', requestedImages = 0;
+  function usage() {
+    const day = new Date().toISOString().slice(0, 10);
+    if (day !== usageDay) { usageDay = day; requestedImages = 0; }
+    return { day: usageDay, requestedImages, limit: dailyImageLimit || null, remaining: dailyImageLimit ? Math.max(0, dailyImageLimit - requestedImages) : null, persistent: false };
+  }
   const jobs = new Map(); const rates = new Map(); const queue = []; let active = 0;
   const json = (res, status, value) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(value)); };
   const view = job => ({ id: job.id, kind: job.kind, status: job.status, total: job.shots.length, completed: job.shots.filter(s => s.status === 'completed').length, failed: job.shots.filter(s => s.status === 'failed').length, shots: job.shots.map(({ controller, ...shot }) => shot) });
@@ -39,6 +49,12 @@ export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.S
     while (retained.length > 4 || total > MAX_RETAINED_OUTPUT) {
       const oldest = retained.shift(); jobs.delete(oldest.id); total -= oldest.outputBytes || 0;
     }
+  }
+  function capacity(key) {
+    const recent = (rates.get(key) || []).filter(time => Date.now() - time < 60_000);
+    if (recent.length >= 6) throw new RequestError(429, '잠시 후 다시 요청해 주세요.');
+    if ([...jobs.values()].filter(job => !job.finishedAt).length >= 2) throw new RequestError(429, '생성 중인 작업이 있습니다. 완료 후 다시 시도해 주세요.');
+    return recent;
   }
   function settle(job) {
     if (!job.shots.some(s => s.status === 'queued' || s.status === 'running')) { job.status = job.cancelled ? 'cancelled' : 'completed'; job.finishedAt = Date.now(); job.payload = null; prune(); }
@@ -80,10 +96,16 @@ export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.S
     try {
       prune();
       const url = new URL(req.url, 'http://localhost');
+      if (url.pathname === '/healthz' && ['GET', 'HEAD'].includes(req.method)) {
+        if (req.method === 'HEAD') { res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end(); return; }
+        return json(res, 200, { ok: true });
+      }
+      if (await auth.handle(req, res, url)) return;
       if (url.pathname.startsWith('/api/studio/')) {
         if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}` && req.headers.origin !== `https://${req.headers.host}`) throw new RequestError(403, '같은 웹페이지에서만 요청할 수 있습니다.');
         if (req.headers['sec-fetch-site'] === 'cross-site') throw new RequestError(403, '다른 사이트에서 보낸 요청입니다.');
-        if (req.method === 'GET' && url.pathname === '/api/studio/status') return json(res, 200, { configured: Boolean(apiKey), model, maxReferences: 3, shotsPerReference: 10, modelSheet: true, maxModelPhotos: 10, developmentPreview: true });
+        if (!auth.authorized(req)) return json(res, 401, { error: 'authentication_required', authRequired: true, configured: false, message: '스튜디오 비밀번호로 로그인한 뒤 생성할 수 있습니다.' });
+        if (req.method === 'GET' && url.pathname === '/api/studio/status') return json(res, 200, { configured: Boolean(apiKey), authenticated: true, authRequired: auth.required, model, maxReferences: 3, shotsPerReference: 10, modelSheet: true, maxModelPhotos: 10, developmentPreview: true, usage: usage() });
         if (req.method === 'POST' && url.pathname === '/api/studio/preview') {
           const data = await readJson(req, MAX_SHEET_BODY);
           if (data?.kind === 'editorial' && Buffer.byteLength(JSON.stringify(data)) > MAX_BODY) throw new RequestError(413, '화보 검증 요청의 최대 업로드 용량은 32MB입니다.');
@@ -91,11 +113,16 @@ export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.S
         }
         if (req.method === 'POST' && ['/api/studio/generate', '/api/studio/model-sheet'].includes(url.pathname)) {
           if (!apiKey) throw new RequestError(503, '실제 이미지 생성은 서버의 STUDIO_IMAGE_API_KEY 연결 후 사용할 수 있습니다. 사진 업로드와 구성 보드는 지금 사용할 수 있습니다.', 'not_configured');
-          const key = req.socket.remoteAddress; const recent = (rates.get(key) || []).filter(time => Date.now() - time < 60_000);
-          if (recent.length >= 6) throw new RequestError(429, '잠시 후 다시 요청해 주세요.');
-          if ([...jobs.values()].filter(job => !job.finishedAt).length >= 2) throw new RequestError(429, '생성 중인 작업이 있습니다. 완료 후 다시 시도해 주세요.');
+          const key = req.socket.remoteAddress;
+          capacity(key);
           const isSheet = url.pathname === '/api/studio/model-sheet';
           const payload = isSheet ? validateSheetPayload(await readJson(req, MAX_SHEET_BODY)) : validatePayload(await readJson(req));
+          // Recheck after reading the body; concurrent submissions may have
+          // reserved work while this request was awaiting input.
+          const recent = capacity(key);
+          const available = usage();
+          if (dailyImageLimit && payload.shots.length > available.remaining) throw new RequestError(429, `오늘 요청할 수 있는 이미지가 ${available.remaining}장 남았습니다. 서버의 요청 한도를 확인해주세요.`, 'daily_image_limit');
+          requestedImages += payload.shots.length;
           recent.push(Date.now()); rates.set(key, recent);
           const job = { id: randomUUID(), kind: payload.kind, status: 'queued', payload, shots: payload.shots.map(shot => ({ id: shot.id, referenceId: shot.referenceId, status: 'queued' })), cancelled: false };
           jobs.set(job.id, job); queue.push(...job.shots.map(shot => ({ job, shot }))); json(res, 202, { jobId: job.id }); drain(); return;
@@ -115,6 +142,7 @@ export function createStudioServer({ root = DEFAULT_ROOT, apiKey = process.env.S
       if (!['GET', 'HEAD'].includes(req.method)) throw new RequestError(405, '지원하지 않는 요청입니다.');
       let decoded; try { decoded = decodeURIComponent(url.pathname); } catch { throw new RequestError(400, '잘못된 경로입니다.'); }
       if (decoded.split('/').some(part => part.startsWith('.')) || decoded.includes('\0')) throw new RequestError(404, '파일을 찾을 수 없습니다.');
+      if (production && decoded !== '/' && decoded !== '/editorial-studio.html' && !/^\/assets\/editorial-[^/]+\.(?:js|css)$/.test(decoded) && !/^\/assets\/editorial-studio\/[^/]+\.(?:jpg|jpeg|png|webp|ttf|txt)$/.test(decoded)) throw new RequestError(404, '파일을 찾을 수 없습니다.');
       const rootPath = await realpath(root);
       let file = path.resolve(rootPath, `.${decoded === '/' ? '/editorial-studio.html' : decoded}`);
       file = await realpath(file).catch(() => { throw new RequestError(404, '파일을 찾을 수 없습니다.'); });
