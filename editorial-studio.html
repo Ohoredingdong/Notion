@@ -5,10 +5,12 @@
 <meta name="theme-color" content="#f6f5f1">
 <meta name="description" content="당신의 모습은 그대로, 새로운 크리에이티브. 모델 사진과 레퍼런스로 만드는 AI 에디토리얼 스튜디오.">
 <title>MUSE — 나만의 에디토리얼 스튜디오</title>
-<link rel="stylesheet" href="assets/editorial-studio.css">
-<link rel="stylesheet" href="assets/editorial-model.css">
-<script src="assets/editorial-studio.js" defer></script>
-<script src="assets/editorial-model.js" defer></script>
+<link rel="stylesheet" href="assets/editorial-studio.css?v=muse-functions-20261105">
+<link rel="stylesheet" href="assets/editorial-model.css?v=muse-functions-20261105">
+<script src="assets/editorial-image-loader.js?v=muse-functions-20261105" defer></script>
+<script src="assets/editorial-prompt-core.js?v=muse-functions-20261105" defer></script>
+<script src="assets/editorial-studio.js?v=muse-functions-20261105" defer></script>
+<script src="assets/editorial-model.js?v=muse-functions-20261105" defer></script>
 </head>
 <body>
 <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -36,13 +38,16 @@
 <nav class="tool-rail" aria-label="스튜디오 도구"><div class="rail-top"><button class="rail-button" data-view="model" aria-label="모델 기준 시트" title="모델 기준 시트"><svg><use href="#i-lock"/></svg><span>모델 기준</span></button><button class="rail-button active" data-view="board" aria-label="무드보드" title="무드보드"><svg><use href="#i-grid"/></svg><span>스튜디오</span></button><button class="rail-button" data-view="results" aria-label="생성된 이미지" title="생성된 이미지"><svg><use href="#i-image"/></svg><span>갤러리</span></button><div class="rail-line"></div><button class="rail-button" id="plan-button" aria-label="10컷 촬영 플랜" title="촬영 플랜"><svg><use href="#i-stack"/></svg><span>촬영 플랜</span></button></div><button class="rail-button" id="settings-button" aria-label="생성 연결 설정" title="생성 연결 설정"><svg><use href="#i-settings"/></svg><span>설정</span></button></nav>
 <main class="main-workspace">
 <div class="workspace-heading"><div><div class="eyebrow"><span class="small-sun">✳</span> IMAGINATION, MADE REAL</div><h1>당신의 다음 화보를 그려보세요<span>.</span></h1><p>당신의 모습에 새로운 무드를 더해, 세상에 없던 한 장으로.</p></div><div class="session-label"><span class="live-dot"></span><span id="connection-status">연결 확인 중</span></div></div>
+<p id="studio-generation-notice" class="studio-generation-notice" role="status">사진 정리·배치·제작자료 저장을 사용할 수 있어요. AI 이미지 생성은 아직 연결되지 않았습니다.</p>
 <section id="model-view" class="model-workspace" aria-label="모델 기준 시트">
-<div class="model-flow"><div class="model-flow-title"><span class="flow-orbit">01</span><div><strong>먼저, 변하지 않을 기준을 만드세요.</strong><p>여러 사진을 하나의 모델 프로필로. 모든 촬영은 이 기준에서 시작합니다.</p></div></div><div class="flow-steps"><span class="current">01 모델 기준</span><i>→</i><button data-view="board">02 무드 & 구성</button><i>→</i><button data-view="results">03 새로운 10컷</button></div></div>
+<div class="model-flow"><div class="model-flow-title"><span class="flow-orbit">01</span><div><strong>먼저, 변하지 않을 기준을 만드세요.</strong><p>여러 사진을 하나의 모델 프로필로. 모든 촬영은 이 기준에서 시작합니다.</p></div></div><div class="flow-steps"><span class="current">01 모델 기준</span><i>→</i><button data-view="board" data-model-next>02 무드 & 구성</button><i>→</i><button data-view="results">03 새로운 10컷</button></div></div>
 <div class="model-editor">
 <aside class="model-library">
 <div class="section-heading"><h2>모델 레퍼런스</h2><span class="mini-label" id="model-photo-count">0 / 10</span></div><p class="model-panel-copy">한 사람의 다양한 사진을 올려주세요.<br>가장 정확한 정면 사진이 얼굴의 기준이 됩니다.</p>
-<label class="model-upload-zone" id="model-upload-zone" for="model-photos-upload"><svg><use href="#i-plus"/></svg><strong>모델 사진 추가</strong><span>정면 · 전신 · 측면 · 후면</span><small>JPG, PNG, WEBP · 최대 10장</small></label><input type="file" id="model-photos-upload" class="visually-hidden" multiple accept="image/jpeg,image/png,image/webp,image/avif"><input type="file" id="model-kit-import" class="visually-hidden" accept="application/json,.json">
+<label class="model-upload-zone" id="model-upload-zone" for="model-photos-upload"><svg><use href="#i-plus"/></svg><strong>모델 사진 추가</strong><span>정면 · 전신 · 측면 · 후면</span><small>사진당 최대 50MB · 자동 크기 조절 · 최대 10장</small></label><input type="file" id="model-photos-upload" class="visually-hidden" multiple accept="image/*"><input type="file" id="model-kit-import" class="visually-hidden" accept="application/json,.json">
 <div class="model-photo-list" id="model-photo-list"></div>
+<p id="model-upload-status" class="model-upload-status" role="status">사진당 최대 50MB · 작업용 사본을 자동 조절합니다.</p>
+<div class="model-next-step"><p id="model-next-status" role="status">얼굴과 전신 사진을 올려주세요. 측면·후면은 선택입니다.</p><button type="button" id="model-add-required-photo">얼굴·전신 사진 추가</button><button type="button" id="model-next-button" aria-describedby="model-next-status">다음 · 무드와 구성으로 <span>→</span></button></div>
 <div class="model-source-guide"><svg><use href="#i-image"/></svg><div><strong>좋은 기준이 좋은 결과를 만듭니다.</strong><p>필터 없는 얼굴과 전신 사진은 필수예요. 측면·후면 사진을 더하면 보이지 않는 각도를 추정하는 일을 줄일 수 있어요.</p></div></div>
 <div class="model-library-bottom"><span id="model-storage-status" role="status">이 기기에 자동 저장</span><div><button id="model-kit-import-button">모델 키트 불러오기 ↗</button><button id="model-clear">초기화</button></div></div>
 </aside>
@@ -68,7 +73,7 @@
 <section id="board-view" class="editor-layout" aria-label="에디토리얼 편집기">
 <aside class="source-panel">
 <section class="panel-section model-section"><div class="section-heading"><h2><span class="step-number">01</span> 나의 모델</h2><span class="mini-label">IDENTITY</span></div><p class="section-description">얼굴과 전신 사진을 각각 올려주세요.</p><button class="model-anchor-link" data-view="model"><svg><use href="#i-lock"/></svg><span id="active-model-name">모델 기준 시트 만들기</span><span>↗</span></button><div class="model-uploads"><label class="upload-card" for="face-upload"><div class="upload-image"><img id="face-preview" src="assets/editorial-studio/portrait.jpg" alt="얼굴 사진 예시"><span class="upload-hover"><svg><use href="#i-plus"/></svg>사진 변경</span><span class="photo-tag">예시</span></div><span class="upload-caption"><strong>얼굴 사진</strong><svg><use href="#i-plus"/></svg></span></label><label class="upload-card" for="body-upload"><div class="upload-image"><img id="body-preview" src="assets/editorial-studio/editorial.jpg" alt="전신 사진 예시"><span class="upload-hover"><svg><use href="#i-plus"/></svg>사진 변경</span><span class="photo-tag">예시</span></div><span class="upload-caption"><strong>전신 사진</strong><svg><use href="#i-plus"/></svg></span></label></div><input type="file" class="visually-hidden" id="face-upload" accept="image/*"><input type="file" class="visually-hidden" id="body-upload" accept="image/*"><div class="identity-note"><svg><use href="#i-lock"/></svg><span>얼굴 · 체형 · 신체 비율 유지</span><span class="check-circle"><svg><use href="#i-check"/></svg></span></div></section>
-<section class="panel-section references-section"><div class="section-heading"><h2><span class="step-number">02</span> 영감의 시작</h2><span class="mini-label">REFERENCE</span></div><p class="section-description">좋아하는 사진이나 영상의 무드를 담아요.</p><label for="reference-upload" class="reference-dropzone" id="reference-dropzone"><span class="dropzone-icon"><svg><use href="#i-plus"/></svg></span><strong>레퍼런스 추가하기</strong><span>드래그하거나 클릭해서 업로드</span><small>JPG, PNG, WEBP, MP4 · 최대 3개</small></label><input type="file" id="reference-upload" class="visually-hidden" multiple accept="image/*,video/*"><div class="reference-list" id="reference-list"></div><p class="source-tip"><svg><use href="#i-spark"/></svg>의상과 포즈는 새롭게, 분위기는 그대로.</p></section>
+<section class="panel-section references-section"><div class="section-heading"><h2><span class="step-number">02</span> 영감의 시작</h2><span class="mini-label">REFERENCE</span></div><p class="section-description">좋아하는 사진이나 영상의 무드를 담아요.</p><label for="reference-upload" class="reference-dropzone" id="reference-dropzone"><span class="dropzone-icon"><svg><use href="#i-plus"/></svg></span><strong>레퍼런스 추가하기</strong><span>드래그하거나 클릭해서 업로드</span><small>사진 50MB · 영상 60MB · 최대 3개</small></label><input type="file" id="reference-upload" class="visually-hidden" multiple accept="image/*,video/*"><div class="reference-list" id="reference-list"></div><p class="source-tip"><svg><use href="#i-spark"/></svg>의상과 포즈는 새롭게, 분위기는 그대로.</p></section>
 <div class="privacy-caption"><svg><use href="#i-lock"/></svg><span>사진은 생성 요청 전까지<br>이 브라우저 안에서만 사용돼요.</span></div>
 </aside>
 <section class="canvas-panel" aria-label="무드보드">

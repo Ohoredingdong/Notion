@@ -9,6 +9,10 @@ NODE_USE_ENV_PROXY=1 node services/editorial-studio/server.mjs
 
 The server serves the repository and opens `editorial-studio.html` at its root. Default bind address: `127.0.0.1:8787`. Set `PORT` if needed. Keep the default loopback bind for personal use; this is a development server, not a multiuser production service.
 
+The published GitHub Pages page also works without this server for model photo organization, source-board PNG/model-kit downloads, composition, local ChatGPT preparation files, and importing/reviewing externally generated images. Preparation runs in the browser using `assets/editorial-prompt-core.js`; originals are not posted to a preview API. When image generation is unavailable, the main buttons prepare these files and the page explicitly says AI generation is not connected. GitHub Pages does not run the Node image-generation service.
+
+Photo uploads accept up to 50MB per image. The shared local image loader preserves aspect ratio and camera orientation while preparing a JPEG copy of at most 3072px and 2MB; device originals remain unchanged. Browsers with a native HEIC/HEIF decoder can read those files; other browsers show a JPG conversion instruction. Upload progress and per-file errors remain visible beside the photos. The next-step control explains any missing face/full-body role, and navigation to composition applies the chosen model anchors automatically.
+
 ## Actual image generation
 
 Provide `STUDIO_IMAGE_API_KEY` securely in the server environment, then restart the server. Use the environment settings secret binding with destination `api.openai.com` in the managed cloud environment; `OPENAI_*` secret target names are reserved there. Existing local setups may continue to use `OPENAI_API_KEY` as a fallback; `STUDIO_IMAGE_API_KEY` takes precedence. Never put a key in the browser or tracked files. Optional `OPENAI_IMAGE_MODEL` defaults to `gpt-image-1`. The key must have image model access and billing. HTTPS access to `api.openai.com` must be allowed by the execution environment; the server uses inherited proxy/trust configuration supported by Node. With Node 24, launch with `NODE_USE_ENV_PROXY=1` when HTTP(S)_PROXY is supplied. Do not disable TLS verification.
@@ -25,9 +29,12 @@ Use only model/reference files you are authorized to use. Files are sent to the 
 
 ```sh
 node --test services/editorial-studio/server.test.mjs
+node --test services/editorial-studio/prompt-core.test.mjs
 ```
 
 Tests use an in-memory mock image provider and do not call or bill the real API.
+
+`python tests/editorial-static-browser.py` starts a real static HTTP server under `/Notion/` and checks the published workflow without mocking an API. `python tests/editorial-image-upload-browser.py` verifies real 20MB input files, EXIF orientation, decoding fallback and failure preservation. Set `STUDIO_BROWSER` (or `--browser-executable` for the static runner) when Chromium is not at `/usr/bin/chromium`. The read-only `MUSE functional validation` workflow runs these regressions on matching branches and PRs; it does not alter financial writers or publish the site.
 
 ## Browser regression checks
 
@@ -80,6 +87,8 @@ Model source images and sheets are sent to the provider only when paid generatio
 ## Development validation without image API charges
 
 `POST /api/studio/preview` exports the exact prompt and ordered originals for a sheet or editorial shot without requiring an API key or calling the image provider. It creates no generation job and returns no generated image. The payload is `{kind: "model-sheet" | "editorial", payload: <the existing model-sheet or editorial JSON>}`. Sheet requests retain the 64MB upload limit; editorial requests retain the 32MB limit. The same source validators, prompt builders, provider sizes and image-order helper are shared with paid generation. Existing same-origin protections also apply to this endpoint.
+
+The website now uses the shared contract locally rather than this endpoint, so these controls also work on static hosting. Node uses a synchronous SHA-256 adapter and the browser uses Web Crypto; regression tests check that their prompts, input ordering, image hashes and source fingerprints agree. The endpoint remains available to existing clients.
 
 The response contains `billable: false`, configured `model`, `requestedQuality: "high"`, instructions, profile ID/revision, a deterministic `sourceFingerprint`, an `inputs` dictionary, and `shots`. Each dictionary item has an opaque `id`, dictionary `index`, `role`, `name`, image `dataUrl`, and SHA-256 checksum. Each shot has `prompt`, native `size` and ordered `inputIds`. Attach the originals in **that shot's `inputIds` order**, numbering those attachments from 1. Dictionary indices are not provider image positions when several mood references are present. Images appear only once in the dictionary, even when reused across 10 or 30 shots. The preview response uses `Cache-Control: no-store`; it is not persisted or logged by the server.
 

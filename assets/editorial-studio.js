@@ -15,6 +15,7 @@
   let toastTimer;
   let dialogCleanup = null;
   let generationPending = false;
+  let devPreviewPending = false;
   const modeNames = { editorial: '에디토리얼', campaign: '브랜드 캠페인', wedding: '웨딩' };
   const variations = [
     ['편안하게 정면으로 서기', '렌즈 정면', '전신 · 넓은 여백'],
@@ -57,9 +58,9 @@
     const count = state.references.length * 10;
     if ($('#generate-button')) {
       const button = $('#generate-button');
-      button.disabled = !!state.jobId || generationPending;
+      button.disabled = !!state.jobId || generationPending || devPreviewPending;
       const label = $(':scope > span', button);
-      if (label) label.innerHTML = state.jobId ? '화보를 만드는 중…' : `<b id="shot-count">${count || 10}</b>컷 생성하기`;
+      if (label) label.innerHTML = state.jobId ? '화보를 만드는 중…' : devPreviewPending ? '제작자료 준비 중…' : `<b id="shot-count">${count || 10}</b>컷 ${state.configured ? '생성하기' : '제작자료 만들기'}`;
     }
   }
   function modal(title, content) {
@@ -100,16 +101,8 @@
     state.selectedReference = null;
   }
   async function readImage(file) {
-    if (!/^image\/(jpeg|png|webp|avif|gif)$/.test(file.type)) throw new Error('JPG, PNG, WebP, AVIF 또는 GIF 이미지를 선택해 주세요.');
-    if (file.size > 12 * 1024 * 1024) throw new Error('이미지는 한 장당 12MB 이하로 올려주세요.');
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1536 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale)); canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext('2d');
-    context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
-    return canvas.toDataURL('image/jpeg', 0.9);
+    if (!window.MuseImages) throw new Error('사진 업로드 기능을 불러오지 못했습니다. 새로고침해주세요.');
+    return window.MuseImages.read(file);
   }
   async function uploadIdentity(slot, file) {
     if (!file) return;
@@ -236,6 +229,11 @@
     if (isBlob) setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function setView(view) {
+    if (view === 'board' && state.view === 'model') {
+      const model = window.MuseModel?.snapshot();
+      if (model?.uploadingPhotos) { toast('사진을 읽는 중입니다. 업로드가 끝나면 다음 단계로 이동할 수 있어요.'); return; }
+      if (model?.hasFace && model.hasBody) window.MuseModel.use(false);
+    }
     state.view = view;
     $$('[data-view]').forEach(button => { const active = button.dataset.view === view; button.classList.toggle('is-active', active); button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active)); button.removeAttribute('aria-selected'); });
     if ($('#board-view')) $('#board-view').hidden = view !== 'board';
@@ -259,6 +257,9 @@
     try { const response = await fetch('/api/studio/status', { signal: AbortSignal.timeout(4500) }); if (!response.ok) throw new Error(); const data = await response.json(); state.configured = data.configured === true; }
     catch { state.configured = false; }
     if ($('#connection-status')) { $('#connection-status').textContent = state.configured ? '생성 설정 있음' : '미리보기 모드'; $('#connection-status').classList.toggle('is-connected', state.configured); }
+    if ($('#studio-generation-notice')) $('#studio-generation-notice').hidden = state.configured;
+    syncControls();
+    window.dispatchEvent(new CustomEvent('muse:connection', { detail: { configured: state.configured } }));
     return state.configured;
   }
   function generationPayload() {
@@ -275,7 +276,11 @@
   async function generate() {
     if (generationPending || state.jobId) return;
     if (!state.references.length) { toast('레퍼런스 사진 또는 영상을 먼저 추가해 주세요.'); return; }
-    if (!state.configured) { planModal(true); return; }
+    if (!state.configured) {
+      if (state.identity.face && state.identity.body && !state.references.some(ref => ref.demo)) await studioDevPreview();
+      else planModal(true);
+      return;
+    }
     if (!state.identity.face || !state.identity.body || state.references.some(r => r.demo)) { toast('나의 얼굴·전신 사진과 새 레퍼런스를 모두 올려주세요. 예시 사진으로는 생성하지 않습니다.'); return; }
     try { preflightGeneration(); } catch (error) { toast(error.message); return; }
     const count = state.references.length * 10;
@@ -364,7 +369,10 @@
   });
   $$('[data-mode]').forEach(button => button.addEventListener('click', () => { state.mode = button.dataset.mode; syncControls(); savePreferences(); if (state.references.length && state.references.every(r => r.demo) && $('#stage-main')) $('#stage-main').src = assets + (state.mode === 'wedding' ? 'bridal.jpg' : 'editorial.jpg'); }));
   $$('[data-ratio]').forEach(button => button.addEventListener('click', () => { state.aspectRatio = button.dataset.ratio; syncControls(); savePreferences(); }));
-  $$('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
+  $$('[data-view]').forEach(button => button.addEventListener('click', () => {
+    if (button.hasAttribute('data-model-next') && window.MuseModel) window.MuseModel.use(true);
+    else setView(button.dataset.view);
+  }));
   $('#brief')?.addEventListener('input', savePreferences);
   $$('[data-brief]').forEach(button => button.addEventListener('click', () => {
     const input = $('#brief'); if (!input) return;
@@ -415,16 +423,21 @@
     return true;
   }
   async function studioDevPreview() {
+    if (devPreviewPending || generationPending || state.jobId) return;
     if (!realSourcesReady()) return;
+    devPreviewPending = true;
+    if ($('#studio-dev-preview')) $('#studio-dev-preview').disabled = true;
+    syncControls();
     try {
       const submitted = generationPayload(); const signature = await payloadSignature(submitted);
-      const response = await fetch('/api/studio/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'editorial',payload:submitted}),signal:AbortSignal.timeout(20000)});
-      const manifest = await response.json().catch(()=>({}));
-      if (!response.ok) throw new Error(response.status === 404 ? '개발 검증 API가 없습니다. 최신 스튜디오 서버를 실행해주세요.' : manifest.message || '테스트 자료를 만들지 못했습니다.');
+      if (!window.MusePrompts) throw new Error('제작자료 기능을 불러오지 못했습니다. 페이지를 새로고침해주세요.');
+      const manifest = await window.MusePrompts.buildPreview('editorial', submitted);
       if (manifest.billable !== false || !Array.isArray(manifest.shots) || !Array.isArray(manifest.inputs)) throw new Error('검증 자료 형식이 올바르지 않습니다.');
+      if (await payloadSignature(generationPayload()) !== signature) throw new Error('준비하는 동안 모델·시안·방향이 바뀌었습니다. 현재 사진으로 다시 제작자료를 만들어주세요.');
       devPreview = {manifest,signature,aspectRatio:submitted.aspectRatio,plan:structuredClone(submitted.shots)};
       showStudioDevPreview();
     } catch (error) { toast(error.message || '검증 자료를 준비하지 못했습니다.'); }
+    finally { devPreviewPending = false; if ($('#studio-dev-preview')) $('#studio-dev-preview').disabled = false; syncControls(); }
   }
   function showStudioDevPreview() {
     const {manifest} = devPreview;

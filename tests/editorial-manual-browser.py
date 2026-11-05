@@ -1,8 +1,8 @@
 """No-billing development workflow regressions.
 
 Run the latest local Editorial Studio server, then execute this file using Python
-with Playwright installed. The preview endpoint is real and needs no API key.
-Every billable browser endpoint is intercepted and forbidden by these tests;
+with Playwright installed. Preview prompts are built locally in the browser.
+Every billable or obsolete preview endpoint is forbidden by these tests;
 fixture images are synthetic test inputs, never presented as generated photos.
 """
 from __future__ import annotations
@@ -44,7 +44,7 @@ def make_page(browser, viewport=None):
         route.fulfill(status=418, json={'message': 'Billable endpoint forbidden by manual-development browser test'})
     def preview(route):
         calls['preview'].append(route.request.post_data_json)
-        route.continue_()
+        route.fulfill(status=418, json={'message': 'Preview must be built in the browser without a server request'})
     context.route('**/api/studio/model-sheet', forbidden)
     context.route('**/api/studio/generate', forbidden)
     context.route('**/api/studio/status', lambda route: route.fulfill(json={'configured': False, 'model': 'gpt-image-1'}))
@@ -80,6 +80,7 @@ def export_model_kit(page):
 
 def assert_clean(calls, errors):
     assert not calls['paid'], f'Billable requests were attempted: {calls["paid"]}'
+    assert not calls['preview'], 'Local prompt preparation must not POST photos to a preview API'
     assert not errors, errors
 
 
@@ -127,7 +128,7 @@ with sync_playwright() as play:
         page.locator('#model-dialog-close').click()
         assert not page.evaluate('window.MuseModel.snapshot().hasSheet')
         assert_clean(calls, errors)
-        record('real unconfigured preview exports exact prompt and numbered source inputs without any paid call or fabricated output')
+        record('local unconfigured preview exports exact prompt and numbered source inputs without any preview API, paid call or fabricated output')
         context.close()
 
         context, page, calls, errors = make_page(browser)
@@ -238,14 +239,70 @@ with sync_playwright() as play:
 
         context, page, calls, errors = make_page(browser)
         upload_model(page)
-        context.route('**/api/studio/preview', lambda route: route.fulfill(status=404, json={'message': 'Preview endpoint unavailable'}))
+        page.evaluate('''() => {
+          window.__originalMusePrompts = window.MusePrompts;
+          window.MusePrompts = {...window.MusePrompts, buildPreview: async () => {
+            throw new Error('테스트: 브라우저 제작자료 준비 실패');
+          }};
+        }''')
         page.locator('#model-dev-preview').click()
-        expect(page.locator('#toast')).to_contain_text('최신 스튜디오 서버')
+        expect(page.locator('#toast')).to_contain_text('테스트: 브라우저 제작자료 준비 실패')
         expect(page.locator('#model-dev-prompt')).to_have_count(0)
         expect(page.locator('.model-photo-card')).to_have_count(3)
         assert not page.evaluate('window.MuseModel.snapshot().hasSheet')
+        page.evaluate('() => {window.MusePrompts = window.__originalMusePrompts;}')
+        model_preview(page)
+        assert not page.evaluate('window.MuseModel.snapshot().hasSheet')
         assert_clean(calls, errors)
-        record('preview endpoint failures explain the missing server and preserve originals without fake generated output')
+        record('local prompt builder failure preserves originals without fake output and recovers without a server')
+        context.close()
+
+        context, page, calls, errors = make_page(browser)
+        upload_model(page)
+        page.evaluate('''() => {
+          const original = window.MusePrompts;
+          window.MusePrompts = {...original, buildPreview: async (...args) => {
+            const result = await original.buildPreview(...args);
+            await new Promise(resolve => {window.__releaseModelPreview = resolve;});
+            return result;
+          }};
+        }''')
+        page.locator('#model-dev-preview').click()
+        page.wait_for_function('() => typeof window.__releaseModelPreview === "function"')
+        page.locator('#model-name').fill('준비 중 바뀐 모델')
+        page.evaluate('() => window.__releaseModelPreview()')
+        expect(page.locator('#toast')).to_contain_text('원본이 바뀌었습니다')
+        expect(page.locator('#model-dev-prompt')).to_have_count(0)
+        expect(page.locator('.model-photo-card')).to_have_count(3)
+        assert not page.evaluate('window.MuseModel.snapshot().hasDevPreview')
+        assert not page.evaluate('window.MuseModel.snapshot().hasSheet')
+        assert_clean(calls, errors)
+        record('an asynchronous local prompt cannot attach stale evidence after its source revision changes')
+        context.close()
+
+        context, page, calls, errors = make_page(browser)
+        upload_model(page)
+        page.locator('#model-use-photos').click()
+        page.locator('#reference-upload').set_input_files(image_file('race-mood.png'))
+        page.wait_for_function('() => window.EditorialStudio.snapshot().referenceCount === 1')
+        page.evaluate('''() => {
+          const original = window.MusePrompts;
+          window.MusePrompts = {...original, buildPreview: async (...args) => {
+            const result = await original.buildPreview(...args);
+            await new Promise(resolve => {window.__releaseEditorialPreview = resolve;});
+            return result;
+          }};
+        }''')
+        page.locator('#studio-dev-preview').click()
+        page.wait_for_function('() => typeof window.__releaseEditorialPreview === "function"')
+        page.locator('#brief').fill('자료 준비 중 바뀐 화보 방향')
+        page.evaluate('() => window.__releaseEditorialPreview()')
+        expect(page.locator('#toast')).to_contain_text('방향이 바뀌었습니다')
+        expect(page.locator('#studio-dev-prompt')).to_have_count(0)
+        expect(page.locator('#results-grid .result-image img')).to_have_count(0)
+        assert page.evaluate('window.EditorialStudio.snapshot().hasFace && window.EditorialStudio.snapshot().hasBody')
+        assert_clean(calls, errors)
+        record('an asynchronous editorial prompt rejects a changed brief without losing uploaded source photographs')
         context.close()
 
         context, page, calls, errors = make_page(browser, {'width':390,'height':844})

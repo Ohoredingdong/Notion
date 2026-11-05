@@ -1,0 +1,89 @@
+name: MUSE functional validation
+
+on:
+  pull_request:
+    paths:
+      - 'editorial-studio.html'
+      - 'assets/editorial-*'
+      - 'assets/editorial-studio/**'
+      - 'services/editorial-studio/**'
+      - 'tests/editorial-*.py'
+      - '.github/workflows/test-editorial-studio.yml'
+  push:
+    branches: [main, 'codex/muse-*']
+    paths:
+      - 'editorial-studio.html'
+      - 'assets/editorial-*'
+      - 'assets/editorial-studio/**'
+      - 'services/editorial-studio/**'
+      - 'tests/editorial-*.py'
+      - '.github/workflows/test-editorial-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: muse-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  functional:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      STUDIO_IMAGE_API_KEY: ''
+      OPENAI_API_KEY: ''
+      STUDIO_URL: http://127.0.0.1:8787/editorial-studio.html
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+          python - <<'PY' >> "$GITHUB_ENV"
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              print('STUDIO_BROWSER=' + p.chromium.executable_path)
+          PY
+      - name: Validate shared contract and server
+        run: node --test --test-isolation=none services/editorial-studio/server.test.mjs services/editorial-studio/prompt-core.test.mjs
+      - name: Exercise static Pages and large photo uploads
+        run: |
+          python tests/editorial-static-browser.py --browser-executable "$STUDIO_BROWSER" --output /tmp/notion-muse-function-fix/static
+          python tests/editorial-image-upload-browser.py
+      - name: Exercise editorial, model, and local preparation flows
+        run: |
+          mkdir -p /tmp/notion-muse-function-fix
+          node services/editorial-studio/server.mjs > /tmp/notion-muse-function-fix/server.log 2>&1 &
+          studio_pid=$!
+          trap 'kill "$studio_pid" 2>/dev/null || true' EXIT
+          python - <<'PY'
+          import time, urllib.request
+          for attempt in range(30):
+              try:
+                  with urllib.request.urlopen('http://127.0.0.1:8787/api/studio/status', timeout=2) as response:
+                      assert response.status == 200
+                  break
+              except OSError:
+                  if attempt == 29:
+                      raise
+                  time.sleep(0.2)
+          PY
+          python tests/editorial-studio-browser.py > /tmp/notion-muse-function-fix/studio.log 2>&1
+          python tests/editorial-model-browser.py > /tmp/notion-muse-function-fix/model.log 2>&1
+          python tests/editorial-manual-browser.py > /tmp/notion-muse-function-fix/manual.log 2>&1
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse-functional-${{ github.run_id }}
+          path: /tmp/notion-muse-function-fix
+          if-no-files-found: warn
+          retention-days: 7

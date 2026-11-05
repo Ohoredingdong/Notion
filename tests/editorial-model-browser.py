@@ -134,9 +134,10 @@ with sync_playwright() as play:
         page.locator('.model-photo-card').nth(0).locator('[data-model-action="primary"]').click()
         page.locator('.model-photo-card').nth(2).locator('select').select_option('side')
         page.locator('#model-sheet-generate').click()
-        expect(page.locator('#model-no-api-close')).to_be_visible()
-        expect(page.locator('#model-dialog-content')).to_contain_text('서비스 연결 후')
-        page.locator('#model-no-api-close').click()
+        expect(page.locator('#model-dev-prompt')).to_be_visible()
+        assert 'PRIORITY ORDER' in page.locator('#model-dev-prompt').input_value()
+        assert not page.evaluate('window.MuseModel.snapshot().hasSheet'), 'Preparing source instructions must not fabricate an AI sheet'
+        page.locator('#model-dialog-close').click()
         kit = export_kit(page)
         assert 'data:image' in json.dumps(kit), 'A reusable model kit must retain its source photos'
         page.reload(wait_until='networkidle')

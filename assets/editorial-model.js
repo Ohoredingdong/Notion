@@ -12,6 +12,7 @@
   let state = fresh();
   let details = {};
   let previewManifest = null, previewPending = false;
+  let uploadingPhotos = false, uploadFeedback = '';
   let palette = ['#d7c7b5','#a58f79','#746755','#3c3933','#ede8df'];
   let jobId = null, jobRevision = null, jobEpoch = null, sourceEpoch = 0, polling = null, pending = false, ready = false;
   let db = null, storageBroken = false, saveQueue = Promise.resolve(), toastTimer, deriveToken = 0;
@@ -53,8 +54,14 @@
     };
   }
   function useModel(navigate = true) {
+    if (uploadingPhotos) { toast('사진을 읽는 중입니다. 업로드가 끝나면 다음 단계로 이동할 수 있어요.'); return; }
     const data = payload(navigate);
-    if (!data) { toast('기준 정면 얼굴과 전신 사진을 각각 지정해주세요.'); return; }
+    if (!data) {
+      toast(!front() && !body() ? '기준 얼굴과 전신 사진이 필요합니다. 사진을 추가한 뒤 역할을 확인해주세요.' : !body() ? '전신 사진이 필요합니다. 두 번째 사진을 추가하거나 사진 역할을 전신으로 지정해주세요.' : '기준 얼굴이 필요합니다. 사진 역할을 기준 정면 얼굴로 지정해주세요.');
+      $('#model-next-status')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+      $('#model-add-required-photo')?.focus({preventScroll:true});
+      return;
+    }
     window.dispatchEvent(new CustomEvent('muse:model-approved', {detail:data}));
     if (navigate) toast(activeSheet() ? '승인한 기준 시트를 화보 촬영에 연결했어요.' : '원본 모델 사진을 화보 촬영에 연결했어요. 아직 승인한 AI 기준 시트는 없습니다.');
   }
@@ -145,26 +152,32 @@
     }
   }
   async function fileImage(file) {
-    if (!/^image\/(jpeg|png|webp|avif|gif)$/.test(file.type)) throw new Error('JPG, PNG, WebP, AVIF, GIF 사진을 사용해주세요.');
-    if (file.size > 15*1024*1024) throw new Error('사진은 한 장당 15MB 이하로 올려주세요.');
-    const bitmap = await createImageBitmap(file);
-    const ratio = Math.min(1,1536/Math.max(bitmap.width,bitmap.height));
-    const canvas = document.createElement('canvas'); canvas.width = Math.max(1,Math.round(bitmap.width*ratio)); canvas.height = Math.max(1,Math.round(bitmap.height*ratio));
-    const context = canvas.getContext('2d'); context.fillStyle='#fff'; context.fillRect(0,0,canvas.width,canvas.height); context.drawImage(bitmap,0,0,canvas.width,canvas.height); bitmap.close();
-    return canvas.toDataURL('image/jpeg',.92);
+    if (!window.MuseImages) throw new Error('사진 업로드 기능을 불러오지 못했습니다. 새로고침해주세요.');
+    return window.MuseImages.read(file);
   }
   async function addPhotos(files) {
     if (!ready) { toast('저장한 모델을 불러오는 중입니다. 잠시 기다려주세요.'); return; }
+    if (uploadingPhotos) { toast('현재 사진을 읽는 중입니다. 완료 후 추가해주세요.'); return; }
+    if (!files.length) return;
+    uploadingPhotos = true;
     let added = 0;
+    const failures = [];
+    render();
     for (const file of files) {
-      if (state.photos.length >= 10) { toast('모델 사진은 최대 10장까지 보관할 수 있어요.'); break; }
+      if (state.photos.length >= 10) { failures.push('모델 사진은 최대 10장입니다.'); break; }
+      uploadFeedback = `${file.name} 읽는 중… 큰 사진은 작업용 사본으로 자동 조절합니다.`;
+      if ($('#model-upload-status')) $('#model-upload-status').textContent = uploadFeedback;
       try {
         const dataUrl = await fileImage(file);
         const role = !front() ? 'face' : !body() ? 'body' : 'extra';
         state.photos.push({id:uid(),name:file.name,role,primary:role === 'face',dataUrl}); added++;
-      } catch (error) { toast(error.message || '사진을 읽지 못했습니다.'); }
+        render();
+      } catch (error) { failures.push(`${file.name}: ${error.message || '사진을 읽지 못했습니다.'}`); }
     }
-    if (added) { changed('photos-added',{derive:true}); toast(`${added}장의 사진을 추가했어요. 각 사진의 역할을 확인해주세요.`); }
+    uploadingPhotos = false;
+    uploadFeedback = [added ? `${added}장 추가 완료. 기기의 원본 파일은 바꾸지 않았어요.` : '', ...failures].filter(Boolean).join(' ');
+    if (added) changed('photos-added',{derive:true}); else render();
+    if (uploadFeedback) toast(uploadFeedback);
   }
   function rolePhoto(id,role) {
     const photo = state.photos.find(photo => photo.id === id); if (!photo || !roles[role]) return;
@@ -200,15 +213,26 @@
   function render() {
     renderLibrary(); renderBoard(); renderGenerated();
     const hasAnchors = !!front() && !!body();
-    if ($('#model-sheet-generate')) $('#model-sheet-generate').disabled = !hasAnchors || !!jobId || pending || previewPending;
-    if ($('#model-use-photos')) { $('#model-use-photos').disabled=!hasAnchors; $('#model-use-photos').textContent = activeSheet() ? '이 모델로 화보 만들기 →' : '원본 사진으로 화보 기획 →'; }
+    if ($('#model-upload-status')) $('#model-upload-status').textContent = uploadFeedback || '장당 50MB까지 · 작업용 사본을 자동 조절하며 원본 파일은 유지합니다.';
+    if ($('#model-next-status')) $('#model-next-status').textContent = uploadingPhotos ? '사진을 읽는 중입니다…' : hasAnchors ? '얼굴·전신 준비 완료. 다음 단계에서 시안을 추가하세요.' : !state.photos.length ? '얼굴과 전신 사진을 올려주세요. 측면·후면은 선택입니다.' : !body() ? '다음 단계에는 전신 사진이 필요해요. 사진을 추가하거나 역할을 전신으로 지정해주세요.' : '다음 단계에는 기준 정면 얼굴이 필요해요. 사진 역할을 확인해주세요.';
+    if ($('#model-next-button')) $('#model-next-button').disabled = uploadingPhotos;
+    if ($('#model-add-required-photo')) { $('#model-add-required-photo').hidden = hasAnchors || uploadingPhotos; $('#model-add-required-photo').textContent = !state.photos.length ? '얼굴·전신 사진 추가' : !body() ? '전신 사진 추가' : '기준 얼굴 사진 추가'; }
+    if ($('#model-photos-upload')) $('#model-photos-upload').disabled = uploadingPhotos;
+    if ($('#model-clear')) $('#model-clear').disabled = uploadingPhotos;
+    if ($('#model-kit-import-button')) $('#model-kit-import-button').disabled = uploadingPhotos;
+    if ($('#model-kit-import')) $('#model-kit-import').disabled = uploadingPhotos;
+    if ($('#model-sheet-generate')) {
+      $('#model-sheet-generate').disabled = !hasAnchors || uploadingPhotos || !!jobId || pending || previewPending;
+      $('#model-sheet-generate > span').textContent = window.EditorialStudio?.snapshot().configured ? 'AI 기준 시트 만들기' : '기준 시트 제작자료 만들기';
+    }
+    if ($('#model-use-photos')) { $('#model-use-photos').disabled=uploadingPhotos; $('#model-use-photos').textContent = activeSheet() ? '이 모델로 화보 만들기 →' : '원본 사진으로 화보 기획 →'; }
     if ($('#model-sheet-approve')) { $('#model-sheet-approve').disabled = !state.sheet || activeSheet() || state.sheet.sourceRevision !== state.revision; $('#model-sheet-approve').hidden = !state.sheet || activeSheet(); }
     if ($('#model-sheet-cancel')) $('#model-sheet-cancel').hidden = !jobId;
-    if ($('#model-kit-export')) $('#model-kit-export').disabled = !state.photos.length;
-    if ($('#model-board-export')) $('#model-board-export').disabled = !front();
-    if ($('#model-dev-preview')) $('#model-dev-preview').disabled=!hasAnchors || !!jobId || pending || previewPending;
-    if ($('#model-sheet-import-button')) $('#model-sheet-import-button').disabled=!hasAnchors || !!jobId || pending;
-    if (!jobId && !pending) status(activeSheet() ? '기준 시트 승인됨 · 이후 촬영에 사용 가능' : state.sheet ? '생성 시트 검토 대기' : hasAnchors ? '원본 준비 완료 · AI 기준 시트 생성 가능' : '정면 얼굴과 전신 사진을 지정해주세요');
+    if ($('#model-kit-export')) $('#model-kit-export').disabled = !state.photos.length || uploadingPhotos;
+    if ($('#model-board-export')) $('#model-board-export').disabled = !front() || uploadingPhotos;
+    if ($('#model-dev-preview')) $('#model-dev-preview').disabled=!hasAnchors || uploadingPhotos || !!jobId || pending || previewPending;
+    if ($('#model-sheet-import-button')) $('#model-sheet-import-button').disabled=!hasAnchors || uploadingPhotos || !!jobId || pending;
+    if (!jobId && !pending) status(activeSheet() ? '기준 시트 승인됨 · 이후 촬영에 사용 가능' : state.sheet ? '생성 시트 검토 대기' : hasAnchors ? (window.EditorialStudio?.snapshot().configured ? '원본 준비 완료 · AI 기준 시트 생성 가능' : '원본 준비 완료 · 제작자료를 저장할 수 있어요') : '정면 얼굴과 전신 사진을 지정해주세요');
   }
   async function imageElement(source) { const image = new Image(); image.src=source; await image.decode(); return image; }
   async function derivePhotos() {
@@ -251,9 +275,8 @@
     const previewRevision=state.revision, previewEpoch=sourceEpoch;
     previewPending=true;render();
     try {
-      const response=await fetch('/api/studio/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'model-sheet',payload:sheetSubmission()}),signal:AbortSignal.timeout(30000)});
-      const manifest=await response.json().catch(()=>({}));
-      if (!response.ok) throw new Error(response.status===404 ? '개발 검증 API가 없습니다. 최신 스튜디오 서버를 실행한 뒤 다시 시도해주세요.' : manifest.message || '검증용 프롬프트를 준비하지 못했습니다.');
+      if (!window.MusePrompts) throw new Error('제작자료 기능을 불러오지 못했습니다. 페이지를 새로고침해주세요.');
+      const manifest=await window.MusePrompts.buildPreview('model-sheet',sheetSubmission());
       if (manifest.billable!==false || manifest.kind!=='model-sheet' || !manifest.shots?.[0]?.prompt || !Array.isArray(manifest.inputs) || !Array.isArray(manifest.shots[0].inputIds)) throw new Error('검증 응답 형식이 올바르지 않습니다. 유료 생성은 실행하지 않았습니다.');
       if (previewRevision!==state.revision || previewEpoch!==sourceEpoch) throw new Error('준비 중 모델 원본이 바뀌었습니다. 현재 사진으로 다시 검증 프롬프트를 준비해주세요.');
       const byId=new Map(manifest.inputs.map(input=>[input.id,input]));
@@ -304,7 +327,8 @@
       const response=await fetch('/api/studio/status',{signal:AbortSignal.timeout(5000)});const data=await response.json();
       if(!response.ok||!data.configured)throw new Error('not configured');
     } catch {
-      modal('실제 기준 시트 생성은 서비스 연결 후 가능해요','<p>현재는 원본 사진 정리 보드입니다. 사진의 역할·디테일 영역·모델 설명을 먼저 정리하고 모델 파일로 보관할 수 있어요.</p><p>실제 3면 뷰와 표정 시트는 서버의 이미지 생성 서비스 연결 후 만들 수 있습니다. 완성한 것처럼 예시 사진을 대신 표시하지 않습니다.</p><div class="model-dialog-actions"><button id="model-no-api-dev">API 결제 없이 개발 검증</button><button id="model-no-api-close">알겠어요</button></div>');$('#model-no-api-close').addEventListener('click',closeModal);$('#model-no-api-dev').addEventListener('click',()=>{closeModal();devPreview();});return;
+      await devPreview();
+      return;
     }
     const missing=['side','back'].filter(role=>!state.photos.some(photo=>photo.role===role)).map(role=>roles[role]);
     modal('모델 기준 시트를 생성할까요?',`<p>원본 ${state.photos.length}장으로 한 장의 기준 보드를 생성합니다. <strong>고화질 이미지 API 유료 요청 1회</strong>가 발생하며 사진이 이미지 생성 서비스로 전송됩니다.</p><ol><li>얼굴 일관성 최우선</li><li>같은 축척의 정면·측면·후면</li><li>얼굴 구조를 유지한 표정 8개</li><li>눈·입·피부 디테일과 간결한 팔레트</li></ol>${missing.length?`<p class="model-warning">${missing.join('·')} 사진이 없습니다. 이 각도는 추정되므로 실제 사진을 추가할수록 기준이 명확해집니다.</p>`:''}<p>얼굴 구조나 비율의 완전한 고정을 보장할 수 없습니다. 생성 후 기준 얼굴과 비교·승인하는 단계를 거칩니다.</p><div class="model-dialog-actions"><button id="model-generation-back">사진 더 확인하기</button><button id="model-generation-confirm">유료 1회 · 시트 생성</button></div>`);
@@ -357,6 +381,7 @@
     $('#model-export-confirm').addEventListener('click',()=>{download(new Blob([JSON.stringify({format:'muse-model-kit-v1',version:1,exportedAt:new Date().toISOString(),model:state})],{type:'application/json'}),`muse-model-${state.profile.id}.json`);closeModal();toast('사진을 포함한 모델 파일을 저장했어요.');});
   }
   async function importKit(file) {
+    if (uploadingPhotos) { toast('사진 업로드가 끝난 뒤 모델 파일을 불러와주세요.'); return; }
     if(!file)return;
     try {
       if(file.size>65*1024*1024)throw new Error('모델 파일은 65MB 이하만 가져올 수 있습니다.');
@@ -372,6 +397,7 @@
     }catch(error){toast(error.message||'모델 파일을 읽을 수 없습니다.');}
   }
   function clearModel() {
+    if (uploadingPhotos) { toast('사진 업로드가 끝난 뒤 초기화해주세요.'); return; }
     modal('이 기기의 모델 작업 지우기','<p>사진과 기준 시트의 로컬 작업을 지웁니다. 이미 내려받은 모델 파일은 유지됩니다. 필요한 작업은 먼저 저장해주세요.</p><div class="model-dialog-actions"><button id="model-clear-back">유지하기</button><button id="model-clear-confirm">이 기기에서 지우기</button></div>');
     $('#model-clear-back').addEventListener('click',closeModal);$('#model-clear-confirm').addEventListener('click',()=>{state=fresh();sourceEpoch++;previewManifest=null;details={};fillFields();persist();render();derivePhotos();closeModal();window.dispatchEvent(new CustomEvent('muse:model-changed',{detail:{reason:'clear'}}));toast('이 기기의 모델 사진을 지웠어요.');});
   }
@@ -419,12 +445,15 @@
   $('#model-sheet-cancel')?.addEventListener('click',cancel);
   $('#model-sheet-approve')?.addEventListener('click',approve);
   $('#model-use-photos')?.addEventListener('click',()=>useModel(true));
+  $('#model-next-button')?.addEventListener('click',()=>useModel(true));
+  $('#model-add-required-photo')?.addEventListener('click',()=>$('#model-photos-upload')?.click());
   $('#model-kit-export')?.addEventListener('click',exportKit);
   $('#model-board-export')?.addEventListener('click',exportBoard);
   $('#model-kit-import-button')?.addEventListener('click',()=>$('#model-kit-import')?.click());
   $('#model-kit-import')?.addEventListener('change',event=>{importKit(event.target.files[0]);event.target.value='';});
   $('#model-clear')?.addEventListener('click',clearModel);
   $('#model-dialog-close')?.addEventListener('click',closeModal);
+  window.addEventListener('muse:connection',render);
   $('#model-dialog')?.addEventListener('click',event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeModal();}});
-  window.MuseModel={ready:initStorage(),flush:persist,snapshot:()=>({profile:{...state.profile},photoCount:state.photos.length,revision:state.revision,hasFace:!!front(),hasBody:!!body(),approved:!!activeSheet(),hasSheet:!!state.sheet,sheetOrigin:state.sheet?.origin || null,hasDevPreview:!!previewManifest,devPreviewCurrent:!!previewManifest&&previewManifest.revision===state.revision&&previewManifest.epoch===sourceEpoch,jobId,storageAvailable:!!db&&!storageBroken})};
+  window.MuseModel={ready:initStorage(),flush:persist,use:useModel,snapshot:()=>({profile:{...state.profile},photoCount:state.photos.length,revision:state.revision,hasFace:!!front(),hasBody:!!body(),uploadingPhotos,approved:!!activeSheet(),hasSheet:!!state.sheet,sheetOrigin:state.sheet?.origin || null,hasDevPreview:!!previewManifest,devPreviewCurrent:!!previewManifest&&previewManifest.revision===state.revision&&previewManifest.epoch===sourceEpoch,jobId,storageAvailable:!!db&&!storageBroken})};
 })();
