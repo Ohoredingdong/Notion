@@ -325,18 +325,23 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
     us, next_us=choose(items,int(previous_cursor.get("US",0)),"US",us_batch)
     kr, next_kr=choose(items,int(previous_cursor.get("KR",0)),"KR",kr_batch)
     getter=getter or read_url
-    user_agent=agent or os.getenv("SEC_USER_AGENT") or "Ohoredingdong/Notion stock-research via https://github.com/Ohoredingdong/Notion/issues"
+    user_agent=agent if agent is not None else os.getenv("SEC_USER_AGENT", "")
+    sec_contact_ok=bool(re.search(r"[A-Za-z0-9_.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",user_agent or ""))
     key=dart_key if dart_key is not None else os.getenv("DART_API_KEY", "")
     now=iso()
     stats={"US":{"attempted":0,"available":0,"blocked":0},
            "KR":{"attempted":0,"available":0,"blocked":0}}
     issues=[]
     if us:
-        try:
-            cik_map=official_cik_map(getter(SEC_CIK,agent=user_agent))
-        except Exception as exc:
+        if not sec_contact_ok:
+            issues.append("SEC_USER_AGENT must identify a real organization and a contact email; US requests skipped.")
             cik_map={}
-            issues.append("SEC_mapping: "+str(exc)[:180])
+        else:
+            try:
+                cik_map=official_cik_map(getter(SEC_CIK,agent=user_agent))
+            except Exception as exc:
+                cik_map={}
+                issues.append("SEC_mapping: "+str(exc)[:180])
         provider_failure_streak=0
         for item in us:
             symbol=item["symbol"]
@@ -348,8 +353,10 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                         "reason":"SEC request circuit breaker: repeated source/access errors"}
             elif cik is None:
                 result={"symbol":symbol,"country":"US",
-                        "status":"source_unavailable" if not cik_map else "identifier_unmatched",
-                        "checked_at":now,"reason":"SEC CIK map unavailable" if not cik_map else "No verified SEC CIK"}
+                        "status":"source_not_configured" if not sec_contact_ok else
+                                 "source_unavailable" if not cik_map else "identifier_unmatched",
+                        "checked_at":now,"reason":"Real SEC contact user agent not configured" if not sec_contact_ok else
+                            "SEC CIK map unavailable" if not cik_map else "No verified SEC CIK"}
             else:
                 try:
                     content=getter(SEC_FACTS.format(cik=cik),agent=user_agent)
