@@ -47,6 +47,13 @@ TAGS = {
     "reported_eps": ("EarningsPerShareDiluted", "DilutedEarningsLossPerShare",
                      "EarningsPerShareBasic", "BasicEarningsLossPerShare"),
 }
+INSTANT_TAGS = {
+    "assets": ("Assets",),
+    "liabilities": ("Liabilities",),
+    "equity": ("StockholdersEquity",
+               "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest", "Equity"),
+    "cash_and_equivalents": ("CashAndCashEquivalentsAtCarryingValue", "CashAndCashEquivalents"),
+}
 
 
 def iso():
@@ -157,6 +164,24 @@ def _xbrl_fact(facts, category, start=None, end=None):
     return max(selections, key=lambda x: (x[0], x[1])) if selections else None
 
 
+def _xbrl_instant(facts, category, period_end):
+    found = []
+    for namespace in ("us-gaap", "ifrs-full"):
+        for tag in INSTANT_TAGS[category]:
+            for row in (facts.get(namespace, {}).get(tag, {})
+                        .get("units", {}).get("USD", [])):
+                if row.get("form") not in FORMS or row.get("end") != period_end:
+                    continue
+                try:
+                    filed = date.fromisoformat(str(row["filed"]))
+                    val = float(row["val"])
+                except (ValueError, KeyError, TypeError):
+                    continue
+                if filed <= date.today() and row.get("start") is None:
+                    found.append((filed.isoformat(),val))
+    return max(found, key=lambda x: x[0])[1] if found else None
+
+
 def parse_sec_companyfacts(raw, *, symbol, cik, checked_at):
     obj = json.loads(raw)
     facts = obj.get("facts") or {}
@@ -174,6 +199,8 @@ def parse_sec_companyfacts(raw, *, symbol, cik, checked_at):
     for name in TAGS:
         fact = _xbrl_fact(facts, name, start=begin, end=end)
         fields[name] = fact[2] if fact else None
+    for name in INSTANT_TAGS:
+        fields[name] = _xbrl_instant(facts, name, end)
     ops, capex = fields["cash_from_operations"], fields["capital_expenditure"]
     fields["free_cash_flow"] = ops - capex if ops is not None and capex is not None else None
     present = sum(fields.get(k) is not None for k in ("revenue", "net_income", "operating_income"))
@@ -224,7 +251,10 @@ def parse_dart_multi(raw, *, corp_map, checked_at, report_year, report_code):
         vals = {}
         labels = {"revenue": ("매출액","영업수익","수익(매출액)"),
                   "operating_income": ("영업이익","영업이익(손실)"),
-                  "net_income": ("당기순이익","당기순이익(손실)")}
+                  "net_income": ("당기순이익","당기순이익(손실)"),
+                  "assets": ("자산총계",),
+                  "liabilities": ("부채총계",),
+                  "equity": ("자본총계",)}
         for key,names in labels.items():
             for name in names:
                 candidates=[r for r in rows if str(r.get("account_nm") or "").replace(" ","")==name.replace(" ","")]
@@ -243,7 +273,9 @@ def parse_dart_multi(raw, *, corp_map, checked_at, report_year, report_code):
             "consolidation":"CFS" if consolidated else "OFS",
             "currency":"KRW","annualized":False,"estimated":False,
             "metrics":{"revenue":vals.get("revenue"),"operating_income":vals.get("operating_income"),
-                       "net_income":vals.get("net_income"),"cash_from_operations":None,
+                       "net_income":vals.get("net_income"),"assets":vals.get("assets"),
+                       "liabilities":vals.get("liabilities"),"equity":vals.get("equity"),
+                       "cash_and_equivalents":None,"cash_from_operations":None,
                        "capital_expenditure":None,"free_cash_flow":None,"reported_eps":None},
             "limitations":["DART thstrm_amount reported period; do not annualize",
                            "Cashflow, FCF and forecast EPS not obtained in multi-account endpoint"]}
