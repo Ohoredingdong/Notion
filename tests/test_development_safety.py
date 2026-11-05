@@ -2,11 +2,13 @@
 from __future__ import annotations
 import argparse
 import hashlib
+import io
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 from unittest.mock import patch
 
@@ -18,6 +20,30 @@ import yaml
 
 
 class SelectionTests(unittest.TestCase):
+    def test_financial_build_update_and_test_changes_select_their_actual_suites(self):
+        expected = {
+            "scripts/build_stock_event_outlook.py": "scripts.test_stock_event_outlook",
+            "scripts/build_stock_entry_plan.py": "scripts.test_stock_entry_plan",
+            "scripts/update_stock_opportunities.py": "scripts.test_stock_opportunities",
+        }
+        for path, suite in expected.items():
+            with self.subTest(path=path):
+                plan = checks.plan_checks([path])
+                self.assertIn("radar", plan["groups"])
+                self.assertIn("radar", plan["browser_required"])
+                commands = checks.commands_for(plan["groups"], plan["unit_modules"], plan["node_tests"])
+                self.assertTrue(any(suite in command for _, command in commands), commands)
+
+    def test_entry_ui_test_runs_when_it_alone_changes(self):
+        plan = checks.plan_checks(["tests/stock-entry-ui.test.cjs"])
+        self.assertTrue(any("tests/stock-entry-ui.test.cjs" in command for _, command in checks.commands_for(plan["groups"])))
+
+    def test_unmapped_production_module_is_not_green_just_from_generic_tests(self):
+        plan = checks.plan_checks(["scripts/build_stock_uncovered_feature.py"])
+        self.assertEqual(plan["unknown_code"], ["scripts/build_stock_uncovered_feature.py"])
+        for path in ("scripts/uncovered-collector.cjs", "scripts/uncovered-job.sh"):
+            self.assertEqual(checks.plan_checks([path])["unknown_code"], [path])
+
     def test_radar_ui_selects_finance_and_browser_regressions(self):
         plan = checks.plan_checks(["assets/stock-radar-flow-v2.js"])
         self.assertEqual(plan["groups"], ["radar"])
@@ -96,6 +122,29 @@ class CandidateTests(GitFixture):
         manifest = release.prepare(self.root, report_path, self.root.parent / "candidate.tar.gz")
         self.assertEqual(manifest["kind"], "review-only-not-deployed")
         self.assertEqual(list(manifest["files"]), ["index.html"])
+        with tarfile.open(self.root.parent / "candidate.tar.gz") as archive:
+            data = archive.extractfile("index.html").read()
+            self.assertEqual(hashlib.sha256(data).hexdigest(), manifest["files"]["index.html"])
+            self.assertEqual(data, b"<h1>Verified candidate</h1>")
+
+    def test_concurrent_source_edit_blocks_atomic_candidate_output(self):
+        report_path = self.root.parent / "report.json"
+        report_path.write_text(json.dumps(self.report))
+        output = self.root.parent / "candidate.tar.gz"
+        original = release.verify_report
+        calls = 0
+
+        def concurrent_edit(root, report):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                (root / "index.html").write_text("<h1>Concurrent untested edit</h1>")
+            return original(root, report)
+
+        with patch.object(release, "verify_report", side_effect=concurrent_edit), self.assertRaises(ValueError):
+            release.prepare(self.root, report_path, output)
+        self.assertFalse(output.exists())
+        self.assertEqual(list(self.root.parent.glob(".widget-candidate-*")), [])
 
     def test_failed_cancelled_incomplete_or_no_tests_block_candidate(self):
         for status in ("failed", "cancelled", "incomplete"):

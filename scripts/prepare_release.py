@@ -7,6 +7,7 @@ import io
 import json
 from pathlib import Path
 import tarfile
+import tempfile
 
 from check_changed import ROOT, git, source_digest, source_files
 
@@ -52,20 +53,43 @@ def prepare(root, report_path, output):
     verify_report(root, report)
     if output.resolve().is_relative_to(root.resolve()) and not output.resolve().is_relative_to(root / ".dev-artifacts"):
         raise ValueError("Candidate output must be outside checkout or inside ignored .dev-artifacts")
-    entries = list(public_files(root))
-    if not entries:
-        raise ValueError("Candidate blocked: no public files")
+    if output.exists():
+        raise ValueError("Candidate output already exists; choose a fresh output path")
+    names = set(public_files(root))
+    # Read immutable Git objects from the validated commit, never re-read mutable
+    # working files between hashing and archiving.
+    source = git(root, "archive", "--format=tar", report["head_sha"])
+    entries = {}
+    with tarfile.open(fileobj=io.BytesIO(source), mode="r:") as committed:
+        for member in committed.getmembers():
+            if member.name in names:
+                if not member.isfile():
+                    raise ValueError("Candidate blocked: unsupported public file type")
+                entries[member.name] = committed.extractfile(member).read()
+    if not entries or set(entries) != names:
+        raise ValueError("Candidate blocked: public files differ from validated commit")
     manifest = {"kind": "review-only-not-deployed", "source_commit": report["head_sha"],
                 "source_digest": report["source_digest"], "validation_report_sha256": hashlib.sha256(report_bytes).hexdigest(),
-                "files": {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in entries}}
+                "files": {name: hashlib.sha256(data).hexdigest() for name, data in entries.items()}}
     output.parent.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(output, "w:gz") as archive:
-        for name in entries:
-            archive.add(root / name, arcname=name, recursive=False)
-        data = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode()
-        info = tarfile.TarInfo("_candidate-manifest.json")
-        info.size = len(data)
-        archive.addfile(info, io.BytesIO(data))
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(prefix=".widget-candidate-", dir=output.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+        with tarfile.open(temporary, "w:gz") as archive:
+            for name, data in entries.items():
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                archive.addfile(info, io.BytesIO(data))
+            data = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode()
+            info = tarfile.TarInfo("_candidate-manifest.json")
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+        verify_report(root, report)
+        temporary.replace(output)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     return manifest
 
 

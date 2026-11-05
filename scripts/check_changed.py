@@ -56,13 +56,43 @@ def changed_files(root, base, head, working_tree=False):
     return sorted({name for name in names if name})
 
 
-def plan_checks(paths):
-    groups = set()
-    unknown_ui = []
+RADAR_PYTHON = ("scripts/build_stock", "scripts/update_stock", "scripts/run_stock", "scripts/stock", "scripts/test_stock", "scripts/publish_stock", "scripts/install_stock", "scripts/audit_stock", "scripts/verify_stock")
+CORE_RADAR_UNITS = {"scripts.test_stock_decisions", "scripts.test_market_context", "scripts.test_stock_event_outlook", "scripts.test_stock_forecasts", "scripts.test_stock_forecast_directions", "scripts.test_stock_autopilot"}
+REGISTERED_BROWSER = {"scripts/test_radar_development_browser.py", "scripts/test_fridge_development_browser.py", "scripts/test_auction_study_browser.py", "scripts/test_stock_radar_canonical_browser.py", "scripts/test_stock_radar_flow_browser.py"}
+REGISTERED_STATIC = {"scripts/test_stock_radar_publish_protection.py"}
+PUBLISHER_COMPONENTS = {"publish_widget_data", "update_real_estate_pulse", "run_real_estate_pulse_update", "update_mortgage_rates", "update-bitcoin-korea-premium", "update-supply-chain", "update-korea-market-sentiment"}
+UNIT_ALIASES = {"update_stock_decisions": "test_stock_decisions", "stock_forecast_model": "test_stock_forecasts", "stock_forecast_sources": "test_stock_forecasts", "stock_forecast_cascade": "test_stock_forecasts", "run_stock_forecasts": "test_stock_forecasts", "stock_entry_inputs": "test_stock_entry_plan", "update_stock_event_risks": "test_stock_recommendations"}
+
+
+def matching_unit(path, root):
+    stem = Path(path).stem
+    if stem.startswith("test_"):
+        candidates = [stem]
+    else:
+        shortened = re.sub(r"^(build|update|run|publish|verify)_", "", stem)
+        candidates = [UNIT_ALIASES.get(stem, ""), "test_" + stem, "test_" + shortened]
+    for name in candidates:
+        file = root / "scripts" / (name + ".py")
+        if not name or not file.is_file():
+            continue
+        try:
+            tree = ast.parse(file.read_text())
+        except SyntaxError:
+            continue
+        if any(isinstance(node, ast.ClassDef) and any(
+            isinstance(base, ast.Attribute) and base.attr == "TestCase" or isinstance(base, ast.Name) and base.id == "TestCase"
+            for base in node.bases) for node in ast.walk(tree)):
+            return "scripts." + name
+    return None
+
+
+def plan_checks(paths, root=ROOT):
+    groups, extra_units, node_tests = set(), set(), set()
+    unknown_ui, unknown_code = [], []
     for path in paths:
         if path.startswith(TOOLING) or path.startswith("scripts/test_radar_development_browser.py"):
             groups.update(("tooling", "radar", "publishers", "fridge", "auction", "toss"))
-        elif path.startswith(("stock", "assets/stock", "scripts/stock", "scripts/test_stock", "scripts/publish_stock", "scripts/install_stock", "scripts/audit_stock")):
+        elif path.startswith(("stock", "assets/stock", *RADAR_PYTHON)) or path == "tests/stock-entry-ui.test.cjs":
             groups.add("radar")
         elif path.startswith(("use-me-first", "tests/fridge", "scripts/test_fridge_development_browser.py", "supabase/")):
             groups.add("fridge")
@@ -72,10 +102,21 @@ def plan_checks(paths):
             groups.add("toss")
         elif path.startswith("scripts/") and path.endswith((".py", ".cjs", ".js")):
             groups.add("publishers")
-        elif path.endswith((".html", ".js", ".css", ".ts", ".tsx", ".jsx")):
+        elif path.startswith("tests/") and path.endswith(".test.cjs"):
+            node_tests.add(path)
+        elif path.endswith((".html", ".js", ".cjs", ".mjs", ".css", ".ts", ".tsx", ".jsx")):
             unknown_ui.append(path)
-    return {"groups": sorted(groups), "unknown_ui": unknown_ui,
-            "browser_required": sorted(groups & {"radar", "fridge", "auction"})}
+        if path.startswith("scripts/") and path.endswith(".py") and not path.startswith(TOOLING) and path not in REGISTERED_BROWSER and path not in REGISTERED_STATIC:
+            unit = matching_unit(path, root)
+            if unit:
+                extra_units.add(unit)
+            elif Path(path).stem not in PUBLISHER_COMPONENTS:
+                unknown_code.append(path)
+        elif path.startswith("scripts/") and path.endswith((".js", ".cjs", ".mjs", ".sh", ".ts")) and not path.startswith(TOOLING):
+            unknown_code.append(path)
+    return {"groups": sorted(groups), "unknown_ui": unknown_ui, "unknown_code": unknown_code,
+            "unit_modules": sorted(extra_units - CORE_RADAR_UNITS if "radar" in groups else extra_units),
+            "node_tests": sorted(node_tests), "browser_required": sorted(groups & {"radar", "fridge", "auction"})}
 
 
 class LocalReferences(HTMLParser):
@@ -178,7 +219,7 @@ def static_checks(root, paths):
             "checked_files": checked, "errors": errors}
 
 
-def commands_for(groups):
+def commands_for(groups, extra_units=None, extra_nodes=None):
     py = sys.executable
     commands = []
     if "tooling" in groups:
@@ -196,6 +237,9 @@ def commands_for(groups):
         commands += [("auction-financial-model", ["node", "tests/auction-study-model.test.cjs"])]
     if "toss" in groups:
         commands += [("toss-offline-adapter", [py, "-B", "-m", "unittest", "discover", "-s", "services/toss-live", "-p", "test_*.py", "-v"])]
+    if extra_units:
+        commands += [("changed-component-regressions", [py, "-B", "-m", "unittest", *extra_units, "-v"])]
+    commands += [("changed-node-test-" + Path(name).stem, ["node", name]) for name in (extra_nodes or [])]
     return commands
 
 
@@ -216,7 +260,7 @@ def run_checks(root, args):
     if not args.working_tree and git(root, "status", "--porcelain").strip():
         raise ValueError("Source has working changes; use --working-tree or commit them before validating")
     paths = changed_files(root, args.base, args.head, args.working_tree)
-    plan = plan_checks(paths)
+    plan = plan_checks(paths, root)
     if args.profile:
         extra = plan_checks(["AGENTS.md"])["groups"] if "tooling" in args.profile else args.profile
         plan["groups"] = sorted(set(plan["groups"]) | set(extra))
@@ -254,7 +298,7 @@ def run_checks(root, args):
             report["checks"].append(entry)
             print(f"{entry['status'].upper()}: {name}; {log}", flush=True)
 
-        for name, command in commands_for(plan["groups"]):
+        for name, command in commands_for(plan["groups"], plan["unit_modules"], plan["node_tests"]):
             run(name, command)
         if plan["browser_required"] and not args.browser:
             report["unverified"].append("Required browser checks were not requested; run with --browser")
@@ -279,6 +323,8 @@ def run_checks(root, args):
             finally:
                 server.shutdown()
                 server.server_close()
+    if plan["unknown_code"]:
+        report["unverified"].append("No executed component regression profile for: " + ", ".join(plan["unknown_code"]))
     if plan["unknown_ui"]:
         report["unverified"].append("No functional/browser profile for: " + ", ".join(plan["unknown_ui"]))
     if source_digest(root) != report["source_digest"]:
