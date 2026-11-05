@@ -46,6 +46,7 @@ jobs:
           python -m pip install 'playwright==1.56.0'
           python -m playwright install --with-deps chromium
       - name: Desktop, persistence, mobile and iframe regressions
+        shell: bash
         env:
           AUCTION_STUDY_URL: http://127.0.0.1:8765/auction-study.html
         run: |
@@ -121,6 +122,7 @@ jobs:
                   time.sleep(10)
           PY
       - name: Exercise the actual public widget in an isolated browser
+        shell: bash
         env:
           AUCTION_STUDY_URL: https://ohoredingdong.github.io/Notion/auction-study.html?release=${{ github.sha }}
         run: |
