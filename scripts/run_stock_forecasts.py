@@ -23,7 +23,13 @@ DEFAULT = [
     ('005930.KS', '삼성전자', 'KR'), ('000660.KS', 'SK하이닉스', 'KR'),
     ('035420.KS', 'NAVER', 'KR'), ('403870.KQ', 'HPSP', 'KR'),
     ('AAPL', 'Apple', 'US'), ('MSFT', 'Microsoft', 'US'),
-    ('NVDA', 'NVIDIA', 'US'), ('ON', 'ON Semiconductor', 'US')]
+    ('NVDA', 'NVIDIA', 'US'), ('ON', 'ON Semiconductor', 'US'),
+    # Expanded research universe: only verified tickers from the tracked stock snapshot.
+    # Each still requires real provider candles and must pass the existing future-target gates.
+    ('FN', 'Fabrinet', 'US'), ('DOCS', 'Doximity', 'US'),
+    ('EXLS', 'EXLService', 'US'), ('AMZN', 'Amazon', 'US'),
+    ('TSLA', 'Tesla', 'US'), ('META', 'Meta Platforms', 'US'),
+    ('207940.KS', '삼성바이오로직스', 'KR'), ('005380.KS', '현대자동차', 'KR')]
 
 
 def write(path, value):
