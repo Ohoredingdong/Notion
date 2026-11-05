@@ -29,7 +29,10 @@ def ticker(country, exchange, symbol):
         # Valid Yahoo-style plain stock tickers; reject complex preferred/rights symbols.
         return symbol if re.fullmatch(r"[A-Z]{1,5}", symbol) else None
     if country == "KR" and re.fullmatch(r"\d{6}", symbol):
-        return symbol + (".KQ" if exchange == "KOSDAQ" else ".KS" if exchange == "KOSPI" else "")
+        if exchange == "KOSPI":
+            return symbol + ".KS"
+        if exchange == "KOSDAQ":
+            return symbol + ".KQ"
     return None
 
 
