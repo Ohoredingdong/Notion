@@ -23,6 +23,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   browser:
+    # Scheduled/manual/push recovery remains independent; chained work requires a successful same-repository producer.
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -35,10 +37,10 @@ jobs:
           pip install 'playwright==1.56.0'
           python -m playwright install --with-deps chromium
       - name: Test full widget interaction and layout
-        run: python scripts/test_stock_decision_browser.py
+        run: python scripts/test_stock_radar_canonical_browser.py --output /tmp/stock-decision-current-browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: stock-decision-browser-tests
-          path: decision-browser-tests/
+          path: /tmp/stock-decision-current-browser/
           retention-days: 3

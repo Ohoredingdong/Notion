@@ -105,6 +105,11 @@ async function boot(options = {}) {
     card(name) { return [...document.querySelectorAll('.umf-menu-card')].find(x => x.dataset.name === name); },
     async add(name, quantity = '', expiry = '') { await api.click('#umfTopAdd'); api.fill('#name', name); api.fill('#umfQty', quantity); api.fill('#expiry', expiry); await api.click('#save'); },
     async toggle(selector, name) { const button = [...document.querySelectorAll(selector + ' .tog')].find(x => x.textContent.replace(/^✓ /, '') === name); assert.ok(button, 'Missing stock button: ' + name); await api.click(button); },
+    async moveToShelf(zone) {
+      const target = api.$('#umfKitchenScene .shelf-target[data-action="move-zone"][data-zone="' + zone + '"]');
+      assert.equal(target.hidden, false, 'The destination shelf must be visible while organizing');
+      await api.click(target);
+    },
     async menu(id, action) { const row = [...document.querySelectorAll('#list .row')].find(x => x.dataset.id === id); assert.ok(row); await api.click(row.querySelector('.rm')); await api.click(row.querySelector('[data-action="' + action + '"]')); },
     advance(ms) { currentTime += ms; },
     storageEvent() { const event = new dom.Event('storage'); event.key = STATE; event.newValue = memory.get(STATE) || null; w.dispatchEvent(event); },
@@ -260,13 +265,17 @@ test('shortage plus routes seasonings and pantry into the correct confirmation d
 
 test('custom seasoning and pantry controls work and quantities remain unrelated to those sets', async t => {
   const app = await boot(); t.after(() => app.close()); await app.click('#seasonTab');
+  const customSeason = '훈제파프리카가루';
   assert.equal(app.$('#seasonTab').getAttribute('aria-selected'), 'true'); assert.equal(app.$('#season').classList.contains('on'), true);
-  await app.click('#addSeason'); app.fill('#customName', '굴소스'); await app.click('#customSave');
+  assert.equal([...app.document.querySelectorAll('#sg .tog')].some(button => button.textContent === customSeason), false, 'The custom fixture is not a built-in seasoning');
+  await app.click('#addSeason'); app.fill('#customName', customSeason); await app.click('#customSave');
   await app.click('#addPantry'); app.fill('#customName', '오트밀'); await app.click('#customSave');
-  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('굴소스'), true); assert.equal(st.customPantry.includes('오트밀'), true);
-  assert.equal(st.season.includes('굴소스'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
-  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '굴소스 항목 삭제'); await app.click(remove);
-  assert.equal(app.w.UMFStore.getState().season.includes('굴소스'), false);
+  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes(customSeason), true); assert.equal(st.customPantry.includes('오트밀'), true);
+  assert.equal(st.season.includes(customSeason), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
+  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === customSeason + ' 항목 삭제'); await app.click(remove);
+  const after = app.w.UMFStore.getState();
+  assert.equal(after.season.includes(customSeason), false); assert.equal(after.customSeason.includes(customSeason), false);
+  assert.equal(after.pantry.includes('오트밀'), true); assert.equal(after.items.length, 0);
 });
 
 test('filters and search clear hidden selection and disable unavailable actions', async t => {
@@ -576,7 +585,7 @@ test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and 
   assert.equal(app.w.UMFKitchenState.getState().doors.fridge, true);
   await app.click(shelfItem(app, firstId));
   assert.equal(app.w.UMFKitchen.getMovingId(), firstId);
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-bottom"]');
+  await app.moveToShelf('freezer-bottom');
   assert.equal(app.w.UMFKitchenState.zoneFor(firstId), 'freezer-bottom');
   assert.equal(app.w.UMFKitchenState.zoneFor(secondId), 'middle');
   assert.equal(shelfItem(app, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
@@ -618,6 +627,9 @@ test('kitchen renders every overlapping lot and inventory can select a buried lo
   const memory = new Map([[STATE, JSON.stringify(existingFridge(items))], [KITCHEN_VIEW, JSON.stringify(view)]]);
   const app = await boot({ memory }); t.after(() => app.close());
   const before = memory.get(STATE), buriedId = items[0].id;
+  const layerControls = app.$('#umfKitchenScene .organize-layer-controls');
+  assert.equal(layerControls.hidden, true, 'Normal inventory viewing does not expose arrangement controls');
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, true);
   const rendered = [...app.document.querySelectorAll('#umfKitchenScene .shelf-canvas[data-zone="middle"] .fridge-food')];
   assert.equal(rendered.length, items.length, 'No inventory lot is replaced by a hidden-count placeholder');
   assert.deepEqual(rendered.map(node => node.dataset.lot), items.map(item => item.id));
@@ -643,6 +655,10 @@ test('kitchen renders every overlapping lot and inventory can select a buried lo
   await app.click(arrange);
   assert.equal(app.w.UMFKitchen.getOrganizing(), true);
   assert.equal(app.w.UMFKitchen.getMovingId(), buriedId);
+  assert.equal(layerControls.hidden, false);
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, false);
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').getAttribute('aria-label'), '계란을 앞으로 놓기');
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-back"]').getAttribute('type'), 'button');
   await app.click('#umfKitchenScene [data-action="layer-front"]');
   const front = assertKitchenPosition(app, buriedId, 'middle', .4, .6);
   assert.ok(items.slice(1).every(item => app.w.UMFKitchenState.positionFor(item.id).z < front.z));
@@ -672,8 +688,15 @@ test('kitchen layer changes preserve the relative order and coordinates of unsel
   const positions = new Map(items.map(item => [item.id, { x: Number(shelfItem(app, item.id).dataset.x), y: Number(shelfItem(app, item.id).dataset.y) }]));
   assert.ok(Number(shelfItem(app, 'default-egg').style.zIndex) < Number(shelfItem(app, 'saved-onion').style.zIndex));
   await app.click('#umfKitchenScene [data-action="organize"]');
+  assert.equal(app.$('#umfKitchenScene .organize-layer-controls').hidden, true, 'Selecting arrange mode without a lot leaves layer controls hidden');
   await app.click(shelfItem(app, 'selected-tofu'));
-  await app.click('#umfKitchenScene [data-action="layer-front"]');
+  assert.equal(app.$('#umfKitchenScene .organize-layer-controls').hidden, false);
+  await whileStoreLocked(async () => {
+    app.$('#umfKitchenScene [data-action="layer-front"]').click();
+    assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, true, 'A pending layer save prevents another front action');
+    assert.equal(app.$('#umfKitchenScene [data-action="layer-back"]').disabled, true, 'A pending layer save prevents a competing back action');
+  }, KITCHEN_VIEW);
+  await app.flush();
   for (const item of items) {
     const position = positions.get(item.id);
     assertKitchenPosition(app, item.id, 'middle', position.x, position.y);
@@ -681,6 +704,17 @@ test('kitchen layer changes preserve the relative order and coordinates of unsel
   assert.ok(app.w.UMFKitchenState.positionFor('default-egg').z < app.w.UMFKitchenState.positionFor('saved-onion').z, 'Sending C to the front must not move an unrelated default B in front of saved A');
   assert.ok(app.w.UMFKitchenState.positionFor('saved-onion').z < app.w.UMFKitchenState.positionFor('selected-tofu').z);
   assert.equal(app.memory.get(STATE), before);
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, true, 'A closed compartment cannot reorder its selected ingredient');
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-back"]').disabled, true);
+  assert.equal(app.w.UMFKitchen.getMovingId(), null, 'Closing the compartment clears the active ingredient selection');
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  assert.equal(app.$('#umfKitchenScene .organize-layer-controls').hidden, true, 'Reopening does not silently reselect an ingredient');
+  await app.click(shelfItem(app, 'selected-tofu'));
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, false);
+  await app.click(shelfItem(app, 'selected-tofu'));
+  assert.equal(app.$('#umfKitchenScene .organize-layer-controls').hidden, true, 'Deselecting a lot hides layer actions');
+  assert.equal(app.$('#umfKitchenScene [data-action="layer-front"]').disabled, true);
 });
 
 test('kitchen mouse placement uses captured-pointer destination coordinates and keeps repaired duplicate lots independent', async t => {
@@ -936,7 +970,7 @@ test('kitchen preserves v5 records and sync settings without adding sample food,
   await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
   await app.click('#umfKitchenScene [data-action="organize"]');
   await app.click(shelfItem(app, 'legacy-tofu'));
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-top"]');
+  await app.moveToShelf('freezer-top');
   assert.equal(memory.get(STATE), raw);
   assert.equal(memory.get('use-me-first-sync-code-v1'), syncCode);
   assert.equal(memory.get('use-me-first-sync-meta-v2'), metadata);

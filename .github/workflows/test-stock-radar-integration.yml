@@ -56,16 +56,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
       - name: Install browser dependencies
         run: |
-          pip install 'playwright==1.56.0' beautifulsoup4
+          pip install -r requirements-dev.txt
           python -m playwright install --with-deps chromium
-          npm install --no-save --package-lock=false @playwright/test@1.56.0
+          npm ci --ignore-scripts --no-audit --no-fund
       - name: Syntax checks
         run: |
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-radar-clean-bridge.js
-          node --check assets/stock-radar-flow-v2.js
           node --check assets/stock-radar-flow-v2.js
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py
@@ -76,19 +78,17 @@ jobs:
           node --check assets/stock-forecast.js
           python -m py_compile scripts/test_stock_decision_browser.py
           python -m unittest scripts.test_market_context -v
-      - name: Start local radar
+      - name: Verify current canonical radar and entry display invariants
         run: |
-          python -m http.server 8765 >/tmp/integrated-radar-http.log 2>&1 &
-      - name: Verify neutral home, legacy research and entry-plan navigation
-        run: |
-          node tests/stock-entry-browser.cjs
-          python scripts/test_stock_decision_browser.py
-          python scripts/test_stock_radar_flow_browser.py
+          node tests/stock-entry-ui.test.cjs
+          node scripts/test_stock_event_ui.cjs
+          node scripts/test_stock_evidence_review.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+          python scripts/test_stock_radar_canonical_browser.py --output /tmp/integrated-radar-browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: stock-radar-integrated-ui-evidence
-          retention-days: 5
-          path: |
-            entry-*.png
-            decision-browser-tests/
+          retention-days: 14
+          path: /tmp/integrated-radar-browser/
+          if-no-files-found: error

@@ -1,0 +1,2410 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-05",
+  "repository": "Ohoredingdong/Notion",
+  "source_revision": "17d11d28fdf156f7a6f9ee7eeefe689e761cd83c",
+  "evidence_scope": "Immutable Git source snapshot. Does not attest GitHub run results, branch protection, Pages settings, or live publication.",
+  "remote_status": {
+    "native_git_heads_observed": 174,
+    "github_api": "403; Pages configuration, Actions run history, default branch protection and rulesets unverified"
+  },
+  "counts": {
+    "workflows": 38,
+    "contents_write": 27,
+    "contents_read": 11,
+    "schedule": 24,
+    "push": 36,
+    "pull_request": 5,
+    "workflow_run": 13,
+    "workflow_dispatch": 36
+  },
+  "workflows": [
+    {
+      "file": ".github/workflows/audit-stock-radar-accuracy.yml",
+      "name": "Audit Stock Radar Accuracy",
+      "source_sha256": "6ef0e91b026d55d22229bc8730e1e230ddb361fc05e36d51c2de28ee7dbd8163",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-forecast-learning.json",
+            "stock-direction-forecast.json",
+            "stock-forecast-outcomes.jsonl",
+            "stock-market-context.json",
+            "stock-radar-chart-data.json",
+            "stock-opportunity-summary.json",
+            "stock-investment-cases-summary.json",
+            "stock-entry-plan-summary.json",
+            "scripts/audit_stock_radar_accuracy.py",
+            ".github/workflows/audit-stock-radar-accuracy.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "15 0 * * 1-5"
+          },
+          {
+            "cron": "30 8 * * 1-5"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-radar-independent-accuracy-audit",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "정확도 감사 JSON",
+      "check_summary": "감사 재계산·무결성 검사",
+      "audit_note": "데이터 main push + 정기 감사; PR 검사 없음",
+      "jobs": [
+        {
+          "id": "verify-and-publish",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python -m py_compile scripts/audit_stock_radar_accuracy.py",
+            "python scripts/audit_stock_radar_accuracy.py"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish accuracy report only",
+              "if": null,
+              "command": "git add -- stock-radar-accuracy-audit.json"
+            },
+            {
+              "step": "Publish accuracy report only",
+              "if": null,
+              "command": "git pull --rebase origin main && git push origin HEAD:main && exit 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/monitor-stock-value-radar.yml",
+      "name": "Monitor Stock Radar Health",
+      "source_sha256": "20d07cb1cce19205d62c8395021ee15af24e8698594fee232133f8a3d39a7c8b",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "23 0,4,8,12,16,20 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/monitor-stock-value-radar.py",
+            ".github/workflows/monitor-stock-value-radar.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write",
+        "issues": "write"
+      },
+      "concurrency": {
+        "group": "monitor-stock-radar",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "health JSON + 경고 이슈",
+      "check_summary": "시각·커버리지·원천·이상값",
+      "audit_note": "알림/건강 상태 기록; 배포 차단 기능 없음",
+      "jobs": [
+        {
+          "id": "monitor",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Write independent health heartbeat",
+              "if": null,
+              "command": "git add stock-radar-health.json"
+            },
+            {
+              "step": "Write independent health heartbeat",
+              "if": null,
+              "command": "git pull --rebase origin main && git push && exit 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/probe-decision-sources.yml",
+      "name": "Probe Decision Sources",
+      "source_sha256": "6d7faabb79c9c3417ab6bb7d14c2ff5f4b29958a9c64ac4cf90638d9b2fc5d4d",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/probe_decision_sources.py",
+            ".github/workflows/probe-decision-sources.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "없음",
+      "check_summary": "외부 데이터 소스 접근 진단",
+      "audit_note": "수동/해당 스크립트 main push만 실행",
+      "jobs": [
+        {
+          "id": "probe",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-autopilot-recovery.yml",
+      "name": "Stock Autopilot Bounded Recovery",
+      "source_sha256": "f333b9f5b0086bc089596fb1562e8e56ae6d19fcf535c22e72a27b766ade8c34",
+      "events": {
+        "workflow_run": {
+          "workflows": [
+            "Stock Prospective Forecasts"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read",
+        "actions": "write"
+      },
+      "concurrency": null,
+      "publication_summary": "실패 job 1회 재실행 요청",
+      "check_summary": "인프라 오류 allowlist·첫 시도·동일 저장소",
+      "audit_note": "정상 결과를 대신하지 않는 복구 장치",
+      "jobs": [
+        {
+          "id": "recover-once",
+          "if": "github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt == 1 && github.event.workflow_run.head_repository.full_name == github.repository",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-entry-plan.yml",
+      "name": "Stock Entry Plan",
+      "source_sha256": "8442b704eae89bba6209fe156d417674f9eff1e4a01c0d98edef66c83153c60d",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/build_stock_entry_plan.py",
+            "scripts/stock_entry_inputs.py",
+            "scripts/evaluate_stock_entry_outcomes.py",
+            "scripts/test_stock_entry_plan.py",
+            "assets/stock-recommendations.js",
+            "tests/stock-entry-*.cjs",
+            ".github/workflows/stock-entry-plan.yml",
+            "stock-research-review-records.json"
+          ]
+        },
+        "workflow_run": {
+          "workflows": [
+            "Strict Green Review",
+            "Stock Three-Year Reading",
+            "Stock Recommendations"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "37 8,23 * * *"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write",
+        "pages": "write"
+      },
+      "concurrency": {
+        "group": "stock-entry-plan",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "진입계획 JSON/JSONL + Pages build 요청",
+      "check_summary": "Python 정책·JS UI·브라우저·공개 snapshot",
+      "audit_note": "main 재취득 뒤 결과 재생성; main 직접 push 필요",
+      "jobs": [
+        {
+          "id": "validate-publish",
+          "if": "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main",
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [
+            "PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_entry_plan.py' -v",
+            "node --check assets/stock-recommendations.js",
+            "PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_entry_plan.py'"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish without overwriting concurrent source updates",
+              "if": null,
+              "command": "git reset --hard origin/main"
+            },
+            {
+              "step": "Publish without overwriting concurrent source updates",
+              "if": null,
+              "command": "git add stock-entry-plan.json stock-entry-plan-summary.json stock-entry-ledger.jsonl stock-entry-outcomes.json"
+            },
+            {
+              "step": "Publish without overwriting concurrent source updates",
+              "if": null,
+              "command": "if git push origin HEAD:main; then exit 0; fi"
+            },
+            {
+              "step": "Request Pages build",
+              "if": null,
+              "command": "gh api --method POST \"repos/${GITHUB_REPOSITORY}/pages/builds\" --silent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-forecast-independent-audit.yml",
+      "name": "Independent Forecast Evidence Audit",
+      "source_sha256": "baace1be946b5990c9cb870589712c225e433e36575427c67004068dbf38fa9f",
+      "events": {
+        "workflow_dispatch": "",
+        "pull_request": {
+          "paths": [
+            ".github/workflows/stock-forecast-independent-audit.yml",
+            "scripts/test_stock_timing_audit_handoff.py",
+            "scripts/stock_forecast_autopilot.py",
+            "scripts/test_stock_timing_transaction_rollback.py",
+            "scripts/test_stock_timing_workflow_provenance.py",
+            "scripts/audit_stock_timing_workflow_provenance.py",
+            "scripts/audit_stock_forecast_independent.py",
+            "scripts/test_stock_timing_shadow_catalogue.py",
+            "scripts/stock_autopilot_recovery.cjs",
+            "scripts/audit_stock_forecast_attempt_coverage.py",
+            "scripts/test_stock_timing_attempt_coverage.py",
+            "scripts/audit_stock_learning_evidence.py",
+            "scripts/audit_stock_timing_acceptance_guard.py",
+            "scripts/test_stock_timing_acceptance_guard.py",
+            "scripts/test_stock_timing_band_audit.py",
+            "scripts/test_stock_timing_equal_issuance.py",
+            "scripts/test_stock_timing_ledger_status.py",
+            "scripts/test_stock_timing_public_identity.py",
+            "scripts/test_stock_timing_public_payload_fingerprint.py",
+            "scripts/test_stock_timing_source_asof.py",
+            "scripts/test_stock_timing_training_asof.py"
+          ]
+        },
+        "workflow_run": {
+          "workflows": [
+            "Stock Prospective Forecasts"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/audit_stock_forecast_independent.py",
+            "scripts/test_stock_timing_source_asof.py",
+            "scripts/test_stock_timing_band_audit.py",
+            "scripts/test_stock_timing_training_asof.py",
+            "scripts/test_stock_timing_ledger_status.py",
+            "scripts/test_stock_timing_public_identity.py",
+            "scripts/test_stock_timing_shadow_catalogue.py",
+            "scripts/test_stock_timing_public_payload_fingerprint.py",
+            "scripts/test_stock_timing_workflow_provenance.py",
+            "scripts/audit_stock_timing_workflow_provenance.py",
+            "scripts/audit_stock_learning_evidence.py",
+            "scripts/audit_stock_forecast_attempt_coverage.py",
+            "scripts/audit_stock_timing_acceptance_guard.py",
+            "scripts/test_stock_timing_acceptance_guard.py",
+            "scripts/test_stock_timing_attempt_coverage.py",
+            "scripts/test_stock_timing_equal_issuance.py",
+            ".github/workflows/stock-forecast-independent-audit.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "33 * * * *"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "stock-independent-forecast-evidence",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "artifact/summary만",
+      "check_summary": "출처·원장·시점·학습·수용 조건 독립 감사",
+      "audit_note": "현재 PR 범위는 지정된 forecast 파일에 한정",
+      "jobs": [
+        {
+          "id": "independent-audit",
+          "if": "github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_timing_audit_handoff.py -v",
+            "python scripts/test_stock_timing_transaction_rollback.py -v",
+            "python scripts/test_stock_timing_workflow_provenance.py -v",
+            "python scripts/audit_stock_forecast_independent.py --self-test",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_band_audit.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_training_asof.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_ledger_status.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_public_identity.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_shadow_catalogue.py -v",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_public_payload_fingerprint.py -v",
+            "python scripts/audit_stock_timing_workflow_provenance.py \\",
+            "python scripts/audit_stock_forecast_independent.py",
+            "python scripts/audit_stock_learning_evidence.py --self-test",
+            "python scripts/audit_stock_learning_evidence.py",
+            "python scripts/audit_stock_forecast_attempt_coverage.py",
+            "PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v",
+            "python scripts/audit_stock_timing_acceptance_guard.py"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-forecasts.yml",
+      "name": "Stock Prospective Forecasts",
+      "source_sha256": "f1b18b8aa8a7b9d85139f7be9a95d0acc65b0d8b293bf55ed21709941ddde764",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main",
+            "research/bounded-autopilot-20261029"
+          ],
+          "paths": [
+            "scripts/stock_forecast*.py",
+            "scripts/stock_autopilot*.cjs",
+            "scripts/run_stock_forecasts.py",
+            "scripts/publish_stock_forecasts.py",
+            "scripts/verify_stock_forecast_public.py",
+            "scripts/test_stock_forecast*",
+            "scripts/test_stock_autopilot*",
+            "assets/stock-forecast*.js",
+            "stock-forecast.html",
+            ".github/workflows/stock-forecasts.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "7,17,27,37,47,57 0-7,13-22 * * 1-5"
+          },
+          {
+            "cron": "47 23 * * 0-4"
+          }
+        ],
+        "workflow_run": {
+          "workflows": [
+            "Update News Link Hub"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write",
+        "pages": "write"
+      },
+      "concurrency": {
+        "group": "stock-prospective-forecasts-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "forecast JSON/JSONL + HTML 태그 + Pages build",
+      "check_summary": "모델/학습/방향/복구 unit·JS·실제 브라우저·공개 검증",
+      "audit_note": "뉴스 완료 후 성공 guard·시간 gate 있음; 큐에 쌓일 수 있음",
+      "jobs": [
+        {
+          "id": "research",
+          "if": "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "${{ github.ref_name }}",
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [
+            "PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v",
+            "PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v",
+            "python scripts/audit_stock_forecast_independent.py --self-test",
+            "node --check assets/stock-forecast.js",
+            "node --check assets/stock-forecast-learning.js",
+            "node --check assets/stock-forecast-directions.js",
+            "node --check assets/stock-forecast-autopilot.js",
+            "node scripts/test_stock_forecast_ui.cjs",
+            "python scripts/test_stock_forecast_browser.py",
+            "python scripts/test_stock_forecast_learning_browser.py",
+            "python scripts/test_stock_forecast_directions_browser.py",
+            "python scripts/test_stock_autopilot_browser.py",
+            "python scripts/verify_stock_forecast_public.py"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish forecast and learning state atomically",
+              "if": "steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'",
+              "command": "python scripts/publish_stock_forecasts.py"
+            },
+            {
+              "step": "Request public build",
+              "if": "steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'",
+              "command": "gh api --method POST \"repos/${GITHUB_REPOSITORY}/pages/builds\" --silent"
+            },
+            {
+              "step": "Preserve public availability timestamps",
+              "if": "steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'",
+              "command": "python scripts/publish_stock_forecasts.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-investment-cases.yml",
+      "name": "Stock Investment Cases",
+      "source_sha256": "f527b56603045060061e011cedc4f39b360db774799aa5bb1be18d3e9af6bcef",
+      "events": {
+        "workflow_dispatch": "",
+        "workflow_run": {
+          "workflows": [
+            "Update Stock Opportunities"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "17 8,23 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/build_stock_investment_cases.py",
+            "scripts/test_stock_investment_cases.py",
+            "scripts/check_stock_investment_cases.py",
+            "scripts/update_market_context.py",
+            "scripts/run_market_context.py",
+            "scripts/test_market_context.py",
+            "scripts/build_stock_decision_guide.py",
+            "scripts/test_stock_decision_guide.py",
+            "scripts/install_stock_decision_guide.py",
+            "scripts/install_stock_investment_cases.py",
+            "scripts/publish_stock_investment_cases.py",
+            "assets/stock-investment-cases.js",
+            "assets/stock-decision-guide.js",
+            "assets/stock-decision-guide.css",
+            ".github/workflows/stock-investment-cases.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-investment-cases",
+        "cancel-in-progress": "true"
+      },
+      "publication_summary": "cases/green/macro/guide JSON + legacy UI",
+      "check_summary": "사례·macro·guide·strict unit·원문 검사",
+      "audit_note": "workflow_run 선행 실패 guard 없음; source→UI 두 번 push 가능",
+      "jobs": [
+        {
+          "id": "cases",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_investment_cases.py",
+            "python -m unittest scripts.test_market_context -v",
+            "python -m unittest scripts.test_stock_decision_guide -v",
+            "python scripts/test_stock_strict_green.py",
+            "node --check assets/stock-investment-cases.js",
+            "node --check assets/stock-decision-guide.js",
+            "node --check assets/stock-green-review.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish source-bound opinions and proof",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'research: publish strictly gated investment evidence and macro context' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json stock-market-context.json stock-decision-guide.json stock-decision-guide-summary.json"
+            },
+            {
+              "step": "Install integrated verdict and decision-guide view",
+              "if": null,
+              "command": "python scripts/publish_stock_investment_cases.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-reading-depth.yml",
+      "name": "Stock Three-Year Reading",
+      "source_sha256": "05dade15264fb534d2e35f2b44a1a0c5f35a44e2d2eff08bb0370da8f369168f",
+      "events": {
+        "workflow_dispatch": "",
+        "workflow_run": {
+          "workflows": [
+            "Stock Investment Cases"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/stock_reading_depth.py",
+            "scripts/test_stock_reading_depth.py",
+            ".github/workflows/stock-reading-depth.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-reading-depth",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "3개년 reading JSON",
+      "check_summary": "기간·평균자본 ROE unit",
+      "audit_note": "workflow_run 선행 실패 guard 없음",
+      "jobs": [
+        {
+          "id": "reading",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_reading_depth.py"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish reading snapshot only",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'research: publish three-year statements with shareholder-scope ROE' stock-reading-depth.json stock-reading-depth-summary.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-recommendations.yml",
+      "name": "Stock Recommendations",
+      "source_sha256": "7c1e4c7799db04e6d183cc9047306ec34b4fbb6a0a0b31e38518f66eaaf1ba05",
+      "events": {
+        "workflow_dispatch": "",
+        "workflow_run": {
+          "workflows": [
+            "Stock Three-Year Reading"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update_stock_event_risks.py",
+            "stock-event-risks-seed.json",
+            "scripts/build_stock_recommendations.py",
+            "scripts/test_stock_recommendations.py",
+            "assets/stock-recommendations.js",
+            ".github/workflows/stock-recommendations.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-recommendations",
+        "cancel-in-progress": "true"
+      },
+      "publication_summary": "이벤트·추천 JSON",
+      "check_summary": "추천 정책 unit·JS syntax",
+      "audit_note": "성공 guard 있음; 별도 PR 경로 없음",
+      "jobs": [
+        {
+          "id": "recommend",
+          "if": "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python -m unittest scripts.test_stock_recommendations -v",
+            "node --check assets/stock-recommendations.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish recommendation snapshots",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'research: publish event-aware ranked investment recommendations' stock-event-risks.json stock-recommendations.json stock-recommendations-summary.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/stock-strict-green.yml",
+      "name": "Strict Green Review",
+      "source_sha256": "ce497a40fa4975c487ca384eff05dd87bd3551344fe95501802e1ff56c865b64",
+      "events": {
+        "workflow_dispatch": "",
+        "workflow_run": {
+          "workflows": [
+            "Stock Investment Cases",
+            "Stock Three-Year Reading"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/stock_strict_green.py",
+            "scripts/test_stock_strict_green.py",
+            "scripts/install_stock_strict_green.py",
+            "assets/stock-green-review.js",
+            "stock-research-review-records.json",
+            ".github/workflows/stock-strict-green.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-strict-green-review",
+        "cancel-in-progress": "true"
+      },
+      "publication_summary": "cases/green JSON + legacy UI",
+      "check_summary": "누락·오래됨·충돌·unsafe-positive unit",
+      "audit_note": "성공 guard 있음; cases/reading 양쪽 완료로 중복 가능",
+      "jobs": [
+        {
+          "id": "review",
+          "if": "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_strict_green.py"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish source-bound strict opinions and audit trail",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'audit: require all strict due-diligence checks before green' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json"
+            },
+            {
+              "step": "Install gated labels and plain-language explanations",
+              "if": null,
+              "command": "python scripts/publish_stock_investment_cases.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-stock-decisions-ui.yml",
+      "name": "Test Stock Decision UI",
+      "source_sha256": "9ac350b277fe4cc4eeb6acb138b445ba66c28306f3b9ce86d141f686a3ddc0e4",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/test_stock_decision_browser.py",
+            ".github/workflows/test-stock-decisions-ui.yml",
+            "stock-value-radar.html",
+            "assets/stock-radar-v8.js",
+            "assets/stock-radar-v8.css",
+            "assets/stock-radar-v9.js",
+            "assets/stock-radar-neutral.js",
+            "assets/stock-radar-neutral.css"
+          ]
+        },
+        "workflow_run": {
+          "workflows": [
+            "Update Stock Decisions"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "stock-decision-ui-qa",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "artifact만",
+      "check_summary": "decision 실제 브라우저·레이아웃·오류 상태",
+      "audit_note": "구형 neutral selector가 현재 flow 페이지와 불일치; 실행 확인 별도",
+      "jobs": [
+        {
+          "id": "browser",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python scripts/test_stock_decision_browser.py"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-stock-neutral-ui.yml",
+      "name": "Verify Neutral Production Radar",
+      "source_sha256": "edca1ae3c6c06c1eaf2a43070772da2d986d4c174b259308e1d9ce6fa7bfde51",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main",
+            "design/neutral-production-20261030"
+          ],
+          "paths": [
+            ".github/workflows/test-stock-neutral-ui.yml",
+            "assets/stock-radar-neutral.*",
+            "stock-value-radar.html",
+            "assets/stock-radar-v8.html",
+            "assets/stock-radar-v8.js",
+            "scripts/install_stock_radar_neutral.py",
+            "scripts/test_stock_radar_neutral.py",
+            "scripts/build_stock_radar_chart_cache.py"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "41 */2 * * 1-5"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write",
+        "pages": "write"
+      },
+      "concurrency": {
+        "group": "neutral-radar-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "schedule: chart JSON + Pages build; design: UI",
+      "check_summary": "installer idempotency·데이터 hash·브라우저·공개 hash",
+      "audit_note": "검사 job은 구형 neutral UI 주입; schedule은 현행 차트 갱신",
+      "jobs": [
+        {
+          "id": "verify",
+          "if": "github.event_name != 'schedule'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "${{ github.ref_name }}",
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [
+            "node --check assets/stock-radar-neutral.js",
+            "node --check assets/stock-radar-v8.js",
+            "python scripts/test_stock_radar_neutral.py",
+            "python scripts/test_stock_radar_neutral.py --url 'https://ohoredingdong.github.io/Notion/stock-value-radar.html' --public"
+          ],
+          "publication_commands": [
+            {
+              "step": "Save checked generated UI on design branch only",
+              "if": "github.ref_name == 'design/neutral-production-20261030'",
+              "command": "git add stock-value-radar.html assets/stock-radar-v8.html assets/stock-radar-v8.js stock-radar-chart-data.json"
+            },
+            {
+              "step": "Save checked generated UI on design branch only",
+              "if": "github.ref_name == 'design/neutral-production-20261030'",
+              "command": "git push origin HEAD:design/neutral-production-20261030"
+            }
+          ]
+        },
+        {
+          "id": "display-cache",
+          "if": "github.event_name == 'schedule'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main",
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Update only display closing-price cache",
+              "if": null,
+              "command": "git reset --hard origin/main"
+            },
+            {
+              "step": "Update only display closing-price cache",
+              "if": null,
+              "command": "git add stock-radar-chart-data.json"
+            },
+            {
+              "step": "Update only display closing-price cache",
+              "if": null,
+              "command": "if git push origin HEAD:main; then exit 0; fi"
+            },
+            {
+              "step": "Request Pages build",
+              "if": null,
+              "command": "gh api --method POST \"repos/${GITHUB_REPOSITORY}/pages/builds\" --silent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-stock-radar-canonical.yml",
+      "name": "Verify Canonical Stock Radar Layout",
+      "source_sha256": "a50250048d1b707e5cf1021f1bda84b7b5b5eab955fc3d1e010833a5b9f4baa1",
+      "events": {
+        "pull_request": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-radar-dashboard.html",
+            "stock-value-radar.html",
+            "assets/stock-radar-flow-v2.js",
+            "assets/stock-radar-clean-bridge.js",
+            "scripts/test_stock_radar_canonical_browser.py",
+            ".github/workflows/test-stock-radar-canonical.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-radar-dashboard.html",
+            "stock-value-radar.html",
+            "scripts/test_stock_radar_canonical_browser.py",
+            ".github/workflows/test-stock-radar-canonical.yml"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "없음",
+      "check_summary": "두 진입 URL·canonical 패널 경계 실제 브라우저",
+      "audit_note": "PR 감시 있음; push paths에는 JS 2개가 누락",
+      "jobs": [
+        {
+          "id": "canonical-visual-check",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python scripts/test_stock_radar_canonical_browser.py"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-stock-radar-integration.yml",
+      "name": "Test Stock Radar Integrated UI",
+      "source_sha256": "8497429aa651df765a76da82df6985a4d9259c156b4b53438395c8d7ce22e845",
+      "events": {
+        "workflow_dispatch": "",
+        "pull_request": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-radar-dashboard.html",
+            "stock-event-outlook.json",
+            "assets/stock-radar-clean-bridge.js",
+            "assets/stock-radar-flow-v2.js",
+            "scripts/build_stock_event_outlook.py",
+            "stock-event-calendar-seed.json",
+            ".github/workflows/test-stock-radar-integration.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main",
+            "fix/radar-feature-audit-20261030"
+          ],
+          "paths": [
+            "stock-value-radar.html",
+            "stock-radar-dashboard.html",
+            "stock-value-radar-advanced.html",
+            "assets/stock-radar-clean-bridge.js",
+            "assets/stock-radar-flow-v2.js",
+            "stock-korea-fear-greed.json",
+            "scripts/update_korea_fear_greed.py",
+            "scripts/test_stock_radar_flow_browser.py",
+            "scripts/publish_stock_opportunities.py",
+            "scripts/publish_stock_market_groups.py",
+            "scripts/publish_stock_investment_cases.py",
+            "scripts/install_stock_radar_v8.py",
+            "scripts/install_stock_decision_ui.py",
+            "scripts/install_stock_audit_ui.py",
+            "scripts/test_stock_radar_publish_protection.py",
+            "scripts/audit_stock_radar_accuracy.py",
+            "stock-radar-accuracy-audit.json",
+            ".github/workflows/audit-stock-radar-accuracy.yml",
+            "assets/stock-radar-neutral.js",
+            "assets/stock-radar-neutral.css",
+            "assets/stock-radar-v8.js",
+            "assets/stock-radar-v8.css",
+            "assets/stock-radar-v9.js",
+            "assets/stock-forecast.js",
+            "assets/stock-recommendations.js",
+            "assets/stock-investment-cases.js",
+            "tests/stock-entry-browser.cjs",
+            "scripts/test_stock_decision_browser.py",
+            "scripts/test_market_context.py",
+            "scripts/update_market_context.py",
+            ".github/workflows/test-stock-radar-integration.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "artifact만",
+      "check_summary": "보호·정확도·macro·entry·decision·flow 브라우저",
+      "audit_note": "PR paths가 push보다 좁음; flow/decision 구형 기대값 존재",
+      "jobs": [
+        {
+          "id": "integrated-browser",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "node --check assets/stock-radar-neutral.js",
+            "node --check assets/stock-radar-clean-bridge.js",
+            "node --check assets/stock-radar-flow-v2.js",
+            "node --check assets/stock-radar-flow-v2.js",
+            "python -m py_compile scripts/test_stock_radar_flow_browser.py",
+            "python scripts/test_stock_radar_publish_protection.py",
+            "python -m py_compile scripts/audit_stock_radar_accuracy.py",
+            "python scripts/audit_stock_radar_accuracy.py --check",
+            "node --check assets/stock-recommendations.js",
+            "node --check assets/stock-investment-cases.js",
+            "node --check assets/stock-forecast.js",
+            "python -m py_compile scripts/test_stock_decision_browser.py",
+            "python -m unittest scripts.test_market_context -v",
+            "python scripts/test_stock_decision_browser.py",
+            "python scripts/test_stock_radar_flow_browser.py"
+          ],
+          "publication_commands": [
+            {
+              "step": "Syntax checks",
+              "if": null,
+              "command": "python scripts/test_stock_radar_publish_protection.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-stock-radar-ui-preview.yml",
+      "name": "Verify Comparison Desk UI Preview",
+      "source_sha256": "2fc0633c783c0dc12ec936fa519d5ab0bd12647e9e24f12d5ed640d256847a96",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main",
+            "design/comparison-desk-20261030"
+          ],
+          "paths": [
+            "stock-radar-ui-preview.html",
+            "assets/stock-radar-desk*",
+            "assets/stock-radar-compare.css",
+            "scripts/install_stock_radar_desk_preview.py",
+            "scripts/test_stock_radar_compare_preview.py",
+            ".github/workflows/test-stock-radar-ui-preview.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "radar-compare-preview-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "design branch만 preview HTML",
+      "check_summary": "별도 preview 생성/idempotency·브라우저·공개 hash",
+      "audit_note": "의도적 demo preview; 현행 운영 radar 검사 대체 불가",
+      "jobs": [
+        {
+          "id": "preview",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "${{ github.ref_name }}",
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [
+            "node --check /tmp/radar-desk-preview.js",
+            "python scripts/test_stock_radar_compare_preview.py",
+            "python scripts/test_stock_radar_compare_preview.py --url 'https://ohoredingdong.github.io/Notion/stock-radar-ui-preview.html'"
+          ],
+          "publication_commands": [
+            {
+              "step": "Save generated preview on design branch only",
+              "if": "github.ref_name == 'design/comparison-desk-20261030'",
+              "command": "git add stock-radar-ui-preview.html"
+            },
+            {
+              "step": "Save generated preview on design branch only",
+              "if": "github.ref_name == 'design/comparison-desk-20261030'",
+              "command": "git push origin HEAD:design/comparison-desk-20261030"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/test-toss-live.yml",
+      "name": "Test Toss Read-Only Live Adapter",
+      "source_sha256": "a0dc32e1683e39d2f703b25b10ac1c16221075ead431ea5f09c9518656c1accd",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "services/toss-live/**",
+            "toss-live-radar.html",
+            "toss-live-config.json",
+            ".github/workflows/test-toss-live.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "없음",
+      "check_summary": "synthetic frame adapter unit·Python/JS compile",
+      "audit_note": "프레임 fixture는 unit용; 실제 Toss 접속 성공 증거 아님",
+      "jobs": [
+        {
+          "id": "tests",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python -m unittest discover -s services/toss-live -p 'test_*.py' -v",
+            "node --check /tmp/toss-live-ui.js"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-bond-yields.yml",
+      "name": "Update Bond Yields",
+      "source_sha256": "5b3879f24b074e4b037f0575b5bd549b83147b26169d7d92e2a02daadd161888",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "13,43 * * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-bond-yields.py",
+            ".github/workflows/update-bond-yields.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-bond-yields-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "bond JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "수집기 단위 회귀가 Actions에 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update bond yields\" bond-yields-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-commodities.yml",
+      "name": "Update commodities data",
+      "source_sha256": "85cfaa94062f67876de8bb2670b18d29e30b0cddbd35b44221725fad59f44bb3",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "17 * * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "commodities-matrix.html",
+            "scripts/update_commodities.py",
+            ".github/workflows/update-commodities.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-commodities-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "commodities JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "수집기 단위 회귀가 Actions에 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update commodities\" commodities-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-cryptocurrency.yml",
+      "name": "Update Cryptocurrency Dashboard",
+      "source_sha256": "8e56b35ba9bb467423400cac059d17c4bd51d0072151c12124008b90420cfe75",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "11,41 * * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-bitcoin-korea-premium.py",
+            "scripts/market_data_utils.py",
+            "scripts/update-cryptocurrency.py",
+            ".github/workflows/update-cryptocurrency.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-cryptocurrency-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "crypto·Korea-premium JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "공통 parser 변경으로 여러 위젯 영향; PR 경로 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update cryptocurrency and Korea premium\" cryptocurrency-data.json bitcoin-korea-premium-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-exchange-rates.yml",
+      "name": "Update Exchange Rates",
+      "source_sha256": "61201a999a4aa1acc72fb6d76ab6e41a51f150cb833faabb6b7c237bc3271774",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "37 14,15,16 * * 1-5"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-exchange-rates.py",
+            ".github/workflows/update-exchange-rates.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-exchange-rates-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "FX JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "공통 publisher 변경은 자체 path trigger에 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update exchange rates\" exchange-rates-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-fear-greed.yml",
+      "name": "Update Market Sentiment Data",
+      "source_sha256": "66dfd116924473f6e9970a4f3dcadb28d9289d0ad1c7465af3d1e3da02480807",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "17 * * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "fear-greed-dashboard-v3.html",
+            "market-mood-v3.html",
+            "scripts/update_fear_greed.py",
+            "scripts/market_data_utils.py",
+            ".github/workflows/update-fear-greed.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-fear-greed-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "US/Korea/crypto sentiment JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "Korea radar 전용 snapshot과 다른 데이터·주기",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update market sentiment\" fear-greed-data.json korea-market-sentiment.json crypto-fear-greed-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-korea-fear-greed.yml",
+      "name": "Update Korea Fear Greed",
+      "source_sha256": "f2f6dc808d419a5f6bdfb37713f235bbaae5103e870cc1673fdea0bc9867d559",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update_korea_fear_greed.py",
+            ".github/workflows/update-korea-fear-greed.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "55 6 * * 1-5"
+          },
+          {
+            "cron": "25 9 * * 1-5"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-korean-sentiment-snapshot",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "radar Korea sentiment JSON",
+      "check_summary": "Python compile·공식 API 수집",
+      "audit_note": "main rebase push; 일반 sentiment와 함부로 통합 금지",
+      "jobs": [
+        {
+          "id": "snapshot",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish Korea reading only",
+              "if": null,
+              "command": "git add -- stock-korea-fear-greed.json"
+            },
+            {
+              "step": "Publish Korea reading only",
+              "if": null,
+              "command": "git pull --rebase origin main && git push origin HEAD:main && exit 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-market-events.yml",
+      "name": "Update Market Events",
+      "source_sha256": "d70fbe73b3aac8fda4aba9fd1e5b04bd74973dc3340132ac49e8a252c3f6af74",
+      "events": {
+        "workflow_dispatch": "",
+        "pull_request": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/build_stock_event_outlook.py",
+            "scripts/test_stock_event_outlook.py",
+            "scripts/test_stock_event_ui.cjs",
+            "stock-event-calendar-seed.json",
+            ".github/workflows/update-market-events.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-market-events.py",
+            "scripts/build_stock_event_outlook.py",
+            "scripts/test_stock_event_outlook.py",
+            "stock-event-calendar-seed.json",
+            "scripts/ensure-bok-market-events.py",
+            ".github/workflows/update-market-events.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "17,47 * * * *"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-market-events-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "market-events/outlook JSON",
+      "check_summary": "이벤트 시점·가짜 매매신호 unit·UI 검사",
+      "audit_note": "PR은 네트워크 수집·publish 제외; 권한은 workflow write",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python -m unittest discover -s scripts -p \"test_stock_event_outlook.py\" -v",
+            "node scripts/test_stock_event_ui.cjs"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": "github.ref == 'refs/heads/main'",
+              "command": "python scripts/publish_widget_data.py --message \"data: update market events\" market-events-data.json stock-event-outlook.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-mortgage-rates.yml",
+      "name": "Update Mortgage Reference Rates",
+      "source_sha256": "bea61e92bb77a2e7ad50ef7714de71122d76220a327e88fb9e88e893f4a9d42f",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "30 7 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update_mortgage_rates.py",
+            "scripts/publish_widget_data.py",
+            ".github/workflows/update-mortgage-rates.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "mortgage-rates-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "mortgage JSON + 수집 health",
+      "check_summary": "공식 발표 수집·JSON publisher",
+      "audit_note": "수집 실패 후 health 기록, 마지막 exit 1로 실패 유지",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish rates and source health",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'data: update official mortgage reference rates' mortgage-rates-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-news-link-hub.yml",
+      "name": "Update News Link Hub",
+      "source_sha256": "9602dc457a20ce882c2e1cbbc97f0ef0614d9fd7ded7a6b557994ac4dbfee4a2",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-news-link-hub.py",
+            ".github/workflows/update-news-link-hub.yml"
+          ]
+        },
+        "schedule": [
+          {
+            "cron": "7,22,37,52 * * * *"
+          }
+        ]
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-news-link-hub-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "news JSON",
+      "check_summary": "RSS 수집·JSON publisher",
+      "audit_note": "15분 주기; forecast workflow_run의 기점",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update news link hub\" news-link-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-real-estate-pulse.yml",
+      "name": "Update Real Estate Pulse",
+      "source_sha256": "152a81feabadaa052c9e04c18c465e3233b4faef56dac5939c52f4ee4736e977",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "20 7 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main",
+            "fix/real-estate-pulse-post-merger-auto"
+          ],
+          "paths": [
+            "scripts/update_real_estate_pulse.py",
+            "scripts/run_real_estate_pulse_update.py",
+            ".github/workflows/update-real-estate-pulse.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "real-estate-pulse-update-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "REB dataset/health JSON",
+      "check_summary": "공식 REB 수집·JSON publisher",
+      "audit_note": "실패 후 health 기록·exit 1; 과거 fix branch에서도 main publisher 가능",
+      "jobs": [
+        {
+          "id": "refresh",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "fetch-depth": "0"
+            }
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish verified dataset and collection health",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'data: update verified REB weekly statistics' real-estate-pulse-data.json real-estate-pulse-health.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-stock-decisions.yml",
+      "name": "Update Stock Decisions",
+      "source_sha256": "50416e4bc7a568bd30182a69cf17f2cb3ffcc6805e1affcf0dc5ef84ba6dfe36",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "47 7,22 * * *"
+          }
+        ],
+        "workflow_run": {
+          "workflows": [
+            "Verify Stock Official Filings"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update_stock_decisions.py",
+            "scripts/refresh_stock_decisions.py",
+            "scripts/test_stock_decisions.py",
+            "scripts/install_stock_decision_ui.py",
+            "assets/stock-decision-v7.js",
+            ".github/workflows/update-stock-decisions.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-decision-v7",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "decision JSON + legacy stock-decision-v7.js",
+      "check_summary": "숫자·시장시계 unit·JS syntax",
+      "audit_note": "workflow_run 선행 실패 guard 없음",
+      "jobs": [
+        {
+          "id": "refresh",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python scripts/test_stock_decisions.py",
+            "node --check assets/stock-decision-v7.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish only decision outputs; do not alter raw financial values",
+              "if": null,
+              "command": "git add stock-decision-data.json stock-decision-run-summary.json stock-decision-tests.json assets/stock-decision-v7.js"
+            },
+            {
+              "step": "Publish only decision outputs; do not alter raw financial values",
+              "if": null,
+              "command": "git pull --rebase origin main && git push && exit 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-stock-market-groups.yml",
+      "name": "Update Stock Market Groups",
+      "source_sha256": "3c2a60b37d6ee6f020282f236af3df3c8e52de9528b241fc5b43b791d1ab9682",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "19 8,23 * * *"
+          }
+        ],
+        "workflow_run": {
+          "workflows": [
+            "Update Stock Opportunities"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update_stock_market_groups.py",
+            "scripts/test_stock_market_groups.py",
+            "scripts/install_stock_market_groups.py",
+            "scripts/publish_stock_market_groups.py",
+            "assets/stock-market-groups.js",
+            ".github/workflows/update-stock-market-groups.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-market-groups",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "classification JSON + legacy UI/installer",
+      "check_summary": "상장·소속 unit·JS syntax",
+      "audit_note": "성공 guard 있음; 데이터 외 코드도 생성",
+      "jobs": [
+        {
+          "id": "classify",
+          "if": "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_market_groups.py",
+            "node --check assets/stock-market-groups.js",
+            "node --check assets/stock-radar-v8.js",
+            "node --check assets/stock-radar-v9.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish classification and compatible UI on latest main",
+              "if": null,
+              "command": "python scripts/publish_stock_market_groups.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-stock-opportunities.yml",
+      "name": "Update Stock Opportunities",
+      "source_sha256": "5c5615e2142220d0cf5a25522cb3cc1997baf964fd3531b223416bac053b90b8",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "57 7,22 * * *"
+          }
+        ],
+        "workflow_run": {
+          "workflows": [
+            "Verify Stock Official Filings"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-opportunity-universe.json",
+            "scripts/update_stock_opportunities.py",
+            "scripts/stock_fundamental_extensions.py",
+            "scripts/test_stock_opportunities.py",
+            "scripts/finalize_stock_opportunities.py",
+            "scripts/test_stock_opportunity_filings.py",
+            "scripts/validate_stock_opportunity_dates.py",
+            "scripts/test_stock_opportunity_dates.py",
+            "scripts/refine_stock_radar_v8.py",
+            "scripts/publish_stock_opportunities.py",
+            "scripts/install_stock_radar_v8.py",
+            "scripts/discover_stock_candidates_v9.py",
+            "scripts/run_stock_research_v9.py",
+            "scripts/curate_stock_decisions_v9.py",
+            "scripts/test_stock_discovery_v9.py",
+            "scripts/apply_stock_radar_v9.py",
+            "assets/stock-radar-v8.*",
+            "assets/stock-radar-v9.js",
+            ".github/workflows/update-stock-opportunities.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "stock-opportunity-v8",
+        "cancel-in-progress": "true"
+      },
+      "publication_summary": "opportunity JSON + legacy UI/installer",
+      "check_summary": "위험·공시·날짜·발굴 unit·JS syntax",
+      "audit_note": "workflow_run 선행 실패 guard 없음; cancel-in-progress=true",
+      "jobs": [
+        {
+          "id": "refresh",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {
+              "ref": "main"
+            }
+          ],
+          "check_commands": [
+            "python scripts/test_stock_opportunities.py",
+            "python scripts/test_stock_opportunity_filings.py",
+            "python scripts/test_stock_opportunity_dates.py",
+            "python scripts/test_stock_discovery_v9.py",
+            "node --check assets/stock-radar-v8.js",
+            "node --check assets/stock-radar-v9.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish current snapshot safely",
+              "if": null,
+              "command": "python scripts/publish_stock_opportunities.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-stock-value-radar.yml",
+      "name": "Update Stock Value Radar",
+      "source_sha256": "77caf259895d3a7dd926d5fe8714add35f70ec62b1a9132c5f2adc72c1f22d68",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "15 3,13 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-stock-value-radar.py",
+            "scripts/build-stock-investment-intelligence.py",
+            "stock-official-verifications.json",
+            ".github/workflows/update-stock-value-radar.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-stock-value-radar",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "raw/intelligence/history JSON + report MD",
+      "check_summary": "output 회사 수·quality/thesis 검사",
+      "audit_note": "main rebase 직접 push; 기존 금융 갱신의 기점",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Commit results with rebase retry",
+              "if": null,
+              "command": "git add stock-value-radar-data.json stock-investment-intelligence.json stock-investment-history.json stock-investment-report.md"
+            },
+            {
+              "step": "Commit results with rebase retry",
+              "if": null,
+              "command": "git pull --rebase origin main && git push && exit 0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-stocks-dashboard.yml",
+      "name": "Update Stocks Dashboard",
+      "source_sha256": "b0da7996eeb0b152270a6f29e6b1987c7f14b8d4a1a46c05ea0a1f898535c36e",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "7,37 * * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-market-radar.py",
+            "scripts/market_data_utils.py",
+            "scripts/update-stocks-dashboard.py",
+            ".github/workflows/update-stocks-dashboard.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-stocks-dashboard-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "stocks·market-radar JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "공통 parser 영향; PR 경로 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update stocks and market radar\" stocks-dashboard-data.json market-radar-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/update-supply-chain.yml",
+      "name": "Update Supply Chain Pulse",
+      "source_sha256": "8048aeb82ab73c14ebe7c9fd68ae60be088d88a3f112ae21a99a76980aa3ace4",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "17 2 * * *"
+          }
+        ],
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/update-supply-chain.py",
+            ".github/workflows/update-supply-chain.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write"
+      },
+      "concurrency": {
+        "group": "update-supply-chain-${{ github.ref }}",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "supply-chain JSON",
+      "check_summary": "수집기 실행·JSON 파싱 publisher",
+      "audit_note": "수집기 단위 회귀가 Actions에 없음",
+      "jobs": [
+        {
+          "id": "update",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": [
+            {
+              "step": "Publish data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message \"data: update supply chain\" supply-chain-data.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/validate-real-estate-pulse.yml",
+      "name": "Validate Real Estate Pulse",
+      "source_sha256": "4dc2e7409f4089919de452f253345a829591347c36976f22239204fd989ee17e",
+      "events": {
+        "pull_request": {
+          "paths": [
+            "real-estate-pulse-data.json",
+            ".github/workflows/validate-real-estate-pulse.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "없음",
+      "check_summary": "16지역/32수치·공식출처·SHA256·BOK 출처",
+      "audit_note": "PR은 dataset/workflow 두 경로만 감시",
+      "jobs": [
+        {
+          "id": "validate",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/verify-investment-embeds.yml",
+      "name": "Verify investment widget embeds",
+      "source_sha256": "f0cb16d051020a793cb4bfa61881f85027f2b49263cd9c48166c18165f289098",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "paths": [
+            "stock-paper-investing.html",
+            "property-paper-investing.html",
+            "assets/investment-labs-20261016/**",
+            "assets/investment-labs-20261019/**",
+            ".github/workflows/verify-investment-embeds.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "investment-embeds-verify",
+        "cancel-in-progress": "true"
+      },
+      "publication_summary": "없음",
+      "check_summary": "공개 9개 파일 고정 hash·문법·iframe header",
+      "audit_note": "checkout 없는 live 검사; 변경 PR 원본을 검증하지 않음",
+      "jobs": [
+        {
+          "id": "verify",
+          "if": null,
+          "permissions": null,
+          "checkout": [],
+          "check_commands": [
+            "subprocess.run(['node', '--check', str(target)], check=True)"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/verify-stock-detail-v6.yml",
+      "name": "Verify Stock Detail V6",
+      "source_sha256": "bacf2708a7dd689b283cd8f22c62664eac382fa5b2a4e826426753f9786e358e",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "assets/stock-radar-flow-v2.js",
+            "stock-value-radar.html",
+            "scripts/test_stock_detail_v6.py",
+            "scripts/test_stock_evidence_review.cjs",
+            "scripts/test_stock_forecast_wiring.cjs",
+            ".github/workflows/verify-stock-detail-v6.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "artifact만",
+      "check_summary": "JS syntax·evidence/forecast wiring·detail 브라우저",
+      "audit_note": "main push 전용; PR 검사 없음",
+      "jobs": [
+        {
+          "id": "detail-browser",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "node --check assets/stock-radar-clean-bridge.js",
+            "node --check assets/stock-radar-flow-v2.js",
+            "node scripts/test_stock_evidence_review.cjs",
+            "node scripts/test_stock_forecast_wiring.cjs",
+            "python scripts/test_stock_detail_v6.py"
+          ],
+          "publication_commands": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/verify-stock-official.yml",
+      "name": "Verify Stock Official Filings",
+      "source_sha256": "5d4bc8b8d58b65e2ca92b66a5a225579fda65cbbbca5d47c604580d5ae7672d4",
+      "events": {
+        "workflow_dispatch": "",
+        "schedule": [
+          {
+            "cron": "47 3,13 * * *"
+          }
+        ],
+        "workflow_run": {
+          "workflows": [
+            "Update Stock Value Radar"
+          ],
+          "types": [
+            "completed"
+          ],
+          "branches": [
+            "main"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "scripts/stock_official_audit.py",
+            "scripts/run_stock_audit.py",
+            "scripts/stock_audit_adapters.py",
+            "scripts/test_stock_official_audit.py",
+            "scripts/test_stock_audit_adapters.py",
+            "scripts/install_stock_audit_ui.py",
+            "assets/stock-official-audit-v5.js",
+            "stock-verification-sources.json",
+            ".github/workflows/verify-stock-official.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "write",
+        "issues": "write"
+      },
+      "concurrency": {
+        "group": "stock-official-audit",
+        "cancel-in-progress": "false"
+      },
+      "publication_summary": "audit/history/test JSON + 경고 이슈",
+      "check_summary": "기간·법인·단위·정의 unit·원문 대조",
+      "audit_note": "workflow_run 선행 실패 guard 없음",
+      "jobs": [
+        {
+          "id": "verify",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "python scripts/test_stock_official_audit.py",
+            "if [ -f scripts/test_stock_audit_adapters.py ]; then python scripts/test_stock_audit_adapters.py; fi",
+            "python scripts/install_stock_audit_ui.py",
+            "node --check assets/stock-official-audit-v5.js"
+          ],
+          "publication_commands": [
+            {
+              "step": "Publish audit data on current main",
+              "if": null,
+              "command": "python scripts/publish_widget_data.py --message 'audit: publish current official comparisons' stock-official-audit.json stock-official-audit-history.json stock-audit-unit-tests.json stock-audit-adapter-tests.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/verify-stock-value-radar.yml",
+      "name": "Verify Stock Value Radar",
+      "source_sha256": "d6cbf83dbcc66c666ec99877d33e9697a15f53fb0c63a28744cf92dc12e3a84d",
+      "events": {
+        "workflow_dispatch": "",
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "stock-value-radar.html",
+            "assets/stock-radar-clean-bridge.js",
+            "assets/stock-radar-flow-v2.js",
+            "scripts/update-news-link-hub.py",
+            "scripts/build-stock-investment-intelligence.py",
+            "scripts/monitor-stock-value-radar.py",
+            "scripts/update-stock-value-radar.py",
+            ".github/workflows/verify-stock-value-radar.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": null,
+      "publication_summary": "없음",
+      "check_summary": "부정값·UI 구조·출처/시각·JS syntax",
+      "audit_note": "main push 전용; 실제 브라우저 아님",
+      "jobs": [
+        {
+          "id": "verify",
+          "if": null,
+          "permissions": null,
+          "checkout": [
+            {}
+          ],
+          "check_commands": [
+            "node --check assets/stock-radar-clean-bridge.js",
+            "node --check assets/stock-radar-flow-v2.js"
+          ],
+          "publication_commands": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+name: Change-aware validation
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'codex/**', 'feat/**', 'fix/**']
+  workflow_dispatch:
+  # GITHUB_TOKEN data pushes do not emit ordinary push workflows. This observes
+  # completed writers without changing their schedules, permissions or publishes.
+  workflow_run:
+    workflows:
+      - "Audit Stock Radar Accuracy"
+      - "Monitor Stock Radar Health"
+      - "Stock Entry Plan"
+      - "Stock Prospective Forecasts"
+      - "Stock Investment Cases"
+      - "Stock Three-Year Reading"
+      - "Stock Recommendations"
+      - "Strict Green Review"
+      - "Verify Neutral Production Radar"
+      - "Verify Comparison Desk UI Preview"
+      - "Update Bond Yields"
+      - "Update commodities data"
+      - "Update Cryptocurrency Dashboard"
+      - "Update Exchange Rates"
+      - "Update Market Sentiment Data"
+      - "Update Korea Fear Greed"
+      - "Update Market Events"
+      - "Update Mortgage Reference Rates"
+      - "Update News Link Hub"
+      - "Update Real Estate Pulse"
+      - "Update Stock Decisions"
+      - "Update Stock Market Groups"
+      - "Update Stock Opportunities"
+      - "Update Stock Value Radar"
+      - "Update Stocks Dashboard"
+      - "Update Supply Chain Pulse"
+      - "Verify Stock Official Filings"
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  # Data writers may finish frequently. Keep one running data check and only
+  # the latest pending observation instead of repeatedly cancelling all progress.
+  group: change-validation-${{ github.event_name == 'workflow_run' && 'data-main' || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_run' }}
+jobs:
+  verify:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
+    name: Related checks and data-preservation policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            requirements-dev.lock
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install pinned development tools
+        run: |
+          python -m pip install -r requirements-dev.txt
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m playwright install --with-deps chromium
+      - name: Verify automation and safe release policy
+        run: |
+          python scripts/check_workflow_policy.py --output /tmp/notion-validation/workflow-policy.json
+          python -m unittest discover -s tests -p 'test_workflow_policy.py' -v
+          python -m unittest discover -s tests -p 'test_release_gate.py' -v
+      - name: Resolve immutable comparison commits
+        id: comparison
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PRODUCER_HEAD: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          python - <<'PY'
+          import os, re, subprocess
+          event = os.environ['EVENT_NAME']
+          head = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          base = os.environ.get('PR_BASE') if event == 'pull_request' else os.environ.get('PUSH_BEFORE') if event == 'push' else os.environ.get('PRODUCER_HEAD') if event == 'workflow_run' else ''
+          if not base or base == '0' * 40 or base == head:
+              base = subprocess.check_output(['git','rev-parse',head+'^'],text=True).strip()
+          if not re.fullmatch('[a-f0-9]{40}',base):
+              raise SystemExit('Invalid comparison commit')
+          subprocess.run(['git','cat-file','-e',base+'^{commit}'],check=True)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+              output.write(f'base={base}\nhead={head}\n')
+          print(f'Checking exact commit {head} against {base}; event={event}')
+          PY
+      - name: Run related checks on an isolated snapshot
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          HEAD_SHA: ${{ steps.comparison.outputs.head }}
+        run: |
+          python scripts/dev_check.py --base "$BASE_SHA" --head "$HEAD_SHA" --run --output /tmp/notion-validation/related/report.json
+      - name: Check source tree stayed untouched
+        if: always()
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: development-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/notion-validation/
+          if-no-files-found: error
+          retention-days: 14

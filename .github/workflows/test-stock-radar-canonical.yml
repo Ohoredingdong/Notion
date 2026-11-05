@@ -34,8 +34,12 @@ jobs:
         run: |
           pip install 'playwright==1.56.0'
           python -m playwright install --with-deps chromium
-      - name: Serve canonical pages
-        run: |
-          python -m http.server 8765 >/tmp/radar-canonical.log 2>&1 &
-      - name: Confirm duplicate URL redirects and panels stay within bounds
-        run: python scripts/test_stock_radar_canonical_browser.py
+      - name: Verify current layout, interactions and data preservation
+        run: python scripts/test_stock_radar_canonical_browser.py --output /tmp/radar-canonical
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canonical-radar-browser-${{ github.run_id }}
+          path: /tmp/radar-canonical/
+          if-no-files-found: error
+          retention-days: 14

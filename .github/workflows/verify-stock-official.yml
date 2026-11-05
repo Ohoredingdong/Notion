@@ -27,6 +27,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
+    # Scheduled/manual/push recovery remains independent; chained work requires a successful same-repository producer.
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:

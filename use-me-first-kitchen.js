@@ -152,7 +152,10 @@
     ).join('');
     scene.innerHTML = '<div class="kitchen-scene"><div class="scene-top"><div class="scene-label">' + A.icon('fridge') + '<strong>나의 냉장고</strong><small class="muted" data-kitchen-count>0개</small></div>' +
       '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
-      '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
+      '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span>' +
+      '<div class="organize-layer-controls" role="group" aria-label="선택한 재료의 앞뒤 순서" style="pointer-events:auto;margin-top:6px" hidden>' +
+      '<button type="button" class="btn btn-small btn-line" data-action="layer-front" disabled>앞으로</button> ' +
+      '<button type="button" class="btn btn-small btn-line" data-action="layer-back" disabled>뒤로</button></div></div>' +
       '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '<div class="fridge-lower" aria-hidden="true"><div class="fridge-drawer fridge-drawer-one"><i></i></div><div class="fridge-drawer fridge-drawer-two"><i></i></div></div></div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
 
@@ -266,6 +269,11 @@
     const moving = items.find(item => item.id === movingId);
     scene.querySelector('.organize-banner').hidden = !organizing;
     text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
+    scene.querySelector('.organize-layer-controls').hidden = !organizing || !moving;
+    for (const button of scene.querySelectorAll('.organize-layer-controls button')) {
+      button.disabled = !initialized || !moving || moveBusy || !!pointerSession || !openZone(zoneFor(moving), doors);
+      button.setAttribute('aria-label', (moving ? objectPhrase(moving.name) + ' ' : '') + (button.dataset.action === 'layer-front' ? '앞으로 놓기' : '뒤로 놓기'));
+    }
     renderSeasoningShelf();
     for (const button of scene.querySelectorAll('.kitchen-zone-controls [data-zone]')) {
       button.disabled = !initialized || !movingId || moveBusy || !openZone(button.dataset.zone, doors);

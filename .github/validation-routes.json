@@ -1,0 +1,567 @@
+{
+  "version": 1,
+  "documentation": [
+    "*.md",
+    "docs/**",
+    ".agents/skills/**/*.md",
+    ".github/*.md",
+    ".github/ISSUE_TEMPLATE/*.md"
+  ],
+  "checks": {
+    "validation-runner": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_dev_check.py",
+        "-v"
+      ]
+    },
+    "workflow-policy": {
+      "argv": [
+        "{python}",
+        "scripts/check_workflow_policy.py",
+        "--root",
+        "."
+      ]
+    },
+    "workflow-policy-tests": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_workflow_policy.py",
+        "-v"
+      ]
+    },
+    "release-gate-tests": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_release_gate.py",
+        "-v"
+      ]
+    },
+    "radar-browser": {
+      "argv": [
+        "{python}",
+        "scripts/test_stock_radar_canonical_browser.py",
+        "--root",
+        "{root}",
+        "--output",
+        "{output}/radar-browser",
+        "--browser-executable",
+        "{browser}"
+      ],
+      "timeout": 360
+    },
+    "radar-browser-tests": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_stock_radar_canonical_browser.py",
+        "-v"
+      ]
+    },
+    "radar-publish-protection": {
+      "argv": [
+        "{python}",
+        "scripts/test_stock_radar_publish_protection.py"
+      ]
+    },
+    "radar-evidence-review": {
+      "argv": [
+        "node",
+        "scripts/test_stock_evidence_review.cjs"
+      ]
+    },
+    "radar-forecast-wiring": {
+      "argv": [
+        "node",
+        "scripts/test_stock_forecast_wiring.cjs"
+      ]
+    },
+    "radar-data-audit": {
+      "argv": [
+        "{python}",
+        "scripts/audit_stock_radar_accuracy.py",
+        "--check"
+      ]
+    },
+    "event-outlook": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_stock_event_outlook.py",
+        "-v"
+      ]
+    },
+    "event-ui": {
+      "argv": [
+        "node",
+        "scripts/test_stock_event_ui.cjs"
+      ]
+    },
+    "market-repairs": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "scripts.test_market_repairs",
+        "-v"
+      ]
+    },
+    "market-context": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "scripts.test_market_context",
+        "-v"
+      ]
+    },
+    "forecast-model": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_stock_forecasts.py",
+        "-v"
+      ],
+      "timeout": 600
+    },
+    "forecast-learning": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_stock_forecast_learning.py",
+        "-v"
+      ],
+      "timeout": 360
+    },
+    "forecast-directions": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_stock_forecast_directions.py",
+        "-v"
+      ],
+      "timeout": 360
+    },
+    "forecast-ui": {
+      "argv": [
+        "node",
+        "scripts/test_stock_forecast_ui.cjs"
+      ]
+    },
+    "auction-domain": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/auction-study-model.test.cjs"
+      ]
+    },
+    "fridge-domain": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/fridge-domain.test.cjs",
+        "tests/fridge-kitchen-state.test.cjs",
+        "tests/fridge-store.test.cjs"
+      ]
+    },
+    "fridge-ui": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/fridge-ui.test.cjs"
+      ]
+    },
+    "stock-entry-ui": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/stock-entry-ui.test.cjs"
+      ]
+    },
+    "widget-publisher-regressions": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_widget_data_repairs.py",
+        "-v"
+      ]
+    },
+    "investment-embed-tests": {
+      "argv": [
+        "{python}",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_investment_embeds.py",
+        "-v"
+      ]
+    },
+    "investment-embed-source": {
+      "argv": [
+        "{python}",
+        "scripts/verify_investment_embeds.py"
+      ]
+    }
+  },
+  "routes": [
+    {
+      "patterns": [
+        "scripts/dev_check.py",
+        "tests/test_dev_check.py",
+        ".github/validation-routes.json"
+      ],
+      "checks": [
+        "validation-runner",
+        "workflow-policy"
+      ]
+    },
+    {
+      "patterns": [
+        ".github/workflows/**",
+        "scripts/check_workflow_policy.py",
+        "tests/test_workflow_policy.py",
+        "scripts/publish_widget_data.py",
+        "docs/development-workflow-inventory.json",
+        "requirements-dev.txt",
+        "requirements-dev.lock",
+        ".python-version",
+        ".node-version",
+        ".gitignore"
+      ],
+      "checks": [
+        "workflow-policy",
+        "workflow-policy-tests"
+      ]
+    },
+    {
+      "patterns": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "checks": [
+        "workflow-policy",
+        "workflow-policy-tests",
+        "fridge-domain",
+        "fridge-ui",
+        "auction-domain",
+        "stock-entry-ui"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/release_gate.py",
+        "tests/test_release_gate.py",
+        ".github/release-policy.json",
+        ".github/workflows/reviewed-pages-release.yml"
+      ],
+      "checks": [
+        "release-gate-tests",
+        "workflow-policy"
+      ]
+    },
+    {
+      "patterns": [
+        "stock-value-radar.html",
+        "stock-radar-dashboard.html",
+        "assets/stock-radar-clean-bridge.js",
+        "assets/stock-radar-flow-v2.js",
+        "scripts/test_stock_radar_canonical_browser.py",
+        "scripts/test_stock_detail_v6.py",
+        ".github/workflows/test-stock-radar-canonical.yml",
+        ".github/workflows/verify-stock-detail-v6.yml",
+        ".github/workflows/verify-stock-value-radar.yml"
+      ],
+      "checks": [
+        "radar-browser",
+        "radar-publish-protection",
+        "radar-evidence-review",
+        "radar-forecast-wiring",
+        "event-ui"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/test_stock_radar_canonical_browser.py",
+        "tests/test_stock_radar_canonical_browser.py"
+      ],
+      "checks": [
+        "radar-browser-tests",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "stock-opportunity-data.json",
+        "stock-radar-chart-data.json",
+        "stock-direction-forecast.json",
+        "stock-forecast-learning.json",
+        "stock-market-groups.json",
+        "stock-event-risks.json",
+        "stock-market-context.json",
+        "stock-investment-cases.json",
+        "stock-forecast-autopilot.json",
+        "stock-entry-plan-summary.json",
+        "stock-green-review-summary.json",
+        "toss-live-config.json",
+        "stock-forecast-outcomes.jsonl",
+        "fear-greed-data.json",
+        "stock-korea-fear-greed.json",
+        "stock-radar-accuracy-audit.json",
+        "stock-opportunity-summary.json",
+        "stock-investment-cases-summary.json",
+        "news-link-data.json",
+        "stock-event-outlook.json"
+      ],
+      "checks": [
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "stock-forecast-learning.json",
+        "stock-direction-forecast.json",
+        "stock-market-context.json",
+        "stock-radar-chart-data.json",
+        "stock-opportunity-summary.json",
+        "stock-investment-cases-summary.json",
+        "stock-entry-plan-summary.json",
+        "stock-forecast-outcomes.jsonl",
+        ".github/workflows/audit-stock-radar-accuracy.yml"
+      ],
+      "checks": [
+        "radar-data-audit"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/publish_stock_opportunities.py",
+        "scripts/publish_stock_market_groups.py",
+        "scripts/publish_stock_investment_cases.py",
+        "scripts/install_stock_radar_v8.py",
+        "scripts/install_stock_decision_ui.py",
+        "scripts/install_stock_audit_ui.py",
+        "scripts/test_stock_radar_publish_protection.py",
+        ".github/workflows/update-stock-decisions.yml"
+      ],
+      "checks": [
+        "radar-publish-protection",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/test_stock_evidence_review.cjs"
+      ],
+      "checks": [
+        "radar-evidence-review",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/build_stock_event_outlook.py",
+        "scripts/test_stock_event_outlook.py",
+        "scripts/test_stock_event_ui.cjs",
+        "stock-event-outlook.json",
+        ".github/workflows/update-market-events.yml"
+      ],
+      "checks": [
+        "event-outlook",
+        "event-ui",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/update-bitcoin-korea-premium.py",
+        "scripts/update-supply-chain.py",
+        "scripts/update_fear_greed.py",
+        "scripts/test_market_repairs.py",
+        ".github/workflows/update-supply-chain.yml",
+        ".github/workflows/update-fear-greed.yml",
+        ".github/workflows/update-korea-fear-greed.yml"
+      ],
+      "checks": [
+        "market-repairs"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/update_market_context.py",
+        "scripts/run_market_context.py",
+        "scripts/test_market_context.py"
+      ],
+      "checks": [
+        "market-context"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/stock_forecast_model.py",
+        "scripts/stock_forecast_sources.py",
+        "scripts/run_stock_forecasts.py",
+        "scripts/test_stock_forecasts.py"
+      ],
+      "checks": [
+        "forecast-model",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/stock_forecast_learning.py",
+        "scripts/test_stock_forecast_learning.py"
+      ],
+      "checks": [
+        "forecast-learning",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/stock_forecast_directions.py",
+        "scripts/test_stock_forecast_directions.py"
+      ],
+      "checks": [
+        "forecast-directions",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "assets/stock-forecast*.js",
+        "scripts/test_stock_forecast_ui.cjs",
+        "scripts/test_stock_forecast_wiring.cjs"
+      ],
+      "checks": [
+        "forecast-ui",
+        "radar-forecast-wiring",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "assets/auction-study-model.js",
+        "tests/auction-study-model.test.cjs"
+      ],
+      "checks": [
+        "auction-domain"
+      ]
+    },
+    {
+      "patterns": [
+        "assets/use-me-first/**",
+        "use-me-first*.js",
+        "tests/fridge-*.test.cjs",
+        "use-me-first.html"
+      ],
+      "checks": [
+        "fridge-domain",
+        "fridge-ui"
+      ]
+    },
+    {
+      "patterns": [
+        "tests/stock-entry-ui.test.cjs",
+        "assets/stock-recommendations.js",
+        "stock-entry*.html"
+      ],
+      "checks": [
+        "stock-entry-ui",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "requirements-dev.txt",
+        "requirements-dev.lock"
+      ],
+      "checks": [
+        "market-repairs",
+        "market-context",
+        "event-outlook",
+        "widget-publisher-regressions",
+        "forecast-model",
+        "forecast-learning",
+        "forecast-directions",
+        "radar-browser"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/publish_widget_data.py",
+        "scripts/test_widget_data_repairs.py"
+      ],
+      "checks": [
+        "widget-publisher-regressions",
+        "workflow-policy"
+      ]
+    },
+    {
+      "patterns": [
+        "scripts/verify_investment_embeds.py",
+        "tests/test_investment_embeds.py",
+        ".github/workflows/verify-investment-embeds.yml",
+        "stock-paper-investing.html",
+        "property-paper-investing.html",
+        "assets/investment-labs-20261016/**",
+        "assets/investment-labs-20261019/**"
+      ],
+      "checks": [
+        "investment-embed-tests",
+        "investment-embed-source"
+      ]
+    }
+  ]
+}

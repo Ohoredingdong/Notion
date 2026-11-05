@@ -1,0 +1,161 @@
+# Opt-in release path only. This does not replace or disable current Pages
+# publishing or scheduled main writers. Policy remains disabled until approved.
+name: Reviewed Pages release (manual, disabled by default)
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact current main commit (40 lowercase hex characters)
+        required: true
+        type: string
+      confirm:
+        description: For production enter DEPLOY followed by the exact SHA
+        required: true
+        default: DRY RUN
+        type: string
+      dry_run:
+        description: Validate and build only; never publish
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reviewed-pages-release
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      RELEASE_CONFIRM: ${{ inputs.confirm }}
+      BUILD_DIR: ${{ runner.temp }}/reviewed-release
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Require an immutable commit before checkout
+        shell: bash
+        run: |
+          if [[ ! "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '::error::candidate_sha must be a full lowercase 40-character Git SHA'
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require candidate to be current main at validation start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          MAIN_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          python scripts/release_gate.py check --candidate "$CANDIDATE_SHA" --main-sha "$MAIN_SHA" --checkout-sha "$(git rev-parse HEAD)"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated test dependencies
+        run: |
+          python -m pip install -r requirements-dev.txt
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m playwright install --with-deps chromium
+      - name: Run checks for every changed candidate file
+        run: |
+          python scripts/dev_check.py --base "$CANDIDATE_SHA^" --head "$CANDIDATE_SHA" --run --output "$BUILD_DIR/validation/report.json"
+      - name: Always run canonical radar, browser and publishing protection
+        run: |
+          python scripts/dev_check.py --base "$CANDIDATE_SHA^" --head "$CANDIDATE_SHA" --files stock-value-radar.html stock-radar-dashboard.html --run --output "$BUILD_DIR/radar/report.json"
+      - name: Package only tested public Git objects and verify exact bytes
+        run: |
+          python scripts/release_gate.py package --candidate "$CANDIDATE_SHA" --site "$BUILD_DIR/site" --manifest "$BUILD_DIR/manifest.json" --validation-report "$BUILD_DIR/validation/report.json" --radar-report "$BUILD_DIR/radar/report.json" --browser-report "$BUILD_DIR/radar/radar-browser/report.json"
+          python scripts/release_gate.py verify --candidate "$CANDIDATE_SHA" --site "$BUILD_DIR/site" --manifest "$BUILD_DIR/manifest.json" --validation-report "$BUILD_DIR/validation/report.json" --radar-report "$BUILD_DIR/radar/report.json" --browser-report "$BUILD_DIR/radar/radar-browser/report.json"
+      - name: Record dry-run result without enabling production
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo 'Validated and packaged the exact candidate. Dry run: no production deployment was requested.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Existing Pages publishing and scheduled main writers remain active. This workflow does not protect that legacy deployment path.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Refuse production while policy remains disabled
+        if: ${{ !inputs.dry_run }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from scripts.release_gate import load_policy, require
+          policy = load_policy(Path('.github/release-policy.json'))
+          require(policy['enabled'] is True, 'Production is disabled; a separately reviewed policy change and approved Pages migration are required')
+          require(os.environ['RELEASE_CONFIRM'] == 'DEPLOY ' + os.environ['CANDIDATE_SHA'], 'Explicit confirmation must exactly equal DEPLOY <candidate SHA>')
+          PY
+      - name: Retain build and test evidence for review
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reviewed-release/
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: true
+      - name: Stage verified public site as a Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: reviewed-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reviewed-release/site/
+          retention-days: 1
+
+  deploy:
+    if: ${{ !inputs.dry_run }}
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      RELEASE_CONFIRM: ${{ inputs.confirm }}
+      BUILD_DIR: ${{ runner.temp }}/reviewed-release
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download the exact validated build and evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: reviewed-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reviewed-release/
+      - name: Check observed Pages configuration and reauthorize exact artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pages" > "$RUNNER_TEMP/pages-config.json"
+          MAIN_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          python scripts/release_gate.py authorize --candidate "$CANDIDATE_SHA" --main-sha "$MAIN_SHA" --confirm "$RELEASE_CONFIRM" --pages-config "$RUNNER_TEMP/pages-config.json" --site "$BUILD_DIR/site" --manifest "$BUILD_DIR/manifest.json" --validation-report "$BUILD_DIR/validation/report.json" --radar-report "$BUILD_DIR/radar/report.json" --browser-report "$BUILD_DIR/radar/radar-browser/report.json"
+      # Main writers are intentionally not blocked or reset. Recheck after the
+      # byte verification; an advanced main must be validated as a new release.
+      - name: Refuse a main advance immediately before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          MAIN_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          python scripts/release_gate.py check --candidate "$CANDIDATE_SHA" --main-sha "$MAIN_SHA" --checkout-sha "$(git rev-parse HEAD)"
+      - name: Deploy the reviewed artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: reviewed-pages-${{ github.run_id }}-${{ github.run_attempt }}

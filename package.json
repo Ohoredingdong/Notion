@@ -1,0 +1,15 @@
+{
+  "name": "notion-widget-development",
+  "private": true,
+  "description": "Development-only tooling for the existing static widgets; no frontend build step.",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "test:workflow-policy": "python3 scripts/check_workflow_policy.py",
+    "test:radar": "python3 scripts/test_stock_radar_canonical_browser.py",
+    "test:fridge": "node --test tests/fridge-*.test.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0",
+    "linkedom": "0.18.12"
+  }
+}
