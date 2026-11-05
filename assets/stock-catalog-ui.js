@@ -64,7 +64,7 @@
      <strong>${has?esc(s.label+" "+n(s.value*100)+"%"):"미발행 · 검증 대기"}</strong>
      <p>${esc(description)}</p></div>
     <div class="fx-catalog-preview-info"><b>공식 상장종목 목록에 확인된 기업</b>
-      <p>현재가·재무제표·FCF·기업 가치평가가 연결되지 않았다면 분석 점수나 예상수익률을 표시하지 않습니다.</p>
+      <p>현재가·재무제표·FCF·기업 가치평가가 아직 확인되지 않았습니다. 근거 없는 분석 점수나 예상수익률은 표시하지 않습니다.</p>
       <small>출처: ${esc(x.source)} · 자료일 ${esc(cat.generated_at||"미확인")}</small></div>
   </section>`;
  }
