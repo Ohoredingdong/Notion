@@ -42,4 +42,34 @@ check(!a.available,'duplicate IDs and missing criterion must fail closed');
 a=make({valuation:'missing',forecast:'missing',cash_quality:'review'});
 check(a.percent===75&&!a.eligible,'a high partial coverage rate is not buying probability');
 check(block.includes('FX_EVIDENCE_IDS')&&!block.includes('probabilities.up'),'direction likelihood does not affect checklist coverage');
+/* The right-hand decision card must show four distinct questions, not checklist coverage four times. */
+const directionView = new Function(
+ 'fxHelpers','fxModelQuality','fxN','fxNum','fxPct','fxMoney',
+ block+'\nreturn fxInvestmentDecision;'
+)(
+ ()=>({caseOf:()=>linked}),()=>({accepted:false}),
+ v=>typeof v==='number'&&Number.isFinite(v)?v:null,
+ (v,d=1)=>Number(v).toFixed(d),
+ v=>(v>0?'+':'')+Number(v).toFixed(2)+'%',
+ (v,c)=>Number(v).toFixed(0)+' '+c
+);
+const signal={active:true,stale:false,unknown:false,p:{up:.99}};
+a=make({valuation:'missing'});
+let d=directionView(stock,{data:{raw}},a,signal);
+check(d.direction==='99.0%'&&d.value==='가치 검증 대기'&&d.range==='손익비 미검증',
+ '99% direction cannot be mistaken for investment valuation or risk/reward');
+check(d.status==='검증 대기','incomplete valuation remains unapproved');
+a=make();
+linked.green_review.valuation={reference_price:120,stress_change_pct:-35};
+d=directionView(stock,{data:{raw}},a,signal);
+check(d.independent&&d.value==='보수 기준 통과','independent valuation requires a passed official check');
+check(d.range.includes('+20.00%')&&d.range.includes('-35.00%'),
+ 'only verified conservative and stress scenario values may be shown');
+a=make({valuation:'review'});
+linked.green_review.valuation={reference_price:120,stress_change_pct:-35};
+d=directionView(stock,{data:{raw}},a,signal);
+check(!d.independent&&d.range==='손익비 미검증','reviewed/failed valuation cannot show numbers');
+d=directionView(stock,{data:{raw}},a,{...signal,stale:true});
+check(d.direction==='기간 종료','expired predictions are never displayed as current probabilities');
+check(!block.includes('buy_success_probability'),'no fabricated buy success forecast');
 console.log('PASS: '+n+' independent composite investment screening assertions');
