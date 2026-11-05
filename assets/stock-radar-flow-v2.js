@@ -238,7 +238,7 @@ function fxMiniScore(ctx){
 
 function fxNav(ctx){
  const h=fxHelpers(),pages=[["home","홈","home"],["stocks","AI 종목","search"],["stockdetail","종목 분석","chart"],["scenario","시나리오","chart"],["performance","예측 검증","check"],["portfolio","포트폴리오","star"],["monitor","감시","check"]];
- return `<header class="fx-topbar"><div class="fx-brand"><span class="fx-brand-icon">${h.I?.("chart")||"◉"}</span><h1>투자 레이더</h1><span class="fx-mode-badge">저장 종가 · 연구용</span></div><nav class="fx-nav" aria-label="위젯 메뉴">${pages.map(([s,n,ico])=>`<button type="button" class="${ctx.screen===s?"active":""}" data-nr-screen="${s}" aria-current="${ctx.screen===s?"page":"false"}">${h.I?.(ico)||""}${n}</button>`).join("")}</nav><div class="fx-nav-tools"><button type="button" data-nr-screen="news" title="뉴스" aria-label="뉴스">${h.I?.("news")||"▤"}</button><button type="button" data-fx-refresh title="자료 다시 불러오기" aria-label="자료 새로고침">↻</button><button type="button" data-nr-screen="settings" title="설정" aria-label="설정">${h.I?.("settings")||"⚙"}</button></div></header>`;
+ return `<header class="fx-topbar"><div class="fx-brand"><span class="fx-brand-icon">${h.I?.("chart")||"◉"}</span><h1>투자 레이더</h1><span class="fx-mode-badge">저장 종가 · 연구용</span></div><nav class="fx-nav" aria-label="위젯 메뉴">${pages.map(([s,n,ico])=>`<button type="button" class="${ctx.screen===s?"active":""}" data-nr-screen="${s}" aria-current="${ctx.screen===s?"page":"false"}">${h.I?.(ico)||""}${n}</button>`).join("")}</nav><div class="fx-nav-tools"><button type="button" data-nr-screen="news" title="국내외 경제·정책·기업 상황판" aria-label="국내외 경제·정책·기업 상황판">${h.I?.("news")||"▤"}</button><button type="button" data-fx-refresh title="자료 다시 불러오기" aria-label="자료 새로고침">↻</button><button type="button" data-nr-screen="settings" title="설정" aria-label="설정">${h.I?.("settings")||"⚙"}</button></div></header>`;
 }
 
 function fxSteps(ctx){
@@ -801,7 +801,7 @@ function fxOutcomes(ctx){
 }
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
- const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?h.renderNews?.():s==="settings"?h.renderSettings?.():fxHome(ctx);
+ const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?(window.StockWorldBrief?.render?.(ctx)||h.renderNews?.()):s==="settings"?h.renderSettings?.():fxHome(ctx);
  return `<div class="fx-root">${fxNav(ctx)}<div id="source-status" class="fx-source-status" role="status" aria-live="polite">연구용 저장 자료 · 실시간 시세 아님</div><div class="fx-stage ${s==="home"?"fx-stage-home":"fx-stage-other"}" data-screen="${fxEscape(s)}">${body||""}</div></div>`;
 }
 function fxHandleClick(e){
