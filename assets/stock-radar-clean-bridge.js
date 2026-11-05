@@ -323,7 +323,7 @@ function render(){
  else if(catalogAge!==null&&catalogAge>96*60)extraWarnings.push("상장명부 최근 갱신 지연");
  if(!D.financial?.records)extraWarnings.push("공식 재무제표 수집 대기");
  else if(D.financial.refresh_status==="blocked")extraWarnings.push("공식 재무 최근 수집 중단 · 이전 확인값만 유지");
- else if(D.financial.refresh_status==="partial")extraWarnings.push("공식 재무 일부 수집 실패");
+ else if(D.financial.refresh_status==="partial")extraWarnings.push(D.financial.current_run_failed?"공식 재무 일부 수집 실패":"공식 재무 일부 미확인");
   if(!D.extended?.records?.length)extraWarnings.push("확장 AI 분석 아직 미발행");
  else if(extendedAge!==null&&extendedAge>240&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
  if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
