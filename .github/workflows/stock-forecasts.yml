@@ -58,9 +58,9 @@ jobs:
       - uses: actions/checkout@v4
         if: steps.market_gate.outputs.active == 'true'
         with:
-          # Resolve the newest branch head at job start. Queued jobs must not
-          # start from a stale event SHA after a previous forecast publication.
-          ref: ${{ github.ref_name }}
+          # Pin the archived source_commit to the code actually checked out.
+          # Stale queued snapshots fail the publisher's state CAS, not relabel another commit.
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         if: steps.market_gate.outputs.active == 'true'

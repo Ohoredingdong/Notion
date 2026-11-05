@@ -79,6 +79,7 @@ class WorkflowIsolation(unittest.TestCase):
         checkout = workflow.split("- uses: actions/checkout@v4", 1)[1].split("- uses:", 1)[0]
         self.assertIn("ref: ${{ github.sha }}", checkout)
         self.assertNotIn("ref: ${{ github.ref }}", checkout)
+        self.assertNotIn("ref: ${{ github.ref_name }}", checkout)
         self.assertIn("fetch-depth: 0", checkout)
 
     def test_source_sha_label_is_event_sha_in_both_producers(self):
