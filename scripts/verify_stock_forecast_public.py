@@ -83,9 +83,19 @@ def main(paper_only=False):
                 if hashlib.sha256(get_public(name)).hexdigest()!=hashes[name]:raise ValueError('public_code_not_equal')
             html=get_public('stock-value-radar.html').decode()
             if any(name not in html for name in scripts):raise ValueError('main_radar_not_integrated')
-            record={'status':'public_verified','verified_at':datetime.now(timezone.utc).isoformat(),
+            # The public JSON/JS/HTML bytes can be genuine when the regular
+            # session produced no issued call. Such a snapshot must NOT create
+            # a public_verified issuance proof with empty membership: the
+            # independent ledger audit correctly rejects that as invalid.
+            prediction_ids=[r['id'] for r in expected[names[0]]['records']
+                            if r.get('status')=='research_prediction']
+            verified_at=datetime.now(timezone.utc).isoformat()
+            if not prediction_ids:
+                print('EXACT_PUBLIC_AUTOPILOT_FORECAST_AND_CODE_VERIFIED_NO_NEW_PREDICTIONS', verified_at)
+                return
+            record={'status':'public_verified','verified_at':verified_at,
                     'snapshot_generated_at':expected[names[0]]['generated_at'],
-                    'prediction_ids':[r['id'] for r in expected[names[0]]['records'] if r.get('status')=='research_prediction'],
+                    'prediction_ids':prediction_ids,
                     'human_notification_received':False}
             record['verification_id']=digest(record)
             with Path('stock-forecast-deliveries.jsonl').open('a') as f:f.write(json.dumps(record,ensure_ascii=False)+'\n')
