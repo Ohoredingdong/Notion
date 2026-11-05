@@ -67,5 +67,76 @@ class PublicVerificationIdentityTests(unittest.TestCase):
         self.assertEqual(result["scored"], 0)
 
 
+class PublicNoCallProducerProofTests(unittest.TestCase):
+    """Synthetic local public-byte verification; no network or archived evidence."""
+
+    def verify_snapshot(self, records):
+        import contextlib
+        import io
+        import json
+        import os
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        import verify_stock_forecast_public as verifier
+
+        scripts = (
+            'assets/stock-forecast.js',
+            'assets/stock-forecast-learning.js',
+            'assets/stock-forecast-directions.js',
+            'assets/stock-forecast-autopilot.js',
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            previous = os.getcwd()
+            try:
+                os.chdir(temporary)
+                payloads = {
+                    'stock-direction-forecast.json': {
+                        'generated_at': '2026-11-05T20:36:14+00:00',
+                        'records': records,
+                    },
+                    'stock-forecast-learning.json': {'status': 'research_only'},
+                    'stock-forecast-autopilot.json': {'status': 'research_cycle_verified'},
+                }
+                for filename, payload in payloads.items():
+                    Path(filename).write_text(json.dumps(payload), encoding='utf-8')
+                for filename in scripts:
+                    target = Path(filename)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_text('// SYNTHETIC verifier fixture\n', encoding='utf-8')
+                Path('stock-value-radar.html').write_text(
+                    '<html><head>' + ''.join(
+                        '<script src="' + s + '"></script>' for s in scripts
+                    ) + '</head></html>', encoding='utf-8')
+                with patch.object(verifier, 'get_public',
+                                  side_effect=lambda name: Path(name).read_bytes()):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        verifier.main(paper_only=False)
+                ledger = Path('stock-forecast-deliveries.jsonl')
+                return [json.loads(line) for line in ledger.read_text().splitlines()] if ledger.exists() else []
+            finally:
+                os.chdir(previous)
+
+    def test_no_call_only_snapshot_must_not_create_empty_public_proof(self):
+        # RED on old producer: its unconditional append adds prediction_ids=[].
+        rows = self.verify_snapshot([
+            {'status': 'no_call', 'symbol': 'SYNTHETIC', 'reason': 'session_closed'},
+        ])
+        self.assertEqual(rows, [], 'No-call byte verification is not an issued forecast')
+
+    def test_one_real_frozen_call_with_no_calls_still_gets_proof(self):
+        import verify_stock_forecast_public as verifier
+        rows = self.verify_snapshot([
+            {'status': 'no_call', 'symbol': 'SYNTHETIC-NO-CALL'},
+            {'status': 'research_prediction', 'id': 'SYNTHETIC-CALL'},
+        ])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['prediction_ids'], ['SYNTHETIC-CALL'])
+        self.assertIs(rows[0]['human_notification_received'], False)
+        payload = {key: value for key, value in rows[0].items()
+                   if key != 'verification_id'}
+        self.assertEqual(rows[0]['verification_id'], verifier.digest(payload))
+
+
 if __name__ == "__main__":
     unittest.main()
