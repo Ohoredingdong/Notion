@@ -306,6 +306,7 @@ function fxV5StockNews(ctx,c){
   '<p class="fx-v5-empty">최근 확인 가능한 시장·기업 뉴스가 없습니다. 자료 수집 시각을 확인해 주세요.</p>';
 }
 function fxV5Checks(c,ctx){
+ const verifiedReview=fxInvestmentEvidence(c,ctx);
  const assessment=c.assessment||{},checks=Array.isArray(assessment.checks)?assessment.checks:[],audit=c.extension_audit||{};
  const period=c.history?.filing_period,listed=checks.slice(0,4).map(x=>({label:String(x.label||"사전 점검"),pass:x.ok===true}));
  const fallback=[{label:"최신 공시·회계기간 공식 확인",pass:false},{label:"FCF·부채 항목 원문 대조",pass:false},{label:"EPS 추정치·가격 시점 검토",pass:false},{label:"거래량·가격 위험 점검",pass:false}];
@@ -315,7 +316,7 @@ function fxV5Checks(c,ctx){
  const positive=validSummary&&Array.isArray(summary.positive_companies)&&summary.positive_companies.some(x=>String(x.symbol||x)===String(c.symbol));
  const sourceAudit=!!period&&audit.period===period&&audit.status==="compared";
  return `<div class="fx-v5-checklist">${items.map(x=>`<div class="fx-v5-checkrow"><span class="${x.pass?'yes':'todo'}">${x.pass?'✓':'!'}</span><span>${fxEscape(x.label)}</span></div>`).join("")}</div>
- <div class="fx-v5-footnote">${passed}/${items.length}개 내부 체크 · ${validSummary?(positive?"엄격 실사 후보 별도 확인":'전체 엄격 실사 승인 '+fxNum(summary.counts.attractive,0)+'건'):"엄격 실사 최신 검증 필요"} · ${sourceAudit?"일부 회계기간 대조":"원문 대조 별도"} · 매수 승인 아님</div>`;
+ <div class="fx-v5-footnote">${fxEscape(verifiedReview.available?"종합 실사 "+verifiedReview.passed+"/12개 · "+verifiedReview.percent+"% · "+verifiedReview.status:"종합 실사 검증 대기")} · AI 방향과 별개 · 매수 승인 아님</div>`;
 }
 function fxV5Portfolio(ctx){
  const holdings=(ctx.paper||[]).filter(x=>fxN(x.qty)!==null&&x.qty>0&&fxN(x.cost)!==null);
@@ -564,8 +565,7 @@ function fxDetail(ctx){
  if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
  const f=c.forecasts||{},h=c.history||{},balance=c.balance||{},tech=c.technical||{},a=c.assessment||{},short=c.short||{};
  const helper=fxHelpers(),periods=[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]];
- const stateNames={ready:"제공처 조건 검토",verify:"공식 대조 필요",price:"가격 조건 대기",risk:"위험 우선 확인",data:"자료 보강 필요"};
- const state=stateNames[a.state]||"종합 실사 검토 전";
+ const review=fxInvestmentEvidence(c,ctx),state=review.status;
  const downside=Array.isArray(a.risks)?a.risks:[],missing=Array.isArray(a.missing)?a.missing:[];
  const asText=x=>typeof x==="string"?x:x?.text||x?.reason||x?.label||"";
  const audit=c.extension_audit||{},auditFields=Array.isArray(audit.fields)?audit.fields:[],auditPeriodMatches=!!(h.filing_period&&audit.period&&h.filing_period===audit.period);
@@ -602,14 +602,11 @@ function fxDetail(ctx){
     </section>
     <section class="fx-panel fx-decision-panel fx-d-hero">
      <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>이 종목을 검토할 때 먼저 확인할 조건입니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
-     <div class="fx-decision-company"><span>장기 관점 · 실사 우선</span><strong>${fxEscape(a.next_action||"공식 실사와 가격 조건을 확인해야 합니다.")}</strong></div>
+     <div class="fx-decision-company"><span>종합 실사 · 12개 기준</span><strong>${review.available?"통과 "+review.passed+"/12개 · "+review.percent+"%":"검증 대기 · 충족률 미표시"}</strong></div>
      <div class="fx-d-mini-grid">
-      ${fxFact("검토 상한가",fxMoney(priceCondition.ceiling,c.currency),"독립 적정가치 아님","연구상 확인할 가격 기준, 매수가 확정 아님")}
-      ${fxFact("단기 방향",short.label||"단기 자료 없음","5~20거래일 연구","최근 가격 흐름을 바탕으로 본 단기 경향")}
-      ${fxFact("가격 조건",priceCondition.price_condition_usable===false||a.price_condition_usable===false?"사용 보류":fxN(priceCondition.move_pct)===null?"미산출":fxPct(priceCondition.move_pct),"원문 대조 별도","저장 종가와 연구 가격 기준 사이 차이")}
-      ${fxFact("분석 우선점수",fxN(c.priority?.display_score??c.priority?.score)===null?"—":fxNum(c.priority?.display_score??c.priority?.score,0)+" / 100","투자 성공 확률 아님","추가로 살펴볼 우선순위 점수")}
+      ${review.groups.map(g=>fxFact(g.label,g.value,g.note,g.meaning)).join("")}
      </div>
-     <div class="fx-d-notice">AI 신호와 기업 실사는 서로 다른 근거입니다. 공식 대조: ${auditOk===null?"기간·원문 미확인":auditOk+" / "+auditFields.length+"개 항목 대조"}</div>
+     <div class="fx-d-notice">${fxEscape(review.explanation)}<br>충족률은 매수·수익 확률이 아닙니다. AI 방향 추정은 별도 연구값이며 실전 미입증.</div>
     </section>
    </div>
    <div class="fx-detail-mid">
