@@ -291,10 +291,14 @@ function render(){
  const host=document.getElementById("nr-home-content");if(!host)return;
  host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';
  const status=document.getElementById("source-status");if(!status)return;
- const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),warnings=[];
+ const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),warnings=[];
  if(p!==null&&p>480)warnings.push("종목 자료 "+Math.round(p/60)+"시간 전");
  if(m!==null&&m>360)warnings.push("시장 지표 "+Math.round(m/60)+"시간 전");
- if(n===null)warnings.push("뉴스 수집 확인 전");
+ const utcHour=new Date().getUTCHours(),utcDay=new Date().getUTCDay();
+ const researchHours=((utcDay>=1&&utcDay<=5&&(utcHour<=7||(utcHour>=13&&utcHour<=22)))||(utcHour===23&&(utcDay===0||utcDay<=4)));
+ if(ai===null)warnings.push("AI 예측 파일 조회 전");
+ else if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
+  if(n===null)warnings.push("뉴스 수집 확인 전");
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
  if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
  if(storageError)warnings.push("브라우저 저장 실패");
@@ -302,6 +306,7 @@ function render(){
  (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
  (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
  (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
+ (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"")+
  (warnings.length?" · 주의: "+warnings.join(" / "):"")+
  " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
  status.title=status.textContent;
