@@ -8,6 +8,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright, expect
@@ -183,6 +184,120 @@ def mobile_navigation(page):
     page.screenshot(path="/tmp/auction-study-mobile.png", full_page=True)
 
 
+def document_fits_viewport(page, label):
+    dimensions = page.evaluate("""() => ({
+        width: document.documentElement.scrollWidth,
+        height: document.documentElement.scrollHeight,
+        viewportWidth: innerWidth,
+        viewportHeight: innerHeight,
+        scrollX, scrollY,
+    })""")
+    assert dimensions["width"] <= dimensions["viewportWidth"] + 1, (label, dimensions)
+    assert dimensions["height"] <= dimensions["viewportHeight"] + 1, (label, dimensions)
+    assert dimensions["scrollX"] == 0 and dimensions["scrollY"] == 0, (label, dimensions)
+
+
+def box_inside_viewport(locator, label):
+    expect(locator).to_be_visible()
+    bounds = locator.evaluate("""el => {
+        const r=el.getBoundingClientRect();
+        return {left:r.left, top:r.top, right:r.right, bottom:r.bottom,
+                viewportWidth:innerWidth, viewportHeight:innerHeight};
+    }""")
+    assert bounds["left"] >= -1 and bounds["top"] >= -1, (label, bounds)
+    assert bounds["right"] <= bounds["viewportWidth"] + 1, (label, bounds)
+    assert bounds["bottom"] <= bounds["viewportHeight"] + 1, (label, bounds)
+
+
+def fixed_viewport_pages(page):
+    """The page stays fixed; long forms retain reachable internal scrolling."""
+    for width, height in [(1440, 900), (1366, 768), (1280, 720), (390, 844), (390, 667)]:
+        page.set_viewport_size({"width": width, "height": height})
+        for name in ["home", "rights", "money", "area", "notes"]:
+            navigate(page, name)
+            label = (width, height, name)
+            expect(page.locator(f'.page-content[data-view="{name}"]')).to_be_visible()
+            document_fits_viewport(page, label)
+            box_inside_viewport(page.locator(".nav-item.active"), label)
+            box_inside_viewport(page.locator('.topbar [data-action="new"]'), label)
+            # Scrolling over the fixed app must not move the document.
+            page.mouse.move(width - 8, height - 8)
+            page.mouse.wheel(0, 1200)
+            document_fits_viewport(page, (label, "after wheel"))
+
+        navigate(page, "home")
+        if width >= 1100:
+            for pane in ["progress", "reasons", "cash"]:
+                panel = page.locator(f".home-panel-{pane}")
+                box_inside_viewport(panel, (width, height, pane))
+                assert panel.evaluate("el => el.scrollHeight <= el.clientHeight + 1"), (
+                    width, height, pane, "desktop overview should not require internal scrolling"
+                )
+                # Checking only the panel box would miss a clipped or scrolling
+                # body nested inside an overflow:hidden outer card.
+                nested_overflow = panel.locator(".panel-body, .analysis-progress").evaluate_all("""elements =>
+                    elements.filter(el => el.getClientRects().length &&
+                        (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1))
+                    .map(el => ({classes:el.className, height:el.clientHeight,
+                        scrollHeight:el.scrollHeight, width:el.clientWidth, scrollWidth:el.scrollWidth}))
+                """)
+                assert not nested_overflow, (
+                    width, height, pane, "nested desktop overview content requires scrolling", nested_overflow
+                )
+        else:
+            for pane in ["progress", "reasons", "cash"]:
+                button = page.locator(f'[data-home-panel="{pane}"]')
+                box_inside_viewport(button, (width, height, pane, "tab"))
+                button.click()
+                selected = page.locator(f".home-panel-{pane}")
+                box_inside_viewport(selected, (width, height, pane))
+                assert selected.evaluate("el => el.closest('.page-content').getBoundingClientRect().bottom + 1 >= el.getBoundingClientRect().bottom")
+                expect(selected).to_have_class(re.compile(r"\bhome-tab-active\b"))
+                document_fits_viewport(page, (width, height, pane))
+            expect(page.locator(".home-panel-cash .cash-number")).to_contain_text("13,756")
+            page.locator('[data-home-panel="reasons"]').click()
+            expect(page.locator(".home-panel-reasons")).to_contain_text("권리분석")
+
+        navigate(page, "money")
+        scroll_container = ".page-content .split-layout" if width <= 760 else ".page-content .split-layout > div:first-child"
+        panel = page.locator(scroll_container)
+        panel.evaluate("el => el.scrollTop = 0")
+        target = page.locator('[data-finance="targetProfit"]')
+        target.scroll_into_view_if_needed()
+        box_inside_viewport(target, (width, height, "last finance input"))
+        assert panel.evaluate("el => el.scrollTop > 0"), (width, height, "finance form must scroll inside its panel")
+        document_fits_viewport(page, (width, height, "finance panel scrolled"))
+        target.fill("2500")
+        assert active(notebook(page))["finance"]["targetProfit"] == 2500
+        # Restore the scenario so the next viewport checks the same cash amount.
+        target.fill("2000")
+
+        navigate(page, "rights")
+        panel = page.locator(scroll_container)
+        last_evidence = page.locator('[data-evidence="5"]')
+        last_evidence.scroll_into_view_if_needed()
+        box_inside_viewport(last_evidence, (width, height, "last rights evidence"))
+        assert panel.evaluate("el => el.scrollTop > 0"), (width, height, "rights records remain reachable")
+        document_fits_viewport(page, (width, height, "rights panel scrolled"))
+
+
+def short_mobile_dialog(page):
+    page.set_viewport_size({"width": 390, "height": 667})
+    page.locator('.topbar [data-action="new"]').click()
+    dialog = page.locator("#caseDialog")
+    box_inside_viewport(dialog, "short mobile dialog")
+    page.locator("#case-name").fill("작은 화면에서 저장한 물건")
+    page.locator("#case-address").fill("입력과 저장 버튼이 잘리지 않는지 확인")
+    submit = page.locator('#caseForm button[type="submit"]')
+    submit.scroll_into_view_if_needed()
+    box_inside_viewport(submit, "short mobile dialog submit")
+    submit.click()
+    expect(dialog).not_to_be_visible()
+    expect(page.locator(".case-title")).to_have_text("작은 화면에서 저장한 물건")
+    assert active(notebook(page))["name"] == "작은 화면에서 저장한 물건"
+    document_fits_viewport(page, "after short mobile dialog submit")
+
+
 def main():
     failures = []
     cases = [
@@ -192,6 +307,8 @@ def main():
         ("imports_preserve_and_validate", imports_preserve_and_validate, 1440),
         ("deposit_liquidity_guard", deposit_liquidity_guard, 1440),
         ("mobile_navigation", mobile_navigation, 390),
+        ("fixed_viewport_pages", fixed_viewport_pages, 1366),
+        ("short_mobile_dialog", short_mobile_dialog, 390),
     ]
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True)
