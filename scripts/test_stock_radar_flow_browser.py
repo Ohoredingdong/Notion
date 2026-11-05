@@ -166,8 +166,13 @@ with sync_playwright() as play:
         check("Selected stock appears in focus",symbol in page.locator(".fx-focus-head").inner_text())
         search = page.locator("#fx-search-input")
         search.fill(symbol)
-        check("Search shows selected ticker",page.locator(".fx-row[data-nr-select]").count() == 1 and
-              symbol in page.locator(".fx-focus-head").inner_text())
+        visible_names=page.locator(".fx-row[data-nr-select]").evaluate_all(
+            "(nodes) => nodes.map(n=>({symbol:n.dataset.nrSelect,text:n.innerText}))")
+        check("Search includes selected ticker and no unrelated results",
+              any(row["symbol"]==symbol for row in visible_names) and
+              all(symbol.lower() in (row["symbol"]+" "+row["text"]).lower() for row in visible_names) and
+              symbol in page.locator(".fx-focus-head").inner_text(),
+              str({"query":symbol,"visible":visible_names[:12]}))
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
         check("Details preserve selected ticker",
             symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
