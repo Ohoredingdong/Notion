@@ -305,11 +305,16 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
         except Exception as exc:
             cik_map={}
             issues.append("SEC_mapping: "+str(exc)[:180])
+        provider_failure_streak=0
         for item in us:
             symbol=item["symbol"]
             stats["US"]["attempted"]+=1
             cik=cik_map.get(symbol)
-            if cik is None:
+            if provider_failure_streak>=3:
+                result={"symbol":symbol,"country":"US","status":"source_unavailable",
+                        "checked_at":now,
+                        "reason":"SEC request circuit breaker: repeated source/access errors"}
+            elif cik is None:
                 result={"symbol":symbol,"country":"US",
                         "status":"source_unavailable" if not cik_map else "identifier_unmatched",
                         "checked_at":now,"reason":"SEC CIK map unavailable" if not cik_map else "No verified SEC CIK"}
@@ -317,17 +322,21 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                 try:
                     content=getter(SEC_FACTS.format(cik=cik),agent=user_agent)
                     result=parse_sec_companyfacts(content,symbol=symbol,cik=cik,checked_at=now)
+                    provider_failure_streak=0
                     if result["status"] in ("available","partial","stale"):
                         stats["US"]["available"]+=1
                 except Exception as exc:
+                    provider_failure_streak+=1
                     result={"symbol":symbol,"country":"US","status":"source_unavailable",
                             "checked_at":now,"reason":str(exc)[:180]}
-                if throttle:
+                if throttle and provider_failure_streak<3:
                     time.sleep(throttle)
             if result["status"] not in ("available","partial","stale"):
                 stats["US"]["blocked"]+=1
             identity="US:"+symbol
             known[identity]=merge_record(known.get(identity),result)
+        if provider_failure_streak>=3:
+            issues.append("SEC repeated provider errors; remaining batch requests paused to avoid hammering the service.")
     if kr:
         if not key:
             issues.append("KR DART_API_KEY is not configured; no official Korean financial data generated.")
