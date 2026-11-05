@@ -145,6 +145,18 @@ def run(root=Path("."), *, collector=None, batch_size=MAX_BATCH, predictor=None)
         result=predict(spec,collector)
         if result.get("symbol")!=spec[0] or result.get("status") not in ("no_call","research_prediction"):
             raise ValueError("invalid_predictor_response")
+        old=previous_results.get(spec[0])
+        if (result["status"]=="no_call" and old and old.get("status")=="research_prediction"):
+            # Keep only a GENUINE, previously issued forecast whose target is
+            # still in the future; a transient data failure cannot erase it.
+            end=(old.get("target") or {}).get("end")
+            try:
+                ending=datetime.fromisoformat(end) if end else None
+            except (TypeError, ValueError):
+                ending=None
+            if ending and ending.tzinfo and ending>datetime.now(UTC):
+                result={**old,"latest_attempt":{"status":"no_call",
+                        "checked_at":generated,"reason":result.get("reason")}}
         previous_results[spec[0]]=result
         outcomes.append(result)
     output={"version":VERSION,"generated_at":generated,"status":"research_only_partial_coverage",
