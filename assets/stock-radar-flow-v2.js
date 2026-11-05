@@ -107,9 +107,8 @@ function fxChosen(ctx){
 
 function fxSignalChip(c,ctx){
  const x=fxPrediction(c,ctx);
- return `<span class="fx-signal ${x.klass}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note">${x.stale?"기간 종료":x.unknown?"시점 확인":x.active?"연구용":x.r?.status==="research_prediction"?"검증 오류":"발행 없음"}</small>`;
+ return `<span class="fx-signal ${x.klass}" title="${fxEscape(x.status)}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note" title="${fxEscape(x.status)}">${x.active?"연구용":!x.r?"대상 외":x.stale?"기간 종료":x.r?.status==="no_call"?"자료 대기":"검증 대기"}</small>`;
 }
-
 function fxStockRows(ctx,expanded){
  const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
  if(!pool.length)return '<div class="fx-chart-empty">현재 검색·필터에 해당하는 종목이 없습니다.</div>';
@@ -130,7 +129,7 @@ function fxStockPanel(ctx,expanded){
  <label class="fx-search">${h.I?.("search")||"⌕"}<input id="fx-search-input" type="search" aria-label="종목명·코드로 검색" placeholder="종목명 · 코드 검색" value="${fxEscape(fxLocal.search)}"></label></div>
  <div class="fx-columns"><span>기업 / 시장</span><span>저장 종가</span><span>AI 방향</span></div>
  <div class="fx-results" id="fx-results">${fxStockRows(ctx,expanded)}</div>
- <div class="fx-list-footer"><span id="fx-result-count">${Math.min(pool.length,cap)} / ${pool.length}개 · AI 연구용</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}</div></section>`;
+ <div class="fx-list-footer"><span id="fx-result-count">${Math.min(pool.length,cap)} / ${pool.length}개 · AI 모델 ${fxForecastMeta(ctx).modeled}개 기업</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}</div></section>`;
 }
 
 function fxChart(c){
@@ -624,7 +623,7 @@ function fxDetail(ctx){
  const ai=hasSignal?fxBars(c,ctx):`<div class="fx-d-ai-empty">
   <span class="fx-d-ai-icon" aria-hidden="true">${helper.I?.("chart")||"◇"}</span>
   <strong>${fxEscape(signal.status==="현재 연구 신호 없음"?"현재 연구 신호 없음":signal.status||"검증된 최신 신호 없음")}</strong>
-  <p>유효한 목표 기간과 예측 자료가 확인될 때 표시합니다. 과거 확률은 매수 근거가 아닙니다.</p>
+  <p>${fxEscape(fxForecastMeta(ctx).summary)} · 모델 미지원·원자료 부족·기간 만료를 구분하며 임의 확률은 만들지 않습니다.</p>
  </div>`;
  const ticker=String(c.symbol||"—").replace(/\.(KS|KQ)$/,""),badge=ticker.replace(/[^A-Za-z0-9]/g,"").slice(0,3)||"STK";
  return `<div class="fx-detail-v4 fx-detail-v6">
@@ -644,7 +643,7 @@ function fxDetail(ctx){
     <section class="fx-panel fx-d-hero fx-d-ai-panel">
      <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} AI 방향 분석</h3><small>상승·횡보·하락을 추정한 연구 결과입니다.</small></div><span class="fx-d-ai-badge">연구용</span></div>
      <div class="fx-d-ai-body">${ai}</div>
-     <p class="fx-d-research-note">연구 확률은 수익률·매수 성공률이 아닙니다.</p>
+     <p class="fx-d-research-note">${fxEscape(fxForecastMeta(ctx).summary)} · ${ctx.data?.direction?.generated_at?"예측 생성 "+fxEscape(fxHelpers().T?.(ctx.data.direction.generated_at)||"시각 확인 전"):"예측 수집 전"}${fxForecastMeta(ctx).delayed?" · 갱신 지연":""} · 매수 성공률 아님</p>
     </section>
     <section class="fx-panel fx-decision-panel fx-d-hero">
      <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>상승 방향 · 가격 매력 · 손익 위험을 함께 비교합니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
