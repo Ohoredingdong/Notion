@@ -96,10 +96,13 @@ with sync_playwright() as play:
         assets=page.locator("script[src]").evaluate_all(
             "(nodes) => nodes.map(n => n.getAttribute('src'))")
         expected_modules=("stock-radar-clean-bridge.js","stock-radar-flow-v2.js",
-                          "stock-catalog-ui.js","stock-world-brief.js")
-        check("Four approved V5 runtime modules, without outdated scripts",
-            len(assets)==4 and all(sum(name in x for x in assets)==1
-                                   for name in expected_modules),
+                          "stock-catalog-ui.js","stock-world-brief.js",
+                          "stock-forecast.js","stock-forecast-learning.js",
+                          "stock-forecast-directions.js","stock-forecast-autopilot.js")
+        check("Approved V5 runtime modules and independent forecast screens only",
+            len(assets)==len(expected_modules) and all(sum(name in x for x in assets)==1
+              for name in expected_modules) and not any("stock-radar-v8.js" in x
+              or "stock-radar-v9.js" in x for x in assets),
             str(assets))
         check("Market index cards",
             page.locator(".fx-v5-markets .nr-index").count() == 4)
