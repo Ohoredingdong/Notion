@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-05T19:51:49.995146+09:00
+- 계산일: 2026-11-06T05:39:11.468298+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,21 +10,21 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 31.0배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 40.8배 | warning |
-| Apple (AAPL) | 6.4% | 32.0% | 양수 | 46.9배 | warning |
+| Apple (AAPL) | 15.1% | 33.0% | 양수 | 38.3배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 30.1배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 37.2배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 37.1배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.4배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 356.7배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 315.3배 | warning |
 
 ## 데이터 이상·제약
+- AAPL: 비공식 보조 재무자료 — 공시와 교차검증 필요
 - MSFT: 비공식 보조 재무자료 — 공시와 교차검증 필요
 - NVDA: 비공식 보조 재무자료 — 공시와 교차검증 필요
-- AAPL: 비공식 보조 재무자료 — 공시와 교차검증 필요
 - 000660: 필수 재무항목 누락; DART 공식 검증 미완료
 - 207940: 필수 재무항목 누락; DART 공식 검증 미완료
 - AMZN: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- ["미국은 '휴~' 안도했는데"…한국 개미들에 날아든 '날벼락' - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFBxMWtLNzJLUk1feWk4dGYzVFFCMWZBUm9WZjROSXd0UlNWM2d5V1V1REtFdk5TdjJWZkVRNkp6UXFKRWJDelNzWVdmd3AxN0VZbjd6ejF5QjhLUQ?oc=5)
-- [(인문자의 미국 중간선거 이야기 ③ / 인간·문화·자연) 블루 쓰나미 이후, 돈은 어디로 흐르는가 - 아주경제](https://news.google.com/rss/articles/CBMiWEFVX3lxTFB6ZDI3THRBa2xZQlY0X1k2V3hGd1J6VU5xeENhTHZLTklIaVZoUWJMckt1OUd4czdtVks2VmtVSzgwSndDT290NFFJbW5pRjVLcEdrQUlQTUzSAVhBVV95cUxQemQyN0x0QWtsWUJWNF9ZNld4RndSelVOcXhDYUx2S05JSGlWaFFiTHJLdTlHeHM3bVZLNlZrVUs4MEp3Q09vdDRRSW1uaUY1S3BHa0FJUE1M?oc=5)
+- [임장은 수십번 다니지만 '기본'은 놓치는 투자자들…신간 - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE04Z1dGUVlOYmJTTVlqbUdOTUFpb0p2RnNhanJLb2F1M1VtNmxsWWV5ak5LRlhBUXk2NUFUZDJndkN1WDlDaTdZY0tLNzAtRnhFYjRUOHRtc1lhdw?oc=5)
+- [美 중간선거 후 금융시장 출렁···정부, AI 규제·관세 영향 점검 - 여성경제신문](https://news.google.com/rss/articles/CBMic0FVX3lxTE1WRzU2N1YzVkhyQjAyUG9QU2FaMmgwT2QxYTdHd21hVUhDV2g1blBLcG9kR1hHZ18yaW94TUZEb1FnWDhvYU5MS2dNTGQ1a1VYTGx1b1JZRTFvekpfN3ZJMDZsV1hHX1V6cGlZVmR0RnVucUHSAXdBVV95cUxNeVBvS2tvMXpSYk5WS1JPMmx6bUhJdFVVLUN2RmIxS0txQ1FrZlYtZ2VWZGlVYUJvazlBbERuUjctcld2T2F0b1h6SG56NHlvSXJITl9rbU1FaWl6dGhLbGRuNm9kZkVwMU5xVjlzYlBSX29vbFhYMA?oc=5)
+- [(르포) 삼전닉스·마이크론, 중국 수입박람회서 '메모리 모듈' 경쟁 - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE1hUlV5N0NLMmItX09va25oZGhDTWo1Y3dVWGU5U0tKZVJjZjNBZGQ3ODk3LUNqeUgwY1NBUHJzLUZlVldqdUFpVjdOdEpvSkNUai1ReUYwYnNGcWhRazhfQdIBYEFVX3lxTE1hUlV5N0NLMmItX09va25oZGhDTWo1Y3dVWGU5U0tKZVJjZjNBZGQ3ODk3LUNqeUgwY1NBUHJzLUZlVldqdUFpVjdOdEpvSkNUai1ReUYwYnNGcWhRazhfQQ?oc=5)
 - [(단독) 美서 'HBM 기반' 만드는 삼성 … TSMC 대안 찾는 빅테크 공략 - 매일경제](https://news.google.com/rss/articles/CBMiVkFVX3lxTE9ZaS1GUUh5dzNTbk56OVpBQk9Hc25xVU9FQlM4S24xN2NhOG05VGtOeVlQWkdra3dEMDhpemh2WnFSN0ZubWRIamY4S0dwUUtPSDhxZG53?oc=5)
-- [엔비디아·인텔, 다음 주 서울서 네트워크 다진다…삼성·SK 등 국내 기업 스킨십 - 서울경제](https://news.google.com/rss/articles/CBMiU0FVX3lxTE1vbHdCai1lYy1rWHhQWjIzOG9iM1VhN292WFBqRWo1UUJTelozMHBJWExUeGRabkVIQmRRb2p4cC01XzB1ZWxRanFpOEhYc3I0LXpn?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
