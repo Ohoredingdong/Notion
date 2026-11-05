@@ -57,6 +57,29 @@ class RotationTests(unittest.TestCase):
             self.assertEqual(len(second["records"]),1)
             self.assertEqual(second["universe"]["attempted_total"],1)
 
+    def test_no_call_keeps_only_unexpired_genuine_forecast(self):
+        from datetime import datetime, timedelta, timezone
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            (root/"stock-opportunity-summary.json").write_text(json.dumps(
+                {"states":[{"symbol":"AAPL","name":"Apple"}]}))
+            prior={"version":x.VERSION,"cursor":{},
+                   "records":[{"symbol":"AAPL","mode":"daily","status":"research_prediction",
+                               "target":{"end":(datetime.now(timezone.utc)+timedelta(hours=5)).isoformat()},
+                               "probabilities":{"up":.3,"flat":.4,"down":.3},"direction":"flat"}]}
+            (root/x.OUTPUT).write_text(json.dumps(prior))
+            def unavailable(spec,collector):
+                return {"symbol":spec[0],"status":"no_call","probabilities":None,
+                        "reason":"temporary_source_timeout"}
+            current=x.run(root,batch_size=2,collector=lambda _:None,predictor=unavailable)
+            self.assertEqual(current["records"][0]["status"],"research_prediction")
+            self.assertEqual(current["records"][0]["latest_attempt"]["status"],"no_call")
+            previous=current
+            previous["records"][0]["target"]["end"]=(datetime.now(timezone.utc)-timedelta(minutes=5)).isoformat()
+            (root/x.OUTPUT).write_text(json.dumps(previous))
+            after=x.run(root,batch_size=2,collector=lambda _:None,predictor=unavailable)
+            self.assertEqual(after["records"][0]["status"],"no_call")
+
     def test_generator_failure_does_not_replace_persisted_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
