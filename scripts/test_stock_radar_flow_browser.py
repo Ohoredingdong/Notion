@@ -160,8 +160,13 @@ with sync_playwright() as play:
             page.locator('[data-rf-market="ALL"].active').count()==1,
             "Explicit selection must clear incompatible NASDAQ market filter")
         page.locator('[data-rf-market="NASDAQ"]').first.click()
-        first = page.locator(".fx-row[data-nr-select]").first
-        symbol = first.get_attribute("data-nr-select")
+        # The full directory includes companies without a collected quote.
+        # Keep this price/chart positive control on the actual raw NVDA record;
+        # the universe suite separately exercises unpriced catalog companies.
+        page.locator("#fx-search-input").fill("NVDA")
+        first = page.locator('.fx-row[data-nr-select="NVDA"]')
+        check("Known priced NASDAQ company is still searchable",first.count()==1)
+        symbol = "NVDA"
         first.click()
         check("Selected stock appears in focus",symbol in page.locator(".fx-focus-head").inner_text())
         search = page.locator("#fx-search-input")

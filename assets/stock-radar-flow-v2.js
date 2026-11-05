@@ -13,12 +13,22 @@ function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},se
 
 function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
+function fxId(c){return window.StockCatalogUI?.selectionId?.(c)||String(c?.symbol||"");}
+
+function fxSelected(ctx){return window.StockCatalogUI?.resolve?.(ctx.selected,ctx)||(!window.StockCatalogUI?.resolve?(ctx.data?.raw?.companies||[]).find(c=>String(c.symbol)===String(ctx.selected)):null);}
+
+function fxSearchText(c){return window.StockCatalogUI?.searchText?.(c)||String(c.name||"")+" "+String(c.symbol||"");}
+
+const fxPoolCache=new WeakMap();
+
 /* A future valid forecast must outrank a later no-call snapshot. */
 /* Live target selection from independent core and rolling extended research. */
 function fxRecord(c,ctx){
  const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,""),now=Date.now();
- const primary=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
- const extended=(ctx.data?.extended?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const country=String(c?.country||c?.market||"").toUpperCase();
+ const matches=r=>{const rc=String(r?.country||r?.market||"").toUpperCase();return String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key&&(!["KR","US"].includes(country)||!["KR","US"].includes(rc)||country===rc)};
+ const primary=(ctx.data?.direction?.records||[]).filter(matches);
+ const extended=(ctx.data?.extended?.records||[]).filter(matches);
  const valid=r=>{
   const p=r?.probabilities||{},start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
   return r?.status==="research_prediction"&&Number.isFinite(start)&&Number.isFinite(end)&&start<end&&end>now&&
@@ -39,10 +49,12 @@ function fxForecastMeta(ctx){
  const age=Date.parse(data.generated_at||""),ext=Date.parse(more.generated_at||"");
  const updated=Math.max(Number.isFinite(age)?age:0,Number.isFinite(ext)?ext:0);
  const ageMinutes=updated?Math.max(0,Math.round((now-updated)/60000)):null;
- const active=(ctx.data?.raw?.companies||[]).filter(c=>fxPrediction(c,ctx).active).length;
+ const available=typeof window!=="undefined"&&window.StockCatalogUI?.resolve;
+ const candidates=available?[...known].map(id=>window.StockCatalogUI.resolve(id,ctx)).filter(Boolean):(ctx.data?.raw?.companies||[]);
+ const active=candidates.filter(c=>fxPrediction(c,ctx).active).length;
  return {modeled:known.size,tracked,active,age:ageMinutes,delayed:ageMinutes!==null&&ageMinutes>180,
   summary:tracked===null?"AI 모델 범위 확인 전":
-   "AI 연구 이력 "+known.size+"개 기업 · 심층목록 유효 "+active+"/"+tracked+"개"};
+   "AI 연구 이력 "+known.size+"개 기업 · 현재 유효 "+active+"개 · 심층 자료 "+tracked+"개"};
 }
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
@@ -84,13 +96,11 @@ function fxPrediction(c,ctx){
 }
 
 function fxUniverse(ctx){
- const h=fxHelpers(),fav=new Set(ctx.favorites||[]);
- const data=[...(ctx.data?.raw?.companies||[])];
- data.sort((a,b)=>{
-  if(ctx.screen==="home"){const pin=Number(String(b.symbol)===String(ctx.selected))-Number(String(a.symbol)===String(ctx.selected));if(pin)return pin;}
-  return Number(fav.has(b.symbol))-Number(fav.has(a.symbol))+(Number(b.priority?.display_score??b.priority?.score??0)-Number(a.priority?.display_score??a.priority?.score??0))/1000;
- });
- return data.filter(c=>{
+ if(fxPoolCache.has(ctx))return fxPoolCache.get(ctx);
+ const fav=new Set((ctx.favorites||[]).map(id=>{const c=window.StockCatalogUI?.resolve?.(id,ctx);return c?fxId(c):String(id)}));
+ const data=window.StockCatalogUI?.universe?.(ctx)||ctx.data?.raw?.companies||[];
+ const query=fxLocal.search.trim().toLowerCase(),selected=fxId(fxSelected(ctx));
+ const pool=data.filter(c=>{
   if(ctx.market!=="ALL"){
    if(typeof window.RadarMarkets?.match==="function"){if(!window.RadarMarkets.match(c,ctx.market))return false}
    else if(ctx.market==="KOSPI"&&!(c.market==="KR"&&!String(c.symbol).endsWith(".KQ")))return false;
@@ -98,16 +108,33 @@ function fxUniverse(ctx){
    else if(ctx.market==="NASDAQ"&&c.market!=="US")return false;
    else if(ctx.market==="DOW")return false;
   }
-  if(fxLocal.filter==="star"&&!fav.has(c.symbol))return false;
+  if(query&&!fxSearchText(c).toLowerCase().includes(query))return false;
+  if(fxLocal.filter==="star"&&!fav.has(fxId(c)))return false;
   if(["up","flat","down"].includes(fxLocal.filter)){const sig=fxPrediction(c,ctx);if(!sig.active||sig.stale||sig.unknown||sig.r?.direction!==fxLocal.filter)return false;}
   if(fxLocal.filter==="ai"){const sig=fxPrediction(c,ctx);if(!sig.active||sig.stale||sig.unknown)return false;}
-  return !fxLocal.search||(String(c.name||"")+" "+String(c.symbol)).toLowerCase().includes(fxLocal.search.toLowerCase());
+  return true;
  });
+ pool.sort((a,b)=>{
+  if(query){const exact=c=>[c.symbol,c.source_symbol,fxId(c),c.name,c.catalog_entry?.name].some(v=>String(v||"").toLowerCase()===query);const match=Number(exact(b))-Number(exact(a));if(match)return match;}
+  if(ctx.screen==="home"){const pin=Number(fxId(b)===selected)-Number(fxId(a)===selected);if(pin)return pin;}
+  return Number(fav.has(fxId(b)))-Number(fav.has(fxId(a)))+(Number(b.priority?.display_score??b.priority?.score??0)-Number(a.priority?.display_score??a.priority?.score??0))/1000;
+ });
+ fxPoolCache.set(ctx,pool);return pool;
 }
 
 function fxChosen(ctx){
  const arr=fxUniverse(ctx);
- return arr.find(c=>String(c.symbol)===String(ctx.selected))||arr[0]||null;
+ const id=fxId(fxSelected(ctx));
+ return arr.find(c=>fxId(c)===id)||arr[0]||null;
+}
+
+function fxListCount(ctx,pool,cap){return Math.min(pool.length,cap).toLocaleString("ko-KR")+" / "+pool.length.toLocaleString("ko-KR")+"개 · AI 이력 "+fxForecastMeta(ctx).modeled+"개";}
+
+function fxListFooter(ctx,pool,cap,expanded){return `<span id="fx-result-count" title="${fxEscape(fxUniverseNote(ctx))}">${fxListCount(ctx,pool,cap)}</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}`;}
+
+function fxUniverseNote(ctx){
+ const items=window.StockCatalogUI?.universe?.(ctx)||ctx.data?.raw?.companies||[],official=window.StockCatalogUI?.count?.(ctx)||0,tracked=ctx.data?.raw?.companies?.length||0,extra=items.length-official;
+ return official?"공식 명부 "+official.toLocaleString("ko-KR")+"개"+(extra?" + 명부 미포함 기존 분석 "+extra+"개":"")+" · 가격·심층 자료 "+tracked+"개":"전체 명부 조회 실패 · 확인된 심층 자료 "+tracked+"개만 표시";
 }
 
 function fxSignalChip(c,ctx){
@@ -115,26 +142,27 @@ function fxSignalChip(c,ctx){
  return `<span class="fx-signal ${x.klass}" title="${fxEscape(x.status)}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note" title="${fxEscape(x.status)}">${x.active?"연구용":!x.r?"대상 외":x.stale?"기간 종료":x.r?.status==="no_call"?"자료 대기":"검증 대기"}</small>`;
 }
 function fxStockRows(ctx,expanded){
- const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
+ const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9,chosen=fxId(fxChosen(ctx));
  if(!pool.length)return '<div class="fx-chart-empty">현재 검색·필터에 해당하는 종목이 없습니다.</div>';
  return pool.slice(0,cap).map(c=>{
   const m=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market;
   const d=h.change?.(c);
-  return `<button type="button" data-nr-select="${fxEscape(c.symbol)}" class="fx-row ${String(c.symbol)===String(fxChosen(ctx)?.symbol)?"active":""}" aria-label="${fxEscape(c.name)} 선택">
-  <span class="fx-stock-name"><strong>${fxEscape(c.name)}</strong><small>${fxEscape(c.symbol)} · ${fxEscape(m||"분류 확인 전")}</small></span>
+  return `<button type="button" data-nr-select="${fxEscape(fxId(c))}" class="fx-row ${fxId(c)===chosen?"active":""}" aria-label="${fxEscape(c.name)} 선택" title="${fxEscape(c.catalog_only?"공식 명부 · 가격·심층 자료 미수집":c.catalog_entry?"공식 명부 · 가격·심층 자료 있음":"현재 명부 미포함 · 기존 분석 자료")}">
+  <span class="fx-stock-name"><strong>${fxEscape(c.name)}</strong><small>${fxEscape(c.symbol)} · ${fxEscape(m||"분류 확인 전")}${!c.catalog_entry&&!c.catalog_only?" · 명부 미포함":""}</small></span>
   <span class="fx-price">${fxMoney(c.price,c.currency)}<small class="${h.tone?.(d)||""}">${fxPct(d)}</small></span><span class="fx-signal-wrap">${fxSignalChip(c,ctx)}</span></button>`;
  }).join("");
 }
 
 function fxStockPanel(ctx,expanded){
  const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9;
- return `<section class="fx-panel fx-list-panel"><div class="fx-panel-head"><div><h3>AI 종목 신호</h3><p>종목을 선택하면 분석이 바뀝니다.</p></div><button class="fx-link" type="button" data-nr-screen="stocks">${expanded?"목록":"전체"} ${h.I?.("arrow")||"›"}</button></div>
+ const scope=window.StockCatalogUI?.info?.(ctx),scopeText=scope?.official?"공식 명부 "+scope.official.toLocaleString("ko-KR")+(scope.extra?" + 기존 "+scope.extra:""):"전체 명부 미확인 · 심층 자료만 표시";
+ return `<section class="fx-panel fx-list-panel"><div class="fx-panel-head"><div><h3>전체 종목 · AI 신호</h3><p title="${fxEscape(fxUniverseNote(ctx))}">${fxEscape(scopeText)}</p></div><button class="fx-link" type="button" data-nr-screen="stocks">${expanded?"목록":"전체"} ${h.I?.("arrow")||"›"}</button></div>
  <div class="fx-filters"><div class="fx-chips">${[["ALL","전체"],["KOSPI","코스피"],["KOSDAQ","코스닥"],["NASDAQ","나스닥"],["DOW","다우"]].map(([key,title])=>`<button type="button" data-rf-market="${key}" class="${ctx.market===key?"active":""}" aria-pressed="${ctx.market===key}">${title}</button>`).join("")}</div>
  <div class="fx-chips direction">${[["all","전체"],["ai","기간 유효"],["up","상승"],["down","하락"],["star","★ 관심"]].map(([key,title])=>`<button type="button" data-fx-filter="${key}" class="${fxLocal.filter===key?"active":""}" aria-pressed="${fxLocal.filter===key}">${title}</button>`).join("")}</div>
  <label class="fx-search">${h.I?.("search")||"⌕"}<input id="fx-search-input" type="search" aria-label="종목명·코드로 검색" placeholder="종목명 · 코드 검색" value="${fxEscape(fxLocal.search)}"></label></div>
  <div class="fx-columns"><span>기업 / 시장</span><span>저장 종가</span><span>AI 방향</span></div>
  <div class="fx-results" id="fx-results">${fxStockRows(ctx,expanded)}</div>
- <div class="fx-list-footer"><span id="fx-result-count">${Math.min(pool.length,cap)} / ${pool.length}개 · AI 모델 ${fxForecastMeta(ctx).modeled}개 기업</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}</div></section>`;
+ <div class="fx-list-footer">${fxListFooter(ctx,pool,cap,expanded)}</div></section>`;
 }
 
 function fxChart(c){
@@ -209,22 +237,24 @@ function fxBars(c,ctx){
 }
 
 function fxFocus(ctx){
- const h=fxHelpers(),c=ctx.screen==="home"||ctx.screen==="stocks"?fxChosen(ctx):ctx.data?.raw?.companies?.find(v=>String(v.symbol)===String(ctx.selected));
+ const h=fxHelpers(),c=ctx.screen==="home"||ctx.screen==="stocks"?fxChosen(ctx):fxSelected(ctx);
  if(!c)return '<section class="fx-panel fx-focus"><div class="fx-chart-empty">기업을 선택해 주세요.</div></section>';
+ if(c.catalog_only)return window.StockCatalogUI.profile(c,ctx);
  const delta=h.change?.(c),venue=window.RadarMarkets?.label?window.RadarMarkets.label(c):c.market,why=h.flowReasonLines?.(c)||[];
  return `<section class="fx-panel fx-focus"><div class="fx-focus-head"><div><small>선택 종목 분석 · ${fxEscape(venue||"분류 미확인")}</small><h3>${fxEscape(c.name)} <span>${fxEscape(c.symbol)}</span></h3></div><div class="fx-icon-actions">
- <button type="button" class="${(ctx.favorites||[]).includes(c.symbol)?"saved":""}" data-nr-star="${fxEscape(c.symbol)}" title="관심 등록" aria-label="관심 등록">${h.I?.("star")||"☆"}</button>
- <button type="button" data-nr-detail="${fxEscape(c.symbol)}" title="종목 상세" aria-label="종목 상세">${h.I?.("arrow")||"›"}</button></div></div>
+ <button type="button" class="${(ctx.favorites||[]).includes(fxId(c))?"saved":""}" data-nr-star="${fxEscape(fxId(c))}" title="관심 등록" aria-label="관심 등록">${h.I?.("star")||"☆"}</button>
+ <button type="button" data-nr-detail="${fxEscape(fxId(c))}" title="종목 상세" aria-label="종목 상세">${h.I?.("arrow")||"›"}</button></div></div>
  <div class="fx-price-large"><strong>${fxMoney(c.price,c.currency)}</strong><span class="${h.tone?.(delta)||""}">${fxPct(delta)}</span><small>${fxEscape(c.price_session||"기준일 미확인")} 저장 종가</small></div>
  <div class="fx-focus-content"><div class="fx-chart-card"><div class="fx-mini-head"><b>실제 가격 흐름</b><div class="fx-periods">${[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]].map(([key,title])=>`<button type="button" data-fx-period="${key}" class="${fxLocal.period===key?"active":""}">${title}</button>`).join("")}</div></div>${fxChart(c)}</div>
  <div class="fx-ai-card"><div class="fx-mini-head"><b>AI 방향 분석</b><span class="fx-signal stale">연구용</span></div>${fxBars(c,ctx)}</div></div>
  <div class="fx-evidence"><div><b>우선 확인할 근거</b><p title="${fxEscape(why[0]||"공식 자료 대조 필요")}">${fxEscape(why[0]||"공식 자료 대조 필요")}</p></div><div><b>확인할 위험</b><p title="${fxEscape(why[1]||"가격·공시 재확인")}">${fxEscape(why[1]||"가격·공시 재확인")}</p></div></div>
- <div class="fx-focus-actions"><button class="fx-action-primary" data-nr-detail="${fxEscape(c.symbol)}">${h.I?.("search")||"⌕"} 상세 분석</button><button class="fx-action-secondary" data-nr-screen="scenario">${h.I?.("chart")||"↗"} 시나리오</button></div></section>`;
+ <div class="fx-focus-actions"><button class="fx-action-primary" data-nr-detail="${fxEscape(fxId(c))}">${h.I?.("search")||"⌕"} 상세 분석</button><button class="fx-action-secondary" data-nr-screen="scenario">${h.I?.("chart")||"↗"} 시나리오</button></div></section>`;
 }
 
 function fxRisk(ctx){
- const h=fxHelpers(),c=ctx.screen==="home"||ctx.screen==="stocks"?fxChosen(ctx):ctx.data?.raw?.companies?.find(v=>String(v.symbol)===String(ctx.selected));
+ const h=fxHelpers(),c=ctx.screen==="home"||ctx.screen==="stocks"?fxChosen(ctx):fxSelected(ctx);
  if(!c)return '<div class="fx-chart-empty">종목을 선택해 주세요.</div>';
+ if(c.catalog_only)return '<div class="fx-risk-lines"><div class="fx-risk-item"><span class="fx-risk-icon">!</span><span><b>가격·실사 자료 미수집</b><div>확인된 공시 재무와 출처를 먼저 확인해 주세요. 투자 적합성은 평가하지 않았습니다.</div></span></div></div>';
  const k=h.caseOf?.(c),why=h.flowReasonLines?.(c)||[],labels={attractive:"엄격 실사 항목 통과",conditional:"추가 검증 필요",avoid:"위험 검토 필요",price_wait:"가격 조건 대기",insufficient:"자료 보강 필요"};
  return `<div class="fx-risk-lines"><div class="fx-risk-item"><span class="fx-risk-icon">!</span><span><b>${fxEscape(k?labels[k.state]||"실사 확인 필요":"동일 시점 실사 미확인")}</b><div>AI 예측과 실사 판정은 별도입니다.</div></span></div>
  ${why.slice(0,2).map(x=>`<div class="fx-risk-item"><span class="fx-risk-icon">·</span><span>${fxEscape(x)}</span></div>`).join("")}</div>
@@ -330,6 +360,7 @@ function fxV5StockNews(ctx,c){
   '<p class="fx-v5-empty">최근 확인 가능한 시장·기업 뉴스가 없습니다. 자료 수집 시각을 확인해 주세요.</p>';
 }
 function fxV5Checks(c,ctx){
+ if(c.catalog_only)return `<div class="fx-v5-checklist"><div class="fx-v5-checkrow"><span class="todo">!</span><span>가격·컨센서스 미수집</span></div><div class="fx-v5-checkrow"><span class="todo">!</span><span>종합 투자 실사 미수행</span></div></div><div class="fx-v5-footnote">확보된 공식 재무와 출처는 선택 기업 화면에서 확인할 수 있습니다.</div>`;
  const verifiedReview=fxInvestmentEvidence(c,ctx);
  const assessment=c.assessment||{},checks=Array.isArray(assessment.checks)?assessment.checks:[],audit=c.extension_audit||{};
  const period=c.history?.filing_period,listed=checks.slice(0,4).map(x=>({label:String(x.label||"사전 점검"),pass:x.ok===true}));
@@ -357,7 +388,7 @@ function fxV5Side(ctx,c){
  const h=fxHelpers(),quality=fxModelQuality(ctx),overall=ctx.data?.learning?.overall||{},acc=fxN(overall.accuracy),sample=fxN(overall.samples),correct=fxN(overall.correct);
  return `<aside class="fx-v5-aside" id="fx-risk-slot">
  <section class="fx-panel fx-v5-sidecard fx-v5-sidecheck">
- <div class="fx-v5-sidehead"><h3>${h.I?.('check')||"☑"} 투자 체크리스트</h3><button data-nr-detail="${fxEscape(c?.symbol||'')}" type="button">자세히 ›</button></div>
+ <div class="fx-v5-sidehead"><h3>${h.I?.('check')||"☑"} 투자 체크리스트</h3><button data-nr-detail="${fxEscape(fxId(c))}" type="button">자세히 ›</button></div>
  ${c?fxV5Checks(c,ctx):'<div class="fx-v5-empty">종목 선택 후 확인</div>'}
  </section>
  <section class="fx-panel fx-v5-sidecard fx-v5-sidenews">
@@ -388,6 +419,7 @@ function fxSafeTargets(c){
 function fxV5Cockpit(ctx){
  const c=fxChosen(ctx),h=fxHelpers();
  if(!c)return `<section class="fx-panel fx-v5-cockpit"><div class="fx-chart-empty">조건에 맞는 기업이 없습니다. 시장·신호 필터를 변경해 주세요.</div></section>`;
+ if(c.catalog_only)return window.StockCatalogUI.profile(c,ctx);
  const f=c.forecasts||{},a=c.assessment||{},t=fxSafeTargets(c),b=c.balance||{},tech=c.technical||{},history=c.history||{},first=ctx.data?.charts?.series?.[c.symbol];
  const delta=h.change?.(c),market=window.RadarMarkets?.label?.(c)||c.market;
  const focus=fxV5Facts(c);
@@ -399,7 +431,7 @@ function fxV5Cockpit(ctx){
  const volumeAligned=lastChart?.bars?.at(-1)?.date===c.price_session&&fxN(volume)!==null;
  return `<section class="fx-panel fx-v5-cockpit" aria-label="선택 기업 종합 분석">
  <div class="fx-v5-stockhead">
-  <div class="fx-v5-stocktitle"><small>${fxEscape(market||"시장 확인 전")} · ${fxEscape(c.sector||"업종 확인 전")}</small><div><h2>${fxEscape(c.name)}</h2><span>${fxEscape(c.symbol)}</span><button type="button" data-nr-star="${fxEscape(c.symbol)}" aria-label="관심 종목 저장" class="fx-v5-star ${(ctx.favorites||[]).includes(c.symbol)?'on':''}">${(ctx.favorites||[]).includes(c.symbol)?'★':'☆'}</button></div></div>
+  <div class="fx-v5-stocktitle"><small>${fxEscape(market||"시장 확인 전")} · ${fxEscape(c.sector||"업종 확인 전")}</small><div><h2>${fxEscape(c.name)}</h2><span>${fxEscape(c.symbol)}</span><button type="button" data-nr-star="${fxEscape(fxId(c))}" aria-label="관심 종목 저장" class="fx-v5-star ${(ctx.favorites||[]).includes(fxId(c))?'on':''}">${(ctx.favorites||[]).includes(fxId(c))?'★':'☆'}</button></div></div>
   <div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b class="${h.tone?.(delta)||''}">${fxPct(delta)}</b></div>
   <div class="fx-v5-volume"><span>기준 거래량</span><strong>${volumeAligned?fxNum(volume,0)+"주":"동일 시점 미수집"}</strong><small>종가 ${fxEscape(c.price_session||"기준일 미확인")}</small></div>
  </div>
@@ -430,7 +462,7 @@ function fxV5Cockpit(ctx){
     <div><small>직전 20일 고점</small><strong>${fxMoney(tech.prior_high20,c.currency)}</strong></div>
    </div><small class="fx-v5-datanote">외국인·기관 순매수: 데이터 미연결</small></section>
  </div>
- <div class="fx-v5-actions"><button class="fx-v5-strong" data-nr-detail="${fxEscape(c.symbol)}" type="button">⌕ 심층 분석 · 재무·공시·위험</button><button data-nr-screen="scenario" type="button">↗ 시나리오 비교</button><button data-nr-screen="performance" type="button">✓ 예측 검증</button><button data-nr-screen="portfolio" type="button">☆ 관심·모의투자</button></div>
+ <div class="fx-v5-actions"><button class="fx-v5-strong" data-nr-detail="${fxEscape(fxId(c))}" type="button">⌕ 심층 분석 · 재무·공시·위험</button><button data-nr-screen="scenario" type="button">↗ 시나리오 비교</button><button data-nr-screen="performance" type="button">✓ 예측 검증</button><button data-nr-screen="portfolio" type="button">☆ 관심·모의투자</button></div>
  </section>`;
 }
 
@@ -511,11 +543,9 @@ function fxHome(ctx){
   </div>`;
 }
 function fxStockPage(ctx){
- const pool=fxUniverse(ctx);
  return `<div class="fx-stock-directory-page">
- <div class="fx-intro"><div><h2>국내·미국 상장종목 검색</h2><p>공식 상장명부와 가격·재무제표 심층 분석 ${pool.length}개를 구분합니다.</p></div><span class="fx-stamp">저장된 데이터 · 실시간 호가 아님</span></div>
- ${window.StockCatalogUI?.panel?.(ctx)||'<section class="fx-panel">상장명부 확인 중</section>'}
- <div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${window.StockCatalogUI?.focus?.(ctx)||fxFocus(ctx)}</div></div>${fxSteps(ctx)}
+ <div class="fx-intro"><div><h2>국내·미국 전체 종목</h2><p>${fxEscape(fxUniverseNote(ctx))} · 공식 재무 확인 ${(window.StockCatalogUI?.verifiedCount?.(ctx)||0).toLocaleString("ko-KR")}개</p></div><span class="fx-stamp">저장된 데이터 · 실시간 호가 아님</span></div>
+ <div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}
  </div>`;
 }
 
@@ -614,8 +644,9 @@ function fxInvestmentDecision(c,ctx,review,signal){
 }
 
 function fxDetail(ctx){
- const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
+ const c=fxSelected(ctx);
  if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
+ if(c.catalog_only)return `<div class="fx-catalog-detail"><div class="fx-intro"><div><h2>${fxEscape(c.name)} · 종목 분석</h2><p>선택한 기업의 공식 명부와 확보된 공시 재무입니다.</p></div><button type="button" class="fx-action-secondary" data-nr-screen="stocks">종목 목록으로</button></div>${window.StockCatalogUI.profile(c,ctx)}${fxSteps(ctx)}</div>`;
  const f=c.forecasts||{},h=c.history||{},balance=c.balance||{},tech=c.technical||{},a=c.assessment||{},short=c.short||{};
  const helper=fxHelpers(),periods=[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]];
  const review=fxInvestmentEvidence(c,ctx),state=review.status;
@@ -641,7 +672,7 @@ function fxDetail(ctx){
   <section class="fx-d-securitybar" aria-label="현재 선택 종목 및 마지막 저장 종가">
    <div class="fx-d-security"><span class="fx-d-ticker">${fxEscape(badge)}</span><div><strong>${fxEscape(c.name)}</strong><small>${fxEscape(c.symbol)} · ${fxEscape(window.RadarMarkets?.label?.(c)||c.market||"시장 확인 전")} · ${fxEscape(c.sector||"업종 확인 전")}</small></div></div>
    <div class="fx-d-quote"><strong>${fxMoney(c.price,c.currency)}</strong><span class="${helper.tone?.(delta)||"nr-neutral"}">${fxPct(delta)}</span><small>${fxEscape(c.price_session||"기준일 미확인")} 저장 종가</small></div>
-   <div class="fx-d-security-actions"><button type="button" class="fx-d-star" data-nr-star="${fxEscape(c.symbol)}" title="관심종목 저장" aria-label="관심종목 저장">${ctx.favorites?.includes(c.symbol)?"★":"☆"}</button><button type="button" data-nr-screen="stocks" class="fx-d-back" title="종목 목록으로" aria-label="종목 목록으로">‹</button></div>
+   <div class="fx-d-security-actions"><button type="button" class="fx-d-star" data-nr-star="${fxEscape(fxId(c))}" title="관심종목 저장" aria-label="관심종목 저장">${ctx.favorites?.includes(fxId(c))?"★":"☆"}</button><button type="button" data-nr-screen="stocks" class="fx-d-back" title="종목 목록으로" aria-label="종목 목록으로">‹</button></div>
   </section>
   <div class="fx-detail-content">
    <div class="fx-detail-upper">
@@ -732,8 +763,9 @@ function fxScenarioPlot(c){
  </svg>`;
 }
 function fxScenario(ctx){
- const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
+ const c=fxSelected(ctx);
  if(!c)return '<section class="fx-empty-state">기업을 먼저 선택해 주세요.</section>';
+ if(c.catalog_only)return `<div class="fx-catalog-detail"><div class="fx-intro"><div><h2>${fxEscape(c.name)} · 시나리오</h2><p>가격·컨센서스 미수집으로 목표가와 수익률 시나리오를 계산할 수 없습니다.</p></div><button type="button" class="fx-action-secondary" data-nr-screen="stocks">종목 목록으로</button></div>${window.StockCatalogUI.profile(c,ctx)}${fxSteps(ctx)}</div>`;
  const t=fxSafeTargets(c),f=c.forecasts||{},a=c.assessment||{},tech=c.technical||{},current=fxN(c.price);
  const order=[["낙관 상단",t.high,"up","상단"],["중앙 기준",t.median,"base","중앙"],["비관 하단",t.low,"down","하단"]];
  const conditions=[
@@ -811,15 +843,15 @@ function fxHandleClick(e){
  if("fxSentimentNext" in ds){fxLocal.sentimentMarket=fxLocal.sentimentMarket==="us"?"kr":"us";try{localStorage.setItem("radar-sentiment-market",fxLocal.sentimentMarket)}catch{}bridge.render();return}
  if("fxRefresh" in ds){bridge.refresh();return}
  if(ds.fxPeriod){fxLocal.period=ds.fxPeriod;bridge.render();return}
- if(ds.fxFilter){fxLocal.filter=ds.fxFilter;fxLocal.limit=36;const c=fxChosen(fxContext());if(c)bridge.select(c.symbol);else bridge.render();return}
+ if(ds.fxFilter){fxLocal.filter=ds.fxFilter;fxLocal.limit=36;const c=fxChosen(fxContext());if(c)bridge.select(fxId(c));else bridge.render();return}
  if("fxMore" in ds){fxLocal.limit+=36;bridge.render();return}
  if(ds.fxDeep){bridge.deep(ds.fxDeep);return}
 }
 
 function fxEnsureSelectedVisible(c){
  if(!c)return;
- if(fxLocal.search&&!String(c.name+" "+c.symbol).toLowerCase().includes(fxLocal.search.trim().toLowerCase()))fxLocal.search="";
- if(fxLocal.filter==="star"&&!fxContext().favorites?.includes(c.symbol))fxLocal.filter="all";
+ if(fxLocal.search&&!fxSearchText(c).toLowerCase().includes(fxLocal.search.trim().toLowerCase()))fxLocal.search="";
+ if(fxLocal.filter==="star"&&!fxContext().favorites?.includes(fxId(c)))fxLocal.filter="all";
  if(["up","down","flat","ai"].includes(fxLocal.filter)){
   const forecast=fxPrediction(c,fxContext());
   if(!forecast.active||forecast.stale||forecast.unknown||(fxLocal.filter!=="ai"&&forecast.r?.direction!==fxLocal.filter))fxLocal.filter="all";
@@ -830,18 +862,19 @@ function fxHandleInput(e){
  fxLocal.search=e.target.value;
  let ctx=fxContext(),pool=fxUniverse(ctx);
  const bridge=window.StockRadarV2Bridge;
- if(pool.length&&!pool.some(c=>String(c.symbol)===String(ctx.selected)))bridge?.setSelectedSilently?.(pool[0].symbol);
+ if(pool.length&&!pool.some(c=>fxId(c)===fxId(fxSelected(ctx))))bridge?.setSelectedSilently?.(fxId(pool[0]));
  ctx=fxContext();
  const list=document.getElementById?.("fx-results"),count=document.getElementById?.("fx-result-count"),focus=document.getElementById?.("fx-focus-slot"),risk=document.getElementById?.("fx-risk-slot"),expanded=ctx.screen==="stocks",cap=expanded?fxLocal.limit:9;
  if(list)list.innerHTML=fxStockRows(ctx,expanded);
  if(focus)focus.innerHTML=ctx.screen==="home"?fxV5Cockpit(ctx):fxFocus(ctx);
  if(risk&&ctx.screen==="home"){const chosen=fxChosen(ctx);risk.outerHTML=fxV5Side(ctx,chosen)}
  else if(risk)risk.innerHTML=fxRisk(ctx);
- if(count)count.textContent=Math.min(pool.length,cap)+" / "+pool.length+"개 · AI 연구용";
+ if(count?.parentElement)count.parentElement.innerHTML=fxListFooter(ctx,pool,cap,expanded);
+ else if(count)count.textContent=fxListCount(ctx,pool,cap);
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261105-integrity-v2'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261105-unified-universe'};
 const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
