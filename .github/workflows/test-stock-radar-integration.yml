@@ -8,6 +8,8 @@ on:
       - 'stock-event-outlook.json'
       - 'assets/stock-radar-clean-bridge.js'
       - 'assets/stock-radar-flow-v2.js'
+      - 'assets/stock-catalog-ui.js'
+      - 'scripts/test_stock_catalog_model.cjs'
       - 'scripts/build_stock_event_outlook.py'
       - 'scripts/publish_widget_data.py'
       - 'scripts/test_widget_source_publication.py'
@@ -76,6 +78,7 @@ jobs:
           node --check assets/stock-catalog-ui.js
           node --check assets/stock-world-brief.js
           node scripts/test_stock_catalog_integrity.cjs
+          node scripts/test_stock_catalog_model.cjs
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py
           python -m unittest discover -s scripts -p 'test_widget_source_publication.py' -v

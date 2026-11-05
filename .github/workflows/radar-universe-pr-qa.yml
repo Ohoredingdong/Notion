@@ -13,6 +13,7 @@ on:
       - 'scripts/test_stock_universe_catalog.py'
       - 'scripts/test_stock_extended_forecasts.py'
       - 'scripts/test_stock_universe_browser.py'
+      - 'scripts/test_stock_catalog_model.cjs'
       - 'scripts/compare_radar_before_after.py'
       - '.github/workflows/*stock*'
       - '.github/workflows/radar-universe-pr-qa.yml'
@@ -83,6 +84,7 @@ jobs:
           node scripts/test_stock_evidence_review.cjs
           node scripts/test_stock_forecast_wiring.cjs
           node scripts/test_stock_catalog_integrity.cjs
+          node scripts/test_stock_catalog_model.cjs
           node scripts/test_stock_radar_freshness.cjs
       - name: Install Chromium (browser runs only on a local server)
         run: |

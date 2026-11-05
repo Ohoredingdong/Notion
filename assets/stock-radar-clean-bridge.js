@@ -18,14 +18,18 @@ function tone(v){return N(v)===null?"nr-neutral":v>0?"nr-up":v<0?"nr-down":"nr-n
 
 function I(k){const paths={home:'<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',search:'<circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',chart:'<path d="M4 4v16h16M7 14l4-5 4 3 5-7"/>',check:'<rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',news:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h6M7 16h10"/>',settings:'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="18" r="2"/>',arrow:'<path d="m9 5 7 7-7 7"/>',plus:'<path d="M5 12h14M12 5v14"/>'};return `<svg class="nr-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[k]||paths.chart}</svg>`;}
 
-function rows(){return Array.isArray(D.raw?.companies)?D.raw.companies:[];}
+function trackedRows(){return Array.isArray(D.raw?.companies)?D.raw.companies:[];}
 
-function company(id){return rows().find(x=>String(x.symbol)===String(id));}
+function rows(){return window.StockCatalogUI?.universe?.({data:D})||trackedRows();}
+
+function selectionId(c){return window.StockCatalogUI?.selectionId?.(c)||String(c?.symbol||"");}
+
+function company(id){return window.StockCatalogUI?.resolve?.(id,{data:D})||(!window.StockCatalogUI?.resolve?trackedRows().find(x=>String(x.symbol)===String(id)):null);}
 
 function series(id){const r=D.charts?.series?.[id];return r&&r.status!=="unavailable"&&Array.isArray(r.bars)&&r.bars.length>1?r:null;}
 
 function chartFor(id){
- const c=company(id),source=series(String(id));
+ const c=company(id),source=series(String(c?.symbol||id));
  if(!source?.bars?.length)return null;
  const original=source.bars.filter(b=>typeof b?.date==="string"&&N(b.close)!==null);
  if(original.length<2)return null;
@@ -48,6 +52,7 @@ function chartFor(id){
  return {...source,bars:[...original,appended],chart_status:"snapshot_appended",historical_end:last.date};
 }
 function change(c){
+ if(!c||N(c.price)===null)return null;
  const x=chartFor(String(c?.symbol)),b=x?.bars;
  if(!c||!x||!["aligned","snapshot_appended"].includes(x.chart_status)||b.length<2)return null;
  const before=b.at(-2)?.close,last=b.at(-1)?.close;
@@ -116,7 +121,7 @@ function compactAlerts(){const items=[];for(const c of D.events?.companies||[])f
 function qualityHTML(){const x=D.learning?.overall||{};return `<div class="nr-head"><h3>예측 사후검증</h3><button class="nr-link" data-nr-forecast>전체 연구 성적표 ${I("arrow")}</button></div><div class="nr-quality"><strong>${F(x.correct,0)} / ${F(x.samples,0)}</strong><span>일치 / 평가 표본 · 연구용</span></div><p class="nr-small-note">실전 수익성·타이밍 유용성 미입증 · 자료 ${T(D.learning?.generated_at)}</p>`;}
 
 function renderMonitor(){
- const live=!!(D.toss?.enabled&&D.toss.api_base),list=rows(),checks=rules.map((r,i)=>{
+ const live=!!(D.toss?.enabled&&D.toss.api_base),list=trackedRows(),checks=rules.map((r,i)=>{
   const c=company(r.symbol),price=N(c?.price),met=price!==null&&(r.kind==="gte"?price>=r.value:price<=r.value);
   return `<div class="nr-manual-row"><div><b>${E(c?.name||r.symbol)}</b><small>${r.kind==="gte"?"저장 종가가 설정가 이상":"저장 종가가 설정가 이하"} · ${money(r.value,c?.currency)}</small><small>${E(c?.price_session||"관측 시점 없음")} · 저장 종가 ${money(price,c?.currency)}</small></div><span class="nr-check-state ${price===null?"unknown":met?"match":"pending"}">${price===null?"조회 전":met?"조건 충족":"미충족"}</span><button class="nr-delete" data-nr-rule-remove="${i}" type="button" aria-label="조건 삭제">삭제</button></div>`;
  });
@@ -153,7 +158,7 @@ function renderPortfolio(){
   const changeValue=amount===null?null:amount-book;
   return `<tr><td>${E(c?.name||p.symbol)}</td><td>${F(p.qty,4)}</td><td>${money(p.cost,c?.currency)}</td><td>${money(amount,c?.currency)}</td><td class="${tone(changeValue)}">${money(changeValue,c?.currency)}</td><td><button class="nr-delete" data-nr-paper-remove="${i}" type="button">삭제</button></td></tr>`;
  }).join("");
- const all=rows();
+ const all=trackedRows();
  return `<div class="nr-screen-head"><div><h2>포트폴리오 & 모의투자</h2><p>실계좌와 분리된 수기 모의 보유내역입니다. 실제 자산이나 실현손익으로 표시하지 않습니다.</p></div><span class="nr-badge warn">실계좌 미연결</span></div>
  <div class="nr-screen-grid nr-feature-grid"><section class="nr-panel"><div class="nr-head"><h3>모의 보유 종목 등록</h3><span class="nr-sub">브라우저에 저장 · 주문 아님</span></div>
  <form id="radar-paper-form" class="nr-form"><label for="radar-paper-symbol">종목</label><select id="radar-paper-symbol" required ${all.length?"":"disabled"}>${all.map(c=>`<option value="${E(c.symbol)}" ${c.symbol===selected?"selected":""}>${E(c.name)} · ${E(c.symbol)}</option>`).join("")}</select>
@@ -191,7 +196,7 @@ function renderNews(){
  '<section class="nr-panel"><h3>경제 지표</h3><div class="nr-ops-grid"><div class="nr-op"><small>원/달러 · '+E(f.date||"—")+'</small><strong>'+F(f.value,2)+'원</strong></div><div class="nr-op"><small>미국 10년물 · '+E(ten.date||"—")+'</small><strong>'+F(ten.value,2)+'%</strong></div><div class="nr-op"><small>한국은행 기준금리 · '+E(bok.date||"—")+'</small><strong>'+F(bok.value,2)+'%</strong></div></div><p class="nr-small-note">위 지표는 마지막으로 저장된 관측값입니다. 실시간 호가나 투자 추천이 아닙니다.</p></section></div>';
 }
 
-function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base),issued=latestIssued(D.direction?.records);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>AI 파일 확인</b><span>${D.direction?.generated_at?T(D.direction.generated_at):"파일 확인 전"}</span></div><div class="nr-setting-row"><b>실제 예측 발행</b><span>${issued?T(issued):"발행 전 · 미확인"}</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
+function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base),issued=latestIssued(D.direction?.records);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>검색 가능 종목</b><span>${rows().length.toLocaleString("ko-KR")}개</span></div><div class="nr-setting-row"><b>가격·심층 자료</b><span>${trackedRows().length}개</span></div><div class="nr-setting-row"><b>AI 파일 확인</b><span>${D.direction?.generated_at?T(D.direction.generated_at):"파일 확인 전"}</span></div><div class="nr-setting-row"><b>실제 예측 발행</b><span>${issued?T(issued):"발행 전 · 미확인"}</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
 
 async function read(name){
  const ac=new AbortController(),timeout=setTimeout(()=>ac.abort(),22000);
@@ -241,16 +246,24 @@ async function load(){
   });
   D=updated;
   if(!Array.isArray(D.raw?.companies)||!D.raw.companies.length)problems.push("종목 원자료 이용 불가");
-  if(!company(selected)&&rows().length){selected=String(rows()[0].symbol);storeValue("radar-last-symbol-v5",selected)}
+  const restored=company(selected);
+  if(restored){selected=selectionId(restored);storeValue("radar-last-symbol-v5",selected)}
+  else if(rows().length){selected=selectionId(rows()[0]);storeValue("radar-last-symbol-v5",selected)}
  }catch(err){
   problems.push("자료 갱신 처리 실패");
  }finally{
   errors=problems;busy=false;render();
  }
 }
-function isMarket(c,m){if(m==="ALL")return true;const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];const venue=info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])||"UNKNOWN";if(m==="DOW")return D.markets?.dow?.status==="current"&&D.markets?.dow?.symbols?.includes(k);return venue===m;}
+function marketVenue(c){
+ const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];
+ const exchange=String(c.catalog_entry?.exchange||c.exchange||"").toUpperCase();
+ return ({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[exchange])||
+  (["KOSPI","KOSDAQ","NASDAQ","NYSE","NYSE AMERICAN","NYSE ARCA","CBOE"].includes(exchange)?exchange:info?.venue)||"UNKNOWN";
+}
+function isMarket(c,m){if(m==="ALL")return true;if(m==="DOW")return (c.country||c.market)==="US"&&D.markets?.dow?.status==="current"&&D.markets?.dow?.symbols?.includes(c.symbol);return marketVenue(c)===m;}
 
-function marketLabel(c){const k=c.source_symbol||c.symbol,info=D.markets?.members?.[k]||D.markets?.members?.[c.symbol]||D.markets?.members?.[k+".KS"]||D.markets?.members?.[k+".KQ"];return info?.venue||({KSC:"KOSPI",KOE:"KOSDAQ",NMS:"NASDAQ",NGM:"NASDAQ",NCM:"NASDAQ",NYQ:"NYSE"}[c.exchange])|| (c.market==="KR"?"한국 · 세부시장 확인 전":c.market==="US"?"미국 · 세부시장 확인 전":"미확인");}
+function marketLabel(c){const venue=marketVenue(c);return venue!=="UNKNOWN"?venue:(c.market==="KR"?"한국 · 세부시장 확인 전":c.market==="US"?"미국 · 세부시장 확인 전":"미확인");}
 
 function loadValue(key){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a:[]}catch{return []}}
 
@@ -281,7 +294,7 @@ function snapshot(){return {screen,selected,data:D,favorites:[...favorites],mark
 
 function choose(id){
  const c=company(id);if(!c)return;
- selected=String(c.symbol);
+ selected=selectionId(c);
  storeValue("radar-last-symbol-v5",selected);
  if(screen==="home"||screen==="stocks"){
   if(market!=="ALL"&&!isMarket(c,market)){market="ALL";storeValue("radar-last-market-v5",market)}
@@ -303,9 +316,9 @@ function goto(v){
  render();window.scrollTo({top:0,behavior:"instant"});
 }
 
-function toggleStar(id){const v=String(id);favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];storeValue("radar-v8-stars",favorites);render();}
+function toggleStar(id){const c=company(id);if(!c)return;const v=selectionId(c);favorites=favorites.map(x=>{const row=company(x);return row?selectionId(row):x});favorites=favorites.includes(v)?favorites.filter(x=>x!==v):[...favorites,v];storeValue("radar-v8-stars",favorites);render();}
 
-function deep(id){if(company(id))window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(id)),"_blank","noopener");}
+function deep(id){const c=company(id);if(!c)return;if(c.catalog_only){choose(selectionId(c));goto("stockdetail");return}window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(c.symbol)),"_blank","noopener");}
 
 function ageMinutes(value){const d=Date.parse(value||"");return Number.isFinite(d)?Math.max(0,Math.round((Date.now()-d)/60000)):null}
 function render(){
@@ -357,8 +370,8 @@ function autoRefreshIfDue(){
  load();
 }
 
-function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;storeValue("radar-last-market-v5",market);const c=window.StockRadarFlowV2?.pick?.();if(c){selected=String(c.symbol);storeValue("radar-last-symbol-v5",selected)}render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
+function click(ev){const b=ev.target.closest?.("button");if(!b)return;const d=b.dataset;if("nrRuleRemove" in d){const i=Number(d.nrRuleRemove);if(Number.isInteger(i)&&i>=0&&i<rules.length){rules.splice(i,1);storeValue("radar-manual-rules-v2",rules);render()}return}if("nrPaperRemove" in d){const i=Number(d.nrPaperRemove);if(Number.isInteger(i)&&i>=0&&i<paper.length){paper.splice(i,1);storeValue("radar-paper-holdings-v2",paper);render()}return}if(d.nrScreen){goto(d.nrScreen);return}if(d.nrView){deep(selected);return}if(d.nrSelect){choose(d.nrSelect);return}if(d.nrDetail){choose(d.nrDetail);goto("stockdetail");return}if(d.nrStar){toggleStar(d.nrStar);return}if(d.rfMarket){market=d.rfMarket;storeValue("radar-last-market-v5",market);const c=window.StockRadarFlowV2?.pick?.();if(c){selected=selectionId(c);storeValue("radar-last-symbol-v5",selected)}render();return}if("nrReload" in d){load();return}if("nrForecast" in d){window.open("./stock-forecast.html","_blank","noopener");return}}
 
-function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);try{const savedSymbol=JSON.parse(localStorage.getItem("radar-last-symbol-v5")||"null");const savedMarket=JSON.parse(localStorage.getItem("radar-last-market-v5")||"null");if(typeof savedSymbol==="string"&&savedSymbol.length<80)selected=savedSymbol;if(["ALL","KOSPI","KOSDAQ","NASDAQ","DOW"].includes(savedMarket))market=savedMarket}catch{}document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");if(params.get("screen")==="stockdetail")screen="stockdetail";document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{if(company(id)){selected=String(id);storeValue("radar-last-symbol-v5",selected)}},deep,helpers:{I,change,pointData,chartFor,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();window.setInterval(autoRefreshIfDue,300000);document.addEventListener('visibilitychange',autoRefreshIfDue);window.addEventListener('focus',autoRefreshIfDue);}
+function init(){try{favorites=JSON.parse(localStorage.getItem("radar-v8-stars")||"[]");if(!Array.isArray(favorites))favorites=[]}catch{favorites=[]}rules=loadValue("radar-manual-rules-v2").filter(v=>typeof v.symbol==="string"&&["gte","lte"].includes(v.kind)&&N(v.value)!==null&&v.value>0).slice(0,100);paper=loadValue("radar-paper-holdings-v2").filter(v=>typeof v.symbol==="string"&&N(v.qty)!==null&&v.qty>0&&N(v.cost)!==null&&v.cost>0).slice(0,200);try{const savedSymbol=JSON.parse(localStorage.getItem("radar-last-symbol-v5")||"null");const savedMarket=JSON.parse(localStorage.getItem("radar-last-market-v5")||"null");if(typeof savedSymbol==="string"&&savedSymbol.length<80)selected=savedSymbol;if(["ALL","KOSPI","KOSDAQ","NASDAQ","DOW"].includes(savedMarket))market=savedMarket}catch{}document.body.classList.add("neutral-ready");const params=new URLSearchParams(location.search);if(params.has("stock"))selected=params.get("stock");if(params.get("screen")==="stockdetail")screen="stockdetail";document.addEventListener("click",click);document.addEventListener("submit",forms);window.StockRadarV2Bridge={snapshot,render,refresh:load,select:choose,setSelectedSilently:id=>{const c=company(id);if(c){selected=selectionId(c);storeValue("radar-last-symbol-v5",selected)}},deep,helpers:{I,change,pointData,chartFor,indices,flowReasonLines,caseOf,compactAlerts,T,tone,qualityHTML,renderMonitor,renderPortfolio,renderNews,renderSettings}};window.RadarMarkets={match:isMarket,label:marketLabel};render();load();window.setInterval(autoRefreshIfDue,300000);document.addEventListener('visibilitychange',autoRefreshIfDue);window.addEventListener('focus',autoRefreshIfDue);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
