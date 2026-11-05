@@ -448,6 +448,9 @@ def main():
                 failures.append((name, str(error)))
                 page.screenshot(path=f"/tmp/auction-study-failed-{name}.png", full_page=True)
                 print("FAIL", name, str(error), flush=True)
+                if os.environ.get("GITHUB_ACTIONS") == "true":
+                    detail = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                    print(f"::error title=Auction browser {name}::{detail}", flush=True)
             finally:
                 context.close()
         browser.close()

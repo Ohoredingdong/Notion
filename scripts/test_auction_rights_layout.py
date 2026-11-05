@@ -414,6 +414,9 @@ def main():
                     failures.append((label, str(error)))
                     screenshot(page, f"failed-{label}")
                     print("FAIL", label, str(error), flush=True)
+                    if os.environ.get("GITHUB_ACTIONS") == "true":
+                        detail = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                        print(f"::error title=Auction layout {label}::{detail}", flush=True)
                 finally:
                     context.close()
         browser.close()
