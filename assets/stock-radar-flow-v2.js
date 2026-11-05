@@ -14,33 +14,36 @@ function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},se
 function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
 /* A future valid forecast must outrank a later no-call snapshot. */
+/* Live target selection from independent core and rolling extended research. */
 function fxRecord(c,ctx){
  const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,""),now=Date.now();
- const rows=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const primary=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const extended=(ctx.data?.extended?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
  const valid=r=>{
   const p=r?.probabilities||{},start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
   return r?.status==="research_prediction"&&Number.isFinite(start)&&Number.isFinite(end)&&start<end&&end>now&&
    Number.isFinite(issued)&&issued<=now+300000&&issued<=start&&["up","down","flat"].includes(r.direction)&&
-   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&Math.abs(p.up+p.down+p.flat-1)<.025;
+   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&
+   Math.abs(p.up+p.down+p.flat-1)<.025;
  };
- rows.sort((a,b)=>{
-  const x=Date.parse(a.issued_at||""),y=Date.parse(b.issued_at||"");
-  if(Number.isFinite(x)&&Number.isFinite(y))return y-x;
-  return Number(Number.isFinite(y))-Number(Number.isFinite(x));
- });
- return rows.find(valid)||rows.find(r=>r?.status==="research_prediction")||rows[0]||null;
+ const newer=(xs)=>xs.slice().sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
+ const p=newer(primary),e=newer(extended);
+ return p.find(valid)||e.find(valid)||p.find(r=>r?.status==="research_prediction")||
+        e.find(r=>r?.status==="research_prediction")||p[0]||e[0]||null;
 }
 function fxForecastMeta(ctx){
- const d=ctx.data?.direction||{},rows=Array.isArray(d.records)?d.records:[],at=Date.parse(d.generated_at||"");
- const modeled=new Set(rows.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
- const companies=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies:null;
- const tracked=companies?.length??null;
- const active=companies?companies.filter(c=>fxPrediction(c,ctx).active).length:0;
- const age=Number.isFinite(at)?Math.max(0,Math.round((Date.now()-at)/60000)):null;
- return {modeled:modeled.size,tracked,active,age,delayed:age!==null&&age>60,
-  summary:tracked===null?"AI 대상 범위 확인 전":"AI 모델 "+modeled.size+"/"+tracked+"개 기업 · 유효한 예측 "+active+"개"};
+ const data=ctx.data?.direction||{},more=ctx.data?.extended||{},now=Date.now();
+ const records=[...(data.records||[]),...(more.records||[])];
+ const known=new Set(records.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
+ const tracked=ctx.data?.raw?.companies?.length??null;
+ const age=Date.parse(data.generated_at||""),ext=Date.parse(more.generated_at||"");
+ const updated=Math.max(Number.isFinite(age)?age:0,Number.isFinite(ext)?ext:0);
+ const ageMinutes=updated?Math.max(0,Math.round((now-updated)/60000)):null;
+ const active=(ctx.data?.raw?.companies||[]).filter(c=>fxPrediction(c,ctx).active).length;
+ return {modeled:known.size,tracked,active,age:ageMinutes,delayed:ageMinutes!==null&&ageMinutes>180,
+  summary:tracked===null?"AI 모델 범위 확인 전":
+   "AI 연구 기록 "+known.size+"/"+tracked+"개 심층종목 · 현재 유효 "+active+"개"};
 }
-
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
  const audit=ctx.data?.accuracyAudit||null;
