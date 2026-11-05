@@ -38,13 +38,14 @@ def classify(path: str) -> dict:
     radar = path in KNOWN_RADAR_HTML or path.startswith(RADAR_ASSETS) or (
         path.startswith(("scripts/", "tests/"))
         and any(token in p.name for token in ("stock", "market_context", "codex_pr", "widget_browser"))
+    ) or (
+        path.startswith(".github/workflows/")
+        and any(token in p.name for token in ("stock", "radar", "market"))
     )
-    browser = is_ui or path.startswith((".agents/", "AGENTS.md", "scripts/pr_widget_browser.py"))
-    # Newly authored guard/workflow exercises the initial integration demo.
-    browser = browser or path in (
-        ".github/workflows/codex-pr-safety.yml",
-        "scripts/codex_pr_preflight.py",
-    )
+    # A changed stock generator or publisher can alter rendered widgets even
+    # if no HTML file was edited. Verify the UI as well as its data contracts.
+    browser = is_ui or radar or path.startswith((".agents/", "AGENTS.md", "scripts/pr_widget_browser.py"))
+    browser = browser or path == ".github/workflows/codex-pr-safety.yml"
     return {"data": bool(is_data), "media": bool(is_media),
             "ui": bool(is_ui), "radar": bool(radar), "browser": bool(browser)}
 
@@ -101,6 +102,9 @@ def validate(items: list[dict], workflow: Path | None = None) -> tuple[list[str]
 def self_test() -> None:
     assert classify("stock-value-radar.html")["radar"]
     assert classify("assets/stock-radar-flow-v2.js")["browser"]
+    assert classify("scripts/refine_stock_radar_v8.py")["browser"]
+    assert classify(".github/workflows/stock-forecasts.yml")["radar"]
+    assert classify(".github/workflows/stock-forecasts.yml")["browser"]
     assert classify(".agents/skills/widget-safe-pr/SKILL.md")["browser"]
     assert classify("stock-opportunity-data.json")["data"]
     assert classify("backups/saved-state.json")["data"]
