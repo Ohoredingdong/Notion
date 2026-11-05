@@ -8,6 +8,7 @@ on:
       - 'stock-value-radar.html'
       - 'scripts/test_stock_detail_v6.py'
       - 'scripts/test_stock_evidence_review.cjs'
+      - 'scripts/test_stock_forecast_wiring.cjs'
       - '.github/workflows/verify-stock-detail-v6.yml'
 permissions:
   contents: read
@@ -27,6 +28,7 @@ jobs:
           node --check assets/stock-radar-clean-bridge.js
           node --check assets/stock-radar-flow-v2.js
           node scripts/test_stock_evidence_review.cjs
+          node scripts/test_stock_forecast_wiring.cjs
           python -m http.server 8765 >/tmp/stock-detail-v6-http.log 2>&1 &
       - name: Verify layout, explanations and working period buttons
         run: python scripts/test_stock_detail_v6.py
