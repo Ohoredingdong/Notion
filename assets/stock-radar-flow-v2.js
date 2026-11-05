@@ -527,6 +527,38 @@ function fxNewsFor(ctx,c){
   return `<div class="fx-d-news-row"><b>${i+1}</b><div><a href="${fxEscape(fxSafeHref(source.url))}" target="_blank" rel="noopener noreferrer">${fxEscape(entry.title||"제목 확인 필요")}</a><small>${fxEscape(entry.event_date||"날짜 미확인")} · ${fxEscape(source.publisher||"원문")} ${entry.auto_detected?"· 자동 탐지":""}</small></div></div>`;
  }).join(""):'<p class="fx-d-empty">해당 기업의 확인 가능한 이벤트가 없습니다. 공식 공시에서 추가 확인이 필요합니다.</p>';
 }
+/* 12-point review coverage is NOT a probability of buy success. */
+const FX_EVIDENCE_IDS=["inputs","official","cash_quality","working_capital","earnings_quality","debt","business","valuation","macro","governance","forecast","liquidity"];
+const FX_EVIDENCE_GROUPS=[
+ {label:"실적 · 현금",ids:["official","cash_quality","working_capital","earnings_quality"],meaning:"공식 공시와 실제 현금창출력"},
+ {label:"EPS · 사업",ids:["business","forecast"],meaning:"사업과 예상 순이익 성장"},
+ {label:"가격 · 손실위험",ids:["valuation"],meaning:"독립 가치평가와 하락 시나리오"},
+ {label:"부채 · 정책",ids:["inputs","debt","macro","governance","liquidity"],meaning:"부채·금리·정책·유동성과 자료 기준"}
+];
+function fxInvestmentEvidence(c,ctx){
+ const record=fxHelpers().caseOf?.(c),review=record?.green_review,now=Date.now(),raw=ctx.data?.raw||{};
+ const at=Date.parse(raw.generated_at||""),checked=Date.parse(review?.reviewed_at||""),expiry=Date.parse(review?.valid_until||"");
+ const aligned=!!record&&review?.source_generated_at===raw.generated_at&&record.input_price===c.price&&
+  record.input_price_session===c.price_session&&record.input_forecast_eps===c.forecasts?.next_fy?.avg;
+ const timely=Number.isFinite(at)&&at<=now+300000&&now-at<18*3600000&&Number.isFinite(checked)&&checked<=now+300000&&Number.isFinite(expiry)&&expiry>=now;
+ const arr=Array.isArray(review?.checks)?review.checks:[],byId=new Map(arr.map(x=>[x?.id,x]));
+ const valid=aligned&&timely&&arr.length===12&&byId.size===12&&FX_EVIDENCE_IDS.every(id=>["pass","review","missing","blocked"].includes(byId.get(id)?.status));
+ if(!valid)return {available:false,passed:null,total:12,percent:null,status:"검증 대기",eligible:false,
+  groups:FX_EVIDENCE_GROUPS.map(g=>({...g,value:"검증 대기",note:"기준일·원문 확인 전"})),
+  explanation:"최신 동일 기준의 실사 근거가 없거나 필수 항목이 누락돼 종합 충족률을 표시하지 않습니다."};
+ const passed=FX_EVIDENCE_IDS.filter(id=>byId.get(id).status==="pass").length;
+ const hasBlocked=arr.some(x=>x.status==="blocked"),hasRisk=arr.some(x=>x.status==="review");
+ const eligible=passed===12&&review.green_eligible===true&&record.state==="attractive";
+ const status=hasBlocked?"자료 충돌":record.state==="avoid"||hasRisk?"위험 검토":record.state==="price_wait"?"가격 관망":eligible?"조건부 매수 검토":"검증 대기";
+ const groups=FX_EVIDENCE_GROUPS.map(g=>{const values=g.ids.map(id=>byId.get(id).status),count=values.filter(v=>v==="pass").length;
+  return {...g,value:values.includes("blocked")?"자료 확인":values.includes("review")?"위험 점검":values.includes("missing")?"근거 부족":"기준 통과",note:count+" / "+g.ids.length+"개 충족"};});
+ const explanation=eligible?"독립 가치평가·하락 시나리오까지 조건 통과. 수익 보장은 아닙니다.":
+  hasBlocked?"자료·기준일이 충돌해 매수 검토를 중단합니다.":
+  byId.get("valuation").status!=="pass"?"독립 가치평가·하락 시나리오 미통과. AI 상승률이 높아도 매수 근거가 아닙니다.":
+  hasRisk?"해소되지 않은 위험이 남아 있습니다.":"미충족 실사 항목의 근거를 더 확인해야 합니다.";
+ return {available:true,passed,total:12,percent:Math.round(passed/12*100),status,eligible,groups,explanation};
+}
+
 function fxDetail(ctx){
  const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
  if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
