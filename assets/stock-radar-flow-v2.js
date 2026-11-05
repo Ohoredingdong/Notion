@@ -512,7 +512,11 @@ function fxHome(ctx){
 }
 function fxStockPage(ctx){
  const pool=fxUniverse(ctx);
- return `<div class="fx-intro"><div><h2>AI 종목 신호</h2><p>${pool.length}개 검색 결과 · 가격 방향 연구 분포이며 매수 추천이 아닙니다.</p></div><span class="fx-stamp">실시간 호가 아님</span></div><div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}`;
+ return `<div class="fx-stock-directory-page">
+ <div class="fx-intro"><div><h2>국내·미국 상장종목 검색</h2><p>공식 상장명부와 가격·재무제표 심층 분석 ${pool.length}개를 구분합니다.</p></div><span class="fx-stamp">저장된 데이터 · 실시간 호가 아님</span></div>
+ ${window.StockCatalogUI?.panel?.(ctx)||'<section class="fx-panel">상장명부 확인 중</section>'}
+ <div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${window.StockCatalogUI?.focus?.(ctx)||fxFocus(ctx)}</div></div>${fxSteps(ctx)}
+ </div>`;
 }
 
 function fxAmount(v,c){
@@ -837,7 +841,7 @@ function fxHandleInput(e){
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261102-v3-viewport'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261105-stock-universe-v1'};
 const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
