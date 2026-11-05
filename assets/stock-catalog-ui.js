@@ -6,6 +6,32 @@
  const normalized=v=>String(v??"").toUpperCase().replace(/\.(KS|KQ)$/,"");
  function data(ctx){const c=ctx.data?.catalog;return Array.isArray(c?.items)?c.items:[];}
  function tracked(ctx){return new Map((ctx.data?.raw?.companies||[]).map(c=>[(c.market==="KR"?"KR:":"US:")+normalized(c.symbol),c]));}
+ function statement(x,ctx){return ctx.data?.financial?.records?.[x.country+":"+x.symbol]||null;}
+ function financeAmount(v,currency){
+  if(typeof v!=="number"||!Number.isFinite(v))return "공시 없음";
+  const sign=v<0?"−":"";const a=Math.abs(v);
+  if(currency==="KRW")return sign+(a>=1e12?n(a/1e12)+"조 원":a>=1e8?n(a/1e8)+"억 원":n(a)+"원");
+  return sign+(a>=1e9?n(a/1e9)+"B USD":a>=1e6?n(a/1e6)+"M USD":n(a)+" USD");
+ }
+ function statementPanel(x,ctx){
+  const f=statement(x,ctx);
+  if(!f||!["available","partial","stale"].includes(f.status))
+   return `<div class="fx-catalog-preview-info"><b>공식 재무제표: 아직 미확인</b>
+     <p>${esc(f?.status==="source_not_configured"?"한국 DART 인증키 연결 전입니다.":f?.status==="source_unavailable"?"공식 제공처 일시 오류. 기존 검증값은 유지합니다.":"해당 종목의 공식 회계 자료가 아직 수집되지 않았습니다.")} 실제 값이 확인되기 전에는 추정 수치나 임의 EPS를 만들지 않습니다.</p></div>`;
+  const m=f.metrics||{},key=[["매출액","revenue"],["영업이익","operating_income"],["순이익","net_income"],["영업현금흐름","cash_from_operations"],["FCF","free_cash_flow"],["공시 EPS","reported_eps"]];
+  const cells=key.map(([name,field])=>`<div class="fx-catalog-finance-cell">
+    <small>${name}</small><strong>${field==="reported_eps"&&typeof m[field]==="number"?esc(n(m[field])+" "+f.currency+"/주"):esc(financeAmount(m[field],f.currency))}</strong></div>`).join("");
+  const date=f.period_end||f.period_end_label||"보고기간 미확인";
+  const src=String(f.source_url||"");const link=/^https:\/\//.test(src)?
+    `<a href="${esc(src)}" target="_blank" rel="noopener noreferrer">공식 재무 원문 확인</a>`:"";
+  return `<div class="fx-catalog-preview-info fx-catalog-finance">
+    <b>공시 재무 요약 ${f.status==="stale"?"· 오래된 보고서":""}</b>
+    <small>기간 ${esc(date)} · ${esc(f.source)} · ${esc(f.consolidation||"공시 회계기준")}</small>
+    <div class="fx-catalog-finance-grid">${cells}</div>
+    <p>공시된 과거 실적입니다. 미래 EPS 전망·현시점 가격·수익률·매수 확률과 다릅니다. 다른 기간의 숫자를 합산하지 않습니다.</p>
+    ${link}
+  </div>`;
+ }
  function matching(ctx){
   const q=state.query.trim().toLocaleLowerCase();
   const candidates=data(ctx);
@@ -23,7 +49,9 @@
   if(!found.length)return '<p class="fx-catalog-empty">검색 결과가 없습니다. 회사명이나 종목코드를 확인해 주세요.</p>';
   return found.slice(0,35).map(x=>{
     const c=investigated.get(x.country+":"+normalized(x.symbol)),s=sig(x,ctx);
-    const text=s?.active&&s?.value!==null?"AI "+esc(s.label)+" "+n(s.value*100)+"% (연구용)":c?"심층분석 보유 · AI "+(s?.stale?"기간 종료":"확인 필요"):"상장정보만 · AI 연구 대기";
+    const filing=statement(x,ctx),verified=filing&&["available","partial","stale"].includes(filing.status);
+    const text=(s?.active&&s?.value!==null?"AI "+esc(s.label)+" "+n(s.value*100)+"% 연구용":c?"심층분석 · AI "+(s?.stale?"기간 종료":"확인 중"):"AI 미발행")+
+      (verified?" · 공식 재무 "+(filing.status==="stale"?"과거":"확인"):" · 재무 대기");
     const attr=c?`data-nr-select="${esc(c.symbol)}"`:`data-catalog-preview="${esc(x.country+":"+x.symbol)}"`;
     return `<button type="button" class="fx-catalog-row" ${attr}>
       <span class="fx-catalog-company"><strong>${esc(x.name)}</strong><small>${esc(x.symbol)} · ${esc(x.exchange)}</small></span>
@@ -37,10 +65,10 @@
   return `검색 ${n(found.length)}건 / 공식 명부 ${n(total)}건 · ${catalog.status==="partial"?"일부 거래소 자료 누락 · ":""}가격·재무제표와는 별개`;
  }
  function panel(ctx){
-  const catalog=ctx.data?.catalog||{},total=data(ctx).length,kr=catalog.counts?.KR,us=catalog.counts?.US;
+  const catalog=ctx.data?.catalog||{},total=data(ctx).length,kr=catalog.counts?.KR,us=catalog.counts?.US,fin=ctx.data?.financial?.financial_available||{},financeTotal=(fin.KR||0)+(fin.US||0);
   return `<section class="fx-panel fx-catalog" aria-label="국내외 전체 상장종목 검색">
    <div class="fx-catalog-head"><div><h3>전체 상장종목 찾기</h3>
-     <small>한국 ${n(kr)}개 · 미국 ${n(us)}개 · 명부 전체 ${n(total)}개</small></div>
+     <small>한국 ${n(kr)}개 · 미국 ${n(us)}개 · 명부 ${n(total)}개 · 공시 확인 ${n(financeTotal)}개</small></div>
      <small>${esc(catalog.generated_at?"출처 확인 "+new Date(catalog.generated_at).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul"}):"출처 수집 전")}</small></div>
    <div class="fx-catalog-toolbar"><input id="fx-catalog-search" type="search" value="${esc(state.query)}"
       aria-label="전체 상장종목 이름이나 종목코드 검색" placeholder="회사명·종목코드로 8천여 종목 검색"/>
@@ -64,8 +92,9 @@
      <strong>${has?esc(s.label+" "+n(s.value*100)+"%"):"미발행 · 검증 대기"}</strong>
      <p>${esc(description)}</p></div>
     <div class="fx-catalog-preview-info"><b>공식 상장종목 목록에 확인된 기업</b>
-      <p>현재가·재무제표·FCF·기업 가치평가가 아직 확인되지 않았습니다. 근거 없는 분석 점수나 예상수익률은 표시하지 않습니다.</p>
+      <p>검색 가능한 전체 종목 중 일부는 최신 시세와 기업 가치평가를 연결하지 않았습니다. AI 방향 예측은 모델이 실제로 발행한 경우에만 표시합니다.</p>
       <small>출처: ${esc(x.source)} · 자료일 ${esc(cat.generated_at||"미확인")}</small></div>
+    ${statementPanel(x,ctx)}
   </section>`;
  }
  function update(){
