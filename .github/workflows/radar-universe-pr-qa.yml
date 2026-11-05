@@ -1,0 +1,80 @@
+name: Radar Universe, AI and News PR QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-*.js'
+      - 'scripts/build_stock_universe_catalog.py'
+      - 'scripts/run_stock_extended_forecasts.py'
+      - 'scripts/test_stock_universe_catalog.py'
+      - 'scripts/test_stock_extended_forecasts.py'
+      - 'scripts/test_stock_universe_browser.py'
+      - '.github/workflows/*stock*'
+      - '.github/workflows/radar-universe-pr-qa.yml'
+  push:
+    branches: [feat/radar-universe-ai-news-20261105]
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-*.js'
+      - 'scripts/test_stock_universe_browser.py'
+      - '.github/workflows/radar-universe-pr-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: radar-universe-pr-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  code-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate actual catalogue and current stored financial data integrity
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path("stock-universe-catalog.json").read_text(encoding="utf-8"))
+          assert c["version"]=="radar-universe-catalog-v1"
+          assert c["counts"]["total"]==len(c["items"]) and len(c["items"])>=1000
+          assert c["counts"]["KR"]>1000 and c["counts"]["US"]>1000
+          assert len({(x["country"],x["symbol"]) for x in c["items"]})==len(c["items"])
+          d=json.loads(Path("stock-direction-forecast.json").read_text())
+          assert d["status"]=="research_only" and d["real_time_connected"] is False
+          print("CATALOG_PROVENANCE_AND_CORE_RESEARCH_SAFE",c["counts"])
+          PY
+      - name: Run source, rotation, signal/valuation tests
+        run: |
+          python -m unittest scripts.test_stock_universe_catalog scripts.test_stock_extended_forecasts -v
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-catalog-ui.js
+          node --check assets/stock-world-brief.js
+          node scripts/test_stock_evidence_review.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+      - name: Install Chromium (browser runs only on a local server)
+        run: |
+          python -m pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+      - name: Browser acceptance for 8k-company catalogue, real news and Notion sizes
+        run: |
+          python -m http.server 8765 >/tmp/radar-universe-qa.log 2>&1 &
+          python scripts/test_stock_universe_browser.py
+          python scripts/test_stock_detail_v6.py
+      - name: Save screen captures and exact error report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-universe-pr-evidence
+          path: |
+            radar-universe-evidence/
+            detail-v6-artifacts/
+          retention-days: 7
+          if-no-files-found: warn
