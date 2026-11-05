@@ -36,6 +36,10 @@ def navigate(page, name):
     page.locator(f'.nav-item[data-page="{name}"]').click()
 
 
+def choose_right(page, index):
+    page.locator(f'.rights-step-button[data-right-step="{index}"]').click()
+
+
 def favorable(page):
     # The initial sample is intentionally unverified. Seed checked user evidence,
     # rather than satisfying the final signal by changing application functions.
@@ -80,6 +84,7 @@ def shell_and_calculator(page):
 def rights_and_new_case(page):
     navigate(page, "rights")
     for i in range(6):
+        choose_right(page, i)
         page.locator(f'[data-right="{i}"]').select_option("clear")
     expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
     expect(page.locator("#rightsCount")).to_have_text("0 / 6 완료")
@@ -89,11 +94,13 @@ def rights_and_new_case(page):
     expect(page.locator(".example-document").first).to_contain_text("법원 매각물건명세서")
     assert notebook(page) == before_example, "Opening a lesson must not fill user evidence"
     for i in range(6):
+        choose_right(page, i)
         page.locator(f'[data-evidence="{i}"]').fill(f"실제 확인 서류와 질문 {i + 1}")
     # No blur/change event here: the completion state must follow the active input.
     expect(page.locator(".panel-header .badge").first).to_have_text("6 / 6 완료")
     page.reload(wait_until="domcontentloaded")
     navigate(page, "rights")
+    choose_right(page, 5)
     expect(page.locator('[data-evidence="5"]')).to_have_value("실제 확인 서류와 질문 6")
     old_id = active(notebook(page))["id"]
     page.locator('.topbar [data-action="new"]').click()
@@ -317,7 +324,7 @@ def fixed_viewport_pages(page):
             expect(page.locator(".home-panel-reasons")).to_contain_text("권리분석")
 
         navigate(page, "money")
-        scroll_container = ".page-content .split-layout" if width <= 760 else ".page-content .split-layout > div:first-child"
+        scroll_container = ".page-content .split-layout"
         panel = page.locator(scroll_container)
         panel.evaluate("el => el.scrollTop = 0")
         target = page.locator('[data-finance="targetProfit"]')
@@ -332,10 +339,12 @@ def fixed_viewport_pages(page):
 
         navigate(page, "rights")
         panel = page.locator(scroll_container)
+        choose_right(page, 5)
         last_evidence = page.locator('[data-evidence="5"]')
         last_evidence.scroll_into_view_if_needed()
         box_inside_viewport(last_evidence, (width, height, "last rights evidence"))
-        assert panel.evaluate("el => el.scrollTop > 0"), (width, height, "rights records remain reachable")
+        expect(page.locator('[data-right-panel="5"]')).to_be_visible()
+        expect(page.locator('[data-right-panel="0"]')).to_be_hidden()
         document_fits_viewport(page, (width, height, "rights panel scrolled"))
 
 

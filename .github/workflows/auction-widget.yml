@@ -2,12 +2,12 @@ name: Validate and publish auction widget
 
 on:
   push:
-    branches: [main]
     paths:
       - 'auction-study.html'
       - 'assets/auction-study*'
       - 'tests/auction-study-model.test.cjs'
       - 'scripts/test_auction_study_browser.py'
+      - 'scripts/test_auction_rights_layout.py'
       - '.github/workflows/auction-widget.yml'
   pull_request:
     branches: [main]
@@ -16,6 +16,7 @@ on:
       - 'assets/auction-study*'
       - 'tests/auction-study-model.test.cjs'
       - 'scripts/test_auction_study_browser.py'
+      - 'scripts/test_auction_rights_layout.py'
       - '.github/workflows/auction-widget.yml'
   workflow_dispatch:
 
@@ -49,7 +50,20 @@ jobs:
           AUCTION_STUDY_URL: http://127.0.0.1:8765/auction-study.html
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
-          python -B scripts/test_auction_study_browser.py
+          python -B scripts/test_auction_study_browser.py | tee /tmp/auction-functional.log
+          python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-layout.log
+      - name: Record browser verification results
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              for name in ['functional', 'layout']:
+                  log = Path('/tmp/auction-' + name + '.log')
+                  summary.write('### Auction ' + name + ' browser checks\n\n')
+                  summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
