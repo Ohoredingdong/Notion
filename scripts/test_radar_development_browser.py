@@ -127,6 +127,44 @@ class Checks:
         self.page.screenshot(path=str(target), full_page=True)
         self.report["screenshots"][name] = str(target.relative_to(self.out))
 
+    def market_card_geometry(self, surface, name):
+        cards = surface.evaluate("""() => {
+            const rect = r => ({x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height});
+            const textRects = el => {
+                const range=document.createRange();
+                range.selectNodeContents(el);
+                return Array.from(range.getClientRects(),rect);
+            };
+            return Array.from(document.querySelectorAll('.fx-v5-markets .nr-index')).map(card => {
+                const number=card.querySelector('.nr-num'), chart=card.querySelector('.nr-mini-chart');
+                return {label:card.querySelector('h3').textContent,card:rect(card.getBoundingClientRect()),
+                    number:textRects(number),change:textRects(card.querySelector('.nr-up,.nr-down,.nr-neutral')),
+                    source:textRects(card.querySelector('.nr-sub')),chart:rect(chart.getBoundingClientRect()),
+                    chartPoints:chart.querySelector('polyline')?.getAttribute('points'),
+                    fontSize:parseFloat(getComputedStyle(number).fontSize)};
+            });
+        }""")
+        self.report["geometry"][name + "-market-cards"] = cards
+        self.assert_(len(cards) == 4, "Four saved market index cards must remain available")
+        for card in cards:
+            label, outer, chart = card["label"], card["card"], card["chart"]
+            self.assert_(card["chartPoints"] and chart["width"] >= 40 and chart["height"] >= 20,
+                f"{label}: saved trend chart is missing or unreadably small")
+            self.assert_(card["fontSize"] >= 18, f"{label}: index number was made too small")
+            # Text ranges cover the glyphs, unlike the full-width .nr-num block.
+            for group in ("number", "change", "source"):
+                self.assert_(card[group] and all(r["x"] >= outer["x"] - 1 and
+                    r["right"] <= outer["right"] + 1 and r["y"] >= outer["y"] - 1 and
+                    r["bottom"] <= outer["bottom"] + 1 for r in card[group]),
+                    f"{label}: {group} text is clipped by its market card")
+            self.assert_(chart["x"] >= outer["x"] and chart["right"] <= outer["right"] and
+                chart["y"] >= outer["y"] and chart["bottom"] <= outer["bottom"],
+                f"{label}: trend chart leaves its market card")
+            for group in ("number", "change"):
+                self.assert_(all(min(r["right"], chart["right"]) <= max(r["x"], chart["x"]) + 1 or
+                    min(r["bottom"], chart["bottom"]) <= max(r["y"], chart["y"]) + 1 for r in card[group]),
+                    f"{label}: saved trend chart overlaps actual {group} text")
+
     def selected_source_matches(self, surface):
         chosen = surface.evaluate("""() => {
             const s=window.StockRadarV2Bridge.snapshot();
@@ -154,6 +192,7 @@ class Checks:
         self.assert_(page.locator(".fx-v5-chartarea .fx-chart-svg polyline").count() > 0, "Actual saved price chart is missing")
         self.assert_("실시간 호가 아님" in page.locator("#source-status").inner_text(), "Saved-data disclosure is absent")
         self.screenshot("desktop-home")
+        self.market_card_geometry(page, "desktop-home")
         sentinel = '{"note":"사용자 기록 보존 검사","version":1}'
         page.evaluate("value => localStorage.setItem('development-user-note',value)", sentinel)
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
@@ -197,12 +236,20 @@ class Checks:
         self.assert_(page.evaluate("() => localStorage.getItem('development-user-note')") == sentinel, "Unrelated existing user note was changed")
         self.selected_source_matches(page)
 
+        page.set_viewport_size({"width": 1629, "height": 929})
+        info = self.geometry(page, "desktop-wide-home")
+        self.assert_(info["documentHeight"] <= 932 and info["main"]["bottom"] <= 932,
+            "Wide desktop home no longer fits its viewport")
+        self.screenshot("desktop-wide-home")
+        self.market_card_geometry(page, "desktop-wide-home")
+
     def mobile(self, browser):
         page = self.context(browser, 390, 844)
         self.load(page)
         self.geometry(page, "mobile-home")
         self.selected_source_matches(page)
         self.screenshot("mobile-home")
+        self.market_card_geometry(page, "mobile-home")
         page.locator('.fx-nav [data-nr-screen="stockdetail"]').click()
         self.assert_(page.locator(".fx-detail-content").count() == 1, "Mobile detail navigation failed")
         info = page.evaluate("() => [document.documentElement.scrollWidth,innerWidth]")
@@ -223,6 +270,7 @@ class Checks:
         self.geometry(child, "iframe-home")
         self.selected_source_matches(child)
         self.screenshot("iframe-home")
+        self.market_card_geometry(child, "iframe-home")
         frame.locator('.fx-nav [data-nr-screen="stockdetail"]').click()
         self.assert_(frame.locator(".fx-detail-content").count() == 1, "Embedded detail navigation failed")
         size = child.evaluate("() => [document.documentElement.scrollWidth,innerWidth]")

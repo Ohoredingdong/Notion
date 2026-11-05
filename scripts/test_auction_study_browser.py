@@ -209,6 +209,43 @@ def box_inside_viewport(locator, label):
     assert bounds["bottom"] <= bounds["viewportHeight"] + 1, (label, bounds)
 
 
+def overview_proportions(page, label):
+    """Metric amounts stay readable, with aligned values in comparable cards."""
+    metrics = page.locator(".overview-metric").evaluate_all("""elements => elements.map(el => {
+        const value = el.querySelector('.overview-value');
+        const card = el.getBoundingClientRect(), bounds = value.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(value);
+        const text = range.getBoundingClientRect();
+        return {card:{left:card.left, top:card.top, right:card.right, bottom:card.bottom},
+            value:{top:bounds.top, bottom:bounds.bottom, height:bounds.height},
+            text:{left:text.left, right:text.right, lines:range.getClientRects().length},
+            lineHeight:parseFloat(getComputedStyle(value).lineHeight),
+            fontSize:parseFloat(getComputedStyle(value).fontSize)};
+    })""")
+    assert len(metrics) == 3, (label, metrics)
+    for index, metric in enumerate(metrics):
+        assert metric["fontSize"] >= 24, (label, index, "metric must remain readable", metric)
+        assert metric["text"]["left"] >= metric["card"]["left"], (label, index, metric)
+        assert metric["text"]["right"] <= metric["card"]["right"], (label, index, metric)
+        assert metric["value"]["bottom"] <= metric["card"]["bottom"], (label, index, metric)
+        # The progress count contains a smaller inline unit. Currency values
+        # contain one text node; their rect count detects actual line wrapping.
+        # Glyph bounds can exceed the CSS line box in Korean fallback fonts.
+        if index < 2:
+            assert metric["text"]["lines"] == 1 and metric["value"]["height"] <= metric["lineHeight"] + 1, (
+                label, index, "currency amount wrapped onto another line", metric
+            )
+    if page.evaluate("innerWidth") <= 760:
+        cash, profit, evidence = metrics
+        assert cash["card"]["bottom"] < profit["card"]["top"], (label, metrics)
+        assert abs(profit["card"]["top"] - evidence["card"]["top"]) <= 1, (label, metrics)
+        assert abs(profit["card"]["bottom"] - evidence["card"]["bottom"]) <= 1, (label, metrics)
+        assert abs(profit["value"]["top"] - evidence["value"]["top"]) <= 1, (label, metrics)
+    else:
+        assert max(item["value"]["top"] for item in metrics) - min(item["value"]["top"] for item in metrics) <= 1, (label, metrics)
+
+
 def fixed_viewport_pages(page):
     """The page stays fixed; long forms retain reachable internal scrolling."""
     for width, height in [(1440, 900), (1366, 768), (1280, 720), (390, 844), (390, 667)]:
@@ -226,6 +263,7 @@ def fixed_viewport_pages(page):
             document_fits_viewport(page, (label, "after wheel"))
 
         navigate(page, "home")
+        overview_proportions(page, (width, height, "overview metrics"))
         if width >= 1100:
             for pane in ["progress", "reasons", "cash"]:
                 panel = page.locator(f".home-panel-{pane}")
@@ -298,6 +336,55 @@ def short_mobile_dialog(page):
     document_fits_viewport(page, "after short mobile dialog submit")
 
 
+def embedded_overview(page):
+    """A 900x650 embed keeps readable rows even when storage is blocked."""
+    page.set_viewport_size({"width": 1100, "height": 800})
+    for blocked in [False, True]:
+        # Start at the application origin, then use a real iframe. The sandbox
+        # creates a storage-denied context without changing application code.
+        page.goto(URL, wait_until="domcontentloaded")
+        page.evaluate("""({url, blocked}) => {
+            const iframe = document.createElement('iframe');
+            iframe.title = '경매노트 임베드 검사';
+            iframe.style.cssText = 'display:block;width:900px;height:650px;border:0';
+            if (blocked) iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-downloads allow-modals');
+            iframe.src = url;
+            document.body.replaceChildren(iframe);
+        }""", {"url": URL, "blocked": blocked})
+        element = page.locator("iframe").element_handle()
+        frame = element.content_frame()
+        expect(frame.locator("h1")).to_have_text("물건 검토 한눈에 보기")
+        label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available")
+        overview_proportions(frame, label)
+        document_fits_viewport(frame, label)
+        if blocked:
+            notice = frame.locator(".notice")
+            expect(notice).to_contain_text("저장소를 사용할 수 없거나")
+            box_inside_viewport(notice, label)
+            assert notice.evaluate("el => el.scrollHeight <= el.clientHeight + 1"), label
+            assert notice.evaluate("el => el.getBoundingClientRect().bottom <= document.querySelector('.home-screen').getBoundingClientRect().top"), label
+        else:
+            expect(frame.locator(".notice")).to_have_count(0)
+        progress = frame.locator(".analysis-progress")
+        rows = progress.locator(".analysis-step").evaluate_all("""elements => elements.map(el => {
+            const row = el.getBoundingClientRect();
+            const content = el.querySelector('.analysis-step-copy').getBoundingClientRect();
+            return {top:row.top, bottom:row.bottom, contentTop:content.top, contentBottom:content.bottom};
+        })""")
+        for index, row in enumerate(rows):
+            assert row["contentTop"] >= row["top"] and row["contentBottom"] <= row["bottom"], (label, index, row)
+            if index:
+                assert row["top"] >= rows[index - 1]["bottom"] - 1, (label, rows)
+        last = progress.locator(".analysis-step").last
+        last.scroll_into_view_if_needed()
+        box_inside_viewport(last, (label, "last step"))
+        assert last.evaluate("el => el.getBoundingClientRect().bottom <= el.parentElement.getBoundingClientRect().bottom + 1"), label
+        document_fits_viewport(frame, (label, "after internal scroll"))
+        last.click()
+        expect(frame.locator('.page-content[data-view="notes"]')).to_be_visible()
+        document_fits_viewport(frame, (label, "last step opened"))
+
+
 def main():
     failures = []
     cases = [
@@ -309,6 +396,7 @@ def main():
         ("mobile_navigation", mobile_navigation, 390),
         ("fixed_viewport_pages", fixed_viewport_pages, 1366),
         ("short_mobile_dialog", short_mobile_dialog, 390),
+        ("embedded_overview", embedded_overview, 1100),
     ]
     with sync_playwright() as p:
         launch_options = {"headless": True}
