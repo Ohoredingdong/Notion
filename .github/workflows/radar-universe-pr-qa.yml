@@ -10,6 +10,7 @@ on:
       - 'scripts/test_stock_universe_catalog.py'
       - 'scripts/test_stock_extended_forecasts.py'
       - 'scripts/test_stock_universe_browser.py'
+      - 'scripts/compare_radar_before_after.py'
       - '.github/workflows/*stock*'
       - '.github/workflows/radar-universe-pr-qa.yml'
   push:
@@ -63,11 +64,22 @@ jobs:
         run: |
           python -m pip install 'playwright==1.56.0'
           python -m playwright install chromium
+      - name: Checkout production main reference (read-only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'main' }}
+          path: production-reference
+          persist-credentials: false
       - name: Browser acceptance for 8k-company catalogue, real news and Notion sizes
         run: |
           python -m http.server 8765 >/tmp/radar-universe-qa.log 2>&1 &
           python scripts/test_stock_universe_browser.py
           python scripts/test_stock_detail_v6.py
+      - name: Compare unchanged home and detailed stock views before/after
+        run: |
+          python -m pip install 'Pillow==11.3.0'
+          python -m http.server 8776 --directory production-reference >/tmp/radar-baseline.log 2>&1 &
+          python scripts/compare_radar_before_after.py --before http://127.0.0.1:8776 --after http://127.0.0.1:8765 --real-data . --out radar-universe-evidence
       - name: Save screen captures and exact error report
         if: always()
         uses: actions/upload-artifact@v4
