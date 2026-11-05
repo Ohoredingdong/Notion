@@ -28,7 +28,7 @@ SEC_CIK = "https://www.sec.gov/files/company_tickers_exchange.json"
 SEC_FACTS = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
 DART_MAP = "https://opendart.fss.or.kr/api/corpCode.xml"
 DART_MULTI = "https://opendart.fss.or.kr/api/fnlttMultiAcnt.json"
-MAX_US_BATCH, MAX_KR_BATCH = 120, 400
+MAX_US_BATCH, MAX_KR_BATCH = 120, 3000
 FORMS = {"10-Q", "10-K", "20-F", "40-F"}
 TAGS = {
     "revenue": ("RevenueFromContractWithCustomerExcludingAssessedTax",
