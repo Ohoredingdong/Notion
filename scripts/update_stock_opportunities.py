@@ -18,6 +18,22 @@ OUT=Path('stock-opportunity-data.json')
 N=core.num
 
 
+def price_integrity(info,bars,session,expected_currency):
+    """Preserve observed currency/session causes without relaxing the existing gate."""
+    actual_session=bars[-1]['date'] if bars else None
+    quote_currency=info.get('currency')
+    financial_currency=info.get('financialCurrency')
+    reasons=[]
+    if actual_session!=session['date']:reasons.append('completed_price_session_missing_or_stale')
+    if quote_currency!=expected_currency:reasons.append('quote_currency_missing_or_mismatch')
+    if financial_currency!=expected_currency:reasons.append('financial_currency_missing_or_mismatch')
+    return {'price_session':actual_session,'expected_session':session['date'],
+            'completed_session_match':bool(bars and actual_session==session['date']),
+            'quote_currency':quote_currency,'financial_currency':financial_currency,
+            'expected_currency':expected_currency,'issues':reasons,
+            'note':'거래통화와 재무통화가 다른 ADR 등은 기존 동일통화 비교 검증을 통과하지 않습니다.'}
+
+
 def size_group(cap,market):
     cap=N(cap)
     if cap is None or cap<=0:return 'unknown'
@@ -139,6 +155,7 @@ def collect(spec,base,audit,benchmark,now):
     cap=N(info.get('marketCap'));root='https://finance.yahoo.com/quote/'+source_symbol
     official=proof.get('source_url') or ir or ('https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm='+quote(name) if market=='KR' else 'https://www.sec.gov/edgar/search/')
     row={'symbol':symbol,'name':name,'market':market,'sector':sector,'cohort':cohort,'source_symbol':source_symbol,'currency':expected,'status':'current' if fresh else 'incomplete','collected_at':datetime.now(timezone.utc).isoformat(),'price':price,'price_session':bars[-1]['date'] if bars else None,'expected_session':session,'market_cap':cap,'size_group':size_group(cap,market),'technical':tech,'forecasts':forecasts,'targets':target,'balance':balance,'history':hist,'official_history':proof,'liquidity':{'avg_turnover20':turnover,'currency':expected,'period':'last 20 completed sessions'},'earnings_calendar':calendar,'short':core.short_decision(tech,fresh,days),'sources':{'history':root+'/history/','estimates':root+'/analysis/','cashflow':root+'/cash-flow/','balance':root+'/balance-sheet/','official':official},'errors':errors,'flow_status':'외국인·기관 수급 미연결; 거래량과 구분','forecast_basis':'단일 제공처 애널리스트 추정; 독립 대조 전·개별 리포트 날짜 미제공'}
+    row['price_integrity']=price_integrity(info,bars,session,expected)
     row['priority']=priority_score(row);row['assessment']=assessment(row)
     return row
 
@@ -163,3 +180,4 @@ def main():
     if counts['current']==0:raise SystemExit('모든 완료 시세 수집 실패')
 
 if __name__=='__main__':main()
+

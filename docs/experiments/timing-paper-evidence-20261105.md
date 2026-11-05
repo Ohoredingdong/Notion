@@ -96,8 +96,21 @@ then records the observation time in the separate append-only
 `stock-forecast-paper-publication-verifications.jsonl`. The original policy,
 plans, forecasts and answers are not rewritten. The same bundle publisher
 preserves this proof ledger and recalculates diagnostics against merged evidence.
-The workflow requests another public build so the stored proof and diagnostic
-become visible. No additional automation is created.
+Each forecast cycle requests one public build: initial bundle publication,
+build, forecast check, paper check against that same published snapshot, then
+one publication preserving both proof ledgers. New plans registered during that
+last publication, and its updated diagnostics, wait for the next scheduled
+public build. They remain pending until the actual public check; a late check
+cannot establish before-target publication. This intentional delay avoids two
+extra build requests per cycle. No additional automation is created.
+
+The existing news workflow requests a public build only outside the exact UTC
+research window used by the forecast workflow. During that window the existing
+news-completion trigger delegates publication to the forecast workflow. The
+schedule is best effort and does not establish a real-time delivery guarantee.
+GitHub documents a soft limit of 10 Pages builds per hour for this publishing
+mode; there is no change to a custom Pages deployment system. Source:
+[GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
 
 A first public check at or after target start is retained with
 `public_before_target_verified: false`; it cannot be backdated or turned into an

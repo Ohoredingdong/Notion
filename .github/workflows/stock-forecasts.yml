@@ -49,7 +49,7 @@ jobs:
             echo "active=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          hour=$(date -u +%H)
+          hour=$((10#$(date -u +%H)))
           day=$(date -u +%u)
           if (( (day>=1 && day<=5 && (hour<=7 || (hour>=13 && hour<=22))) || (hour==23 && (day==7 || day<=4)) )); then
             echo "active=true" >> "$GITHUB_OUTPUT"
@@ -109,25 +109,14 @@ jobs:
       - name: Verify public autonomous cycle and code
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/verify_stock_forecast_public.py
-      - name: Preserve public availability timestamps
-        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
-        run: python scripts/publish_stock_forecasts.py
-      - name: Request build of preregistered paper plans
-        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
-      - name: Verify the exact public paper policy and plan bytes
+      - name: Verify paper plans in the same public build
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/verify_stock_forecast_public.py --paper-only
-      - name: Preserve paper publication evidence with its matching audit
+      - name: Preserve forecast and paper publication evidence with the matching audit
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        # Newly registered plans wait for the next scheduled build and actual
+        # public check. Do not backdate them or request two extra Pages builds.
         run: python scripts/publish_stock_forecasts.py
-      - name: Request public build of verified paper evidence
-        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
       - uses: actions/upload-artifact@v4
         if: always() && steps.market_gate.outputs.active == 'true'
         with:

@@ -49,6 +49,7 @@ jobs:
           python scripts/test_stock_discovery_v9.py
           python scripts/test_stock_investment_cases.py
           python scripts/test_stock_strict_green.py
+          python -m unittest scripts.test_stock_recommendations -v
           python scripts/verify_stock_canonical_pipeline.py
       - name: Collect current detailed research and matching completed-session charts
         if: steps.request.outputs.collect == 'true'
@@ -77,6 +78,7 @@ jobs:
           python scripts/stock_reading_depth.py
           python scripts/stock_strict_green.py
           python scripts/build_stock_decision_guide.py
+          python scripts/update_stock_event_risks.py
           python scripts/build_stock_recommendations.py
           python scripts/build_stock_entry_plan.py
       - name: Publish the coherent operating bundle to the repair branch only
@@ -95,6 +97,7 @@ jobs:
           stock-reading-depth.json stock-reading-depth-summary.json
           stock-green-review.json stock-green-review-summary.json stock-green-tests.json
           stock-decision-guide.json stock-decision-guide-summary.json
+          stock-event-risks.json
           stock-recommendations.json stock-recommendations-summary.json
           stock-entry-plan.json stock-entry-plan-summary.json
       - name: Inspect the actual latest repair-branch bundle including parallel finance recovery
@@ -125,10 +128,17 @@ jobs:
           path: |
             stock-radar-health.json
             stock-radar-accuracy-audit.json
-            stock-opportunity-summary.json
+            stock-opportunity-*.json
             stock-radar-chart-data.json
             stock-market-context.json
             news-link-data.json
+            market-events-data.json
             stock-event-outlook.json
-            stock-investment-cases-summary.json
-            stock-entry-plan-summary.json
+            stock-event-risks.json
+            stock-investment-cases*.json
+            stock-reading-depth*.json
+            stock-green-*.json
+            stock-decision-guide*.json
+            stock-recommendations*.json
+            stock-entry-plan*.json
+            stock-entry-ledger.jsonl

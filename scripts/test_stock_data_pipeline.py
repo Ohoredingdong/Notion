@@ -3,10 +3,13 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
+import sqlite3
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
@@ -17,6 +20,10 @@ from market_data_utils import completed_daily_points, market_session_clock, utc_
 import audit_stock_radar_accuracy as accuracy
 import publish_stock_radar_audit as publisher
 import publish_widget_data as widget_publisher
+import build_stock_radar_chart_cache as chart_builder
+import update_stock_opportunities as opportunity_builder
+import update_stock_event_risks as event_builder
+import build_stock_recommendations as recommendation_builder
 from verify_stock_canonical_pipeline import verify_canonical
 
 spec = importlib.util.spec_from_file_location('radar_health', SCRIPTS / 'monitor-stock-value-radar.py')
@@ -214,6 +221,80 @@ class HealthTests(unittest.TestCase):
 
 
 class CanonicalAndAuditTests(unittest.TestCase):
+    def test_completed_adr_price_does_not_hide_financial_currency_mismatch(self):
+        bars=[{'date':'2026-11-04','close':100}]
+        evidence=opportunity_builder.price_integrity({'currency':'USD','financialCurrency':'CNY'},bars,{'date':'2026-11-04'},'USD')
+        self.assertTrue(evidence['completed_session_match'])
+        self.assertEqual(evidence['quote_currency'],'USD')
+        self.assertEqual(evidence['financial_currency'],'CNY')
+        self.assertEqual(evidence['issues'],['financial_currency_missing_or_mismatch'])
+        matched=opportunity_builder.price_integrity({'currency':'USD','financialCurrency':'USD'},bars,{'date':'2026-11-04'},'USD')
+        self.assertFalse(matched['issues'])
+
+    def test_recommendation_dependency_requires_new_event_scan_before_build(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            stamp=NOW.isoformat()
+            write(root,'stock-opportunity-data.json',{'generated_at':stamp,'companies':[
+                {'symbol':'X','name':'Example','market':'US','status':'current','model_integrity':{'status':'ok'}}]})
+            for name in ('stock-investment-cases.json','stock-reading-depth.json'):
+                write(root,name,{'source_generated_at':stamp,'companies':[]})
+            write(root,'stock-event-risks.json',{'source_generated_at':'2026-11-04T00:00:00Z','companies':[]})
+            previous=os.getcwd()
+            try:
+                os.chdir(root)
+                with self.assertRaisesRegex(SystemExit,'source snapshot mismatch'):
+                    recommendation_builder.main()
+                with patch.object(event_builder,'rss',return_value=[]), patch.object(recommendation_builder,'dart_names',return_value={}):
+                    event_builder.main()
+                    recommendation_builder.main()
+                result=json.loads((root/'stock-recommendations.json').read_text())
+                self.assertEqual(result['source_generated_at'],stamp)
+                self.assertEqual(result['top_recommendations'],[])
+            finally:
+                os.chdir(previous)
+
+    def test_chart_cache_retries_real_fetch_after_transient_sqlite_failure(self):
+        class Frame:
+            def iterrows(self):
+                for day in ('2026-11-03', '2026-11-04', '2026-11-05'):
+                    yield datetime.fromisoformat(day), {'Close': 100, 'Volume': 1000}
+        attempts={}
+        def ticker(symbol):
+            def history(**kwargs):
+                attempts[symbol]=attempts.get(symbol,0)+1
+                if symbol=='^KQ11' and attempts[symbol]==1:
+                    raise sqlite3.OperationalError('database is locked')
+                return Frame()
+            return SimpleNamespace(history=history)
+        yf=SimpleNamespace(Ticker=ticker,set_tz_cache_location=lambda path:None)
+        xc=SimpleNamespace(get_calendar=lambda name,**kwargs:Calendar('KR' if name=='XKRX' else 'US'))
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            write(root,'stock-opportunity-data.json',{'generated_at':NOW.isoformat(),'companies':[]})
+            with patch.dict(sys.modules,{'yfinance':yf,'exchange_calendars':xc}), patch.object(chart_builder.time,'sleep'):
+                data=chart_builder.build(root,NOW)
+            self.assertEqual(data['counts'],{'ok':4,'stale':0,'unavailable':0})
+            self.assertEqual(data['series']['^KQ11']['price_session'],'2026-11-05')
+            self.assertEqual(data['series']['^KQ11']['collection_attempts'],2)
+            self.assertEqual(attempts['^KQ11'],2)
+            self.assertEqual(data['series']['^GSPC']['price_session'],'2026-11-04')
+
+    def test_chart_cache_preserves_unavailable_after_bounded_retry(self):
+        def ticker(symbol):
+            def history(**kwargs):
+                raise sqlite3.OperationalError('cache remains unavailable')
+            return SimpleNamespace(history=history)
+        yf=SimpleNamespace(Ticker=ticker,set_tz_cache_location=lambda path:None)
+        xc=SimpleNamespace(get_calendar=lambda name,**kwargs:Calendar('KR' if name=='XKRX' else 'US'))
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            write(root,'stock-opportunity-data.json',{'generated_at':NOW.isoformat(),'companies':[]})
+            with patch.dict(sys.modules,{'yfinance':yf,'exchange_calendars':xc}), patch.object(chart_builder.time,'sleep'):
+                data=chart_builder.build(root,NOW)
+            self.assertEqual(data['counts'],{'ok':0,'stale':0,'unavailable':4})
+            self.assertTrue(all(row['bars']==[] and row['collection_attempts']==2 for row in data['series'].values()))
+
     def test_modern_installer_preserves_html_and_rejects_missing_evidence_feed(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
