@@ -45,6 +45,10 @@ jobs:
           print('PASS: all changed Python / JavaScript syntax checks')
           PY
 
+      - name: Install existing macro-test parser dependency
+        if: steps.scope.outputs.stock == 'true'
+        run: python -m pip install 'beautifulsoup4==4.14.3'
+
       - name: Reuse current investment evidence & AI signal unit checks
         if: steps.scope.outputs.stock == 'true'
         run: |
