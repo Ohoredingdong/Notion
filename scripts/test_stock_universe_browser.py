@@ -54,6 +54,19 @@ try:
                 }""")
                 verify(f"{width}: real issuer directory exceeds demo 104 stocks",snapshot["total"]>1000,snapshot)
                 verify(f"{width}: Korean/US issuer counts are source based",snapshot["kr"]>1000 and snapshot["us"]>1000,snapshot)
+                page.wait_for_function("""() => !!window.StockRadarV2Bridge?.snapshot()?.data?.financial?.records""",timeout=45000)
+                finance = page.evaluate("""() => {
+                    const s=window.StockRadarV2Bridge.snapshot().data,records=s.financial.records||{};
+                    const deep=new Set((s.raw?.companies||[]).map(c=>String(c.symbol).replace(/\.(KS|KQ)$/,'')));
+                    const eligible=(s.catalog.items||[]).find(item=>item.country==='KR'&&!deep.has(item.symbol)
+                      && ['available','partial','stale'].includes(records['KR:'+item.symbol]?.status));
+                    return {catalogSize:s.catalog.items.length,processed:Object.keys(records).length,
+                      sourced:(s.financial.financial_available.KR||0)+(s.financial.financial_available.US||0),
+                      sample:eligible?.symbol||null};
+                }""")
+                verify(f"{width}: official financial data has independent source provenance",
+                       finance["catalogSize"]==snapshot["total"] and finance["sourced"]>=1, finance)
+
                 verify(f"{width}: existing market dashboard intact",snapshot["mainIndex"]==4 and snapshot["sentiment"]==1,snapshot)
                 screenshot(page,f"{width}-home")
                 page.locator('.fx-nav [data-nr-screen="stocks"]').click()
@@ -79,6 +92,14 @@ try:
                            "확인되지" in page.locator(".fx-catalog-preview").inner_text())
                     verify(f"{width}: no fabricated price for unknown ticker",
                            page.locator(".fx-catalog-preview .fx-d-quote").count()==0)
+                if finance["sample"]:
+                    page.locator("#fx-catalog-search").fill(finance["sample"])
+                    page.locator('[data-catalog-preview="KR:'+finance["sample"]+'"]').first.click()
+                    verify(f"{width}: real DART statement surfaced for listed issuer",
+                           "매출액" in page.locator(".fx-catalog-finance").inner_text() and
+                           "DART periodic reports" in page.locator(".fx-catalog-finance").inner_text())
+                    verify(f"{width}: FCF is not fabricated when source omits cash flows",
+                           "공시 없음" in page.locator(".fx-catalog-finance").inner_text())
                 screenshot(page,f"{width}-catalog-preview")
                 page.locator('.fx-nav-tools [data-nr-screen="news"]').click()
                 page.locator(".fx-world-page").wait_for(timeout=12000)
