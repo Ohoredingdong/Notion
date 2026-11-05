@@ -15,8 +15,14 @@ on:
       - 'stock-forecast.html'
       - '.github/workflows/stock-forecasts.yml'
   schedule:
+    # GitHub cron is best effort; delay/drop is possible.
     - cron: '7,17,27,37,47,57 0-7,13-22 * * 1-5'
     - cron: '47 23 * * 0-4'
+  # Additional opportunity to refresh after the 15-minute news collection finishes.
+  workflow_run:
+    workflows: ['Update News Link Hub']
+    types: [completed]
+    branches: [main]
 permissions:
   contents: write
   pages: write
@@ -25,6 +31,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   research:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
@@ -32,16 +39,36 @@ jobs:
       OPENBLAS_NUM_THREADS: '1'
       MKL_NUM_THREADS: '1'
     steps:
+      - name: Skip news-triggered runs outside regular research hours
+        id: market_gate
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" != "workflow_run" ]]; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          hour=$(date -u +%H)
+          day=$(date -u +%u)
+          if (( (day>=1 && day<=5 && (hour<=7 || (hour>=13 && hour<=22))) || (hour==23 && (day==7 || day<=4)) )); then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Outside research window: no model run."
+          fi
       - uses: actions/checkout@v4
+        if: steps.market_gate.outputs.active == 'true'
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
+        if: steps.market_gate.outputs.active == 'true'
         with:
           python-version: '3.12'
       - name: Install model and session readers
+        if: steps.market_gate.outputs.active == 'true'
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2' 'playwright==1.56.0'
       - name: Test future targets, transaction rejection and bounded recovery
+        if: steps.market_gate.outputs.active == 'true'
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
           PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
@@ -54,8 +81,10 @@ jobs:
           node scripts/test_stock_forecast_ui.cjs
           node scripts/stock_autopilot_recovery.cjs
       - name: Execute bounded autonomous research transaction
+        if: steps.market_gate.outputs.active == 'true'
         run: python scripts/stock_forecast_autopilot.py
       - name: Test actual forecast and autonomous status screens
+        if: steps.market_gate.outputs.active == 'true'
         run: |
           python -m playwright install --with-deps chromium
           python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
@@ -64,21 +93,21 @@ jobs:
           python scripts/test_stock_forecast_directions_browser.py
           python scripts/test_stock_autopilot_browser.py
       - name: Publish forecast and learning state atomically
-        if: github.ref == 'refs/heads/main'
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/publish_stock_forecasts.py
       - name: Request public build
-        if: github.ref == 'refs/heads/main'
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
       - name: Verify public autonomous cycle and code
-        if: github.ref == 'refs/heads/main'
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/verify_stock_forecast_public.py
       - name: Preserve public availability timestamps
-        if: github.ref == 'refs/heads/main'
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/publish_stock_forecasts.py
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.market_gate.outputs.active == 'true'
         with:
           name: prospective-forecast-evidence
           retention-days: 7
