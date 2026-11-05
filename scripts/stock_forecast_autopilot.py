@@ -14,6 +14,7 @@ import shutil
 import tempfile
 import threading
 import time
+from stock_forecast_paper import PAPER_OUTPUTS, READ_ONLY_INPUTS
 
 VERSION = 'bounded-autopilot-1.0'
 REPORT = 'stock-forecast-autopilot.json'
@@ -23,7 +24,7 @@ CORE_OUTPUTS = ('stock-direction-forecast.json','stock-forecast-ledger.jsonl',
                 'stock-forecast-outcomes.jsonl','stock-forecast-deliveries.jsonl',
                 'stock-forecast-learning-state.json','stock-forecast-learning.json',
                 'stock-forecast-attempts.jsonl','stock-forecast-learning-events.jsonl')
-OUTPUTS = CORE_OUTPUTS + (REPORT, EVENTS, SOURCES)
+OUTPUTS = CORE_OUTPUTS + (REPORT, EVENTS, SOURCES) + PAPER_OUTPUTS
 POLICY = {'version':VERSION, 'maximum_source_attempts':2,
           'rate_limit_cooldown_minutes':15, 'maximum_new_recipe_families':1,
           'allowed_variants':['adaptive','balanced_linear','balanced_nonlinear','movement_then_direction'],
@@ -161,6 +162,16 @@ def verify_stage(root,stage,cutoff):
     import stock_forecast_learning as learning
     for name in OUTPUTS:
         if name.endswith('.jsonl'): preserve_records(lines(root/name),lines(stage/name))
+    paper_policy='stock-forecast-paper-policy.json'
+    if (root/paper_policy).exists() and (
+            not (stage/paper_policy).exists() or (root/paper_policy).read_bytes()!=(stage/paper_policy).read_bytes()):
+        raise ValueError('original_paper_policy_was_changed_or_deleted')
+    paper_report=read(stage,'stock-forecast-paper-audit.json',{})
+    if paper_report and (paper_report.get('timing_utility')!='not_proven' or
+            any(paper_report.get(key) is not False for key in (
+                'after_cost_forward_edge_verified','untouched_followup_verified',
+                'automatic_completion_notice','orders_enabled','strict_green_override'))):
+        raise ValueError('paper_diagnostic_cannot_authorize_usefulness_or_orders')
     records=lines(stage/'stock-forecast-ledger.jsonl')
     outcomes=lines(stage/'stock-forecast-outcomes.jsonl')
     deliveries=lines(stage/'stock-forecast-deliveries.jsonl')
@@ -241,7 +252,7 @@ def run(root=Path('.'),pipeline=None,clock=now):
     try:
         with tempfile.TemporaryDirectory(prefix='forecast-transaction-') as temp:
             stage=Path(temp)
-            for name in OUTPUTS:
+            for name in OUTPUTS + READ_ONLY_INPUTS:
                 if (root/name).exists():shutil.copy2(root/name,stage/name)
             manifest={'kind':'preregistered_recipe','version':VERSION,'recipe':RECIPE,
                       'created_at':start.isoformat(),'effective_from':start.isoformat(),
@@ -252,6 +263,8 @@ def run(root=Path('.'),pipeline=None,clock=now):
             collector=SafeCollector(original.process,source_state,clock=clock)
             engine=pipeline or original.run
             engine(root=stage,processor=collector)
+            from stock_forecast_paper import run as run_paper_research
+            paper_report=run_paper_research(root=stage,cutoff=clock())
             check=verify_stage(root,stage,clock())
             evaluation=read(stage,'stock-forecast-learning.json',{})
             collected={(v['symbol'],v['mode']) for v in collector.events if v['history_received']}
@@ -277,6 +290,14 @@ def run(root=Path('.'),pipeline=None,clock=now):
                     'learning_after_observed_outcome_verified':True,
                     'promotions':evaluation.get('learning',{}).get('promotions',0),
                     'rollbacks':evaluation.get('learning',{}).get('rollbacks',0),
+                    'paper_experiment':{'status':paper_report['status'],
+                        'registered_plans':paper_report['registered_plans'],
+                        'new_plans':paper_report['new_plans'],
+                        'status_counts':paper_report['status_counts'],
+                        'report':'stock-forecast-paper-audit.json',
+                        'shadow_comparison':'stock-forecast-shadow-comparison.json',
+                        'external_quote_adapter_connected':False,
+                        'human_receipt_adapter_connected':False},
                     'timing_utility':{'status':'not_proven','automatic_completion_notice':False,
                         'blockers':['prospective_directional_edge_requires_more_evidence',
                                     'independent_executable_quotes_and_delivery_not_connected',
@@ -311,3 +332,4 @@ def run(root=Path('.'),pipeline=None,clock=now):
         raise
 
 if __name__=='__main__': run()
+

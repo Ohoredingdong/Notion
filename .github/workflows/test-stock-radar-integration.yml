@@ -9,10 +9,12 @@ on:
       - 'assets/stock-radar-clean-bridge.js'
       - 'assets/stock-radar-flow-v2.js'
       - 'scripts/build_stock_event_outlook.py'
+      - 'scripts/publish_widget_data.py'
+      - 'scripts/test_widget_source_publication.py'
       - 'stock-event-calendar-seed.json'
       - '.github/workflows/test-stock-radar-integration.yml'
   push:
-    branches: [main, 'fix/radar-feature-audit-20261030']
+    branches: [main, 'fix/radar-feature-audit-20261030', 'fix/radar-integrity-20261105']
     paths:
       - 'stock-value-radar.html'
       - 'stock-radar-dashboard.html'
@@ -23,6 +25,8 @@ on:
       - 'scripts/update_korea_fear_greed.py'
       - 'scripts/test_stock_radar_flow_browser.py'
       - 'scripts/publish_stock_opportunities.py'
+      - 'scripts/publish_widget_data.py'
+      - 'scripts/test_widget_source_publication.py'
       - 'scripts/publish_stock_market_groups.py'
       - 'scripts/publish_stock_investment_cases.py'
       - 'scripts/install_stock_radar_v8.py'
@@ -58,7 +62,10 @@ jobs:
           python-version: '3.12'
       - name: Install browser dependencies
         run: |
-          pip install 'playwright==1.56.0' beautifulsoup4
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          test -n "$(fc-list :lang=ko)"
+          pip install 'playwright==1.56.0' beautifulsoup4 'exchange-calendars==4.13.1' 'yfinance==0.2.66'
           python -m playwright install --with-deps chromium
           npm install --no-save --package-lock=false @playwright/test@1.56.0
       - name: Syntax checks
@@ -66,9 +73,12 @@ jobs:
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-radar-clean-bridge.js
           node --check assets/stock-radar-flow-v2.js
-          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-catalog-ui.js
+          node --check assets/stock-world-brief.js
+          node scripts/test_stock_catalog_integrity.cjs
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py
+          python -m unittest discover -s scripts -p 'test_widget_source_publication.py' -v
           python -m py_compile scripts/audit_stock_radar_accuracy.py
           python scripts/audit_stock_radar_accuracy.py --check
           node --check assets/stock-recommendations.js
@@ -92,3 +102,4 @@ jobs:
           path: |
             entry-*.png
             decision-browser-tests/
+

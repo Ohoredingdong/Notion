@@ -9,6 +9,10 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from bs4 import BeautifulSoup
+try:
+    from .market_data_utils import completed_daily_points
+except ImportError:
+    from market_data_utils import completed_daily_points
 
 NOW=datetime.now(timezone.utc)
 OUT=Path('stock-market-context.json')
@@ -162,14 +166,22 @@ def fred_unrate(body):
     rows=parse_fred_csv(body);date,value=rows[-1];old=rows[-4][1] if len(rows)>=4 else rows[0][1]
     return {'date':date,'value_pct':value,'change_3m_pp':value-old,'source_url':'https://fred.stlouisfed.org/series/UNRATE','basis':'미국 실업률, 계절조정'}
 
-def market_series(symbol,label):
+def market_series(symbol,label,now=None):
     import yfinance as yf
+    collected_at=now or datetime.now(timezone.utc)
     frame=yf.Ticker(symbol).history(period='3mo',interval='1d',auto_adjust=False,actions=False,raise_errors=True)
     if frame is None or frame.empty:raise ValueError(label+'_empty')
-    values=[(str(i.date()),num(v)) for i,v in frame['Close'].items() if num(v) is not None]
+    market={'^KS11':'KR','^KQ11':'KR','^GSPC':'US','^IXIC':'US','KRW=X':'FX'}[symbol]
+    values,clock=completed_daily_points([(str(i.date()),num(v)) for i,v in frame['Close'].items()],market,collected_at)
     if not values:raise ValueError(label+'_no_close')
     latest=values[-1];prior=values[-2] if len(values)>1 else latest;old=values[-21] if len(values)>=21 else values[0]
-    return {'date':latest[0],'value':latest[1],'change_1d_pct':pct_change(latest[1],prior[1]),'change_20_sessions_pct':pct_change(latest[1],old[1]),'source_url':'https://finance.yahoo.com/quote/'+symbol,'basis':'시장 데이터 제공처의 마지막 일봉 종가; 실시간 아님'}
+    status='ok' if clock['expected_session'] is None or latest[0]==clock['expected_session'] else 'stale'
+    basis=('제공처 일봉 중 UTC 날짜가 완전히 지난 값; 단일 거래소 확정 환율·실시간 환율 아님' if market=='FX'
+           else '정규장 종료 후 30분이 지난 완료 세션의 제공처 종가; 실시간 아님')
+    return {'date':latest[0],'value':latest[1],'change_1d_pct':pct_change(latest[1],prior[1]),'change_20_sessions_pct':pct_change(latest[1],old[1]),'source_url':'https://finance.yahoo.com/quote/'+symbol,'basis':basis,
+            'market':market,'status':status,'collected_at':collected_at.isoformat(),
+            'price_basis':'elapsed_UTC_daily_bar' if market=='FX' else 'completed_regular_session_close',
+            'expected_session':clock['expected_session'],'session_clock':clock}
 
 def interpretation(i):
     fed=i.get('fed_policy',{});ten=i.get('us_10y',{});cpi=i.get('us_cpi',{});un=i.get('us_unemployment',{});fx=i.get('usdkrw',{})
@@ -190,11 +202,15 @@ def interpretation(i):
 def main():
     errors=[];ind={}
     for key,fn in [('fed_policy',collect_fed_policy),('bok_policy',collect_bok_policy),('us_10y',lambda:parse_treasury(fetch(TREASURY_URL.format(year=NOW.year)))),('us_cpi',lambda:fred_cpi(fetch(FRED_CPI))),('us_unemployment',lambda:fred_unrate(fetch(FRED_UNRATE))),('usdkrw',lambda:market_series('KRW=X','usdkrw')),('sp500',lambda:market_series('^GSPC','sp500')),('nasdaq',lambda:market_series('^IXIC','nasdaq')),('kospi',lambda:market_series('^KS11','kospi')),('kosdaq',lambda:market_series('^KQ11','kosdaq'))]:
-        try:ind[key]=fn()
+        try:
+            ind[key]=fn()
+            if ind[key].get('status')=='stale':
+                errors.append({'field':key,'error':'provider_close_behind_completed_session','date':ind[key].get('date'),'expected_session':ind[key].get('expected_session')})
         except Exception as e:errors.append({'field':key,'error':type(e).__name__+': '+str(e)[:160]})
-    out={'version':'market-context-1.0','generated_at':NOW.isoformat(),'status':'ok' if not errors else 'partial','max_age_hours':18,'indicators':ind,'interpretation':interpretation(ind),'errors':errors,'source_note':'정책금리는 중앙은행 공식자료, 미국 10년물은 미국 재무부, CPI·실업률은 FRED, 환율·주가지수는 시장 데이터 제공처의 일봉 종가를 사용합니다.','terms':[{'term':'기준금리','meaning':'중앙은행이 정하는 돈의 기본 가격'},{'term':'국채금리','meaning':'정부가 돈을 빌릴 때 시장이 요구하는 금리'},{'term':'환율','meaning':'1달러를 사는 데 필요한 원화'}]}
+    out={'version':'market-context-1.1','generated_at':datetime.now(timezone.utc).isoformat(),'status':'ok' if not errors else 'partial','max_age_hours':18,'indicators':ind,'interpretation':interpretation(ind),'errors':errors,'source_note':'정책금리는 중앙은행, 미국 10년물은 미국 재무부, CPI·실업률은 FRED 자료입니다. 주가지수는 정규장 종료 30분 후 완료 일봉만, 환율은 UTC 날짜가 완전히 지난 제공처 일봉만 사용합니다.','terms':[{'term':'기준금리','meaning':'중앙은행이 정하는 돈의 기본 가격'},{'term':'국채금리','meaning':'정부가 돈을 빌릴 때 시장이 요구하는 금리'},{'term':'환율','meaning':'1달러를 사는 데 필요한 원화'}]}
     OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False)+'\n',encoding='utf-8')
     print(out['status'],len(ind),'indicators',len(errors),'errors')
     if len(ind)<5:raise SystemExit('핵심 거시지표 수집률 부족')
 
 if __name__=='__main__':main()
+

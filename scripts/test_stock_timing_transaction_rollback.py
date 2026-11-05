@@ -74,6 +74,12 @@ class RecoverableCopyFailureTests(unittest.TestCase):
                               "scored": 0, "correct": 0}
             ), patch.object(
                 autopilot.shutil, "copy2", side_effect=fail_during_second_destination
+            ), patch(
+                # This test intentionally uses a non-forecast ledger stub and
+                # isolates copy rollback, not either independent evidence audit.
+                "stock_forecast_paper.run",
+                return_value={"status": "not_proven", "registered_plans": 0,
+                              "new_plans": 0, "status_counts": {}}
             ):
                 with self.assertRaisesRegex(OSError, "synthetic_mid_copy_io_failure"):
                     autopilot.run(
@@ -136,3 +142,4 @@ class PlainNoCallQualityGateTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

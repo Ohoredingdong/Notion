@@ -6,7 +6,7 @@ on:
     types: [completed]
     branches: [main]
   schedule:
-    - cron: '17 8,23 * * *'
+    - cron: '35 7,22 * * 1-5'
   push:
     branches: [main]
     paths:
@@ -16,6 +16,9 @@ on:
       - 'scripts/update_market_context.py'
       - 'scripts/run_market_context.py'
       - 'scripts/test_market_context.py'
+      - 'scripts/market_data_utils.py'
+      - 'scripts/test_stock_data_pipeline.py'
+      - 'scripts/verify_stock_canonical_pipeline.py'
       - 'scripts/build_stock_decision_guide.py'
       - 'scripts/test_stock_decision_guide.py'
       - 'scripts/install_stock_decision_guide.py'
@@ -32,6 +35,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   cases:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 16
     steps:
@@ -42,13 +46,14 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install bounded readers
-        run: pip install 'beautifulsoup4==4.14.3' 'yfinance==0.2.66'
+        run: pip install 'beautifulsoup4==4.14.3' 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
       - name: Test decisions, macro parsers and strict due diligence
         run: |
           python scripts/test_stock_investment_cases.py
           python -m unittest scripts.test_market_context -v
           python -m unittest scripts.test_stock_decision_guide -v
           python scripts/test_stock_strict_green.py
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
       - name: Authenticate and fetch source evidence without exposing keys
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -64,7 +69,7 @@ jobs:
       - name: Publish source-bound opinions and proof
         run: >-
           python scripts/publish_widget_data.py --message 'research: publish strictly gated investment evidence and macro context' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json stock-market-context.json stock-decision-guide.json stock-decision-guide-summary.json
-      - name: Install integrated verdict and decision-guide view
+      - name: Verify current evidence view; preserve canonical HTML
         run: |
           node --check assets/stock-investment-cases.js
           node --check assets/stock-decision-guide.js
@@ -89,6 +94,8 @@ jobs:
             scripts/update_market_context.py
             scripts/run_market_context.py
             scripts/test_market_context.py
+            scripts/market_data_utils.py
+            scripts/verify_stock_canonical_pipeline.py
             scripts/build_stock_decision_guide.py
             scripts/test_stock_decision_guide.py
             scripts/install_stock_decision_guide.py
@@ -98,3 +105,4 @@ jobs:
             assets/stock-radar-v8.*
             assets/stock-radar-v9.js
             assets/stock-market-groups.js
+

@@ -1,9 +1,42 @@
 import unittest
+import sys
+from datetime import datetime, timezone
+from types import SimpleNamespace
 from unittest.mock import patch
 from scripts import update_market_context as m
 from scripts import run_market_context as runner
 
 class MarketContextTests(unittest.TestCase):
+    def test_market_series_excludes_incomplete_intraday_provider_bar(self):
+        from scripts.test_stock_data_pipeline import Calendar
+        from scripts.market_data_utils import completed_daily_points
+        import pandas as pd
+        frame = pd.DataFrame({'Close': [100, 999]}, index=pd.to_datetime(['2026-11-04', '2026-11-05']))
+        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame))
+        now = datetime(2026, 11, 5, 3, tzinfo=timezone.utc)
+        def completed(points, market, cutoff):
+            return completed_daily_points(points, market, cutoff, Calendar(market))
+        with patch.dict(sys.modules, {'yfinance': provider}), patch.object(m, 'completed_daily_points', side_effect=completed):
+            result = m.market_series('^KS11', 'kospi', now)
+        self.assertEqual((result['date'], result['value']), ('2026-11-04', 100))
+        self.assertEqual(result['price_basis'], 'completed_regular_session_close')
+        self.assertEqual(result['status'], 'ok')
+
+    def test_old_provider_close_retains_stale_status_after_collection(self):
+        from scripts.test_stock_data_pipeline import Calendar
+        from scripts.market_data_utils import completed_daily_points
+        import pandas as pd
+        frame = pd.DataFrame({'Close': [100]}, index=pd.to_datetime(['2026-11-04']))
+        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame))
+        now = datetime(2026, 11, 5, 10, tzinfo=timezone.utc)
+        def completed(points, market, cutoff):
+            return completed_daily_points(points, market, cutoff, Calendar(market))
+        with patch.dict(sys.modules, {'yfinance': provider}), patch.object(m, 'completed_daily_points', side_effect=completed):
+            result = m.market_series('^KS11', 'kospi', now)
+        self.assertEqual(result['status'], 'stale')
+        self.assertEqual(result['expected_session'], '2026-11-05')
+        self.assertEqual(result['date'], '2026-11-04')
+
     def test_fed(self):
         html='''<h4>2026</h4><table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
         x=runner.parse_fed_funds(html)
@@ -47,3 +80,4 @@ class MarketContextTests(unittest.TestCase):
         x=m.interpretation(i);self.assertIn('장기금리',x['label']);self.assertIn('주가 방향을 확정하지',x['not_causality'])
 
 if __name__=='__main__':unittest.main()
+

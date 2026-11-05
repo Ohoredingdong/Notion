@@ -11,6 +11,7 @@ on:
     - cron: "7,22,37,52 * * * *"
 permissions:
   contents: write
+  pages: write
 concurrency:
   group: update-news-link-hub-${{ github.ref }}
   cancel-in-progress: false
@@ -28,3 +29,19 @@ jobs:
       - name: Publish data on current main
         run: >-
           python scripts/publish_widget_data.py --message "data: update news link hub" news-link-data.json
+      - name: Request public news build outside forecast research hours
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Keep this UTC condition identical to stock-forecasts market_gate.
+          # During research hours its workflow_run publishes the shared snapshot.
+          hour=$((10#$(date -u +%H)))
+          day=$(date -u +%u)
+          if (( (day>=1 && day<=5 && (hour<=7 || (hour>=13 && hour<=22))) || (hour==23 && (day==7 || day<=4)) )); then
+            echo "Forecast research workflow owns the public build during this window."
+            exit 0
+          fi
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+

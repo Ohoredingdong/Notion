@@ -69,14 +69,15 @@ def evaluate(row,case,depth,event_scan,display_name=None):
     official=official_ok(row,case)
     if row.get('market')=='KR' and official is not True: blockers.append('DART에서 매출·영업이익·현금흐름 핵심 대조가 충분하지 않아요.')
     # Recent material-event gate: recommendations require a fresh, aligned news scan.
-    scan_ok=isinstance(event_scan,dict) and event_scan.get('status') in ('ok','partial')
+    scan_ok=(isinstance(event_scan,dict) and event_scan.get('status')=='ok'
+             and not event_scan.get('error'))
     scan_time=event_scan.get('scanned_at') if isinstance(event_scan,dict) else None
     try:
         scan_age=(datetime.now(timezone.utc)-datetime.fromisoformat(str(scan_time).replace('Z','+00:00'))).total_seconds()/3600
     except Exception:
         scan_age=999
-    if not scan_ok or scan_age>6:
-        blockers.append('최근 중요뉴스·공시 이벤트 확인이 6시간 이내에 완료되지 않았어요.')
+    if not scan_ok or not -5/60<=scan_age<=6:
+        blockers.append('최근 중요뉴스·공시 이벤트를 6시간 이내에 오류 없이 확인하지 못했거나 확인 시각이 유효하지 않아요.')
     else:
         for ev in event_scan.get('events',[]):
             sev=ev.get('severity')
@@ -165,3 +166,4 @@ def main():
     Path('stock-recommendations-summary.json').write_text(json.dumps({k:out[k] for k in ('version','generated_at','source_generated_at','counts','top_recommendations','method')},ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     print(counts);print([(x['symbol'],x['name'],x['grade'],x['score']) for x in top])
 if __name__=='__main__':main()
+

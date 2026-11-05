@@ -343,11 +343,17 @@ class RadarChecks:
             if page.locator("#view-home").count():
                 expect(page.locator("#view-home")).to_be_visible()
                 expect(page.locator("#nr-home-content")).to_be_visible()
-                require(page.locator("#nr-market-overview,#nr-home-alerts,#nr-home-picks").count() == 3,
-                        "Neutral home must expose market overview, alerts and research picks.")
-                require(page.locator(".nr-home-actions button").count() >= 6,
-                        "Neutral home must expose the primary screen entry points.")
-                self.record(label + " neutral home exposes market, alerts, picks and primary screen entry points")
+                # The archived advanced page now hosts the restored rf-flow home.
+                # Verify the *real* market, AI, price evidence and risk sections
+                # rather than the obsolete 2026 v7 element IDs.
+                require(page.locator(".rf-markets .nr-index").count() == 4,
+                        "Archived deep-analysis home must expose four genuine market index cards.")
+                require(page.locator(".rf-work .rf-list").count() == 1 and
+                        page.locator(".rf-work .rf-aside").count() == 1,
+                        "Archived home must preserve candidate browsing and risk/news rail.")
+                require(page.locator(".rf-bottom [data-nr-screen]").count() >= 4,
+                        "Archived home must expose multiple functioning research destinations.")
+                self.record(label + " archived advanced home exposes market, AI, risk and navigation")
                 page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()
             require(page.locator("#companySelect option").count() == len(self.companies),
@@ -620,3 +626,4 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

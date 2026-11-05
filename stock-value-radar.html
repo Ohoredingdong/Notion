@@ -1139,9 +1139,116 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
  .fx-detail-v6 .fx-d-plain{max-width:80%}
 }
 
+
+/* Source-attributed issuer catalogue and one-screen geopolitical/news view.
+   New styles are scoped; approved market strip and sentiment cards are untouched. */
+.fx-stock-directory-page{display:flex;flex-direction:column;gap:8px;flex:1 1 0;min-height:0;min-width:0;overflow:hidden}
+.fx-stock-directory-page>.fx-intro{flex:0 0 auto;margin:0!important;min-height:33px}
+.fx-stock-directory-page>.fx-page-grid{flex:1 1 0;min-height:0;min-width:0}
+.fx-stock-directory-page .fx-catalog{display:flex;flex-direction:column;gap:5px;min-height:0;max-height:170px;flex:0 0 170px;padding:10px 13px;border:1px solid #e0e8f3;border-radius:15px;background:#fff;box-shadow:0 4px 15px rgba(29,63,107,.04);overflow:hidden}
+.fx-catalog-head{display:flex;justify-content:space-between;align-items:start;gap:8px;flex:0 0 auto}
+.fx-catalog-head>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.fx-catalog-head h3{font-size:13px;font-weight:810;color:#223955;line-height:1.2}
+.fx-catalog-head small,.fx-catalog-count{font-size:9px;color:#8295af;line-height:1.35}
+.fx-catalog-head>small{flex:0 0 auto;white-space:nowrap;font-size:9px;color:#98a8b9}
+.fx-catalog-toolbar{display:flex;gap:8px;align-items:center;flex:0 0 auto}
+.fx-catalog-toolbar input{width:100%;min-width:0;flex:1;min-height:31px;border:1px solid #dee8f5;border-radius:9px;background:#f8fafd;padding:6px 10px;color:#203957;font-size:11px}
+.fx-catalog-toolbar input:focus-visible{outline:2px solid #4c87d5;outline-offset:1px}
+.fx-catalog-countries{display:flex;gap:4px;flex:0 0 auto}
+.fx-catalog-countries button{padding:6px 9px;border-radius:8px;border:1px solid #e2e9f3;background:#f9fbfe;color:#607b99;font-size:10px;font-weight:720;white-space:nowrap}
+.fx-catalog-countries button.active{background:#eaf3ff;border-color:#b8d3f2;color:#2c6bb9}
+.fx-catalog-results{display:grid;gap:2px;overflow:auto;scrollbar-width:thin;min-height:0;flex:1 1 0;align-content:start}
+.fx-catalog-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(130px,1fr) 13px;align-items:center;gap:7px;width:100%;min-height:30px;background:#f9fbfe;border:1px solid #edf1f8;border-radius:8px;padding:3px 8px;text-align:left}
+.fx-catalog-row:hover{background:#eef5ff}
+.fx-catalog-company{display:flex;gap:8px;align-items:baseline;min-width:0}
+.fx-catalog-company strong{font-size:11px;font-weight:790;color:#28415f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-catalog-company small{font-size:9px;color:#8da0b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-catalog-signal{font-size:9px;color:#8798ad;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx-catalog-signal.is-active{color:#3272b7}
+.fx-catalog-row>span:last-child{font-size:13px;color:#7c94b3}
+.fx-catalog-empty{padding:10px 6px;font-size:11px;color:#788ca8}
+.fx-catalog-count{flex:0 0 auto;margin:0}
+.fx-catalog-preview{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto;padding:13px!important}
+.fx-catalog-preview .fx-panel-heading{display:flex;justify-content:space-between;gap:8px}
+.fx-catalog-preview .fx-panel-heading>div{display:flex;flex-direction:column;gap:3px}
+.fx-catalog-preview .fx-panel-heading h3{font-size:16px;font-weight:850;color:#1f395a}
+.fx-catalog-preview .fx-panel-heading small{font-size:10px;color:#899cb1}
+.fx-catalog-preview button[data-catalog-back]{border:1px solid #dbe6f4;padding:6px 8px;border-radius:9px;background:#f6faff;font-size:10px;color:#3773b6}
+.fx-catalog-preview-core{display:flex;flex-direction:column;gap:8px;border-radius:11px;background:#f4f8fd;padding:14px}
+.fx-catalog-preview-core>small{font-size:10px;color:#768ea9}
+.fx-catalog-preview-core strong{font-size:18px;font-weight:860;color:#28476c}
+.fx-catalog-preview-core p,.fx-catalog-preview-info p{font-size:11px;line-height:1.5;color:#7088a4}
+.fx-catalog-preview-info{padding:10px;border:1px solid #e9eff7;border-radius:10px;display:flex;flex-direction:column;gap:6px}
+.fx-catalog-preview-info b{font-size:11px;font-weight:800;color:#284460}
+.fx-catalog-preview-info small{font-size:9px;color:#8da1ba}
+.fx-world-page{display:flex;flex-direction:column;flex:1 1 0;min-height:0;min-width:0;gap:9px;overflow:hidden}
+.fx-world-intro{flex:0 0 auto;margin:0!important}
+.fx-world-metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;flex:0 0 auto;min-height:76px}
+.fx-world-metric{display:flex;flex-direction:column;gap:3px;min-width:0;overflow:hidden;padding:10px 11px;background:#fff;border:1px solid #e1eaf5;border-radius:13px;box-shadow:0 3px 12px rgba(38,65,108,.045)}
+.fx-world-metric small{font-size:10px;color:#8296ae;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-world-metric strong{font-size:18px;line-height:1.12;color:#1f395a;font-weight:860;font-variant-numeric:tabular-nums}
+.fx-world-metric a{font-size:9px;color:#5482bc;text-decoration:none}
+.fx-world-metric a:hover{text-decoration:underline}
+.fx-world-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;flex:1 1 0;min-height:0;min-width:0}
+.fx-world-panel{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0;overflow:hidden;padding:12px 14px!important;background:#fff;border:1px solid #e1eaf5;border-radius:15px}
+.fx-world-panel-head{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.fx-world-panel-head h3{font-size:14px;font-weight:850;color:#203c5e}
+.fx-world-panel-head small{font-size:10px;color:#849ab5}
+.fx-world-list{display:flex;flex-direction:column;gap:5px;flex:1 1 0;min-height:0;overflow:auto;scrollbar-width:thin}
+.fx-world-article{display:flex;flex-direction:column;gap:5px;padding:9px 8px;background:#f8fafd;border:1px solid #edf1f8;border-radius:10px;min-width:0}
+.fx-world-article a{font-size:11px;color:#284667;text-decoration:none;font-weight:740;line-height:1.4}
+.fx-world-article a:hover{color:#236ab3;text-decoration:underline}
+.fx-world-article small{font-size:9px;color:#8aa0b9;line-height:1.32}
+.fx-world-company-flag{background:#f6f9fc;border-left:3px solid #9bb7df}
+.fx-world-empty{font-size:11px;color:#8498b2;padding:12px 3px}
+.fx-world-schedule{display:flex;align-items:center;gap:16px;min-height:55px;max-height:55px;flex:0 0 55px;padding:8px 12px;background:#fff;border:1px solid #e0e9f4;border-radius:13px;overflow:hidden}
+.fx-world-schedule>div:first-child{display:flex;flex-direction:column;flex:0 0 auto;gap:3px}
+.fx-world-schedule b{font-size:11px;color:#253e60}
+.fx-world-schedule small{font-size:9px;color:#8c9db1}
+.fx-world-schedule-items{display:flex;flex-wrap:wrap;gap:7px;min-width:0;max-height:43px;overflow:auto}
+.fx-world-schedule-items a,.fx-world-schedule-items span{font-size:10px;color:#4c72a0;border:1px solid #e2ebf6;background:#f6f9fd;border-radius:8px;padding:5px 9px;text-decoration:none}
+@media(max-width:1180px){
+ .fx-stock-directory-page{overflow:auto;flex:1 1 0}
+ .fx-stock-directory-page .fx-catalog{flex:0 0 196px;max-height:196px}
+ .fx-stock-directory-page>.fx-page-grid{flex:0 0 auto;min-height:380px}
+ .fx-world-page{overflow:auto}
+ .fx-world-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .fx-world-columns{grid-template-columns:repeat(2,minmax(0,1fr));flex:0 0 auto}
+ .fx-world-panel{min-height:310px}
+ .fx-world-columns>.fx-world-panel:last-child{grid-column:1/-1;min-height:280px}
+ .fx-world-schedule{flex:0 0 auto;max-height:none;min-height:80px}
+}
+@media(max-width:740px){
+ .fx-stock-directory-page .fx-catalog{flex:0 0 250px;max-height:250px}
+ .fx-catalog-toolbar{flex-wrap:wrap}
+ .fx-catalog-toolbar input{flex:1 1 100%}
+ .fx-catalog-row{grid-template-columns:minmax(0,1fr) 120px 10px}
+ .fx-catalog-company{flex-direction:column;gap:2px}
+ .fx-catalog-head{flex-wrap:wrap}
+ .fx-world-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fx-world-metric strong{font-size:16px}
+ .fx-world-columns{grid-template-columns:1fr}
+ .fx-world-columns>.fx-world-panel:last-child{grid-column:auto}
+ .fx-world-panel{min-height:310px}
+ .fx-world-schedule{flex-direction:column;align-items:stretch}
+}
+
+
+/* Verified SEC/DART annual/quarterly snapshot display; no forecast or synthetic value. */
+.fx-catalog-finance{display:flex;flex-direction:column;gap:7px;background:#fff}
+.fx-catalog-finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.fx-catalog-finance-cell{display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:9px;background:#f6f9fc;min-width:0;overflow:hidden}
+.fx-catalog-finance-cell small{font-size:10px;color:#8498ae}
+.fx-catalog-finance-cell strong{font-size:12px;color:#284661;font-weight:760;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.fx-catalog-finance>a{font-size:10px;color:#306da8;align-self:flex-start;text-decoration:none}
+.fx-catalog-finance>a:hover{text-decoration:underline}
+@media(max-width:410px){.fx-catalog-finance-grid{grid-template-columns:1fr 1fr}.fx-catalog-finance-cell strong{font-size:11px}}
+
 </style>
-<script defer src="./assets/stock-radar-clean-bridge.js?v=v5-ai-coverage-16-samsung-20261105-3"></script>
-<script defer src="./assets/stock-radar-flow-v2.js?v=v5-ai-coverage-16-samsung-20261105-3"></script>
+<script defer src="./assets/stock-radar-clean-bridge.js?v=2946783ebf3f"></script>
+<script defer src="./assets/stock-catalog-ui.js?v=b8750fb23526"></script>
+<script defer src="./assets/stock-world-brief.js?v=ed064e984b6d"></script>
+<script defer src="./assets/stock-radar-flow-v2.js?v=78cdbe1d4291"></script>
 <script src="./assets/stock-forecast.js?v=direction-forecast-1.0" defer></script>
 <script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>
 <script src="./assets/stock-forecast-directions.js?v=direction-specialists-1.0" defer></script>
