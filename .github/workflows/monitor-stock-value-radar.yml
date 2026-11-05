@@ -1,10 +1,19 @@
 name: Monitor Stock Radar Health
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/monitor-stock-value-radar.py"
+      - "scripts/market_data_utils.py"
+      - "scripts/publish_widget_data.py"
+      - "scripts/publish_stock_radar_health.py"
+      - "scripts/test_stock_radar_health_publication.py"
+      - "scripts/test_stock_data_pipeline.py"
+      - ".github/workflows/monitor-stock-value-radar.yml"
   schedule:
     - cron: "23 * * * *"
   workflow_run:
-    workflows: ['Update Stock Opportunities', 'Stock Investment Cases', 'Stock Official Financial Coverage']
+    workflows: ['Update Stock Opportunities', 'Stock Investment Cases', 'Stock Official Financial Coverage', 'Audit Stock Radar Accuracy']
     types: [completed]
     branches: [main]
   push:
@@ -12,17 +21,39 @@ on:
     paths:
       - "scripts/monitor-stock-value-radar.py"
       - "scripts/market_data_utils.py"
+      - "scripts/publish_widget_data.py"
+      - "scripts/publish_stock_radar_health.py"
+      - "scripts/test_stock_radar_health_publication.py"
       - "scripts/test_stock_data_pipeline.py"
       - ".github/workflows/monitor-stock-value-radar.yml"
 permissions:
-  contents: write
-  issues: write
+  contents: read
 concurrency:
-  group: monitor-stock-radar
+  group: ${{ github.event_name == 'pull_request' && format('monitor-stock-radar-pr-{0}', github.event.pull_request.number) || 'monitor-stock-radar' }}
   cancel-in-progress: false
 jobs:
+  publication-regression:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install exchange session calendar
+        run: pip install 'exchange-calendars==4.13.1'
+      - name: Test latest-source health publication without remote writes
+        run: |
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+          python -m unittest discover -s scripts -p 'test_stock_radar_health_publication.py' -v
   monitor:
-    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository))
+    permissions:
+      contents: write
+      issues: write
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
@@ -35,12 +66,11 @@ jobs:
       - name: Install exchange session calendar
         run: pip install 'exchange-calendars==4.13.1'
       - name: Test stale sources, missing feeds and closed-market handling
-        run: python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
-      - name: Inspect canonical feeds and actual source sessions
-        run: python scripts/monitor-stock-value-radar.py
-      - name: Write independent health heartbeat
-        run: >-
-          python scripts/publish_widget_data.py --message 'ops: inspect canonical radar feeds and completed sessions' stock-radar-health.json
+        run: |
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+          python -m unittest discover -s scripts -p 'test_stock_radar_health_publication.py' -v
+      - name: Inspect and publish against latest main on every retry
+        run: python scripts/publish_stock_radar_health.py
       - name: Open or close actionable GitHub alert issue
         shell: bash
         env:
