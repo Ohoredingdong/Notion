@@ -69,6 +69,7 @@ class PostForecastAuditHandoff(unittest.TestCase):
             self.source,
         ))
         self.assertIn("scripts/audit_stock_timing_acceptance_guard.py", executed)
+        self.assertIn(".github/workflows/stock-forecasts.yml", reviewed_paths, "Producer checkout changes must trigger the independent premerge audit")
         missing = sorted(executed - reviewed_paths)
         self.assertEqual(
             missing, [],
