@@ -450,6 +450,86 @@ class FinanceTests(unittest.TestCase):
             self.assertTrue(result["current_run_failed"])
             self.assertEqual(validate(source,result),{"KR":1,"US":0})
 
+    def test_only_missing_preserves_1136_verified_records_and_does_not_request_them_again(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,archive=many_issuers(root,1138)
+            previous={}
+            for i in range(1,1137):
+                old=verified_record(symbol=f"{i:06}",name=f"Issuer {i}",corp=str(10000000+i))
+                old.update(full_financial_statements=False,source="DART periodic reports")
+                previous[f"KR:{i:06}"]=old
+            # Merely having a cached number does not make an issuer verified.
+            prior={**previous,"KR:001137":{"symbol":"001137","country":"KR",
+                   "status":"available","metrics":{"revenue":999999}}}
+            cursors={"KR":46,"US":120}
+            (root/f.OUTPUT).write_text(json.dumps({"records":prior,"cursor":cursors}))
+            requested=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                if url.startswith(f.DART_MULTI):
+                    corps=set(parse_qs(urlparse(url).query)["corp_code"][0].split(','))
+                    requested.append(corps)
+                    self.assertEqual(corps,{"10001137","10001138"})
+                    accounts=official_rows("001137","10001137",report="11014")
+                    accounts["list"].extend(official_rows("001138","10001138",report="11014")["list"])
+                    return json.dumps(accounts).encode()
+                raise AssertionError("unexpected request")
+            result=f.build(root,us_batch=0,kr_batch=3000,getter=get,dart_key="offline",agent="",
+                           throttle=0,as_of=date(2026,11,5),only_missing=True)
+            self.assertEqual(len(requested),1)
+            self.assertEqual(result["collection_mode"],"only_missing")
+            self.assertEqual(result["run"]["KR"]["attempted"],2)
+            self.assertEqual(result["run"]["KR"]["available"],2)
+            self.assertEqual(result["cursor"],cursors)
+            self.assertEqual(result["quarantined_records"],1)
+            self.assertEqual({key:result["records"][key] for key in previous},previous)
+            self.assertEqual(validate(source,result),{"KR":1138,"US":0})
+            def prohibited(*args,**kwargs):
+                raise AssertionError("No issuer request is needed after verified recovery is complete")
+            complete=f.build(root,us_batch=0,kr_batch=3000,getter=prohibited,dart_key="offline",agent="",
+                             throttle=0,only_missing=True)
+            self.assertEqual(complete["run"]["KR"]["attempted"],0)
+            self.assertEqual(complete["run"]["KR"]["provider_requests"],0)
+            self.assertEqual(complete["records"],result["records"])
+            self.assertEqual(complete["cursor"],cursors)
+
+    def test_default_rotation_still_refreshes_verified_issuer_and_advances_daily_cursor(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,archive=many_issuers(root,3)
+            previous={}
+            for i in range(1,4):
+                row=verified_record(symbol=f"{i:06}",name=f"Issuer {i}",corp=str(10000000+i))
+                row.update(full_financial_statements=False,source="DART periodic reports")
+                previous[f"KR:{i:06}"]=row
+            (root/f.OUTPUT).write_text(json.dumps({"records":previous,"cursor":{"KR":1,"US":0}}))
+            requested=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                if url.startswith(f.DART_MULTI):
+                    corps=parse_qs(urlparse(url).query)["corp_code"][0]
+                    requested.append(corps)
+                    self.assertEqual(corps,"10000002")
+                    return json.dumps(official_rows("000002","10000002",report="11014")).encode()
+                raise AssertionError("unexpected request")
+            result=f.build(root,us_batch=0,kr_batch=1,getter=get,dart_key="offline",agent="",
+                           throttle=0,as_of=date(2026,11,5))
+            self.assertEqual(requested,["10000002"])
+            self.assertEqual(result["collection_mode"],"rotation")
+            self.assertEqual(result["cursor"]["KR"],2)
+            self.assertEqual(result["records"]["KR:000002"]["period_end"],"2026-09-30")
+            self.assertEqual(result["records"]["KR:000001"],previous["KR:000001"])
+            self.assertEqual(result["records"]["KR:000003"],previous["KR:000003"])
+            self.assertEqual(validate(source,result),{"KR":3,"US":0})
+
+    def test_recovery_only_missing_requires_an_actual_boolean(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);catalog(root)
+            for invalid in ("false","true",0,1,None):
+                with self.assertRaisesRegex(ValueError,"only_missing_must_be_a_boolean"):
+                    f.build(root,us_batch=0,kr_batch=1,only_missing=invalid)
+
     def test_early_year_checks_last_year_q3_instead_of_future_quarters(self):
         periods=f.reported_period_candidates(date(2027,1,10))
         self.assertEqual(periods[:2],[(2026,"11011"),(2026,"11014")])

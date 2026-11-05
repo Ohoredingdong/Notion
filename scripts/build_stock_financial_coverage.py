@@ -602,7 +602,7 @@ def merge_record(previous, latest):
 
 def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
           agent=None, dart_agent=None, dart_key=None, throttle=0.30, as_of=None,
-          max_runtime_seconds=MAX_COLLECTION_SECONDS, monotonic=None):
+          max_runtime_seconds=MAX_COLLECTION_SECONDS, monotonic=None, only_missing=False):
     root=Path(root)
     catalog=json_file(root/"stock-universe-catalog.json",{})
     items=catalog.get("items") or []
@@ -617,13 +617,23 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
         raise RuntimeError("catalogue_official_identifier_provenance_missing")
     if not 0 <= us_batch <= MAX_US_BATCH or not 0 <= kr_batch <= MAX_KR_BATCH:
         raise ValueError("batch_size_exceeds_safe_cap")
+    if type(only_missing) is not bool:
+        raise ValueError("only_missing_must_be_a_boolean")
     prior=json_file(root/OUTPUT,{})
     now=iso()
     today=as_of or observed_date(now)
     known, quarantine_count = isolate_unverified_records(root, prior, items, now)
     previous_cursor=prior.get("cursor") or {}
-    us, next_us=choose(items,int(previous_cursor.get("US",0)),"US",us_batch)
-    kr, next_kr=choose(items,int(previous_cursor.get("KR",0)),"KR",kr_batch)
+    if only_missing:
+        missing=[item for item in items if not verified_financial_record(
+            known.get(item["country"]+":"+item["symbol"],{}),item["country"]+":"+item["symbol"],item)]
+        us,_=choose(missing,0,"US",us_batch)
+        kr,_=choose(missing,0,"KR",kr_batch)
+        # Recovery fills holes without consuming or shifting the daily rotation.
+        next_us,next_kr=int(previous_cursor.get("US",0)),int(previous_cursor.get("KR",0))
+    else:
+        us,next_us=choose(items,int(previous_cursor.get("US",0)),"US",us_batch)
+        kr,next_kr=choose(items,int(previous_cursor.get("KR",0)),"KR",kr_batch)
     getter=getter or read_url
     clock=monotonic or time.monotonic
     if not 0 < max_runtime_seconds <= MAX_COLLECTION_SECONDS:
@@ -852,6 +862,7 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
     observed=[row["checked_at"] for row in published.values() if verified_financial_record(row) and row.get("checked_at")]
     result={"version":VERSION,"identity_policy":IDENTITY_POLICY,"generated_at":now,
         "catalog_generated_at":catalog.get("generated_at"),
+        "collection_mode":"only_missing" if only_missing else "rotation",
         "status":"partial_verified_financial_coverage",
         "scope_note":"공식 종목·법인 연결을 검증한 SEC/DART 주요계정입니다. 전체 재무제표·미래 EPS·현재 시세·AI 확률이 아닙니다.",
         "full_financial_statements":False,"refresh_status":refresh_status,"current_run_failed":source_failed,
@@ -872,8 +883,10 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--us-batch",type=int,default=60)
     parser.add_argument("--kr-batch",type=int,default=240)
+    parser.add_argument("--only-missing",action="store_true",
+                        help="Recovery only: collect issuers without verified accounts; preserve normal rotation cursors")
     args=parser.parse_args()
-    result=build(us_batch=args.us_batch,kr_batch=args.kr_batch)
+    result=build(us_batch=args.us_batch,kr_batch=args.kr_batch,only_missing=args.only_missing)
     if result["current_run_failed"]:
         raise SystemExit("Current financial refresh was blocked or incomplete; prior verified accounts were retained. See run/issues, not accumulated coverage counts.")
 
