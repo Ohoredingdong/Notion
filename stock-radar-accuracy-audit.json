@@ -3,10 +3,10 @@
   "source": {
     "learning_generated_at": "2026-11-05T20:36:14.401960+00:00",
     "forecasts_generated_at": "2026-11-05T20:36:14.401960+00:00",
-    "opportunity_generated_at": "2026-11-05T12:55:05.581050+00:00",
+    "opportunity_generated_at": "2026-11-05T20:47:10.868451+00:00",
     "market_generated_at": "2026-11-05T13:02:13.140394+00:00",
-    "chart_generated_at": "2026-11-05T12:55:23.628595+00:00",
-    "chart_source_generated_at": "2026-11-05T12:55:05.581050+00:00",
+    "chart_generated_at": "2026-11-05T20:47:21.312756+00:00",
+    "chart_source_generated_at": "2026-11-05T20:47:10.868451+00:00",
     "cases_generated_at": "2026-11-05T13:02:04.315831+00:00",
     "entry_generated_at": "2026-11-05T16:46:09.983270+00:00"
   },
@@ -99,19 +99,33 @@
   },
   "chart_integrity": {
     "series_checked": 108,
-    "provider_status_ok": 108,
+    "provider_status_ok": 55,
     "invalid_series": [],
     "date_order_and_price_values_valid": true,
     "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote."
   },
-  "index_date_mismatch": [],
+  "index_date_mismatch": [
+    {
+      "market": "KOSPI",
+      "index_snapshot": "2026-11-05",
+      "chart_history_through": "2026-11-04",
+      "policy": "display dates separately; do not claim history chart is current"
+    },
+    {
+      "market": "KOSDAQ",
+      "index_snapshot": "2026-11-05",
+      "chart_history_through": "2026-11-04",
+      "policy": "display dates separately; do not claim history chart is current"
+    }
+  ],
   "data_integrity": {
     "check_passed": true,
     "errors": [],
     "warnings": [
       "Insufficient independent observations and/or sessions for promotion",
       "Paired Brier gain below configured policy threshold",
-      "No independently proven live trading profitability"
+      "No independently proven live trading profitability",
+      "Market index snapshots have dates different from sparkline histories"
     ],
     "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
   }
