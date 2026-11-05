@@ -88,9 +88,10 @@ jobs:
           PY
       - name: Exercise static Pages and large photo uploads
         run: |
-          python tests/editorial-static-browser.py --browser-executable "$STUDIO_BROWSER" --output /tmp/notion-muse-function-fix/static
-          python tests/editorial-image-upload-browser.py
-          python tests/editorial-auth-browser.py
+          mkdir -p /tmp/notion-muse-function-fix
+          python tests/editorial-static-browser.py --browser-executable "$STUDIO_BROWSER" --output /tmp/notion-muse-function-fix/static > /tmp/notion-muse-function-fix/static.log 2>&1
+          python tests/editorial-image-upload-browser.py > /tmp/notion-muse-function-fix/uploads.log 2>&1
+          python tests/editorial-auth-browser.py > /tmp/notion-muse-function-fix/auth.log 2>&1
       - name: Exercise editorial, model, and local preparation flows
         run: |
           mkdir -p /tmp/notion-muse-function-fix
@@ -112,6 +113,24 @@ jobs:
           python tests/editorial-studio-browser.py > /tmp/notion-muse-function-fix/studio.log 2>&1
           python tests/editorial-model-browser.py > /tmp/notion-muse-function-fix/model.log 2>&1
           python tests/editorial-manual-browser.py > /tmp/notion-muse-function-fix/manual.log 2>&1
+      - name: Summarize functional failures
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path('/tmp/notion-muse-function-fix')
+          with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a') as summary:
+              summary.write('## MUSE validation evidence\n\nAll images and credentials used in these tests are synthetic fixtures. No live provider is called.\n\n')
+              for path in sorted(root.glob('*.log')):
+                  summary.write('### ' + path.name + '\n\n```text\n' + path.read_text(errors='replace')[-9000:] + '\n```\n\n')
+              for path in sorted(root.glob('*/report.json')):
+                  report = json.loads(path.read_text())
+                  summary.write('### ' + str(path.relative_to(root)) + '\n\n')
+                  for check in report.get('checks', []):
+                      if isinstance(check, dict) and (check.get('pass') is False):
+                          summary.write('```text\n' + json.dumps(check, ensure_ascii=False)[:7000] + '\n```\n\n')
+          PY
       - name: Preserve validation evidence
         if: always()
         uses: actions/upload-artifact@v4
