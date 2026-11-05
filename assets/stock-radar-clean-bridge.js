@@ -191,7 +191,7 @@ function renderNews(){
  '<section class="nr-panel"><h3>경제 지표</h3><div class="nr-ops-grid"><div class="nr-op"><small>원/달러 · '+E(f.date||"—")+'</small><strong>'+F(f.value,2)+'원</strong></div><div class="nr-op"><small>미국 10년물 · '+E(ten.date||"—")+'</small><strong>'+F(ten.value,2)+'%</strong></div><div class="nr-op"><small>한국은행 기준금리 · '+E(bok.date||"—")+'</small><strong>'+F(bok.value,2)+'%</strong></div></div><p class="nr-small-note">위 지표는 마지막으로 저장된 관측값입니다. 실시간 호가나 투자 추천이 아닙니다.</p></section></div>';
 }
 
-function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
+function renderSettings(){const alive=!!(D.toss?.enabled&&D.toss?.api_base),issued=latestIssued(D.direction?.records);return `<div class="nr-screen-head"><div><h2>설정 · 데이터 연결</h2><p>새로운 UI는 기존 고급 기업 분석과 분리하여 충돌 없이 운영합니다.</p></div></div><div class="nr-screen-grid"><section class="nr-panel"><h3>운영 상태</h3><div class="nr-setting-row"><b>저장 종목</b><span>${rows().length}개</span></div><div class="nr-setting-row"><b>AI 파일 확인</b><span>${D.direction?.generated_at?T(D.direction.generated_at):"파일 확인 전"}</span></div><div class="nr-setting-row"><b>실제 예측 발행</b><span>${issued?T(issued):"발행 전 · 미확인"}</span></div><div class="nr-setting-row"><b>토스증권 실시간</b><span>${alive?"서버 설정됨 · 응답 미검증":"미연결"}</span></div><div class="nr-setting-row"><b>자동 주문</b><span>비활성</span></div><button class="nr-action" data-nr-reload>저장 자료 새로고침</button></section><section class="nr-panel"><h3>원래의 심층 재무분석</h3><p class="nr-sub">기존 V1의 전체 기업 분석 기능은 별도의 페이지로 보존했습니다.</p><a class="nr-action primary" href="./stock-value-radar-advanced.html" target="_blank" rel="noopener">심층 분석 열기</a></section></div>`;}
 
 async function read(name){
  const ac=new AbortController(),timeout=setTimeout(()=>ac.abort(),22000);
@@ -331,17 +331,18 @@ function render(){
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
  if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
  if(storageError)warnings.push("브라우저 저장 실패");
- const summary=(busy?"자료 재조회 중 · ":"")+
+ const mobile=window.innerWidth<=850,issued=latestIssued(D.direction?.records);
+ const sourceSummary=(busy?"자료 재조회 중 · ":"")+
  (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
  (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
- (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
- (D.direction?.generated_at?" · AI 자료 확인 "+T(D.direction.generated_at):"")+
- (latestIssued(D.direction?.records)?" · 최근 예측 발행 "+T(latestIssued(D.direction.records)):"");
+ (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"");
+ const summary=sourceSummary+
+ (D.direction?.generated_at?" · AI 파일 확인 "+T(D.direction.generated_at):" · AI 파일 확인 전")+
+ (issued?" · 실제 예측 발행 "+T(issued):" · 실제 예측 발행 전 · 미확인");
  const extras=(D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
   (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"")+
    (D.financial?.generated_at?" · 공식 재무 "+T(D.financial.generated_at):"");
- const mobile=window.innerWidth<=850;
- status.textContent=summary+(mobile?"":extras)+
+ status.textContent=(mobile?sourceSummary+" · AI 발행 "+(issued?T(issued):"전 · 미확인"):summary+extras)+
   (warnings.length?" · 주의: "+warnings.join(" / "):"")+
   (!mobile&&extraWarnings.length?" · 추가: "+extraWarnings.join(" / "):"")+
   " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
