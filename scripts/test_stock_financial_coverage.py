@@ -26,7 +26,13 @@ def sec_facts():
              "filed":"2026-10-28","val":20}]}},
         "EarningsPerShareDiluted":{"units":{"USD/shares":[
             {"form":"10-Q","start":"2026-07-01","end":"2026-09-30",
-             "filed":"2026-10-28","val":1.23}]}}
+             "filed":"2026-10-28","val":1.23}]}},
+        "Assets":{"units":{"USD":[
+            {"form":"10-Q","end":"2026-09-30","filed":"2026-10-28","val":300}]}},
+        "Liabilities":{"units":{"USD":[
+            {"form":"10-Q","end":"2026-09-30","filed":"2026-10-28","val":110}]}},
+        "StockholdersEquity":{"units":{"USD":[
+            {"form":"10-Q","end":"2026-09-30","filed":"2026-10-28","val":190}]}}
     }}}).encode()
 
 
@@ -46,6 +52,9 @@ class FinanceTests(unittest.TestCase):
         self.assertEqual(d["metrics"]["revenue"],200.0)
         self.assertEqual(d["metrics"]["net_income"],30.0)
         self.assertEqual(d["metrics"]["reported_eps"],1.23)
+        self.assertEqual(d["metrics"]["assets"],300.0)
+        self.assertEqual(d["metrics"]["liabilities"],110.0)
+        self.assertEqual(d["metrics"]["equity"],190.0)
         self.assertIsNone(d["metrics"]["cash_from_operations"])
         self.assertIsNone(d["metrics"]["free_cash_flow"])  # no mixed cashflow periods
         self.assertFalse(d["estimated"])
@@ -66,13 +75,18 @@ class FinanceTests(unittest.TestCase):
            {"corp_code":"00126380","fs_div":"OFS","account_nm":"매출액","thstrm_amount":"9999"},
            {"corp_code":"00126380","fs_div":"CFS","account_nm":"매출액","thstrm_amount":"1,234"},
            {"corp_code":"00126380","fs_div":"CFS","account_nm":"영업이익","thstrm_amount":"-50"},
-           {"corp_code":"00126380","fs_div":"CFS","account_nm":"당기순이익","thstrm_amount":"20"}
+           {"corp_code":"00126380","fs_div":"CFS","account_nm":"당기순이익","thstrm_amount":"20"},
+           {"corp_code":"00126380","fs_div":"CFS","account_nm":"자산총계","thstrm_amount":"7000"},
+           {"corp_code":"00126380","fs_div":"CFS","account_nm":"부채총계","thstrm_amount":"3000"},
+           {"corp_code":"00126380","fs_div":"CFS","account_nm":"자본총계","thstrm_amount":"4000"}
         ]}
         r=f.parse_dart_multi(json.dumps(rows).encode(),corp_map={"005930":"00126380"},
                              checked_at="2026-11-05",report_year=2026,report_code="11012")
         d=r["005930"]
         self.assertEqual(d["metrics"]["revenue"],1234)
         self.assertEqual(d["metrics"]["operating_income"],-50)
+        self.assertEqual(d["metrics"]["assets"],7000)
+        self.assertEqual(d["metrics"]["equity"],4000)
         self.assertEqual(d["consolidation"],"CFS")
         self.assertIsNone(d["metrics"]["free_cash_flow"])
         self.assertFalse(d["annualized"])
