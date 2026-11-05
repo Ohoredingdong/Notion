@@ -27,3 +27,21 @@
 기능 기준 이후에는 B1 탄단지 값을 복원하고 B2의 사진/하단 여백을 조정했다. [최종 관계 증명](kitchen-tabs-20261105/final-build-relationship.json)에서 최종15개 스크립트와 모든 AVIF가 기능 기준과 같고 레시피 스타일1개만 달라졌음을 확인했다. [최종 B1/B2 실제 검사](kitchen-tabs-20261105/final-recipe-visual.json)는 세 폭×8요리24카드의 탄단지(미입력 포함), 기본5재료 전체,46px 두CTA 및 지역 스크롤0을 확인했다. 기능 검사 통과를 외형 승인으로 대신하지 않는다.
 
 [저장소 검사](kitchen-tabs-20261105/validation.json)는 Python274/Node233/전송12·일곱 JS 문법·diff검사를 통과했다. [생성물4개](kitchen-tabs-20261105/generated-files.json)는 각각1MiB 이하이며 포장을 풀면 생성 원문과 같다. 공개 URL과 해당 고정 소스의 브라우저 실행은 별도로 확인한다.
+
+
+## 고정 소스와 공유
+
+최종 화면과4개 HTML은 작업 브랜치의 `52c243770304257efa1082313bb002bd69ca037c`에 고정했다. main/Pages는 수정하지 않았다.
+
+- [수정본 열기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/52c243770304257efa1082313bb002bd69ca037c/previews/mobile/widget.html)
+- [세 탭 실제 화면](https://raw.githubusercontent.com/Ohoredingdong/Notion/52c243770304257efa1082313bb002bd69ca037c/docs/kitchen-tabs-20261105/tabs-after.png)
+- [변경 전후 실제 비교](https://raw.githubusercontent.com/Ohoredingdong/Notion/52c243770304257efa1082313bb002bd69ca037c/docs/kitchen-tabs-20261105/tabs-before-after.png)
+
+[공개 원본 접근](kitchen-tabs-20261105/public-source-fetch.json)에서 네 HTML 및 실제 캡처 PNG의 정상 TLS/HTTP200과 고정 커밋 바이트 일치를 확인했다. 실제 미리보기 실행은 별도로 구분한다.
+
+Draft PR 조회/생성 경로는 이 환경에서 GitHub GraphQL뿐 아니라 REST pulls 조회도 Forbidden으로 차단됐다. 작업 브랜치 push와 원본 HTTPS 접근은 성공했으며, 이 차단 때문에 PR 생성은 완료하지 못했다.
+
+
+[공개 브라우저 실행](https://github.com/Ohoredingdong/Notion/actions/runs/41978435798)은 Success다. [최종 공개 요약](kitchen-tabs-20261105/public-summary.json)과 [상세 실행](kitchen-tabs-20261105/public-status.json)에서 source52c24377의 실제 HTMLPreview320×568/390×844/801×782 세 프로필 모두15스크립트·19스타일·8AVIF 원문 일치, A1/B1/C1/C2/C3/C4/D1 동일 프레임, 새로운 탐색 전후 전체 envelope 불변, 실제 A5 저장 및 D5취소/D6적용을 통과했다. 실행 오류는0이다.
+
+[공개 캡처33개와 비교 PNG](kitchen-tabs-20261105/public-fetch-screenshots.json)는 정상 TLS/HTTP200·image/png·고정 evidence 바이트 일치를 확인했다. evidence는 `073c55de6227229c01214555d66abb9f864ecd88`이며 비교 PNG는 고정 source의 비교 파일과도 같다. 공개 wrapper는 origin=null/temporary로 관찰했다. 이 검사는 영구 저장·실제 사용자 데이터·실제 Safari/Notion 기기 확인을 주장하지 않는다.
