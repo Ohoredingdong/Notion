@@ -316,7 +316,7 @@ function fxV5Checks(c,ctx){
  const positive=validSummary&&Array.isArray(summary.positive_companies)&&summary.positive_companies.some(x=>String(x.symbol||x)===String(c.symbol));
  const sourceAudit=!!period&&audit.period===period&&audit.status==="compared";
  return `<div class="fx-v5-checklist">${items.map(x=>`<div class="fx-v5-checkrow"><span class="${x.pass?'yes':'todo'}">${x.pass?'✓':'!'}</span><span>${fxEscape(x.label)}</span></div>`).join("")}</div>
- <div class="fx-v5-footnote">${fxEscape(verifiedReview.available?"종합 실사 "+verifiedReview.passed+"/12개 · "+verifiedReview.percent+"% · "+verifiedReview.status:"종합 실사 검증 대기")} · AI 방향과 별개 · 매수 승인 아님</div>`;
+ <div class="fx-v5-footnote">${fxEscape(verifiedReview.available?"실사 "+verifiedReview.passed+"/12개 항목 충족 · "+verifiedReview.status:"종합 실사 검증 대기")} · AI 방향과 별도 · 수익·매수 성공 확률 아님</div>`;
 }
 function fxV5Portfolio(ctx){
  const holdings=(ctx.paper||[]).filter(x=>fxN(x.qty)!==null&&x.qty>0&&fxN(x.cost)!==null);
@@ -560,6 +560,31 @@ function fxInvestmentEvidence(c,ctx){
  return {available:true,passed,total:12,percent:Math.round(passed/12*100),status,eligible,groups,explanation};
 }
 
+/* Four distinct investment questions: no invented buy probabilities or future returns. */
+function fxInvestmentDecision(c,ctx,review,signal){
+ const model=fxModelQuality(ctx),up=fxN(signal?.p?.up);
+ const live=signal?.active&&!signal?.stale&&!signal?.unknown&&up!==null&&up>=0&&up<=1;
+ const direction=live?fxNum(up*100,1)+"%":signal?.stale?"기간 종료":signal?.unknown?"기간 미확인":"연구 신호 없음";
+ const directionNote=live?(model.accepted?"상승 방향 추정 · 제한적 검증":"상승 방향 추정 · 실전 미입증"):
+   signal?.stale?"예측 기간이 지나 현재 매수 근거 아님":"유효한 현재 상승 추정치 없음";
+ const record=review.available?fxHelpers().caseOf?.(c):null,verified=record?.green_review||null;
+ const valuation=(verified?.checks||[]).find(v=>v.id==="valuation");
+ const price=fxN(c.price),reference=fxN(verified?.valuation?.reference_price),stress=fxN(verified?.valuation?.stress_change_pct);
+ const independent=review.available&&valuation?.status==="pass"&&price!==null&&price>0&&
+   reference!==null&&reference>0&&stress!==null;
+ const referencePct=independent?(reference/price-1)*100:null;
+ const value=independent?"보수 기준 통과":valuation?.status==="review"?"가격 부담 검토":"가치 검증 대기";
+ const valueNote=independent?"독립 평가 기준 "+fxMoney(reference,c.currency):
+   valuation?.status==="review"?"평가 가정·가격 부담 재확인":"애널리스트 목표가만으로 판단 불가";
+ const range=independent?fxPct(referencePct)+" / "+fxPct(stress):"손익비 미검증";
+ const rangeNote=independent?"보수 평가 여유 / 스트레스 변화 (손실한도 아님)":
+   "독립 가격평가와 하락 시나리오 확인 전";
+ const finalNote=review.available?"공식 실사 "+review.passed+"/12 · 투자 성공 확률 아님":
+   "공시·기준일 미확인 · 자동 매수 승인 없음";
+ return {direction,directionNote,value,valueNote,range,rangeNote,
+   status:review.status,finalNote,explanation:review.explanation,independent};
+}
+
 function fxDetail(ctx){
  const c=ctx.data?.raw?.companies?.find(r=>String(r.symbol)===String(ctx.selected));
  if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
@@ -575,6 +600,7 @@ function fxDetail(ctx){
  const disclaimer=ctx.data?.raw?.generated_at?"자료 수집: "+fxEscape(helper.T?.(ctx.data.raw.generated_at)||"시간 확인 중"):"저장 데이터 수집 시각 확인 전";
  const priceCondition=a.price_condition||{},delta=helper.change?.(c);
  const signal=fxPrediction(c,ctx),hasSignal=signal.active&&!signal.stale&&!signal.unknown;
+ const decision=fxInvestmentDecision(c,ctx,review,signal);
  const ai=hasSignal?fxBars(c,ctx):`<div class="fx-d-ai-empty">
   <span class="fx-d-ai-icon" aria-hidden="true">${helper.I?.("chart")||"◇"}</span>
   <strong>${fxEscape(signal.status==="현재 연구 신호 없음"?"현재 연구 신호 없음":signal.status||"검증된 최신 신호 없음")}</strong>
@@ -601,12 +627,15 @@ function fxDetail(ctx){
      <p class="fx-d-research-note">연구 확률은 수익률·매수 성공률이 아닙니다.</p>
     </section>
     <section class="fx-panel fx-decision-panel fx-d-hero">
-     <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>이 종목을 검토할 때 먼저 확인할 조건입니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
-     <div class="fx-decision-company"><span>종합 실사 · 12개 기준</span><strong>${review.available?"통과 "+review.passed+"/12개 · "+review.percent+"%":"검증 대기 · 충족률 미표시"}</strong></div>
-     <div class="fx-d-mini-grid">
-      ${review.groups.map(g=>fxFact(g.label,g.value,g.note,g.meaning)).join("")}
+     <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>상승 방향 · 가격 매력 · 손익 위험을 함께 비교합니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
+     <div class="fx-decision-company"><span>판단 요약</span><strong>${fxEscape(review.status)} · ${review.available?"실사 "+review.passed+"/12 충족":"자료 재확인 필요"}</strong></div>
+     <div class="fx-d-mini-grid" data-investment-assessment="four-questions">
+      ${fxFact("① AI 상승 추정",decision.direction,decision.directionNote,"AI 연구용 상승 분류 확률이며 수익률·매수 성공률이 아닙니다.")}
+      ${fxFact("② 지금 가격의 매력",decision.value,decision.valueNote,"공식 자료와 독립 가치평가를 대조한 가격 판단입니다. 애널리스트 목표가는 적정 가치가 아닙니다.")}
+      ${fxFact("③ 상승여력 · 하락위험",decision.range,decision.rangeNote,"보수적 평가와 스트레스 시나리오를 따로 비교하며 실제 손실 한도나 수익률 전망은 아닙니다.")}
+      ${fxFact("④ 최종 투자 판단",decision.status,decision.finalNote,"이익·현금흐름·성장·독립 가치평가·부채·정책 등 12개 실사 조건을 종합합니다.")}
      </div>
-     <div class="fx-d-notice">${fxEscape(review.explanation)}<br>충족률은 매수·수익 확률이 아닙니다. AI 방향 추정은 별도 연구값이며 실전 미입증.</div>
+     <div class="fx-d-notice">${fxEscape(decision.explanation)}<br>AI 추정 확률과 실사 충족률은 매수 성공률이 아닙니다.</div>
     </section>
    </div>
    <div class="fx-detail-mid">
