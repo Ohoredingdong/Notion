@@ -709,3 +709,22 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .case-title{max-width:calc(100vw - 193px)}
 }
 @media screen and (max-width:760px){.case-banner .case-address{display:none}}
+
+/* PC: keep the summary/detail columns on one grid and size cards to content,
+   rather than stretching sparse rows to the bottom of a tall monitor. */
+@media screen and (min-width:1100px){
+  .home-screen>.overview-layout{flex:0 1 360px;max-height:360px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .home-screen .overview-layout .panel-header{align-items:flex-start}
+  .home-panel-progress .panel-subtitle{display:none}
+}
+@media screen and (min-width:1600px){
+  .page-heading h1{font-size:28px}
+  .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:34px}
+  .home-screen .overview-layout .panel-title{font-size:17px}
+  .home-screen .analysis-step-copy>strong{font-size:15px}
+  .home-screen .analysis-step-copy>span{font-size:13px}
+  .home-screen .overview-tasks .task-item>p{font-size:14px}
+  .home-screen .overview-summary .cost-row{font-size:13px}
+  .home-screen .overview-summary .cost-row strong{font-size:15px}
+  .home-screen .overview-summary .cost-row.total .cash-number{font-size:22px}
+}

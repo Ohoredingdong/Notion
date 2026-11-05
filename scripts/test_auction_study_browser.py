@@ -246,9 +246,28 @@ def overview_proportions(page, label):
         assert max(item["value"]["top"] for item in metrics) - min(item["value"]["top"] for item in metrics) <= 1, (label, metrics)
 
 
+def desktop_overview_balance(page, label):
+    """PC columns align, and taller displays do not inflate sparse cards."""
+    data = page.evaluate("""() => {
+        const rect = el => { const r=el.getBoundingClientRect();
+            return {left:r.left, width:r.width, top:r.top, height:r.height, bottom:r.bottom}; };
+        return {metrics:[...document.querySelectorAll('.overview-metric')].map(rect),
+            panels:[...document.querySelectorAll('.home-panel')].map(rect),
+            titles:[...document.querySelectorAll('.home-panel .panel-title')].map(rect),
+            steps:[...document.querySelectorAll('.analysis-step')].map(rect)};
+    }""")
+    assert len(data['metrics']) == len(data['panels']) == 3, (label, data)
+    for metric, panel in zip(data['metrics'], data['panels']):
+        assert abs(metric['left'] - panel['left']) <= 1 and abs(metric['width'] - panel['width']) <= 1, (
+            label, 'summary and detail columns must align', metric, panel)
+        assert panel['height'] <= 380, (label, 'sparse cards must not stretch with monitor height', panel)
+    assert max(t['top'] for t in data['titles']) - min(t['top'] for t in data['titles']) <= 1, (label, 'panel headings must align', data['titles'])
+    assert all(44 <= step['height'] <= 90 for step in data['steps']), (label, 'study rows must keep a usable reading rhythm', data['steps'])
+
+
 def fixed_viewport_pages(page):
     """The page stays fixed; long forms retain reachable internal scrolling."""
-    for width, height in [(1440, 900), (1366, 768), (1280, 720), (390, 844), (390, 667)]:
+    for width, height in [(1920, 1080), (1440, 900), (1366, 768), (1280, 720), (390, 844), (390, 667)]:
         page.set_viewport_size({"width": width, "height": height})
         for name in ["home", "rights", "money", "area", "notes"]:
             navigate(page, name)
@@ -265,6 +284,7 @@ def fixed_viewport_pages(page):
         navigate(page, "home")
         overview_proportions(page, (width, height, "overview metrics"))
         if width >= 1100:
+            desktop_overview_balance(page, (width, height, "PC balance"))
             for pane in ["progress", "reasons", "cash"]:
                 panel = page.locator(f".home-panel-{pane}")
                 box_inside_viewport(panel, (width, height, pane))
