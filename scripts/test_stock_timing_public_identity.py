@@ -67,5 +67,48 @@ class PublicVerificationIdentityTests(unittest.TestCase):
         self.assertEqual(result["scored"], 0)
 
 
+    def test_repeated_only_public_proof_cannot_masquerade_as_new_forecast(self):
+        # Fixed synthetic chronology; target begins at 14:00Z.
+        first = {
+            **self.genuine,
+            "snapshot_generated_at": "2026-10-29T13:36:30Z",
+            "verified_at": "2026-10-29T13:37:00Z",
+        }
+        first["verification_id"] = audit_digest(
+            {k: v for k, v in first.items() if k != "verification_id"})
+        repeated = {
+            **first,
+            "snapshot_generated_at": "2026-10-29T13:49:00Z",
+            "verified_at": "2026-10-29T13:50:00Z",
+        }
+        repeated["verification_id"] = audit_digest(
+            {k: v for k, v in repeated.items() if k != "verification_id"})
+        report = self.result([first, repeated])
+        self.assertEqual(report["status"], "ledger_arithmetic_consistent")
+        self.assertEqual(report["scored"], 1)
+        self.assertEqual(
+            report["freshness_evidence"]["last_public_verified_at"],
+            "2026-10-29T13:50:00+00:00")
+        self.assertEqual(
+            report["freshness_evidence"]["last_first_issued_timely_public_verified_at"],
+            "2026-10-29T13:37:00+00:00")
+        self.assertAlmostEqual(
+            report["freshness_evidence"]["first_issued_timely_public_age_minutes"],
+            83.0)
+
+    def test_first_public_proof_after_start_is_not_new_actionable_public(self):
+        # Existing genuine proof is at 14:06Z, after target start 14:00Z.
+        report = self.result([self.genuine])
+        self.assertEqual(report["status"], "ledger_arithmetic_consistent")
+        self.assertEqual(report["scored"], 0)
+        self.assertEqual(
+            report["freshness_evidence"]["last_public_verified_at"],
+            "2026-10-29T14:06:00+00:00")
+        self.assertIsNone(
+            report["freshness_evidence"]["last_first_issued_timely_public_verified_at"])
+        self.assertIsNone(
+            report["freshness_evidence"]["first_issued_timely_public_age_minutes"])
+
+
 if __name__ == "__main__":
     unittest.main()
