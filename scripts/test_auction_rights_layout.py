@@ -133,6 +133,23 @@ def retained_dates(surface):
         expect(surface.locator(f'.rights-dates [data-field="timeline.{key}"]')).to_have_value(value)
 
 
+def wrapped_date_label(surface, label):
+    """Long labels must align inputs naturally rather than rely on one line."""
+    first = surface.locator(".rights-dates .timeline-fields .field > label").first
+    original_style = first.get_attribute("style")
+    try:
+        first.evaluate("el => el.style.maxWidth = '80px'")
+        assert first.evaluate("el => el.getBoundingClientRect().height > parseFloat(getComputedStyle(el).lineHeight) + 1"), (label, "fixture must actually wrap the date label")
+        dates_layout(surface, (label, "wrapped label"), desktop=True)
+        assert first.evaluate("el => el.scrollHeight <= el.clientHeight + 1"), (label, "wrapped label is clipped")
+        shared_scroll(surface, (label, "wrapped date label"))
+    finally:
+        first.evaluate("""(el, previous) => {
+            if (previous === null) el.removeAttribute('style');
+            else el.setAttribute('style', previous);
+        }""", original_style)
+
+
 def desktop_layout(page, label):
     navigate(page, "rights")
     for width, height in DESKTOPS:
@@ -148,6 +165,7 @@ def desktop_layout(page, label):
             inside(page.locator(".rights-verdict .decision-title"), (size_label, index, "decision"))
         fill_dates(page)
         dates_layout(page, size_label, desktop=True)
+        wrapped_date_label(page, size_label)
         select_step(page, 0)
         screenshot(page, size_label)
     page.goto(URL, wait_until="domcontentloaded")
@@ -250,22 +268,116 @@ def all_steps_shared_scroll(page, label):
             shared_scroll(page, (label, width, height, name, "after shared scroll"))
 
 
+def learning_resources(page, label):
+    navigate(page, "rights")
+    fill_dates(page)
+    page.locator('[data-evidence="0"]').fill("학습 자료를 열어도 보존할 나의 확인 기록")
+    page.locator('[data-evidence="0"]').press("Tab")
+    before = page.evaluate("key => localStorage.getItem(key)", KEY)
+    lesson = page.locator(".rights-layout .study-example")
+    summary = lesson.locator(":scope > summary")
+    expect(summary).to_contain_text("서류 예시·용어·원문")
+    summary.focus()
+    summary.press("Enter")
+    expect(lesson.locator(".example-answer")).to_be_visible()
+    expect(lesson.locator(".example-document").nth(0)).to_contain_text("법원 매각물건명세서")
+    expect(lesson.locator(".example-document").nth(1)).to_contain_text("등기사항증명서 표제부")
+    expect(lesson.locator(".example-document").nth(2)).to_contain_text("내 노트에는 이렇게 기록해요")
+
+    glossary = lesson.locator(".learning-glossary details")
+    expect(glossary).to_have_count(4)
+    for term in ["말소기준권리", "대항력", "우선변제와 배당요구", "인수금액"]:
+        definition = glossary.filter(has=page.locator("summary", has_text=re.compile(f"^{re.escape(term)}$")))
+        heading = definition.locator("summary")
+        heading.scroll_into_view_if_needed()
+        heading.focus()
+        heading.press("Enter")
+        expect(definition.locator("p")).to_be_visible()
+        inside(heading, (label, term))
+        assert definition.locator("p").inner_text().strip(), (label, term, "definition is empty")
+        heading.press("Enter")
+        expect(definition.locator("p")).not_to_be_visible()
+
+    for href in ["https://www.courtauction.go.kr/", "https://www.iros.go.kr/", "https://rt.molit.go.kr/", "https://www.eum.go.kr/"]:
+        link = lesson.locator(f'.source-links a[href="{href}"]')
+        expect(link).to_have_count(1)
+        link.scroll_into_view_if_needed()
+        link.focus()
+        expect(link).to_be_focused()
+        inside(link, (label, href))
+    screenshot(page, label)
+    summary.scroll_into_view_if_needed()
+    summary.focus()
+    summary.press("Enter")
+    expect(lesson.locator(".example-answer")).not_to_be_visible()
+    assert page.evaluate("key => localStorage.getItem(key)", KEY) == before, (
+        label, "reading examples, terms or source links must not alter the notebook"
+    )
+    shared_scroll(page, (label, "lesson closed"), require_no_scroll=True)
+
+
 def print_all_rights(page, label):
     navigate(page, "rights")
+    evidence = {index: f"인쇄 보존 근거 {index + 1}: 확인 기록" for index in range(6)}
     for index in range(6):
         select_step(page, index)
-        page.locator(f'[data-evidence="{index}"]').fill(f"인쇄 보존 근거 {index + 1}: 확인 기록")
+        page.locator(f'[data-evidence="{index}"]').fill(evidence[index])
+    # Enter the long value last, then print immediately: a render on another
+    # step must not hide a missing update of the print mirror after input.
+    evidence[0] = "긴 근거 시작\n" + "등기 원문 <b>그대로 기록</b> & 발급·열람일, 배당요구와 매각 조건을 대조한 확인 기록입니다.\n" * 180 + "전체 근거 마지막 문장"
+    assert len(evidence[0]) > 8000
+    select_step(page, 0)
+    page.locator('[data-evidence="0"]').fill(evidence[0])
+    page.locator('[data-evidence="0"]').press("Tab")
     expect(page.locator(".rights-card[data-right-panel]:visible")).to_have_count(1)
+    details = page.locator(".rights-verdict .decision-details")
+    assert details.get_attribute("open") is None, (label, "print fixture must start with collapsed reasons")
+    reasons = details.locator(".reason-list")
+    expect(reasons).not_to_be_visible()
+    reason_texts = reasons.locator("li").all_text_contents()
+    assert reason_texts, (label, "print fixture needs actual unresolved reasons")
+    before_print = page.evaluate("key => localStorage.getItem(key)", KEY)
     page.emulate_media(media="print")
     expect(page.locator(".rights-card[data-right-panel]:visible")).to_have_count(6)
+    expect(reasons).to_be_visible()
+    assert reasons.locator("li").all_text_contents() == reason_texts, (label, "print reasons changed")
+    for reason in reasons.locator("li").all():
+        expect(reason).to_be_visible()
+        assert reason.evaluate("el => el.getBoundingClientRect().height > 0 && el.getClientRects().length > 0"), (label, "closed details suppressed a printed reason")
     for index in range(6):
         card = page.locator(f'.rights-card[data-right-panel="{index}"]')
         expect(card).to_be_visible()
-        expect(card.locator(f'[data-evidence="{index}"]')).to_have_value(f"인쇄 보존 근거 {index + 1}: 확인 기록")
+        expect(card.locator(f'[data-evidence="{index}"]')).to_have_value(evidence[index])
+        mirror = card.locator(f'.evidence-print[data-print-evidence="{index}"]')
+        expect(mirror).to_be_visible()
+        assert mirror.text_content() == evidence[index], (label, index, "print mirror omits or changes evidence")
+        assert mirror.locator("b").count() == 0, (label, index, "evidence was interpreted as HTML")
+        bounds = mirror.evaluate("""el => {
+            const r=el.getBoundingClientRect(), card=el.closest('.rights-card').getBoundingClientRect();
+            const range=document.createRange();range.selectNodeContents(el);
+            const textRects=[...range.getClientRects()];
+            const clippedAncestors=[];
+            for(let node=el.parentElement;node;node=node.parentElement){
+                if(['hidden','clip','auto','scroll'].includes(getComputedStyle(node).overflowY) &&
+                    node.scrollHeight > node.clientHeight + 1)
+                    clippedAncestors.push({classes:node.className,height:node.clientHeight,scrollHeight:node.scrollHeight});
+            }
+            return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+                cardLeft:card.left,cardRight:card.right,cardTop:card.top,cardBottom:card.bottom,
+                height:el.clientHeight,scrollHeight:el.scrollHeight,width:el.clientWidth,scrollWidth:el.scrollWidth,
+                clippedAncestors,textRects:textRects.length,lastTextBottom:textRects.at(-1)?.bottom};
+        }""")
+        assert bounds["height"] >= 1 and bounds["scrollHeight"] <= bounds["height"] + 1, (label, index, "print mirror clips long evidence", bounds)
+        assert bounds["scrollWidth"] <= bounds["width"] + 1, (label, index, "print evidence overflows horizontally", bounds)
+        assert bounds["left"] >= bounds["cardLeft"] - 1 and bounds["right"] <= bounds["cardRight"] + 1, (label, index, bounds)
+        assert bounds["top"] >= bounds["cardTop"] - 1 and bounds["bottom"] <= bounds["cardBottom"] + 1, (label, index, "print card does not contain all evidence", bounds)
+        assert not bounds["clippedAncestors"], (label, index, "ancestor clips printed evidence", bounds)
+        assert bounds["textRects"] > 0 and bounds["lastTextBottom"] <= bounds["bottom"] + 4, (label, index, "last evidence line is not fully rendered", bounds)
         assert card.evaluate("el => el.scrollHeight <= el.clientHeight + 1"), (label, index, "print card clips evidence")
     screenshot(page, label)
     page.emulate_media(media="screen")
     expect(page.locator(".rights-card[data-right-panel]:visible")).to_have_count(1)
+    assert page.evaluate("key => localStorage.getItem(key)", KEY) == before_print, (label, "printing altered the notebook")
 
 
 def main():
@@ -276,6 +388,7 @@ def main():
         ("six-steps-mobile", lambda page, label: six_steps(page, label, mobile=True)),
         ("iframe-900x650", iframe_layout),
         ("all-steps-shared-scroll", all_steps_shared_scroll),
+        ("learning-resources", learning_resources),
         ("print-six-cards", print_all_rights),
     ]
     with sync_playwright() as p:

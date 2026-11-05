@@ -730,6 +730,7 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
 }
 
 /* A single working surface: columns must not create competing scrollbars. */
+.evidence-print{display:none}
 @media screen {
   .page-content>.split-layout{overflow:auto;align-items:start;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
   .page-content>.split-layout>div:first-child,.page-content>.split-layout>.side-column{height:auto;min-height:0;overflow:visible;scrollbar-gutter:auto;padding-right:0}
@@ -774,6 +775,10 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
 }
 @media screen and (min-width:1100px){
   .page-content>.rights-layout{grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+  @supports(grid-template-rows:subgrid){
+    .timeline-fields>.field{display:grid;grid-template-rows:subgrid;grid-row:span 2;row-gap:7px}
+    .timeline-fields>.field>label{margin-bottom:0}
+  }
 }
 @media screen and (min-width:1280px){
   .rights-step-navigation{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -798,8 +803,11 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .rights-pagination{margin-right:15px;margin-left:15px}
 }
 @media print{
-  .rights-step-navigation,.rights-pagination,.rights-layout .study-example,.decision-details>summary{display:none!important}
+  .rights-step-navigation,.rights-pagination,.decision-details>summary{display:none!important}
   .rights-checklist .rights-card[hidden]{display:block!important}
   .rights-checklist .rights-card{break-inside:avoid}
+  .rights-checklist .evidence-field textarea{display:none}
+  .rights-checklist .evidence-print{display:block;margin-top:9px;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:400}
+  .decision-details::details-content{content-visibility:visible}
   .rights-verdict .decision-details .reason-list{display:block!important}
 }

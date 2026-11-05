@@ -89,7 +89,7 @@ def rights_and_new_case(page):
     expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
     expect(page.locator("#rightsCount")).to_have_text("0 / 6 완료")
     before_example = notebook(page)
-    page.locator(".study-example summary").click()
+    page.locator(".study-example>summary").click()
     expect(page.locator(".example-answer")).to_be_visible()
     expect(page.locator(".example-document").first).to_contain_text("법원 매각물건명세서")
     assert notebook(page) == before_example, "Opening a lesson must not fill user evidence"
