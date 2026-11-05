@@ -13,18 +13,32 @@ function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},se
 
 function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
+/* A future valid forecast must outrank a later no-call snapshot. */
 function fxRecord(c,ctx){
- const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
- const records=(ctx.data?.direction?.records||[]).filter(r=>String(r.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
- records.sort((a,b)=>{
-  const ta=Date.parse(a.issued_at||""),tb=Date.parse(b.issued_at||"");
-  if(Number.isFinite(ta)&&Number.isFinite(tb)&&ta!==tb)return tb-ta;
-  if(Number.isFinite(tb)&&!Number.isFinite(ta))return 1;
-  if(Number.isFinite(ta)&&!Number.isFinite(tb))return -1;
-  return Number(b.mode==="intraday")-Number(a.mode==="intraday");
+ const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,""),now=Date.now();
+ const rows=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const valid=r=>{
+  const p=r?.probabilities||{},start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
+  return r?.status==="research_prediction"&&Number.isFinite(start)&&Number.isFinite(end)&&start<end&&end>now&&
+   Number.isFinite(issued)&&issued<=now+300000&&issued<=start&&["up","down","flat"].includes(r.direction)&&
+   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&Math.abs(p.up+p.down+p.flat-1)<.025;
+ };
+ rows.sort((a,b)=>{
+  const x=Date.parse(a.issued_at||""),y=Date.parse(b.issued_at||"");
+  if(Number.isFinite(x)&&Number.isFinite(y))return y-x;
+  return Number(Number.isFinite(y))-Number(Number.isFinite(x));
  });
- return records[0]||null;
+ return rows.find(valid)||rows.find(r=>r?.status==="research_prediction")||rows[0]||null;
 }
+function fxForecastMeta(ctx){
+ const d=ctx.data?.direction||{},rows=Array.isArray(d.records)?d.records:[],at=Date.parse(d.generated_at||"");
+ const modeled=new Set(rows.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
+ const tracked=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies.length:null;
+ const age=Number.isFinite(at)?Math.max(0,Math.round((Date.now()-at)/60000)):null;
+ return {modeled:modeled.size,tracked,age,delayed:age!==null&&age>60,
+  summary:tracked===null?"AI 대상 범위 확인 전":"AI 모델 "+modeled.size+"/"+tracked+"개 기업 대상"};
+}
+
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
  const audit=ctx.data?.accuracyAudit||null;
@@ -40,24 +54,30 @@ function fxModelQuality(ctx){
  return {status:!hasEnough?"표본·기간 부족":!hasBrier?"확률 품질 개선 미달":accepted?"검증 범위 제한 확인":"실전 효용 미입증",accepted,aligned,n,correct,days,acc,up,minN,minDays,brier,threshold,hasEnough,hasBrier};
 }
 function fxPrediction(c,ctx){
- const r=fxRecord(c,ctx),p=r?.probabilities||{};
- const choices=["up","flat","down"],numbers=choices.map(k=>fxN(p[k]));
- const validDistribution=numbers.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(numbers.reduce((a,b)=>a+b,0)-1)<=0.025;
- const knownDirection=choices.includes(r?.direction);
- const val=validDistribution&&knownDirection?fxN(p[r.direction]):null;
- const active=r?.status==="research_prediction"&&val!==null;
- const until=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
- const invalidDates=Number.isFinite(until)&&Number.isFinite(issued)&&until<issued;
- const futureIssued=Number.isFinite(issued)&&issued>Date.now()+5*60*1000;
- const usable=active&&!invalidDates&&!futureIssued;
- const stale=usable&&Number.isFinite(until)&&until<Date.now();
- const unknown=usable&&!Number.isFinite(until);
- const label=!usable?"미산출":r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보";
- const klass=!usable||stale||unknown?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
- const status=r?.status==="research_prediction"&&!usable?(futureIssued?"미래 발행 시각 오류 · 사용 불가":"분포·목표기간 오류 · 사용 불가"):
-  !usable?"현재 연구 신호 없음":stale?"기간 종료 · 과거 기록":unknown?"기간 정보 미확인 · 연구용":"연구용 방향 분류";
- return {r,p,label,klass,value:usable?val:null,stale,unknown,active:usable,status};
+ const r=fxRecord(c,ctx),p=r?.probabilities||{},now=Date.now();
+ const names=["up","flat","down"],values=names.map(k=>fxN(p[k]));
+ const valid=values.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(values.reduce((a,b)=>a+b,0)-1)<.025;
+ const issued=Date.parse(r?.issued_at||""),start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||"");
+ const dates=Number.isFinite(issued)&&Number.isFinite(start)&&Number.isFinite(end)&&issued<=now+300000&&issued<=start&&start<end;
+ const base=r?.status==="research_prediction"&&valid&&names.includes(r.direction)&&dates;
+ const stale=base&&end<=now,unknown=r?.status==="research_prediction"&&!Number.isFinite(end);
+ const active=base&&!stale,val=active?fxN(p[r.direction]):null;
+ const reason=String(r?.reason||"");
+ const explanations={
+  target_already_started_or_delivery_window_too_short:"예측 대상 거래가 이미 시작돼 발행하지 않았습니다.",
+  insufficient_regular_session_time:"정규장 자료 또는 남은 거래시간이 부족합니다.",
+  publication_window_missed:"자료 공개가 늦어 예측 유효시간을 놓쳤습니다.",
+  provider_returned_no_candles:"제공처 원자료가 누락됐습니다."
+ };
+ const status=!r?"이 종목은 현재 AI 예측 모델 대상이 아닙니다.":
+  r.status==="no_call"?(explanations[reason]||(/RateLimit|Too Many Requests/i.test(reason)?"데이터 제공처 요청 제한":"자료·모형 조건 미충족")):
+  r.status!=="research_prediction"?"예측 발행 상태 확인 필요":
+  !base?"예측 확률·발행시각 검증 실패":stale?"기간 종료 · 과거 예측":start>now?"다음 거래기간 예측 · 연구용":"현재 거래기간 예측 · 연구용";
+ const label=active?r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보":!r?"대상 외":stale?"기간 종료":"미산출";
+ const klass=!active?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
+ return {r,p,label,klass,value:val,stale,unknown,active,status};
 }
+
 function fxUniverse(ctx){
  const h=fxHelpers(),fav=new Set(ctx.favorites||[]);
  const data=[...(ctx.data?.raw?.companies||[])];
