@@ -164,6 +164,7 @@
     const room=$('.room'),shell=$('.shell');
     const homeScale=Math.max(1,shell.clientWidth/390);
     shell.style.setProperty('--home-ui-scale',String(homeScale));
+    document.body.style.setProperty('--hub-scale',String(Math.min(1.25,Math.max(.9,shell.clientWidth/390))));
     // Hidden tabs have no layout box. Keep the last visible scene geometry
     // until the fridge tab is shown again; records must never resize the art.
     if(!room.getClientRects().length)return;
