@@ -182,7 +182,7 @@ input:focus,select:focus,textarea:focus{border-color:#82a2f0}
 textarea{resize:vertical;min-height:100px}
 input[type=checkbox],input[type=radio]{accent-color:var(--blue)}
 .input-wrap{position:relative}
-.input-wrap input{padding-right:49px!important;font-variant-numeric:tabular-nums}
+.input-wrap.has-unit input{padding-right:49px!important;font-variant-numeric:tabular-nums}
 .input-unit{position:absolute;top:50%;right:13px;transform:translateY(-50%);color:#8591a5;font-size:12px;pointer-events:none}
 .field-help{margin:8px 0 0;color:#78849a;font-size:12px;line-height:1.9}
 .form-section+.form-section{margin-top:34px;padding-top:28px;border-top:1px solid var(--line)}
@@ -727,4 +727,92 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen .overview-summary .cost-row{font-size:13px}
   .home-screen .overview-summary .cost-row strong{font-size:15px}
   .home-screen .overview-summary .cost-row.total .cash-number{font-size:22px}
+}
+
+/* A single working surface: columns must not create competing scrollbars. */
+.evidence-print{display:none}
+@media screen {
+  .page-content>.split-layout{overflow:auto;align-items:start;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+  .page-content>.split-layout>div:first-child,.page-content>.split-layout>.side-column{height:auto;min-height:0;overflow:visible;scrollbar-gutter:auto;padding-right:0}
+  .rights-layout>.rights-main{display:flex!important;flex-direction:column;gap:12px}
+  .rights-layout>.rights-main>*+*{margin-top:0}
+  .rights-layout .rights-checklist{flex-shrink:0}
+  .rights-checklist>.panel-header{align-items:flex-start}
+  .rights-step-navigation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:12px 18px 0}
+  .rights-step-button{display:flex;align-items:center;gap:7px;min-width:0;min-height:38px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fafbfc;color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap}
+  .rights-step-button:hover{border-color:#b8c9f4}
+  .rights-step-button.active{border-color:#a9bef6;background:var(--blue-soft);color:var(--blue)}
+  .rights-step-number{color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
+  .rights-step-button.active .rights-step-number{color:var(--blue)}
+  .rights-step-state{display:flex;flex-shrink:0;width:13px;margin-left:auto;color:var(--blue)}
+  .rights-checklist .rights-card{margin:0;border:0;border-radius:0}
+  .rights-checklist .rights-card>.panel-body{padding-top:16px;padding-bottom:14px}
+  .rights-checklist .rights-top{gap:12px}
+  .rights-checklist .rights-index{width:30px;height:30px;font-size:11px}
+  .rights-checklist .rights-text h3{font-size:16px;line-height:1.5;margin-bottom:7px}
+  .rights-checklist .rights-text p{font-size:13px;line-height:1.8}
+  .rights-checklist .rights-controls{display:flex;align-items:center;gap:12px;width:auto;margin:12px 0 0 42px}
+  .rights-checklist .rights-controls label{margin:0;white-space:nowrap}
+  .rights-checklist .rights-controls select{width:160px;min-height:38px}
+  .rights-checklist .evidence-field{margin-top:12px}
+  .rights-checklist .evidence-field textarea{height:84px;min-height:84px;resize:vertical;margin-top:7px;padding:10px 12px;font-size:13px;line-height:1.7}
+  .rights-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 18px;padding:10px 0 12px;border-top:1px solid var(--line)}
+  .rights-pagination>span{color:var(--faint);font-size:12px;font-variant-numeric:tabular-nums}
+  .rights-layout .study-example{flex-shrink:0;margin-bottom:0}
+  .page-content .rights-layout .study-example>summary{padding:10px 18px;font-size:13px}
+  .rights-dates .panel-subtitle{margin-top:0;margin-bottom:14px}
+  .rights-dates .timeline-fields{gap:14px 14px;margin-top:0!important}
+  .timeline-fields>.field>label{display:flex;align-items:flex-end;min-height:21px;margin-bottom:7px;line-height:21px;font-size:13px}
+  .timeline-fields input[type=date]{height:44px;min-height:44px;padding:10px;font-size:13px;font-variant-numeric:tabular-nums}
+  .rights-dates .panel-body>.notice{margin:16px 0 0;padding:12px 13px;font-size:12px;line-height:1.8}
+  .rights-layout .side-column>*+*{margin-top:12px}
+  .rights-verdict .panel-body{padding:14px 18px}
+  .rights-verdict-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .rights-verdict .decision-title{margin:0;font-size:16px;line-height:1.5}
+  .rights-verdict .decision-text{margin:6px 0 0;font-size:12px;line-height:1.7}
+  .decision-details>summary{width:fit-content;margin-top:8px;color:#806028;font-size:12px;cursor:pointer}
+  .rights-verdict .reason-list{margin:12px 0;padding-top:12px;font-size:12px}
+}
+@media screen and (min-width:1100px){
+  .page-content>.rights-layout{grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+  @supports(grid-template-rows:subgrid){
+    .timeline-fields>.field{display:grid;grid-template-rows:subgrid;grid-row:span 2;row-gap:7px}
+    .timeline-fields>.field>label{margin-bottom:0}
+  }
+}
+@media screen and (min-width:1280px){
+  .rights-step-navigation{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .rights-step-button{position:relative;flex-direction:column;justify-content:center;gap:2px;min-height:54px;padding:6px;font-size:12px}
+  .rights-step-state{position:absolute;top:6px;right:6px;width:13px}
+}
+@media screen and (min-width:761px) and (max-width:1099px){
+  .page-content>.rights-layout{grid-template-columns:minmax(0,1fr)}
+  .page-content>.rights-layout>.side-column{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.85fr);gap:16px}
+  .rights-layout .side-column>*+*{margin-top:0}
+  .rights-dates .timeline-fields{grid-template-columns:minmax(0,1fr)}
+  .timeline-fields>.field{display:grid;grid-template-columns:minmax(0,1fr) 170px;align-items:center;gap:12px}
+  .timeline-fields>.field>label{min-height:0;margin:0}
+}
+@media screen and (min-width:761px) and (max-width:1099px) and (max-height:740px){
+  /* Preserve room for a whole study row when an embed shows its storage warning
+     or the browser substitutes a taller Korean font. Detail tabs keep the rest. */
+  .home-screen .verdict-description,.home-screen .overview-metric .metric-subline,.home-panel-progress .panel-subtitle{display:none}
+}
+@media screen and (max-width:760px){
+  .rights-step-navigation{gap:6px;padding:14px 15px 0}
+  .rights-step-button{justify-content:center;gap:5px;padding:8px 5px;font-size:11px}
+  .rights-step-state{display:none}
+  .rights-checklist .rights-card>.panel-body{padding-top:18px}
+  .rights-checklist .rights-controls{margin-left:0}
+  .rights-checklist .rights-text h3{font-size:15px}
+  .rights-pagination{margin-right:15px;margin-left:15px}
+}
+@media print{
+  .rights-step-navigation,.rights-pagination,.decision-details>summary{display:none!important}
+  .rights-checklist .rights-card[hidden]{display:block!important}
+  .rights-checklist .rights-card{break-inside:avoid}
+  .rights-checklist .evidence-field textarea{display:none}
+  .rights-checklist .evidence-print{display:block;margin-top:9px;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:400}
+  .decision-details::details-content{content-visibility:visible}
+  .rights-verdict .decision-details .reason-list{display:block!important}
 }

@@ -36,6 +36,10 @@ def navigate(page, name):
     page.locator(f'.nav-item[data-page="{name}"]').click()
 
 
+def choose_right(page, index):
+    page.locator(f'.rights-step-button[data-right-step="{index}"]').click()
+
+
 def favorable(page):
     # The initial sample is intentionally unverified. Seed checked user evidence,
     # rather than satisfying the final signal by changing application functions.
@@ -80,20 +84,23 @@ def shell_and_calculator(page):
 def rights_and_new_case(page):
     navigate(page, "rights")
     for i in range(6):
+        choose_right(page, i)
         page.locator(f'[data-right="{i}"]').select_option("clear")
     expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
     expect(page.locator("#rightsCount")).to_have_text("0 / 6 완료")
     before_example = notebook(page)
-    page.locator(".study-example summary").click()
+    page.locator(".study-example>summary").click()
     expect(page.locator(".example-answer")).to_be_visible()
     expect(page.locator(".example-document").first).to_contain_text("법원 매각물건명세서")
     assert notebook(page) == before_example, "Opening a lesson must not fill user evidence"
     for i in range(6):
+        choose_right(page, i)
         page.locator(f'[data-evidence="{i}"]').fill(f"실제 확인 서류와 질문 {i + 1}")
     # No blur/change event here: the completion state must follow the active input.
     expect(page.locator(".panel-header .badge").first).to_have_text("6 / 6 완료")
     page.reload(wait_until="domcontentloaded")
     navigate(page, "rights")
+    choose_right(page, 5)
     expect(page.locator('[data-evidence="5"]')).to_have_value("실제 확인 서류와 질문 6")
     old_id = active(notebook(page))["id"]
     page.locator('.topbar [data-action="new"]').click()
@@ -317,7 +324,7 @@ def fixed_viewport_pages(page):
             expect(page.locator(".home-panel-reasons")).to_contain_text("권리분석")
 
         navigate(page, "money")
-        scroll_container = ".page-content .split-layout" if width <= 760 else ".page-content .split-layout > div:first-child"
+        scroll_container = ".page-content .split-layout"
         panel = page.locator(scroll_container)
         panel.evaluate("el => el.scrollTop = 0")
         target = page.locator('[data-finance="targetProfit"]')
@@ -332,10 +339,12 @@ def fixed_viewport_pages(page):
 
         navigate(page, "rights")
         panel = page.locator(scroll_container)
+        choose_right(page, 5)
         last_evidence = page.locator('[data-evidence="5"]')
         last_evidence.scroll_into_view_if_needed()
         box_inside_viewport(last_evidence, (width, height, "last rights evidence"))
-        assert panel.evaluate("el => el.scrollTop > 0"), (width, height, "rights records remain reachable")
+        expect(page.locator('[data-right-panel="5"]')).to_be_visible()
+        expect(page.locator('[data-right-panel="0"]')).to_be_hidden()
         document_fits_viewport(page, (width, height, "rights panel scrolled"))
 
 
@@ -359,7 +368,7 @@ def short_mobile_dialog(page):
 def embedded_overview(page):
     """A 900x650 embed keeps readable rows even when storage is blocked."""
     page.set_viewport_size({"width": 1100, "height": 800})
-    for blocked in [False, True]:
+    for blocked, fallback in [(False, None), (True, None), (True, "serif")]:
         # Start at the application origin, then use a real iframe. The sandbox
         # creates a storage-denied context without changing application code.
         page.goto(URL, wait_until="domcontentloaded")
@@ -374,7 +383,9 @@ def embedded_overview(page):
         element = page.locator("iframe").element_handle()
         frame = element.content_frame()
         expect(frame.locator("h1")).to_have_text("물건 검토 한눈에 보기")
-        label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available")
+        if fallback:
+            frame.add_style_tag(content=f"body.auction-app {{font-family:{fallback};}}")
+        label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available", fallback or "default font")
         overview_proportions(frame, label)
         document_fits_viewport(frame, label)
         if blocked:
@@ -395,6 +406,10 @@ def embedded_overview(page):
             assert row["contentTop"] >= row["top"] and row["contentBottom"] <= row["bottom"], (label, index, row)
             if index:
                 assert row["top"] >= rows[index - 1]["bottom"] - 1, (label, rows)
+        available_height = progress.evaluate("el => el.clientHeight")
+        assert available_height + 1 >= max(row["bottom"] - row["top"] for row in rows), (
+            label, "progress viewport must fit a complete readable row", available_height, rows
+        )
         last = progress.locator(".analysis-step").last
         last.scroll_into_view_if_needed()
         box_inside_viewport(last, (label, "last step"))
@@ -439,6 +454,9 @@ def main():
                 failures.append((name, str(error)))
                 page.screenshot(path=f"/tmp/auction-study-failed-{name}.png", full_page=True)
                 print("FAIL", name, str(error), flush=True)
+                if os.environ.get("GITHUB_ACTIONS") == "true":
+                    detail = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                    print(f"::error title=Auction browser {name}::{detail}", flush=True)
             finally:
                 context.close()
         browser.close()
