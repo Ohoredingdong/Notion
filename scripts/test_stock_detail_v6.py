@@ -142,6 +142,15 @@ with sync_playwright() as play:
                     page.locator(".fx-d-ai-empty [data-fx-filter='ai']").click()
                     require("One-click switch selects a ticker with a valid signal",
                             page.locator(".fx-d-ai-body .fx-ai-heading strong").count()==1)
+            page.goto(BASE+"?stock=005930&screen=stockdetail", wait_until="domcontentloaded")
+            page.locator(".fx-detail-v6").wait_for(timeout=45000)
+            page.wait_for_function(
+                "() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length",
+                timeout=45000)
+            require("Direct Samsung detail link opens the correct actual stock",
+                    "삼성전자" in page.locator(".fx-detail-v6 .fx-detail-intro h2").inner_text())
+            require("Direct detail link renders its model status without blank panel",
+                    bool(page.locator(".fx-detail-v6 .fx-d-ai-body").inner_text().strip()))
         finally:
             page.close()
     finally:
