@@ -299,25 +299,31 @@ function render(){
  const utcHour=new Date().getUTCHours(),utcDay=new Date().getUTCDay();
  const researchHours=((utcDay>=1&&utcDay<=5&&(utcHour<=7||(utcHour>=13&&utcHour<=22)))||(utcHour===23&&(utcDay===0||utcDay<=4)));
  if(ai===null)warnings.push("AI 예측 파일 조회 전");
- if(!D.catalog?.items?.length)warnings.push("전체 상장종목 명부 미수집");
- else if(catalogAge!==null&&catalogAge>96*60)warnings.push("상장명부 최근 갱신 지연");
- if(!D.extended?.records?.length)warnings.push("확장 AI 분석 아직 미발행");
- else if(extendedAge!==null&&extendedAge>240&&researchHours)warnings.push("확장 AI 분석 갱신 지연");
- else if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
+ const extraWarnings=[];
+ if(!D.catalog?.items?.length)extraWarnings.push("전체 상장종목 명부 미수집");
+ else if(catalogAge!==null&&catalogAge>96*60)extraWarnings.push("상장명부 최근 갱신 지연");
+ if(!D.extended?.records?.length)extraWarnings.push("확장 AI 분석 아직 미발행");
+ else if(extendedAge!==null&&extendedAge>240&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
+ if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
   if(n===null)warnings.push("뉴스 수집 확인 전");
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
  if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
  if(storageError)warnings.push("브라우저 저장 실패");
- status.textContent=(busy?"자료 재조회 중 · ":"")+
+ const summary=(busy?"자료 재조회 중 · ":"")+
  (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
  (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
  (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
- (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"")+
- (D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
- (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"")+
- (warnings.length?" · 주의: "+warnings.join(" / "):"")+
- " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
- status.title=status.textContent;
+ (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"");
+ const extras=(D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
+  (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"");
+ const mobile=window.innerWidth<=850;
+ status.textContent=summary+(mobile?"":extras)+
+  (warnings.length?" · 주의: "+warnings.join(" / "):"")+
+  (!mobile&&extraWarnings.length?" · 추가: "+extraWarnings.join(" / "):"")+
+  " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
+ status.title=summary+extras+
+   ([...warnings,...extraWarnings].length?" · 주의: "+[...warnings,...extraWarnings].join(" / "):"")+
+   " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
 }
 function autoRefreshIfDue(){
  if(busy||Date.now()-lastLoadStartedAt<300000||document.visibilityState==="hidden")return;
