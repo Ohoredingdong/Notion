@@ -12,6 +12,8 @@ function money(v,c){return N(v)===null?"—":v.toLocaleString("ko-KR",{minimumFr
 
 function T(v){const d=new Date(v||"");return Number.isFinite(+d)?d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false})+" KST":"시각 미확인";}
 
+function latestIssued(records){return (records||[]).filter(r=>r?.status==="research_prediction"&&Number.isFinite(Date.parse(r.issued_at||""))&&Date.parse(r.issued_at)<=Date.now()+300000).map(r=>r.issued_at).sort((a,b)=>Date.parse(b)-Date.parse(a))[0]||null;}
+
 function tone(v){return N(v)===null?"nr-neutral":v>0?"nr-up":v<0?"nr-down":"nr-neutral";}
 
 function I(k){const paths={home:'<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',search:'<circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',chart:'<path d="M4 4v16h16M7 14l4-5 4 3 5-7"/>',check:'<rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',news:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h6M7 16h10"/>',settings:'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="18" r="2"/>',arrow:'<path d="m9 5 7 7-7 7"/>',plus:'<path d="M5 12h14M12 5v14"/>'};return `<svg class="nr-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[k]||paths.chart}</svg>`;}
@@ -68,6 +70,19 @@ function url(u){try{const v=new URL(u);return v.protocol==="https:"?v.href:""}ca
 
 function link(u,label){const href=url(u);return href?`<a href="${E(href)}" target="_blank" rel="noopener noreferrer">${E(label)}</a>`:`<span>${E(label)} · 출처 확인 전</span>`;}
 
+function expectedClose(sources){
+ const dates=[];
+ for(const item of sources){
+  if(!item)continue;
+  const clock=item.session_clock||{},expected=item.expected_session||clock.expected_session;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(expected||""))dates.push(expected);
+  // A stored clock includes the next actual exchange session. Once its close
+  // plus provider delay has passed, even an unchanged file must become stale.
+  const close=Date.parse(clock.next_close||""),delay=N(clock.delay_minutes);
+  if(Number.isFinite(close)&&delay!==null&&Date.now()>=close+delay*60000&&/^\d{4}-\d{2}-\d{2}$/.test(clock.next_session||""))dates.push(clock.next_session);
+ }
+ return dates.sort().at(-1)||null;
+}
 function indices(){
  const configs=[["^KS11","코스피","kospi"],["^KQ11","코스닥","kosdaq"],["^IXIC","나스닥","nasdaq"],["^GSPC","S&P 500","sp500"]];
  return configs.map(([id,name,key])=>{
@@ -82,7 +97,10 @@ function indices(){
   const delta=useMacro?N(macro.change_1d_pct):chartValid&&N(previous?.close)!==null&&previous.close!==0?(last.close/previous.close-1)*100:null;
   const divergent=chartValid&&macroValid&&chartDate===macroDate&&Math.abs(last.close-macro.value)>Math.max(0.02,Math.abs(last.close)*.0001);
   const olderChart=chartValid&&valueDate>chartDate;
-  const subtitle=(valueDate||"기준일 미확인")+" · "+(useMacro?"별도 지표 저장값":"차트 일봉")+ (olderChart?" · 추이 "+chartDate+"까지":"")+(divergent?" · 제공처 값 불일치":"");
+  const basis=useMacro?(macro.price_basis==="completed_regular_session_close"?"완료 정규장 종가":"별도 지표 저장값"):"차트 일봉";
+  const expected=expectedClose([macro,chart]);
+  const missingClose=expected&&valueDate<expected?" · "+expected+" 마감값 갱신 대기":"";
+  const subtitle=(valueDate||"기준일 미확인")+" · "+basis+missingClose+ (olderChart?" · 추이 "+chartDate+"까지":"")+(divergent?" · 제공처 값 불일치":"");
   const source=useMacro?macro.source_url||chart?.source_url:chart?.source_url||macro.source_url;
   return `<article class="nr-panel nr-index" title="${E(subtitle)}"><div class="nr-head" style="margin-bottom:0"><h3>${name}</h3>${link(source,"출처")}</div>
   <div class="nr-num">${F(value,2)}</div><div class="${tone(delta)}" style="font-size:12px;font-weight:750">${P(delta)}</div>
@@ -190,7 +208,7 @@ async function load(){
  if(busy)return;
  lastLoadStartedAt=Date.now();
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json",catalog:"stock-universe-catalog.json",extended:"stock-extended-direction-forecast.json",financial:"stock-financial-coverage.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -209,6 +227,9 @@ async function load(){
    if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
    if(okay&&key==="newsLink")okay=Array.isArray(val?.items)&&Number.isFinite(Date.parse(val?.generated_at||""));
    if(okay&&key==="eventOutlook")okay=val?.version==="stock-event-outlook-v1"&&Array.isArray(val?.events)&&val.research_only===true&&val.automatic_orders===false;
+   if(okay&&key==="catalog")okay=val?.version==="radar-universe-catalog-v1"&&val.identifier_policy==="kr-six-character-alphanumeric-v2"&&Array.isArray(val.items)&&val.items.length>=1000&&val.counts?.total===val.items.length&&val.items.every(x=>x.country!=="KR"||/^[A-Z0-9]{6}$/.test(x.symbol));
+   if(okay&&key==="extended")okay=val?.version==="stock-extended-direction-v1"&&val.source_identity_policy==="kr-six-character-alphanumeric-v2"&&Array.isArray(val.records)&&val.records.every(r=>r.identity_verified===true&&r.source_identity_policy==="kr-six-character-alphanumeric-v2")&&val.automatic_orders===false;
+    if(okay&&key==="financial")okay=val?.version==="official-financial-coverage-v1"&&val.identity_policy==="official-issuer-identity-v2"&&!!val.records&&typeof val.records==="object"&&val.universe?.total>=1000;
    if(okay){
     const beforeTime=Date.parse(updated[key]?.generated_at||"");
     const afterTime=Date.parse(val?.generated_at||"");
@@ -291,25 +312,42 @@ function render(){
  const host=document.getElementById("nr-home-content");if(!host)return;
  host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';
  const status=document.getElementById("source-status");if(!status)return;
- const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),warnings=[];
+ const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),extendedAge=ageMinutes(D.extended?.generated_at),catalogAge=ageMinutes(D.catalog?.generated_at),warnings=[];
  if(p!==null&&p>480)warnings.push("종목 자료 "+Math.round(p/60)+"시간 전");
  if(m!==null&&m>360)warnings.push("시장 지표 "+Math.round(m/60)+"시간 전");
  const utcHour=new Date().getUTCHours(),utcDay=new Date().getUTCDay();
  const researchHours=((utcDay>=1&&utcDay<=5&&(utcHour<=7||(utcHour>=13&&utcHour<=22)))||(utcHour===23&&(utcDay===0||utcDay<=4)));
  if(ai===null)warnings.push("AI 예측 파일 조회 전");
- else if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
+ const extraWarnings=[];
+ if(!D.catalog?.items?.length)extraWarnings.push("전체 상장종목 명부 미수집");
+ else if(catalogAge!==null&&catalogAge>96*60)extraWarnings.push("상장명부 최근 갱신 지연");
+ if(!D.financial?.records)extraWarnings.push("공식 재무제표 수집 대기");
+ else if(D.financial.refresh_status==="blocked")extraWarnings.push("공식 재무 최근 수집 중단 · 이전 확인값만 유지");
+ else if(D.financial.refresh_status==="partial")extraWarnings.push("공식 재무 일부 수집 실패");
+  if(!D.extended?.records?.length)extraWarnings.push("확장 AI 분석 아직 미발행");
+ else if(extendedAge!==null&&extendedAge>240&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
+ if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
   if(n===null)warnings.push("뉴스 수집 확인 전");
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
  if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
  if(storageError)warnings.push("브라우저 저장 실패");
- status.textContent=(busy?"자료 재조회 중 · ":"")+
+ const summary=(busy?"자료 재조회 중 · ":"")+
  (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
  (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
  (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
- (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"")+
- (warnings.length?" · 주의: "+warnings.join(" / "):"")+
- " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
- status.title=status.textContent;
+ (D.direction?.generated_at?" · AI 자료 확인 "+T(D.direction.generated_at):"")+
+ (latestIssued(D.direction?.records)?" · 최근 예측 발행 "+T(latestIssued(D.direction.records)):"");
+ const extras=(D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
+  (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"")+
+   (D.financial?.generated_at?" · 공식 재무 "+T(D.financial.generated_at):"");
+ const mobile=window.innerWidth<=850;
+ status.textContent=summary+(mobile?"":extras)+
+  (warnings.length?" · 주의: "+warnings.join(" / "):"")+
+  (!mobile&&extraWarnings.length?" · 추가: "+extraWarnings.join(" / "):"")+
+  " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
+ status.title=summary+extras+
+   ([...warnings,...extraWarnings].length?" · 주의: "+[...warnings,...extraWarnings].join(" / "):"")+
+   " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
 }
 function autoRefreshIfDue(){
  if(busy||Date.now()-lastLoadStartedAt<300000||document.visibilityState==="hidden")return;

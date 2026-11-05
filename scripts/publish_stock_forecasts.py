@@ -5,7 +5,10 @@ import subprocess,tempfile,time
 from stock_forecast_model import digest
 from stock_forecast_learning import STATE_FILE
 from stock_forecast_autopilot import OUTPUTS
+from audit_stock_radar_accuracy import report as accuracy_report
+from stock_forecast_paper import PAPER_OUTPUTS, READ_ONLY_INPUTS, POLICY_FILE, run as paper_report
 FILES=list(OUTPUTS)
+AUDIT='stock-radar-accuracy-audit.json'
 TAGS=['<script src="./assets/stock-forecast.js?v=direction-forecast-1.0" defer></script>',
       '<script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>',
       '<script src="./assets/stock-forecast-directions.js?v=direction-specialists-1.0" defer></script>',
@@ -36,6 +39,9 @@ def publish(root=Path('.')):
         with tempfile.TemporaryDirectory() as tmp:
             work=Path(tmp)/'work';git(root,'worktree','add','--detach',str(work),'origin/main')
             try:
+                saved_policy=work/POLICY_FILE
+                if saved_policy.exists() and json.loads(saved_policy.read_text()) != json.loads(payload[POLICY_FILE]):
+                    raise RuntimeError('paper_policy_changed; recollect_rather_than_overwrite_preregistration')
                 remote=work/FILES[0]
                 if remote.exists() and json.loads(remote.read_text())['generated_at']>data['generated_at']:
                     raise RuntimeError('newer_forecast_already_published')
@@ -47,6 +53,24 @@ def publish(root=Path('.')):
                     dest=work/name
                     if name.endswith('.jsonl'):body=merged_lines(dest.read_text() if dest.exists() else '',body)
                     dest.write_text(body)
+                # The public-proof ledger may gain immutable rows during merge.
+                # Recompute diagnostics against the exact merged bytes. Optional
+                # observed execution inputs are read-only and are never staged.
+                for name in READ_ONLY_INPUTS:
+                    local_input=root/name
+                    if local_input.exists():
+                        remote_input=work/name
+                        if remote_input.exists() and remote_input.read_bytes()!=local_input.read_bytes():
+                            raise RuntimeError('paper_execution_inputs_changed; recollect')
+                        remote_input.write_bytes(local_input.read_bytes())
+                paper_report(work)
+                # Derive the displayed audit from exactly the forecast/learning
+                # bundle being committed, plus the latest main's other feeds.
+                # Bot-created pushes do not trigger another push workflow.
+                audit=accuracy_report(work)
+                if not audit['data_integrity']['check_passed']:
+                    raise RuntimeError('forecast_bundle_accuracy_audit_failed: '+ '; '.join(audit['data_integrity']['errors']))
+                (work/AUDIT).write_text(json.dumps(audit,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
                 for name in HTML:
                     path=work/name
                     if not path.exists():raise RuntimeError('radar_template_missing')
@@ -59,13 +83,18 @@ def publish(root=Path('.')):
                     path.write_text(text)
                 git(work,'config','user.name','github-actions[bot]')
                 git(work,'config','user.email','41898282+github-actions[bot]@users.noreply.github.com')
-                git(work,'add','--',*FILES,*HTML)
-                if git(work,'diff','--cached','--quiet',check=False).returncode==0:return
+                git(work,'add','--',*FILES,AUDIT,*HTML)
+                if git(work,'diff','--cached','--quiet',check=False).returncode==0:
+                    (root/AUDIT).write_bytes((work/AUDIT).read_bytes())
+                    return
                 git(work,'commit','-m','forecast: publish audited autonomous research cycle')
                 if git(work,'push','origin','HEAD:main',check=False).returncode==0:
+                    (root/AUDIT).write_bytes((work/AUDIT).read_bytes())
+                    for name in PAPER_OUTPUTS:(root/name).write_bytes((work/name).read_bytes())
                     print('Autonomous research bundle published',git(work,'rev-parse','HEAD').stdout.strip());return
             finally:git(root,'worktree','remove','--force',str(work),check=False)
         time.sleep(2)
     raise RuntimeError('publication_race; no_force_push_performed')
 
 if __name__=='__main__':publish()
+

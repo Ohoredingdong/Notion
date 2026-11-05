@@ -49,8 +49,31 @@ def snapshot_time(body):
     return None
 
 
-def publish(root, names, message, attempts=12):
+def merge_entry_ledger(old, new):
+    records = {}
+    order = []
+    for body in (old or b'', new):
+        for line in body.decode('utf-8').splitlines():
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            key = value.get('id') if isinstance(value, dict) else None
+            if not isinstance(key, str) or not key:
+                raise ValueError('entry_ledger_record_missing_id')
+            if key in records and records[key] != value:
+                raise ValueError('conflicting_immutable_entry_record')
+            if key not in records:
+                records[key] = value
+                order.append(key)
+    return (''.join(json.dumps(records[key], ensure_ascii=False, allow_nan=False, separators=(',', ':')) + '\n' for key in order)).encode()
+
+
+def publish(root, names, message, attempts=12, branch='main', append_ledgers=()):
     root = Path(root).resolve()
+    if not branch or branch.startswith('-') or git(root, 'check-ref-format', 'refs/heads/' + branch, check=False).returncode:
+        raise ValueError('Invalid explicit publication branch')
+    if any(name != 'stock-entry-ledger.jsonl' for name in append_ledgers):
+        raise ValueError('Only the immutable entry-plan ledger is supported here')
     payload, baseline = {}, {}
     for name in names:
         path = Path(name)
@@ -64,15 +87,18 @@ def publish(root, names, message, attempts=12):
         old = revision_bytes(root, "HEAD", name)
         if body != old:
             payload[name], baseline[name] = body, old
-    if not payload:
+    ledgers = {name: (root / name).read_bytes() for name in append_ledgers}
+    for name, body in ledgers.items():
+        merge_entry_ledger(None, body)  # Validate before creating any worktree.
+    if not payload and not ledgers:
         print("No generated data changes to publish.")
         return None
 
     for attempt in range(attempts):
-        git(root, "fetch", "origin", "main")
+        git(root, "fetch", "origin", branch)
         worktree = Path(tempfile.mkdtemp(prefix="widget-data-publish-"))
         worktree.rmdir()
-        git(root, "worktree", "add", "--detach", str(worktree), "origin/main")
+        git(root, "worktree", "add", "--detach", str(worktree), "origin/" + branch)
         try:
             for name, body in payload.items():
                 remote = revision_bytes(worktree, "HEAD", name)
@@ -88,14 +114,16 @@ def publish(root, names, message, attempts=12):
                 target = worktree / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(body)
+            for name, body in ledgers.items():
+                (worktree / name).write_bytes(merge_entry_ledger(revision_bytes(worktree, 'HEAD', name), body))
             git(worktree, "config", "user.name", "github-actions[bot]")
             git(worktree, "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
-            git(worktree, "add", "--", *payload)
+            git(worktree, "add", "--", *payload, *ledgers)
             if git(worktree, "diff", "--cached", "--quiet", check=False).returncode == 0:
                 print("Snapshot already published.")
                 return None
             git(worktree, "commit", "-m", message)
-            result = git(worktree, "push", "origin", "HEAD:main", check=False)
+            result = git(worktree, "push", "origin", "HEAD:" + branch, check=False)
             if result.returncode == 0:
                 sha = git(worktree, "rev-parse", "HEAD").stdout.strip()
                 print(f"Published {len(payload)} data files: {sha}")
@@ -114,10 +142,13 @@ def publish(root, names, message, attempts=12):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--message", required=True)
+    parser.add_argument("--branch", default='main', help='Explicit destination branch; default remains main')
+    parser.add_argument("--append-ledger", action='append', default=[], choices=['stock-entry-ledger.jsonl'])
     parser.add_argument("files", nargs="+")
     args = parser.parse_args()
-    publish(Path.cwd(), args.files, args.message)
+    publish(Path.cwd(), args.files, args.message, branch=args.branch, append_ledgers=args.append_ledger)
 
 
 if __name__ == "__main__":
     main()
+

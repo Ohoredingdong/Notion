@@ -17,14 +17,14 @@ ROOT = Path(__file__).resolve().parent.parent
 DEST = ROOT / "stock-radar-accuracy-audit.json"
 
 
-def read(name: str):
-    path = ROOT / name
+def read(name: str, root=ROOT):
+    path = Path(root) / name
     with path.open(encoding="utf-8") as f:
         return json.load(f)
 
 
-def lines(name: str):
-    with (ROOT / name).open(encoding="utf-8") as f:
+def lines(name: str, root=ROOT):
+    with (Path(root) / name).open(encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
@@ -46,18 +46,20 @@ def fail_if(condition, message, errors):
         errors.append(message)
 
 
-def report():
-    learning = read("stock-forecast-learning.json")
-    forecasts = read("stock-direction-forecast.json")
-    market = read("stock-market-context.json")
-    chart = read("stock-radar-chart-data.json")
-    opportunity = read("stock-opportunity-summary.json")
-    cases = read("stock-investment-cases-summary.json")
-    entry = read("stock-entry-plan-summary.json")
-    observed = lines("stock-forecast-outcomes.jsonl")
+def report(root=ROOT, now=None):
+    learning = read("stock-forecast-learning.json", root)
+    forecasts = read("stock-direction-forecast.json", root)
+    market = read("stock-market-context.json", root)
+    chart = read("stock-radar-chart-data.json", root)
+    opportunity = read("stock-opportunity-summary.json", root)
+    cases = read("stock-investment-cases-summary.json", root)
+    entry = read("stock-entry-plan-summary.json", root)
+    observed = lines("stock-forecast-outcomes.jsonl", root)
 
     errors = []
     warnings = []
+    fail_if(not learning.get("generated_at") or learning.get("generated_at") != forecasts.get("generated_at"),
+            "Forecast and learning snapshots have different source timestamps", errors)
     overall = learning["overall"]
     policy = learning["policy"]
     n = int(overall["samples"])
@@ -118,7 +120,7 @@ def report():
 
     forecast_issues = []
     statuses = {}
-    now = datetime.now(timezone.utc)
+    now = now or datetime.now(timezone.utc)
     for pred in forecasts.get("records", []):
         st = pred.get("status", "missing")
         statuses[st] = statuses.get(st, 0)+1
@@ -278,15 +280,17 @@ def report():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="Validate without editing the report")
+    parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args()
-    result = report()
+    result = report(args.root)
     if not result["data_integrity"]["check_passed"]:
         raise SystemExit("Accuracy audit failed: " + "; ".join(result["data_integrity"]["errors"]))
     wire = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     if not args.check:
-        if not DEST.exists() or DEST.read_text(encoding="utf-8") != wire:
-            DEST.write_text(wire, encoding="utf-8")
-            print("Updated", DEST.name)
+        dest = args.root / DEST.name
+        if not dest.exists() or dest.read_text(encoding="utf-8") != wire:
+            dest.write_text(wire, encoding="utf-8")
+            print("Updated", dest.name)
         else:
             print("Audit report unchanged")
     summary = {
@@ -302,3 +306,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

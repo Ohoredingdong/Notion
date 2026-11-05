@@ -5,6 +5,7 @@ import json, math, re, tempfile
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from zoneinfo import ZoneInfo
+from market_data_utils import market_session_clock
 UTC=dt.timezone.utc
 INDEX=[('^KS11','코스피','KR','KRW'),('^KQ11','코스닥','KR','KRW'),('^IXIC','나스닥','US','USD'),('^GSPC','S&P 500','US','USD')]
 def build(root=Path('.')):
@@ -16,10 +17,7 @@ def build(root=Path('.')):
     calendars={m:xc.get_calendar(n,start=f'{now.year-1}-01-01',end=f'{now.year+1}-12-31') for m,n in [('KR','XKRX'),('US','XNYS')]}
     cutoff={}
     for market,cal in calendars.items():
-        local=now.astimezone(ZoneInfo('Asia/Seoul' if market=='KR' else 'America/New_York'))
-        label=cal.date_to_session(local.date().isoformat(),direction='previous')
-        if cal.session_close(label).to_pydatetime()+dt.timedelta(minutes=30)>now: label=cal.previous_session(label)
-        cutoff[market]=label.date().isoformat()
+        cutoff[market]=market_session_clock(market,now,calendar=cal)['expected_session']
     specs=[dict(symbol=s,name=n,market=m,currency=c,provider=s) for s,n,m,c in INDEX]
     specs += [dict(symbol=str(r['symbol']),name=r['name'],market=r['market'],currency=r.get('currency'),provider=r.get('source_symbol') or r['symbol']) for r in raw['companies'] if r.get('market') in calendars]
     specs=list({r['symbol']:r for r in specs}.values())
@@ -48,3 +46,4 @@ def build(root=Path('.')):
     (root/'stock-radar-chart-data.json').write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'),allow_nan=False)+'\n')
     print(json.dumps({'chart_cache':payload['counts'],'cutoff':cutoff},ensure_ascii=False))
 if __name__=='__main__':build()
+

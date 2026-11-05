@@ -1,7 +1,11 @@
 """Integrate case view, terminology and strict proof; preserve filters and training."""
 from pathlib import Path
 import hashlib,re,subprocess,sys
+from verify_stock_canonical_pipeline import verify_canonical
 root=Path('.')
+if verify_canonical(root):
+ print('Canonical dashboard evidence integration verified; existing UI and source data preserved.')
+ raise SystemExit(0)
 subprocess.run([sys.executable,'scripts/install_stock_term_labels.py'],check=True)
 subprocess.run([sys.executable,'scripts/install_stock_strict_green.py'],check=True)
 def replace_once(s,a,b):
@@ -45,3 +49,4 @@ for name in ('stock-radar-v8.js','stock-radar-v9.js','stock-investment-cases.js'
 subprocess.run([sys.executable,'scripts/install_stock_decision_guide.py'],check=True)
 subprocess.run([sys.executable,'scripts/install_stock_radar_v8.py'],check=True)
 print('Strict green view, term+meaning and market-to-company guide installed; source figures and training unchanged.')
+

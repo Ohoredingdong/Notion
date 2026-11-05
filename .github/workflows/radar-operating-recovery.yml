@@ -1,0 +1,134 @@
+name: Radar Operating Data Recovery
+on:
+  push:
+    branches: [fix/radar-integrity-20261105]
+    paths: ['.github/radar-operating-recovery-request.json']
+permissions:
+  contents: write
+concurrency:
+  group: radar-operating-recovery-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate the explicit branch recovery request
+        id: request
+        run: |
+          python - <<'PY'
+          import json,os
+          request=json.load(open('.github/radar-operating-recovery-request.json'))
+          branch=os.environ['GITHUB_REF_NAME']
+          if branch!='fix/radar-integrity-20261105' or request.get('branch')!=branch:
+              raise SystemExit('Recovery is restricted to the explicitly requested repair branch.')
+          if request.get('operation')!='refresh-operating-radar':
+              raise SystemExit('Explicit operating-radar recovery request missing.')
+          mode=request.get('mode','refresh')
+          if mode not in ('refresh','verify-only'):
+              raise SystemExit('Unsupported recovery mode')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('collect='+('true' if mode=='refresh' else 'false')+'\n')
+          PY
+      - name: Install bounded source readers and exchange calendars
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'beautifulsoup4==4.14.3' 'requests>=2.32,<3'
+      - name: Verify session boundaries, stale-data detection and publication races
+        run: |
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+          python -m unittest scripts.test_market_context -v
+          python scripts/test_stock_opportunities.py
+          python scripts/test_stock_opportunity_filings.py
+          python scripts/test_stock_opportunity_dates.py
+          python scripts/test_stock_discovery_v9.py
+          python scripts/test_stock_investment_cases.py
+          python scripts/test_stock_strict_green.py
+          python scripts/verify_stock_canonical_pipeline.py
+      - name: Collect current detailed research and matching completed-session charts
+        if: steps.request.outputs.collect == 'true'
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          python scripts/run_stock_research_v9.py
+          python scripts/finalize_stock_opportunities.py
+          python scripts/validate_stock_opportunity_dates.py
+          python scripts/curate_stock_decisions_v9.py
+          python scripts/build_stock_radar_chart_cache.py
+      - name: Collect actual market context, news and calendar events
+        if: steps.request.outputs.collect == 'true'
+        run: |
+          python scripts/run_market_context.py
+          python scripts/update-news-link-hub.py
+          python scripts/update-market-events.py
+          python scripts/build_stock_event_outlook.py
+      - name: Rebuild source-aligned research and entry evidence
+        if: steps.request.outputs.collect == 'true'
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          python scripts/build_stock_investment_cases.py
+          python scripts/check_stock_investment_cases.py
+          python scripts/stock_reading_depth.py
+          python scripts/stock_strict_green.py
+          python scripts/build_stock_decision_guide.py
+          python scripts/build_stock_recommendations.py
+          python scripts/build_stock_entry_plan.py
+      - name: Publish the coherent operating bundle to the repair branch only
+        if: steps.request.outputs.collect == 'true'
+        run: >-
+          python scripts/publish_widget_data.py --branch "$GITHUB_REF_NAME"
+          --message 'data: refresh completed-session radar evidence on repair branch'
+          --append-ledger stock-entry-ledger.jsonl
+          stock-opportunity-data.json stock-opportunity-summary.json
+          stock-opportunity-tests.json stock-opportunity-filing-tests.json
+          stock-opportunity-date-tests.json stock-opportunity-extension-audit.json
+          stock-opportunity-discovery.json stock-opportunity-discovery-tests.json
+          stock-radar-chart-data.json stock-market-context.json news-link-data.json
+          market-events-data.json stock-event-outlook.json
+          stock-investment-cases.json stock-investment-cases-summary.json
+          stock-reading-depth.json stock-reading-depth-summary.json
+          stock-green-review.json stock-green-review-summary.json stock-green-tests.json
+          stock-decision-guide.json stock-decision-guide-summary.json
+          stock-recommendations.json stock-recommendations-summary.json
+          stock-entry-plan.json stock-entry-plan-summary.json
+      - name: Inspect the actual latest repair-branch bundle including parallel finance recovery
+        run: |
+          git fetch origin "$GITHUB_REF_NAME"
+          python - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          ref='origin/'+os.environ['GITHUB_REF_NAME']
+          tree=subprocess.run(['git','ls-tree','-r','--name-only',ref],check=True,text=True,capture_output=True).stdout.splitlines()
+          for name in tree:
+              if '/' not in name and (name.startswith('stock-') or name in ('news-link-data.json','market-events-data.json')) and name.endswith(('.json','.jsonl')):
+                  result=subprocess.run(['git','show',ref+':'+name],check=True,capture_output=True)
+                  Path(name).write_bytes(result.stdout)
+          PY
+          python scripts/audit_stock_radar_accuracy.py
+          python scripts/monitor-stock-value-radar.py
+          python scripts/publish_widget_data.py --branch "$GITHUB_REF_NAME" --message 'audit: verify the current repair-branch radar bundle' stock-radar-accuracy-audit.json stock-radar-health.json
+      - name: Require current operating and financial source contracts
+        run: |
+          python -m scripts.validate_stock_financial_coverage
+          python scripts/monitor-stock-value-radar.py --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-operating-recovery-evidence
+          retention-days: 14
+          path: |
+            stock-radar-health.json
+            stock-radar-accuracy-audit.json
+            stock-opportunity-summary.json
+            stock-radar-chart-data.json
+            stock-market-context.json
+            news-link-data.json
+            stock-event-outlook.json
+            stock-investment-cases-summary.json
+            stock-entry-plan-summary.json

@@ -3,6 +3,10 @@ The companion is explicitly called, not another mutation-observer overlay.
 """
 from pathlib import Path
 import hashlib,re,subprocess
+from verify_stock_canonical_pipeline import verify_canonical
+if verify_canonical():
+ print('Canonical dashboard already consumes strict evidence; legacy HTML mutation is not applicable.')
+ raise SystemExit(0)
 p=Path('assets/stock-investment-cases.js');s=p.read_text()
 def replace(a,b):
  global s
@@ -37,3 +41,4 @@ h=h[:tag.start()]+'<script src="./assets/stock-green-review.js?v='+digest+'" def
 h=h.replace('>지금 살 만한 편</button>','>엄격 검증 통과</button>');p.write_text(h)
 for name in ('stock-green-review.js','stock-investment-cases.js','stock-radar-v8.js'):subprocess.run(['node','--check','assets/'+name],check=True)
 print('Strict green integrated: no qualifying packet, no green; technical-only conditions stay blue')
+

@@ -1,0 +1,116 @@
+name: Radar Universe, AI and News PR QA
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-*.js'
+      - 'scripts/build_stock_universe_catalog.py'
+      - 'scripts/run_stock_extended_forecasts.py'
+      - 'scripts/build_stock_financial_coverage.py'
+      - 'scripts/test_stock_financial_coverage.py'
+      - 'scripts/test_stock_universe_catalog.py'
+      - 'scripts/test_stock_extended_forecasts.py'
+      - 'scripts/test_stock_universe_browser.py'
+      - 'scripts/compare_radar_before_after.py'
+      - '.github/workflows/*stock*'
+      - '.github/workflows/radar-universe-pr-qa.yml'
+  push:
+    branches: [feat/radar-universe-ai-news-20261105, fix/radar-integrity-20261105]
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-*.js'
+      - 'stock-universe-catalog.json'
+      - 'stock-financial-coverage.json'
+      - 'stock-extended-direction-forecast.json'
+      - 'scripts/test_stock_universe_browser.py'
+      - 'scripts/test_stock_financial_coverage.py'
+      - 'scripts/validate_stock_financial_coverage.py'
+      - 'scripts/test_stock_catalog_integrity.cjs'
+      - 'scripts/test_stock_forecast_paper.py'
+      - '.github/workflows/radar-universe-pr-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: radar-universe-pr-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  code-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate actual catalogue and current stored financial data integrity
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          c=json.loads(Path("stock-universe-catalog.json").read_text(encoding="utf-8"))
+          assert c["version"]=="radar-universe-catalog-v1"
+          assert c["identifier_policy"]=="kr-six-character-alphanumeric-v2"
+          assert c["counts"]["total"]==len(c["items"]) and len(c["items"])>=1000
+          assert c["counts"]["KR"]>1000 and c["counts"]["US"]>1000
+          assert len({(x["country"],x["symbol"]) for x in c["items"]})==len(c["items"])
+          d=json.loads(Path("stock-direction-forecast.json").read_text())
+          assert d["status"]=="research_only" and d["real_time_connected"] is False
+          f=Path("stock-financial-coverage.json")
+          assert f.exists(), "Official financial feed missing; do not claim financial coverage"
+          verified=json.loads(f.read_text(encoding="utf-8"))
+          from scripts.validate_stock_financial_coverage import validate
+          validate(c,verified)
+          assert verified["version"]=="official-financial-coverage-v1"
+          assert verified["universe"]["total"]==c["counts"]["total"]
+          assert verified["processed"]<=c["counts"]["total"]
+          assert sum(verified["financial_available"].values())>=1, "No official financial statements yet"
+          print("OFFICIAL_FINANCIAL_COUNTS",verified["financial_available"],"of",c["counts"]["total"])
+          print("CATALOG_PROVENANCE_AND_CORE_RESEARCH_SAFE",c["counts"])
+          PY
+      - name: Run source, rotation, signal/valuation tests
+        run: |
+          python -m unittest scripts.test_stock_universe_catalog scripts.test_stock_extended_forecasts scripts.test_stock_financial_coverage -v
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_paper -v
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-catalog-ui.js
+          node --check assets/stock-world-brief.js
+          node scripts/test_stock_evidence_review.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+          node scripts/test_stock_catalog_integrity.cjs
+          node scripts/test_stock_radar_freshness.cjs
+      - name: Install Chromium (browser runs only on a local server)
+        run: |
+          python -m pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+      - name: Checkout production main reference (read-only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'main' }}
+          path: production-reference
+          persist-credentials: false
+      - name: Browser acceptance for 8k-company catalogue, real news and Notion sizes
+        run: |
+          python -m http.server 8765 >/tmp/radar-universe-qa.log 2>&1 &
+          python scripts/test_stock_universe_browser.py
+          python scripts/test_stock_detail_v6.py
+      - name: Compare unchanged home and detailed stock views before/after
+        run: |
+          python -m pip install 'Pillow==11.3.0'
+          python -m http.server 8776 --directory production-reference >/tmp/radar-baseline.log 2>&1 &
+          python scripts/compare_radar_before_after.py --before http://127.0.0.1:8776 --after http://127.0.0.1:8765 --real-data . --out radar-universe-evidence
+      - name: Save screen captures and exact error report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-universe-pr-evidence
+          path: |
+            radar-universe-evidence/
+            detail-v6-artifacts/
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,6 +1,10 @@
 name: Audit Stock Radar Accuracy
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Stock Prospective Forecasts', 'Update Stock Opportunities', 'Stock Investment Cases', 'Stock Entry Plan']
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -13,6 +17,8 @@ on:
       - "stock-investment-cases-summary.json"
       - "stock-entry-plan-summary.json"
       - "scripts/audit_stock_radar_accuracy.py"
+      - "scripts/publish_stock_radar_audit.py"
+      - "scripts/test_stock_data_pipeline.py"
       - ".github/workflows/audit-stock-radar-accuracy.yml"
   schedule:
     # Local Seoul 09:15 and 17:30 KST; audit only, no trade decisions.
@@ -25,6 +31,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify-and-publish:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -35,18 +42,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: Verify audit source syntax
-        run: python -m py_compile scripts/audit_stock_radar_accuracy.py
+        run: |
+          python -m py_compile scripts/audit_stock_radar_accuracy.py scripts/publish_stock_radar_audit.py
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
       - name: Recompute independent model audit and integrity gates
         run: python scripts/audit_stock_radar_accuracy.py
-      - name: Publish accuracy report only
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- stock-radar-accuracy-audit.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "audit: refresh evidence-gated Stock Radar accuracy report"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
-            sleep $((attempt*3))
-          done
-          exit 1
+      - name: Recompute and publish against latest main on every retry
+        run: python scripts/publish_stock_radar_audit.py
+

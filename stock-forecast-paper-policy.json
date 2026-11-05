@@ -1,0 +1,29 @@
+{
+  "version": "forecast-paper-evidence-1.0",
+  "registered_at": "2026-11-05T10:59:37.016627+00:00",
+  "rules": {
+    "strategy": "up_long_else_cash",
+    "benchmarks": [
+      "always_cash",
+      "always_long",
+      "frozen_baseline_long_else_cash"
+    ],
+    "maximum_shares": 1,
+    "minimum_registration_lead_seconds": 60,
+    "entry_window_seconds": 60,
+    "exit_window_seconds_before_target_end": 60,
+    "maximum_quote_latency_seconds": 5,
+    "maximum_spread_bps": 50,
+    "entry_selection": "first_received_quote_in_fixed_window",
+    "exit_selection": "first_received_quote_in_fixed_preclose_window",
+    "bad_first_entry_quote": "cancel_without_replacement",
+    "bad_or_missing_exit_quote": "unresolved_not_assumed_fill",
+    "cost_schedule_must_be_frozen_before_target": true,
+    "slippage_is_explicit_assumption": true,
+    "orders_enabled": false,
+    "strict_green_override": false
+  },
+  "source_commit": null,
+  "purpose": "orderless_research_only",
+  "id": "fbb4762e47602d648641ea5b027093cda37d229944c71ce3f558e030c331e6ad"
+}

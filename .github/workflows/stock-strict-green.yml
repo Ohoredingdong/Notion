@@ -11,6 +11,7 @@ on:
       - 'scripts/stock_strict_green.py'
       - 'scripts/test_stock_strict_green.py'
       - 'scripts/install_stock_strict_green.py'
+      - 'scripts/verify_stock_canonical_pipeline.py'
       - 'assets/stock-green-review.js'
       - 'stock-research-review-records.json'
       - '.github/workflows/stock-strict-green.yml'
@@ -38,7 +39,7 @@ jobs:
       - name: Publish source-bound strict opinions and audit trail
         run: >-
           python scripts/publish_widget_data.py --message 'audit: require all strict due-diligence checks before green' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json
-      - name: Install gated labels and plain-language explanations
+      - name: Verify gated canonical view without applying legacy HTML replacements
         run: python scripts/publish_stock_investment_cases.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -66,3 +67,4 @@ jobs:
             scripts/install_stock_term_labels.py
             scripts/install_stock_decision_guide.py
             scripts/publish_stock_investment_cases.py
+

@@ -2,11 +2,17 @@ name: Monitor Stock Radar Health
 on:
   workflow_dispatch:
   schedule:
-    - cron: "23 0,4,8,12,16,20 * * *" # Every 4 hours (UTC)
+    - cron: "23 * * * *"
+  workflow_run:
+    workflows: ['Update Stock Opportunities', 'Stock Investment Cases', 'Stock Official Financial Coverage']
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
       - "scripts/monitor-stock-value-radar.py"
+      - "scripts/market_data_utils.py"
+      - "scripts/test_stock_data_pipeline.py"
       - ".github/workflows/monitor-stock-value-radar.yml"
 permissions:
   contents: write
@@ -16,28 +22,25 @@ concurrency:
   cancel-in-progress: false
 jobs:
   monitor:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Inspect timestamps, data coverage, source quality, anomalies
+      - name: Install exchange session calendar
+        run: pip install 'exchange-calendars==4.13.1'
+      - name: Test stale sources, missing feeds and closed-market handling
+        run: python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+      - name: Inspect canonical feeds and actual source sessions
         run: python scripts/monitor-stock-value-radar.py
       - name: Write independent health heartbeat
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stock-radar-health.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "ops: update independent stock data health heartbeat"
-          for attempt in 1 2 3 4; do
-            git pull --rebase origin main && git push && exit 0
-            sleep $((attempt*2))
-          done
-          exit 1
+        run: >-
+          python scripts/publish_widget_data.py --message 'ops: inspect canonical radar feeds and completed sessions' stock-radar-health.json
       - name: Open or close actionable GitHub alert issue
         shell: bash
         env:
@@ -60,3 +63,12 @@ jobs:
               gh issue close "$issue" --comment "데이터 갱신 경보가 해제되었습니다. 품질경고는 위젯에서 계속 확인하세요."
             fi
           fi
+      - name: Fail when required canonical data remains broken
+        run: |
+          python - <<'PY'
+          import json
+          report=json.load(open('stock-radar-health.json'))
+          if report['status']=='error':
+              raise SystemExit('Canonical feed health failed; published report and source-specific issues are available.')
+          PY
+

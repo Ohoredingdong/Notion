@@ -1,0 +1,50 @@
+name: Stock Universe Source Check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stock-universe-source-check-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official-directory identifiers without network
+        run: python -m unittest scripts.test_stock_universe_catalog -v
+      - name: Fetch attributed official listing sources
+        env:
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+        run: python scripts/build_stock_universe_catalog.py
+      - name: Validate complete sources and unmodified identifiers
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.build_stock_universe_catalog import IDENTIFIER_POLICY, korean_symbol
+          d=json.loads(Path('stock-universe-catalog.json').read_text(encoding='utf-8'))
+          assert d['identifier_policy']==IDENTIFIER_POLICY
+          assert d['status']=='complete', 'Source failures: do not publish a smaller catalogue'
+          assert d['counts']['total']==len(d['items'])>=1000
+          assert len({(x['country'],x['symbol']) for x in d['items']})==len(d['items'])
+          assert all(korean_symbol(x['symbol'])==x['symbol']==x.get('source_symbol')
+                     for x in d['items'] if x['country']=='KR')
+          print('VALIDATED_OFFICIAL_CATALOG',d['counts'])
+          PY
+      # Financial Coverage is the sole publisher of the aligned catalogue and
+      # verified accounts. This diagnostic cannot invalidate its scope snapshot.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-universe-source-evidence
+          path: stock-universe-catalog.json
+          retention-days: 7
+          if-no-files-found: warn

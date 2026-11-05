@@ -8,6 +8,8 @@ on:
       - 'scripts/stock_autopilot*.cjs'
       - 'scripts/run_stock_forecasts.py'
       - 'scripts/publish_stock_forecasts.py'
+      - 'scripts/audit_stock_radar_accuracy.py'
+      - 'scripts/test_stock_data_pipeline.py'
       - 'scripts/verify_stock_forecast_public.py'
       - 'scripts/test_stock_forecast*'
       - 'scripts/test_stock_autopilot*'
@@ -74,6 +76,8 @@ jobs:
         run: |
           PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
           PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+          python -m unittest discover -s scripts -p 'test_stock_forecast_paper.py' -v
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
           python scripts/audit_stock_forecast_independent.py --self-test
           python scripts/stock_forecast_sources.py
           node --check assets/stock-forecast.js
@@ -108,6 +112,22 @@ jobs:
       - name: Preserve public availability timestamps
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
         run: python scripts/publish_stock_forecasts.py
+      - name: Request build of preregistered paper plans
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify the exact public paper policy and plan bytes
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        run: python scripts/verify_stock_forecast_public.py --paper-only
+      - name: Preserve paper publication evidence with its matching audit
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        run: python scripts/publish_stock_forecasts.py
+      - name: Request public build of verified paper evidence
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
       - uses: actions/upload-artifact@v4
         if: always() && steps.market_gate.outputs.active == 'true'
         with:
@@ -119,8 +139,12 @@ jobs:
             stock-forecast-learning*.json
             stock-forecast-autopilot.json
             stock-forecast-source-state.json
+            stock-forecast-paper-*.json
+            stock-forecast-shadow-comparison.json
+            stock-radar-accuracy-audit.json
             forecast-*.png
             scripts/stock_forecast*.py
             scripts/test_stock_autopilot.py
             scripts/audit_stock_forecast_independent.py
             scripts/run_stock_forecasts.py
+

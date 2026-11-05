@@ -1,0 +1,136 @@
+name: Stock Official Financial Coverage
+on:
+  workflow_dispatch:
+    inputs:
+      kr_batch:
+        description: 'Korean issuer request budget (0..3000)'
+        required: true
+        default: '240'
+        type: string
+      us_batch:
+        description: 'US issuer request budget (0..120); requires real SEC contact'
+        required: true
+        default: '60'
+        type: string
+  schedule:
+    - cron: '11 23 * * 1-5'
+  # A separate reviewed marker commit starts the initial recovery once. Ordinary
+  # code/test commits do not launch heavy collectors or race the reviewed source.
+  push:
+    branches: [fix/radar-integrity-20261105]
+    paths: ['.github/radar-financial-recovery-request.json']
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: stock-official-data-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/radar-integrity-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate request budgets and pin observed source revision
+        env:
+          RADAR_KR_BATCH: ${{ inputs.kr_batch || '240' }}
+          RADAR_US_BATCH: ${{ inputs.us_batch || '60' }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          request={'kr_batch':os.environ['RADAR_KR_BATCH'],'us_batch':os.environ['RADAR_US_BATCH']}
+          if os.environ['GITHUB_EVENT_NAME']=='push':
+              request=json.loads(Path('.github/radar-financial-recovery-request.json').read_text())
+          kr,us=int(request['kr_batch']),int(request['us_batch'])
+          assert 0<=kr<=3000 and 0<=us<=120 and kr+us>0, 'Unsafe or empty collection budget'
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write(f'RADAR_KR_BUDGET={kr}\nRADAR_US_BUDGET={us}\n')
+              out.write('RADAR_SOURCE_SHA='+subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()+'\n')
+          PY
+      - name: Reproduce and verify identifier, issuer, period and failure regressions
+        run: python -m unittest scripts.test_stock_universe_catalog scripts.test_stock_financial_coverage -v
+      - name: Rebuild official catalogue before collecting financial records
+        env:
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+        run: |
+          python scripts/build_stock_universe_catalog.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('stock-universe-catalog.json').read_text())
+          assert d['identifier_policy']=='kr-six-character-alphanumeric-v2'
+          assert d['status']=='complete', 'Incomplete source refresh; keep published catalogue and accounts'
+          assert d['counts']['KR']>1000 and d['counts']['US']>1000
+          print('FRESH_CATALOGUE_FOR_FINANCIAL_COLLECTION',d['counts'])
+          PY
+      - name: Collect bounded official accounts and preserve forensic quarantine
+        id: collect
+        continue-on-error: true
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          DART_USER_AGENT: ${{ vars.DART_USER_AGENT }}
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+        run: python scripts/build_stock_financial_coverage.py --us-batch "$RADAR_US_BUDGET" --kr-batch "$RADAR_KR_BUDGET"
+      - name: Validate aligned catalogue and every displayable issuer identity
+        run: python -m scripts.validate_stock_financial_coverage
+      - name: Publish a coherent snapshot only if its source was not superseded
+        id: publish
+        run: |
+          git fetch origin "$GITHUB_REF_NAME"
+          RADAR_CHECKED_REMOTE_SHA="$(git rev-parse "origin/$GITHUB_REF_NAME")"
+          if ! git diff --quiet "$RADAR_SOURCE_SHA" "$RADAR_CHECKED_REMOTE_SHA" -- \
+            scripts/build_stock_universe_catalog.py scripts/build_stock_financial_coverage.py \
+            scripts/validate_stock_financial_coverage.py .github/workflows/stock-financial-coverage.yml \
+            stock-universe-catalog.json stock-financial-coverage.json data-quarantine/stock-financial-coverage.json; then
+            echo 'Collector inputs changed during execution; refusing a stale publication'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-universe-catalog.json stock-financial-coverage.json
+          if [ -f data-quarantine/stock-financial-coverage.json ]; then
+            git add data-quarantine/stock-financial-coverage.json
+          fi
+          if git diff --cached --quiet; then
+            echo 'Official data unchanged'
+            exit 0
+          fi
+          git commit -m "data: refresh official issuer identities and financial coverage"
+          # Rebase only onto the revision checked above. A later remote change
+          # must reject the fast-forward push, not bypass the source guard.
+          git rebase "$RADAR_CHECKED_REMOTE_SHA"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo 'published=true' >> "$GITHUB_OUTPUT"
+      - name: Request existing Pages build for a published main snapshot
+        if: github.ref_name == 'main' && steps.publish.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Report this run honestly even when prior verified accounts survived
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('stock-financial-coverage.json').read_text())
+          print('CURRENT_REFRESH',d['refresh_status'],d['run'],'provider_readiness',d['provider_readiness'])
+          if d['current_run_failed']:
+              raise SystemExit('Current provider/identity verification failed; preserved historical counts are not a successful refresh')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-stock-financial-evidence
+          path: |
+            stock-universe-catalog.json
+            stock-financial-coverage.json
+            data-quarantine/stock-financial-coverage.json
+          retention-days: 7
+          if-no-files-found: warn

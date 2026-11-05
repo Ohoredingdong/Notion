@@ -14,33 +14,36 @@ function fxContext(){return window.StockRadarV2Bridge?.snapshot?.()||{data:{},se
 function fxHelpers(){return window.StockRadarV2Bridge?.helpers||{};}
 
 /* A future valid forecast must outrank a later no-call snapshot. */
+/* Live target selection from independent core and rolling extended research. */
 function fxRecord(c,ctx){
  const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,""),now=Date.now();
- const rows=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const primary=(ctx.data?.direction?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
+ const extended=(ctx.data?.extended?.records||[]).filter(r=>String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key);
  const valid=r=>{
   const p=r?.probabilities||{},start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
   return r?.status==="research_prediction"&&Number.isFinite(start)&&Number.isFinite(end)&&start<end&&end>now&&
    Number.isFinite(issued)&&issued<=now+300000&&issued<=start&&["up","down","flat"].includes(r.direction)&&
-   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&Math.abs(p.up+p.down+p.flat-1)<.025;
+   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&
+   Math.abs(p.up+p.down+p.flat-1)<.025;
  };
- rows.sort((a,b)=>{
-  const x=Date.parse(a.issued_at||""),y=Date.parse(b.issued_at||"");
-  if(Number.isFinite(x)&&Number.isFinite(y))return y-x;
-  return Number(Number.isFinite(y))-Number(Number.isFinite(x));
- });
- return rows.find(valid)||rows.find(r=>r?.status==="research_prediction")||rows[0]||null;
+ const newer=(xs)=>xs.slice().sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
+ const p=newer(primary),e=newer(extended);
+ return p.find(valid)||e.find(valid)||p.find(r=>r?.status==="research_prediction")||
+        e.find(r=>r?.status==="research_prediction")||p[0]||e[0]||null;
 }
 function fxForecastMeta(ctx){
- const d=ctx.data?.direction||{},rows=Array.isArray(d.records)?d.records:[],at=Date.parse(d.generated_at||"");
- const modeled=new Set(rows.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
- const companies=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies:null;
- const tracked=companies?.length??null;
- const active=companies?companies.filter(c=>fxPrediction(c,ctx).active).length:0;
- const age=Number.isFinite(at)?Math.max(0,Math.round((Date.now()-at)/60000)):null;
- return {modeled:modeled.size,tracked,active,age,delayed:age!==null&&age>60,
-  summary:tracked===null?"AI 대상 범위 확인 전":"AI 모델 "+modeled.size+"/"+tracked+"개 기업 · 유효한 예측 "+active+"개"};
+ const data=ctx.data?.direction||{},more=ctx.data?.extended||{},now=Date.now();
+ const records=[...(data.records||[]),...(more.records||[])];
+ const known=new Set(records.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
+ const tracked=ctx.data?.raw?.companies?.length??null;
+ const age=Date.parse(data.generated_at||""),ext=Date.parse(more.generated_at||"");
+ const updated=Math.max(Number.isFinite(age)?age:0,Number.isFinite(ext)?ext:0);
+ const ageMinutes=updated?Math.max(0,Math.round((now-updated)/60000)):null;
+ const active=(ctx.data?.raw?.companies||[]).filter(c=>fxPrediction(c,ctx).active).length;
+ return {modeled:known.size,tracked,active,age:ageMinutes,delayed:ageMinutes!==null&&ageMinutes>180,
+  summary:tracked===null?"AI 모델 범위 확인 전":
+   "AI 연구 이력 "+known.size+"개 기업 · 심층목록 유효 "+active+"/"+tracked+"개"};
 }
-
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
  const audit=ctx.data?.accuracyAudit||null;
@@ -235,7 +238,7 @@ function fxMiniScore(ctx){
 
 function fxNav(ctx){
  const h=fxHelpers(),pages=[["home","홈","home"],["stocks","AI 종목","search"],["stockdetail","종목 분석","chart"],["scenario","시나리오","chart"],["performance","예측 검증","check"],["portfolio","포트폴리오","star"],["monitor","감시","check"]];
- return `<header class="fx-topbar"><div class="fx-brand"><span class="fx-brand-icon">${h.I?.("chart")||"◉"}</span><h1>투자 레이더</h1><span class="fx-mode-badge">저장 종가 · 연구용</span></div><nav class="fx-nav" aria-label="위젯 메뉴">${pages.map(([s,n,ico])=>`<button type="button" class="${ctx.screen===s?"active":""}" data-nr-screen="${s}" aria-current="${ctx.screen===s?"page":"false"}">${h.I?.(ico)||""}${n}</button>`).join("")}</nav><div class="fx-nav-tools"><button type="button" data-nr-screen="news" title="뉴스" aria-label="뉴스">${h.I?.("news")||"▤"}</button><button type="button" data-fx-refresh title="자료 다시 불러오기" aria-label="자료 새로고침">↻</button><button type="button" data-nr-screen="settings" title="설정" aria-label="설정">${h.I?.("settings")||"⚙"}</button></div></header>`;
+ return `<header class="fx-topbar"><div class="fx-brand"><span class="fx-brand-icon">${h.I?.("chart")||"◉"}</span><h1>투자 레이더</h1><span class="fx-mode-badge">저장 종가 · 연구용</span></div><nav class="fx-nav" aria-label="위젯 메뉴">${pages.map(([s,n,ico])=>`<button type="button" class="${ctx.screen===s?"active":""}" data-nr-screen="${s}" aria-current="${ctx.screen===s?"page":"false"}">${h.I?.(ico)||""}${n}</button>`).join("")}</nav><div class="fx-nav-tools"><button type="button" data-nr-screen="news" title="국내외 경제·정책·기업 상황판" aria-label="국내외 경제·정책·기업 상황판">${h.I?.("news")||"▤"}</button><button type="button" data-fx-refresh title="자료 다시 불러오기" aria-label="자료 새로고침">↻</button><button type="button" data-nr-screen="settings" title="설정" aria-label="설정">${h.I?.("settings")||"⚙"}</button></div></header>`;
 }
 
 function fxSteps(ctx){
@@ -509,7 +512,11 @@ function fxHome(ctx){
 }
 function fxStockPage(ctx){
  const pool=fxUniverse(ctx);
- return `<div class="fx-intro"><div><h2>AI 종목 신호</h2><p>${pool.length}개 검색 결과 · 가격 방향 연구 분포이며 매수 추천이 아닙니다.</p></div><span class="fx-stamp">실시간 호가 아님</span></div><div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}`;
+ return `<div class="fx-stock-directory-page">
+ <div class="fx-intro"><div><h2>국내·미국 상장종목 검색</h2><p>공식 상장명부와 가격·재무제표 심층 분석 ${pool.length}개를 구분합니다.</p></div><span class="fx-stamp">저장된 데이터 · 실시간 호가 아님</span></div>
+ ${window.StockCatalogUI?.panel?.(ctx)||'<section class="fx-panel">상장명부 확인 중</section>'}
+ <div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${window.StockCatalogUI?.focus?.(ctx)||fxFocus(ctx)}</div></div>${fxSteps(ctx)}
+ </div>`;
 }
 
 function fxAmount(v,c){
@@ -646,7 +653,7 @@ function fxDetail(ctx){
     <section class="fx-panel fx-d-hero fx-d-ai-panel">
      <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} AI 방향 분석</h3><small>상승·횡보·하락을 추정한 연구 결과입니다.</small></div><span class="fx-d-ai-badge">연구용</span></div>
      <div class="fx-d-ai-body">${ai}</div>
-     <p class="fx-d-research-note">${fxEscape(fxForecastMeta(ctx).summary)} · ${ctx.data?.direction?.generated_at?"예측 생성 "+fxEscape(fxHelpers().T?.(ctx.data.direction.generated_at)||"시각 확인 전"):"예측 수집 전"}${fxForecastMeta(ctx).delayed?" · 갱신 지연":""} · 매수 성공률 아님</p>
+     <p class="fx-d-research-note">${fxEscape(fxForecastMeta(ctx).summary)} · ${ctx.data?.direction?.generated_at?"자료 확인 "+fxEscape(fxHelpers().T?.(ctx.data.direction.generated_at)||"시각 확인 전"):"예측 수집 전"}${fxForecastMeta(ctx).delayed?" · 갱신 지연":""} · 매수 성공률 아님</p>
     </section>
     <section class="fx-panel fx-decision-panel fx-d-hero">
      <div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("check")||"◎"} 투자 판단 현황</h3><small>상승 방향 · 가격 매력 · 손익 위험을 함께 비교합니다.</small></div><span class="fx-d-status">${fxEscape(state)}</span></div>
@@ -794,7 +801,7 @@ function fxOutcomes(ctx){
 }
 function fxRender(){
  const ctx=fxContext(),h=fxHelpers(),s=ctx.screen||"home";
- const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?h.renderNews?.():s==="settings"?h.renderSettings?.():fxHome(ctx);
+ const body=s==="home"?fxHome(ctx):s==="stocks"?fxStockPage(ctx):s==="stockdetail"?fxDetail(ctx):s==="scenario"?fxScenario(ctx):s==="performance"?fxPerformance(ctx):s==="monitor"?h.renderMonitor?.():s==="portfolio"?h.renderPortfolio?.():s==="news"?(window.StockWorldBrief?.render?.(ctx)||h.renderNews?.()):s==="settings"?h.renderSettings?.():fxHome(ctx);
  return `<div class="fx-root">${fxNav(ctx)}<div id="source-status" class="fx-source-status" role="status" aria-live="polite">연구용 저장 자료 · 실시간 시세 아님</div><div class="fx-stage ${s==="home"?"fx-stage-home":"fx-stage-other"}" data-screen="${fxEscape(s)}">${body||""}</div></div>`;
 }
 function fxHandleClick(e){
@@ -834,7 +841,7 @@ function fxHandleInput(e){
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261102-v3-viewport'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261105-integrity-v2'};
 const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();

@@ -2,6 +2,17 @@
 from pathlib import Path
 import hashlib,re
 root=Path(__file__).resolve().parents[1]
+main=(root/'stock-value-radar.html').read_text(encoding='utf-8')
+if 'data-custom-radar-ui="flow-v3"' in main:
+    # The canonical dashboard is independently authored. An old theme installer
+    # must verify its entry points, never inject a second renderer into it.
+    for required in ('stock-radar-clean-bridge.js','stock-radar-flow-v2.js'):
+        if required not in main or not (root/'assets'/required).is_file():
+            raise ValueError('canonical_ui_missing_'+required)
+    if 'stock-radar-neutral.js' in main or 'stock-radar-v8.js' in main:
+        raise ValueError('canonical_ui_contains_legacy_renderer')
+    print('CANONICAL_UI_VERIFIED: legacy neutral installer has no writes')
+    raise SystemExit(0)
 legacy=root/'assets/stock-radar-v8.js';code=legacy.read_text()
 marker='// NEUTRAL_WATCH_SYNC'
 if marker not in code:
@@ -25,3 +36,4 @@ for name in ['stock-value-radar.html','assets/stock-radar-v8.html']:
     s=s.replace('<meta name="color-scheme" content="light dark">','<meta name="color-scheme" content="light">')
     p.write_text(s)
 print('NEUTRAL_UI_INSTALLED: operating page and canonical template; investment data/logic untouched')
+

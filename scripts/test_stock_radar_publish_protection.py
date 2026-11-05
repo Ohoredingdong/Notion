@@ -25,7 +25,13 @@ for line in decisions.splitlines():
 
 installer=(ROOT/"scripts/install_stock_radar_v8.py").read_text(encoding="utf-8")
 assert 'data-custom-radar-ui="flow-v3"' in installer
-for name in ("scripts/install_stock_decision_ui.py","scripts/install_stock_audit_ui.py"):
-    assert 'data-custom-radar-ui="flow-v3"' in (ROOT/name).read_text(encoding="utf-8")
+for name in ("scripts/install_stock_decision_ui.py","scripts/install_stock_audit_ui.py",
+             "scripts/install_stock_radar_neutral.py","scripts/install_stock_strict_green.py",
+             "scripts/install_stock_investment_cases.py"):
+    body=(ROOT/name).read_text(encoding="utf-8")
+    assert ('data-custom-radar-ui="flow-v3"' in body or
+            ('from verify_stock_canonical_pipeline import verify_canonical' in body and
+             'if verify_canonical(' in body)), name
 
 print("PASS: automated data collectors cannot stage or replace the independent radar home")
+

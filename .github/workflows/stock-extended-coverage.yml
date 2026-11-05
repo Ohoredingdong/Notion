@@ -1,0 +1,108 @@
+name: Stock Extended Research Coverage
+on:
+  workflow_dispatch:
+  schedule:
+    # Bounded rotation, independent from the core prospective-forecast ledger.
+    - cron: '13,43 0-7,13-22 * * 1-5'
+  push:
+    branches: [fix/radar-integrity-20261105]
+    paths: ['.github/radar-extended-recovery-request.json']
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: stock-extended-coverage-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  research:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/radar-integrity-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin the verified source and bounded request
+        run: |
+          python - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          batch=12
+          if os.environ['GITHUB_EVENT_NAME']=='push':
+              request=json.loads(Path('.github/radar-extended-recovery-request.json').read_text())
+              batch=int(request['batch_size'])
+          assert 1<=batch<=16,'Unbounded extended research request'
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              out.write(f'RADAR_EXTENDED_BATCH={batch}\n')
+              out.write('RADAR_SOURCE_SHA='+subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()+'\n')
+          PY
+      - name: Test source identity, rotation and unverified forecast rejection
+        run: python -m unittest scripts.test_stock_extended_forecasts -v
+      - name: Install market source and model dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Run bounded prospective research from the verified catalogue
+        run: python scripts/run_stock_extended_forecasts.py --batch-size "$RADAR_EXTENDED_BATCH"
+      - name: Validate actual research with issuer identity and no-order disclosure
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('stock-extended-direction-forecast.json').read_text())
+          assert d['version']=='stock-extended-direction-v1'
+          assert d['source_identity_policy']=='kr-six-character-alphanumeric-v2'
+          assert d['automatic_orders'] is False and not d['real_time_connected']
+          assert d['run']['attempted']<=16
+          assert d['run']['no_call']+d['run']['research_prediction']==d['run']['attempted']
+          for row in d['records']:
+              assert row['identity_verified'] is True
+              assert row['source_identity_policy']=='kr-six-character-alphanumeric-v2'
+              assert row['status'] in ('no_call','research_prediction')
+              if row['status']=='no_call':
+                  assert row['probabilities'] is None
+              else:
+                  assert abs(sum(row['probabilities'].values())-1)<.025
+                  assert row.get('target',{}).get('start') and row['target']['end']
+          print('VERIFIED_IDENTIFIER_EXTENDED_RESEARCH',d['run'],d['universe'])
+          PY
+      - name: Publish this branch snapshot without overwriting newer source inputs
+        id: publish
+        run: |
+          git fetch origin "$GITHUB_REF_NAME"
+          RADAR_CHECKED_REMOTE=$(git rev-parse "origin/$GITHUB_REF_NAME")
+          if ! git diff --quiet "$RADAR_SOURCE_SHA" "$RADAR_CHECKED_REMOTE" -- scripts/run_stock_extended_forecasts.py scripts/stock_forecast_model.py scripts/stock_forecast_sources.py stock-universe-catalog.json stock-opportunity-summary.json stock-extended-direction-forecast.json data-quarantine/stock-extended-direction-forecast.json .github/workflows/stock-extended-coverage.yml; then
+            echo 'Extended research inputs changed during collection; refusing stale publication'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-extended-direction-forecast.json
+          if [ -f data-quarantine/stock-extended-direction-forecast.json ]; then
+            git add data-quarantine/stock-extended-direction-forecast.json
+          fi
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'research: refresh extended forecasts from verified issuer identifiers'
+          git rebase "$RADAR_CHECKED_REMOTE"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo 'published=true' >> "$GITHUB_OUTPUT"
+      - name: Publish the new main snapshot to the public radar
+        if: github.ref_name == 'main' && steps.publish.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bounded-extended-forecast-evidence
+          path: |
+            stock-extended-direction-forecast.json
+            data-quarantine/stock-extended-direction-forecast.json
+          retention-days: 7
+          if-no-files-found: warn

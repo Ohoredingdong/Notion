@@ -2,7 +2,8 @@ name: Update Stock Opportunities
 on:
   workflow_dispatch:
   schedule:
-    - cron: '57 7,22 * * *'
+    # KR close + 40 minutes; US close + at least 70 minutes (DST aware reader).
+    - cron: '10 7,22 * * 1-5'
   workflow_run:
     workflows: ['Verify Stock Official Filings']
     types: [completed]
@@ -20,6 +21,10 @@ on:
       - 'scripts/test_stock_opportunity_dates.py'
       - 'scripts/refine_stock_radar_v8.py'
       - 'scripts/publish_stock_opportunities.py'
+      - 'scripts/build_stock_radar_chart_cache.py'
+      - 'scripts/market_data_utils.py'
+      - 'scripts/verify_stock_canonical_pipeline.py'
+      - 'scripts/test_stock_data_pipeline.py'
       - 'scripts/install_stock_radar_v8.py'
       - 'scripts/discover_stock_candidates_v9.py'
       - 'scripts/run_stock_research_v9.py'
@@ -36,6 +41,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   refresh:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 24
     steps:
@@ -46,13 +52,14 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install data and session readers
-        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.11.3' 'beautifulsoup4==4.14.3'
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'beautifulsoup4==4.14.3'
       - name: Test risk, filing, date and discovery gates
         run: |
           python scripts/test_stock_opportunities.py
           python scripts/test_stock_opportunity_filings.py
           python scripts/test_stock_opportunity_dates.py
           python scripts/test_stock_discovery_v9.py
+          python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
       - name: Discover and deeply collect real market candidates
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -63,13 +70,11 @@ jobs:
         run: |
           python scripts/validate_stock_opportunity_dates.py
           python scripts/curate_stock_decisions_v9.py
-      - name: Verify lighter UI and independent training separation
+      - name: Collect completed-session charts from this exact research snapshot
+        run: python scripts/build_stock_radar_chart_cache.py
+      - name: Verify canonical runtime without legacy HTML mutation
         run: |
-          python scripts/apply_stock_radar_v9.py
-          python scripts/refine_stock_radar_v8.py
-          node --check assets/stock-radar-v8.js
-          node --check assets/stock-radar-v9.js
-          python scripts/install_stock_radar_v8.py
+          python scripts/verify_stock_canonical_pipeline.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -77,6 +82,7 @@ jobs:
           retention-days: 2
           path: |
             stock-opportunity-*.json
+            stock-radar-chart-data.json
             stock-value-radar.html
             stock-value-radar-data.json
             stock-official-audit.json
@@ -91,5 +97,5 @@ jobs:
             scripts/install_stock_audit_ui.py
             assets/stock-radar-v8.*
             assets/stock-radar-v9.js
-      - name: Publish current snapshot safely
+      - name: Publish research and chart snapshot together safely
         run: python scripts/publish_stock_opportunities.py
