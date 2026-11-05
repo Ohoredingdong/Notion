@@ -1,0 +1,97 @@
+name: Codex PR Code Safety
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+concurrency:
+  group: codex-pr-code-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  verify-code-and-widgets:
+    name: Read-only code / widget PR gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Classify changed files; prohibit deleting or overwriting live data
+        id: scope
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python scripts/codex_pr_preflight.py --self-test
+          python scripts/codex_pr_preflight.py --base "$PR_BASE_SHA" \
+            --out codex-pr-artifacts/changed-files.json
+          python - <<'PY'
+          import json,py_compile,subprocess
+          from pathlib import Path
+          info=json.loads(Path('codex-pr-artifacts/changed-files.json').read_text())
+          for item in info['changes']:
+              path=Path(item['path'])
+              if item['status']=='D' or not path.is_file(): continue
+              if path.suffix=='.py':
+                  py_compile.compile(str(path),doraise=True)
+              elif path.suffix in ('.js','.cjs','.mjs'):
+                  subprocess.run(['node','--check',str(path)],check=True)
+          print('PASS: all changed Python / JavaScript syntax checks')
+          PY
+
+      - name: Reuse current investment evidence & AI signal unit checks
+        if: steps.scope.outputs.stock == 'true'
+        run: |
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          node scripts/test_stock_evidence_review.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+          python -m unittest scripts.test_market_context -v
+          python scripts/test_stock_radar_publish_protection.py
+
+      - name: Install real browser and screenshot diff support
+        if: steps.scope.outputs.browser == 'true'
+        run: |
+          python -m pip install 'playwright==1.56.0' 'Pillow==11.3.0'
+          python -m playwright install chromium
+
+      - name: Checkout current base for comparison (read-only)
+        if: steps.scope.outputs.browser == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: pr-reference
+          persist-credentials: false
+
+      - name: Compare baseline and candidate at desktop, mobile and Notion sizes
+        if: steps.scope.outputs.browser == 'true'
+        run: |
+          python scripts/pr_widget_browser.py \
+            --reference pr-reference --candidate . \
+            --changes codex-pr-artifacts/changed-files.json \
+            --out codex-pr-artifacts
+
+      - name: Run the existing canonical & detailed investment radar browser tests
+        if: steps.scope.outputs.browser == 'true' && steps.scope.outputs.stock == 'true'
+        run: |
+          python -m http.server 8765 >/tmp/codex-pr-radar-http.log 2>&1 &
+          python scripts/test_stock_radar_canonical_browser.py
+          python scripts/test_stock_detail_v6.py
+          mkdir -p codex-pr-artifacts/detail
+          cp -R detail-v6-artifacts/. codex-pr-artifacts/detail/
+
+      - name: Preserve source checks, screenshots, diffs and unverified findings
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codex-pr-quality-evidence
+          path: |
+            codex-pr-artifacts/
+          retention-days: 14
+          if-no-files-found: warn
