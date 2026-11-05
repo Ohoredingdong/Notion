@@ -92,6 +92,21 @@ def dart_getter(symbol="005930", name="삼성전자", corp="00126380", calls=Non
     return get
 
 
+def many_issuers(root, count, *, matching_names=True):
+    items=[{"country":"KR","symbol":f"{i:06}","source_symbol":f"{i:06}",
+            "name":f"Issuer {i}","exchange":"KOSPI"} for i in range(1,count+1)]
+    source={"identifier_policy":f.CATALOG_POLICY,"status":"complete",
+            "generated_at":"2026-11-05","counts":{"total":count,"KR":count,"US":0},"items":items}
+    (root/"stock-universe-catalog.json").write_text(json.dumps(source))
+    rows="".join(f'<list><corp_code>{10000000+i}</corp_code><stock_code>{item["symbol"]}</stock_code>'
+                 f'<corp_name>{item["name"] if matching_names else "Different name"}</corp_name></list>'
+                 for i,item in enumerate(items,1))
+    buffer=io.BytesIO()
+    with zipfile.ZipFile(buffer,"w") as zf:
+        zf.writestr("CORPCODE.xml","<result>"+rows+"</result>")
+    return source,buffer.getvalue()
+
+
 class FinanceTests(unittest.TestCase):
     def test_companyfacts_one_same_interval(self):
         d=f.parse_sec_companyfacts(sec_facts(),symbol="AAPL",cik=320193,checked_at="2026-11-05T00:00:00Z")
@@ -324,6 +339,116 @@ class FinanceTests(unittest.TestCase):
             self.assertTrue(result["current_run_failed"])
             self.assertEqual(result["records"]["KR:005930"]["checked_at"],"2026-11-04T00:00:00Z")
             self.assertNotIn("do-not-publish",json.dumps(result))
+
+    def test_three_dart_transport_failures_stop_remaining_batches_and_preserve_progress(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,archive=many_issuers(root,321)
+            old=verified_record(symbol="000321",name="Issuer 321",corp="10000321")
+            old.update(full_financial_statements=False,source="DART periodic reports")
+            (root/f.OUTPUT).write_text(json.dumps({"records":{"KR:000321":old}}))
+            multi_calls=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                if url.startswith(f.DART_MULTI):
+                    multi_calls.append(url)
+                    if len(multi_calls)==1:
+                        return json.dumps(official_rows("000001","10000001",report="11014")).encode()
+                    raise TimeoutError("DART transport timed out")
+                raise AssertionError("unexpected request")
+            result=f.build(root,us_batch=0,kr_batch=321,getter=get,dart_key="offline",agent="",
+                           throttle=0,as_of=date(2026,11,5))
+            self.assertEqual(len(multi_calls),4)  # one success, exactly three failures
+            self.assertEqual(result["run"]["KR"]["provider_requests"],5)  # plus the issuer map
+            self.assertEqual(result["run"]["KR"]["available"],1)
+            self.assertEqual(result["run"]["KR"]["deferred"],320)
+            self.assertEqual(result["run"]["KR"]["provider_errors"],320)
+            self.assertTrue(result["current_run_failed"])
+            self.assertEqual(result["refresh_status"],"partial")
+            self.assertEqual(result["records"]["KR:000001"]["metrics"]["revenue"],1234)
+            retained=result["records"]["KR:000321"]
+            self.assertEqual(retained["checked_at"],old["checked_at"])
+            self.assertEqual(retained["metrics"],old["metrics"])
+            self.assertIn("circuit breaker",retained["last_refresh_error"]["reason"])
+            self.assertEqual(validate(source,result),{"KR":2,"US":0})
+            self.assertEqual(json.loads((root/f.OUTPUT).read_text())["financial_available"]["KR"],2)
+
+    def test_deadline_saves_current_and_prior_verified_accounts_before_next_request(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,archive=many_issuers(root,81)
+            old=verified_record(symbol="000081",name="Issuer 81",corp="10000081")
+            old.update(full_financial_statements=False,source="DART periodic reports")
+            (root/f.OUTPUT).write_text(json.dumps({"records":{"KR:000081":old}}))
+            clock=[0];multi_calls=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                if url.startswith(f.DART_MULTI):
+                    multi_calls.append(url)
+                    clock[0]=11  # the first successful request consumes the remaining budget
+                    return json.dumps(official_rows("000001","10000001",report="11014")).encode()
+                raise AssertionError("unexpected request")
+            result=f.build(root,us_batch=0,kr_batch=81,getter=get,dart_key="offline",agent="",
+                           throttle=0,as_of=date(2026,11,5),max_runtime_seconds=10,monotonic=lambda:clock[0])
+            self.assertEqual(len(multi_calls),1)
+            self.assertEqual(result["run"]["KR"]["provider_requests"],2)
+            self.assertEqual(result["run"]["KR"]["deferred"],80)
+            self.assertEqual(result["run"]["KR"]["provider_errors"],80)
+            self.assertTrue(result["current_run_failed"])
+            self.assertIn("deadline",result["run"]["KR"]["collection_stop_reason"])
+            self.assertEqual(result["records"]["KR:000081"]["checked_at"],old["checked_at"])
+            self.assertEqual(validate(source,result),{"KR":2,"US":0})
+            self.assertTrue((root/f.OUTPUT).is_file())
+
+    def test_dart_identity_lookup_transport_failure_uses_same_three_request_limit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,archive=many_issuers(root,90,matching_names=False)
+            calls=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                calls.append(url)
+                if url.startswith(f.DART_COMPANY):
+                    raise TimeoutError("DART identity endpoint timed out")
+                raise AssertionError("Accounts cannot be requested without issuer verification")
+            result=f.build(root,us_batch=0,kr_batch=90,getter=get,dart_key="offline",agent="",throttle=0)
+            self.assertEqual(len(calls),3)
+            self.assertEqual(result["run"]["KR"]["provider_requests"],4)
+            self.assertEqual(result["run"]["KR"]["identity_errors"],0)
+            self.assertEqual(result["run"]["KR"]["provider_errors"],90)
+            self.assertEqual(result["run"]["KR"]["deferred"],87)
+            self.assertEqual(result["refresh_status"],"blocked")
+            self.assertTrue(result["current_run_failed"])
+            self.assertEqual(validate(source,result),{"KR":0,"US":0})
+
+    def test_failed_optional_alias_endpoint_does_not_block_exact_mapped_issuer_accounts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source,_=many_issuers(root,5)
+            alias_rows="".join(f'<list><corp_code>{10000000+i}</corp_code><stock_code>{i:06}</stock_code>'
+                               '<corp_name>Different legal name</corp_name></list>' for i in range(1,5))
+            archive=corp_zip("000005","10000005","Issuer 5",extra=alias_rows)
+            identity_calls=[];account_calls=[]
+            def get(url,**kwargs):
+                if url.startswith(f.DART_MAP):
+                    return archive
+                if url.startswith(f.DART_COMPANY):
+                    identity_calls.append(url)
+                    raise TimeoutError("Optional identity lookup unavailable")
+                if url.startswith(f.DART_MULTI):
+                    account_calls.append(url)
+                    return json.dumps(official_rows("000005","10000005",report="11014")).encode()
+                raise AssertionError("unexpected request")
+            result=f.build(root,us_batch=0,kr_batch=5,getter=get,dart_key="offline",agent="",
+                           throttle=0,as_of=date(2026,11,5))
+            self.assertEqual(len(identity_calls),3)
+            self.assertEqual(len(account_calls),1)
+            self.assertEqual(result["run"]["KR"]["provider_requests"],5)
+            self.assertEqual(result["run"]["KR"]["available"],1)
+            self.assertEqual(result["run"]["KR"]["provider_errors"],4)
+            self.assertEqual(result["run"]["KR"]["deferred"],1)
+            self.assertEqual(result["records"]["KR:000005"]["metrics"]["revenue"],1234)
+            self.assertTrue(result["current_run_failed"])
+            self.assertEqual(validate(source,result),{"KR":1,"US":0})
 
     def test_early_year_checks_last_year_q3_instead_of_future_quarters(self):
         periods=f.reported_period_candidates(date(2027,1,10))

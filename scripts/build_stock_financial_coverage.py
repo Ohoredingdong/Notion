@@ -38,6 +38,8 @@ DART_MULTI = "https://opendart.fss.or.kr/api/fnlttMultiAcnt.json"
 DART_COMPANY = "https://opendart.fss.or.kr/api/company.json"
 MAX_US_BATCH, MAX_KR_BATCH = 120, 3000
 MAX_IDENTITY_LOOKUPS = 80
+MAX_COLLECTION_SECONDS = 18 * 60
+MAX_CONSECUTIVE_SOURCE_FAILURES = 3
 FINANCIAL_STATUSES = {"available", "partial", "stale"}
 KR_SYMBOL = re.compile(r"[0-9A-Z]{6}")
 FORMS = {"10-Q", "10-K", "20-F", "40-F"}
@@ -150,6 +152,36 @@ def read_url(url, *, agent, max_bytes=16_000_000, attempts=2):
                 continue
             break
     raise RuntimeError(f"source_fetch_failed: {type(error).__name__}: {getattr(error, 'code', str(error))}")
+
+
+class CollectionPaused(RuntimeError):
+    """No request was made; save verified progress before the workflow expires."""
+
+
+class SourceRequestBudget:
+    def __init__(self, getter, *, deadline, clock):
+        self.getter, self.deadline, self.clock = getter, deadline, clock
+        self.requests = self.consecutive_failures = 0
+        self.stop_reason = None
+
+    def paused_reason(self):
+        if not self.stop_reason and self.clock() >= self.deadline:
+            self.stop_reason = "Collection deadline reached; remaining source checks were not requested"
+        return self.stop_reason
+
+    def __call__(self, url, **kwargs):
+        if self.paused_reason():
+            raise CollectionPaused(self.stop_reason)
+        self.requests += 1
+        try:
+            response = self.getter(url, **kwargs)
+        except (OSError, RuntimeError) as exc:
+            self.consecutive_failures += 1
+            if self.consecutive_failures >= MAX_CONSECUTIVE_SOURCE_FAILURES:
+                self.stop_reason = "Source request circuit breaker: three consecutive transport failures; remaining source checks were not requested"
+            raise
+        self.consecutive_failures = 0
+        return response
 
 
 def official_cik_map(raw):
@@ -569,7 +601,8 @@ def merge_record(previous, latest):
 
 
 def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
-          agent=None, dart_agent=None, dart_key=None, throttle=0.30, as_of=None):
+          agent=None, dart_agent=None, dart_key=None, throttle=0.30, as_of=None,
+          max_runtime_seconds=MAX_COLLECTION_SECONDS, monotonic=None):
     root=Path(root)
     catalog=json_file(root/"stock-universe-catalog.json",{})
     items=catalog.get("items") or []
@@ -592,12 +625,22 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
     us, next_us=choose(items,int(previous_cursor.get("US",0)),"US",us_batch)
     kr, next_kr=choose(items,int(previous_cursor.get("KR",0)),"KR",kr_batch)
     getter=getter or read_url
+    clock=monotonic or time.monotonic
+    if not 0 < max_runtime_seconds <= MAX_COLLECTION_SECONDS:
+        raise ValueError("collection_deadline_exceeds_safe_cap")
+    deadline=clock()+max_runtime_seconds
+    source_requests={country:SourceRequestBudget(getter,deadline=deadline,clock=clock)
+                     for country in ("US","KR")}
+    # The optional company-name lookup must not disable accounts for issuers
+    # already verified directly against the official corporation directory.
+    dart_identity_request=SourceRequestBudget(getter,deadline=deadline,clock=clock)
+    dart_accounts_request=SourceRequestBudget(getter,deadline=deadline,clock=clock)
     user_agent=agent if agent is not None else os.getenv("SEC_USER_AGENT", "")
     kr_agent=dart_agent if dart_agent is not None else (os.getenv("DART_USER_AGENT", "").strip() or PROJECT_AGENT)
     sec_contact_ok=sec_contact_configured(user_agent)
     key=dart_key if dart_key is not None else os.getenv("DART_API_KEY", "")
     stats={country:{"attempted":0,"available":0,"blocked":0,"provider_errors":0,
-                    "identity_errors":0,"no_report":0} for country in ("US","KR")}
+                    "identity_errors":0,"no_report":0,"deferred":0} for country in ("US","KR")}
     issues=[]
 
     def save_result(item, result):
@@ -617,6 +660,8 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
             known.pop(key,None)
         counter = stats[country]
         counter["attempted"] += 1
+        if result.get("source_checks_deferred") is True:
+            counter["deferred"] += 1
         if result.get("status") in FINANCIAL_STATUSES:
             if not verified_financial_record(result, country+":"+symbol, item):
                 raise ValueError("refusing_unverified_financial_record:"+country+":"+symbol)
@@ -638,7 +683,7 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
             cik_map={}
         else:
             try:
-                cik_map=official_cik_map(getter(SEC_CIK,agent=user_agent))
+                cik_map=official_cik_map(source_requests["US"](SEC_CIK,agent=user_agent))
             except Exception as exc:
                 cik_map={}
                 issues.append("SEC_mapping: "+safe_reason(exc))
@@ -646,10 +691,11 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
         for item in us:
             symbol=item["symbol"]
             cik=cik_map.get(symbol)
-            if provider_failure_streak>=3:
+            paused=source_requests["US"].paused_reason()
+            if provider_failure_streak>=3 or paused:
                 result={"symbol":symbol,"country":"US","status":"source_unavailable",
-                        "checked_at":now,
-                        "reason":"SEC request circuit breaker: repeated source/access errors"}
+                        "checked_at":now,"source_checks_deferred":True,
+                        "reason":paused or "SEC request circuit breaker: repeated source/access errors"}
             elif cik is None:
                 result={"symbol":symbol,"country":"US",
                         "status":"source_not_configured" if not sec_contact_ok else
@@ -658,13 +704,15 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                             "SEC CIK map unavailable" if not cik_map else "No verified SEC CIK"}
             else:
                 try:
-                    content=getter(SEC_FACTS.format(cik=cik),agent=user_agent)
+                    content=source_requests["US"](SEC_FACTS.format(cik=cik),agent=user_agent)
                     result=parse_sec_companyfacts(content,symbol=symbol,cik=cik,checked_at=now)
                     provider_failure_streak=0
                 except Exception as exc:
                     provider_failure_streak+=1
                     result={"symbol":symbol,"country":"US","status":"source_unavailable",
                              "checked_at":now,"reason":safe_reason(exc)}
+                    if isinstance(exc,CollectionPaused):
+                        result["source_checks_deferred"]=True
                 if throttle and provider_failure_streak<3:
                     time.sleep(throttle)
             if cik is not None:
@@ -681,27 +729,40 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                         "checked_at":now,"reason":"DART_API_KEY is required"}
                 save_result(item, result)
         else:
+            dart_request=source_requests["KR"]
             mapping_error=None
             try:
-                official=dart_corp_identities(getter(DART_MAP+"?"+urllib.parse.urlencode({"crtfc_key":key}),
+                official=dart_corp_identities(dart_request(DART_MAP+"?"+urllib.parse.urlencode({"crtfc_key":key}),
                                                      agent=kr_agent,max_bytes=30_000_000))
             except Exception as exc:
                 official={}
                 mapping_error=safe_reason(exc)
                 issues.append("DART_corp_map: "+mapping_error)
-            identities, identity_errors = {}, {}
+            identities, identity_errors, identity_provider_errors = {}, {}, {}
+            deferred=set()
             budget=[MAX_IDENTITY_LOOKUPS]
             for item in kr:
                 symbol=item["symbol"]
                 if not official.get(symbol):
                     continue
+                direct_matches=[candidate for candidate in official[symbol]
+                    if company_name_key(candidate["corp_name"])==company_name_key(item["name"])]
+                if len(direct_matches)!=1 and dart_identity_request.paused_reason():
+                    identity_provider_errors[symbol]=dart_identity_request.stop_reason
+                    deferred.add(symbol)
+                    continue
                 try:
-                    identity=resolve_dart_identity(item,official[symbol],getter=getter,key=key,
+                    identity=resolve_dart_identity(item,official[symbol],getter=dart_identity_request,key=key,
                                                   agent=kr_agent,budget=budget,checked_at=now)
                     if identity:
                         identities[symbol]=identity
                     else:
                         identity_errors[symbol]="Official corporation/name does not match the catalogue; financials withheld"
+                except (OSError, RuntimeError) as exc:
+                    identity_provider_errors[symbol]=safe_reason(exc)
+                    if isinstance(exc,CollectionPaused):
+                        deferred.add(symbol)
+                    issues.append("DART_identity_provider "+symbol+": "+safe_reason(exc))
                 except Exception as exc:
                     identity_errors[symbol]=safe_reason(exc)
                     issues.append("DART_identity "+symbol+": "+safe_reason(exc))
@@ -717,12 +778,15 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                         break
                     companies=list(unresolved.items())
                     for k in range(0,len(companies),80):
+                        if dart_accounts_request.paused_reason():
+                            deferred.update(unresolved)
+                            break
                         portion=dict(companies[k:k+80])
                         url=DART_MULTI+"?"+urllib.parse.urlencode({
                             "crtfc_key":key,"corp_code":",".join(portion.values()),
                             "bsns_year":str(report_year),"reprt_code":code})
                         try:
-                            payload=getter(url,agent=kr_agent)
+                            payload=dart_accounts_request(url,agent=kr_agent)
                             found=parse_dart_multi(payload,corp_map=portion,checked_at=now,
                                                    report_year=report_year,report_code=code,
                                                    identities=identities)
@@ -734,18 +798,29 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                             report_errors.update(portion)
                         if throttle:
                             time.sleep(throttle)
+                    if dart_accounts_request.paused_reason():
+                        deferred.update(unresolved)
+                        break
+            for endpoint,requests in (("directory",dart_request),("identity",dart_identity_request),
+                                      ("accounts",dart_accounts_request)):
+                if requests.stop_reason:
+                    issues.append("DART_"+endpoint+": "+requests.stop_reason)
             for item in kr:
                 sym=item["symbol"]
                 result=outcomes.get(sym)
                 if result is None:
-                    status=("source_unavailable" if mapping_error or sym in report_errors else
+                    status=("source_unavailable" if mapping_error or sym in report_errors or
+                            sym in identity_provider_errors or sym in deferred else
                             "identity_mismatch" if sym in identity_errors else
                             "identifier_unmatched" if sym not in identities else "no_report")
-                    reason=(mapping_error or identity_errors.get(sym) or
+                    reason=(mapping_error or identity_provider_errors.get(sym) or
+                            (dart_accounts_request.stop_reason if sym in deferred else None) or identity_errors.get(sym) or
                             ("DART report request failed; latest published period could not be checked" if sym in report_errors else
                              "No verified DART issuer mapping" if sym not in identities else
                              "No comparable published DART periodic accounts"))
                     result={"symbol":sym,"country":"KR","status":status,"checked_at":now,"reason":reason}
+                    if sym in deferred or (mapping_error and dart_request.stop_reason):
+                        result["source_checks_deferred"]=True
                 elif sym in report_errors:
                     result["latest_period_check_incomplete"]=True
                     result["last_refresh_error"]={"at":now,"reason":"A newer reporting-period request failed"}
@@ -759,7 +834,12 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                       for k,rec in known.items() if k in allowed)
            for country in ("KR","US")}
     published={k:v for k,v in known.items() if k in allowed}
-    for counter in stats.values():
+    for country,counter in stats.items():
+        budgets=([source_requests[country]] if country=="US" else
+                 [source_requests[country],dart_identity_request,dart_accounts_request])
+        counter["provider_requests"]=sum(budget.requests for budget in budgets)
+        stop_reasons=list(dict.fromkeys(budget.stop_reason for budget in budgets if budget.stop_reason))
+        counter["collection_stop_reason"]="; ".join(stop_reasons) or None
         counter["refresh_status"]=("not_requested" if not counter["attempted"] else
             "blocked" if not counter["available"] and (counter["provider_errors"] or counter["identity_errors"]) else
             "partial" if counter["blocked"] or counter["provider_errors"] else "success")
