@@ -24,3 +24,19 @@
 
 
 [처음 첨부한 시안과 실제 화면](kitchen-original-scene-20261105/original-and-actual.png)을 같은 너비로 비교했다. 실제 초기 미입력 값을 예시 영양으로 채우지 않았으며, 원본과 실제 그림을 비율이 다르게 늘려 일치시키지 않았다. [출처와 고정 파일](kitchen-original-scene-20261105/comparison-source.json), [전달4파일 크기/해시](kitchen-original-scene-20261105/generated-files.json)를 기록한다. 각1MiB 이하이고 포장을 풀면 생성 원문과 같다. 전송12검사·JS문법·diffcheck를 통과했다.
+
+
+## 최종 고정 실행과 공유
+
+[최종 실행 범위](kitchen-original-scene-20261105/final-qa-summary.json)는 최종 고정4파일의 hash를 확인했다. native/wrapper의 기본17개·저장21개 ×320/390/801 실제 선택228/228, 냉동60/60을 확인했고 실제 우유 로트 추가3건과 추가 후 기존/새 우유·브로콜리·대파 선택12/12도 확인했다. 새 로트의 같은 선반 수평 이동·다른 기록 보존·재로드, 작은 상세 버튼의 모든 가장자리도 통과했다. source11개 비장면 모듈과 거래/OCR 모델은 바뀌지 않았다.
+
+구현은 `56259d13964dc4494bbe2780d28702105b40f3f8`에 고정해 작업 브랜치에 업로드했다. main/Pages는 변경하지 않았다.
+
+- [수정한 미리보기](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/56259d13964dc4494bbe2780d28702105b40f3f8/previews/mobile/widget.html)
+- [공개 실제 냉장고](https://raw.githubusercontent.com/Ohoredingdong/Notion/9b500f5f5c7355f8a96976fed1038fb7eff10dd8/widget-phone-A1.png)
+- [처음 첨부한 시안과 실제 비교](https://raw.githubusercontent.com/Ohoredingdong/Notion/9b500f5f5c7355f8a96976fed1038fb7eff10dd8/local-reference-comparison.png)
+- [공개 실행 성공](https://github.com/Ohoredingdong/Notion/actions/runs/41971040057)
+
+공개 HTMLPreview Chromium에서320×568·390×844·801×782 모두 A1/A2/A6/B1/B2/C1/D5를 실제 열었다.12모듈·19스타일·8AVIF의 원문/바이트와 조회 전후 전체 envelope 불변, 별도 격리 예시의 저장/적용을 통과했다.21PNG 및 비교PNG는 정상TLS에서HTTP200·image/png·고정 evidence 및 source 바이트 일치를 확인했다. [공개 실행](kitchen-original-scene-20261105/public-status.json), [공개 이미지 접근](kitchen-original-scene-20261105/public-images.json)을 기록한다. 실제 기기 Safari/Notion 확인과 사용자 디자인 승인은 주장하지 않는다.
+
+Draft PR 생성은 GitHub GraphQL API의403 Forbidden으로 실패했다. 작업 브랜치 업로드와 공개 미리보기/이미지 실행은 성공했으며 PR 생성·main 병합·운영 배포를 완료했다고 보고하지 않는다.

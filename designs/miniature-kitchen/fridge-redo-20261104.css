@@ -1,5 +1,5 @@
 /* Reference-sized home chrome; the scene and controls share one composition. */
-:root{--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.36));--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)));--fullflow-nav:calc(60px * var(--home-ui-scale,1))}
+:root{--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.018205128));--widget-frame-height:min(calc(100svh - 16px),calc(var(--widget-frame-width) * .89 + max(50px,calc(var(--widget-frame-width) * .128205128))));--workflow-frame-width:min(var(--widget-frame-width),560px);--workflow-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--workflow-frame-width) * 1.36)));--fullflow-nav:50px}
 body[data-mode]{align-items:flex-start;padding-top:8px}
 body[data-mode] .shell{margin:0 auto!important}
 body[data-mode] #tray{top:8px;bottom:auto;left:50%;right:auto;margin:0;transform:translateX(-50%)}
@@ -7,6 +7,19 @@ body[data-mode] #tray[data-workflow-route="item"],body[data-mode] #tray[data-wor
 body[data-mode] .shell:before{background-image:none;background-color:#fbf5ed}
 body .fitted-side-counters{display:none!important}
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])){--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.018205128));--widget-frame-height:min(calc(100svh - 16px),calc(var(--widget-frame-width) * .89 + max(50px,calc(var(--widget-frame-width) * .128205128))))}
+/* One canvas for the four main destinations; focused sheets keep reading space. */
+body[data-mode] .shell{--fullflow-nav:calc(50px * var(--home-ui-scale,1));--nav-height:var(--fullflow-nav)}
+body[data-mode]:not([data-home="fridge"]) .shell,body[data-mode][data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) .shell{width:var(--widget-frame-width)!important;height:var(--widget-frame-height)!important;max-height:calc(100svh - 16px);min-height:0;padding:0 0 var(--fullflow-nav);overflow:hidden}
+body[data-mode]:not([data-home="fridge"]) .masthead{display:none}
+body[data-mode]:not([data-home="fridge"]) .home-panel{flex:1;min-height:0;max-height:none;padding:8px 12px;overflow:hidden;gap:0}
+body[data-mode]:not([data-home="fridge"]) .home-panel>.hub-heading{display:none}
+body[data-mode]:not([data-home="fridge"]) .home-panel>.panel-tabs{position:relative;top:auto;display:flex;flex:none;min-height:36px;margin:0 0 6px;gap:5px;padding:0;background:none}
+body[data-mode]:not([data-home="fridge"]) .home-panel>.panel-tabs button{flex:1;min-width:0;min-height:36px;padding:4px 3px;font-size:calc(13px * var(--hub-scale,1));white-space:nowrap}
+body[data-mode]:not([data-home="fridge"]) .home-panel>[data-home-page]{flex:1;min-height:0;max-height:none;max-width:none;width:100%;margin:0;overflow:hidden}
+body[data-mode][data-home-page="decor"] .shell{padding-bottom:0}
+body[data-mode] #tray{--widget-frame-height:var(--workflow-frame-height);width:var(--workflow-frame-width);max-width:var(--workflow-frame-width)}
+body[data-mode][data-home="fridge"] #tray[data-workflow-route="item"]{--widget-frame-height:inherit}
+@media(max-width:360px){:root{--widget-frame-height:min(calc(100svh - 16px),calc(var(--widget-frame-width) * .89 + 58px))}body[data-mode] .shell{--home-ui-scale:.82!important;--fullflow-nav:46px;--nav-height:46px}body[data-mode]:not([data-home="fridge"]) .home-panel{padding:6px 9px}body[data-mode]:not([data-home="fridge"]) .home-panel>.panel-tabs{min-height:34px;margin-bottom:5px}body[data-mode]:not([data-home="fridge"]) .home-panel>.panel-tabs button{min-height:34px;font-size:12px}}
 /* The user's original home is one kitchen scene with its controls overlaid. */
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell{height:var(--widget-frame-height)!important;max-height:calc(100svh - 16px);padding:0 0 calc(50px * var(--home-ui-scale));--fullflow-nav:calc(50px * var(--home-ui-scale));--nav-height:var(--fullflow-nav);border-radius:14px;background:#f8f0e6}
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell:before{background-image:none;background-color:#f4e5ce}
@@ -65,9 +78,9 @@ body .item[data-food-profile="frozen-small"]{--profile-width:145px;--profile-hei
 body[data-home="fridge"] .room .shelf-label:not(.is-selected){opacity:0}
 body[data-home="fridge"] .room .shelf-label.is-selected{background:#fffdf6f2;box-shadow:0 1px 2px #38230d12}
 body[data-mode] .shell .home-shortcuts{height:var(--fullflow-nav);min-height:var(--fullflow-nav);padding:3px 8px;border-top:1px solid #eee2d5;background:#fffaf3}
-body[data-mode] .shell .home-shortcuts button{font-size:calc(14px * var(--home-ui-scale));font-weight:550;color:#65472d!important;border-radius:0;background:none!important;gap:3px}
-body[data-mode] .shell .home-shortcuts .nav-art{width:calc(26px * var(--home-ui-scale));height:calc(26px * var(--home-ui-scale))}
-body[data-mode] .shell .home-shortcuts [aria-selected="true"]{color:#ff542b!important;background:none!important;box-shadow:none!important}
+body[data-mode] .shell .home-shortcuts button{font-size:calc(11px * var(--home-ui-scale));font-weight:500;color:#7b6b5c!important;border-radius:0;background:none!important;gap:3px}
+body[data-mode] .shell .home-shortcuts .nav-art{width:calc(21px * var(--home-ui-scale));height:calc(21px * var(--home-ui-scale))}
+body[data-mode] .shell .home-shortcuts [aria-selected="true"]{color:#a45b3c!important;background:none!important;box-shadow:none!important}
 body[data-mode] .shell #tab-fridge[aria-selected="true"] svg{fill:#ff5b31;stroke:#fff;stroke-width:1.5}
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts{height:calc(50px * var(--home-ui-scale));min-height:calc(50px * var(--home-ui-scale));padding:1px 8px;border-radius:10px 10px 0 0;background:#fffdf9f5}
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts button{font-size:calc(11px * var(--home-ui-scale));font-weight:500;gap:1px;color:#7b6b5c!important}
@@ -96,7 +109,7 @@ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeStorageNotice:not([hidden]):not([data-storage-status="temporary"])>span{font-size:11px}
 body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeStorageNotice:not([hidden]):not([data-storage-status="temporary"]) button{min-width:44px;min-height:44px;font-size:11px}
 /* Registration keeps its own reading space beside the short home composition. */
-body[data-mode][data-home="fridge"] #tray:not([data-workflow-route="item"]){--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)))}
+
 /* Native photograph projection: no independently stretched cabinet or doors. */
 body[data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .scene-world{width:1254px!important;height:1254px!important;background:none}
 .original-kitchen-photo,.original-door-reveals{position:absolute;inset:0;width:1254px;height:1254px;max-width:none;pointer-events:none;user-select:none}
@@ -115,64 +128,10 @@ body .item[data-food-profile="scallion"]{--profile-width:210px;--profile-height:
 body .item[data-food-profile="generic"]{--profile-width:64px;--profile-height:44px}
 body .item[data-food-profile="tray"]{--profile-width:220px;--profile-height:85px}
 body .item[data-food-profile="frozen-small"]{--profile-width:110px;--profile-height:71px;}
-/* Wide view: the background fits by width; its real cabinet feet anchor the appliance. */
-body[data-home-page="decor"] .shell{height:min(100svh,calc(190px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;max-height:100svh}
-body[data-home-page="decor"] #homeDecor{gap:0;overflow:hidden}
-body[data-home-page="decor"] #decorStage{flex:none;min-height:0;align-items:flex-start}
-body[data-home-page="decor"] .shell .kitchen-view .room,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .room{background:#f6f0e6 var(--kitchen-room-art) center var(--room-photo-top,0px)/100% var(--room-photo-height,auto) no-repeat;overflow:hidden}
-body[data-home-page="decor"] .scene-world,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .scene-world{height:500px}
-body[data-home-page="decor"] .decor-fridge-backdrop,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .decor-fridge-backdrop{left:360.5px;bottom:14px;width:285px;height:auto;aspect-ratio:812 / 1344;filter:drop-shadow(0 2px 2px #7053381a)}
-body[data-home-page="decor"] .decor-heading{position:relative;height:calc(44px * var(--home-ui-scale));min-height:calc(44px * var(--home-ui-scale));padding:0 110px 0 7px;flex:none}
-body[data-home-page="decor"] .decor-heading h2{font-size:calc(15px * var(--home-ui-scale));white-space:nowrap}
-body[data-home-page="decor"] .decor-actions{position:absolute;top:0;right:6px;gap:3px;margin:0;padding:0;z-index:5;background:none}
-body[data-home-page="decor"] .decor-actions button{height:44px;min-height:44px;min-width:44px;padding:4px 9px;border:0;border-radius:0;background:none!important;color:#8b684b!important;font-size:11px}
-body[data-home-page="decor"] .decor-actions button:before{display:none}
-body[data-home-page="decor"] .decor-selection-toolbar{height:calc(50px * var(--home-ui-scale));padding:4px 14px;gap:8px;flex:none}
-body[data-home-page="decor"] .decor-selection-toolbar button{min-height:42px;background:#fffdf9;border:1px solid #e9dfd2;box-shadow:none}
-body[data-home-page="decor"] .decor-editor #decorationTools{height:calc(32px * var(--home-ui-scale));min-height:calc(32px * var(--home-ui-scale));margin:0 14px;padding:4px 9px;flex:none}
-body[data-home-page="decor"] .decor-footer{height:calc(64px * var(--home-ui-scale));padding:9px 14px 11px;flex:none}
-body[data-home-page="decor"] .decor-footer button{min-height:44px;border-radius:8px}
-body[data-home-page="decor"] .decor-editor .counter-zone .item.decor{width:120px;height:150px}
-body[data-home-page="decor"] .decor-editor .counter-zone .item.decor>.decor-art{position:absolute;left:50%;bottom:0;width:120px;height:150px;max-width:none;transform:translateX(-50%)}
-body[data-home-page="decor"] .decor-editor .counter-zone .item.decor[data-art="cup"]>.decor-art{height:90px}
-/* The applied view shares the exact same room/prop projection as the editor. */
-body[data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) .shell{height:min(100svh,calc(146px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;padding-top:0}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"]{padding:0;gap:0}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeFridgeProgress{margin:9px 12px;width:calc(100% - 24px);min-height:44px;box-shadow:none}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #fridgeSceneHost{flex:none;border:0;border-radius:0;background:none}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini{width:calc(120px * var(--scene-scale));height:calc(150px * var(--scene-scale));min-width:0;min-height:0}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini[data-home-art="cup"],body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeSceneDecor .home-prop-mini[data-home-art="cup"]>.decor-art{height:calc(90px * var(--scene-scale))}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #growthFridgeOpen{bottom:8px;min-height:44px;height:44px;padding:6px 14px;font-size:12px}
-/* The goal page uses the same width-based panoramic photograph. */
-body[data-home-page="growth"] .shell{height:min(100svh,calc(260px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important}
-body[data-home-page="growth"]:has(.growth-first-record-link) .shell{height:min(100svh,calc(296px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important}
-body[data-home-page="growth"] #homeGrowth{gap:8px;padding-top:6px}
-body[data-home-page="growth"] #homeGrowth .growth-preview.home-kitchen-scene{flex:none;aspect-ratio:2 / 1;container-type:inline-size;background-size:100% auto;background-position:center 93.26%;padding:0;margin-top:0}
-body[data-home-page="growth"] #homeGrowth .growth-preview .home-fridge-art{left:50.3%;top:auto;bottom:1.4cqw;width:28.5%;height:auto;max-width:none;aspect-ratio:812 / 1344;transform:translateX(-50%)}
-body[data-home-page="growth"] #growthSceneDecor{left:2%;top:calc(62.12% - 3.84cqw);width:96%;height:4cqw;min-height:0;padding:0;background:none;display:block}
-body[data-home-page="growth"] #growthSceneDecor .home-prop-mini{width:12cqw;height:15cqw;left:clamp(6cqw,var(--prop-x),calc(100% - 6cqw))!important}
-body[data-home-page="growth"] #growthSceneDecor .home-prop-mini[data-home-art="cup"]{height:9cqw}
-body[data-home-page="growth"] .growth-preview-callout{display:none}
-/* Fit the room pages to their contents rather than leaving a second floor-colored row. */
-body[data-mode][data-home-page="decor"] .shell,body[data-mode][data-home-page="growth"] .shell,body[data-mode][data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) .shell{height:auto!important;max-height:calc(100svh - 16px)}
-body[data-home-page="decor"] #panel-kitchen,body[data-home-page="growth"] #panel-kitchen,body[data-home="fridge"] #panel-fridge[data-screen-id="D6"]{flex:none}
-body[data-home-page="growth"] #homeGrowth{flex:none;gap:8px;padding-bottom:0}
-body[data-home-page="growth"] #homeGrowth .growth-first-goal{margin-bottom:0}
-#appliedRoomMessage{display:none}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #appliedRoomMessage{display:flex;align-items:center;justify-content:center;gap:7px;order:-2;min-height:36px;margin:8px 12px 5px;font-size:12px;color:#584532}
-#appliedRoomMessage>span{display:grid;place-items:center;width:20px;height:20px;background:#e9f4e4;color:#4d853a;border-radius:50%;font-weight:750}
-body[data-home="fridge"] #panel-fridge[data-screen-id="D6"] #homeFridgeProgress{margin-top:0}
-body[data-home="fridge"]:has(#panel-fridge[data-screen-id="D6"]) #liveMessage{width:1px!important;height:1px!important;min-height:0!important;min-width:0!important;padding:0!important;border:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
-body.theme-stone[data-home-page="decor"] .room,body.theme-stone[data-home="fridge"] #panel-fridge[data-screen-id="D6"] .room,body.theme-stone[data-home-page="growth"] .growth-preview{filter:saturate(.65)}
 body.theme-stone[data-home="fridge"] #fridgeSceneHost{background-color:#f1f1ef}
 body #tray[data-workflow-route="add"] .registration-method-hero{background-position:0% 60%;background-size:310% auto}
 @media(max-width:360px){body[data-home="fridge"] #panel-fridge{padding-inline:9px}body[data-mode][data-home="fridge"] .brand h1{font-size:18px}body[data-home="fridge"] #dailyBalance{padding:9px}body[data-home="fridge"] #dailyBalance .balance-head b{font-size:16px}body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:10px}body[data-home="fridge"] #dailyBalance .balance-name{font-size:12px;gap:2px}body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:17px}body[data-home="fridge"] #dailyBalance .balance-number>span,body[data-home="fridge"] #dailyBalance .balance-number strong small{font-size:10px}.balance-symbol{width:16px;height:19px}body[data-mode] .shell .home-shortcuts button{font-size:12px}body[data-mode] .shell .home-shortcuts .nav-art{width:24px;height:24px}body[data-home-page="decor"] .decor-heading{padding-right:104px}body[data-home-page="decor"] .decor-heading h2{font-size:14px}}
 /* Focused record details use their existing back header, as drawn in the reference. */
-body[data-home-page="monthly"] .shell{height:min(calc(100svh - 16px),500px)!important;padding-bottom:0!important}
-body[data-home-page="budget"] .shell{height:auto!important;max-height:calc(100svh - 16px);padding-bottom:0!important}
-body[data-home-page="budget"] #panel-records{flex:none}
-body[data-home-page="monthly"] .home-shortcuts,body[data-home-page="budget"] .home-shortcuts{display:none!important}
-body[data-home-page="nutrition"] .shell{height:min(calc(100svh - 16px),max(480px,calc(var(--widget-frame-width) * 1.23)))!important}
-body[data-home-page="recommendation"] .shell{height:min(calc(100svh - 16px),max(480px,calc(var(--widget-frame-width) * 1.23)))!important}
-body[data-home-page="plans"] .shell{height:min(calc(100svh - 16px),max(530px,calc(var(--widget-frame-width) * 1.36)))!important}
-@media(max-width:360px){body[data-home-page="recommendation"] .shell,body[data-home-page="nutrition"] .shell{height:min(calc(100svh - 16px),500px)!important}}
+
+/* The public sandbox is a temporary session; the native app reports saved storage. */
+body #trayTitle[data-temporary]:after{content:'임시 미리보기';display:inline-block;vertical-align:middle;margin-left:7px;padding:3px 5px;border:1px solid #ead8c1;border-radius:5px;background:#faf1e4;color:#866344;font-size:10px;font-weight:400;letter-spacing:0;line-height:1.2}

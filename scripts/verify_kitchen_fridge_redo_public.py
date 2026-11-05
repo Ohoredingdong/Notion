@@ -5,7 +5,8 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 OUT=Path('/tmp/kitchen-fridge-redo-public');RESULT_BRANCH='preview/kitchen-fridge-redo-20261104'
 PROFILES=[('small-phone',320,568),('phone',390,844),('user-size',801,782)]
-CAPTURE_SCREENS=('A1','A2','A6','B1','B2','C1','D5')
+CAPTURE_SCREENS=('A1','A2','A6','B1','B2','C1','C2','C3','C4','D1','D5')
+MAIN_SCREENS=('A1','B1','C1','C2','C3','C4','D1')
 def git(*args,env=None):return subprocess.run(['git',*args],env=env,check=True,capture_output=True).stdout
 @lru_cache(maxsize=64)
 def source_bytes(source,path):return git('show',source+':'+path)
@@ -26,7 +27,7 @@ def click(page,frame,selector,touch=False):
   if not node.is_visible():continue
   point=painted(node)
   if point:
-   offset=frame.frame_element().bounding_box();(page.touchscreen.tap if touch else page.mouse.click)(point['x']+offset['x'],point['y']+offset['y']);return node
+   offset=frame.frame_element().bounding_box()if frame.parent_frame else{'x':0,'y':0};(page.touchscreen.tap if touch else page.mouse.click)(point['x']+offset['x'],point['y']+offset['y']);return node
  raise AssertionError('No painted reachable control: '+selector)
 def close(page,frame,touch=False):
  for _ in range(8):
@@ -38,18 +39,26 @@ def bounds(frame):
  d=frame.evaluate('''()=>({width:innerWidth,height:innerHeight,docWidth:document.documentElement.scrollWidth,docHeight:document.documentElement.scrollHeight,x:scrollX,y:scrollY,screen:document.body.dataset.screenId,nav:[...document.querySelectorAll('.home-shortcuts button')].map(e=>{const r=e.getBoundingClientRect();return {id:e.dataset.homeTab,width:r.width,height:r.height,visible:r.width>0&&r.height>0};})})''');assert d['docWidth']<=d['width']+1 and d['x']==0,d;return d
 def cap(page,frame,label,screen,rows):
  frame.evaluate('async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}');row={'screen':screen,'geometry':bounds(frame)};rows.append(row)
+ if screen in MAIN_SCREENS:
+  row['main_canvas']=frame.locator('.shell').bounding_box();nav=frame.locator('.home-shortcuts button').evaluate_all('nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};})');assert len(nav)==4 and all(n['width']>=44 and n['height']>=44 for n in nav),nav
+  base=next((r['main_canvas']for r in rows if r.get('screen')=='A1'and 'main_canvas'in r),None)
+  if base:assert all(abs(row['main_canvas'][key]-base[key])<=1.5 for key in ['x','y','width','height']),{'screen':screen,'expected_A1':base,'actual':row['main_canvas']}
  if screen in CAPTURE_SCREENS:
   selector='#tray[open]'if screen in ('A2','A6','B2')else'.shell';node=frame.locator(selector);row['screenshot_target']=selector;row['screenshot_bounds']=node.bounding_box();node.screenshot(path=str(OUT/(label+'-'+screen+'.png')))
 def food_tap(page,frame,item_id,touch=False):
- art=frame.locator('.room .item[data-item="'+item_id+'"] .food-art').first;expect(art).to_be_visible();point=art.evaluate('e=>{const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};}');offset=frame.frame_element().bounding_box();(page.touchscreen.tap if touch else page.mouse.click)(point['x']+offset['x'],point['y']+offset['y'])
+ art=frame.locator('.room .item[data-item="'+item_id+'"] .food-art').first;expect(art).to_be_visible();point=art.evaluate('e=>{const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};}');offset=frame.frame_element().bounding_box()if frame.parent_frame else{'x':0,'y':0};(page.touchscreen.tap if touch else page.mouse.click)(point['x']+offset['x'],point['y']+offset['y'])
 def smoke(page,frame,label,touch,data):
  decoded=frame.evaluate('async rows=>Promise.all(rows.map(async row=>{const image=new Image();image.src=row.url;await image.decode();return {file:row.file,width:image.naturalWidth,height:image.naturalHeight};}))',data['assets']);assert all((a['width'],a['height'])==(b['width'],b['height'])for a,b in zip(decoded,data['assets']));rows=[];before=frame.evaluate('KitchenJournal.getEnvelope()');assert before['version']==1 and frame.evaluate('KitchenJournal.storageKey')=='miniature-kitchen-preview-v1';state(frame,'A1');cap(page,frame,label,'A1',rows)
  nav=frame.locator('.home-shortcuts button').evaluate_all('nodes=>nodes.map(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height};})');assert len(nav)==4 and all(r['width']>=44 and r['height']>=44 for r in nav),nav;expect(frame.locator('[data-home-tab="meals"]')).to_have_text('레시피')
  food_tap(page,frame,'milk',touch);state(frame,'A6');expect(frame.locator('#tray')).to_have_attribute('data-workflow-route','item');expect(frame.locator('#ingredientForm')).to_have_attribute('data-id','milk');expect(frame.locator('#ingredientForm .ingredient-name')).to_have_text(next(i['name']for i in before['world']['items']if i['id']=='milk'));cap(page,frame,label,'A6',rows);close(page,frame,touch);assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Actual milk art tap/detail/close must preserve the entire envelope'
  click(page,frame,'#addFood',touch);state(frame,'A2');cap(page,frame,label,'A2',rows);click(page,frame,'#tray [data-wf="photos"]',touch);state(frame,'A3');expect(frame.locator('[data-photo="product"]')).to_be_attached();expect(frame.locator('[data-photo="expiry"]')).to_be_attached();assert frame.locator('[data-wf="readPhotos"]').is_disabled();cap(page,frame,label,'A3',rows);close(page,frame,touch);assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Registration view must not change data'
- click(page,frame,'[data-home-tab="meals"]',touch);state(frame,'B1');cap(page,frame,label,'B1',rows);recipe=frame.locator('#homeRecommendation [data-wf="recipe"]').first;recipe_id=recipe.get_attribute('data-arg');click(page,frame,'#homeRecommendation [data-wf="recipe"]',touch);state(frame,'B2');after=frame.evaluate('KitchenJournal.getEnvelope()');expected=copy.deepcopy(before)
+ click(page,frame,'[data-home-tab="meals"]',touch);state(frame,'B1');cap(page,frame,label,'B1',rows);card=frame.locator('#homeRecommendation [data-home-recipe]');initial_recipe=card.get_attribute('data-home-recipe');next_recipe=frame.locator('[data-recipe-hub-nav="1"]');
+ if next_recipe.is_enabled():
+  click(page,frame,'[data-recipe-hub-nav="1"]',touch);expect(card).not_to_have_attribute('data-home-recipe',initial_recipe);click(page,frame,'[data-recipe-hub-nav="-1"]',touch);expect(card).to_have_attribute('data-home-recipe',initial_recipe)
+ assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Recipe paging must preserve the entire envelope'
+ recipe=frame.locator('#homeRecommendation [data-wf="recipe"]').first;recipe_id=recipe.get_attribute('data-arg');click(page,frame,'#homeRecommendation [data-wf="recipe"]',touch);state(frame,'B2');after=frame.evaluate('KitchenJournal.getEnvelope()');expected=copy.deepcopy(before)
  assert after==before,'Recipe detail view must preserve the entire envelope';before=after;cap(page,frame,label,'B2',rows);click(page,frame,'#tray [data-wf="planRecipe"]',touch);state(frame,'B3');expect(frame.locator('[data-wf-form="plan"]')).to_be_visible();fonts=frame.locator('[data-wf-form="plan"] input,[data-wf-form="plan"] select').evaluate_all('nodes=>nodes.filter(e=>e.getClientRects().length).map(e=>({name:e.name,font:getComputedStyle(e).fontSize}))');cap(page,frame,label,'B3',rows);close(page,frame,touch);assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Plan view must not save, consume stock, or add a meal'
- click(page,frame,'[data-home-tab="records"]',touch);state(frame,'C1');cap(page,frame,label,'C1',rows);click(page,frame,'[data-home-subtab="monthly"]',touch);state(frame,'C3');cap(page,frame,label,'C3',rows);click(page,frame,'#homeMonthly .home-focused-heading [data-home-open="nutrition"]',touch);state(frame,'C1');assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Record/calendar and native back navigation must retain data'
+ click(page,frame,'[data-home-tab="records"]',touch);state(frame,'C1');cap(page,frame,label,'C1',rows);click(page,frame,'[data-home-subtab="supplements"]',touch);state(frame,'C2');cap(page,frame,label,'C2',rows);click(page,frame,'[data-home-subtab="monthly"]',touch);state(frame,'C3');cap(page,frame,label,'C3',rows);click(page,frame,'[data-record-month-view="day"]',touch);expect(frame.locator('[data-record-month-view="day"]')).to_have_attribute('aria-selected','true');click(page,frame,'[data-record-month-view="calendar"]',touch);expect(frame.locator('[data-record-month-view="calendar"]')).to_have_attribute('aria-selected','true');click(page,frame,'[data-home-subtab="budget"]',touch);state(frame,'C4');cap(page,frame,label,'C4',rows);click(page,frame,'[data-record-budget-view="history"]',touch);expect(frame.locator('[data-record-budget-view="history"]')).to_have_attribute('aria-selected','true');click(page,frame,'[data-record-budget-view="summary"]',touch);expect(frame.locator('[data-record-budget-view="summary"]')).to_have_attribute('aria-selected','true');assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Record tabs, calendar/day and budget summary/history must retain the entire envelope'
  click(page,frame,'[data-home-tab="kitchen"]',touch);state(frame,'D1');cap(page,frame,label,'D1',rows);click(page,frame,'#homeGrowth [data-workflow="book"]',touch);state(frame,'D2');cap(page,frame,label,'D2',rows);close(page,frame,touch);click(page,frame,'#homeGrowth [data-home-open="decor"]',touch);state(frame,'D5');cap(page,frame,label,'D5',rows);click(page,frame,'.decor-footer [data-decor-cancel]',touch);state(frame,'D1');assert frame.evaluate('KitchenJournal.getEnvelope()')==before,'Cookbook/decor Cancel must not charge or save';return {'decoded_assets':decoded,'screens':rows,'main_nav_targets':nav,'plan_native_input_fonts':fonts,'exact_data_preserved_on_all_views':True,'scope':'Read-only actual control navigation; no saves, stock changes, rewards, OCR, or synthetic records.'}
 def reveal(node):
  details=node.locator('xpath=ancestor::details').all();details=sorted(details,key=lambda d:d.evaluate('e=>{let n=0;for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==="DETAILS")n++;return n;}'))
@@ -75,36 +84,81 @@ def publish_results():
     blob=git('hash-object','-w',str(path)).decode().strip();git('update-index','--add','--cacheinfo','100644,'+blob+','+path.name,env=env)
   tree=git('write-tree',env=env).decode().strip();parents=['-p',old[0]]if old else[];commit=git('-c','user.name=github-actions[bot]','-c','user.email=41898282+github-actions[bot]@users.noreply.github.com','commit-tree',tree,*parents,'-m','Record actual fridge redo widget element screenshots').decode().strip();git('push','origin',commit+':refs/heads/'+RESULT_BRANCH);return commit
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--source',required=True);p.add_argument('--local-root',type=Path);p.add_argument('--publish-results',action='store_true');a=p.parse_args();assert re.fullmatch('[0-9a-f]{40}',a.source);assert not(a.local_root and a.publish_results);OUT.mkdir(exist_ok=True);server=None;run=os.environ.get('GITHUB_RUN_ID');result={'source':a.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/Ohoredingdong/Notion/actions/runs/{run}'if run else None,'scope':'Actual pinned HTTPS rendering in three fresh opaque widget contexts. Four-area navigation is read-only. Focused A5 uses an explicitly labelled browser-only100mL milk merge through the real form; D6 applies existing owned decor and closes doors. No real-user, meal/purchase/reward/OCR, physical-device/Safari/Notion or persistence claim.','cases':[]}
+ global OUT
+ parser=argparse.ArgumentParser(description=__doc__)
+ parser.add_argument('--source',required=True)
+ parser.add_argument('--local-root',type=Path)
+ parser.add_argument('--include-native',action='store_true',help='Local calibration only: include the native same-origin delivery')
+ parser.add_argument('--output-dir',type=Path)
+ parser.add_argument('--publish-results',action='store_true')
+ args=parser.parse_args()
+ assert re.fullmatch('[0-9a-f]{40}',args.source)
+ assert not(args.local_root and args.publish_results)
+ assert not args.include_native or args.local_root,'Native delivery is local-only in this bounded public verifier'
+ if args.output_dir:OUT=args.output_dir
+ OUT.mkdir(parents=True,exist_ok=True)
+ deliveries=['wrapper','native']if args.include_native else['wrapper']
+ server=None;run=os.environ.get('GITHUB_RUN_ID')
+ result={'source':args.source,'verifier_commit':os.environ.get('GITHUB_SHA'),'run_url':f'https://github.com/Ohoredingdong/Notion/actions/runs/{run}'if run else None,'scope':'Actual pinned HTTPS rendering in fresh opaque widget contexts. Hub navigation is read-only with exact envelope preservation. A5 uses an explicitly scoped browser-only 100mL milk merge through the real form; D6 applies owned decor. No physical-device, Safari, Notion or reload/persistence claim.','cases':[]}
  try:
-  if a.local_root:
+  if args.local_root:
    from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
    from functools import partial
    import threading
    class Quiet(SimpleHTTPRequestHandler):
     def log_message(self,*args):pass
-   server=ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(a.local_root)));threading.Thread(target=server.serve_forever,daemon=True).start();result['scope']='LOCAL HTTP calibration of candidate bytes only; not public HTTPS proof.';result['candidate']=str(a.local_root)
+   server=ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(args.local_root)))
+   threading.Thread(target=server.serve_forever,daemon=True).start()
+   result.update({'scope':'LOCAL HTTP candidate calibration only. Native same-origin and opaque wrapper contexts are separate, disposable browser examples; no public HTTPS or reload/persistence claim.','candidate':str(args.local_root)})
   with sync_playwright()as p:
-   b=p.chromium.launch(executable_path=shutil.which('google-chrome')or shutil.which('chromium'),args=['--no-sandbox'])
-   for mode in ['widget']:
-    native=(a.local_root/f'miniature-kitchen-{mode}.html').read_bytes()if a.local_root else source_bytes(a.source,f'previews/miniature-kitchen-{mode}.html');mobile=(a.local_root/'mobile'/f'{mode}.html').read_bytes()if a.local_root else source_bytes(a.source,f'previews/mobile/{mode}.html');data=contract(native,a.source,bool(a.local_root));payload=re.search(r'<template id="kitchenSource">([\s\S]*?)</template>',mobile.decode());assert payload and html.unescape(payload[1]).encode()==native
+   browser=p.chromium.launch(executable_path=shutil.which('google-chrome')or shutil.which('chromium'),args=['--no-sandbox'])
+   native=(args.local_root/'miniature-kitchen-widget.html').read_bytes()if args.local_root else source_bytes(args.source,'previews/miniature-kitchen-widget.html')
+   mobile=(args.local_root/'mobile/widget.html').read_bytes()if args.local_root else source_bytes(args.source,'previews/mobile/widget.html')
+   data=contract(native,args.source,bool(args.local_root))
+   payload=re.search(r'<template id="kitchenSource">([\s\S]*?)</template>',mobile.decode())
+   assert payload and html.unescape(payload[1]).encode()==native
+   for delivery in deliveries:
     for name,width,height in PROFILES:
-     label=mode+'-'+name;raw=f'http://127.0.0.1:{server.server_port}/mobile/{mode}.html'if server else f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{a.source}/previews/mobile/{mode}.html';url=raw if server else 'https://htmlpreview.github.io/?'+raw;row={'mode':mode,'profile':name,'viewport':[width,height],'url':url,'passed':False};ctx=b.new_context(viewport={'width':width,'height':height},has_touch=width<500,is_mobile=width<500,reduced_motion='reduce',locale='ko-KR',timezone_id='Asia/Seoul');page=ctx.new_page();page.set_default_timeout(20000);errors=[];responses=[];page.on('pageerror',lambda e,bucket=errors:bucket.append(str(e)));page.on('response',lambda r,bucket=responses:bucket.append(r))
+     label='widget-'+('native-'if delivery=='native'else'')+name
+     suffix='miniature-kitchen-widget.html'if delivery=='native'else'mobile/widget.html'
+     raw=f'http://127.0.0.1:{server.server_port}/{suffix}'if server else f'https://raw.githubusercontent.com/Ohoredingdong/Notion/{args.source}/previews/mobile/widget.html'
+     url=raw if server else'https://htmlpreview.github.io/?'+raw
+     row={'mode':'widget','delivery':delivery,'profile':name,'viewport':[width,height],'url':url,'passed':False}
+     ctx=browser.new_context(viewport={'width':width,'height':height},has_touch=width<500,is_mobile=width<500,reduced_motion='reduce',locale='ko-KR',timezone_id='Asia/Seoul')
+     page=ctx.new_page();page.set_default_timeout(20000);errors=[];responses=[]
+     page.on('pageerror',lambda error,bucket=errors:bucket.append(str(error)))
+     page.on('response',lambda response,bucket=responses:bucket.append(response))
      try:
-      response=page.goto(url,wait_until='domcontentloaded',timeout=45000);assert response.status==200;iframe=page.locator('iframe[sandbox="allow-scripts allow-forms"]');expect(iframe).to_be_attached(timeout=45000);frame=iframe.element_handle().content_frame();frame.wait_for_function('window.KitchenHome&&window.KitchenJournal&&window.MiniKitchen&&window.KitchenWorkflows',timeout=30000);got=[r for r in responses if r.url==raw];assert got and got[-1].status==200 and got[-1].body()==mobile;assert iframe.get_attribute('srcdoc').encode()==native;assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['scripts'];assert frame.locator('style').evaluate_all('nodes=>nodes.map(n=>n.textContent)')==data['styles'];row.update({'http_status':response.status,'mobile_sha256':hashlib.sha256(mobile).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'exact_inline_modules':data['script_count'],'exact_styles':data['style_count'],'inline_asset_files':[{'file':asset['file'],'sha256':asset['sha256'],'width':asset['width'],'height':asset['height']}for asset in data['assets']]});row['visual']=focused(page,frame,label,width<500,data);assert not errors,errors;row['passed']=True
-     except Exception as e:
-      row.update({'error':str(e),'trace':traceback.format_exc()})
+      response=page.goto(url,wait_until='domcontentloaded',timeout=45000);assert response.status==200
+      if delivery=='wrapper':
+       iframe=page.locator('iframe[sandbox="allow-scripts allow-forms"]');expect(iframe).to_be_attached(timeout=45000)
+       frame=iframe.element_handle().content_frame();assert iframe.get_attribute('srcdoc').encode()==native
+      else:frame=page.main_frame
+      frame.wait_for_function('window.KitchenHome&&window.KitchenJournal&&window.MiniKitchen&&window.KitchenWorkflows',timeout=30000)
+      got=[entry for entry in responses if entry.url==raw]
+      assert got and got[-1].status==200 and got[-1].body()==(native if delivery=='native'else mobile)
+      assert frame.locator('script:not([src])').evaluate_all('nodes=>nodes.map(node=>node.textContent)')==data['scripts']
+      assert frame.locator('style').evaluate_all('nodes=>nodes.map(node=>node.textContent)')==data['styles']
+      observation=frame.evaluate('()=>({origin:location.origin,storage_status:KitchenJournal.status})')
+      row.update({'http_status':response.status,'mobile_sha256':hashlib.sha256(mobile).hexdigest(),'native_sha256':hashlib.sha256(native).hexdigest(),'decoded_sha256':data['decoded_sha256'],'exact_inline_modules':data['script_count'],'exact_styles':data['style_count'],'storage_observation':observation,'inline_asset_files':[{'file':asset['file'],'sha256':asset['sha256'],'width':asset['width'],'height':asset['height']}for asset in data['assets']]})
+      row['visual']=focused(page,frame,label,width<500,data);assert not errors,errors;row['passed']=True
+     except Exception as error:
+      row.update({'error':str(error),'trace':traceback.format_exc()})
       try:page.screenshot(path=str(OUT/(label+'-failure.png')))
       except Exception:pass
-     finally:row['runtime_errors']=errors;result['cases'].append(row);print(label,row['passed'],row.get('error',''),flush=True);ctx.close()
-   b.close()
+     finally:
+      row['runtime_errors']=errors;result['cases'].append(row);print(label,row['passed'],row.get('error',''),flush=True);ctx.close()
+   browser.close()
  except Exception:result['setup_error']=traceback.format_exc()
  finally:
   if server:server.shutdown()
   comparison=Path('ci-evidence/kitchen-fridge-redo-local-reference-comparison.png')
   if comparison.is_file():
-   raw=comparison.read_bytes();assert raw[:8]==b'\x89PNG\r\n\x1a\n';shutil.copyfile(comparison,OUT/'local-reference-comparison.png');result['comparison_evidence']={'file':'local-reference-comparison.png','sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'dimensions':struct.unpack('>II',raw[16:24]),'scope':'Supplied reference versus locally rendered source-candidate comparison; this optional PNG is not a CI screenshot.'}
-  result['passed']=len(result['cases'])==3 and all(row['passed']for row in result['cases']);(OUT/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps({'source':a.source,'passed':result['passed'],'run_url':result['run_url'],'setup_error':result.get('setup_error')},ensure_ascii=False),flush=True)
-  if a.publish_results:print('Evidence commit '+publish_results(),flush=True)
+   raw=comparison.read_bytes();assert raw[:8]==b'\x89PNG\r\n\x1a\n';shutil.copyfile(comparison,OUT/'local-reference-comparison.png')
+   result['comparison_evidence']={'file':'local-reference-comparison.png','sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'dimensions':struct.unpack('>II',raw[16:24]),'scope':'Unmodified locally prepared comparison artifact supplied with the pinned source; this optional PNG is not a CI screenshot.'}
+  result['passed']=len(result['cases'])==len(PROFILES)*len(deliveries)and all(row['passed']for row in result['cases'])
+  (OUT/'status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+  print(json.dumps({'source':args.source,'passed':result['passed'],'run_url':result['run_url'],'setup_error':result.get('setup_error')},ensure_ascii=False),flush=True)
+  if args.publish_results:print('Evidence commit '+publish_results(),flush=True)
  if not result['passed']:raise SystemExit(1)
 if __name__=='__main__':main()

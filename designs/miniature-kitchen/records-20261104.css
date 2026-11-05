@@ -328,3 +328,259 @@ body[data-home="records"] #homeMonthly>.home-focused-heading h3,body[data-home="
 body[data-home="records"] #homeMonthly .home-calendar button:not([aria-current]):nth-child(7n+1){color:#c34436}
 body[data-home="records"] #homeMonthly .home-calendar button:not([aria-current]):nth-child(7n){color:#855d40}
 @media(max-width:360px){body[data-home="records"] #panel-records>.panel-tabs button{font-size:14px}body[data-home="records"] #homeMonthly>.home-focused-heading h3,body[data-home="records"] #homeBudget>.home-budget-heading h3{font-size:18px}}
+
+/* Record hubs share the refrigerator frame. Detail and management views open
+   separately; extra meals, products and receipts use explicit page controls. */
+body[data-home="records"] #panel-records{display:flex;flex-direction:column}
+body[data-home="records"] #panel-records>.hub-heading{display:none}
+body[data-home="records"][data-home-page] #panel-records>.panel-tabs{display:flex;flex:none;min-height:34px;margin:0 0 6px;padding:0 2px;gap:0;border:0;border-radius:12px;background:#f1ece6}
+body[data-home="records"][data-home-page] #panel-records>.panel-tabs button{min-height:34px;padding:3px 4px;font-size:14px;border-radius:11px}
+body[data-home="records"] #panel-records>.home-card{display:flex;flex:1;min-height:0;width:100%;max-width:none;padding:0!important;margin:0;border:0;border-radius:0;overflow:visible}
+body[data-home="records"] #panel-records>.home-card[hidden]{display:none!important}
+body[data-home="records"] #panel-records .record-hub{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;width:100%;gap:5px;container-type:inline-size;font-size:14px;line-height:1.35}
+body[data-home="records"] #panel-records .record-hub :is(h3,h4,p){margin:0}
+body[data-home="records"] #panel-records .record-hub button{font-family:inherit;color:inherit;cursor:pointer;min-width:0}
+body[data-home="records"] #panel-records .record-hub button:disabled{opacity:.35;cursor:default}
+body[data-home="records"] #panel-records .record-hub :is(button,input):focus-visible{outline:2px solid #9b7051;outline-offset:2px}
+body[data-home="records"] #panel-records .record-hub-footer{margin-top:auto;flex:none}
+body[data-home="records"] #panel-records .record-hub-footer>button,
+body[data-home="records"] #panel-records .record-two-actions>button,
+body[data-home="records"] #panel-records .record-direct-input{width:100%;min-height:44px;padding:7px 5px;border:1px solid #e5d6c8;border-radius:8px;background:#f7f0e9;font-size:14px;font-weight:600}
+body[data-home="records"] #panel-records .record-two-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex:none}
+body[data-home="records"] #panel-records .record-hub .home-primary{background:#8b6044;color:#fff;border-color:#8b6044}
+body[data-home="records"] #panel-records .record-pager{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px;flex:none;min-height:44px}
+body[data-home="records"] #panel-records .record-pager>button{display:grid;place-items:center;min-height:44px;width:44px;padding:0;border:1px solid #e9dfd4;border-radius:8px;background:#fffdfa;font-size:25px;line-height:1}
+body[data-home="records"] #panel-records .record-pager>span{text-align:center;font-size:11px;color:#8c7663}
+body[data-home="records"] #panel-records .record-no-meal{display:flex;align-items:center;justify-content:center;gap:7px;min-height:64px;padding:8px;background:#f8f3ec;border-radius:9px;color:#8a7460;font-size:12px;text-align:center}
+body[data-home="records"] #panel-records .record-no-meal>.icon{width:25px;height:25px}
+
+/* Nutrition: one full meal entry, with paging beside it. */
+body[data-home="records"] #panel-records .record-hub .home-record-date,
+body[data-home="records"] #panel-records .record-supplement-date{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:30px;padding:0;border:0;border-radius:0;background:none;flex:none}
+body[data-home="records"] #panel-records .record-hub .home-record-date>span{font-size:14px;font-weight:650}
+body[data-home="records"] #panel-records .record-hub :is(.home-record-date,.record-supplement-date) input{min-height:30px;width:141px;min-width:0;padding:1px 2px;font-size:13px;border:0;background:none;color:#7b6554;font-family:inherit}
+body[data-home="records"] #panel-records .record-hub .home-daily-card{padding:0;border:0;border-radius:0;background:none;box-shadow:none;flex:none}
+body[data-home="records"] #panel-records .record-hub .record-macros{gap:5px}
+body[data-home="records"] #panel-records .record-hub .record-macros>div{padding:6px;border-radius:8px;min-width:0}
+body[data-home="records"] #panel-records .record-hub .record-macros>div>span{margin:0 0 2px;font-size:11px}
+body[data-home="records"] #panel-records .record-hub .record-macros strong{font-size:22px;line-height:1.1;letter-spacing:-.5px}
+body[data-home="records"] #panel-records .record-hub .record-macros strong small{font-size:11px;margin-left:1px}
+body[data-home="records"] #panel-records .record-hub .record-macros>div>small{font-size:10px;line-height:1.15}
+body[data-home="records"] #panel-records .record-hub .record-track{height:6px;margin-top:4px}
+body[data-home="records"] #panel-records .record-hub .record-meals-heading{display:flex;align-items:center;justify-content:space-between;min-height:20px;margin:0;gap:6px;flex:none}
+body[data-home="records"] #panel-records .record-hub .record-meals-heading h4{font-size:14px}
+body[data-home="records"] #panel-records .record-hub .record-meals-heading h4 small{font-size:11px;font-weight:400;color:#8f7966}
+body[data-home="records"] #panel-records .record-hub .record-meals-heading>strong{font-size:14px;white-space:nowrap}
+body[data-home="records"] #panel-records .record-meal-browser{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;column-gap:4px;align-items:stretch;flex:none}
+body[data-home="records"] #panel-records .record-hub .record-meal-row{display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-rows:auto auto;gap:0 7px;align-items:center;width:100%;min-height:59px;padding:5px 6px;border:1px solid #e9dfd4;border-radius:9px;background:#fff;text-align:left}
+body[data-home="records"] #panel-records .record-meal-browser>.record-meal-row{grid-column:2;grid-row:1}
+body[data-home="records"] #panel-records .record-meal-browser>.record-meal-row:only-child,
+body[data-home="records"] #panel-records .record-meal-browser>.record-no-meal{grid-column:1/-1}
+body[data-home="records"] #panel-records .record-hub .record-meal-row>span:first-child{display:grid;place-items:center;grid-column:1;grid-row:1/3;width:40px;height:42px;border-radius:6px;background:#f8f1e7;overflow:hidden}
+body[data-home="records"] #panel-records .record-hub .record-meal-row .recipe-photo{width:100%;height:100%!important;object-fit:cover}
+body[data-home="records"] #panel-records .record-hub .record-meal-row .icon{width:25px;height:25px;color:#9a7b5d}
+body[data-home="records"] #panel-records .record-hub .record-meal-row>span:nth-child(2){min-width:0}
+body[data-home="records"] #panel-records .record-hub .record-meal-row small{display:block;font-size:10px;color:#927862;margin:0}
+body[data-home="records"] #panel-records .record-hub .record-meal-row strong{display:block;font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body[data-home="records"] #panel-records .record-hub .record-meal-row>b{grid-column:2;font-size:11px;font-weight:500;white-space:nowrap}
+body[data-home="records"] #panel-records .record-hub .record-meal-row>span:last-child{display:none}
+body[data-home="records"] #panel-records .record-meal-browser>.record-pager{display:contents}
+body[data-home="records"] #panel-records .record-meal-browser>.record-pager>button:first-child{grid-column:1;grid-row:1;width:44px}
+body[data-home="records"] #panel-records .record-meal-browser>.record-pager>button:last-child{grid-column:3;grid-row:1;width:44px}
+body[data-home="records"] #panel-records .record-meal-browser>.record-pager>span{grid-column:2;grid-row:2;font-size:10px;line-height:13px}
+
+/* Management is a local screen, so it cannot push meal actions below the nav. */
+body[data-home="records"] #panel-records .record-manage-heading{display:flex;align-items:center;gap:8px;min-height:44px;flex:none}
+body[data-home="records"] #panel-records .record-manage-heading>button{min-width:60px;min-height:44px;padding:0 5px;border:0;background:none;font-size:14px;color:#7e5b42}
+body[data-home="records"] #panel-records .record-manage-heading h3{font-size:16px}
+body[data-home="records"] #panel-records .record-manage-meal{display:flex;flex-direction:column;gap:5px;flex:none}
+body[data-home="records"] #panel-records .record-manage-selection{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;min-height:44px;column-gap:4px;align-items:center}
+body[data-home="records"] #panel-records .record-manage-selection>span{grid-column:2;grid-row:1;min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;font-size:12px;text-align:center;align-self:start;padding-top:6px}
+body[data-home="records"] #panel-records .record-manage-selection>span:only-child{grid-column:1/-1;align-self:center;padding:0}
+body[data-home="records"] #panel-records .record-manage-selection>.record-pager{display:contents}
+body[data-home="records"] #panel-records .record-manage-selection>.record-pager>button:first-child{grid-column:1;grid-row:1}
+body[data-home="records"] #panel-records .record-manage-selection>.record-pager>button:last-child{grid-column:3;grid-row:1}
+body[data-home="records"] #panel-records .record-manage-selection>.record-pager>span{grid-column:2;grid-row:1;align-self:end;padding-bottom:4px;font-size:10px}
+body[data-home="records"] #panel-records .record-direct-input{margin-top:auto}
+body[data-home="records"] #panel-records .record-cancel{color:#a4533e}
+
+/* Supplement checklist: two products on phones, four in the larger frame. */
+body[data-home="records"] #panel-records .record-supplement-date>span{font-size:12px;color:#7e6754;white-space:nowrap}
+body[data-home="records"] #panel-records .record-supplement-date b{font-size:13px;margin-left:3px;color:#45372d}
+body[data-home="records"] #panel-records .record-supplement-list{flex:none}
+body[data-home="records"] #panel-records .record-hub .home-supplement-row{display:grid;grid-template-columns:minmax(0,1fr) 44px;min-height:64px;border-bottom:1px solid #eee4d8}
+body[data-home="records"] #panel-records .record-hub .home-supplement{display:flex;align-items:center;min-height:64px;min-width:0;padding:5px 0;margin:0;border:0;gap:8px;cursor:pointer}
+body[data-home="records"] #panel-records .record-hub .home-supplement input{flex:none;width:20px;height:20px;margin:0;accent-color:#8b6044}
+body[data-home="records"] #panel-records .record-hub .home-supplement .supplement-product-art{flex:none;width:37px;height:32px}
+body[data-home="records"] #panel-records .record-hub .home-supplement>span:last-child{min-width:0}
+body[data-home="records"] #panel-records .record-hub .home-supplement strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-home="records"] #panel-records .record-hub .home-supplement small{display:block;font-size:11px;margin-top:3px;color:#927b66;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-home="records"] #panel-records .record-hub .home-supplement-row>button{min-width:44px;min-height:44px;padding:0;border:0;background:none;font-size:26px;color:#826149}
+body[data-home="records"] #panel-records .record-supplement-footer{display:grid;gap:5px;grid-template-columns:minmax(0,1fr)}
+body[data-home="records"] #panel-records .record-supplement-footer.has-pages{grid-template-columns:44px minmax(0,1fr) 44px}
+body[data-home="records"] #panel-records .record-supplement-footer.has-pages>[data-record-page]{padding:0;font-size:25px;background:#fffdfa}
+body[data-home="records"] #panel-records .record-hub-note{font-size:10px;line-height:1.25;color:#9b8672;text-align:center;flex:none}
+
+/* Month and selected-day details are separate local tabs. */
+body[data-home="records"] #panel-records .record-local-tabs{display:flex;min-height:32px;flex:none;padding:2px;border-radius:9px;background:#f4f0eb}
+body[data-home="records"] #panel-records .record-local-tabs>button{flex:1;min-height:28px;padding:3px;border:0;border-radius:7px;background:none;font-size:12px;color:#8b7563}
+body[data-home="records"] #panel-records .record-local-tabs>[aria-selected="true"]{background:#fff;box-shadow:0 1px 3px #76533312;color:#4c3829;font-weight:600}
+body[data-home="records"] #panel-records .record-hub .home-date-bar{min-height:32px;margin:0;flex:none}
+body[data-home="records"] #panel-records .record-hub .home-date-bar>button{min-height:32px;height:32px;width:34px;padding:0;font-size:21px}
+body[data-home="records"] #panel-records .record-hub .home-date-value{font-size:14px!important}
+body[data-home="records"] #panel-records .record-hub .home-date-value strong{font-size:14px}
+body[data-home="records"] #panel-records .record-hub .home-month-calendar{padding:0;flex:1;min-height:0;display:flex;flex-direction:column}
+body[data-home="records"] #panel-records .record-hub .calendar-weekdays{margin:0;gap:1px;flex:none}
+body[data-home="records"] #panel-records .record-hub .calendar-weekdays span{padding:2px 0;font-size:11px;line-height:15px}
+body[data-home="records"] #panel-records .record-hub .home-calendar{margin:0;gap:1px;flex:1;grid-auto-rows:minmax(0,1fr)}
+body[data-home="records"] #panel-records .record-hub .home-calendar button{height:auto;min-height:21px!important;padding:1px 0!important;font-size:13px!important;border-radius:6px!important;line-height:1.15}
+body[data-home="records"] #panel-records .record-hub .home-month-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0!important;gap:5px;flex:none}
+body[data-home="records"] #panel-records .record-hub .home-month-stats>span{padding:5px 6px;font-size:10px;border-radius:7px;line-height:1.2}
+body[data-home="records"] #panel-records .record-hub .home-month-stats b{display:block;margin-top:2px;font-size:17px!important;letter-spacing:-.4px;line-height:1.15}
+body[data-home="records"] #panel-records .record-hub .home-month-stats small{font-size:10px;margin-left:1px}
+body[data-home="records"] #panel-records .record-day-summary{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:6px;min-height:0;flex:1}
+body[data-home="records"] #panel-records .record-day-ratio{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:5px;border:1px solid #ece1d6;border-radius:9px;background:#fff}
+body[data-home="records"] #panel-records .record-hub .home-ratio-donut{width:56px;height:56px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-donut>span{width:40px;height:40px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-donut b{font-size:14px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-donut small{font-size:8px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-legend{display:grid;width:100%;gap:2px;font-size:9px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-legend b{font-size:9px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-legend i{width:7px;height:7px;margin-right:3px}
+body[data-home="records"] #panel-records .record-hub .home-ratio-empty{font-size:10px!important}
+body[data-home="records"] #panel-records .record-day-meals{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+body[data-home="records"] #panel-records .record-day-meals .record-meal-row{grid-template-columns:30px minmax(0,1fr);gap:0 4px;min-height:54px;padding:4px}
+body[data-home="records"] #panel-records .record-day-meals .record-meal-row>span:first-child{width:30px;height:36px}
+body[data-home="records"] #panel-records .record-day-meals .record-meal-row strong{font-size:11px}
+body[data-home="records"] #panel-records .record-day-meals .record-meal-row>b{font-size:10px}
+body[data-home="records"] #panel-records .record-day-supplements{display:flex;align-items:center;justify-content:center;min-height:28px;gap:7px;padding:0;font-size:11px;flex:none;color:#836b57}
+body[data-home="records"] #panel-records .record-day-supplements label{display:flex;align-items:center;gap:3px;min-width:0;min-height:28px;cursor:pointer}
+body[data-home="records"] #panel-records .record-day-supplements label>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:86px}
+body[data-home="records"] #panel-records .record-day-supplements input{width:17px;height:17px;accent-color:#8b6044;margin:0}
+body[data-home="records"] #panel-records .record-supplement-link{min-height:32px;border:0;border-radius:7px;background:#f6f0e9;font-size:12px}
+
+/* Cash summary is distinct from unsaved estimates and saved receipt pages. */
+body[data-home="records"] #panel-records .record-hub .budget-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:12px 0;margin:0;flex:none}
+body[data-home="records"] #panel-records .record-hub .budget-overview>div{padding:0 3px}
+body[data-home="records"] #panel-records .record-hub .budget-overview span{font-size:12px;margin-bottom:5px}
+body[data-home="records"] #panel-records .record-hub .budget-overview strong{font-size:clamp(16px,5.55cqw,28px);letter-spacing:-.6px}
+body[data-home="records"] #panel-records .record-hub .budget-overview strong small{font-size:10px;margin-left:1px}
+body[data-home="records"] #panel-records .record-hub .home-shopping-summary{display:flex;align-items:center;gap:5px;min-height:38px;padding:7px 8px;margin:0;flex:none;font-size:12px}
+body[data-home="records"] #panel-records .record-hub .home-shopping-summary strong{font-size:15px}
+body[data-home="records"] #panel-records .record-hub .home-shopping-summary small{font-size:9px}
+body[data-home="records"] #panel-records .record-receipt-card{display:grid;grid-template-columns:30px minmax(0,1fr) auto 10px;gap:6px;align-items:center;width:100%;min-height:70px;padding:9px 7px;border:1px solid #e7dacb;border-radius:9px;background:#fff;text-align:left;flex:none}
+body[data-home="records"] #panel-records .record-receipt-card .icon{width:27px;height:27px;color:#9f7b54}
+body[data-home="records"] #panel-records .record-receipt-card strong{display:block;font-size:13px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body[data-home="records"] #panel-records .record-receipt-card small{display:block;font-size:10px;color:#987d65;margin-top:4px}
+body[data-home="records"] #panel-records .record-receipt-card>b{font-size:14px;white-space:nowrap}
+
+/* Product details show the selected product, without a duplicate inert list. */
+body[data-mode] #tray[data-workflow-route="supplement"]{height:auto;min-height:0}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-background{display:none}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail{margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail>header{margin:0 0 8px;gap:10px;min-height:54px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail>header>button{min-width:44px;min-height:44px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail>header h3{font-size:20px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-info{padding:8px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-info dl>div{min-height:32px;padding:5px 7px;font-size:13px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-info p{font-size:11px;line-height:1.4}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-today{position:static;min-height:46px;margin-top:8px;font-size:16px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail-tools{margin-top:6px;gap:6px}
+body[data-mode] #tray[data-workflow-route="supplement"] .supplement-detail-tools button{min-height:44px;font-size:12px}
+body[data-mode] #tray[data-workflow-route="shopping"],body[data-mode] #tray[data-workflow-route="purchase"],body[data-mode] #tray[data-workflow-route="receipt"]{height:auto;min-height:0}
+
+@media(max-width:360px){
+ body[data-home="records"] #panel-records .record-hub{gap:4px}
+ body[data-home="records"] #panel-records .record-hub .record-macros>div{padding:5px}
+ body[data-home="records"] #panel-records .record-hub .record-macros strong{font-size:20px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row{grid-template-columns:33px minmax(0,1fr);gap:0 4px;min-height:56px;padding:4px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row>span:first-child{width:33px;height:39px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row strong{font-size:12px}
+ body[data-home="records"] #panel-records .record-hub .record-meals-heading>strong{font-size:13px}
+ body[data-home="records"] #panel-records .record-two-actions>button{font-size:12px}
+ body[data-home="records"] #panel-records .record-hub .home-month-stats>span{padding:4px 5px;font-size:9px}
+ body[data-home="records"] #panel-records .record-hub .home-month-stats b{font-size:15px!important}
+ body[data-home="records"] #panel-records .record-hub .home-date-value strong{font-size:12px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut{width:47px;height:47px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut>span{width:34px;height:34px}
+ body[data-home="records"] #panel-records .record-day-ratio{padding:4px;gap:3px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut b{font-size:12px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-legend,body[data-home="records"] #panel-records .record-hub .home-ratio-legend b{font-size:8px}
+ body[data-home="records"] #panel-records .record-hub .home-shopping-summary{font-size:11px;gap:4px;padding-inline:6px}
+ body[data-home="records"] #panel-records .record-hub .home-shopping-summary strong{font-size:14px}
+ body[data-home="records"] #panel-records .record-hub-monthly{gap:3px}
+ body[data-home="records"] #panel-records .record-hub-monthly .record-local-tabs{min-height:28px}
+ body[data-home="records"] #panel-records .record-hub-monthly .record-local-tabs>button{min-height:24px;padding:1px;font-size:11px}
+ body[data-home="records"] #panel-records .record-hub-monthly .home-date-bar,body[data-home="records"] #panel-records .record-hub-monthly .home-date-bar>button{min-height:28px;height:28px}
+ body[data-home="records"] #panel-records .record-hub-monthly .calendar-weekdays span{font-size:10px;line-height:12px;padding:2px 0}
+ body[data-home="records"] #panel-records .record-hub-monthly .home-calendar button{min-height:18px!important;font-size:12px!important}
+ body[data-home="records"] #panel-records .record-hub-monthly .home-month-stats>span{padding:3px 5px}
+ body[data-home="records"] #panel-records .record-hub-monthly .home-month-stats b{font-size:14px!important;margin-top:1px}
+ body[data-home="records"] #panel-records .record-hub-nutrition:has(.record-macros>div>small:nth-of-type(2)){gap:2px}
+ body[data-home="records"] #panel-records .record-hub-nutrition:has(.record-macros>div>small:nth-of-type(2)) .home-record-date,body[data-home="records"] #panel-records .record-hub-nutrition:has(.record-macros>div>small:nth-of-type(2)) .home-record-date input{min-height:26px}
+ body[data-home="records"] #panel-records .record-hub-nutrition:has(.record-macros>div>small:nth-of-type(2)) .record-meals-heading{min-height:18px}
+ body[data-home="records"] #panel-records .record-hub-nutrition:has(.record-macros>div>small:nth-of-type(2)) .record-macros>div{padding-block:2px}
+}
+@media(min-width:560px){
+ body[data-home="records"][data-home-page] #panel-records>.panel-tabs{min-height:42px;margin-bottom:10px}
+ body[data-home="records"][data-home-page] #panel-records>.panel-tabs button{min-height:42px;font-size:16px}
+ body[data-home="records"] #panel-records .record-hub{gap:10px;font-size:16px}
+ body[data-home="records"] #panel-records .record-hub .home-record-date{min-height:42px}
+ body[data-home="records"] #panel-records .record-hub .home-record-date>span{font-size:18px}
+ body[data-home="records"] #panel-records .record-hub :is(.home-record-date,.record-supplement-date) input{width:170px;min-height:38px;font-size:16px}
+ body[data-home="records"] #panel-records .record-hub .record-macros>div{padding:14px}
+ body[data-home="records"] #panel-records .record-hub .record-macros>div>span{font-size:14px;margin-bottom:6px}
+ body[data-home="records"] #panel-records .record-hub .record-macros strong{font-size:32px}
+ body[data-home="records"] #panel-records .record-hub .record-macros :is(strong small,div>small){font-size:13px!important}
+ body[data-home="records"] #panel-records .record-hub .record-track{height:8px;margin-top:8px}
+ body[data-home="records"] #panel-records .record-hub .record-meals-heading{min-height:30px}
+ body[data-home="records"] #panel-records .record-hub .record-meals-heading :is(h4,strong){font-size:18px}
+ body[data-home="records"] #panel-records .record-meal-browser{column-gap:10px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row{min-height:108px;grid-template-columns:83px minmax(0,1fr);padding:10px;gap:0 12px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row>span:first-child{width:83px;height:83px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row small{font-size:13px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row strong{font-size:18px}
+ body[data-home="records"] #panel-records .record-hub .record-meal-row>b{font-size:16px}
+ body[data-home="records"] #panel-records .record-meal-browser>.record-pager>span{font-size:12px;line-height:20px}
+ body[data-home="records"] #panel-records .record-hub-footer>button,body[data-home="records"] #panel-records .record-two-actions>button,body[data-home="records"] #panel-records .record-direct-input{min-height:50px;font-size:16px}
+ body[data-home="records"] #panel-records .record-hub .home-supplement-row,body[data-home="records"] #panel-records .record-hub .home-supplement{min-height:83px}
+ body[data-home="records"] #panel-records .record-hub .home-supplement strong{font-size:18px}
+ body[data-home="records"] #panel-records .record-hub .home-supplement small{font-size:13px}
+ body[data-home="records"] #panel-records .record-hub .home-supplement .supplement-product-art{width:52px;height:43px}
+ body[data-home="records"] #panel-records .record-supplement-date>span{font-size:16px}
+ body[data-home="records"] #panel-records .record-supplement-date b{font-size:17px}
+ body[data-home="records"] #panel-records .record-hub-note{font-size:12px}
+ body[data-home="records"] #panel-records .record-local-tabs{min-height:40px}
+ body[data-home="records"] #panel-records .record-local-tabs>button{min-height:36px;font-size:15px}
+ body[data-home="records"] #panel-records .record-hub .home-date-bar,body[data-home="records"] #panel-records .record-hub .home-date-bar>button{min-height:42px;height:42px}
+ body[data-home="records"] #panel-records .record-hub .home-date-value strong{font-size:18px}
+ body[data-home="records"] #panel-records .record-hub .calendar-weekdays span{font-size:14px;line-height:24px}
+ body[data-home="records"] #panel-records .record-hub .home-calendar button{min-height:38px!important;font-size:17px!important}
+ body[data-home="records"] #panel-records .record-hub .home-month-stats>span{padding:12px;font-size:14px}
+ body[data-home="records"] #panel-records .record-hub .home-month-stats b{font-size:25px!important;margin-top:5px}
+ body[data-home="records"] #panel-records .record-hub .home-month-stats small{font-size:13px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut{width:110px;height:110px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut>span{width:78px;height:78px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut b{font-size:26px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-donut small{font-size:12px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-legend,body[data-home="records"] #panel-records .record-hub .home-ratio-legend b{font-size:13px}
+ body[data-home="records"] #panel-records .record-hub .home-ratio-legend{gap:7px;max-width:240px}
+ body[data-home="records"] #panel-records .record-day-ratio{gap:15px}
+ body[data-home="records"] #panel-records .record-day-meals .record-meal-row{min-height:90px;grid-template-columns:64px minmax(0,1fr);padding:8px;gap:0 8px}
+ body[data-home="records"] #panel-records .record-day-meals .record-meal-row>span:first-child{width:64px;height:64px}
+ body[data-home="records"] #panel-records .record-day-meals .record-meal-row strong{font-size:16px}
+ body[data-home="records"] #panel-records .record-day-meals .record-meal-row>b{font-size:14px}
+ body[data-home="records"] #panel-records .record-day-supplements{min-height:38px;font-size:14px;gap:15px}
+ body[data-home="records"] #panel-records .record-day-supplements label>span{max-width:160px}
+ body[data-home="records"] #panel-records .record-hub .budget-overview{padding:27px 0}
+ body[data-home="records"] #panel-records .record-hub .budget-overview span{font-size:16px;margin-bottom:12px}
+ body[data-home="records"] #panel-records .record-hub .budget-overview strong{font-size:clamp(24px,4.7cqw,34px)}
+ body[data-home="records"] #panel-records .record-hub .budget-overview strong small{font-size:14px}
+ body[data-home="records"] #panel-records .record-hub .home-shopping-summary{min-height:58px;font-size:16px;padding:12px}
+ body[data-home="records"] #panel-records .record-hub .home-shopping-summary strong{font-size:21px}
+ body[data-home="records"] #panel-records .record-hub .home-shopping-summary small{font-size:12px}
+ body[data-home="records"] #panel-records .record-receipt-card{min-height:100px;grid-template-columns:42px minmax(0,1fr) auto 15px;padding:15px;gap:12px}
+ body[data-home="records"] #panel-records .record-receipt-card strong{font-size:18px}
+ body[data-home="records"] #panel-records .record-receipt-card small{font-size:13px}
+ body[data-home="records"] #panel-records .record-receipt-card>b{font-size:21px}
+}
