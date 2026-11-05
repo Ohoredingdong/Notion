@@ -1010,6 +1010,17 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
  .fx-sent-v9 .fx-sent-v9-detail{grid-template-rows:22px 22px 17px}
 }
 @media(max-width:375px){
+ /* Keep full figures above their sparklines in narrow two-column market cards. */
+ .fx-v5-markets .nr-index{
+  display:grid;grid-template-columns:minmax(0,1fr) 68px;column-gap:4px;
+  align-content:start;align-items:center;
+ }
+ .fx-v5-markets .nr-index>.nr-head,
+ .fx-v5-markets .nr-index>.nr-num,
+ .fx-v5-markets .nr-index>.nr-sub{grid-column:1/-1}
+ .fx-v5-markets .nr-index .nr-mini-chart{
+  position:static;grid-column:2;grid-row:3;align-self:center;
+ }
  .fx-sent-v9 .fx-sent-v9-rowicon{display:none}
  .fx-sent-v9 .fx-sent-v9-row{grid-template-columns:31px minmax(0,1fr) 32px;gap:4px}
  .fx-sent-v9 .fx-sent-v9-content{grid-template-columns:78px minmax(0,1fr);gap:6px}

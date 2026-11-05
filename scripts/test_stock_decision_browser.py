@@ -343,10 +343,19 @@ class RadarChecks:
             if page.locator("#view-home").count():
                 expect(page.locator("#view-home")).to_be_visible()
                 expect(page.locator("#nr-home-content")).to_be_visible()
-                require(page.locator("#nr-market-overview,#nr-home-alerts,#nr-home-picks").count() == 3,
-                        "Neutral home must expose market overview, alerts and research picks.")
-                require(page.locator(".nr-home-actions button").count() >= 6,
-                        "Neutral home must expose the primary screen entry points.")
+                require(page.locator("#nr-home-content .rf-markets .nr-index").count() == 4
+                        and page.locator("#nr-home-content .rf-event-feed").count() == 1
+                        and page.locator("#rf-list [data-nr-select]").count() > 0,
+                        "Current neutral home must expose four market cards, sourced alerts and research picks.")
+                home_symbols = page.locator("#rf-list [data-nr-select]").evaluate_all(
+                    "nodes => nodes.map(node => node.dataset.nrSelect)")
+                require(set(home_symbols) <= set(self.companies),
+                        "Neutral home picks must remain actual captured companies.")
+                entry_points = set(page.locator("#nr-home-content [data-nr-screen]").evaluate_all(
+                    "nodes => nodes.map(node => node.dataset.nrScreen)"))
+                require({"stocks", "monitor", "scenario", "performance", "portfolio"} <= entry_points
+                        and page.locator("#nr-home-content [data-nr-detail]").count() > 0,
+                        "Neutral home must expose the six current stock/detail/monitor/scenario/performance/portfolio entry points.")
                 self.record(label + " neutral home exposes market, alerts, picks and primary screen entry points")
                 page.locator('.nr-rail [data-nr-view="discover"]').click()
                 expect(page.locator("#view-discover")).to_be_visible()

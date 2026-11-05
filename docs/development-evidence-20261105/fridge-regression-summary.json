@@ -1,0 +1,68 @@
+{
+  "scope": "Local isolated contexts and existing Node tests only. No production writes, collection, deployment, or actual user data.",
+  "baselineCommit": "17d11d28fdf156f7a6f9ee7eeefe689e761cd83c",
+  "rootBranch": "chore/codex-development-system-20261105",
+  "sourceFiles": {
+    "use-me-first-kitchen.js": "776871220158769bdd6e75b6ffeb81f84ab732f22879baca975d180c3fbc9997",
+    "use-me-first-kitchen.css": "2f5fa92523e7bd050b41e3bbeecf6604c6dbc722827598d03ca5e4262eaf2e15",
+    "tests/fridge-ui.test.cjs": "dc07edf55087eda859c0a5a970f382e31c7b94e61adb45d5f2928b6f52238578"
+  },
+  "baselineNode": {
+    "tests": 146,
+    "passed": 141,
+    "failed": 5
+  },
+  "baselineExtraExpiryReproduction": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "expectedUnfixedBug": true,
+    "report": "expiry-reproduction.json"
+  },
+  "afterNode": {
+    "command": "node --test tests/*.test.cjs",
+    "tests": 150,
+    "passed": 150,
+    "failed": 0,
+    "skipped": 0,
+    "log": "node-all-after.log"
+  },
+  "afterFridgeUI": {
+    "command": "node --test tests/fridge-ui.test.cjs",
+    "tests": 39,
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0,
+    "log": "node-after.log"
+  },
+  "actualBrowser": {
+    "profiles": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        1366,
+        900
+      ]
+    ],
+    "ordinaryDifferentPixels": [
+      0,
+      0,
+      0
+    ],
+    "sceneStageShelfGeometryUnchanged": true,
+    "selectedLayerButtons44pxAndPainted": true,
+    "actualClicksPersistFrontThenBackAndReload": true,
+    "sixExpiredStoredLotsStartupReloadRawExact": true,
+    "report": "layout-comparison.json"
+  },
+  "limitations": [
+    "Previously overwritten dates cannot be reconstructed without a trustworthy original backup; this change does not guess or migrate them.",
+    "Actual production/Safari/Notion devices and deployment are not covered by these local Chromium checks."
+  ]
+}

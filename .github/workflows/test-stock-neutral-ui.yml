@@ -33,7 +33,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install operating theme without changing original financial evidence
+      - name: Install legacy theme on its design preview only
+        if: github.ref_name == 'design/neutral-production-20261030'
         run: |
           sha256sum stock-opportunity-data.json stock-investment-cases.json stock-green-review.json stock-forecast-learning.json > /tmp/finance-before.sha
           python scripts/install_stock_radar_neutral.py
@@ -48,12 +49,22 @@ jobs:
         run: |
           pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
           python scripts/build_stock_radar_chart_cache.py
-      - name: Browser regression with real repository snapshots
+      - name: Install the pinned browser verifier
         run: |
-          pip install playwright
+          pip install 'playwright==1.56.0'
           python -m playwright install --with-deps chromium
+      - name: Verify legacy preview using its own renderer
+        if: github.ref_name == 'design/neutral-production-20261030'
+        run: |
           python -m http.server 8770 >/tmp/neutral-http.log 2>&1 &
           python scripts/test_stock_radar_neutral.py
+      - name: Verify the current canonical page without installing the legacy theme
+        if: github.ref_name != 'design/neutral-production-20261030'
+        run: |
+          python scripts/test_stock_radar_publish_protection.py
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          python scripts/test_stock_radar_canonical_browser.py --output "$RUNNER_TEMP/current-radar-evidence"
       - name: Save checked generated UI on design branch only
         if: github.ref_name == 'design/neutral-production-20261030'
         run: |
@@ -71,7 +82,7 @@ jobs:
           python - <<'PY'
           import hashlib,time,urllib.request
           from pathlib import Path
-          names=['stock-value-radar.html','assets/stock-radar-neutral.css','assets/stock-radar-neutral.js','assets/stock-radar-v8.js']
+          names=['stock-value-radar.html','assets/stock-radar-clean-bridge.js','assets/stock-radar-flow-v2.js','assets/stock-radar-v8.js']
           expected={n:hashlib.sha256(Path(n).read_bytes()).hexdigest() for n in names}
           for attempt in range(24):
               try:
@@ -80,13 +91,19 @@ jobs:
                       with urllib.request.urlopen(req,timeout=15) as r:
                           assert r.status==200
                           assert hashlib.sha256(r.read()).hexdigest()==want,name
-                  print('EXACT_PUBLIC_OPERATING_NEUTRAL_UI_VERIFIED',expected)
+                          if name.endswith('.html'):
+                              assert r.headers.get_content_type() == 'text/html'
+                              assert r.headers.get('X-Frame-Options', '').upper() not in ('DENY', 'SAMEORIGIN')
+                              csp = r.headers.get('Content-Security-Policy', '').lower()
+                              assert "frame-ancestors 'none'" not in csp
+                              assert "frame-ancestors 'self'" not in csp
+                  print('EXACT_PUBLIC_CURRENT_RADAR_UI_VERIFIED',expected)
                   break
               except Exception:
                   if attempt==23:raise
                   time.sleep(6)
           PY
-          python scripts/test_stock_radar_neutral.py --url 'https://ohoredingdong.github.io/Notion/stock-value-radar.html' --public
+          echo 'Public HTML/asset bytes verified. Browser interactions were tested locally with captured source data; live Notion, Safari and public-page browser interactions were not run by this step.'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -109,6 +126,7 @@ jobs:
             stock-forecast-learning.json
             stock-event-risks.json
             neutral-ui-evidence/
+            ${{ runner.temp }}/current-radar-evidence/
   display-cache:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest

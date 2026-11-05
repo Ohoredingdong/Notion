@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "source_commit": "17d11d28fdf156f7a6f9ee7eeefe689e761cd83c",
+  "purpose": "Retain existing financial schedules, dependency handoffs, concurrency and publication entry points while adding read-only developer CI. Review deliberate automation changes separately; do not make an administrator branch-protection change from this file.",
+  "workflows": {
+    ".github/workflows/audit-stock-radar-accuracy.yml": {
+      "name": "Audit Stock Radar Accuracy",
+      "sha256": "6ef0e91b026d55d22229bc8730e1e230ddb361fc05e36d51c2de28ee7dbd8163",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main]\n    paths:\n      - \"stock-forecast-learning.json\"\n      - \"stock-direction-forecast.json\"\n      - \"stock-forecast-outcomes.jsonl\"\n      - \"stock-market-context.json\"\n      - \"stock-radar-chart-data.json\"\n      - \"stock-opportunity-summary.json\"\n      - \"stock-investment-cases-summary.json\"\n      - \"stock-entry-plan-summary.json\"\n      - \"scripts/audit_stock_radar_accuracy.py\"\n      - \".github/workflows/audit-stock-radar-accuracy.yml\"\n  schedule:\n    # Local Seoul 09:15 and 17:30 KST; audit only, no trade decisions.\n    - cron: \"15 0 * * 1-5\"\n    - cron: \"30 8 * * 1-5\"\n",
+      "trigger_sha256": "a49a3e71554fdd57de86bbd1a387c0d7df40eeaab04bcc31b9726db5ad7bce42",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-radar-independent-accuracy-audit\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "15 0 * * 1-5",
+        "30 8 * * 1-5"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/monitor-stock-value-radar.yml": {
+      "name": "Monitor Stock Radar Health",
+      "sha256": "20d07cb1cce19205d62c8395021ee15af24e8698594fee232133f8a3d39a7c8b",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"23 0,4,8,12,16,20 * * *\" # Every 4 hours (UTC)\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/monitor-stock-value-radar.py\"\n      - \".github/workflows/monitor-stock-value-radar.yml\"\n",
+      "trigger_sha256": "9c0278d49f4e31dcc1cf059ff6d56564a26b3bdbf3219f287740f26e6d0657ba",
+      "permissions_block": "permissions:\n  contents: write\n  issues: write\n",
+      "concurrency_block": "concurrency:\n  group: monitor-stock-radar\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "23 0,4,8,12,16,20 * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-autopilot-recovery.yml": {
+      "name": "Stock Autopilot Bounded Recovery",
+      "sha256": "f333b9f5b0086bc089596fb1562e8e56ae6d19fcf535c22e72a27b766ade8c34",
+      "trigger_block": "on:\n  workflow_run:\n    workflows: ['Stock Prospective Forecasts']\n    types: [completed]\n    branches: [main]\n",
+      "trigger_sha256": "c5f040de8be0a7650d14899e03914d4ad065f955f0c21f06ae1bc6e971bf098d",
+      "permissions_block": "permissions:\n  contents: read\n  actions: write\n",
+      "concurrency_block": "",
+      "schedule_crons": [],
+      "workflow_run_dependencies": [
+        "Stock Prospective Forecasts"
+      ],
+      "requests_pages_build": false,
+      "category": "recovery-actions-writer"
+    },
+    ".github/workflows/stock-entry-plan.yml": {
+      "name": "Stock Entry Plan",
+      "sha256": "8442b704eae89bba6209fe156d417674f9eff1e4a01c0d98edef66c83153c60d",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/build_stock_entry_plan.py'\n      - 'scripts/stock_entry_inputs.py'\n      - 'scripts/evaluate_stock_entry_outcomes.py'\n      - 'scripts/test_stock_entry_plan.py'\n      - 'assets/stock-recommendations.js'\n      - 'tests/stock-entry-*.cjs'\n      - '.github/workflows/stock-entry-plan.yml'\n      - 'stock-research-review-records.json'\n  workflow_run:\n    workflows: ['Strict Green Review', 'Stock Three-Year Reading', 'Stock Recommendations']\n    types: [completed]\n    branches: [main]\n  schedule:\n    - cron: '37 8,23 * * *'\n",
+      "trigger_sha256": "3ad671d8d05970c9c31f64054829df45eafdc64a8dc7131e09ae16acca6a8ba5",
+      "permissions_block": "permissions:\n  contents: write\n  pages: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-entry-plan\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "37 8,23 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Strict Green Review",
+        "Stock Three-Year Reading",
+        "Stock Recommendations"
+      ],
+      "requests_pages_build": true,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-forecasts.yml": {
+      "name": "Stock Prospective Forecasts",
+      "sha256": "f1b18b8aa8a7b9d85139f7be9a95d0acc65b0d8b293bf55ed21709941ddde764",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main, research/bounded-autopilot-20261029]\n    paths:\n      - 'scripts/stock_forecast*.py'\n      - 'scripts/stock_autopilot*.cjs'\n      - 'scripts/run_stock_forecasts.py'\n      - 'scripts/publish_stock_forecasts.py'\n      - 'scripts/verify_stock_forecast_public.py'\n      - 'scripts/test_stock_forecast*'\n      - 'scripts/test_stock_autopilot*'\n      - 'assets/stock-forecast*.js'\n      - 'stock-forecast.html'\n      - '.github/workflows/stock-forecasts.yml'\n  schedule:\n    # GitHub cron is best effort; delay/drop is possible.\n    - cron: '7,17,27,37,47,57 0-7,13-22 * * 1-5'\n    - cron: '47 23 * * 0-4'\n  # Additional opportunity to refresh after the 15-minute news collection finishes.\n  workflow_run:\n    workflows: ['Update News Link Hub']\n    types: [completed]\n    branches: [main]\n",
+      "trigger_sha256": "11d87609c4f43d4308b94b3cf4ea6f2ff1704c1a2abb641f0150c2618210087c",
+      "permissions_block": "permissions:\n  contents: write\n  pages: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-prospective-forecasts-${{ github.ref }}\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "7,17,27,37,47,57 0-7,13-22 * * 1-5",
+        "47 23 * * 0-4"
+      ],
+      "workflow_run_dependencies": [
+        "Update News Link Hub"
+      ],
+      "requests_pages_build": true,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-investment-cases.yml": {
+      "name": "Stock Investment Cases",
+      "sha256": "f527b56603045060061e011cedc4f39b360db774799aa5bb1be18d3e9af6bcef",
+      "trigger_block": "on:\n  workflow_dispatch:\n  workflow_run:\n    workflows: ['Update Stock Opportunities']\n    types: [completed]\n    branches: [main]\n  schedule:\n    - cron: '17 8,23 * * *'\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/build_stock_investment_cases.py'\n      - 'scripts/test_stock_investment_cases.py'\n      - 'scripts/check_stock_investment_cases.py'\n      - 'scripts/update_market_context.py'\n      - 'scripts/run_market_context.py'\n      - 'scripts/test_market_context.py'\n      - 'scripts/build_stock_decision_guide.py'\n      - 'scripts/test_stock_decision_guide.py'\n      - 'scripts/install_stock_decision_guide.py'\n      - 'scripts/install_stock_investment_cases.py'\n      - 'scripts/publish_stock_investment_cases.py'\n      - 'assets/stock-investment-cases.js'\n      - 'assets/stock-decision-guide.js'\n      - 'assets/stock-decision-guide.css'\n      - '.github/workflows/stock-investment-cases.yml'\n",
+      "trigger_sha256": "f614f3cd589e5b72cad5cfbadbe106de73d217fc0db2639a904adddeda8ca7ea",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-investment-cases\n  cancel-in-progress: true\n",
+      "schedule_crons": [
+        "17 8,23 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Update Stock Opportunities"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-reading-depth.yml": {
+      "name": "Stock Three-Year Reading",
+      "sha256": "05dade15264fb534d2e35f2b44a1a0c5f35a44e2d2eff08bb0370da8f369168f",
+      "trigger_block": "on:\n  workflow_dispatch:\n  workflow_run:\n    workflows: ['Stock Investment Cases']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/stock_reading_depth.py'\n      - 'scripts/test_stock_reading_depth.py'\n      - '.github/workflows/stock-reading-depth.yml'\n",
+      "trigger_sha256": "2110a97e94398543e99a61d83d2efedb6b54e437c4b1b3c7fb12ee075784f75a",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-reading-depth\n  cancel-in-progress: false\n",
+      "schedule_crons": [],
+      "workflow_run_dependencies": [
+        "Stock Investment Cases"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-recommendations.yml": {
+      "name": "Stock Recommendations",
+      "sha256": "7c1e4c7799db04e6d183cc9047306ec34b4fbb6a0a0b31e38518f66eaaf1ba05",
+      "trigger_block": "on:\n  workflow_dispatch:\n  workflow_run:\n    workflows: ['Stock Three-Year Reading']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/update_stock_event_risks.py'\n      - 'stock-event-risks-seed.json'\n      - 'scripts/build_stock_recommendations.py'\n      - 'scripts/test_stock_recommendations.py'\n      - 'assets/stock-recommendations.js'\n      - '.github/workflows/stock-recommendations.yml'\n",
+      "trigger_sha256": "97cc71fb2a7ac38ebf6f27d55ea511eee15fb44aef4d1f0c27c35ecf6abdb41d",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-recommendations\n  cancel-in-progress: true\n",
+      "schedule_crons": [],
+      "workflow_run_dependencies": [
+        "Stock Three-Year Reading"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/stock-strict-green.yml": {
+      "name": "Strict Green Review",
+      "sha256": "ce497a40fa4975c487ca384eff05dd87bd3551344fe95501802e1ff56c865b64",
+      "trigger_block": "on:\n  workflow_dispatch:\n  workflow_run:\n    workflows: ['Stock Investment Cases', 'Stock Three-Year Reading']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/stock_strict_green.py'\n      - 'scripts/test_stock_strict_green.py'\n      - 'scripts/install_stock_strict_green.py'\n      - 'assets/stock-green-review.js'\n      - 'stock-research-review-records.json'\n      - '.github/workflows/stock-strict-green.yml'\n",
+      "trigger_sha256": "7ea0cca55c4f6d574c2d3d35ca70bfff343a6792dc09af2d8a601b53330f6275",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-strict-green-review\n  cancel-in-progress: true\n",
+      "schedule_crons": [],
+      "workflow_run_dependencies": [
+        "Stock Investment Cases",
+        "Stock Three-Year Reading"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/test-stock-neutral-ui.yml": {
+      "name": "Verify Neutral Production Radar",
+      "sha256": "edca1ae3c6c06c1eaf2a43070772da2d986d4c174b259308e1d9ce6fa7bfde51",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main, 'design/neutral-production-20261030']\n    paths:\n      - '.github/workflows/test-stock-neutral-ui.yml'\n      - 'assets/stock-radar-neutral.*'\n      - 'stock-value-radar.html'\n      - 'assets/stock-radar-v8.html'\n      - 'assets/stock-radar-v8.js'\n      - 'scripts/install_stock_radar_neutral.py'\n      - 'scripts/test_stock_radar_neutral.py'\n      - 'scripts/build_stock_radar_chart_cache.py'\n  schedule:\n    - cron: '41 */2 * * 1-5'\n",
+      "trigger_sha256": "e610dc69714d8b54da430dd5f8462de217fb946a1d300f633488ddab079969bc",
+      "permissions_block": "permissions:\n  contents: write\n  pages: write\n",
+      "concurrency_block": "concurrency:\n  group: neutral-radar-${{ github.ref }}\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "41 */2 * * 1-5"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": true,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-bond-yields.yml": {
+      "name": "Update Bond Yields",
+      "sha256": "5b3879f24b074e4b037f0575b5bd549b83147b26169d7d92e2a02daadd161888",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"13,43 * * * *\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-bond-yields.py\"\n      - \".github/workflows/update-bond-yields.yml\"\n\n",
+      "trigger_sha256": "5622f94f1484a96c8f41a388105ac30b48f7bd8499f74d54d5b3ab0b3e322b61",
+      "permissions_block": "permissions:\n  contents: write\n\n",
+      "concurrency_block": "concurrency:\n  group: update-bond-yields-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "13,43 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-commodities.yml": {
+      "name": "Update commodities data",
+      "sha256": "85cfaa94062f67876de8bb2670b18d29e30b0cddbd35b44221725fad59f44bb3",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '17 * * * *'\n  push:\n    branches: [main]\n    paths:\n      - 'commodities-matrix.html'\n      - 'scripts/update_commodities.py'\n      - '.github/workflows/update-commodities.yml'\n",
+      "trigger_sha256": "b84e7a26b60bf7af8fe4ee6d9f84fa509612de77adaf08ef39ea79e84cc07d96",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-commodities-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "17 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-cryptocurrency.yml": {
+      "name": "Update Cryptocurrency Dashboard",
+      "sha256": "8e56b35ba9bb467423400cac059d17c4bd51d0072151c12124008b90420cfe75",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"11,41 * * * *\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-bitcoin-korea-premium.py\"\n      - \"scripts/market_data_utils.py\"\n      - \"scripts/update-cryptocurrency.py\"\n      - \".github/workflows/update-cryptocurrency.yml\"\n",
+      "trigger_sha256": "22a96929052db163777143f335b3d98065a6acbc530edae482cdc68c6c6c08a0",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-cryptocurrency-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "11,41 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-exchange-rates.yml": {
+      "name": "Update Exchange Rates",
+      "sha256": "61201a999a4aa1acc72fb6d76ab6e41a51f150cb833faabb6b7c237bc3271774",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"37 14,15,16 * * 1-5\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-exchange-rates.py\"\n      - \".github/workflows/update-exchange-rates.yml\"\n",
+      "trigger_sha256": "5da1ad408f77351351eacf019f9cb18ee726a2ba2e01ca479cba0f69b7f2e689",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-exchange-rates-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "37 14,15,16 * * 1-5"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-fear-greed.yml": {
+      "name": "Update Market Sentiment Data",
+      "sha256": "66dfd116924473f6e9970a4f3dcadb28d9289d0ad1c7465af3d1e3da02480807",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '17 * * * *'\n  push:\n    branches: [main]\n    paths:\n      - 'fear-greed-dashboard-v3.html'\n      - 'market-mood-v3.html'\n      - 'scripts/update_fear_greed.py'\n      - 'scripts/market_data_utils.py'\n      - '.github/workflows/update-fear-greed.yml'\n\n",
+      "trigger_sha256": "7ddbaa60539112d5a432737dac609398c960788bcc931795363ae81b876333db",
+      "permissions_block": "permissions:\n  contents: write\n\n",
+      "concurrency_block": "concurrency:\n  group: update-fear-greed-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "17 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-korea-fear-greed.yml": {
+      "name": "Update Korea Fear Greed",
+      "sha256": "f2f6dc808d419a5f6bdfb37713f235bbaae5103e870cc1673fdea0bc9867d559",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main]\n    paths:\n      - scripts/update_korea_fear_greed.py\n      - .github/workflows/update-korea-fear-greed.yml\n  schedule:\n    # KST 15:55 and 18:25 after the Korean regular-session close.\n    - cron: \"55 6 * * 1-5\"\n    - cron: \"25 9 * * 1-5\"\n",
+      "trigger_sha256": "3f77aa31783856c976bb3ef2378a7141fb62948f790f74382ea2a293a15c14b3",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-korean-sentiment-snapshot\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "55 6 * * 1-5",
+        "25 9 * * 1-5"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-market-events.yml": {
+      "name": "Update Market Events",
+      "sha256": "d70fbe73b3aac8fda4aba9fd1e5b04bd74973dc3340132ac49e8a252c3f6af74",
+      "trigger_block": "on:\n  workflow_dispatch:\n  pull_request:\n    branches: [main]\n    paths:\n      - \"scripts/build_stock_event_outlook.py\"\n      - \"scripts/test_stock_event_outlook.py\"\n      - \"scripts/test_stock_event_ui.cjs\"\n      - \"stock-event-calendar-seed.json\"\n      - \".github/workflows/update-market-events.yml\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-market-events.py\"\n      - \"scripts/build_stock_event_outlook.py\"\n      - \"scripts/test_stock_event_outlook.py\"\n      - \"stock-event-calendar-seed.json\"\n      - \"scripts/ensure-bok-market-events.py\"\n      - \".github/workflows/update-market-events.yml\"\n  schedule:\n    - cron: \"17,47 * * * *\"\n\n",
+      "trigger_sha256": "1442f8bdc8cfd55107fec1b3d032af045348fbf071f780ffc3870cc2d91f3ecf",
+      "permissions_block": "permissions:\n  contents: write\n\n",
+      "concurrency_block": "concurrency:\n  group: update-market-events-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "17,47 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-mortgage-rates.yml": {
+      "name": "Update Mortgage Reference Rates",
+      "sha256": "bea61e92bb77a2e7ad50ef7714de71122d76220a327e88fb9e88e893f4a9d42f",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '30 7 * * *'\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/update_mortgage_rates.py'\n      - 'scripts/publish_widget_data.py'\n      - '.github/workflows/update-mortgage-rates.yml'\n",
+      "trigger_sha256": "0dd34362505e01b24a2054acab02dd21d129d37624f9bd0825b3d30676ccb907",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: mortgage-rates-${{ github.ref }}\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "30 7 * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-news-link-hub.yml": {
+      "name": "Update News Link Hub",
+      "sha256": "9602dc457a20ce882c2e1cbbc97f0ef0614d9fd7ded7a6b557994ac4dbfee4a2",
+      "trigger_block": "on:\n  workflow_dispatch:\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-news-link-hub.py\"\n      - \".github/workflows/update-news-link-hub.yml\"\n  schedule:\n    # About every 15 minutes; GitHub Actions schedules may be delayed.\n    - cron: \"7,22,37,52 * * * *\"\n",
+      "trigger_sha256": "2a908c223a296aeca684c805e9300ed9cd504a2995ce8d9506389a6a8b0bf6a7",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-news-link-hub-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "7,22,37,52 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-real-estate-pulse.yml": {
+      "name": "Update Real Estate Pulse",
+      "sha256": "152a81feabadaa052c9e04c18c465e3233b4faef56dac5939c52f4ee4736e977",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    # 16:20 KST daily. REB weekly releases are normally available before this window.\n    - cron: '20 7 * * *'\n  push:\n    branches:\n      - main\n      - fix/real-estate-pulse-post-merger-auto\n    paths:\n      - 'scripts/update_real_estate_pulse.py'\n      - 'scripts/run_real_estate_pulse_update.py'\n      - '.github/workflows/update-real-estate-pulse.yml'\n\n",
+      "trigger_sha256": "a2f18691aef9fba145cec669c65c570d7dd1c366422a14ebf197c4a1ee913053",
+      "permissions_block": "permissions:\n  contents: write\n\n",
+      "concurrency_block": "concurrency:\n  group: real-estate-pulse-update-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "20 7 * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-stock-decisions.yml": {
+      "name": "Update Stock Decisions",
+      "sha256": "50416e4bc7a568bd30182a69cf17f2cb3ffcc6805e1affcf0dc5ef84ba6dfe36",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '47 7,22 * * *'\n  workflow_run:\n    workflows: ['Verify Stock Official Filings']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/update_stock_decisions.py'\n      - 'scripts/refresh_stock_decisions.py'\n      - 'scripts/test_stock_decisions.py'\n      - 'scripts/install_stock_decision_ui.py'\n      - 'assets/stock-decision-v7.js'\n      - '.github/workflows/update-stock-decisions.yml'\n",
+      "trigger_sha256": "923d8e3c68db38eebf0d5025fde6b0a71a02b8b7c800b279dc93a74552186ae3",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-decision-v7\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "47 7,22 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Verify Stock Official Filings"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-stock-market-groups.yml": {
+      "name": "Update Stock Market Groups",
+      "sha256": "3c2a60b37d6ee6f020282f236af3df3c8e52de9528b241fc5b43b791d1ab9682",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '19 8,23 * * *'\n  workflow_run:\n    workflows: ['Update Stock Opportunities']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/update_stock_market_groups.py'\n      - 'scripts/test_stock_market_groups.py'\n      - 'scripts/install_stock_market_groups.py'\n      - 'scripts/publish_stock_market_groups.py'\n      - 'assets/stock-market-groups.js'\n      - '.github/workflows/update-stock-market-groups.yml'\n",
+      "trigger_sha256": "5746d8814338f53843313f752c628c56cca058e86f6253ddd8d6b72b411fa1dc",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-market-groups\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "19 8,23 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Update Stock Opportunities"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-stock-opportunities.yml": {
+      "name": "Update Stock Opportunities",
+      "sha256": "5c5615e2142220d0cf5a25522cb3cc1997baf964fd3531b223416bac053b90b8",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '57 7,22 * * *'\n  workflow_run:\n    workflows: ['Verify Stock Official Filings']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'stock-opportunity-universe.json'\n      - 'scripts/update_stock_opportunities.py'\n      - 'scripts/stock_fundamental_extensions.py'\n      - 'scripts/test_stock_opportunities.py'\n      - 'scripts/finalize_stock_opportunities.py'\n      - 'scripts/test_stock_opportunity_filings.py'\n      - 'scripts/validate_stock_opportunity_dates.py'\n      - 'scripts/test_stock_opportunity_dates.py'\n      - 'scripts/refine_stock_radar_v8.py'\n      - 'scripts/publish_stock_opportunities.py'\n      - 'scripts/install_stock_radar_v8.py'\n      - 'scripts/discover_stock_candidates_v9.py'\n      - 'scripts/run_stock_research_v9.py'\n      - 'scripts/curate_stock_decisions_v9.py'\n      - 'scripts/test_stock_discovery_v9.py'\n      - 'scripts/apply_stock_radar_v9.py'\n      - 'assets/stock-radar-v8.*'\n      - 'assets/stock-radar-v9.js'\n      - '.github/workflows/update-stock-opportunities.yml'\n",
+      "trigger_sha256": "8426ca8c0bc1dcc1aa9ebb79475061fe97c9ce66bf992a8c96ee1e67a6412a94",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-opportunity-v8\n  cancel-in-progress: true\n",
+      "schedule_crons": [
+        "57 7,22 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Verify Stock Official Filings"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-stock-value-radar.yml": {
+      "name": "Update Stock Value Radar",
+      "sha256": "77caf259895d3a7dd926d5fe8714add35f70ec62b1a9132c5f2adc72c1f22d68",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"15 3,13 * * *\" # 12:15 and 22:15 KST\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-stock-value-radar.py\"\n      - \"scripts/build-stock-investment-intelligence.py\"\n      - \"stock-official-verifications.json\"\n      - \".github/workflows/update-stock-value-radar.yml\"\n",
+      "trigger_sha256": "b7837e545d2d3eab91b10b3468a2055936679305e775921f4ae4b5c90305720e",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-stock-value-radar\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "15 3,13 * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-stocks-dashboard.yml": {
+      "name": "Update Stocks Dashboard",
+      "sha256": "b0da7996eeb0b152270a6f29e6b1987c7f14b8d4a1a46c05ea0a1f898535c36e",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"7,37 * * * *\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-market-radar.py\"\n      - \"scripts/market_data_utils.py\"\n      - \"scripts/update-stocks-dashboard.py\"\n      - \".github/workflows/update-stocks-dashboard.yml\"\n",
+      "trigger_sha256": "07cf7500bf2403f06539afda17752dc3f3c6d790b8df3e9f5c6ad269668bca42",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-stocks-dashboard-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "7,37 * * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/update-supply-chain.yml": {
+      "name": "Update Supply Chain Pulse",
+      "sha256": "8048aeb82ab73c14ebe7c9fd68ae60be088d88a3f112ae21a99a76980aa3ace4",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: \"17 2 * * *\"\n  push:\n    branches: [main]\n    paths:\n      - \"scripts/update-supply-chain.py\"\n      - \".github/workflows/update-supply-chain.yml\"\n",
+      "trigger_sha256": "c02148cf1eaf888b0d85d27921c946982ad2bcd7cc12b89a5cd242b1ff9e33dd",
+      "permissions_block": "permissions:\n  contents: write\n",
+      "concurrency_block": "concurrency:\n  group: update-supply-chain-${{ github.ref }}\n  cancel-in-progress: false\n\n",
+      "schedule_crons": [
+        "17 2 * * *"
+      ],
+      "workflow_run_dependencies": [],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    },
+    ".github/workflows/verify-stock-official.yml": {
+      "name": "Verify Stock Official Filings",
+      "sha256": "5d4bc8b8d58b65e2ca92b66a5a225579fda65cbbbca5d47c604580d5ae7672d4",
+      "trigger_block": "on:\n  workflow_dispatch:\n  schedule:\n    - cron: '47 3,13 * * *'\n  workflow_run:\n    workflows: ['Update Stock Value Radar']\n    types: [completed]\n    branches: [main]\n  push:\n    branches: [main]\n    paths:\n      - 'scripts/stock_official_audit.py'\n      - 'scripts/run_stock_audit.py'\n      - 'scripts/stock_audit_adapters.py'\n      - 'scripts/test_stock_official_audit.py'\n      - 'scripts/test_stock_audit_adapters.py'\n      - 'scripts/install_stock_audit_ui.py'\n      - 'assets/stock-official-audit-v5.js'\n      - 'stock-verification-sources.json'\n      - '.github/workflows/verify-stock-official.yml'\n",
+      "trigger_sha256": "254f461bfbb9e2431aaaaf853d6e67d9ccb05b8323310c746be1fd6416b5db9d",
+      "permissions_block": "permissions:\n  contents: write\n  issues: write\n",
+      "concurrency_block": "concurrency:\n  group: stock-official-audit\n  cancel-in-progress: false\n",
+      "schedule_crons": [
+        "47 3,13 * * *"
+      ],
+      "workflow_run_dependencies": [
+        "Update Stock Value Radar"
+      ],
+      "requests_pages_build": false,
+      "category": "production-writer"
+    }
+  },
+  "allowed_preview_branch_writers": {
+    ".github/workflows/test-stock-radar-ui-preview.yml": "Verify Comparison Desk UI Preview"
+  },
+  "known_data_and_ledger_exceptions": [
+    "stock-*.json",
+    "stock-*.jsonl",
+    "*-data.json",
+    "stock-investment-report.md"
+  ],
+  "exception_note": "These patterns are descriptive inventory only, not a security allowlist. Production publishers have narrower explicit output contracts and must keep them.",
+  "reviewed_read_only_changes": {
+    ".github/workflows/test-stock-neutral-ui.yml": {
+      "preserved_jobs": {
+        "display-cache": "3ffeec40635fac5df718b187c7965e05b0d2da2387aceedd12bf93566712621e"
+      },
+      "reason": "Replace the obsolete verify job only; retain the live chart cache writer and all production triggers/permissions/concurrency."
+    }
+  }
+}

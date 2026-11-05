@@ -1,0 +1,148 @@
+name: Development checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, chore/codex-development-system-20261105]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Superseded PR revisions may stop. Independent main data updates must not cancel
+# a still-running code validation from an earlier, different source commit.
+concurrency:
+  group: development-checks-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Development checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DEV_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      DEV_CHECK_ALL: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out the exact review revision without reusable credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Select checks from both sides of the changed file set
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--plan)
+          if [[ "$DEV_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ && ! "$DEV_BASE_SHA" =~ ^0+$ ]]; then
+            args+=(--base "$DEV_BASE_SHA")
+          fi
+          if [[ "$DEV_CHECK_ALL" == 'true' ]]; then args+=(--all); fi
+          python scripts/dev_check.py "${args[@]}" > "$RUNNER_TEMP/notion-plan.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = json.loads((Path(os.environ['RUNNER_TEMP']) / 'notion-plan.json').read_text())
+          assert plan['schema_version'] == 1
+          for key in ('needs_dependencies', 'needs_browser'):
+              assert type(plan[key]) is bool, key
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key in ('needs_dependencies', 'needs_browser'):
+                  output.write(f'{key}={str(plan[key]).lower()}\n')
+              output.write(f"full_plan={str(plan['mode'] == 'all').lower()}\n")
+          print(json.dumps(plan, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Set up Node only for checks that need dependencies
+        if: steps.plan.outputs.needs_dependencies == 'true' || steps.plan.outputs.needs_browser == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install isolated test dependencies and the requested browser
+        if: steps.plan.outputs.needs_dependencies == 'true' || steps.plan.outputs.needs_browser == 'true'
+        shell: bash
+        env:
+          DEV_NEEDS_BROWSER: ${{ steps.plan.outputs.needs_browser }}
+        run: |
+          set -euo pipefail
+          setup=(bash scripts/setup_dev.sh --state "$RUNNER_TEMP/notion-dev")
+          if [[ "$DEV_NEEDS_BROWSER" == 'true' ]]; then setup+=(--install-browser); fi
+          "${setup[@]}"
+
+      - name: Run every selected check and preserve the original failure status
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$RUNNER_TEMP/notion-dev/activate.sh" ]]; then
+            source "$RUNNER_TEMP/notion-dev/activate.sh"
+          fi
+          args=(--output "$RUNNER_TEMP/notion-check")
+          if [[ "$DEV_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ && ! "$DEV_BASE_SHA" =~ ^0+$ ]]; then
+            args+=(--base "$DEV_BASE_SHA")
+          fi
+          if [[ "$DEV_CHECK_ALL" == 'true' ]]; then args+=(--all); fi
+          python scripts/dev_check.py "${args[@]}"
+
+      - name: Prepare an inspection archive only after a complete successful plan
+        if: steps.plan.outputs.full_plan == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/notion-dev/activate.sh"
+          python scripts/prepare_release.py \
+            --sha "$(git rev-parse HEAD)" \
+            --report "$RUNNER_TEMP/notion-check/report.json" \
+            --output "$RUNNER_TEMP/notion-candidate"
+
+      - name: Keep the tested inspection archive without deploying
+        if: steps.plan.outputs.full_plan == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: inspection-candidate-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: error
+          path: ${{ runner.temp }}/notion-candidate/
+
+      - name: Keep the plan, logs, reports and real browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: development-checks-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/notion-plan.json
+            ${{ runner.temp }}/notion-check/
+
+      - name: State exactly which source and check plan ran
+        if: always()
+        shell: bash
+        env:
+          DEV_JOB_STATUS: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          plan_path = Path(os.environ['RUNNER_TEMP']) / 'notion-plan.json'
+          source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('# Development checks\n\n')
+              summary.write(f"Source: `{source}`. Job outcome before this summary: **{os.environ['DEV_JOB_STATUS']}**.\n\n")
+              if plan_path.exists() and plan_path.stat().st_size:
+                  plan = json.loads(plan_path.read_text())
+                  summary.write('Selected checks: ' + ', '.join(plan['expected_check_ids']) + '.\n\n')
+                  summary.write('Plan and execution evidence are in the run artifact. Failed or missing execution evidence is not a successful verification.\n\n')
+              else:
+                  summary.write('No completed check plan. Setup or checkout failure must remain a failure.\n\n')
+              summary.write('Read-only development validation only. No data collector, merge, Pages build or production deployment is requested by this workflow.\n')
+          PY

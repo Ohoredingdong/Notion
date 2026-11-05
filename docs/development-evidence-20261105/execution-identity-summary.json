@@ -1,0 +1,40 @@
+{
+  "scope": "Future execution metadata and read-only upstream binding only; temporary synthetic tests and local Git fixtures. No live forecasting, workflow dispatch, collection, publication or production settings changed.",
+  "changedFiles": {
+    "scripts/stock_forecast_identity.py": "d2f0834bf6ec52960df43547bf235f384575fa3acf0e7beed1b9aeac69ff943a",
+    "scripts/run_stock_forecasts.py": "bbb58517a01ee1994263fc808f57c0331afe278b5e765ef7cc3296b367fd2028",
+    "scripts/stock_forecast_autopilot.py": "0a341df0840fddffb87d2d87d0522cf8318112d59964a79f34fbbc1513639782",
+    "scripts/audit_stock_timing_workflow_provenance.py": "58b0114a6f1c5b577f2182d18e86318009e69a41293b1b3c6dc9dde31ebc2df2",
+    "scripts/test_stock_timing_workflow_provenance.py": "2bd3ab990fda9848db1c57fa98c1e990414937af872b8c4dbf7495ad4183dbd3"
+  },
+  "tests": {
+    "provenance": {
+      "command": "python -m unittest scripts.test_stock_timing_workflow_provenance -v",
+      "passed": 25,
+      "failed": 0
+    },
+    "noThirdPartyPackages": {
+      "command": "python -S scripts/test_stock_timing_workflow_provenance.py -v",
+      "passed": 25,
+      "failed": 0
+    },
+    "relatedModelsLearningDirectionsAutopilotRollback": {
+      "passed": 144,
+      "failed": 0,
+      "log": "related-units.log"
+    }
+  },
+  "binding": {
+    "newReports": "event_commit matches initiating workflow event; source_commit is separately resolved actual Git HEAD and cross-checked with the forecast archive",
+    "legacyReports": "Reports without new identity fields retain the original source_commit-as-event fallback; archived values are never rewritten",
+    "localNonGit": "source_commit=null, source_identity_status=unverified",
+    "githubActions": "Invalid event or unresolved code checkout aborts before readers, collectors, model import/execution, or output creation"
+  },
+  "preservedFiles": 16,
+  "preservationReport": "preserved-source-and-ledgers.json",
+  "limitations": [
+    "The metadata is self-reported execution context, not an authenticated code attestation or external market-price validation.",
+    "Historical source_commit labels remain ambiguous as to actual checkout; no retrospective Git HEAD is invented.",
+    "No production automation or actual model collection was executed."
+  ]
+}

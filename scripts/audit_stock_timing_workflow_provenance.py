@@ -1,10 +1,11 @@
 """Read-only fail-closed evidence binding for post-forecast workflow_run audits.
 
-A GitHub Actions workflow_run payload identifies the invoking upstream run and
-its source commit. The checked-out latest main may instead contain a later
-research snapshot. Match both identities before presenting the downstream audit
-as evidence for that upstream run. This is NOT proof of market prices, useful
-signals, executable trades or human receipt. No writes or network calls.
+A GitHub Actions workflow_run payload identifies the invoking run and its event
+commit. A queued producer intentionally checks out the latest branch head.
+Bind the archived event to that run and check the separately reported checkout;
+do not confuse either with a later, unrelated research snapshot. This is NOT
+proof of market prices, useful signals, executable trades or human receipt.
+No writes or network calls.
 """
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+from stock_forecast_identity import RESOLVED, valid_commit
 
 
 def aware(value):
@@ -29,7 +31,7 @@ def examine(controller, forecast, learning, expected_run_id, expected_head_sha):
     errors = []
     if not isinstance(expected_run_id, str) or not re.fullmatch(r"[1-9][0-9]*", expected_run_id):
         errors.append("invalid_expected_run_id")
-    if not isinstance(expected_head_sha, str) or not re.fullmatch(r"[a-fA-F0-9]{40}", expected_head_sha):
+    if not valid_commit(expected_head_sha):
         errors.append("invalid_expected_head_sha")
     if not all(isinstance(obj, dict) for obj in (controller, forecast, learning)):
         return {"status": "upstream_run_mismatch",
@@ -40,7 +42,25 @@ def examine(controller, forecast, learning, expected_run_id, expected_head_sha):
         errors.append("controller_unverified_cycle")
     if controller.get("run_id") != expected_run_id:
         errors.append("controller_run_id_mismatch")
-    if controller.get("source_commit") != expected_head_sha:
+    explicit_identity = any(key in controller for key in
+                            ("event_commit", "source_identity_status"))
+    if explicit_identity:
+        # A queued producer deliberately checks out the latest branch, so its
+        # actual code HEAD may differ from the initiating workflow event SHA.
+        for label, archive in (("controller", controller), ("forecast", forecast)):
+            if not valid_commit(archive.get("event_commit")):
+                errors.append(f"invalid_{label}_event_commit")
+            elif archive["event_commit"] != expected_head_sha:
+                errors.append(f"{label}_event_commit_mismatch")
+            if not valid_commit(archive.get("source_commit")):
+                errors.append(f"invalid_{label}_source_commit")
+            if archive.get("source_identity_status") != RESOLVED:
+                errors.append(f"{label}_source_identity_unverified")
+        if forecast.get("source_commit") != controller.get("source_commit"):
+            errors.append("forecast_source_commit_mismatch")
+    elif controller.get("source_commit") != expected_head_sha:
+        # Historical reports did not distinguish the event from the checkout.
+        # Preserve their original event-binding rule; never rewrite archives.
         errors.append("controller_source_commit_mismatch")
     if forecast.get("source_run_id") != expected_run_id:
         errors.append("forecast_run_id_mismatch")
@@ -59,8 +79,15 @@ def examine(controller, forecast, learning, expected_run_id, expected_head_sha):
     errors = sorted(set(errors))
     return {"status": "upstream_run_mismatch" if errors else "upstream_run_evidence_matched",
             "errors": errors,
+            "identity_mode": ("event_and_checkout" if explicit_identity
+                              else "legacy_source_commit_event_fallback"),
+            "event_commit": controller.get("event_commit") if explicit_identity
+                            else controller.get("source_commit"),
+            "source_commit": controller.get("source_commit"),
             "scope": ("Only binds workflow-run metadata to self-reported archived "
-                      "source-run metadata; no exchange, notification or timing-edge proof.")}
+                      "event/checkout metadata; the code SHA format and resolved label "
+                      "are not an authenticated attestation, exchange, notification "
+                      "or timing-edge proof.")}
 
 
 def main():

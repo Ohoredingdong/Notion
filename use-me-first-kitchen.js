@@ -152,7 +152,7 @@
     ).join('');
     scene.innerHTML = '<div class="kitchen-scene"><div class="scene-top"><div class="scene-label">' + A.icon('fridge') + '<strong>나의 냉장고</strong><small class="muted" data-kitchen-count>0개</small></div>' +
       '<button type="button" class="btn btn-small btn-line" data-action="organize" aria-pressed="false"><span class="organize-icon">' + A.icon('sparkles') + '</span><span class="organize-label">자리 정리</span></button></div>' +
-      '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span></div>' +
+      '<div class="organize-banner" hidden><span>재료를 누른 뒤, 옮길 칸을 눌러주세요.</span><div class="kitchen-layer-controls" role="group" aria-label="선택한 재료 앞뒤 순서" hidden><button type="button" class="btn btn-small btn-line" data-action="layer-front" aria-label="선택한 재료 앞에 놓기" disabled>앞에</button><button type="button" class="btn btn-small btn-line" data-action="layer-back" aria-label="선택한 재료 뒤에 놓기" disabled>뒤에</button></div></div>' +
       '<div class="fridge-stage side-by-side"><div class="fridge-body side-by-side-body">' + inside + '</div><div class="fridge-feet" aria-hidden="true"></div>' + doors + '<div class="fridge-lower" aria-hidden="true"><div class="fridge-drawer fridge-drawer-one"><i></i></div><div class="fridge-drawer fridge-drawer-two"><i></i></div></div></div>' +
       '<div class="fridge-controls" aria-label="냉장고 문 열고 닫기">' + controls + '</div><div class="scene-footer"><span class="scene-hint"></span></div></div>' +
 
@@ -264,7 +264,10 @@
     text(organize, '.organize-label', organizing ? '정리 마치기' : '자리 정리');
     if (organize.dataset.mode !== String(organizing)) { organize.dataset.mode = String(organizing); organize.querySelector('.organize-icon').innerHTML = A.icon(organizing ? 'check' : 'sparkles'); }
     const moving = items.find(item => item.id === movingId);
-    scene.querySelector('.organize-banner').hidden = !organizing;
+    const banner = scene.querySelector('.organize-banner'), layerControls = banner.querySelector('.kitchen-layer-controls');
+    banner.hidden = !organizing; banner.classList.toggle('has-selection', !!moving);
+    layerControls.hidden = !organizing || !moving;
+    for (const button of layerControls.querySelectorAll('button')) button.disabled = !initialized || organizeBusy || moveBusy || !moving || !openZone(placements.get(moving.id), doors);
     text(scene, '.organize-banner span', moving ? moving.name + ' · 원하는 자리에 겹쳐 놓아보세요' : '재료를 끌어 겹쳐 놓거나, 놓을 자리를 눌러주세요');
     renderSeasoningShelf();
     for (const button of scene.querySelectorAll('.kitchen-zone-controls [data-zone]')) {
@@ -656,46 +659,9 @@
   }
 
   async function refreshLegacyDemoExpiries() {
-    let storage;
-    try { storage = window.localStorage; } catch (_) { return false; }
-    const migrationKey = 'umf-demo-expiry-balance-v1';
-    try { if (storage?.getItem(migrationKey) === 'done') return false; } catch (_) { return false; }
-
-    const state = S.getState();
-    const specs = [
-      { test: /애호박|주키니/, qty: /1\s*개/i, days: 3 },
-      { test: /우유/, qty: /900\s*ml/i, days: 2 },
-      { test: /두부/, qty: /300\s*g/i, days: -1 },
-      { test: /계란|달걀/, qty: /10\s*개/i, days: 7 },
-      { test: /양파/, qty: /3\s*개/i, days: -2 },
-      { test: /요거트|요구르트|요거트컵/, qty: /1\s*개/i, days: 5 }
-    ];
-    const matches = [];
-    for (const item of state.items) {
-      const spec = specs.find(value => value.test.test(item.name) && value.qty.test(String(item.quantity || '')));
-      if (spec) matches.push({ item, spec });
-    }
-    const expired = matches.filter(({ item }) => {
-      const left = D.daysLeft(item.expiry);
-      return left !== null && left < 0;
-    }).length;
-    // This signature belongs to the old visual demo set. Do not touch normal user data.
-    if (matches.length < 5 || expired < 4) return false;
-
-    const dateAt = days => {
-      const d = new Date();
-      d.setHours(12, 0, 0, 0);
-      d.setDate(d.getDate() + days);
-      return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-    };
-    const byId = new Map(matches.map(({ item, spec }) => [item.id, dateAt(spec.days)]));
-    const ok = await S.updateAsync(draft => {
-      for (const item of draft.items) if (byId.has(item.id)) item.expiry = byId.get(item.id);
-    }, { origin: 'demo-expiry-balance' });
-    if (ok) {
-      try { storage?.setItem(migrationKey, 'done'); } catch (_) { /* optional marker */ }
-      return true;
-    }
+    // Names and amounts cannot establish that saved food belongs to a demo.
+    // Keep printed expiry dates and the original storage bytes on ordinary startup.
+    // Retain this ready hook without migrating or deleting existing records/markers.
     return false;
   }
 

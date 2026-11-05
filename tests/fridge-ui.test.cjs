@@ -261,12 +261,26 @@ test('shortage plus routes seasonings and pantry into the correct confirmation d
 test('custom seasoning and pantry controls work and quantities remain unrelated to those sets', async t => {
   const app = await boot(); t.after(() => app.close()); await app.click('#seasonTab');
   assert.equal(app.$('#seasonTab').getAttribute('aria-selected'), 'true'); assert.equal(app.$('#season').classList.contains('on'), true);
-  await app.click('#addSeason'); app.fill('#customName', '굴소스'); await app.click('#customSave');
+  await app.click('#addSeason'); app.fill('#customName', '스리라차'); await app.click('#customSave');
   await app.click('#addPantry'); app.fill('#customName', '오트밀'); await app.click('#customSave');
-  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('굴소스'), true); assert.equal(st.customPantry.includes('오트밀'), true);
-  assert.equal(st.season.includes('굴소스'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
-  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '굴소스 항목 삭제'); await app.click(remove);
+  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('스리라차'), true); assert.equal(st.customPantry.includes('오트밀'), true);
+  assert.equal(st.season.includes('스리라차'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
+  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '스리라차 항목 삭제'); await app.click(remove);
+  assert.equal(app.w.UMFStore.getState().season.includes('스리라차'), false);
+});
+
+test('an existing built-in seasoning is selected without becoming a duplicate custom entry', async t => {
+  const app = await boot(); t.after(() => app.close());
+  await app.click('#seasonTab'); await app.click('#addSeason');
+  app.fill('#customName', '굴소스'); await app.click('#customSave');
+  const state = app.w.UMFStore.getState();
+  assert.equal(state.season.filter(name => name === '굴소스').length, 1);
+  assert.equal(state.customSeason.includes('굴소스'), false);
+  assert.equal(app.document.querySelectorAll('#sg .tog').length > 0, true);
+  assert.equal([...app.document.querySelectorAll('#sg .umf-custom-remove')].some(button => button.getAttribute('aria-label') === '굴소스 항목 삭제'), false);
+  await app.toggle('#sg', '굴소스');
   assert.equal(app.w.UMFStore.getState().season.includes('굴소스'), false);
+  assert.equal(app.w.UMFStore.getState().items.length, 0);
 });
 
 test('filters and search clear hidden selection and disable unavailable actions', async t => {
@@ -576,7 +590,7 @@ test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and 
   assert.equal(app.w.UMFKitchenState.getState().doors.fridge, true);
   await app.click(shelfItem(app, firstId));
   assert.equal(app.w.UMFKitchen.getMovingId(), firstId);
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-bottom"]');
+  await app.click('#umfKitchenScene .shelf-target[data-zone="freezer-bottom"]');
   assert.equal(app.w.UMFKitchenState.zoneFor(firstId), 'freezer-bottom');
   assert.equal(app.w.UMFKitchenState.zoneFor(secondId), 'middle');
   assert.equal(shelfItem(app, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
@@ -607,6 +621,23 @@ test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and 
   assert.equal(shelfItem(reloaded, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
   assert.equal(shelfItem(reloaded, secondId).closest('.shelf').dataset.zone, 'top');
   assert.equal(memory.get(STATE), before);
+});
+
+test('kitchen layer controls are hidden until a real lot is selected and close with its door', async t => {
+  const app = await boot({ seed: { [STATE]: existingFridge([kitchenItem('layer-lot', '두부')]) } });
+  t.after(() => app.close()); const raw = app.memory.get(STATE);
+  const controls = app.$('#umfKitchenScene .kitchen-layer-controls');
+  assert.equal(controls.hidden, true);
+  await app.click('#umfKitchenScene [data-action="organize"]');
+  assert.equal(controls.hidden, true, 'Organizing without a selection must not expose unavailable actions');
+  await app.click(shelfItem(app, 'layer-lot'));
+  assert.equal(controls.hidden, false);
+  for (const action of ['layer-front', 'layer-back']) assert.equal(app.$('#umfKitchenScene [data-action="' + action + '"]').disabled, false);
+  await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
+  assert.equal(app.w.UMFKitchen.getMovingId(), null);
+  assert.equal(controls.hidden, true);
+  for (const action of ['layer-front', 'layer-back']) assert.equal(app.$('#umfKitchenScene [data-action="' + action + '"]').disabled, true);
+  assert.equal(app.memory.get(STATE), raw);
 });
 
 test('kitchen renders every overlapping lot and inventory can select a buried lot to change its layer', async t => {
@@ -936,7 +967,7 @@ test('kitchen preserves v5 records and sync settings without adding sample food,
   await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
   await app.click('#umfKitchenScene [data-action="organize"]');
   await app.click(shelfItem(app, 'legacy-tofu'));
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-top"]');
+  await app.click('#umfKitchenScene .shelf-target[data-zone="freezer-top"]');
   assert.equal(memory.get(STATE), raw);
   assert.equal(memory.get('use-me-first-sync-code-v1'), syncCode);
   assert.equal(memory.get('use-me-first-sync-meta-v2'), metadata);
@@ -944,4 +975,31 @@ test('kitchen preserves v5 records and sync settings without adding sample food,
   assert.equal(app.w.UMFStore.getState().meals[0].day, '2026-10-19');
   assert.equal(app.w.UMFStore.getState().meals[0].name, '어제 메뉴');
   assert.equal(JSON.parse(memory.get(KITCHEN_VIEW)).placements['legacy-tofu'], 'freezer-top');
+});
+
+for (const marker of [null, 'done']) test('ordinary kitchen startup preserves expired signature-like user records with demo marker ' + String(marker), async t => {
+  const items = [
+    ['owned-zucchini', '애호박', '1개'], ['owned-milk', '우유', '900ml'],
+    ['owned-tofu', '두부', '300g'], ['owned-eggs', '계란', '10개'],
+    ['owned-onions', '양파', '3개'], ['owned-yogurt', '요거트', '1개']
+  ].map(([id, name, quantity]) => kitchenItem(id, name, quantity, '2026-09-01'));
+  const original = existingFridge(items, {
+    season: ['굴소스'], pantry: ['오트밀'], customPantry: ['오트밀'],
+    meals: [{ id: 'existing-meal', name: '직접 기록한 식사', ts: seedTime - 86400000, day: '2026-10-19' }],
+    favorites: ['계란 볶음밥']
+  });
+  const raw = JSON.stringify(original), syncMetadata = JSON.stringify({ local: 'existing-local', remote: 'existing-remote' });
+  const memory = new Map([[STATE, raw], ['use-me-first-sync-meta-v2', syncMetadata]]);
+  if (marker !== null) memory.set('umf-demo-expiry-balance-v1', marker);
+  const app = await boot({ memory }); t.after(() => app.close());
+  assert.equal(memory.get(STATE), raw, 'Names/amounts are not a provenance flag and may never authorize rewriting user dates');
+  assert.equal(JSON.stringify(app.w.UMFStore.getState().items.map(item => [item.id, item.quantity, item.expiry])), JSON.stringify(items.map(item => [item.id, item.quantity, item.expiry])));
+  assert.equal(memory.get('umf-demo-expiry-balance-v1') ?? null, marker);
+  assert.equal(memory.get('use-me-first-sync-meta-v2'), syncMetadata);
+  app.advance(86400000 * 90); app.w.dispatchEvent(new app.w.CustomEvent('umf:daychange')); await app.flush();
+  assert.equal(memory.get(STATE), raw, 'Changing the displayed day cannot rewrite printed expiry dates');
+  app.close();
+  const reloaded = await boot({ memory }); t.after(() => reloaded.close());
+  assert.equal(memory.get(STATE), raw); assert.equal(memory.get('use-me-first-sync-meta-v2'), syncMetadata);
+  assert.equal(memory.get('umf-demo-expiry-balance-v1') ?? null, marker);
 });

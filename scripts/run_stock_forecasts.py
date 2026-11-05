@@ -16,6 +16,7 @@ from stock_forecast_model import (VERSION, POLICY, normalise_history, fit_model,
                                   make_prediction, score_prediction, stamp, digest)
 import stock_forecast_learning as learning
 import stock_forecast_directions as directions
+from stock_forecast_identity import execution_identity
 UTC = timezone.utc
 DEFAULT = [
     ('^KS11', '코스피', 'KR'), ('^KQ11', '코스닥', 'KR'),
@@ -77,6 +78,7 @@ def collect(spec, mode):
 
 
 def process(spec, mode):
+    identity = execution_identity()
     symbol, name, market = spec
     bars = None
     try:
@@ -93,7 +95,7 @@ def process(spec, mode):
         record.update(name=name, source_url='https://finance.yahoo.com/quote/'+symbol,
                       collector='yfinance', provider_is_official_exchange=False,
                       source_run_id=os.environ.get('GITHUB_RUN_ID'),
-                      source_commit=os.environ.get('GITHUB_SHA'),
+                      **identity,
                       history_sha256=digest([{'t': row.start.isoformat(), 'o': row.open,
                                              'h': row.high, 'l': row.low, 'c': row.close}
                                             for row in bars.itertuples()]))
@@ -130,6 +132,7 @@ def complete_target(record, bars):
 
 
 def run(root=Path('.'), specs=None, modes=('daily', 'intraday'), processor=None):
+    identity = execution_identity()
     specs = specs or DEFAULT
     state, parent_hash = learning.load_state(root)
     ledger = root/'stock-forecast-ledger.jsonl'
@@ -213,7 +216,7 @@ def run(root=Path('.'), specs=None, modes=('daily', 'intraday'), processor=None)
              'independent_deduplicated':True, 'baseline_comparison':evaluation['baseline_paired'],
              'not_trade_returns':True, 'human_push_receipt_verified':False}
     artifact={'version':VERSION, 'generated_at':evaluation['generated_at'],
-              'source_run_id':os.environ.get('GITHUB_RUN_ID'), 'policy':POLICY,
+              'source_run_id':os.environ.get('GITHUB_RUN_ID'), **identity, 'policy':POLICY,
               'status':'research_only', 'real_time_connected':False,
               'refresh_mode':'scheduled_best_effort_not_realtime',
               'coverage':len(specs), 'counts':dict(Counter(r['status'] for r in ready)),

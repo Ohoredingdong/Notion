@@ -14,6 +14,7 @@ import shutil
 import tempfile
 import threading
 import time
+from stock_forecast_identity import execution_identity
 
 VERSION = 'bounded-autopilot-1.0'
 REPORT = 'stock-forecast-autopilot.json'
@@ -229,6 +230,7 @@ def verify_stage(root,stage,cutoff):
     return check
 
 def run(root=Path('.'),pipeline=None,clock=now):
+    identity=execution_identity()
     import run_stock_forecasts as original
     from stock_forecast_cascade import RECIPE
     root=Path(root).resolve();root.mkdir(parents=True,exist_ok=True)
@@ -265,7 +267,7 @@ def run(root=Path('.'),pipeline=None,clock=now):
             new_count=len(lines(stage/'stock-forecast-ledger.jsonl'))-original_count
             updates=evaluation.get('learning',{}).get('training_updates',0)-old_updates
             report={'version':VERSION,'generated_at':clock().isoformat(),'run_id':run_id,
-                    'source_commit':os.environ.get('GITHUB_SHA'),
+                    **identity,
                     'status':'research_cycle_verified','policy':POLICY,
                     'source_state':'received_real_history','collected_groups':len(collected),
                     'source_attempts':collector.events,'diagnosis':diagnose(evaluation,collector.events),

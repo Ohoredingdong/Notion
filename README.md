@@ -1,5 +1,7 @@
 # Notion 위젯
 
+개발은 [AGENTS.md](./AGENTS.md)와 [설치·변경별 검사·PR·후보 생성 절차](./docs/DEVELOPMENT.md)를 따릅니다. [개발 환경 감사](./docs/DEVELOPMENT_AUDIT_2026-11-05.md)에 자동화·기준선 실패·검증 범위가 있습니다. 새 CI와 후보 생성은 읽기 전용이며, 운영 배포·브랜치 보호 변경은 사용자 승인 후 별도로 진행합니다.
+
 ## 경매노트 · 새 경매 공부 웹앱
 
 [경매노트 열기](https://ohoredingdong.github.io/Notion/auction-study.html) — **권리분석 → 실제 투자금 → 지역·시세 → 최종 검토**를 한 물건씩 연습합니다. 가상 사례로 시작해 내 물건을 추가하고, 확인 근거와 계산을 이 브라우저에 저장할 수 있습니다. [사용·실행 안내](./docs/auction-study.md)
