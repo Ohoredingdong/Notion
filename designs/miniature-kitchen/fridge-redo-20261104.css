@@ -6,30 +6,48 @@ body[data-mode] #tray{top:8px;bottom:auto;left:50%;right:auto;margin:0;transform
 body[data-mode] #tray[data-workflow-route="item"],body[data-mode] #tray[data-workflow-route="supplementDetail"]{top:auto;bottom:calc(100svh - 8px - var(--widget-frame-height))}
 body[data-mode] .shell:before{background-image:none;background-color:#fbf5ed}
 body .fitted-side-counters{display:none!important}
-body[data-mode][data-home="fridge"] .masthead{height:calc(44px * var(--home-ui-scale))!important;min-height:calc(44px * var(--home-ui-scale));background:none;border-radius:0}
-body[data-mode][data-home="fridge"] .brand h1{font-size:calc(20px * var(--home-ui-scale));font-weight:700;color:#60351e}
-body[data-home="fridge"] .story-mark{width:calc(25px * var(--home-ui-scale));height:calc(25px * var(--home-ui-scale));color:#6d4024}
-body[data-home="fridge"] .header-actions svg{width:calc(25px * var(--home-ui-scale));height:calc(25px * var(--home-ui-scale));color:#71492c}
-body[data-home="fridge"] #panel-fridge{padding-inline:12px;gap:0;padding-bottom:0}
-body[data-home="fridge"] #fridgeSceneHost{background:none;border:0;border-radius:0;overflow:hidden}
-body[data-home="fridge"] .room .fridge-stage{left:150.5px!important;bottom:0!important;width:699px!important;height:828px!important}
-body[data-home="fridge"] #dailyBalance{padding:10px 12px 9px;border:0;border-radius:14px;background:#fffdf8;box-shadow:0 1px 4px #7657341c}
-body[data-home="fridge"] #dailyBalance .balance-head{min-height:25px;margin-bottom:5px}
-body[data-home="fridge"] #dailyBalance .balance-head b{font-size:calc(18px * var(--home-ui-scale));font-weight:700}
-body[data-home="fridge"] #dailyBalance .balance-head>span{font-size:calc(12px * var(--home-ui-scale));color:#584b3e}
-body[data-home="fridge"] #dailyBalance .balance-name{display:flex;align-items:center;gap:4px;font-size:calc(14px * var(--home-ui-scale));font-weight:600;margin-bottom:3px;white-space:nowrap}
-body[data-home="fridge"] #dailyBalance .balance-name:before{display:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])){--widget-frame-width:min(100vw,720px,calc((100svh - 16px) / 1.018205128));--widget-frame-height:min(calc(100svh - 16px),calc(var(--widget-frame-width) * .89 + max(50px,calc(var(--widget-frame-width) * .128205128))))}
+/* The user's original home is one kitchen scene with its controls overlaid. */
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell{height:var(--widget-frame-height)!important;max-height:calc(100svh - 16px);padding:0 0 calc(50px * var(--home-ui-scale));--fullflow-nav:calc(50px * var(--home-ui-scale));--nav-height:var(--fullflow-nav);border-radius:14px;background:#f8f0e6}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell:before{background-image:none;background-color:#f4e5ce}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .masthead{position:absolute;left:10%;right:4%;top:calc(8px * var(--home-ui-scale));width:auto;height:calc(26px * var(--home-ui-scale))!important;min-height:calc(26px * var(--home-ui-scale));margin:0;padding:0 calc(8px * var(--home-ui-scale));justify-content:flex-start;z-index:22;border:0;border-radius:10px 10px 0 0;background:#fffdf8}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .brand{justify-content:flex-start;gap:5px}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .brand h1{font-size:calc(13px * var(--home-ui-scale));font-weight:650;color:#43372d;letter-spacing:-.3px}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .brand p#todayStamp{display:block!important;position:absolute;right:calc(80px * var(--home-ui-scale));top:50%;transform:translateY(-50%);margin:0;font-size:calc(9px * var(--home-ui-scale));font-weight:400;letter-spacing:0;color:#827568;white-space:nowrap}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])):has(#homeStorageNotice:not([hidden]):not([data-storage-status="temporary"])) .brand p#todayStamp{display:none!important}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .story-mark{width:calc(15px * var(--home-ui-scale));height:calc(17px * var(--home-ui-scale));color:#715844}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .header-actions{position:absolute;right:calc(6px * var(--home-ui-scale));top:0;transform:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .header-actions button{min-width:calc(62px * var(--home-ui-scale));min-height:calc(28px * var(--home-ui-scale));height:calc(28px * var(--home-ui-scale));padding:1px calc(7px * var(--home-ui-scale));border:1px solid #d9c7b4;border-radius:7px;background:#fffdf8;color:#75513c}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .header-actions svg{display:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .header-actions .sr-only{position:static!important;width:auto!important;height:auto!important;padding:0!important;margin:0!important;overflow:visible!important;clip:auto!important;clip-path:none!important;white-space:nowrap;font-size:calc(10px * var(--home-ui-scale))}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #panel-fridge{position:relative;flex:1;min-height:0;padding:0;gap:0;isolation:isolate}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #fridgeSceneHost{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;overflow:hidden;background:none;border:0;border-radius:0}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #fridgeSceneHost>.kitchen-view{width:100%;height:100%;display:flex;align-items:flex-start;justify-content:center;padding-bottom:0}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #fridgeSceneHost .room{flex:none;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;margin:0 auto}
+body[data-home="fridge"] .room .fridge-stage{left:278px!important;top:352px!important;bottom:auto!important;width:699px!important;height:776px!important}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance{--carb:#ffb59f;--protein:#bba3d1;--fat:#edc382;position:absolute;left:10%;right:4%;top:calc(34px * var(--home-ui-scale));width:auto;margin:0;padding:calc(5px * var(--home-ui-scale)) calc(9px * var(--home-ui-scale)) calc(8px * var(--home-ui-scale));border:0;border-radius:0 0 11px 11px;z-index:21;background:#fffdf8;box-shadow:0 2px 5px #76573415;line-height:1.25}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-head{min-height:calc(18px * var(--home-ui-scale));margin-bottom:calc(2px * var(--home-ui-scale))}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-head b{font-size:calc(13px * var(--home-ui-scale));font-weight:600}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-head>span{font-size:calc(9px * var(--home-ui-scale));color:#827467}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-name{display:flex;align-items:center;gap:4px;font-size:calc(10px * var(--home-ui-scale));font-weight:500;margin-bottom:2px;white-space:nowrap}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-name:before{content:'';display:block;width:calc(8px * var(--home-ui-scale));height:calc(8px * var(--home-ui-scale));margin:0;border-radius:50%;flex:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance [data-balance="carb"] .balance-name:before{background:#ffb59f}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance [data-balance="protein"] .balance-name:before{background:#bba3d1}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance [data-balance="fat"] .balance-name:before{background:#edc382}
 .balance-symbol{display:block;width:calc(18px * var(--home-ui-scale));height:calc(21px * var(--home-ui-scale));flex:none;color:#ed9b17}
 [data-balance="protein"] .balance-symbol{color:#e6a126}[data-balance="fat"] .balance-symbol{color:#ff6844}
-body[data-home="fridge"] #dailyBalance .balance-number{min-height:26px;gap:3px;flex-wrap:nowrap}
-body[data-home="fridge"] #dailyBalance .balance-number strong{font-size:calc(19px * var(--home-ui-scale));font-weight:650;letter-spacing:-.5px}
-body[data-home="fridge"] #dailyBalance .balance-value[data-empty="true"] .balance-number strong{font-size:calc(18px * var(--home-ui-scale));font-weight:450}
-body[data-home="fridge"] #dailyBalance .balance-number strong small,body[data-home="fridge"] #dailyBalance .balance-number>span{font-size:calc(12px * var(--home-ui-scale));color:#645446;white-space:nowrap}
-body[data-home="fridge"] #dailyBalance .balance-track{height:calc(9px * var(--home-ui-scale))!important;margin-top:3px;background:#eae3dc}
-body[data-home="fridge"] #homeWorktop{height:44px;min-height:44px;margin:0}
-body[data-home="fridge"] #addFood{position:relative;isolation:isolate;height:44px;min-height:44px;border:0;border-radius:0;background:none;box-shadow:none;font-size:calc(19px * var(--home-ui-scale));font-weight:550}
-body[data-home="fridge"] #addFood:before{content:'';position:absolute;z-index:-1;inset:6px 0;border:1px solid #ffccb6;border-radius:99px;background:linear-gradient(90deg,#ff653a,#ff4e29);box-shadow:inset 0 1px 2px #ffffff40}
-body[data-home="fridge"] #addFood .icon{width:23px;height:23px}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-symbol{display:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-number{min-height:calc(20px * var(--home-ui-scale));gap:2px;flex-wrap:nowrap}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-number strong{font-size:calc(16px * var(--home-ui-scale));font-weight:600;letter-spacing:-.3px}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-value[data-empty="true"] .balance-number strong{font-size:calc(15px * var(--home-ui-scale));font-weight:450}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-number strong small,body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-number>span{font-size:calc(10px * var(--home-ui-scale));color:#6e6053;white-space:nowrap}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-track{height:calc(6px * var(--home-ui-scale))!important;margin-top:3px;background:#eee6de}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray[data-workflow-route="item"]{max-height:calc(var(--widget-frame-height) - 8px)}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray .ingredient-sheet-actions{bottom:0;margin:7px 0 0;padding:7px 0 0}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeWorktop{position:absolute;top:auto;left:auto;right:calc(12px * var(--home-ui-scale));bottom:calc(5px * var(--home-ui-scale));width:auto;height:calc(44px * var(--home-ui-scale));min-height:calc(44px * var(--home-ui-scale))!important;margin:0;display:flex;z-index:24}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #addFood{position:relative;height:calc(44px * var(--home-ui-scale));min-height:calc(44px * var(--home-ui-scale));padding:calc(6px * var(--home-ui-scale)) calc(15px * var(--home-ui-scale));gap:5px;border:1px solid #fffaf4;border-radius:24px;background:linear-gradient(135deg,#fa8461,#eb694b);box-shadow:0 2px 5px #884e2524;font-size:calc(15px * var(--home-ui-scale));font-weight:550;color:#fff}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #addFood:before{display:none}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #addFood .icon{width:21px;height:21px}
 body[data-home="fridge"] #homeStorageNotice[data-storage-status="temporary"]{display:none!important}
 body .fridge-interiors .drop-zone[data-zone^="fresh"]{pointer-events:none}
 body .door-inside-art{filter:sepia(.16) saturate(.8) brightness(1.035)}
@@ -37,7 +55,7 @@ body .item[data-food-profile="eggs"]{--profile-width:148px;--profile-height:94px
 body .item[data-food-profile="tomatoes"]{--profile-width:148px;--profile-height:93px}
 body .item[data-food-profile="tofu"]{--profile-width:148px;--profile-height:94px}
 body .item[data-food-profile="broccoli"]{--profile-width:210px;--profile-height:134px}
-body .item[data-food-profile="milk"]{--profile-width:83px;--profile-height:141px}
+body .item[data-food-profile="milk"]{--profile-width:64px;--profile-height:108px}
 body .item[data-food-profile="scallion"]{--profile-width:235px;--profile-height:135px}
 body .item[data-food-profile="mushrooms"]{--profile-width:205px;--profile-height:121px}
 body .item[data-food-profile="kimchi"]{--profile-width:145px;--profile-height:100px}
@@ -51,6 +69,52 @@ body[data-mode] .shell .home-shortcuts button{font-size:calc(14px * var(--home-u
 body[data-mode] .shell .home-shortcuts .nav-art{width:calc(26px * var(--home-ui-scale));height:calc(26px * var(--home-ui-scale))}
 body[data-mode] .shell .home-shortcuts [aria-selected="true"]{color:#ff542b!important;background:none!important;box-shadow:none!important}
 body[data-mode] .shell #tab-fridge[aria-selected="true"] svg{fill:#ff5b31;stroke:#fff;stroke-width:1.5}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts{height:calc(50px * var(--home-ui-scale));min-height:calc(50px * var(--home-ui-scale));padding:1px 8px;border-radius:10px 10px 0 0;background:#fffdf9f5}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts button{font-size:calc(11px * var(--home-ui-scale));font-weight:500;gap:1px;color:#7b6b5c!important}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts .nav-art{width:calc(21px * var(--home-ui-scale));height:calc(21px * var(--home-ui-scale))}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts [aria-selected="true"]{color:#a45b3c!important}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell #tab-fridge[aria-selected="true"] svg{fill:#a45b3c;stroke:#fff}
+/* At 320px the overlay must shrink with the scene, leaving the first shelf visible. */
+@media(max-width:360px){
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])){--widget-frame-height:min(calc(100svh - 16px),calc(var(--widget-frame-width) * .89 + 58px))}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell{--home-ui-scale:.82!important;--fullflow-nav:46px;--nav-height:46px;padding-bottom:46px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .shell .home-shortcuts{height:46px;min-height:46px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .brand p#todayStamp{font-size:8px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-head b{font-size:12px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-name{font-size:9px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #dailyBalance .balance-number strong{font-size:14px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeWorktop,body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #addFood{height:44px;min-height:44px!important}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray[data-workflow-route="item"]{max-height:calc(var(--widget-frame-height) - 8px)}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray .ingredient-summary.ingredient-identity{min-height:56px;margin-bottom:8px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray .ingredient-identity .ingredient-preview{height:56px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray .ingredient-identity .ingredient-preview .food-art{height:52px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #tray .ingredient-sheet-actions>button{min-height:50px}
+ body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])):has(#tray[open][data-workflow-route="item"]){--widget-frame-height:min(calc(100svh - 16px),380px)}
+}
+/* Storage errors stay visible above the scene; temporary preview status remains in settings. */
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeStorageNotice:not([hidden]):not([data-storage-status="temporary"]){position:absolute;left:12px!important;right:12px!important;top:calc(114px * var(--home-ui-scale));width:auto!important;height:auto!important;min-height:44px!important;z-index:32;display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:7px 9px;border:1px solid #d3af87;border-radius:9px;background:#fff4e5;color:#654a32}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeStorageNotice:not([hidden]):not([data-storage-status="temporary"])>span{font-size:11px}
+body[data-mode][data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) #homeStorageNotice:not([hidden]):not([data-storage-status="temporary"]) button{min-width:44px;min-height:44px;font-size:11px}
+/* Registration keeps its own reading space beside the short home composition. */
+body[data-mode][data-home="fridge"] #tray:not([data-workflow-route="item"]){--widget-frame-height:min(calc(100svh - 16px),max(500px,calc(var(--widget-frame-width) * 1.36)))}
+/* Native photograph projection: no independently stretched cabinet or doors. */
+body[data-home="fridge"]:not(:has(#panel-fridge[data-screen-id="D6"])) .scene-world{width:1254px!important;height:1254px!important;background:none}
+.original-kitchen-photo,.original-door-reveals{position:absolute;inset:0;width:1254px;height:1254px;max-width:none;pointer-events:none;user-select:none}
+.original-kitchen-photo{z-index:0}.original-door-reveals{z-index:1}
+.original-door-reveals>div{position:absolute;overflow:hidden}.original-door-reveals img{position:absolute;width:1254px;height:1254px;max-width:none}
+body[data-camera="counter"] .original-kitchen-photo,body[data-camera="counter"] .original-door-reveals,body:has(#panel-fridge[data-screen-id="D6"]) .original-kitchen-photo,body:has(#panel-fridge[data-screen-id="D6"]) .original-door-reveals{display:none}
+body .shell .door,body .shell .door.is-open,body .shell .door.right.is-open,body .door-cargo,body .door-cargo.is-open,body .door-cargo.right.is-open,body .door-storage{transform:none!important;transform-style:flat;transition:opacity .18s;box-shadow:none;border:0;border-radius:0}
+body .shell .door.is-open{background:none}body .door-cargo{z-index:4}body .door-storage{backface-visibility:visible}
+body .door-storage .item>.food-art{transform:scale(.5);transform-origin:center bottom}
+body .item[data-food-profile="eggs"]{--profile-width:104px;--profile-height:90px}
+body .item[data-food-profile="tomatoes"]{--profile-width:104px;--profile-height:80px}
+body .item[data-food-profile="tofu"]{--profile-width:100px;--profile-height:72px}
+body .item[data-food-profile="mushrooms"]{--profile-width:120px;--profile-height:80px}
+body .item[data-food-profile="kimchi"]{--profile-width:105px;--profile-height:90px}
+body .item[data-food-profile="scallion"]{--profile-width:210px;--profile-height:80px}
+body .item[data-food-profile="generic"]{--profile-width:64px;--profile-height:44px}
+body .item[data-food-profile="tray"]{--profile-width:220px;--profile-height:85px}
+body .item[data-food-profile="frozen-small"]{--profile-width:110px;--profile-height:71px;}
 /* Wide view: the background fits by width; its real cabinet feet anchor the appliance. */
 body[data-home-page="decor"] .shell{height:min(100svh,calc(190px * var(--home-ui-scale) + var(--widget-frame-width) * .5))!important;max-height:100svh}
 body[data-home-page="decor"] #homeDecor{gap:0;overflow:hidden}

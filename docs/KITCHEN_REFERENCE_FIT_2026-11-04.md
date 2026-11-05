@@ -28,3 +28,18 @@ D1/D5/D6의 넓은 부엌과 같은 조리대 소품 투영, 첫 기록 보상·
 320/390/801에서 기본17개와 추가 재료가 있는21개 자료를 각각 실제 그림 중심으로 눌러 올바른 A6를 열었다. 기존 v1 저장 원문은 읽기·resize·상세 열기/닫기 전후 바이트가 같다. 실제 drag/방향키·수평 같은 선반·다른 ID/기록 보존·그림 크기·재로드도 확인했다. [선택/원문](kitchen-reference-fit-20261104/selection-and-storage.json), [이동/재로드](kitchen-reference-fit-20261104/native-move-reload.json), [추가 재료 이동](kitchen-reference-fit-20261104/generic-move-reload.json)을 기록한다.
 
 실제 B2 탭 전환의 저장 무변경, 계획→실제 식사→취소·재저장, 지출과 재고 분리, D초안 취소의 원문 보존과 적용 때만 꾸밈권1 차감·동시 재고 보존을 확인했다. 최종 버전의12모듈 중 장면을 제외한11개는 이 거래 확인 버전과 바이트가 같고 모델은 수정 전과 같다. A2/A3/A4/A6 320/390/801 및 B1/B2/C1/C3/C5 320/390의 실제 주요 버튼·가로 넘침도 확인했다.
+
+## 공개 전달
+
+구현은 `9f1ee959aaa3901ac88246bbcb65202deac980f4`에 고정해 작업 브랜치에 업로드했다. main/Pages는 변경하지 않았다.
+
+- [수정한 위젯](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Ohoredingdong/Notion/9f1ee959aaa3901ac88246bbcb65202deac980f4/previews/mobile/widget.html)
+- [공개 실제 첫 화면](https://raw.githubusercontent.com/Ohoredingdong/Notion/0fe3f608e4313b088dfdfdbba8674729bb43629b/widget-phone-A1.png)
+- [원본·실제 같은 너비 비교](https://raw.githubusercontent.com/Ohoredingdong/Notion/0fe3f608e4313b088dfdfdbba8674729bb43629b/local-reference-comparison.png)
+- [공개 Chromium 실행 성공](https://github.com/Ohoredingdong/Notion/actions/runs/41844839718)
+
+공개 HTMLPreview에서320×568·390×844·801×782 모두 실제 A1/A2/A6/B1/B2/C1/D5를 열었고,12모듈·19스타일·7AVIF 원문/바이트·데이터 무변경·저장/적용을 확인했다.21개 실제 화면과 별도 로컬 비교PNG는 정상TLS에서HTTP200·image/png·고정 증거 바이트 일치를 확인했다. [최종 공개 결과](kitchen-reference-fit-20261104/public-status.json)와 [공개 이미지 접근](kitchen-reference-fit-20261104/public-fetch-screenshots.json)을 기록한다.
+
+첫 공개 검사에서는 월간 상세의 숨겨진 하단 메뉴를 누르려던 검사 스크립트가 실패했다. 앱 소스와 단언은 그대로 유지하고 실제 월간 뒤로→영양 기록→하단 메뉴 경로로 검사 동작을 수정해 위 최종 실행을 통과했다. 최초 실패를 최종 통과로 덮지 않았다. 실제 기기 Safari/Notion 검증과 사용자의 디자인 승인은 주장하지 않는다.
+
+Draft PR 생성은 GitHub GraphQL API의403 Forbidden으로 실패했다. Git 작업 브랜치 업로드와 위 공개 실행/이미지 접근은 성공했으며 PR 생성이나 main 병합을 완료했다고 보고하지 않는다.
