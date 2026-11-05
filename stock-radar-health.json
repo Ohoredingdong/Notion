@@ -1,84 +1,84 @@
 {
   "version": "canonical-radar-health-v2",
-  "checked_at": "2026-11-05T13:02:48.399352+00:00",
-  "status": "error",
-  "consecutive_failures": 1,
+  "checked_at": "2026-11-05T13:20:40.657428+00:00",
+  "status": "warning",
+  "consecutive_failures": 0,
   "notification_required": false,
   "data_ages": {
     "opportunity": {
       "file": "stock-opportunity-data.json",
       "generated_at": "2026-11-05T12:55:05.581050+00:00",
-      "age_hours": 0.13
+      "age_hours": 0.43
     },
     "cases": {
       "file": "stock-investment-cases-summary.json",
       "generated_at": "2026-11-05T13:02:04.315831+00:00",
-      "age_hours": 0.01
+      "age_hours": 0.31
     },
     "entry": {
       "file": "stock-entry-plan-summary.json",
-      "generated_at": "2026-11-05T12:59:25.886649+00:00",
-      "age_hours": 0.06
+      "generated_at": "2026-11-05T13:10:39.348117+00:00",
+      "age_hours": 0.17
     },
     "charts": {
       "file": "stock-radar-chart-data.json",
       "generated_at": "2026-11-05T12:55:23.628595+00:00",
-      "age_hours": 0.12
+      "age_hours": 0.42
     },
     "forecast": {
       "file": "stock-direction-forecast.json",
       "generated_at": "2026-11-05T12:49:52.518957+00:00",
-      "age_hours": 0.22
+      "age_hours": 0.51
     },
     "learning": {
       "file": "stock-forecast-learning.json",
       "generated_at": "2026-11-05T12:49:52.518957+00:00",
-      "age_hours": 0.22
+      "age_hours": 0.51
     },
     "accuracy": {
       "file": "stock-radar-accuracy-audit.json",
       "generated_at": "2026-11-05T12:49:52.518957+00:00",
-      "age_hours": 0.22
+      "age_hours": 0.51
     },
     "market": {
       "file": "stock-market-context.json",
       "generated_at": "2026-11-05T13:02:13.140394+00:00",
-      "age_hours": 0.01
+      "age_hours": 0.31
     },
     "news": {
       "file": "news-link-data.json",
       "generated_at": "2026-11-05T12:49:02.149562+00:00",
-      "age_hours": 0.23,
+      "age_hours": 0.53,
       "max_hours": 6
     },
     "calendar": {
       "file": "market-events-data.json",
       "generated_at": "2026-11-05T11:42:04.871869+00:00",
-      "age_hours": 1.35,
+      "age_hours": 1.64,
       "max_hours": 18
     },
     "events": {
       "file": "stock-event-outlook.json",
       "generated_at": "2026-11-05T11:42:06.940774+00:00",
-      "age_hours": 1.34,
+      "age_hours": 1.64,
       "max_hours": 18
     },
     "catalog": {
       "file": "stock-universe-catalog.json",
       "generated_at": "2026-11-05T12:32:53.276504+00:00",
-      "age_hours": 0.5,
+      "age_hours": 0.8,
       "max_hours": 168
     },
     "financial": {
       "file": "stock-financial-coverage.json",
       "generated_at": "2026-11-05T12:32:56.869057+00:00",
-      "age_hours": 0.5,
+      "age_hours": 0.8,
       "max_hours": 48
     },
     "extended_forecast": {
       "file": "stock-extended-direction-forecast.json",
       "generated_at": "2026-11-05T12:09:49.876676+00:00",
-      "age_hours": 0.88
+      "age_hours": 1.18
     }
   },
   "session_clocks": {
@@ -1479,9 +1479,7 @@
     "financial": "stock-financial-coverage.json",
     "extended_forecast": "stock-extended-direction-forecast.json"
   },
-  "issues": [
-    "accuracy: 현재 자료와 감사 시점 불일치 (market_generated_at)"
-  ],
+  "issues": [],
   "warnings": [
     "financial KR: 이번 수집에 차단/부분 성공이 있습니다. 누적 보유량은 최신 수집 성공 건수가 아닙니다.",
     "전체 명부 수와 재무 확인 수·유효한 AI 예측 수는 서로 다른 범위입니다.",
@@ -1489,5 +1487,87 @@
   ],
   "notice": "현재 화면이 사용하는 종목·예측·차트·뉴스·시장·감사 파일을 검사합니다. 장중 미완료 일봉과 오래된 원자료는 새 갱신시각으로 정상화하지 않습니다.",
   "repair_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-opportunities.yml",
-  "verification_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/monitor-stock-value-radar.yml"
+  "verification_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/monitor-stock-value-radar.yml",
+  "source_snapshot": {
+    "commit": "f9e49cd00587eb3b631a02db77542dbac8a64ef3",
+    "inputs": {
+      "market-events-data.json": {
+        "exists": true,
+        "sha256": "9092add17e9c164863d4e0a4e9ee1904afd72f41eb2fd65f53dfd3c7af5ad585"
+      },
+      "news-link-data.json": {
+        "exists": true,
+        "sha256": "f4572f62ee620976fbf57cce9a89720e074a73365b5d79845fb5e8de467176e1"
+      },
+      "scripts/market_data_utils.py": {
+        "exists": true,
+        "sha256": "e3e8cdc575f2cc61a47571da02f8778afb724908d2600dcad9daa87fe3d98a44"
+      },
+      "scripts/monitor-stock-value-radar.py": {
+        "exists": true,
+        "sha256": "68bbf95eb038cf80872b4cc33da903301aa7e37a4ba9da0d2182e16d37ec6950"
+      },
+      "scripts/publish_stock_radar_health.py": {
+        "exists": true,
+        "sha256": "947a6d4a39bf2e2b4758961d327bfd87da7571a08b80a6149166af6a0cc37f5a"
+      },
+      "scripts/publish_widget_data.py": {
+        "exists": true,
+        "sha256": "3fa2613a946d3682eb7150dcdc7408c4448e5200a248950c2bdfd4f29ba2ee70"
+      },
+      "stock-direction-forecast.json": {
+        "exists": true,
+        "sha256": "64966a4b0f7b69be69d85b854f131dd8a87b327a20ed4748e8db11fbf6cc950d"
+      },
+      "stock-entry-plan-summary.json": {
+        "exists": true,
+        "sha256": "0c46f1336deefe2b514bdf2ee66ac34b10d40e747130f5e533ff3aae77ed2a86"
+      },
+      "stock-event-outlook.json": {
+        "exists": true,
+        "sha256": "95ddde82a7c66e94689277e1637e8ce71a3719c5bb1e4c07dfbb4f8ffda5da8e"
+      },
+      "stock-extended-direction-forecast.json": {
+        "exists": true,
+        "sha256": "92a56a2f21e6dea0fe3d3494c75447db510cec6ec17b9d7ee8691f67e0d4f5a3"
+      },
+      "stock-financial-coverage.json": {
+        "exists": true,
+        "sha256": "239f5a67e65e9114ace98d86648a1da78ecea23e803ff5bc5532a603a56778de"
+      },
+      "stock-forecast-learning.json": {
+        "exists": true,
+        "sha256": "752940a2d02abf7c9f9a3a45dc3c3d950164bae92299b470636c4ae87e462f5a"
+      },
+      "stock-investment-cases-summary.json": {
+        "exists": true,
+        "sha256": "6d3beebc7bc1cd0ef322613fb95943f80ec9d7fd7115c6c48c6e6f78b3e035be"
+      },
+      "stock-market-context.json": {
+        "exists": true,
+        "sha256": "2a8b74cd913d81eeb1fee0ac5d9a9c2b7418aadc6393e665e0b1ea3f049fa42d"
+      },
+      "stock-opportunity-data.json": {
+        "exists": true,
+        "sha256": "7bb21600449a2d47d4c97d8dff35dbefc6862fd8e8c68cbf7e102b63990d3559"
+      },
+      "stock-radar-accuracy-audit.json": {
+        "exists": true,
+        "sha256": "072feacfb5e70afa4762239823da7b8f64e0475bbdfb757689611f51fee213aa"
+      },
+      "stock-radar-chart-data.json": {
+        "exists": true,
+        "sha256": "67eb55099ff3f0f447a98dff25e7c0b4258884389735f512be930da746450d78"
+      },
+      "stock-universe-catalog.json": {
+        "exists": true,
+        "sha256": "1f358eca4e228ae14680bcf4d3afad6820717379118f385456976a0a7ccce5dc"
+      },
+      "stock-value-radar.html": {
+        "exists": true,
+        "sha256": "3d528606408fa1401fb4696b0abb015ac473e95860062adef3081fea78980fb7"
+      }
+    },
+    "previous_health_sha256": "7aae2ad27dfd0aee2034864080b6369cd2dca54d39cadcc36a543277fda2d42f"
+  }
 }
