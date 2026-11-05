@@ -368,7 +368,7 @@ def short_mobile_dialog(page):
 def embedded_overview(page):
     """A 900x650 embed keeps readable rows even when storage is blocked."""
     page.set_viewport_size({"width": 1100, "height": 800})
-    for blocked in [False, True]:
+    for blocked, fallback in [(False, None), (True, None), (True, "serif")]:
         # Start at the application origin, then use a real iframe. The sandbox
         # creates a storage-denied context without changing application code.
         page.goto(URL, wait_until="domcontentloaded")
@@ -383,7 +383,9 @@ def embedded_overview(page):
         element = page.locator("iframe").element_handle()
         frame = element.content_frame()
         expect(frame.locator("h1")).to_have_text("물건 검토 한눈에 보기")
-        label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available")
+        if fallback:
+            frame.add_style_tag(content=f"body.auction-app {{font-family:{fallback};}}")
+        label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available", fallback or "default font")
         overview_proportions(frame, label)
         document_fits_viewport(frame, label)
         if blocked:
@@ -404,6 +406,10 @@ def embedded_overview(page):
             assert row["contentTop"] >= row["top"] and row["contentBottom"] <= row["bottom"], (label, index, row)
             if index:
                 assert row["top"] >= rows[index - 1]["bottom"] - 1, (label, rows)
+        available_height = progress.evaluate("el => el.clientHeight")
+        assert available_height + 1 >= max(row["bottom"] - row["top"] for row in rows), (
+            label, "progress viewport must fit a complete readable row", available_height, rows
+        )
         last = progress.locator(".analysis-step").last
         last.scroll_into_view_if_needed()
         box_inside_viewport(last, (label, "last step"))

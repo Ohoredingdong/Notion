@@ -793,6 +793,11 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .timeline-fields>.field{display:grid;grid-template-columns:minmax(0,1fr) 170px;align-items:center;gap:12px}
   .timeline-fields>.field>label{min-height:0;margin:0}
 }
+@media screen and (min-width:761px) and (max-width:1099px) and (max-height:740px){
+  /* Preserve room for a whole study row when an embed shows its storage warning
+     or the browser substitutes a taller Korean font. Detail tabs keep the rest. */
+  .home-screen .verdict-description,.home-screen .overview-metric .metric-subline,.home-panel-progress .panel-subtitle{display:none}
+}
 @media screen and (max-width:760px){
   .rights-step-navigation{gap:6px;padding:14px 15px 0}
   .rights-step-button{justify-content:center;gap:5px;padding:8px 5px;font-size:11px}
