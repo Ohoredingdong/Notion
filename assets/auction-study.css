@@ -471,6 +471,7 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .sidebar-bottom>span:last-child{display:none}
   .workspace{display:flex;flex-direction:column;height:100%;min-height:0;max-height:100%;padding:0 24px 16px;overflow:hidden}
   .workspace>.topbar,.workspace>.page-heading,.workspace>.case-banner,.workspace>.notice{flex-shrink:0}
+  .workspace>.notice{margin:0 0 10px;padding-top:12px;padding-bottom:12px}
   .topbar{min-height:48px;margin-bottom:12px;gap:12px}
   .breadcrumb{font-size:12px}
   .top-actions{flex-wrap:nowrap}
@@ -505,10 +506,10 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen .overview-verdict>.button{min-height:38px;padding:9px 13px;font-size:13px}
   .home-screen>.overview-metrics{flex-shrink:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
   .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){grid-column:auto;padding:13px 16px;border-radius:12px}
-  .home-screen .metric-label{min-height:0;margin:0 0 4px;font-size:12px;line-height:1.5}
+  .home-screen .overview-metric .metric-label{min-height:0;margin:0 0 4px;font-size:12px;line-height:1.5}
   .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{margin:0;font-size:29px;line-height:1.3}
   .home-screen .overview-value small{font-size:13px}
-  .home-screen .metric-subline{margin:7px 0 0;padding-top:7px;font-size:12px;line-height:1.5}
+  .home-screen .overview-metric .metric-subline{margin:7px 0 0;padding-top:7px;font-size:12px;line-height:1.5}
   .home-screen .metric-note{margin-top:4px;font-size:11px;line-height:1.45}
   .home-screen .overview-metric>.badge{margin-top:7px;padding:3px 6px}
   .home-screen .overview-metric>.text-link{margin-top:7px;font-size:12px}
@@ -521,7 +522,7 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen .overview-layout .panel-subtitle{font-size:12px;line-height:1.5}
   .home-screen .overview-layout .panel-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:13px 16px 16px;scrollbar-width:thin}
   .home-screen .overview-layout .side-column>.panel:nth-child(2),.home-screen .overview-layout .side-column>.panel:nth-child(3),.home-screen .overview-caveat{display:none}
-  .home-screen .analysis-progress{display:grid;grid-template-rows:repeat(4,minmax(0,1fr));flex:1;min-height:0;padding:4px 16px 8px}
+  .home-screen .analysis-progress{display:grid;grid-template-rows:repeat(4,minmax(min-content,1fr));flex:1;min-height:0;padding:4px 16px 8px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
   .home-screen .analysis-step{position:relative;flex-wrap:nowrap;gap:10px;min-height:0;padding:9px 0}
   .home-screen .analysis-step-index{width:29px;height:29px;border-radius:8px;font-size:12px}
   .home-screen .analysis-step-copy{flex:1;min-width:0}
@@ -595,12 +596,16 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen .verdict-description{display:none}
   .home-screen .overview-verdict>.button{flex-shrink:0;align-self:center;width:auto;min-height:33px;padding:7px 8px;font-size:11px}
   .home-screen .overview-verdict>.button svg{display:none}
-  .home-screen>.overview-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-  .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){grid-column:auto;min-height:114px;padding:10px 9px;border-radius:10px}
-  .home-screen .metric-label{font-size:11px;min-height:32px;line-height:1.45;margin-bottom:2px}
-  .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:22px;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+  .home-screen>.overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){grid-column:auto;min-height:99px;padding:10px 12px;border-radius:10px}
+  .home-screen .overview-metric .metric-label{font-size:11px;min-height:16px;line-height:1.45;margin-bottom:4px}
+  .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:24px;line-height:1.35;word-break:keep-all;overflow-wrap:normal}
+  .home-screen .overview-metric:first-child{display:grid;grid-column:1/-1;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:center;min-height:70px}
+  .home-screen .overview-metric:first-child .metric-label{grid-column:1;grid-row:1;min-height:0;margin:0}
+  .home-screen .overview-metric:first-child .overview-value{grid-column:2;grid-row:1/3;font-size:27px;white-space:nowrap}
+  .home-screen .overview-metric:first-child .metric-note{grid-column:1;grid-row:2;margin-top:3px;max-width:145px}
   .home-screen .overview-value small{display:inline;font-size:11px;margin-left:2px}
-  .home-screen .metric-subline{display:none}
+  .home-screen .overview-metric .metric-subline{display:none}
   .home-screen .metric-note{font-size:10px;line-height:1.5;margin-top:4px}
   .home-screen .overview-metric>.badge{font-size:10px;padding:2px 4px;white-space:normal;margin-top:5px}
   .home-screen .overview-metric>.text-link{font-size:10px;margin-top:5px}
@@ -628,7 +633,6 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .sidebar .brand{gap:6px}
   .sidebar .brand-name{font-size:16px}
   .sidebar .brand-mark{width:26px;height:29px}
-  .home-screen .overview-metric:first-child .overview-value{font-size:20px}
   .home-screen .analysis-step-copy>span{font-size:12px}
   .page-content .scenario-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .page-content .scenario-card{padding:14px}
@@ -645,9 +649,9 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen>.overview-verdict{padding:10px 15px}
   .home-screen .verdict-label{display:none}
   .home-screen .verdict-heading{font-size:18px}
-  .home-screen .overview-metric{padding-top:11px;padding-bottom:11px}
+  .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){padding-top:11px;padding-bottom:11px}
   .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:26px}
-  .home-screen .metric-subline{margin-top:5px;padding-top:5px}
+  .home-screen .overview-metric .metric-subline{margin-top:5px;padding-top:5px}
   .home-screen .metric-note{display:none}
   .home-screen .overview-layout .panel-header{padding-top:13px}
   .home-screen .analysis-step{padding-top:7px;padding-bottom:7px}
@@ -664,9 +668,11 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .home-screen>.overview-verdict{padding:8px 10px}
   .home-screen .verdict-heading{font-size:15px}
   .home-screen .overview-verdict>.button{min-height:29px;font-size:10px}
-  .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){min-height:99px;padding:8px}
-  .home-screen .metric-label{min-height:29px;font-size:10px}
-  .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:20px}
+  .home-screen .overview-metric,.home-screen .overview-metric:first-child,.home-screen .overview-metric:last-child:nth-child(odd){min-height:89px;padding:8px 11px}
+  .home-screen .overview-metric .metric-label{min-height:16px;font-size:11px}
+  .home-screen .overview-value{font-size:24px}
+  .home-screen .overview-metric:first-child{min-height:54px}
+  .home-screen .overview-metric:first-child .overview-value{font-size:27px;grid-row:1}
   .home-screen .metric-note{display:none}
   .home-tabs button{min-height:27px}
   .home-screen .overview-layout .panel-header{padding-top:10px}
@@ -703,3 +709,22 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .case-title{max-width:calc(100vw - 193px)}
 }
 @media screen and (max-width:760px){.case-banner .case-address{display:none}}
+
+/* PC: keep the summary/detail columns on one grid and size cards to content,
+   rather than stretching sparse rows to the bottom of a tall monitor. */
+@media screen and (min-width:1100px){
+  .home-screen>.overview-layout{flex:0 1 360px;max-height:360px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .home-screen .overview-layout .panel-header{align-items:flex-start}
+  .home-panel-progress .panel-subtitle{display:none}
+}
+@media screen and (min-width:1600px){
+  .page-heading h1{font-size:28px}
+  .home-screen .overview-value,.home-screen .overview-metric:first-child .overview-value{font-size:34px}
+  .home-screen .overview-layout .panel-title{font-size:17px}
+  .home-screen .analysis-step-copy>strong{font-size:15px}
+  .home-screen .analysis-step-copy>span{font-size:13px}
+  .home-screen .overview-tasks .task-item>p{font-size:14px}
+  .home-screen .overview-summary .cost-row{font-size:13px}
+  .home-screen .overview-summary .cost-row strong{font-size:15px}
+  .home-screen .overview-summary .cost-row.total .cash-number{font-size:22px}
+}

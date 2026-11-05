@@ -1,0 +1,99 @@
+name: Validate and publish auction widget
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'auction-study.html'
+      - 'assets/auction-study*'
+      - 'tests/auction-study-model.test.cjs'
+      - 'scripts/test_auction_study_browser.py'
+      - '.github/workflows/auction-widget.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'auction-study.html'
+      - 'assets/auction-study*'
+      - 'tests/auction-study-model.test.cjs'
+      - 'scripts/test_auction_study_browser.py'
+      - '.github/workflows/auction-widget.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auction-widget-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Financial calculation regressions
+        run: node tests/auction-study-model.test.cjs
+      - name: Install pinned browser test runtime
+        run: |
+          python -m pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Desktop, persistence, mobile and iframe regressions
+        env:
+          AUCTION_STUDY_URL: http://127.0.0.1:8765/auction-study.html
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
+          python -B scripts/test_auction_study_browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auction-widget-browser-evidence
+          if-no-files-found: warn
+          path: /tmp/auction-study-*.png
+
+  publish:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Request build through the existing Pages configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify the actual public HTML and all runtime assets
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, os, time, urllib.request
+          from pathlib import Path
+          names = ['auction-study.html', 'assets/auction-study.css',
+                   'assets/auction-study.js', 'assets/auction-study-model.js']
+          expected = {name: hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in names}
+          for attempt in range(36):
+              try:
+                  for name, wanted in expected.items():
+                      url = 'https://ohoredingdong.github.io/Notion/' + name + '?release=' + os.environ['RELEASE_SHA']
+                      request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache'})
+                      with urllib.request.urlopen(request, timeout=15) as response:
+                          assert response.status == 200, (name, response.status)
+                          assert hashlib.sha256(response.read()).hexdigest() == wanted, name
+                  print('VERIFIED_PUBLIC_AUCTION_WIDGET', os.environ['RELEASE_SHA'], expected, flush=True)
+                  break
+              except Exception as error:
+                  if attempt == 35:
+                      raise
+                  print('Awaiting Pages publication:', str(error), flush=True)
+                  time.sleep(10)
+          PY
