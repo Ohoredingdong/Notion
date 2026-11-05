@@ -1,5 +1,9 @@
 (() => {
   'use strict';
+  function apiRequest(path, options) {
+    if (!window.MuseService) throw new Error('생성 서비스 연결 기능을 불러오지 못했습니다. 새로고침해주세요.');
+    return window.MuseService.request(path, options);
+  }
   const $ = selector => document.querySelector(selector);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uid = () => crypto.randomUUID?.() || `model-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -324,7 +328,7 @@
     if(jobId||pending||previewPending)return;
     if(!front()||!body()) {toast('정면 얼굴과 전신 사진을 지정해주세요.');return;}
     try {
-      const response=await fetch('/api/studio/status',{signal:AbortSignal.timeout(5000)});const data=await response.json();
+      const response=await apiRequest('/api/studio/status',{signal:AbortSignal.timeout(5000)});const data=await response.json();
       if(!response.ok||!data.configured)throw new Error('not configured');
     } catch {
       await devPreview();
@@ -340,7 +344,7 @@
     let lastError = '';
     const submitted=sheetSubmission();
     try {
-      const response=await fetch('/api/studio/model-sheet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(submitted),signal:AbortSignal.timeout(30000)});
+      const response=await apiRequest('/api/studio/model-sheet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(submitted),signal:AbortSignal.timeout(30000)});
       const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||'기준 시트 요청에 실패했습니다.');
       if(!data.jobId||typeof data.jobId!=='string')throw new Error('작업 정보를 받지 못했습니다.');
       jobId=data.jobId;status('3면 뷰와 표정 시트를 만들고 있어요…');pollJob();
@@ -349,7 +353,7 @@
   async function pollJob() {
     if(!jobId)return;const current=jobId;
     try {
-      const response=await fetch('/api/studio/jobs/'+encodeURIComponent(current),{signal:AbortSignal.timeout(15000)});
+      const response=await apiRequest('/api/studio/jobs/'+encodeURIComponent(current),{signal:AbortSignal.timeout(15000)});
       const data=await response.json().catch(()=>({}));
       if(response.status===404){jobId=null;render();status('작업이 만료되었거나 서버가 재시작되었습니다. 다시 생성해주세요.');toast('시트 작업을 찾지 못했습니다. 다시 생성해주세요.');return;}
       if(!response.ok)throw new Error(data.message||'시트 생성 상태를 확인하지 못했습니다.');
@@ -367,7 +371,7 @@
   }
   async function cancel() {
     if(!jobId)return;
-    try{const response=await fetch('/api/studio/jobs/'+encodeURIComponent(jobId),{method:'DELETE'});if(!response.ok)throw new Error();status('시트 생성 취소를 요청했습니다.');}catch{toast('취소 요청을 보내지 못했습니다. 다시 시도해주세요.');}
+    try{const response=await apiRequest('/api/studio/jobs/'+encodeURIComponent(jobId),{method:'DELETE'});if(!response.ok)throw new Error();status('시트 생성 취소를 요청했습니다.');}catch{toast('취소 요청을 보내지 못했습니다. 다시 시도해주세요.');}
   }
   function approve() {
     if(!state.sheet||state.sheet.sourceRevision!==state.revision){toast('현재 원본 사진과 일치하는 생성 시트가 없습니다.');return;}

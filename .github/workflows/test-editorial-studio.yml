@@ -9,6 +9,7 @@ on:
       - 'services/editorial-studio/**'
       - 'tests/editorial-*.py'
       - '.github/workflows/test-editorial-studio.yml'
+      - 'render.yaml'
   push:
     branches: [main, 'codex/muse-*']
     paths:
@@ -18,6 +19,7 @@ on:
       - 'services/editorial-studio/**'
       - 'tests/editorial-*.py'
       - '.github/workflows/test-editorial-studio.yml'
+      - 'render.yaml'
   workflow_dispatch:
 
 permissions:
@@ -53,11 +55,42 @@ jobs:
               print('STUDIO_BROWSER=' + p.chromium.executable_path)
           PY
       - name: Validate shared contract and server
-        run: node --test --test-isolation=none services/editorial-studio/server.test.mjs services/editorial-studio/prompt-core.test.mjs
+        run: node --test --test-isolation=none services/editorial-studio/*.test.mjs
+      - name: Build the private generation service image
+        run: docker build -f services/editorial-studio/Dockerfile -t muse-studio-validation .
+      - name: Check production container startup and authentication
+        run: |
+          docker run -d --name muse-runtime-check -p 127.0.0.1:8825:10000 -e STUDIO_IMAGE_API_KEY=fixture-not-an-api-key -e STUDIO_ACCESS_PASSWORD=fixture-owner-password-for-container muse-studio-validation
+          trap 'docker rm -f muse-runtime-check >/dev/null 2>&1 || true' EXIT
+          python - <<'PY'
+          import json, time, urllib.request, urllib.error
+          base = 'http://127.0.0.1:8825'
+          for attempt in range(40):
+              try:
+                  with urllib.request.urlopen(base + '/healthz', timeout=2) as response:
+                      assert json.load(response) == {'ok': True}
+                  break
+              except OSError:
+                  if attempt == 39:
+                      raise
+                  time.sleep(0.25)
+          try:
+              urllib.request.urlopen(base + '/api/studio/status', timeout=2)
+              raise AssertionError('Private generation status must require login')
+          except urllib.error.HTTPError as error:
+              assert error.code == 401
+          body = json.dumps({'password': 'fixture-owner-password-for-container'}).encode()
+          request = urllib.request.Request(base + '/api/studio/session', data=body, headers={'Content-Type': 'application/json', 'Origin': base.replace('http:', 'https:')})
+          with urllib.request.urlopen(request, timeout=2) as response:
+              assert json.load(response)['authenticated'] is True
+              assert 'HttpOnly' in response.headers['Set-Cookie'] and 'Secure' in response.headers['Set-Cookie']
+          print('Production image starts as non-root and requires an owner session; no image provider request was made')
+          PY
       - name: Exercise static Pages and large photo uploads
         run: |
           python tests/editorial-static-browser.py --browser-executable "$STUDIO_BROWSER" --output /tmp/notion-muse-function-fix/static
           python tests/editorial-image-upload-browser.py
+          python tests/editorial-auth-browser.py
       - name: Exercise editorial, model, and local preparation flows
         run: |
           mkdir -p /tmp/notion-muse-function-fix

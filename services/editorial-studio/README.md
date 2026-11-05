@@ -9,6 +9,8 @@ NODE_USE_ENV_PROXY=1 node services/editorial-studio/server.mjs
 
 The server serves the repository and opens `editorial-studio.html` at its root. Default bind address: `127.0.0.1:8787`. Set `PORT` if needed. Keep the default loopback bind for personal use; this is a development server, not a multiuser production service.
 
+For a password-protected public generation service, use the [Docker and Render deployment guide](./DEPLOY.md). It serves the page and API from one HTTPS origin. Production requires a server-side image API key, a studio password of at least 16 characters, and a positive image-request limit. The configuration is provided for the account owner to deploy; no public generation server or valid image-provider credential is provisioned by these files.
+
 The published GitHub Pages page also works without this server for model photo organization, source-board PNG/model-kit downloads, composition, local ChatGPT preparation files, and importing/reviewing externally generated images. Preparation runs in the browser using `assets/editorial-prompt-core.js`; originals are not posted to a preview API. When image generation is unavailable, the main buttons prepare these files and the page explicitly says AI generation is not connected. GitHub Pages does not run the Node image-generation service.
 
 Photo uploads accept up to 50MB per image. The shared local image loader preserves aspect ratio and camera orientation while preparing a JPEG copy of at most 3072px and 2MB; device originals remain unchanged. Browsers with a native HEIC/HEIF decoder can read those files; other browsers show a JPG conversion instruction. Upload progress and per-file errors remain visible beside the photos. The next-step control explains any missing face/full-body role, and navigation to composition applies the chosen model anchors automatically.
@@ -25,11 +27,10 @@ Response: `202 {jobId}`. Poll `GET /api/studio/jobs/:id` for shot progress and J
 
 The prompt asks the model to preserve facial identity and body proportions, reinterpret the reference mood with new clothing/accessories and compositions, and vary poses/gaze across the 10 cuts. Exact identity, anatomy, pose control, and photographic realism are not guaranteed; review results. Canvas layer positions guide the prompt as rough composition intent rather than pixel-accurate placement. The provider returns portrait 1024×1536 or square 1024×1024 for the UI’s options. The browser center-crops completed images to the exact selected 3:4, 4:5 or 1:1 ratio and exports JPEG; cropping can remove edge details. This creates images, not video output.
 
-Use only model/reference files you are authorized to use. Files are sent to the selected image provider only when generation is submitted. For deployment, add authenticated sessions and per-user authorization, durable private storage, stronger cost quotas, a job queue and a reverse proxy with upload limits before exposing the service publicly. Current cross-origin checks do not replace authentication.
+Use only model/reference files you are authorized to use. Files are sent to the selected image provider only when generation is submitted. The deployable personal service uses an owner password, HttpOnly sessions, request reservations and bounded in-memory jobs. A multiuser service additionally needs per-user ownership, durable private storage and persistent billing controls. Cross-origin checks alone do not provide authentication. Uploaded photos and results remain temporary, so save them before restarts or hosting sleep.
 
 ```sh
-node --test services/editorial-studio/server.test.mjs
-node --test services/editorial-studio/prompt-core.test.mjs
+node --test --test-isolation=none services/editorial-studio/*.test.mjs
 ```
 
 Tests use an in-memory mock image provider and do not call or bill the real API.
