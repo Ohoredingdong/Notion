@@ -7,6 +7,8 @@ on:
       - 'assets/stock-*.js'
       - 'scripts/build_stock_universe_catalog.py'
       - 'scripts/run_stock_extended_forecasts.py'
+      - 'scripts/build_stock_financial_coverage.py'
+      - 'scripts/test_stock_financial_coverage.py'
       - 'scripts/test_stock_universe_catalog.py'
       - 'scripts/test_stock_extended_forecasts.py'
       - 'scripts/test_stock_universe_browser.py'
@@ -49,11 +51,19 @@ jobs:
           assert len({(x["country"],x["symbol"]) for x in c["items"]})==len(c["items"])
           d=json.loads(Path("stock-direction-forecast.json").read_text())
           assert d["status"]=="research_only" and d["real_time_connected"] is False
+          f=Path("stock-financial-coverage.json")
+          assert f.exists(), "Official financial feed missing; do not claim financial coverage"
+          verified=json.loads(f.read_text(encoding="utf-8"))
+          assert verified["version"]=="official-financial-coverage-v1"
+          assert verified["universe"]["total"]==c["counts"]["total"]
+          assert verified["processed"]<=c["counts"]["total"]
+          assert sum(verified["financial_available"].values())>=1, "No official financial statements yet"
+          print("OFFICIAL_FINANCIAL_COUNTS",verified["financial_available"],"of",c["counts"]["total"])
           print("CATALOG_PROVENANCE_AND_CORE_RESEARCH_SAFE",c["counts"])
           PY
       - name: Run source, rotation, signal/valuation tests
         run: |
-          python -m unittest scripts.test_stock_universe_catalog scripts.test_stock_extended_forecasts -v
+          python -m unittest scripts.test_stock_universe_catalog scripts.test_stock_extended_forecasts scripts.test_stock_financial_coverage -v
           node --check assets/stock-radar-clean-bridge.js
           node --check assets/stock-radar-flow-v2.js
           node --check assets/stock-catalog-ui.js
