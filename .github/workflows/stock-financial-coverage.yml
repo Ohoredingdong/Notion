@@ -2,8 +2,8 @@ name: Stock Official Financial Coverage
 on:
   workflow_dispatch:
   schedule:
-    # Best effort: batch new filings without continuous requests against SEC/DART.
-    - cron: '11,41 0-7,13-22 * * 1-5'
+    # Daily published financial statements; avoid over-querying official providers.
+    - cron: '11 23 * * 1-5'
   push:
     branches: [feat/radar-universe-ai-news-20261105]
     paths:
