@@ -92,7 +92,7 @@
      <strong>${has?esc(s.label+" "+n(s.value*100)+"%"):"미발행 · 검증 대기"}</strong>
      <p>${esc(description)}</p></div>
     <div class="fx-catalog-preview-info"><b>공식 상장종목 목록에 확인된 기업</b>
-      <p>검색 가능한 전체 종목 중 일부는 최신 시세와 기업 가치평가를 연결하지 않았습니다. AI 방향 예측은 모델이 실제로 발행한 경우에만 표시합니다.</p>
+      <p>전체 상장종목 중 현재가·FCF·기업 가치평가가 아직 확인되지 않은 항목은 미확인으로 표시합니다. AI 상승 확률은 실제 모델이 해당 기간에 발행한 경우에만 보여줍니다.</p>
       <small>출처: ${esc(x.source)} · 자료일 ${esc(cat.generated_at||"미확인")}</small></div>
     ${statementPanel(x,ctx)}
   </section>`;
