@@ -131,6 +131,32 @@ def screenshot(page, name):
     REPORT['screenshots'].append(str(path))
 
 
+def capture_browser_failure(browser, error):
+    """Preserve an actual blocked interaction; never bypass pointer hit testing."""
+    REPORT['checks'].append({'name': 'browser interaction completed without exception',
+                             'pass': False, 'details': str(error)})
+    try:
+        page = browser.contexts[-1].pages[-1]
+        REPORT['failure_geometry'] = page.evaluate('''() => {
+          const selectors=['.fx-stage','.fx-stock-directory-page','.fx-page-grid',
+            '.fx-list-panel','#fx-results','#fx-result-count','[data-fx-more]',
+            '.fx-flowbar','.fx-catalog-preview'];
+          return {viewport:{width:innerWidth,height:innerHeight},scroll:{x:scrollX,y:scrollY},
+            nodes:Object.fromEntries(selectors.map(selector=>{
+              const el=document.querySelector(selector);if(!el)return [selector,null];
+              const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+              const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+              return [selector,{x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,
+                scrollHeight:el.scrollHeight,clientHeight:el.clientHeight,
+                overflowY:style.overflowY,position:style.position,
+                centerHit:hit?{tag:hit.tagName,className:hit.className,id:hit.id}:null}];
+            }))};
+        }''')
+        screenshot(page, 'failure-last-screen')
+    except Exception as diagnostic_error:
+        REPORT['failure_capture_error'] = str(diagnostic_error)
+
+
 def context(browser, width, height, root):
     ctx = browser.new_context(viewport={'width': width, 'height': height}, color_scheme='light',
                               reduced_motion='reduce', service_workers='block')
@@ -416,6 +442,9 @@ def main():
                     verify(f'embed-{width}: news accessible', frame.locator('.fx-world-page').count() == 1)
                     screenshot(page, f'embed-{width}-news')
                     ctx.close()
+            except Exception as error:
+                capture_browser_failure(browser, error)
+                raise
             finally:
                 browser.close()
     finally:

@@ -37,7 +37,7 @@
  function model(ctx){
   const raw=ctx?.data?.raw||null,catalog=ctx?.data?.catalog||null;
   const rawRows=Array.isArray(raw?.companies)?raw.companies:empty,items=data(ctx);
-  if(modelCache?.raw===raw&&modelCache?.catalog===catalog&&modelCache?.rawRows===rawRows&&modelCache?.items===items)return modelCache;
+  if(modelCache?.raw===raw&&modelCache?.catalog===catalog&&modelCache?.rawRows===rawRows&&modelCache?.items===items&&modelCache.rawLength===rawRows.length&&modelCache.itemLength===items.length)return modelCache;
   const catalogue=new Map(),catalogueAliases=new Map(),byKey=new Map(),aliases=new Map(),list=[];
   for(const item of items){
    if(!item||!["KR","US"].includes(item.country)||!item.symbol)continue;
@@ -72,7 +72,7 @@
   // Existing raw IDs stay unchanged unless that bare/provider ID is ambiguous.
   // Every row still has a selectable, round-trippable qualified identity.
   for(const c of list)c.selection_id=c.catalog_only||aliases.get(upper(c.symbol))===null?c.universe_key:String(c.symbol);
-  modelCache={raw,catalog,rawRows,items,list,byKey,aliases,info:{official:items.length,total:list.length,
+  modelCache={raw,catalog,rawRows,items,rawLength:rawRows.length,itemLength:items.length,list,byKey,aliases,info:{official:items.length,total:list.length,
    tracked:list.filter(c=>!c.catalog_only).length,extra:list.filter(c=>!c.catalog_entry).length}};
   return modelCache;
  }

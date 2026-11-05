@@ -57,6 +57,21 @@ check('Raw and catalogue references cache one model; source replacement invalida
  ctx.data.raw={...ctx.data.raw};const next=ui.universe(ctx);assert.notEqual(next,first);
  ctx.data.catalog={...ctx.data.catalog};assert.notEqual(ui.universe(ctx),next);
 });
+check('Appending or removing rows in the same raw and catalogue arrays refreshes selection',()=>{
+ const {ui}=runtime(),ctx=fixture(),first=ui.universe(ctx);
+ ctx.data.raw.companies.push({symbol:'TEST-BAD',market:'US',name:'Injected raw fixture'});
+ const appended=ui.universe(ctx),raw=ui.resolve('TEST-BAD',ctx);
+ assert.notEqual(appended,first);assert.equal(appended.length,first.length+1);
+ assert.equal(raw.catalog_only,false);assert.equal(ui.resolve(ui.selectionId(raw),ctx),raw);
+ ctx.data.raw.companies.pop();assert.equal(ui.resolve('TEST-BAD',ctx),null);
+ assert.equal(ui.universe(ctx).length,first.length);
+ ctx.data.catalog.items.push({country:'US',symbol:'TEST-CATALOG',name:'Appended catalogue fixture',exchange:'NYSE'});
+ const catalog=ui.resolve('US:TEST-CATALOG',ctx);
+ assert.equal(catalog.catalog_only,true);assert.equal(ui.resolve(ui.selectionId(catalog),ctx),catalog);
+ assert.equal(ui.universe(ctx).length,first.length+1);
+ ctx.data.catalog.items.pop();assert.equal(ui.resolve('US:TEST-CATALOG',ctx),null);
+ assert.equal(ui.universe(ctx).length,first.length);
+});
 check('Canonical, legacy, alphanumeric Korean and unique provider aliases resolve one identity',()=>{
  const {ui}=runtime(),ctx=fixture();
  for(const alias of ['005930','KR:005930','005930.KS'])assert.equal(ui.resolve(alias,ctx).universe_key,'KR:005930');
