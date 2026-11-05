@@ -460,6 +460,19 @@ def audit(records, outcomes, deliveries, cutoff):
                         'precision': hits/calls if calls else None}
     # This is evidence age only. Neither exchange-session freshness nor human
     # notification delivery can be certified from this repository snapshot.
+    # A repeated website byte check may advance last_public_verified_at
+    # without making any *new* first-issued forecast publicly available.
+    # Derive the separate first-timely forecast clock from immutable originals;
+    # it is still not human receipt or an executable market quote.
+    first_issued_timely_public = [
+        seen for rid, seen in public.items()
+        if rid in by_id
+        and originals.get(event_key(by_id[rid]), {}).get('id') == rid
+        and ts(by_id[rid]['issued_at']) <= seen < ts(by_id[rid]['target']['start'])
+        and seen <= cutoff
+    ]
+    last_first_issued_public = (
+        max(first_issued_timely_public) if first_issued_timely_public else None)
     def newest(field):
         values = [ts(r[field]) for r in by_id.values() if r.get(field) and ts(r[field]) <= cutoff]
         return max(values).isoformat() if values else None
@@ -470,6 +483,11 @@ def audit(records, outcomes, deliveries, cutoff):
         'last_issued_at': newest('issued_at'),
         'last_public_verified_at': last_public.isoformat() if last_public else None,
         'public_age_minutes': (cutoff-last_public).total_seconds()/60 if last_public else None,
+        'last_first_issued_timely_public_verified_at': (
+            last_first_issued_public.isoformat() if last_first_issued_public else None),
+        'first_issued_timely_public_age_minutes': (
+            (cutoff-last_first_issued_public).total_seconds()/60
+            if last_first_issued_public else None),
         'exchange_session_freshness_verified': False,
         'human_delivery_verified': False,
         'scope': 'Ages of immutable repository evidence; not live quote/session/receipt validation.'
