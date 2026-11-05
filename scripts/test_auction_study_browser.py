@@ -311,7 +311,10 @@ def main():
         ("short_mobile_dialog", short_mobile_dialog, 390),
     ]
     with sync_playwright() as p:
-        browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True)
+        launch_options = {"headless": True}
+        if os.environ.get("BROWSER_EXECUTABLE"):
+            launch_options["executable_path"] = os.environ["BROWSER_EXECUTABLE"]
+        browser = p.chromium.launch(**launch_options)
         for name, check, width in cases:
             context = browser.new_context(viewport={"width": width, "height": 1000}, accept_downloads=True)
             page = context.new_page()

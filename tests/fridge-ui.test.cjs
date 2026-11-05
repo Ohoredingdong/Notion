@@ -261,12 +261,15 @@ test('shortage plus routes seasonings and pantry into the correct confirmation d
 test('custom seasoning and pantry controls work and quantities remain unrelated to those sets', async t => {
   const app = await boot(); t.after(() => app.close()); await app.click('#seasonTab');
   assert.equal(app.$('#seasonTab').getAttribute('aria-selected'), 'true'); assert.equal(app.$('#season').classList.contains('on'), true);
-  await app.click('#addSeason'); app.fill('#customName', '굴소스'); await app.click('#customSave');
+  // 굴소스 is now a built-in seasoning. Exercise an actually custom name so
+  // the custom-item/remove contract remains meaningful as the base list grows.
+  const customSeasoning = '테스트 전용 허브소금';
+  await app.click('#addSeason'); app.fill('#customName', customSeasoning); await app.click('#customSave');
   await app.click('#addPantry'); app.fill('#customName', '오트밀'); await app.click('#customSave');
-  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes('굴소스'), true); assert.equal(st.customPantry.includes('오트밀'), true);
-  assert.equal(st.season.includes('굴소스'), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
-  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === '굴소스 항목 삭제'); await app.click(remove);
-  assert.equal(app.w.UMFStore.getState().season.includes('굴소스'), false);
+  const st = app.w.UMFStore.getState(); assert.equal(st.customSeason.includes(customSeasoning), true); assert.equal(st.customPantry.includes('오트밀'), true);
+  assert.equal(st.season.includes(customSeasoning), true); assert.equal(st.pantry.includes('오트밀'), true); assert.equal(st.items.length, 0);
+  const remove = [...app.document.querySelectorAll('#sg .umf-custom-remove')].find(x => x.getAttribute('aria-label') === customSeasoning + ' 항목 삭제'); await app.click(remove);
+  assert.equal(app.w.UMFStore.getState().season.includes(customSeasoning), false);
 });
 
 test('filters and search clear hidden selection and disable unavailable actions', async t => {
@@ -576,7 +579,7 @@ test('kitchen tap and drag arranging preserve same-name lot IDs, quantities and 
   assert.equal(app.w.UMFKitchenState.getState().doors.fridge, true);
   await app.click(shelfItem(app, firstId));
   assert.equal(app.w.UMFKitchen.getMovingId(), firstId);
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-bottom"]');
+  await app.click('#umfKitchenScene .shelf-target[data-action="move-zone"][data-zone="freezer-bottom"]');
   assert.equal(app.w.UMFKitchenState.zoneFor(firstId), 'freezer-bottom');
   assert.equal(app.w.UMFKitchenState.zoneFor(secondId), 'middle');
   assert.equal(shelfItem(app, firstId).closest('.shelf').dataset.zone, 'freezer-bottom');
@@ -936,7 +939,7 @@ test('kitchen preserves v5 records and sync settings without adding sample food,
   await app.click('#umfKitchenScene .compartment-toggle[data-compartment="fridge"]');
   await app.click('#umfKitchenScene [data-action="organize"]');
   await app.click(shelfItem(app, 'legacy-tofu'));
-  await app.click('#umfKitchenScene .kitchen-zone-controls [data-zone="freezer-top"]');
+  await app.click('#umfKitchenScene .shelf-target[data-action="move-zone"][data-zone="freezer-top"]');
   assert.equal(memory.get(STATE), raw);
   assert.equal(memory.get('use-me-first-sync-code-v1'), syncCode);
   assert.equal(memory.get('use-me-first-sync-meta-v2'), metadata);

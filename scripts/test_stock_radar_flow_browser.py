@@ -5,12 +5,13 @@ place orders or assert live-trading profitability. Stores screenshots/artifacts.
 """
 from __future__ import annotations
 import json
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
-BASE = "http://127.0.0.1:8765/stock-value-radar.html"
-OUT = Path("decision-browser-tests")
-OUT.mkdir(exist_ok=True)
+BASE = os.environ.get("RADAR_BASE_URL", "http://127.0.0.1:8765/").rstrip("/") + "/stock-value-radar.html"
+OUT = Path(os.environ.get("RADAR_ARTIFACTS", "decision-browser-tests"))
+OUT.mkdir(parents=True, exist_ok=True)
 REPORT = {"checks": [], "screenshots": []}
 
 def check(name: str, ok: bool, detail: str = ""):
@@ -32,7 +33,10 @@ def screenshot(page, name):
     REPORT["screenshots"].append(str(file))
 
 with sync_playwright() as play:
-    browser = play.chromium.launch(headless=True)
+    launch_options = {"headless": True}
+    if os.environ.get("BROWSER_EXECUTABLE"):
+        launch_options["executable_path"] = os.environ["BROWSER_EXECUTABLE"]
+    browser = play.chromium.launch(**launch_options)
     try:
         for width, height in [(1366, 768), (1440, 900), (1920, 1080)]:
             page = browser.new_page(viewport={"width": width, "height": height})
@@ -93,9 +97,20 @@ with sync_playwright() as play:
         check("No legacy UI rail",
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
-        check("Only two active runtime scripts on main URL",
-            page.locator("script[src]").count()==2,
-            "No legacy research-injection scripts should run on the V5 dashboard")
+        approved_scripts = {
+            "./assets/stock-radar-clean-bridge.js",
+            "./assets/stock-radar-flow-v2.js",
+            "./assets/stock-forecast.js",
+            "./assets/stock-forecast-learning.js",
+            "./assets/stock-forecast-directions.js",
+            "./assets/stock-forecast-autopilot.js",
+        }
+        runtime_scripts = page.locator("script[src]").evaluate_all(
+            "elements => elements.map(el => el.getAttribute('src').split('?')[0])"
+        )
+        check("Only approved current runtime scripts on main URL",
+            len(runtime_scripts)==len(approved_scripts) and set(runtime_scripts)==approved_scripts,
+            "Unexpected or duplicate runtime script: " + json.dumps(runtime_scripts))
         check("Market index cards",
             page.locator(".fx-v5-markets .nr-index").count() == 4)
         check("Market strip has separate spacing before analysis",
@@ -105,21 +120,21 @@ with sync_playwright() as play:
                 return upper && lower && lower.top-upper.bottom>=10;
             }"""), "Expected visible vertical gap between index strip and AI/research panels")
         check("Initial sentiment card is sourced",
-            page.locator(".fx-v5-sentiment .fx-v5-sentiment-date a").count()==1)
+            page.locator(".fx-sent-v9 .fx-sent-v9-foot a").count()==1)
         page.locator('[data-fx-sentiment-next]').click()
         check("Arrow switches to Korean market sentiment",
-            page.locator(".fx-v5-sentiment.is-korea").count()==1 and
-            "코스닥" in page.locator(".fx-v5-sentiment.is-korea").inner_text())
+            page.locator(".fx-sent-v9.is-korea").count()==1 and
+            "코스닥" in page.locator(".fx-sent-v9.is-korea").inner_text())
         check("Korean sentiment source attribution and after-close date",
-            "koreafeargreed.com" in (page.locator(".fx-v5-sentiment.is-korea a").get_attribute("href") or "") and
-            page.locator(".fx-v5-sentiment-date").count()==1)
+            "koreafeargreed.com" in (page.locator(".fx-sent-v9.is-korea a").get_attribute("href") or "") and
+            page.locator(".fx-sent-v9-foot").count()==1)
         page.reload(wait_until="domcontentloaded")
         page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
         check("Korean choice persists after reload",
-            page.locator(".fx-v5-sentiment.is-korea").count()==1)
+            page.locator(".fx-sent-v9.is-korea").count()==1)
         page.locator('[data-fx-sentiment-next]').click()
         check("Arrow switches back to US CNN sentiment",
-            page.locator(".fx-v5-sentiment.is-us").count()==1)
+            page.locator(".fx-sent-v9.is-us").count()==1)
         check("Signal probability labels",
             page.locator(".fx-list-panel .fx-row").count() > 0 and
             page.locator(".fx-v5-cockpit .fx-v5-ai").count() == 1)
@@ -135,8 +150,9 @@ with sync_playwright() as play:
             page.locator(".fx-v5-chartarea .fx-chart-svg polyline").count()>=2)
         check("Research status labelled honestly",
             "연구용" in page.locator(".fx-v5-cockpit .fx-v5-ai").inner_text())
-        check("Strict checklist cannot be mistaken for an investment approval",
-            "매수 승인 아님" in page.locator(".fx-v5-sidecheck").inner_text())
+        checklist_text = page.locator(".fx-v5-sidecheck").inner_text()
+        check("Strict checklist discloses evidence coverage rather than buy-success probability",
+            "AI 방향과 별도" in checklist_text and "수익·매수 성공 확률 아님" in checklist_text)
         check("Index card discloses historical sparkline date",
             all(any(label in x for label in ("일봉","추이","지표 저장값")) for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
@@ -156,11 +172,18 @@ with sync_playwright() as play:
         check("Selected stock appears in focus",symbol in page.locator(".fx-focus-head").inner_text())
         search = page.locator("#fx-search-input")
         search.fill(symbol)
-        check("Search shows selected ticker",page.locator(".fx-row[data-nr-select]").count() == 1 and
-              symbol in page.locator(".fx-focus-head").inner_text())
+        search_rows = page.locator(".fx-row[data-nr-select]")
+        check("Search keeps selected ticker and only matching results",
+            search_rows.count() > 0 and
+            page.locator(f'.fx-row[data-nr-select="{symbol}"]').count() == 1 and
+            symbol in page.locator(".fx-focus-head").inner_text() and
+            all(symbol.lower() in text.lower() for text in search_rows.all_text_contents()),
+            "Ticker/name substring searches can legitimately match more than one company")
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
         check("Details preserve selected ticker",
-            symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
+            symbol in page.locator(".fx-d-security").inner_text() and
+            page.evaluate("() => window.StockRadarV2Bridge.snapshot().selected")==symbol and
+            page.locator(".fx-detail-content").count()==1)
         check("Deep financial analysis now integrated",
             page.locator(".fx-detail-mid .fx-panel").count() == 3 and
             page.locator(".fx-detail-lower .fx-panel").count() == 3 and
@@ -253,22 +276,25 @@ with sync_playwright() as play:
         check("Failed refresh visibly warns about incomplete data",
             "raw 조회 실패" in page.locator("#source-status").inner_text())
         page.unroute("**/stock-opportunity-data.json*")
+        # Synthetic malformed record is confined to this isolated browser test.
+        # Use a valid current target window so only the bad distribution is exercised.
         page.evaluate("""() => {
-            const snap=window.StockRadarV2Bridge.snapshot();
+            const snap=window.StockRadarV2Bridge.snapshot(),now=Date.now();
             snap.data.raw.companies.push({
                 symbol:"TEST-BAD",name:"Bad Forecast Sample",market:"US",
-                currency:"USD",price:100,price_session:"2026-11-02"
+                currency:"USD",price:100,price_session:new Date(now).toISOString().slice(0,10)
             });
             snap.data.direction.records.push({
                 symbol:"TEST-BAD",mode:"daily",status:"research_prediction",
-                direction:"up",issued_at:"2026-11-02T01:00:00Z",
-                target:{end:"2026-11-05T01:00:00Z"},
+                direction:"up",issued_at:new Date(now-60000).toISOString(),
+                target:{start:new Date(now+60000).toISOString(),end:new Date(now+3600000).toISOString()},
                 probabilities:{up:0.9,flat:0.8,down:0.7}
             });
             window.StockRadarV2Bridge.select("TEST-BAD");
         }""")
         check("Malformed model probability is blocked and explained",
-            "분포·목표기간 오류" in page.locator(".fx-v5-ai").inner_text())
+            "예측 확률·발행시각 검증 실패" in page.locator(".fx-v5-ai").inner_text() and
+            page.locator(".fx-v5-ai .fx-prob-row").count()==0)
         page.reload(wait_until="domcontentloaded")
         page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
         page.evaluate("window.StockRadarV2Bridge.select('NVDA')")

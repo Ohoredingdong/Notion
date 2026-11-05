@@ -11,6 +11,33 @@ on:
       - 'scripts/build_stock_event_outlook.py'
       - 'stock-event-calendar-seed.json'
       - '.github/workflows/test-stock-radar-integration.yml'
+      - 'stock-value-radar.html'
+      - 'stock-value-radar-advanced.html'
+      - 'stock-korea-fear-greed.json'
+      - 'scripts/update_korea_fear_greed.py'
+      - 'scripts/test_stock_radar_flow_browser.py'
+      - 'scripts/publish_stock_opportunities.py'
+      - 'scripts/publish_stock_market_groups.py'
+      - 'scripts/publish_stock_investment_cases.py'
+      - 'scripts/install_stock_radar_v8.py'
+      - 'scripts/install_stock_decision_ui.py'
+      - 'scripts/install_stock_audit_ui.py'
+      - 'scripts/test_stock_radar_publish_protection.py'
+      - 'scripts/audit_stock_radar_accuracy.py'
+      - 'stock-radar-accuracy-audit.json'
+      - '.github/workflows/audit-stock-radar-accuracy.yml'
+      - 'assets/stock-radar-neutral.js'
+      - 'assets/stock-radar-neutral.css'
+      - 'assets/stock-radar-v8.js'
+      - 'assets/stock-radar-v8.css'
+      - 'assets/stock-radar-v9.js'
+      - 'assets/stock-forecast.js'
+      - 'assets/stock-recommendations.js'
+      - 'assets/stock-investment-cases.js'
+      - 'tests/stock-entry-browser.cjs'
+      - 'scripts/test_stock_decision_browser.py'
+      - 'scripts/test_market_context.py'
+      - 'scripts/update_market_context.py'
   push:
     branches: [main, 'fix/radar-feature-audit-20261030']
     paths:
@@ -65,7 +92,6 @@ jobs:
         run: |
           node --check assets/stock-radar-neutral.js
           node --check assets/stock-radar-clean-bridge.js
-          node --check assets/stock-radar-flow-v2.js
           node --check assets/stock-radar-flow-v2.js
           python -m py_compile scripts/test_stock_radar_flow_browser.py
           python scripts/test_stock_radar_publish_protection.py

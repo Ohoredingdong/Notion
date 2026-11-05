@@ -34,6 +34,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install operating theme without changing original financial evidence
+        if: github.ref_name == 'design/neutral-production-20261030'
         run: |
           sha256sum stock-opportunity-data.json stock-investment-cases.json stock-green-review.json stock-forecast-learning.json > /tmp/finance-before.sha
           python scripts/install_stock_radar_neutral.py
@@ -49,11 +50,23 @@ jobs:
           pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
           python scripts/build_stock_radar_chart_cache.py
       - name: Browser regression with real repository snapshots
+        if: github.ref_name == 'design/neutral-production-20261030'
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
           python -m http.server 8770 >/tmp/neutral-http.log 2>&1 &
           python scripts/test_stock_radar_neutral.py
+      - name: Verify current custom UI without running a legacy installer
+        if: github.ref_name != 'design/neutral-production-20261030'
+        run: |
+          python scripts/test_stock_radar_publish_protection.py
+          node --check assets/stock-radar-clean-bridge.js
+          node --check assets/stock-radar-flow-v2.js
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+          python -m http.server 8765 >/tmp/current-radar-http.log 2>&1 &
+          python scripts/test_stock_radar_canonical_browser.py
+          python scripts/test_radar_development_browser.py --base-url http://127.0.0.1:8765/ --artifacts current-ui-evidence
       - name: Save checked generated UI on design branch only
         if: github.ref_name == 'design/neutral-production-20261030'
         run: |
@@ -71,7 +84,7 @@ jobs:
           python - <<'PY'
           import hashlib,time,urllib.request
           from pathlib import Path
-          names=['stock-value-radar.html','assets/stock-radar-neutral.css','assets/stock-radar-neutral.js','assets/stock-radar-v8.js']
+          names=['stock-value-radar.html','assets/stock-radar-clean-bridge.js','assets/stock-radar-flow-v2.js','assets/stock-forecast.js','assets/stock-forecast-learning.js','assets/stock-forecast-directions.js','assets/stock-forecast-autopilot.js']
           expected={n:hashlib.sha256(Path(n).read_bytes()).hexdigest() for n in names}
           for attempt in range(24):
               try:
@@ -86,7 +99,7 @@ jobs:
                   if attempt==23:raise
                   time.sleep(6)
           PY
-          python scripts/test_stock_radar_neutral.py --url 'https://ohoredingdong.github.io/Notion/stock-value-radar.html' --public
+          python scripts/test_radar_development_browser.py --base-url 'https://ohoredingdong.github.io/Notion/' --artifacts public-current-ui-evidence
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -109,6 +122,8 @@ jobs:
             stock-forecast-learning.json
             stock-event-risks.json
             neutral-ui-evidence/
+            current-ui-evidence/
+            public-current-ui-evidence/
   display-cache:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest

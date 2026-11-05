@@ -1,14 +1,18 @@
 """Visual geometry smoke test for canonical investment radar (local HTTP server on :8765)."""
 from __future__ import annotations
 import json
+import os
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8765/"
+BASE = os.environ.get("RADAR_BASE_URL", "http://127.0.0.1:8765/").rstrip("/") + "/"
 MAX_CARD_HEIGHT = 150
 
 def main():
     with sync_playwright() as browser_api:
-        browser = browser_api.chromium.launch(headless=True)
+        launch_options = {"headless": True}
+        if os.environ.get("BROWSER_EXECUTABLE"):
+            launch_options["executable_path"] = os.environ["BROWSER_EXECUTABLE"]
+        browser = browser_api.chromium.launch(**launch_options)
         for width, height in [(1629, 929), (1366, 768)]:
             page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=1)
             # The second URL was published by mistake; it must open the same canonical page.

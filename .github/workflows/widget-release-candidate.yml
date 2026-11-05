@@ -1,0 +1,54 @@
+name: Prepare reviewed widget candidate (no deployment)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: widget-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install checksum-verified Actions validator
+        run: |
+          bash scripts/install_actionlint.sh "$RUNNER_TEMP/actionlint-tools"
+          echo "$RUNNER_TEMP/actionlint-tools" >> "$GITHUB_PATH"
+      - name: Install locked test tooling
+        run: |
+          python -m pip install --require-hashes -r requirements-dev.txt
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m playwright install --with-deps chromium
+      - name: Verify the selected branch against main
+        run: python -B scripts/check_changed.py --base origin/main --head HEAD --profile tooling --browser --artifacts "$RUNNER_TEMP/widget-checks"
+      - name: Prepare only the exact verified source
+        # Default success() gating: failed/cancelled/incomplete tests cannot reach this step.
+        run: python -B scripts/prepare_release.py --report "$RUNNER_TEMP/widget-checks/report.json" --output "$RUNNER_TEMP/widget-release-candidate.tar.gz"
+      - name: Upload candidate for review only
+        uses: actions/upload-artifact@v4
+        with:
+          name: widget-release-candidate
+          path: ${{ runner.temp }}/widget-release-candidate.tar.gz
+          if-no-files-found: error
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: widget-candidate-evidence
+          path: ${{ runner.temp }}/widget-checks/
+          if-no-files-found: warn

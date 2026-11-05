@@ -1,5 +1,7 @@
 # Notion 위젯
 
+개발 작업은 [공통 규칙](./AGENTS.md), [개발·검증·PR 절차](./docs/development-workflow.md), [기존 자동화 감사](./docs/development-audit.md)를 먼저 확인합니다. 운영 병합·배포는 별도 승인 후 진행합니다.
+
 ## 경매노트 · 새 경매 공부 웹앱
 
 [경매노트 열기](https://ohoredingdong.github.io/Notion/auction-study.html) — **권리분석 → 실제 투자금 → 지역·시세 → 최종 검토**를 한 물건씩 연습합니다. 가상 사례로 시작해 내 물건을 추가하고, 확인 근거와 계산을 이 브라우저에 저장할 수 있습니다. [사용·실행 안내](./docs/auction-study.md)
