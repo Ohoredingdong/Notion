@@ -1,0 +1,173 @@
+/* Embed presentation: one bounded card, independent of the app's portrait shell.
+   The legacy app rules remain intact; only the widget owns this geometry. */
+body[data-mode="widget"] {
+  --widget-frame-width:100vw!important;
+  --widget-frame-height:min(100dvh,520px,calc(100vw * .94 + 88px))!important;
+  --workflow-frame-width:100vw;
+  --workflow-frame-height:100dvh;
+  --fullflow-nav:44px;
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0!important;
+  background:transparent;
+}
+body[data-mode="widget"] .shell {
+  container:kitchen-widget / inline-size;
+  --home-ui-scale:1!important;
+  --hub-scale:1;
+  --fullflow-nav:44px!important;
+  --nav-height:44px;
+  display:flex;
+  flex-direction:column;
+  width:100%!important;
+  max-width:none!important;
+  height:var(--widget-frame-height)!important;
+  min-height:0!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden;
+  border:1px solid #e9e0d5;
+  border-radius:12px!important;
+  background:#fffdfa;
+  box-shadow:none!important;
+}
+body[data-mode="widget"] .shell:before { display:none!important }
+body[data-mode="widget"] .shell>.masthead {
+  display:flex!important;
+  position:relative!important;
+  inset:auto!important;
+  order:0;
+  flex:0 0 44px;
+  width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fffdfa!important;
+  z-index:25;
+}
+body[data-mode="widget"] .shell .brand { gap:5px!important;justify-content:flex-start!important }
+body[data-mode="widget"] .shell .brand h1 { font-size:13px!important;letter-spacing:-.3px;font-weight:650 }
+body[data-mode="widget"] .shell .story-mark { width:15px!important;height:17px!important }
+body[data-mode="widget"] .shell .brand #todayStamp { display:none!important }
+body[data-mode="widget"] .shell .header-actions { position:static!important;transform:none!important;margin-left:0 }
+body[data-mode="widget"] .shell .header-actions button {
+  display:flex;align-items:center;justify-content:center;
+  width:auto!important;min-width:64px!important;min-height:44px!important;
+  height:44px!important;padding:0 4px!important;border:0!important;background:none!important;
+}
+body[data-mode="widget"] .shell .header-actions svg { display:none }
+body[data-mode="widget"] .shell .header-actions .sr-only {
+  position:static!important;width:auto!important;height:auto!important;
+  clip:auto!important;clip-path:none!important;overflow:visible!important;
+  white-space:nowrap;font-size:11px!important;color:#846b54;
+}
+body[data-mode="widget"] .shell>.home-shortcuts {
+  position:relative!important;
+  inset:auto!important;
+  order:1;
+  flex:0 0 44px;
+  width:100%!important;height:44px!important;min-height:44px!important;
+  padding:0 6px!important;gap:0;
+  border:0!important;border-bottom:1px solid #eee5db!important;
+  border-radius:0!important;background:#fffdfa!important;
+}
+body[data-mode="widget"] .shell>.home-shortcuts button {
+  flex-direction:row!important;gap:4px!important;min-height:44px!important;
+  padding:0 3px!important;border:0;border-radius:0!important;
+  font-size:12px!important;font-weight:500!important;
+  color:#8a7969!important;background:none!important;box-shadow:none!important;
+}
+body[data-mode="widget"] .shell>.home-shortcuts .nav-art { display:none }
+body[data-mode="widget"] .shell>.home-shortcuts [aria-selected="true"] {
+  color:#9e5839!important;background:none!important;
+  box-shadow:inset 0 -2px #d78562!important;
+}
+body[data-mode="widget"] .shell>.home-panel:not([hidden]) {
+  order:2;position:relative;flex:1;min-width:0;min-height:0;
+  width:100%;max-height:none;padding:8px 10px!important;overflow:hidden;
+}
+body[data-mode="widget"] .shell>#panel-fridge:not([hidden]) {
+  display:block!important;padding:0!important;background:#f6eddf;
+}
+body[data-mode="widget"] #panel-fridge:not([data-screen-id="D6"]) #appliedRoomMessage { display:none!important }
+body[data-mode="widget"] #panel-fridge #fridgeSceneHost {
+  display:flex!important;position:absolute!important;inset:0!important;
+  align-items:center!important;justify-content:center!important;
+  padding:0!important;margin:0!important;background:#f4e9d9;
+  overflow:hidden!important;
+}
+body[data-mode="widget"] #fridgeSceneHost>.kitchen-view {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;height:100%!important;padding:0!important;
+}
+body[data-mode="widget"] .shell .kitchen-view .room {
+  flex:none!important;width:var(--room-fit-width,100%)!important;
+  height:var(--scene-height)!important;min-height:0!important;max-height:none!important;
+  margin:0 auto!important;padding:0!important;border:0!important;border-radius:0!important;
+}
+body[data-mode="widget"] #panel-fridge #dailyBalance {
+  position:absolute;inset:6px 9px auto!important;z-index:21;
+  width:auto!important;margin:0!important;padding:6px 8px!important;
+  background:#fffdf8f5;border:1px solid #eee4d9!important;border-radius:9px!important;
+  box-shadow:none!important;
+}
+body[data-mode="widget"] #dailyBalance .balance-head { min-height:14px!important;margin-bottom:3px!important }
+body[data-mode="widget"] #dailyBalance .balance-head b { font-size:11px!important;font-weight:600 }
+body[data-mode="widget"] #dailyBalance .balance-head>span { font-size:9px!important }
+body[data-mode="widget"] #dailyBalance .balance-value { padding-inline:6px!important }
+body[data-mode="widget"] #dailyBalance .balance-name { font-size:10px!important;margin:0 0 2px!important }
+body[data-mode="widget"] #dailyBalance .balance-number { min-height:17px!important;gap:2px }
+body[data-mode="widget"] #dailyBalance .balance-number strong { font-size:14px!important }
+body[data-mode="widget"] #dailyBalance .balance-number>span,
+body[data-mode="widget"] #dailyBalance .balance-number strong small { font-size:9px!important }
+body[data-mode="widget"] #dailyBalance .balance-track { height:4px!important;margin-top:3px!important }
+body[data-mode="widget"] .shell #homeWorktop {
+  position:static!important;inset:auto!important;display:flex!important;
+  order:0!important;
+  width:auto!important;height:44px!important;min-height:44px!important;
+  margin:0 3px 0 auto!important;padding:0!important;z-index:26;
+}
+body[data-mode="widget"]:not([data-home="fridge"]) .shell #homeWorktop { display:none!important }
+body[data-mode="widget"]:not([data-home="fridge"]) .shell .header-actions { margin-left:auto }
+body[data-mode="widget"] #homeWorktop #addFood {
+  min-width:82px!important;min-height:44px!important;height:44px!important;
+  margin:0!important;padding:0 7px!important;font-size:12px!important;font-weight:550;
+  border:0!important;border-radius:0!important;background:none!important;color:#bd6848!important;
+  box-shadow:none!important;
+}
+body[data-mode="widget"] #addFood .icon { width:15px!important;height:15px!important }
+body[data-mode="widget"] #tray {
+  --widget-frame-height:min(100dvh,520px,calc(100vw * .94 + 88px));
+  --widget-frame-width:min(100vw,640px);
+  position:fixed!important;inset:0!important;transform:none!important;
+  width:var(--widget-frame-width)!important;max-width:100vw!important;
+  height:var(--widget-frame-height)!important;min-height:0!important;max-height:100dvh!important;
+  margin:0 auto!important;border-radius:12px!important;
+}
+body[data-mode="widget"] #tray::backdrop { background:#40352b38 }
+@container kitchen-widget (min-width:560px) {
+  body[data-mode="widget"] .shell .brand #todayStamp {
+    display:block!important;position:static!important;transform:none!important;
+    font-size:10px!important;line-height:1;margin:0 0 0 8px;
+  }
+  body[data-mode="widget"] #panel-fridge #fridgeSceneHost { right:218px!important }
+  body[data-mode="widget"][data-camera="fridge"] #panel-fridge:not([data-screen-id="D6"]) #fridgeSceneHost>.kitchen-view { align-items:flex-start!important }
+  body[data-mode="widget"][data-camera="fridge"] #panel-fridge:not([data-screen-id="D6"]) #fridgeSceneHost .room { margin-top:calc(var(--scene-height) * -.12)!important }
+  body[data-mode="widget"] #panel-fridge #dailyBalance {
+    left:auto!important;right:10px!important;top:12px!important;bottom:auto!important;
+    width:198px!important;padding:12px!important;background:#fffdfa;
+  }
+  body[data-mode="widget"] #dailyBalance .balance-head { display:block!important;margin-bottom:12px!important }
+  body[data-mode="widget"] #dailyBalance .balance-head b { display:block;font-size:13px!important }
+  body[data-mode="widget"] #dailyBalance .balance-head>span { display:block;margin-top:3px }
+  body[data-mode="widget"] #dailyBalance .balance-values { display:grid!important;grid-template-columns:1fr!important;gap:13px }
+  body[data-mode="widget"] #dailyBalance .balance-value { border:0!important;padding:0!important }
+  body[data-mode="widget"] #dailyBalance .balance-name { font-size:11px!important }
+  body[data-mode="widget"] #dailyBalance .balance-number strong { font-size:16px!important }
+  body[data-mode="widget"] #dailyBalance .balance-track { margin-top:5px!important }
+}

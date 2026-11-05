@@ -1,0 +1,403 @@
+/* Widget panels use a fixed reading scale inside the bounded embed frame.
+   Only presentation changes here: data, routes and app layouts stay in their modules. */
+body[data-mode="widget"] .shell>.home-panel:not([hidden]) {
+  gap:4px!important;padding:6px 9px!important;line-height:1.35;
+}
+body[data-mode="widget"] .shell>.home-panel>.panel-tabs {
+  display:flex;flex:0 0 44px!important;min-height:44px!important;
+  margin:0!important;padding:0!important;gap:2px;border-radius:8px;
+}
+body[data-mode="widget"] .shell>.home-panel>.panel-tabs>button {
+  flex:1;min-width:0;min-height:44px!important;padding:3px!important;
+  font-size:12px!important;line-height:1.25;border-radius:7px;
+}
+body[data-mode="widget"] .shell>.home-panel>.home-card {
+  min-width:0;min-height:0;margin:0!important;padding:0!important;
+}
+
+/* B1: the whole photograph sits beside a compact, readable description. */
+body[data-mode="widget"][data-home="meals"] #homeRecommendation,
+body[data-mode="widget"][data-home="meals"] #homePlans {
+  gap:3px!important;overflow:hidden;min-height:0;
+}
+body[data-mode="widget"] .recipe-hub-toolbar,
+body[data-mode="widget"] .recipe-hub-pager,
+body[data-mode="widget"] .recipe-plan-tools,
+body[data-mode="widget"] .recipe-meal-tabs {
+  flex:0 0 44px!important;min-height:44px!important;gap:3px;
+}
+body[data-mode="widget"] .recipe-hub-priority,
+body[data-mode="widget"] .recipe-hub-catalog strong,
+body[data-mode="widget"] .recipe-plan-tools>.recipe-plan-browse,
+body[data-mode="widget"] .recipe-plan-tools>.recipe-plan-shopping,
+body[data-mode="widget"] .recipe-meal-tabs>button {
+  font-size:12px!important;line-height:1.25;min-height:44px;
+}
+body[data-mode="widget"] .recipe-hub-catalog>span,
+body[data-mode="widget"] .recipe-meal-tabs small {font-size:12px}
+body[data-mode="widget"] .recipe-hub-pager .recipe-hub-catalog {
+  flex-direction:row!important;align-items:center!important;justify-content:center!important;
+  gap:6px!important;line-height:1.2!important;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card.home-featured-recipe {
+  display:grid!important;grid-template-columns:42% minmax(0,1fr)!important;
+  min-height:0;flex:1;border-radius:8px;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-photo {
+  height:100%!important;min-height:0!important;max-height:none!important;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish {
+  height:100%!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.recipe-photo,
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.dish-art {object-fit:contain}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy {
+  position:static;display:flex;min-height:0;justify-content:center;
+  gap:3px!important;padding:5px 6px!important;overflow:auto;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy h3 {
+  font-size:14px!important;line-height:1.2;margin:0;letter-spacing:-.3px;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-facts {
+  flex-direction:column!important;gap:1px!important;font-size:12px!important;line-height:1.2;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros {
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px!important;line-height:1.2;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros>b {
+  grid-column:1/-1;font-size:14px!important;line-height:1.2;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros>span {
+  display:block;font-size:12px!important;white-space:normal;line-height:1.2;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-favorite {
+  left:calc(42% - 45px)!important;right:auto!important;top:1px!important;
+}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-arrow {
+  left:calc(42% - 45px)!important;right:auto!important;bottom:1px!important;
+  width:44px;min-height:44px;background:#fffaf2e8;border-radius:50%;
+}
+
+/* B5: date and meal targets keep 44px. Saved-plan actions and browsing tools
+   share one bottom row, leaving the recipe name and facts their own space. */
+body[data-mode="widget"][data-home="meals"] #homePlans>.home-date-bar {
+  flex:0 0 44px;min-height:44px!important;margin:0!important;
+}
+body[data-mode="widget"][data-home="meals"] #homePlans .recipe-plan-card.home-plan-row {
+  position:relative;grid-template-columns:20% minmax(0,1fr)!important;
+  gap:4px!important;padding:2px 4px 45px!important;align-items:start;border-radius:8px;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-photo {height:100%;min-height:0}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy {
+  position:static;display:grid;grid-template-columns:1fr 1fr;align-content:center;
+  gap:1px 3px!important;min-height:0;overflow:auto;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>strong {
+  grid-column:1/-1;font-size:14px!important;line-height:1.15;white-space:normal;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>span,
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>small {
+  font-size:12px!important;line-height:1.2;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-actions {
+  position:absolute;inset:auto 3px 1px;min-height:44px;margin:0!important;gap:3px;
+}
+body[data-mode="widget"] .recipe-plan-actions>button {min-height:44px;font-size:12px!important;padding:3px}
+body[data-mode="widget"][data-home="meals"] #homePlans:has(.recipe-plan-actions) {
+  position:relative;padding-bottom:47px!important;
+}
+body[data-mode="widget"][data-home="meals"] #homePlans:has(.recipe-plan-actions) .recipe-plan-card.home-plan-row {
+  position:static;grid-template-columns:22% minmax(0,1fr)!important;padding:3px 4px!important;align-items:center;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-photo {padding:0!important;min-height:44px}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy {
+  display:flex;flex-direction:column;justify-content:center;align-content:start;gap:2px!important;
+}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>strong {flex:none;overflow:visible;text-overflow:clip}
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>span,
+body[data-mode="widget"] .recipe-plan-card .recipe-plan-copy>small {flex:none}
+body[data-mode="widget"][data-home="meals"] #homePlans .recipe-plan-card .recipe-plan-actions {
+  inset:auto auto 0 0;width:91px;gap:3px;
+}
+body[data-mode="widget"][data-home="meals"] #homePlans .recipe-plan-card .recipe-plan-actions>button {
+  min-width:44px;width:44px;min-height:44px;white-space:normal;font-size:12px!important;line-height:1.1;padding:2px;
+}
+body[data-mode="widget"][data-home="meals"] #homePlans:has(.recipe-plan-actions)>.recipe-plan-tools {
+  position:absolute;right:0;bottom:0;width:calc(100% - 94px);height:44px;
+  grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 44px;gap:3px;
+}
+body[data-mode="widget"][data-home="meals"] #homePlans:has(.recipe-plan-actions)>.recipe-plan-tools>button {
+  padding:2px;line-height:1.1;min-width:0;overflow-wrap:normal;
+}
+body[data-mode="widget"] .recipe-plan-empty {padding:5px;gap:3px}
+body[data-mode="widget"] .recipe-plan-empty>strong {font-size:14px}
+body[data-mode="widget"] .recipe-plan-empty>span {font-size:12px}
+
+/* C1-C4: dense data uses the same reading scale as recipes. */
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub {
+  position:relative;display:flex;flex-direction:column;flex:1;min-height:0;
+  gap:3px!important;margin:0;padding:0!important;overflow:hidden;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub p {margin:0;font-size:12px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-footer {
+  flex:0 0 44px!important;min-height:44px;margin:0!important;gap:4px;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-footer>button,
+body[data-mode="widget"][data-home="records"] #panel-records .record-two-actions>button {
+  min-height:44px;font-size:12px!important;padding:3px 5px!important;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub :is(.home-record-date,.record-supplement-date) {
+  display:flex;align-items:flex-start;justify-content:space-between;flex:0 0 44px;
+  min-height:44px!important;padding:0!important;margin:0;border:0;background:none;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub :is(.home-record-date,.record-supplement-date)>span {
+  font-size:13px!important;line-height:20px;padding-top:2px;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub :is(.home-record-date,.record-supplement-date) input {
+  width:128px!important;min-height:44px!important;height:44px;font-size:12px!important;padding:3px;
+}
+body[data-mode="widget"][data-home="records"] #homeNutrition .home-daily-card {
+  flex:none;padding:0!important;margin:0;border:0;box-shadow:none;
+}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros {gap:4px}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros>div {padding:3px 4px!important;line-height:1.15}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros>div>span {font-size:12px!important;margin:0 0 2px}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros strong {font-size:14px!important;letter-spacing:0;line-height:1.15}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros strong small,
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-macros>div>small {font-size:12px!important;line-height:1.15}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-track {height:4px;margin-top:3px}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meals-heading {
+  position:absolute;top:23px;left:0;width:calc(100% - 132px);height:16px;
+  margin:0!important;gap:3px;justify-content:flex-start;
+}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meals-heading :is(h4,strong,small) {font-size:12px!important;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser {
+  display:grid;grid-template-columns:44px minmax(0,1fr) 44px;grid-template-rows:minmax(44px,1fr) auto;
+  flex:1;min-height:0;gap:0 3px;
+}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-meal-row {grid-column:2;grid-row:1}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser:not(:has(.record-pager))>.record-meal-row {grid-column:1/-1}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-pager {display:contents}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-pager>button {grid-row:1;min-width:44px;min-height:44px;padding:0}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-pager>button:first-child {grid-column:1}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-pager>button:last-child {grid-column:3}
+body[data-mode="widget"][data-home="records"] #homeNutrition .record-meal-browser>.record-pager>span {grid-column:1/-1;grid-row:2;font-size:12px;line-height:14px;text-align:center}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .record-meal-row {
+  position:relative;display:grid;grid-template-columns:32px minmax(0,1fr);gap:0 4px;
+  min-height:44px!important;padding:3px 14px 3px 3px!important;overflow:auto;align-content:center;
+}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .record-meal-row>span:first-child {grid-row:1/3;width:32px!important;height:32px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .record-meal-row :is(strong,small) {font-size:12px!important;line-height:1.2;margin:0;display:inline}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .record-meal-row>b {grid-column:2;font-size:12px!important;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .record-meal-row>i {position:absolute;right:3px;top:50%;transform:translateY(-50%)}
+body[data-mode="widget"][data-home="records"] #panel-records .record-pager {min-height:44px;flex:none;gap:3px;margin:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-pager>button {min-height:44px;min-width:44px;font-size:20px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-pager>span {font-size:12px}
+
+/* C1 management shares its heading row with direct input. */
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-heading {min-height:44px;padding-right:90px;gap:2px;margin:0;flex:none}
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-heading h3 {font-size:14px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-heading>button {min-width:44px;min-height:44px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-manage>.record-direct-input {position:absolute;top:0;right:0;width:88px;min-height:44px;font-size:12px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-meal {min-height:0;padding:0;margin:0;display:flex;flex-direction:column;gap:3px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-selection {display:flex;align-items:center;justify-content:space-between;min-height:44px;gap:4px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-manage-selection>span {font-size:12px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-two-actions {margin:0;gap:4px;flex:none}
+
+/* C2: a bounded list; product details remain available through each arrow. */
+body[data-mode="widget"][data-home="records"] #panel-records .record-supplement-list {flex:1;min-height:0;overflow:auto;display:grid;align-content:start;gap:0 8px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-supplement-row {min-height:48px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-supplement {min-height:48px!important;padding:2px 0;gap:5px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-supplement .supplement-product-art {width:26px;height:28px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-supplement strong {font-size:13px!important;white-space:normal;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-supplement small {font-size:12px!important;margin-top:1px;line-height:1.2;white-space:normal}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-note {font-size:12px!important;line-height:1.2}
+
+/* C3-C4: local view switch and date form one row rather than two toolbars. */
+body[data-mode="widget"][data-home="records"] #panel-records :is(.record-hub-monthly,.record-hub-budget) {display:grid;grid-template-columns:112px minmax(0,1fr);grid-template-rows:44px minmax(0,1fr) auto;gap:3px 4px!important}
+body[data-mode="widget"][data-home="records"] #panel-records :is(.record-hub-monthly,.record-hub-budget)>* {grid-column:1/-1;min-width:0}
+body[data-mode="widget"][data-home="records"] #panel-records :is(.record-hub-monthly,.record-hub-budget)>.record-local-tabs {grid-column:1;grid-row:1;min-height:44px!important;padding:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-local-tabs>button {min-height:44px!important;font-size:12px!important;padding:2px}
+body[data-mode="widget"][data-home="records"] #panel-records :is(.record-hub-monthly,.record-hub-budget)>.home-date-bar {grid-column:2;grid-row:1;min-height:44px!important;margin:0;gap:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-date-bar>button {height:44px;min-height:44px!important;width:44px;min-width:44px;padding:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-date-value,
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-date-value strong {font-size:12px!important;line-height:1.2;padding:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-month-calendar {padding:0;min-height:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .calendar-weekdays span {padding:0;font-size:12px;line-height:14px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-calendar {gap:0;grid-auto-rows:minmax(20px,1fr);margin:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-calendar button {height:auto;min-height:20px!important;font-size:12px!important;padding:0!important;line-height:1}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-month-stats {gap:4px;padding:0!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-month-stats>span {padding:2px 4px;font-size:12px!important;line-height:1.15}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-month-stats b {font-size:14px!important;line-height:1.15;margin:1px 0 0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-month-stats small {font-size:12px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-monthly.is-day {grid-template-rows:44px minmax(0,1fr) auto 44px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-monthly.is-day .home-date-value:after {display:none}
+body[data-mode="widget"][data-home="records"] #panel-records .record-day-summary {gap:4px;overflow:auto;min-height:0}
+body[data-mode="widget"][data-home="records"] #panel-records .record-day-ratio {padding:3px;gap:2px;justify-content:flex-start}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-donut {width:48px;height:48px;flex:none}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-donut>span {width:36px;height:36px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-donut :is(b,small) {font-size:12px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-legend,
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-legend b,
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-ratio-empty {font-size:12px!important;line-height:1.2;gap:2px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-day-supplements {min-height:18px;font-size:12px;gap:4px;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #panel-records .record-day-supplements label,
+body[data-mode="widget"][data-home="records"] #panel-records .record-supplement-link {min-height:44px;font-size:12px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-budget {grid-template-rows:44px auto minmax(44px,1fr) 44px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub-budget.is-history {grid-template-rows:44px minmax(44px,1fr) 44px 44px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .budget-overview {padding:5px 0!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .budget-overview span {font-size:12px!important;margin-bottom:3px;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .budget-overview strong {font-size:15px!important;letter-spacing:-.4px;line-height:1.2}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .budget-overview strong small {font-size:12px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-shopping-summary {min-height:44px;padding:4px;gap:4px;flex-wrap:wrap;font-size:12px!important;align-content:center}
+body[data-mode="widget"][data-home="records"] #panel-records .record-hub .home-shopping-summary :is(strong,small) {font-size:12px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-receipt-card {grid-template-columns:28px minmax(0,1fr) auto 10px;min-height:50px;gap:4px;padding:4px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-receipt-card strong {font-size:13px!important}
+body[data-mode="widget"][data-home="records"] #panel-records .record-receipt-card small {font-size:12px!important;margin-top:2px}
+body[data-mode="widget"][data-home="records"] #panel-records .record-receipt-card>b {font-size:14px!important}
+
+/* D1 and settings stay compact; the room photograph retains its 2:1 space. */
+body[data-mode="widget"][data-home-page="growth"] #homeGrowth {gap:4px;padding:0!important;overflow:hidden;min-height:0}
+body[data-mode="widget"] .growth-first-goal {flex:none;padding:5px!important;margin:0}
+body[data-mode="widget"] .growth-first-progress {grid-template-columns:28px minmax(0,1fr) auto;gap:4px!important}
+body[data-mode="widget"] .growth-goal-icon {width:28px;height:32px}
+body[data-mode="widget"] .growth-goal-icon>.icon {width:24px;height:26px}
+body[data-mode="widget"] .growth-goal-main {min-height:44px;padding:0!important}
+body[data-mode="widget"] .growth-first-label,
+body[data-mode="widget"] .growth-first-counter,
+body[data-mode="widget"] #homeGrowth .growth-first-progress .ticket-pill {font-size:12px!important;line-height:1.2}
+body[data-mode="widget"] .growth-first-progress .growth-first-track {height:4px;margin:3px 0}
+body[data-mode="widget"] #homeGrowth .growth-first-progress .ticket-pill {min-height:44px;padding:3px!important;display:flex;align-items:center}
+body[data-mode="widget"] .growth-first-goal .growth-goal-actions {margin-top:4px;gap:4px}
+body[data-mode="widget"] .growth-first-goal .growth-goal-actions button {min-height:44px;font-size:12px!important;padding:3px}
+body[data-mode="widget"] #homeGrowth .growth-room-slot {container-type:size;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;padding:0;margin:0;overflow:hidden}
+body[data-mode="widget"] #homeGrowth .growth-preview {width:min(100%,200cqh)!important;height:auto!important;aspect-ratio:2/1!important;max-height:100%;flex:none;margin:0!important;border-radius:7px}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections {gap:4px!important}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections .home-save-state {padding:5px!important;font-size:12px!important;line-height:1.3;min-height:44px}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections>.home-actions {gap:4px}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections>.home-actions button,
+body[data-mode="widget"][data-home-page="connections"] #homeConnections>.home-data-status>summary {font-size:12px!important;min-height:44px;line-height:1.25}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections>.home-data-status[open] {flex:1;min-height:0;overflow:auto}
+body[data-mode="widget"][data-home-page="connections"] #homeConnections>.home-data-status p {font-size:12px!important;line-height:1.45}
+
+/* B2: bounded detail, fixed actions, a single scrolling content pane. */
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] {padding:7px!important;overflow:hidden!important;--hub-scale:1}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] #trayContent {display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden!important;padding:0}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .workflow-nav {top:0;left:0;right:auto;width:44px;min-height:44px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .workflow-nav>.small-action[data-wf="back"] {width:44px;min-width:44px;height:44px;min-height:44px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-detail-overview {display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:auto auto auto;gap:2px 6px;min-height:88px;flex:none;padding:0}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-hero {grid-column:1;grid-row:1/4;align-self:stretch;width:96px;height:88px!important;min-height:0;margin:0!important;aspect-ratio:auto;overflow:hidden;border-radius:7px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-hero>.recipe-photo,
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-hero>.dish-art {display:block;width:100%;height:100%!important;aspect-ratio:auto!important;object-fit:contain}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-favorite {left:48px;right:auto;top:0;width:44px;height:44px;min-height:44px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-detail-name {grid-column:2;margin:0;font-size:15px!important;line-height:1.2;align-self:end}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-energy-macros {grid-column:2;display:flex;flex-wrap:wrap;gap:2px;margin:0}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-energy-macros>strong {font-size:14px!important;line-height:1.2}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-macro-strip {width:100%;flex:none;margin:0;gap:2px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-macro-strip>span {font-size:12px!important;padding:2px 1px;line-height:1.2;white-space:normal}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-cost-summary {grid-column:2;display:flex;flex-wrap:wrap;gap:1px 4px;margin:0;font-size:12px!important;line-height:1.2}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-cost-summary :is(span,small) {font-size:12px!important}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] [data-recipe-tabs] {flex:0 0 44px;min-height:44px;margin:0;padding:0;gap:2px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] [data-recipe-tab] {min-height:44px;font-size:12px!important;padding:3px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] [data-recipe-panel] {flex:1;min-height:88px;overflow:auto;overscroll-behavior:contain;padding:0;scrollbar-width:thin}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-section-heading {min-height:44px;margin:0!important;gap:4px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-section-heading h3 {font-size:13px!important;line-height:1.2}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-section-heading h3 small {font-size:12px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-section-heading button {min-height:44px;font-size:12px!important;padding:3px 5px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-ingredient-list {gap:3px 5px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-ingredient-list>div {font-size:12.5px!important;line-height:1.2;min-height:31px;gap:3px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-ingredient-art {height:25px;width:24px;flex:0 0 24px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .ingredient-stock-status {font-size:12px!important;padding:2px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-steps li {font-size:13px!important;line-height:1.4}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-detail-actions {position:static;display:grid;grid-template-columns:1fr 1fr;flex:0 0 44px;min-height:44px;margin:0!important;padding:0!important;gap:4px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .recipe-detail-actions>button {min-height:44px!important;font-size:13px!important;padding:3px 5px}
+body[data-mode="widget"] #tray[data-workflow-route="recipe"] .workflow-feedback:empty {display:none}
+
+/* B6 keeps the completed meal, its reward and the exit/undo actions in one
+   bounded card. Long deduction histories scroll within their own section. */
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] {
+  padding:7px!important;overflow:hidden!important;--hub-scale:1;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] #trayContent {
+  display:flex;flex-direction:column;min-height:0;overflow:hidden!important;padding:0;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .meal-success {
+  position:relative;display:flex;flex:1;flex-direction:column;gap:4px;
+  min-width:0;min-height:0;padding:0;text-align:left;overflow:hidden;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .meal-success-mark {
+  position:absolute;left:0;top:1px;width:24px;height:24px;margin:0;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .meal-success>h3 {
+  flex:none;margin:0;min-height:24px;padding:2px 40px 0 30px;
+  font-size:14px!important;line-height:1.3;letter-spacing:-.3px;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-confirmation {
+  flex:none;margin:0;padding-left:30px;font-size:12px!important;line-height:1.25;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-today {
+  flex:none;padding:5px 6px;margin:0;border-radius:7px;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-today>header {
+  display:flex;gap:3px;align-items:center;justify-content:space-between;
+  font-size:12px!important;line-height:1.25;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-today>header small {
+  font-size:12px!important;line-height:1.25;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance.success-balance-rows {
+  display:grid;grid-template-columns:1fr;gap:3px;margin:4px 0 0;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance-rows>div {
+  display:grid;grid-template-columns:60px minmax(12px,1fr) auto;
+  gap:2px 4px;align-items:center;padding:0;line-height:1.2;background:none;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance-rows>div>span,
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance-rows strong,
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance-rows strong small,
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-partial {
+  font-size:12px!important;line-height:1.2;letter-spacing:0;margin:0;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-balance-rows>div>i {height:4px;margin:0}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deductions {
+  flex:1;min-height:44px;overflow:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;padding:4px 5px;margin:0!important;border-radius:7px;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deductions h4 {
+  margin:0 0 3px;font-size:13px!important;line-height:1.25;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deductions h4 small,
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-no-deduction {
+  font-size:12px!important;line-height:1.25;margin:0;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deduction-row {
+  display:grid;grid-template-columns:20px minmax(36px,.8fr) minmax(0,1.4fr) auto;
+  min-height:27px;gap:3px;align-items:center;padding:2px 0;font-size:12px!important;line-height:1.25;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-used-art {width:20px;height:22px}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deduction-row :is(strong,small) {
+  min-width:0;font-size:12px!important;line-height:1.25;font-weight:400;overflow-wrap:anywhere;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-deduction-row>span:not(.success-used-art) {
+  min-width:0;overflow-wrap:anywhere;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-reward {
+  display:grid;grid-template-columns:20px minmax(0,1fr) 10px;align-items:center;gap:5px;
+  flex:0 0 44px;min-height:44px;padding:4px 6px;margin:0;border-radius:7px;text-align:left;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-reward .icon {width:20px;height:22px}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-reward b {font-size:13px!important;line-height:1.2}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-reward small {font-size:12px!important;line-height:1.2;margin-top:1px}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-main-actions {
+  position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  flex:0 0 44px;min-height:44px;margin:0;padding:0;gap:4px;
+}
+body[data-mode="widget"] #tray[data-workflow-route="mealSuccess"] .success-main-actions>button {
+  min-width:0!important;min-height:44px!important;padding:3px!important;font-size:12px!important;line-height:1.2;
+}
+
+@container kitchen-widget (min-width:560px) {
+  body[data-mode="widget"][data-home="records"] #panel-records .record-supplement-list {grid-template-columns:1fr 1fr}
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy {padding:8px 12px!important;gap:5px!important}
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy h3 {font-size:15px!important}
+}

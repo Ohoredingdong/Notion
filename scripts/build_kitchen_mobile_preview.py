@@ -8,6 +8,10 @@ from build_miniature_kitchen_preview import build, fit_document, pack_document, 
 
 def mobile_page(content, mode):
     label = '앱' if mode == 'app' else '위젯'
+    # The widget is an embed-sized card, even in a tall phone browser.
+    # Give its sheets the same available height as the visible widget.
+    frame_height = ('min(100dvh,520px,calc(100vw * .94 + 88px))'
+                    if mode == 'widget' else '100dvh')
     if '\0' in content:
         raise ValueError('A null character cannot round-trip through HTML text')
     # The template holds text, not HTML nodes or JavaScript string syntax.
@@ -25,7 +29,7 @@ def mobile_page(content, mode):
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5eee3">
 <title>한끼의 부엌 · {label} 미리보기</title>
-<style>html,body{{margin:0;width:100%;height:100%;background:#f5eee3;overflow:hidden}}iframe{{display:block;border:0;width:100%;height:100vh;height:100dvh}}</style>
+<style>html,body{{margin:0;width:100%;height:100%;background:#f5eee3;overflow:hidden}}iframe{{display:block;border:0;width:100%;height:100vh;height:{frame_height}}}</style>
 </head><body>
 <iframe title="한끼의 부엌 {label} 미리보기" sandbox="allow-scripts allow-forms"></iframe>
 <template id="kitchenSource">{payload}</template>
