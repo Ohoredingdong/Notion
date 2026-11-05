@@ -6,8 +6,10 @@ on:
       - 'auction-study.html'
       - 'assets/auction-study*'
       - 'tests/auction-study-model.test.cjs'
+      - 'tests/auction-study-lessons.test.cjs'
       - 'scripts/test_auction_study_browser.py'
       - 'scripts/test_auction_rights_layout.py'
+      - 'scripts/test_auction_learning_browser.py'
       - '.github/workflows/auction-widget.yml'
   pull_request:
     branches: [main]
@@ -15,8 +17,10 @@ on:
       - 'auction-study.html'
       - 'assets/auction-study*'
       - 'tests/auction-study-model.test.cjs'
+      - 'tests/auction-study-lessons.test.cjs'
       - 'scripts/test_auction_study_browser.py'
       - 'scripts/test_auction_rights_layout.py'
+      - 'scripts/test_auction_learning_browser.py'
       - '.github/workflows/auction-widget.yml'
   workflow_dispatch:
 
@@ -41,6 +45,8 @@ jobs:
           node-version: '24'
       - name: Financial calculation regressions
         run: node tests/auction-study-model.test.cjs
+      - name: Source-reading exercise regressions
+        run: node tests/auction-study-lessons.test.cjs
       - name: Install pinned browser test runtime
         run: |
           python -m pip install 'playwright==1.56.0'
@@ -53,6 +59,7 @@ jobs:
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
           python -B scripts/test_auction_study_browser.py | tee /tmp/auction-functional.log
           python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-layout.log
+          python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-learning.log
       - name: Record browser verification results
         if: always()
         run: |
@@ -60,7 +67,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout']:
+              for name in ['functional', 'layout', 'learning']:
                   log = Path('/tmp/auction-' + name + '.log')
                   summary.write('### Auction ' + name + ' browser checks\n\n')
                   summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
@@ -70,7 +77,9 @@ jobs:
         with:
           name: auction-widget-browser-evidence
           if-no-files-found: warn
-          path: /tmp/auction-study-*.png
+          path: |
+            /tmp/auction-study-*.png
+            /tmp/auction-study-learning-report.json
 
   publish:
     needs: validate
@@ -101,7 +110,9 @@ jobs:
           import hashlib, os, time, urllib.request
           from pathlib import Path
           names = ['auction-study.html', 'assets/auction-study.css',
-                   'assets/auction-study.js', 'assets/auction-study-model.js']
+                   'assets/auction-study.js', 'assets/auction-study-model.js',
+                   'assets/auction-study-lessons.js', 'assets/auction-study-learning.js',
+                   'assets/auction-study-learning.css']
           expected = {name: hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in names}
           for attempt in range(36):
               try:
@@ -128,6 +139,7 @@ jobs:
         run: |
           python -B scripts/test_auction_study_browser.py | tee /tmp/auction-public-functional.log
           python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-public-layout.log
+          python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-public-learning.log
       - name: Record public browser verification results
         if: always()
         run: |
@@ -135,7 +147,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout']:
+              for name in ['functional', 'layout', 'learning']:
                   log = Path('/tmp/auction-public-' + name + '.log')
                   summary.write('### Public auction ' + name + ' browser checks\n\n')
                   summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
@@ -145,4 +157,6 @@ jobs:
         with:
           name: auction-public-browser-evidence
           if-no-files-found: warn
-          path: /tmp/auction-study-*.png
+          path: |
+            /tmp/auction-study-*.png
+            /tmp/auction-study-learning-report.json
