@@ -86,6 +86,9 @@ jobs:
           node scripts/test_stock_radar_freshness.cjs
       - name: Install Chromium (browser runs only on a local server)
         run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          test -n "$(fc-list :lang=ko)"
           python -m pip install 'playwright==1.56.0'
           python -m playwright install chromium
       - name: Checkout production main reference (read-only)
