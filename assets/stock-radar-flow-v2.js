@@ -33,10 +33,12 @@ function fxRecord(c,ctx){
 function fxForecastMeta(ctx){
  const d=ctx.data?.direction||{},rows=Array.isArray(d.records)?d.records:[],at=Date.parse(d.generated_at||"");
  const modeled=new Set(rows.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
- const tracked=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies.length:null;
+ const companies=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies:null;
+ const tracked=companies?.length??null;
+ const active=companies?companies.filter(c=>fxPrediction(c,ctx).active).length:0;
  const age=Number.isFinite(at)?Math.max(0,Math.round((Date.now()-at)/60000)):null;
- return {modeled:modeled.size,tracked,age,delayed:age!==null&&age>60,
-  summary:tracked===null?"AI 대상 범위 확인 전":"AI 모델 "+modeled.size+"/"+tracked+"개 기업 대상"};
+ return {modeled:modeled.size,tracked,active,age,delayed:age!==null&&age>60,
+  summary:tracked===null?"AI 대상 범위 확인 전":"AI 모델 "+modeled.size+"/"+tracked+"개 기업 · 유효한 예측 "+active+"개"};
 }
 
 function fxModelQuality(ctx){
@@ -623,7 +625,8 @@ function fxDetail(ctx){
  const ai=hasSignal?fxBars(c,ctx):`<div class="fx-d-ai-empty">
   <span class="fx-d-ai-icon" aria-hidden="true">${helper.I?.("chart")||"◇"}</span>
   <strong>${fxEscape(signal.status==="현재 연구 신호 없음"?"현재 연구 신호 없음":signal.status||"검증된 최신 신호 없음")}</strong>
-  <p>${fxEscape(fxForecastMeta(ctx).summary)} · 모델 미지원·원자료 부족·기간 만료를 구분하며 임의 확률은 만들지 않습니다.</p>
+  <p>${fxEscape(fxForecastMeta(ctx).summary)} · 모델 미지원·자료 부족·기간 종료를 구분합니다. 임의의 확률을 만들지 않습니다.</p>
+  ${fxForecastMeta(ctx).active>0?'<button type="button" class="fx-link" data-fx-filter="ai" aria-label="현재 유효한 AI 예측 종목으로 이동">유효 예측 종목 보기 ›</button>':""}
  </div>`;
  const ticker=String(c.symbol||"—").replace(/\.(KS|KQ)$/,""),badge=ticker.replace(/[^A-Za-z0-9]/g,"").slice(0,3)||"STK";
  return `<div class="fx-detail-v4 fx-detail-v6">
