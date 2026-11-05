@@ -95,6 +95,55 @@ with sync_playwright() as play:
             page.screenshot(path=str(screenshot), full_page=True)
             REPORT["screenshots"].append(str(screenshot))
             page.close()
+        # End-to-end: inspect ACTUAL stored forecast records, not fabricated fixtures.
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        try:
+            page.goto(BASE, wait_until="domcontentloaded")
+            page.wait_for_function(
+                "() => !!window.StockRadarV2Bridge?.snapshot()?.data?.direction?.records?.length",
+                timeout=45000,
+            )
+            sample = page.evaluate("""() => {
+                const d=window.StockRadarV2Bridge.snapshot().data;
+                const records=d.direction.records||[],companies=d.raw?.companies||[],now=Date.now();
+                const norm=s=>String(s||'').toUpperCase().replace(/\.(KS|KQ)$/,'');
+                const valid=records.filter(r=>{
+                    const p=r.probabilities||{},issued=Date.parse(r.issued_at||''),
+                      start=Date.parse(r.target?.start||''),end=Date.parse(r.target?.end||'');
+                    return r.status==='research_prediction'&&issued<=start&&issued<=now+300000&&
+                     end>now&&start<end&&['up','flat','down'].every(k=>typeof p[k]==='number'&&p[k]>=0&&p[k]<=1)&&
+                     Math.abs(p.up+p.flat+p.down-1)<.025;
+                });
+                const candidate=companies.find(c=>valid.some(r=>norm(c.symbol)===norm(r.symbol)));
+                return {forecastCount:records.length,generatedAt:d.direction.generated_at,
+                        firstActiveSymbol:candidate?.symbol||null,
+                        forecastStatus:d.direction.status};
+            }""")
+            require("Forecast JSON loaded with actual issuer coverage",
+                    sample["forecastCount"] >= 1 and bool(sample["generatedAt"]), sample)
+            if sample["firstActiveSymbol"]:
+                page.evaluate("(symbol)=>window.StockRadarV2Bridge.select(symbol)",
+                              sample["firstActiveSymbol"])
+                page.locator('.fx-nav [data-nr-screen="stockdetail"]').click()
+                require("Real valid forecast produces a rendered AI probability",
+                        page.locator(".fx-d-ai-body .fx-ai-heading strong").count()==1 and
+                        "%" in page.locator(".fx-d-ai-body .fx-ai-heading strong").inner_text(),
+                        sample)
+            page.evaluate("() => window.StockRadarV2Bridge.select('005930')")
+            page.locator(".fx-nav [data-nr-screen='stockdetail']").click()
+            require("Samsung AI pane is never blank",
+                    bool(page.locator(".fx-d-ai-body").inner_text().strip()))
+            if page.locator(".fx-d-ai-empty").count():
+                require("No-signal view explains actual model coverage",
+                        "AI 모델" in page.locator(".fx-d-ai-empty").inner_text())
+                if sample["firstActiveSymbol"]:
+                    require("No-signal panel navigates to a working signal",
+                            page.locator(".fx-d-ai-empty [data-fx-filter='ai']").count()==1)
+                    page.locator(".fx-d-ai-empty [data-fx-filter='ai']").click()
+                    require("One-click switch selects a ticker with a valid signal",
+                            page.locator(".fx-d-ai-body .fx-ai-heading strong").count()==1)
+        finally:
+            page.close()
     finally:
         browser.close()
 
