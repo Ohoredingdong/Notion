@@ -44,6 +44,16 @@ with sync_playwright() as play:
             require(f"{width}: all 16 indicator definitions",
                     page.locator(".fx-detail-v6 .fx-d-help").count() == 16 and
                     page.locator(".fx-detail-v6 .fx-d-plain").count() == 16)
+            decision = page.locator('.fx-detail-v6 [data-investment-assessment="four-questions"]')
+            require(f"{width}: four independent investment questions",
+                    decision.count() == 1 and decision.locator(".fx-d-fact").count() == 4)
+            labels = decision.locator(".fx-d-fact-label > span:first-child").all_text_contents()
+            require(f"{width}: direction, valuation, downside and verdict are separate",
+                    all(any(word in label for label in labels)
+                        for word in ("AI 상승", "지금 가격", "상승여력", "최종 투자")),
+                    labels)
+            require(f"{width}: no fabricated buy probability",
+                    "매수 성공 확률" in page.locator(".fx-decision-panel").inner_text())
             require(f"{width}: original-source price chart present",
                     page.locator(".fx-detail-v6 .fx-detail-primary .fx-chart-svg").count() == 1)
             require(f"{width}: stock identity and price preserved",
