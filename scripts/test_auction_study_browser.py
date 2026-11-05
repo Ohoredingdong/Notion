@@ -10,11 +10,15 @@ import json
 import os
 import re
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from playwright.sync_api import sync_playwright, expect
 
 
-URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html")
+_url = urlsplit(os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html"))
+_query = dict(parse_qsl(_url.query))
+_query["view"] = "home"  # The original dashboard is an explicit route beside the new learning home.
+URL = urlunsplit(_url._replace(query=urlencode(_query)))
 KEY = "auction-study-v1"
 
 
