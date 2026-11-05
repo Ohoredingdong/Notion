@@ -1,84 +1,84 @@
 {
   "version": "canonical-radar-health-v2",
-  "checked_at": "2026-11-05T11:58:16.222844+00:00",
-  "status": "error",
-  "consecutive_failures": 1,
+  "checked_at": "2026-11-05T12:36:20.134926+00:00",
+  "status": "warning",
+  "consecutive_failures": 0,
   "notification_required": false,
   "data_ages": {
     "opportunity": {
       "file": "stock-opportunity-data.json",
       "generated_at": "2026-11-05T11:41:36.328927+00:00",
-      "age_hours": 0.28
+      "age_hours": 0.91
     },
     "cases": {
       "file": "stock-investment-cases-summary.json",
       "generated_at": "2026-11-05T11:48:10.454993+00:00",
-      "age_hours": 0.17
+      "age_hours": 0.8
     },
     "entry": {
       "file": "stock-entry-plan-summary.json",
       "generated_at": "2026-11-05T11:58:05.853067+00:00",
-      "age_hours": 0.0
+      "age_hours": 0.64
     },
     "charts": {
       "file": "stock-radar-chart-data.json",
       "generated_at": "2026-11-05T11:41:49.221158+00:00",
-      "age_hours": 0.27
+      "age_hours": 0.91
     },
     "forecast": {
       "file": "stock-direction-forecast.json",
       "generated_at": "2026-11-05T08:41:25.466402+00:00",
-      "age_hours": 3.28
+      "age_hours": 3.92
     },
     "learning": {
       "file": "stock-forecast-learning.json",
       "generated_at": "2026-11-05T08:41:25.466402+00:00",
-      "age_hours": 3.28
+      "age_hours": 3.92
     },
     "accuracy": {
       "file": "stock-radar-accuracy-audit.json",
       "generated_at": "2026-11-05T08:41:25.466402+00:00",
-      "age_hours": 3.28
+      "age_hours": 3.92
     },
     "market": {
       "file": "stock-market-context.json",
       "generated_at": "2026-11-05T11:41:57.216587+00:00",
-      "age_hours": 0.27
+      "age_hours": 0.91
     },
     "news": {
       "file": "news-link-data.json",
       "generated_at": "2026-11-05T11:41:57.436653+00:00",
-      "age_hours": 0.27,
+      "age_hours": 0.91,
       "max_hours": 6
     },
     "calendar": {
       "file": "market-events-data.json",
       "generated_at": "2026-11-05T11:42:04.871869+00:00",
-      "age_hours": 0.27,
+      "age_hours": 0.9,
       "max_hours": 18
     },
     "events": {
       "file": "stock-event-outlook.json",
       "generated_at": "2026-11-05T11:42:06.940774+00:00",
-      "age_hours": 0.27,
+      "age_hours": 0.9,
       "max_hours": 18
     },
     "catalog": {
       "file": "stock-universe-catalog.json",
-      "generated_at": "2026-11-05T07:32:40.115366+00:00",
-      "age_hours": 4.43,
+      "generated_at": "2026-11-05T12:32:53.276504+00:00",
+      "age_hours": 0.06,
       "max_hours": 168
     },
     "financial": {
       "file": "stock-financial-coverage.json",
-      "generated_at": "2026-11-05T09:12:48.929402+00:00",
-      "age_hours": 2.76,
+      "generated_at": "2026-11-05T12:32:56.869057+00:00",
+      "age_hours": 0.06,
       "max_hours": 48
     },
     "extended_forecast": {
       "file": "stock-extended-direction-forecast.json",
-      "generated_at": "2026-11-05T07:54:54.472517+00:00",
-      "age_hours": 4.06
+      "generated_at": "2026-11-05T12:09:49.876676+00:00",
+      "age_hours": 0.44
     }
   },
   "session_clocks": {
@@ -1423,28 +1423,45 @@
     "forecast_records": 40,
     "research_predictions": 20,
     "no_calls": 20,
-    "catalog_count": 8546,
+    "catalog_count": 8586,
     "financial_available": {
-      "KR": 2579,
+      "KR": 2631,
       "US": 0
     },
     "financial_current_run": {
       "US": {
         "attempted": 0,
         "available": 0,
-        "blocked": 0
+        "blocked": 0,
+        "provider_errors": 0,
+        "identity_errors": 0,
+        "no_report": 0,
+        "deferred": 0,
+        "provider_requests": 0,
+        "collection_stop_reason": null,
+        "refresh_status": "not_requested"
       },
       "KR": {
-        "attempted": 2400,
-        "available": 0,
-        "blocked": 2400
+        "attempted": 360,
+        "available": 333,
+        "blocked": 27,
+        "provider_errors": 0,
+        "identity_errors": 0,
+        "no_report": 27,
+        "deferred": 0,
+        "provider_requests": 16,
+        "collection_stop_reason": null,
+        "refresh_status": "partial"
       }
     },
-    "financial_refresh_status": null,
-    "financial_current_run_failed": null,
-    "financial_provider_readiness": {},
-    "financial_last_successful_observation_at": null,
-    "extended_forecast_symbols": 21
+    "financial_refresh_status": "partial",
+    "financial_current_run_failed": false,
+    "financial_provider_readiness": {
+      "US": "real_contact_required",
+      "KR": "configured"
+    },
+    "financial_last_successful_observation_at": "2026-11-05T12:32:56.869057+00:00",
+    "extended_forecast_symbols": 10
   },
   "monitored_files": {
     "opportunity": "stock-opportunity-data.json",
@@ -1462,10 +1479,7 @@
     "financial": "stock-financial-coverage.json",
     "extended_forecast": "stock-extended-direction-forecast.json"
   },
-  "issues": [
-    "catalog: 최신 종목 식별 정책으로 수집되지 않은 명부입니다.",
-    "financial: 발행회사 식별 검증 정책이 적용되지 않았습니다."
-  ],
+  "issues": [],
   "warnings": [
     "financial KR: 이번 수집에 차단/부분 성공이 있습니다. 누적 보유량은 최신 수집 성공 건수가 아닙니다.",
     "전체 명부 수와 재무 확인 수·유효한 AI 예측 수는 서로 다른 범위입니다.",
