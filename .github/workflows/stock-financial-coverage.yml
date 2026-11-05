@@ -35,7 +35,13 @@ jobs:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
         run: |
-          python scripts/build_stock_financial_coverage.py --us-batch 60 --kr-batch 240
+          # One-time KR bootstrap in the isolated feature branch only.
+          # Main remains on a much smaller maintenance request budget.
+          if [[ "$GITHUB_REF_NAME" == "feat/radar-universe-ai-news-20261105" ]]; then
+            python scripts/build_stock_financial_coverage.py --us-batch 0 --kr-batch 2400
+          else
+            python scripts/build_stock_financial_coverage.py --us-batch 60 --kr-batch 240
+          fi
       - name: Inspect coverage, source errors and report freshness before publish
         run: |
           python - <<'PY'
