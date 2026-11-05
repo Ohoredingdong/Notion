@@ -1,0 +1,68 @@
+name: Update Stock Universe Catalog
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily issuer-directory refresh; GitHub schedule is best effort.
+    - cron: '19 0 * * 1-5'
+  # Before approval, populate only the feature branch, NEVER main.
+  push:
+    branches: [feat/radar-universe-ai-news-20261105]
+    paths:
+      - 'scripts/build_stock_universe_catalog.py'
+      - 'scripts/test_stock_universe_catalog.py'
+      - '.github/workflows/update-stock-universe-catalog.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-universe-catalog-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  catalog:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/radar-universe-ai-news-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official-directory parsers without network
+        run: python -m unittest scripts.test_stock_universe_catalog -v
+      - name: Fetch official KRX, Nasdaq Trader and SEC listing sources
+        run: python scripts/build_stock_universe_catalog.py
+      - name: Validate actual catalogue and provenance before publishing
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("stock-universe-catalog.json").read_text())
+          items=d["items"]
+          assert d["version"]=="radar-universe-catalog-v1"
+          assert len(items)>=1000 and d["counts"]["total"]==len(items)
+          assert len({(x["country"],x["symbol"]) for x in items})==len(items)
+          assert all(x["source"] in ("Nasdaq Trader","SEC EDGAR","KRX KIND") for x in items)
+          print("VALIDATED_REAL_CATALOG",d["status"],d["counts"],"sources",len(d["sources"]))
+          PY
+      - name: Publish only validated listing data to the executing branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-universe-catalog.json
+          if git diff --cached --quiet; then
+            echo 'Directory unchanged; no publish required'
+            exit 0
+          fi
+          git commit -m "data: update attributed searchable stock catalogue"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - name: Preserve verified audit and query coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-universe-source-evidence
+          path: stock-universe-catalog.json
+          retention-days: 7
+          if-no-files-found: warn

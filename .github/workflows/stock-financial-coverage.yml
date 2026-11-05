@@ -1,0 +1,84 @@
+name: Stock Official Financial Coverage
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily published financial statements; avoid over-querying official providers.
+    - cron: '11 23 * * 1-5'
+  push:
+    branches: [feat/radar-universe-ai-news-20261105]
+    paths:
+      - 'scripts/build_stock_financial_coverage.py'
+      - 'scripts/test_stock_financial_coverage.py'
+      - '.github/workflows/stock-financial-coverage.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-financial-coverage-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/radar-universe-ai-news-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify SEC and DART real financial parsers, no synthetic data
+        run: python -m unittest scripts.test_stock_financial_coverage -v
+      - name: Request bounded SEC XBRL and DART regulatory filings
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+        run: |
+          # One-time KR bootstrap in the isolated feature branch only.
+          # Main remains on a much smaller maintenance request budget.
+          if [[ "$GITHUB_REF_NAME" == "feat/radar-universe-ai-news-20261105" ]]; then
+            python scripts/build_stock_financial_coverage.py --us-batch 0 --kr-batch 2400
+          else
+            python scripts/build_stock_financial_coverage.py --us-batch 60 --kr-batch 240
+          fi
+      - name: Inspect coverage, source errors and report freshness before publish
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('stock-financial-coverage.json').read_text(encoding='utf-8'))
+          assert d['version']=='official-financial-coverage-v1'
+          assert d['processed']<=d['universe']['total']
+          assert all(k.startswith(('US:','KR:')) and v['country'] in ('US','KR')
+                     for k,v in d['records'].items())
+          assert all(v.get('source') in ('SEC EDGAR XBRL','DART periodic reports')
+                     for v in d['records'].values()
+                     if v.get('status') in ('available','partial','stale'))
+          assert all(v.get('metrics') is None for v in d['records'].values()
+                     if v.get('status') not in ('available','partial','stale'))
+          print('OFFICIAL_FINANCIAL_COVERAGE_CHECKED',d['processed'],
+                d['financial_available'],'of',d['universe']['total'],
+                'issues',len(d['issues']))
+          if not sum(d['financial_available'].values()):
+              raise SystemExit('No genuine financial statement retrieved. Refusing to publish empty financial snapshot.')
+          PY
+      - name: Save only verified new financial snapshot to the running branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-financial-coverage.json
+          if git diff --cached --quiet; then
+            echo 'No data changed'
+            exit 0
+          fi
+          git commit -m "data: update verified SEC and DART financial statements"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-stock-financial-evidence
+          path: stock-financial-coverage.json
+          retention-days: 7
+          if-no-files-found: warn

@@ -93,9 +93,17 @@ with sync_playwright() as play:
         check("No legacy UI rail",
             page.locator(".nr-rail").count() == 0 and
             page.locator(".fx-topbar").count() == 1)
-        check("Only two active runtime scripts on main URL",
-            page.locator("script[src]").count()==2,
-            "No legacy research-injection scripts should run on the V5 dashboard")
+        assets=page.locator("script[src]").evaluate_all(
+            "(nodes) => nodes.map(n => n.getAttribute('src'))")
+        expected_modules=("stock-radar-clean-bridge.js","stock-radar-flow-v2.js",
+                          "stock-catalog-ui.js","stock-world-brief.js",
+                          "stock-forecast.js","stock-forecast-learning.js",
+                          "stock-forecast-directions.js","stock-forecast-autopilot.js")
+        check("Approved V5 runtime modules and independent forecast screens only",
+            len(assets)==len(expected_modules) and all(sum(name in x for x in assets)==1
+              for name in expected_modules) and not any("stock-radar-v8.js" in x
+              or "stock-radar-v9.js" in x for x in assets),
+            str(assets))
         check("Market index cards",
             page.locator(".fx-v5-markets .nr-index").count() == 4)
         check("Market strip has separate spacing before analysis",
@@ -104,22 +112,23 @@ with sync_playwright() as play:
                 const lower=document.querySelector('.fx-v5-main')?.getBoundingClientRect();
                 return upper && lower && lower.top-upper.bottom>=10;
             }"""), "Expected visible vertical gap between index strip and AI/research panels")
-        check("Initial sentiment card is sourced",
-            page.locator(".fx-v5-sentiment .fx-v5-sentiment-date a").count()==1)
+        check("Initial sentiment card has provider attribution and session date",
+            page.locator(".fx-sent-v9 .fx-sent-v9-foot a").count()==1 and
+            bool(page.locator(".fx-sent-v9 .fx-sent-v9-foot span").inner_text().strip()))
         page.locator('[data-fx-sentiment-next]').click()
         check("Arrow switches to Korean market sentiment",
-            page.locator(".fx-v5-sentiment.is-korea").count()==1 and
-            "코스닥" in page.locator(".fx-v5-sentiment.is-korea").inner_text())
-        check("Korean sentiment source attribution and after-close date",
-            "koreafeargreed.com" in (page.locator(".fx-v5-sentiment.is-korea a").get_attribute("href") or "") and
-            page.locator(".fx-v5-sentiment-date").count()==1)
+            page.locator(".fx-sent-v9.is-korea").count()==1 and
+            "코스닥" in page.locator(".fx-sent-v9.is-korea").inner_text())
+        check("Korean sentiment source attribution and session date",
+            "koreafeargreed.com" in (page.locator(".fx-sent-v9.is-korea .fx-sent-v9-foot a").get_attribute("href") or "") and
+            page.locator(".fx-sent-v9 .fx-sent-v9-foot span").count()==1)
         page.reload(wait_until="domcontentloaded")
         page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
         check("Korean choice persists after reload",
-            page.locator(".fx-v5-sentiment.is-korea").count()==1)
+            page.locator(".fx-sent-v9.is-korea").count()==1)
         page.locator('[data-fx-sentiment-next]').click()
         check("Arrow switches back to US CNN sentiment",
-            page.locator(".fx-v5-sentiment.is-us").count()==1)
+            page.locator(".fx-sent-v9.is-us").count()==1)
         check("Signal probability labels",
             page.locator(".fx-list-panel .fx-row").count() > 0 and
             page.locator(".fx-v5-cockpit .fx-v5-ai").count() == 1)
@@ -136,7 +145,8 @@ with sync_playwright() as play:
         check("Research status labelled honestly",
             "연구용" in page.locator(".fx-v5-cockpit .fx-v5-ai").inner_text())
         check("Strict checklist cannot be mistaken for an investment approval",
-            "매수 승인 아님" in page.locator(".fx-v5-sidecheck").inner_text())
+            "매수 성공 확률 아님" in page.locator(".fx-v5-sidecheck .fx-v5-footnote").inner_text() and
+            "실사" in page.locator(".fx-v5-sidecheck .fx-v5-footnote").inner_text())
         check("Index card discloses historical sparkline date",
             all(any(label in x for label in ("일봉","추이","지표 저장값")) for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
@@ -156,8 +166,13 @@ with sync_playwright() as play:
         check("Selected stock appears in focus",symbol in page.locator(".fx-focus-head").inner_text())
         search = page.locator("#fx-search-input")
         search.fill(symbol)
-        check("Search shows selected ticker",page.locator(".fx-row[data-nr-select]").count() == 1 and
-              symbol in page.locator(".fx-focus-head").inner_text())
+        visible_names=page.locator(".fx-row[data-nr-select]").evaluate_all(
+            "(nodes) => nodes.map(n=>({symbol:n.dataset.nrSelect,text:n.innerText}))")
+        check("Search includes selected ticker and no unrelated results",
+              any(row["symbol"]==symbol for row in visible_names) and
+              all(symbol.lower() in (row["symbol"]+" "+row["text"]).lower() for row in visible_names) and
+              symbol in page.locator(".fx-focus-head").inner_text(),
+              str({"query":symbol,"visible":visible_names[:12]}))
         page.locator(".fx-focus .fx-focus-actions [data-nr-detail]").click()
         check("Details preserve selected ticker",
             symbol in page.locator(".fx-intro h2").inner_text() and page.locator(".fx-detail-content").count()==1)
@@ -268,7 +283,8 @@ with sync_playwright() as play:
             window.StockRadarV2Bridge.select("TEST-BAD");
         }""")
         check("Malformed model probability is blocked and explained",
-            "분포·목표기간 오류" in page.locator(".fx-v5-ai").inner_text())
+            "예측 확률·발행시각 검증 실패" in page.locator(".fx-v5-ai").inner_text() and
+            "90%" not in page.locator(".fx-v5-ai").inner_text())
         page.reload(wait_until="domcontentloaded")
         page.wait_for_function("() => !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length")
         page.evaluate("window.StockRadarV2Bridge.select('NVDA')")

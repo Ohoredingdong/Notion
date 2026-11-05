@@ -190,7 +190,7 @@ async function load(){
  if(busy)return;
  lastLoadStartedAt=Date.now();
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json",catalog:"stock-universe-catalog.json",extended:"stock-extended-direction-forecast.json",financial:"stock-financial-coverage.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -209,6 +209,9 @@ async function load(){
    if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
    if(okay&&key==="newsLink")okay=Array.isArray(val?.items)&&Number.isFinite(Date.parse(val?.generated_at||""));
    if(okay&&key==="eventOutlook")okay=val?.version==="stock-event-outlook-v1"&&Array.isArray(val?.events)&&val.research_only===true&&val.automatic_orders===false;
+   if(okay&&key==="catalog")okay=val?.version==="radar-universe-catalog-v1"&&Array.isArray(val.items)&&val.items.length>=1000&&val.counts?.total===val.items.length;
+   if(okay&&key==="extended")okay=val?.version==="stock-extended-direction-v1"&&Array.isArray(val.records)&&val.automatic_orders===false;
+    if(okay&&key==="financial")okay=val?.version==="official-financial-coverage-v1"&&!!val.records&&typeof val.records==="object"&&val.universe?.total>=1000;
    if(okay){
     const beforeTime=Date.parse(updated[key]?.generated_at||"");
     const afterTime=Date.parse(val?.generated_at||"");
@@ -291,25 +294,39 @@ function render(){
  const host=document.getElementById("nr-home-content");if(!host)return;
  host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';
  const status=document.getElementById("source-status");if(!status)return;
- const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),warnings=[];
+ const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),extendedAge=ageMinutes(D.extended?.generated_at),catalogAge=ageMinutes(D.catalog?.generated_at),warnings=[];
  if(p!==null&&p>480)warnings.push("종목 자료 "+Math.round(p/60)+"시간 전");
  if(m!==null&&m>360)warnings.push("시장 지표 "+Math.round(m/60)+"시간 전");
  const utcHour=new Date().getUTCHours(),utcDay=new Date().getUTCDay();
  const researchHours=((utcDay>=1&&utcDay<=5&&(utcHour<=7||(utcHour>=13&&utcHour<=22)))||(utcHour===23&&(utcDay===0||utcDay<=4)));
  if(ai===null)warnings.push("AI 예측 파일 조회 전");
- else if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
+ const extraWarnings=[];
+ if(!D.catalog?.items?.length)extraWarnings.push("전체 상장종목 명부 미수집");
+ else if(catalogAge!==null&&catalogAge>96*60)extraWarnings.push("상장명부 최근 갱신 지연");
+ if(!D.financial?.records)extraWarnings.push("공식 재무제표 수집 대기");
+  if(!D.extended?.records?.length)extraWarnings.push("확장 AI 분석 아직 미발행");
+ else if(extendedAge!==null&&extendedAge>240&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
+ if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
   if(n===null)warnings.push("뉴스 수집 확인 전");
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
  if(errors.length)warnings.push("일부 수집 실패: "+errors.join(" / "));
  if(storageError)warnings.push("브라우저 저장 실패");
- status.textContent=(busy?"자료 재조회 중 · ":"")+
+ const summary=(busy?"자료 재조회 중 · ":"")+
  (D.raw?.generated_at?"저장 종목 "+T(D.raw.generated_at):"종목 자료 대기")+
  (D.macro?.generated_at?" · 시장 "+T(D.macro.generated_at):"")+
  (D.newsLink?.generated_at?" · 뉴스 "+T(D.newsLink.generated_at):"")+
- (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"")+
- (warnings.length?" · 주의: "+warnings.join(" / "):"")+
- " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
- status.title=status.textContent;
+ (D.direction?.generated_at?" · AI 예측 "+T(D.direction.generated_at):"");
+ const extras=(D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
+  (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"")+
+   (D.financial?.generated_at?" · 공식 재무 "+T(D.financial.generated_at):"");
+ const mobile=window.innerWidth<=850;
+ status.textContent=summary+(mobile?"":extras)+
+  (warnings.length?" · 주의: "+warnings.join(" / "):"")+
+  (!mobile&&extraWarnings.length?" · 추가: "+extraWarnings.join(" / "):"")+
+  " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
+ status.title=summary+extras+
+   ([...warnings,...extraWarnings].length?" · 주의: "+[...warnings,...extraWarnings].join(" / "):"")+
+   " · 표시 중일 때 5분 간격 재조회 · 실시간 호가 아님";
 }
 function autoRefreshIfDue(){
  if(busy||Date.now()-lastLoadStartedAt<300000||document.visibilityState==="hidden")return;

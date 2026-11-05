@@ -1,0 +1,78 @@
+name: Stock Extended Research Coverage
+on:
+  workflow_dispatch:
+  schedule:
+    # Bounded rotation, independent from the core prospective-forecast ledger.
+    - cron: '13,43 0-7,13-22 * * 1-5'
+  # Preview on the feature branch only; never touch production main before merge.
+  push:
+    branches: [feat/radar-universe-ai-news-20261105]
+    paths:
+      - 'scripts/run_stock_extended_forecasts.py'
+      - 'scripts/test_stock_extended_forecasts.py'
+      - '.github/workflows/stock-extended-coverage.yml'
+permissions:
+  contents: write
+concurrency:
+  group: stock-extended-coverage-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  research:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/radar-universe-ai-news-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test rotation and reject unsupported/fabricated prediction states
+        run: python -m unittest scripts.test_stock_extended_forecasts -v
+      - name: Install market source and model dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Run bounded price-only prospective research
+        run: |
+          python scripts/run_stock_extended_forecasts.py --batch-size 12
+      - name: Validate actual research results with strict no-order disclosure
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("stock-extended-direction-forecast.json").read_text())
+          assert d["version"]=="stock-extended-direction-v1"
+          assert d["automatic_orders"] is False and not d["real_time_connected"]
+          assert d["run"]["attempted"]<=16
+          assert d["run"]["no_call"]+d["run"]["research_prediction"]==d["run"]["attempted"]
+          assert all(r["status"] in ("no_call","research_prediction") for r in d["records"])
+          for r in d["records"]:
+              if r["status"]=="no_call":
+                  assert r["probabilities"] is None
+              else:
+                  p=r["probabilities"]
+                  assert abs(sum(p.values())-1)<.025
+                  assert r.get("target",{}).get("start") and r["target"]["end"]
+          print("PASS: bounded real-only research",d["run"],d["universe"])
+          PY
+      - name: Publish extended snapshot only to executing branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add stock-extended-direction-forecast.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: update bounded extended direction research"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bounded-extended-forecast-evidence
+          path: stock-extended-direction-forecast.json
+          retention-days: 5
+          if-no-files-found: warn
