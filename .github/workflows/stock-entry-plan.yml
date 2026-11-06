@@ -21,6 +21,7 @@ on:
 permissions:
   contents: write
   pages: write
+  actions: write
 concurrency:
   group: stock-entry-plan
   cancel-in-progress: false
@@ -70,6 +71,11 @@ jobs:
             if git push origin HEAD:main; then exit 0; fi
           done
           exit 1
+      - name: Request accuracy audit after successful publication
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/audit-stock-radar-accuracy.yml/dispatches" -f ref=main
       - name: Request Pages build
         env:
           GH_TOKEN: ${{ github.token }}

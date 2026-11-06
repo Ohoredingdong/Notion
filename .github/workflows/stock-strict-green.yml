@@ -17,6 +17,7 @@ on:
       - '.github/workflows/stock-strict-green.yml'
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: stock-strict-green-review
   cancel-in-progress: true
@@ -39,6 +40,11 @@ jobs:
       - name: Publish source-bound strict opinions and audit trail
         run: >-
           python scripts/publish_widget_data.py --message 'audit: require all strict due-diligence checks before green' stock-investment-cases.json stock-investment-cases-summary.json stock-green-review.json stock-green-review-summary.json stock-green-tests.json
+      - name: Request accuracy audit after successful publication
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/audit-stock-radar-accuracy.yml/dispatches" -f ref=main
       - name: Verify gated canonical view without applying legacy HTML replacements
         run: python scripts/publish_stock_investment_cases.py
       - uses: actions/upload-artifact@v4
