@@ -81,7 +81,7 @@ def short_workspace(surface, page, artifacts, label):
     choose_sim_pane(surface, "document")
     metrics["simulation"] = readable(surface.locator('[data-sim-scroll="document"]'), "fictional document")
     reachable(surface.locator('[data-sim-action="review-document"]'), "document confirmation")
-    expect(surface.locator(".sim-document-footer > span")).to_contain_text("1 / 8")
+    expect(surface.locator('.sim-document-tabs [aria-pressed="true"] i')).to_have_count(1)
     choose_sim_pane(surface, "analysis")
     reachable(surface.locator('.sim-stages [data-sim-go-stage="1"]'), "rights stage")
     metrics["simulationAnalysis"] = readable(surface.locator('[data-sim-scroll="analysis"]'), "rights question")
@@ -207,7 +207,7 @@ def lesson_keyboard(page, context, args, artifacts):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html"))
+    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html"))
     parser.add_argument("--executable", default=os.environ.get("BROWSER_EXECUTABLE"))
     parser.add_argument("--artifacts", type=Path, default=Path("/tmp/auction-accessibility-browser"))
     parser.add_argument("--only", nargs="+", help="Run named scenarios only, for a focused fix verification")

@@ -3,36 +3,28 @@ name: Validate and publish auction widget
 on:
   push:
     paths:
+      - '_auction/**'
       - 'auction-study.html'
       - 'assets/auction-study*'
       - 'assets/auction-practice/**'
-      - 'tests/auction-study-model.test.cjs'
-      - 'tests/auction-study-lessons.test.cjs'
-      - 'tests/auction-study-simulation-data.test.cjs'
-      - 'tests/auction-study-process.test.cjs'
-      - 'scripts/test_auction_study_browser.py'
-      - 'scripts/test_auction_rights_layout.py'
-      - 'scripts/test_auction_learning_browser.py'
-      - 'scripts/test_auction_simulation_browser.py'
-      - 'scripts/test_auction_review_browser.py'
-      - 'scripts/test_auction_accessibility_browser.py'
+      - 'auction-release.json'
+      - 'tests/auction-study*.test.cjs'
+      - 'tests/test_auction_release.py'
+      - 'scripts/test_auction_*.py'
+      - 'scripts/auction_release.py'
       - '.github/workflows/auction-widget.yml'
   pull_request:
     branches: [main]
     paths:
+      - '_auction/**'
       - 'auction-study.html'
       - 'assets/auction-study*'
       - 'assets/auction-practice/**'
-      - 'tests/auction-study-model.test.cjs'
-      - 'tests/auction-study-lessons.test.cjs'
-      - 'tests/auction-study-simulation-data.test.cjs'
-      - 'tests/auction-study-process.test.cjs'
-      - 'scripts/test_auction_study_browser.py'
-      - 'scripts/test_auction_rights_layout.py'
-      - 'scripts/test_auction_learning_browser.py'
-      - 'scripts/test_auction_simulation_browser.py'
-      - 'scripts/test_auction_review_browser.py'
-      - 'scripts/test_auction_accessibility_browser.py'
+      - 'auction-release.json'
+      - 'tests/auction-study*.test.cjs'
+      - 'tests/test_auction_release.py'
+      - 'scripts/test_auction_*.py'
+      - 'scripts/auction_release.py'
       - '.github/workflows/auction-widget.yml'
   workflow_dispatch:
 
@@ -45,32 +37,44 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Financial calculation regressions
-        run: node tests/auction-study-model.test.cjs
-      - name: Source-reading exercise regressions
-        run: node tests/auction-study-lessons.test.cjs
-      - name: Mock auction evidence and process regressions
+      - name: Verify the published copy and release safeguards
         run: |
+          python scripts/auction_release.py check-public --root .
+          python -m unittest discover -s tests -p test_auction_release.py
+      - name: Calculator, evidence and process regressions
+        run: |
+          node tests/auction-study-model.test.cjs
+          node tests/auction-study-format.test.cjs
+          node tests/auction-study-lessons.test.cjs
           node tests/auction-study-simulation-data.test.cjs
           node tests/auction-study-process.test.cjs
-      - name: Install pinned browser test runtime
+      - name: Prepare the browser already installed on the runner
+        shell: bash
         run: |
           python -m pip install 'playwright==1.56.0'
-          python -m playwright install --with-deps chromium
-      - name: Desktop, persistence, mobile and iframe regressions
+          browser_path=$(command -v google-chrome || command -v chromium || true)
+          if [[ -n "$browser_path" ]]; then
+            "$browser_path" --version
+            echo "BROWSER_EXECUTABLE=$browser_path" >> "$GITHUB_ENV"
+          else
+            python -m playwright install --with-deps chromium
+          fi
+      - name: Test the development source in isolated browsers
         shell: bash
         env:
-          AUCTION_STUDY_URL: http://127.0.0.1:8765/auction-study.html
+          AUCTION_STUDY_URL: http://127.0.0.1:8765/_auction/auction-study.html
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
           python -B scripts/test_auction_study_browser.py | tee /tmp/auction-functional.log
@@ -79,18 +83,25 @@ jobs:
           python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser | tee /tmp/auction-simulation.log
           python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser | tee /tmp/auction-review.log
           python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser | tee /tmp/auction-accessibility.log
-      - name: Record browser verification results
+          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser | tee /tmp/auction-polish.log
+      - name: Package only the verified auction files
+        run: python scripts/auction_release.py package --source _auction --output /tmp/auction-validated --source-sha '${{ github.sha }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: validated-auction-${{ github.sha }}
+          path: /tmp/auction-validated/
+          if-no-files-found: error
+      - name: Record browser results
         if: always()
         run: |
-          python - <<'PY'
+          python - <<'REPORT'
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish']:
                   log = Path('/tmp/auction-' + name + '.log')
-                  summary.write('### Auction ' + name + ' browser checks\n\n')
-                  summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
-          PY
+                  summary.write('### Auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
+          REPORT
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -102,63 +113,72 @@ jobs:
             /tmp/auction-simulation-browser/
             /tmp/auction-review-browser/
             /tmp/auction-accessibility-browser/
+            /tmp/auction-polish-browser/
 
   publish:
     needs: validate
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 18
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
-      contents: read
+      contents: write
       pages: write
     steps:
       - uses: actions/checkout@v4
-      - name: Request build through the existing Pages configuration
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install public-page browser checks
+      - uses: actions/download-artifact@v4
+        with:
+          name: validated-auction-${{ github.sha }}
+          path: /tmp/auction-validated
+      - name: Promote verified files while preserving current main data
+        shell: bash
+        run: |
+          git fetch origin main
+          git checkout -B auction-publish origin/main
+          python scripts/auction_release.py promote --bundle /tmp/auction-validated --root .
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- auction-study.html 'assets/auction-study*' assets/auction-practice auction-release.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish verified auction release ${{ github.sha }}'
+            pushed=false
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                pushed=true
+                break
+              fi
+              git fetch origin main
+              git rebase origin/main
+              python scripts/auction_release.py check-source --bundle /tmp/auction-validated --root .
+            done
+            if [[ "$pushed" != true ]]; then
+              echo 'Main changed repeatedly; the verified auction release was not pushed.' >&2
+              exit 1
+            fi
+          fi
+          python scripts/auction_release.py check-public --root .
+      - name: Build the existing Pages site after promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Prepare the public browser checks
+        shell: bash
         run: |
           python -m pip install 'playwright==1.56.0'
-          python -m playwright install --with-deps chromium
-      - name: Verify the actual public HTML and all runtime assets
-        env:
-          RELEASE_SHA: ${{ github.sha }}
-        run: |
-          python - <<'PY'
-          import hashlib, os, time, urllib.request
-          from pathlib import Path
-          names = ['auction-study.html', 'assets/auction-study.css',
-                   'assets/auction-study.js', 'assets/auction-study-model.js',
-                   'assets/auction-study-lessons.js', 'assets/auction-study-learning.js',
-                   'assets/auction-study-learning.css',
-                   'assets/auction-study-simulation-data.js', 'assets/auction-study-simulation.js',
-                   'assets/auction-study-simulation.css', 'assets/auction-study-process.js',
-                   'assets/auction-study-process-ui.js', 'assets/auction-study-process.css',
-                   'assets/auction-practice/field-contact-sheet.png']
-          expected = {name: hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in names}
-          for attempt in range(36):
-              try:
-                  for name, wanted in expected.items():
-                      url = 'https://ohoredingdong.github.io/Notion/' + name + '?release=' + os.environ['RELEASE_SHA']
-                      request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache'})
-                      with urllib.request.urlopen(request, timeout=15) as response:
-                          assert response.status == 200, (name, response.status)
-                          assert hashlib.sha256(response.read()).hexdigest() == wanted, name
-                  print('VERIFIED_PUBLIC_AUCTION_WIDGET', os.environ['RELEASE_SHA'], expected, flush=True)
-                  with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-                      summary.write('Public HTML and all runtime assets match commit `' + os.environ['RELEASE_SHA'] + '`.\n\n')
-                  break
-              except Exception as error:
-                  if attempt == 35:
-                      raise
-                  print('Awaiting Pages publication:', str(error), flush=True)
-                  time.sleep(10)
-          PY
-      - name: Exercise the actual public widget in an isolated browser
+          browser_path=$(command -v google-chrome || command -v chromium || true)
+          if [[ -n "$browser_path" ]]; then
+            "$browser_path" --version
+            echo "BROWSER_EXECUTABLE=$browser_path" >> "$GITHUB_ENV"
+          else
+            python -m playwright install --with-deps chromium
+          fi
+      - name: Verify the public release and every runtime asset
+        run: python scripts/auction_release.py verify-public --bundle /tmp/auction-validated --url https://ohoredingdong.github.io/Notion/ --attempts 36 --delay 10
+      - name: Test the actual public auction app
         shell: bash
         env:
           AUCTION_STUDY_URL: https://ohoredingdong.github.io/Notion/auction-study.html?release=${{ github.sha }}
@@ -169,18 +189,18 @@ jobs:
           python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-public-simulation | tee /tmp/auction-public-simulation.log
           python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-public-review | tee /tmp/auction-public-review.log
           python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-public-accessibility | tee /tmp/auction-public-accessibility.log
-      - name: Record public browser verification results
+          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-public-polish | tee /tmp/auction-public-polish.log
+      - name: Record public browser results
         if: always()
         run: |
-          python - <<'PY'
+          python - <<'REPORT'
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish']:
                   log = Path('/tmp/auction-public-' + name + '.log')
-                  summary.write('### Public auction ' + name + ' browser checks\n\n')
-                  summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
-          PY
+                  summary.write('### Public auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
+          REPORT
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -192,3 +212,4 @@ jobs:
             /tmp/auction-public-simulation/
             /tmp/auction-public-review/
             /tmp/auction-public-accessibility/
+            /tmp/auction-public-polish/

@@ -125,6 +125,139 @@ def full_backup(page, context, browser, args):
     assert raw(page) == before
 
 
+def note_management(page, context, browser, args):
+    starting_data(page)
+    create_case(page, "Keep this other note")
+    page.locator('[data-evidence="0"]').fill("Other note evidence must remain identical")
+    create_case(page, 'Delete only this <img src=x onerror="window.deleteXSS=1">')
+    before = notebook(page)
+    target = active(before)
+    page.locator('.topbar [data-action="manage"]').click()
+    expect(page.locator("#deleteCaseName")).to_have_text(target["name"])
+    expect(page.locator("#deleteCaseCancel")).to_be_focused()
+    page.locator("#deleteCaseSubmit").click()
+    assert notebook(page) == before, "Deletion requires an explicit checkbox confirmation"
+    page.locator("#deleteCaseCancel").click()
+    assert notebook(page) == before
+    page.locator('.topbar [data-action="manage"]').click()
+    with page.expect_download() as result:
+        page.locator('#caseDialog [data-action="export"]').click()
+    assert json.loads(Path(result.value.path()).read_bytes()) == before
+    expect(page.locator("#caseDialog")).to_be_visible()
+    page.locator("#confirmCaseDelete").check()
+    page.locator("#deleteCaseSubmit").click()
+    expect(page.locator("#caseDialog")).not_to_be_visible()
+    after = notebook(page)
+    assert after["cases"] == [item for item in before["cases"] if item["id"] != target["id"]]
+    assert target["id"] not in {item["id"] for item in after["cases"]}
+    assert page.evaluate("() => window.deleteXSS === undefined")
+    page.reload(wait_until="domcontentloaded")
+    assert notebook(page) == after
+
+
+def last_note_management(page, context, browser, args):
+    starting_data(page)
+    original = notebook(page)
+    go(page, "learn")
+    page.locator('input[name="studyAnswer"]').first.check()
+    go(page, "simulation")
+    page.locator('.sim-stages [data-sim-go-stage="2"]').click()
+    page.locator("#simulationNote").fill("Independent simulation record")
+    independent = page.evaluate("() => [localStorage.getItem('auction-study-lessons-v1'),localStorage.getItem('auction-simulation-v1')]")
+    go(page, "rights")
+    page.locator('.topbar [data-action="manage"]').click()
+    expect(page.locator("#caseDialog")).to_contain_text("빈 노트 1개")
+    with page.expect_download() as result:
+        page.locator('#caseDialog [data-action="export"]').click()
+    backup = Path(result.value.path()).read_bytes()
+    assert json.loads(backup) == original
+    page.locator("#confirmCaseDelete").check()
+    page.locator("#deleteCaseSubmit").click()
+    replacement = notebook(page)
+    assert len(replacement["cases"]) == 1
+    blank = active(replacement)
+    assert blank["id"] != original["active"] and blank["demo"] is False
+    assert all(value == "" for value in blank["finance"].values())
+    assert all(item == {"status": "unknown", "evidence": ""} for item in blank["rights"])
+    assert page.evaluate("() => [localStorage.getItem('auction-study-lessons-v1'),localStorage.getItem('auction-simulation-v1')]") == independent
+    page.reload(wait_until="domcontentloaded")
+    assert notebook(page) == replacement
+    with browser.new_context() as restored:
+        target = restored.new_page()
+        target.goto(view_url(args.url, "rights"))
+        import_bytes(target, backup)
+        expect(target.locator("#toast")).to_contain_text("1개 노트를 추가")
+        assert active(notebook(target))["rights"] == active(original)["rights"]
+
+
+def full_notebook_cleanup(page, context, browser, args):
+    # Reach the limit through the same dialogs used by a person, without seeding
+    # localStorage or modifying the app's in-memory state.
+    for index in range(99):
+        create_case(page, f"UI-created note {index + 1}")
+    expect(page.locator("#caseSelect option")).to_have_count(100)
+    before = notebook(page)
+    page.locator('.topbar [data-action="new"]').click()
+    expect(page.locator("#toast")).to_contain_text("정리")
+    page.locator('.topbar [data-action="manage"]').click()
+    with page.expect_download() as result:
+        page.locator('#caseDialog [data-action="export"]').click()
+    assert json.loads(Path(result.value.path()).read_bytes()) == before
+    target_id = before["active"]
+    page.locator("#confirmCaseDelete").check()
+    page.locator("#deleteCaseSubmit").click()
+    expect(page.locator("#caseSelect option")).to_have_count(99)
+    assert notebook(page)["cases"] == [item for item in before["cases"] if item["id"] != target_id]
+    create_case(page, "New note after explicit cleanup")
+    expect(page.locator("#caseSelect option")).to_have_count(100)
+    assert active(notebook(page))["name"] == "New note after explicit cleanup"
+
+
+def deletion_conflict(page, context, browser, args):
+    starting_data(page)
+    create_case(page, "Target visible in both tabs")
+    second = context.new_page()
+    second.goto(view_url(args.url, "rights"))
+    working = notebook(second)
+    second.locator('.topbar [data-action="manage"]').click()
+    second.locator("#confirmCaseDelete").check()
+    create_case(page, "Keep newer note from another tab")
+    expected = raw(page)
+    expect(second.locator("#deleteCaseError")).to_contain_text("다른 탭")
+    expect(second.locator("#deleteCaseSubmit")).to_be_disabled()
+    with second.expect_download() as result:
+        second.locator('#caseDialog [data-action="export"]').click()
+    assert json.loads(Path(result.value.path()).read_bytes()) == working
+    assert raw(second) == expected
+    second.locator("#deleteCaseCancel").click()
+    second.locator('.topbar [data-action="manage"]').click()
+    expect(second.locator("#deleteCaseSubmit")).to_be_disabled()
+    assert raw(second) == expected
+
+
+def deletion_write_failure(page, context, browser, args):
+    starting_data(page)
+    create_case(page, "Preserve this target if storage fails")
+    before = notebook(page)
+    page.locator('.topbar [data-action="manage"]').click()
+    page.locator("#confirmCaseDelete").check()
+    page.evaluate("""() => {
+      const write=Storage.prototype.setItem;
+      Storage.prototype.setItem=function(key,value) {
+        if(key==='auction-study-v1')throw new DOMException('Invented quota failure','QuotaExceededError');
+        return write.call(this,key,value);
+      };
+    }""")
+    page.locator("#deleteCaseSubmit").click()
+    expect(page.locator("#deleteCaseSubmit")).to_be_disabled()
+    expect(page.locator("#deleteCaseError")).to_contain_text("삭제를 멈췄")
+    expect(page.locator("#toast")).to_contain_text("삭제하지 않았어요")
+    assert notebook(page) == before
+    with page.expect_download() as result:
+        page.locator('#caseDialog [data-action="export"]').click()
+    assert json.loads(Path(result.value.path()).read_bytes()) == before
+
+
 def large_backup(page, context, browser, args):
     data = starting_data(page)
     original = active(data)
@@ -207,21 +340,21 @@ def failed_storage(page, context, browser, args):
     page.locator("#case-name").fill("Invented edit after quota failure")
     page.locator('#caseForm button[type="submit"]').click()
     expect(page.locator("#toast")).to_contain_text("이 화면에 유지")
-    expect(page.locator("#toast")).to_contain_text("내보내기")
+    expect(page.locator("#toast")).to_contain_text("백업")
     assert "저장했어요" not in page.locator("#toast").inner_text()
     import_bytes(page, payload)
     expect(page.locator("#toast")).to_contain_text("이 화면에 가져왔어요")
-    expect(page.locator("#toast")).to_contain_text("내보내기")
+    expect(page.locator("#toast")).to_contain_text("백업")
     create_case(page, "Invented new note after quota failure")
     expect(page.locator("#toast")).to_contain_text("이 화면에 만들었어요")
-    expect(page.locator("#toast")).to_contain_text("내보내기")
+    expect(page.locator("#toast")).to_contain_text("백업")
     go(page, "simulation")
     page.locator('.sim-stages [data-sim-go-stage="2"]').click()
     page.locator('[data-sim-decision][value="hold"]').check()
     page.locator('[data-sim-action="submit"]').click()
     page.locator('[data-sim-action="copy"]').click()
     expect(page.locator("#toast")).to_contain_text("이 화면에 만들었어요")
-    expect(page.locator("#toast")).to_contain_text("내보내기")
+    expect(page.locator("#toast")).to_contain_text("백업")
     assert len(json.loads(export_bytes(page))["cases"]) == 4
     assert raw(page) is None
 
@@ -267,7 +400,7 @@ def learning_write_failure(page, context, browser, args):
     }""")
     page.locator('input[name="studyAnswer"]').nth(1).check()
     expect(page.locator(".study-storage-warning")).to_be_visible()
-    expect(page.locator(".study-storage-warning")).to_contain_text("저장하지 못했어요")
+    expect(page.locator(".study-storage-warning")).to_contain_text("저장하지 못")
     expect(page.locator('input[name="studyAnswer"]').nth(1)).to_be_checked()
     assert page.evaluate("() => localStorage.getItem('auction-study-lessons-v1')") is None
 
@@ -330,21 +463,22 @@ def fixed_loan_limit(page, context, browser, args):
     active(data)["finance"].update(loan=28000, sale=31000, downside=31000, targetProfit=1000, saleTax=500)
     seed(page, data)
     go(page, "notes")
-    expect(page.locator(".page-content")).to_contain_text("대출 재설정이 필요한 참고 역산값")
-    expect(page.locator(".page-content")).to_contain_text("현재 고정 대출액에서는 목표를 만족하는 유효한 입찰 상한이 없어요")
-    expect(page.locator(".page-content")).to_contain_text("27,047.48")
+    expect(page.locator(".page-content")).to_contain_text("대출 재설정 참고값")
+    expect(page.locator(".page-content")).to_contain_text("현재 고정 대출액에서는 목표를 만족하는 입찰 상한이 없어")
+    expect(page.locator(".page-content")).to_contain_text("27,047.47")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html"))
+    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html"))
     parser.add_argument("--executable", default=os.environ.get("BROWSER_EXECUTABLE"))
     parser.add_argument("--artifacts", default="/tmp/auction-review-browser")
     args = parser.parse_args()
     artifacts = Path(args.artifacts)
     artifacts.mkdir(parents=True, exist_ok=True)
     report = {"started": datetime.now(timezone.utc).isoformat(), "url": args.url, "results": []}
-    checks = [long_notes, full_backup, large_backup, edited_example_preserved, concurrent_tabs,
+    checks = [long_notes, full_backup, note_management, last_note_management, full_notebook_cleanup,
+              deletion_conflict, deletion_write_failure, large_backup, edited_example_preserved, concurrent_tabs,
               failed_storage, corrupt_original, learning_tabs, learning_write_failure,
               simulation_tabs, navigation_history, fixed_loan_limit]
     with sync_playwright() as playwright:

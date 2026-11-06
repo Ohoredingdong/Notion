@@ -15,7 +15,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from playwright.sync_api import expect, sync_playwright
 
 
-BASE_URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html")
+BASE_URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html")
 NOTEBOOK = "auction-study-v1"
 LESSONS = "auction-study-lessons-v1"
 DESKTOPS = [(1280, 720), (1366, 768), (1440, 900), (1920, 1080)]
@@ -245,7 +245,7 @@ def actual_documents(page, context, label):
     upload(page, "auction-browser-A.pdf", pdf_bytes("Document A, test fixture only"))
     viewer = page.locator("#studyPdf")
     expect(viewer).to_be_visible()
-    expect(viewer).to_have_attribute("title", "선택한 경매 PDF 자료")
+    expect(viewer).to_have_attribute("title", "경매 서류 PDF")
     source_a = viewer.get_attribute("src")
     assert source_a and source_a.startswith("blob:"), "PDF must remain a local object URL"
     source_a = latest_pdf_wins(page, pdf_bytes("Delayed valid document, test fixture only"), 1)

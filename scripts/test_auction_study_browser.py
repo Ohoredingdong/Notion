@@ -15,7 +15,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from playwright.sync_api import sync_playwright, expect
 
 
-_url = urlsplit(os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html"))
+_url = urlsplit(os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html"))
 _query = dict(parse_qsl(_url.query))
 _query["view"] = "home"  # The original dashboard is an explicit route beside the new learning home.
 URL = urlunsplit(_url._replace(query=urlencode(_query)))
@@ -67,7 +67,7 @@ def favorable(page):
 
 
 def shell_and_calculator(page):
-    expect(page.locator("h1")).to_have_text("물건 검토 한눈에 보기")
+    expect(page.locator("h1")).to_have_text("검토 요약")
     expect(page.locator(".case-banner")).to_contain_text("가상 연습 물건 · 실매물 아님")
     expect(page.locator(".cash-number")).to_contain_text("13,756")
     navigate(page, "money")
@@ -90,7 +90,7 @@ def rights_and_new_case(page):
     for i in range(6):
         choose_right(page, i)
         page.locator(f'[data-right="{i}"]').select_option("clear")
-    expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
+    expect(page.locator(".decision-title")).to_have_text("검토 보류")
     expect(page.locator("#rightsCount")).to_have_text("0 / 6 완료")
     before_example = notebook(page)
     page.locator(".study-example>summary").click()
@@ -125,14 +125,14 @@ def rights_and_new_case(page):
 def immediate_decision_revalidation(page):
     favorable(page)
     navigate(page, "rights")
-    expect(page.locator(".decision-title")).to_have_text("다음 검토 단계로")
+    expect(page.locator(".decision-title")).to_have_text("추가 검토 가능")
     page.locator('[data-evidence="0"]').fill("")
-    expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
+    expect(page.locator(".decision-title")).to_have_text("검토 보류")
     expect(page.locator(".reason-list").last).to_contain_text("권리분석")
     # The warning is durable, not only a temporary DOM update.
     page.reload(wait_until="domcontentloaded")
     navigate(page, "rights")
-    expect(page.locator(".decision-title")).to_have_text("아직은, 검토 보류")
+    expect(page.locator(".decision-title")).to_have_text("검토 보류")
 
 
 def imports_preserve_and_validate(page):
@@ -173,7 +173,7 @@ def deposit_liquidity_guard(page):
     c["finance"]["available"] = 15000
     seed(page, data)
     navigate(page, "home")
-    expect(page.locator(".verdict-heading")).to_have_text("입찰 판단을 보류하고 있어요.")
+    expect(page.locator(".verdict-heading")).to_have_text("검토 보류")
     expect(page.locator(".overview-tasks")).to_contain_text("보증금")
     navigate(page, "money")
     expect(page.locator("#cashSchedule")).to_contain_text("24,500")
@@ -184,7 +184,7 @@ def deposit_liquidity_guard(page):
     })
     seed(page, data)
     navigate(page, "home")
-    expect(page.locator(".verdict-heading")).to_have_text("입찰 판단을 보류하고 있어요.")
+    expect(page.locator(".verdict-heading")).to_have_text("검토 보류")
     expect(page.locator(".overview-tasks")).to_contain_text("보증금")
 
 
@@ -388,7 +388,7 @@ def embedded_overview(page):
         }""", {"url": URL, "blocked": blocked})
         element = page.locator("iframe").element_handle()
         frame = element.content_frame()
-        expect(frame.locator("h1")).to_have_text("물건 검토 한눈에 보기")
+        expect(frame.locator("h1")).to_have_text("검토 요약")
         if fallback:
             frame.add_style_tag(content=f"body.auction-app {{font-family:{fallback};}}")
         label = ("iframe", 900, 650, "storage blocked" if blocked else "storage available", fallback or "default font")
