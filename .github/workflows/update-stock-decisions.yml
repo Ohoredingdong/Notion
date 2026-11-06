@@ -12,8 +12,13 @@ on:
     branches: [main]
     paths:
       - 'scripts/update_stock_decisions.py'
+      - 'scripts/stock_technical_evidence.py'
+      - 'scripts/test_stock_technical_evidence.py'
       - 'scripts/refresh_stock_decisions.py'
       - 'scripts/test_stock_decisions.py'
+      - 'scripts/stock_price_evidence.py'
+      - 'scripts/test_stock_price_evidence.py'
+      - 'scripts/market_data_utils.py'
       - 'scripts/install_stock_decision_ui.py'
       - 'assets/stock-decision-v7.js'
       - '.github/workflows/update-stock-decisions.yml'
@@ -32,9 +37,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install pinned data and calendar readers
-        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.11.3'
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
       - name: Test numerical and market-clock safeguards
-        run: python scripts/test_stock_decisions.py
+        run: |
+          python scripts/test_stock_decisions.py
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_price_evidence -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_technical_evidence -v
       - name: Fetch actual prices, forecasts, revisions and official events
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -74,3 +82,4 @@ jobs:
             sleep $((attempt*3))
           done
           exit 1
+

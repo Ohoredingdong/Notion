@@ -15,8 +15,8 @@ def main():
  for key,symbol,market in [('US','SPY','US'),('KR','^KS11','KR'),('KQ','^KQ11','KR')]:
   try:
    session=engine.core.latest_session(market,now)
-   frame,_=engine.core.fetch_daily_history(yf.Ticker(symbol),symbol,market,session['date'],instrument_type='ETF' if symbol=='SPY' else 'INDEX')
-   benchmarks[key]=engine.core.bars_from(frame,session)
+   frame,source=engine.core.fetch_daily_history(yf.Ticker(symbol),symbol,market,session['date'],instrument_type='ETF' if symbol=='SPY' else 'INDEX')
+   benchmarks[key]=engine.core.bars_from(frame,session,source_evidence=source)
   except Exception:benchmarks[key]=[]
  rows=[]
  for spec in specs:

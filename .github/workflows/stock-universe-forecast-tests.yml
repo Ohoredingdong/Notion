@@ -2,7 +2,7 @@ name: Full Universe AI Contracts
 on:
   pull_request:
     branches: [main]
-    paths: ['scripts/*stock*forecast*', 'scripts/*stock*universe*', 'scripts/test_stock_timing_band_audit.py', 'assets/stock-*.js', 'stock-value-radar.html', '.github/workflows/*stock*']
+    paths: ['scripts/*stock*forecast*', 'scripts/*stock*universe*', 'scripts/test_stock_timing_band_audit.py', 'scripts/*stock*revenue*', 'scripts/*stock*technical*', 'scripts/*stock*display*number*', 'scripts/*stock*world*public*', 'scripts/*stock*refresh*handoff*', 'scripts/update-stock-value-radar.py', 'scripts/update_stock_opportunities.py', 'scripts/update_stock_decisions.py', 'scripts/*stock*financial*', 'data-evidence/stock-financial-precision*', 'stock-financial-coverage.json', 'assets/stock-*.js', 'stock-value-radar.html', '.github/workflows/*stock*']
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,3 +31,7 @@ jobs:
           node scripts/test_stock_forecast_coverage.cjs
           node scripts/test_stock_forecast_wiring.cjs
           node scripts/test_stock_catalog_model.cjs
+      - name: Test numerical provenance and full refresh completion
+        run: |
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_revenue_evidence scripts.test_stock_technical_evidence scripts.test_stock_financial_precision scripts.test_stock_financial_reconciliation_probe scripts.test_stock_display_number_audit scripts.test_verify_stock_world_public scripts.test_stock_refresh_handoffs -v
+

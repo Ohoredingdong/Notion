@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - "scripts/update-stock-value-radar.py"
+      - "scripts/stock_revenue_evidence.py"
+      - "scripts/test_stock_revenue_evidence.py"
       - "scripts/build-stock-investment-intelligence.py"
       - "stock-official-verifications.json"
       - ".github/workflows/update-stock-value-radar.yml"
@@ -25,7 +27,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install data reader
-        run: pip install "yfinance>=0.2.65,<2"
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
+      - name: Verify annual source observations and exact comparison inputs
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest scripts.test_stock_revenue_evidence -v
       - name: Update financials and price-linked metrics
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -58,3 +64,4 @@ jobs:
           done
           echo "Push failed" >&2
           exit 1
+

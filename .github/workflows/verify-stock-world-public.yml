@@ -10,6 +10,7 @@ on:
       - 'assets/stock-radar-flow-v2.js'
       - 'assets/stock-catalog-ui.js'
       - 'scripts/verify_stock_world_public.py'
+      - 'scripts/test_verify_stock_world_public.py'
       - '.github/workflows/verify-stock-world-public.yml'
 permissions:
   contents: read
@@ -29,6 +30,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install 'exchange-calendars==4.13.1'
+      - name: Reject stale observations and incomplete source proofs
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest scripts.test_verify_stock_world_public -v
       - name: Verify deployed code, actual observations and the exact numerical audit
         run: python scripts/verify_stock_world_public.py --ui-commit "$GITHUB_SHA" --attempts 36
       - uses: actions/upload-artifact@v4

@@ -1,5 +1,7 @@
-import unittest,json
+import unittest,json,sys
 from datetime import datetime,timezone,timedelta
+from types import SimpleNamespace
+from unittest.mock import patch
 import update_stock_decisions as m
 
 class MathSafety(unittest.TestCase):
@@ -64,9 +66,67 @@ class MarketClock(unittest.TestCase):
   bars=m.bars_from(df,{'date':'2026-10-19'})
   self.assertEqual(len(bars),1);self.assertEqual(bars[0]['date'],'2026-10-16')
 
+class CollectorCalendarIntegration(unittest.TestCase):
+ def ticker(self,market='US',last=None,error=None):
+  import pandas as pd
+  currency='KRW' if market=='KR' else 'USD'
+  symbol='005930.KS' if market=='KR' else 'AAPL'
+  end=last or ('2026-11-06' if market=='KR' else '2026-11-05')
+  dates=m.exchange_calendar(market,2026).sessions_in_range('2025-11-06',end).as_unit('us')
+  frame=pd.DataFrame({'Open':100.,'High':102.,'Low':99.,'Close':101.,'Volume':1000.,'Stock Splits':0.},index=dates)
+  metadata={'symbol':symbol,'currency':currency,'instrumentType':'EQUITY',
+            'exchangeName':'KSC' if market=='KR' else 'NMS',
+            'exchangeTimezoneName':'Asia/Seoul' if market=='KR' else 'America/New_York'}
+  ticker=SimpleNamespace(_price_history=SimpleNamespace(_history_metadata=metadata))
+  def history(**kwargs):
+   if error is not None:raise error
+   return frame.copy()
+  ticker.history=history
+  ticker.get_info=lambda:{'currency':currency,'financialCurrency':currency}
+  ticker.get_earnings_estimate=lambda:None
+  ticker.get_eps_trend=lambda:None
+  ticker.get_analyst_price_targets=lambda:{}
+  ticker.calendar={}
+  ticker.get_eps_revisions=lambda:None
+  ticker.get_news=lambda **kwargs:[]
+  return ticker
+ def collect(self,ticker,market='US'):
+  with patch.dict(sys.modules,{'yfinance':SimpleNamespace(Ticker=lambda symbol:ticker)}),patch.object(m.time,'sleep'):
+   return m.collect_symbol('005930' if market=='KR' else 'AAPL','fixture',market,'fixture',{}, {},[],datetime(2026,11,6,11,tzinfo=timezone.utc))
+ def test_real_bounded_calendars_accept_provider_history_and_verify_daily_change(self):
+  # This full path exposed exchange-calendars 4.11.3 / Pandas 3 date-unit errors.
+  # Synthetic prices are fixtures only; dates use the actual installed calendar.
+  for market in ('US','KR'):
+   with self.subTest(market=market):
+    row=self.collect(self.ticker(market),market)
+    self.assertEqual(row['status'],'current')
+    self.assertEqual(row['price_session'],row['expected_session']['date'])
+    self.assertTrue(row['price_source']['source_identity_verified'])
+    self.assertEqual(row['daily_change']['status'],'verified')
+    self.assertEqual(row['technical']['status'],'ok')
+    self.assertEqual(row['errors'],[])
+ def test_old_actual_history_cannot_become_current_on_retry(self):
+  row=self.collect(self.ticker(last='2026-11-04'))
+  self.assertEqual(row['status'],'incomplete')
+  self.assertEqual(row['price_session'],'2026-11-04')
+  self.assertEqual(row['price_source']['collection_attempts'],2)
+  self.assertEqual(row['short']['state'],'data_wait')
+ def test_broken_exception_message_preserves_original_failure_and_missing_price(self):
+  class BrokenMessageError(Exception):
+   def __str__(self):raise AssertionError('fixture formatting failed')
+  row=self.collect(self.ticker(error=BrokenMessageError()))
+  self.assertEqual(row['status'],'incomplete')
+  self.assertIsNone(row['price'])
+  self.assertFalse(row['price_source'].get('source_identity_verified',False))
+  self.assertEqual(row['short']['state'],'data_wait')
+  self.assertEqual(row['errors'][0],{'field':'ohlcv','error':'BrokenMessageError: message_unavailable (AssertionError)'})
+ def test_rendered_error_is_bounded_without_losing_type(self):
+  self.assertEqual(m.error_text(ValueError('x'*500),8),'ValueError: xxxxxxxx')
+
 if __name__=='__main__':
  suite=unittest.defaultTestLoader.loadTestsFromModule(__import__(__name__))
  result=unittest.TextTestRunner(verbosity=2).run(suite)
  from pathlib import Path
  Path('stock-decision-tests.json').write_text(json.dumps({'tests':result.testsRun,'failures':len(result.failures),'errors':len(result.errors),'passed':result.wasSuccessful()},indent=2)+'\n')
  raise SystemExit(not result.wasSuccessful())
+

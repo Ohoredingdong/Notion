@@ -1,0 +1,65 @@
+name: Verify Original Annual Revenue Evidence
+on:
+  push:
+    branches: [fix/radar-complete-numeric-evidence-20261106]
+    paths:
+      - 'scripts/update-stock-value-radar.py'
+      - 'scripts/stock_revenue_evidence.py'
+      - 'scripts/test_stock_revenue_evidence.py'
+      - '.github/workflows/radar-finish-revenue-probe.yml'
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
+      - name: Check the exact annual comparison contract
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest scripts.test_stock_revenue_evidence -v
+      - name: Collect current original annual observations without publishing
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/update-stock-value-radar.py
+      - name: Independently check every preserved current and prior observation
+        env:
+          PYTHONPATH: scripts
+        run: |
+          python - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          from datetime import datetime,timezone
+          from stock_revenue_evidence import comparison_issues
+          body=Path('stock-value-radar-data.json').read_bytes()
+          data=json.loads(body)
+          rows=[]
+          for row in data['rows']:
+              evidence=row.get('revenue_growth_evidence') or {}
+              issues=comparison_issues(evidence,symbol=row['symbol'],currency=row.get('currency'),
+                      current=row.get('revenue'),period=row.get('filing_period'),
+                      previous=row.get('revenue_previous'),published_growth=row.get('revenue_growth'))
+              rows.append({'symbol':row['symbol'],'source':row.get('filing_source'),
+                           'current':row.get('revenue'),'previous':row.get('revenue_previous'),
+                           'period':row.get('filing_period'),'previous_period':row.get('revenue_previous_period'),
+                           'currency':row.get('currency'),'growth':row.get('revenue_growth'),
+                           'evidence_status':evidence.get('status'),'issues':issues})
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'source_commit':os.environ['GITHUB_SHA'],
+                  'data_sha256':hashlib.sha256(body).hexdigest(),'rows':rows,'production_modified':False}
+          Path('revenue-source-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(report,ensure_ascii=False))
+          assert len(rows)==10 and all(not row['issues'] and row['evidence_status']=='verified' for row in rows)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: original-annual-revenue-source-evidence
+          path: |
+            stock-value-radar-data.json
+            revenue-source-verification.json
+          retention-days: 14

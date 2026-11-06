@@ -136,7 +136,7 @@ def collect(spec,base,audit,benchmark,now):
         except Exception as e:errors.append({'field':label,'error':type(e).__name__+': '+str(e)[:120]});return default
     session=core.latest_session(market,now)
     frame,price_source=call('bars',lambda:core.fetch_daily_history(ticker,source_symbol,market,session['date']),(None,{}))
-    bars=core.bars_from(frame,session)
+    bars=core.bars_from(frame,session,source_evidence=price_source)
     info=call('quote',ticker.get_info,{}) or {};price=bars[-1]['close'] if bars else None;expected='KRW' if market=='KR' else 'USD'
     fresh=bool(bars and bars[-1]['date']==session['date'] and info.get('currency')==info.get('financialCurrency')==expected and price_source.get('source_identity_verified') is True)
     estimates=core.frame_rows(call('EPS',ticker.get_earnings_estimate,None));trend=core.frame_rows(call('EPS trend',ticker.get_eps_trend,None));targets=call('targets',ticker.get_analyst_price_targets,{}) or {}
@@ -145,6 +145,13 @@ def collect(spec,base,audit,benchmark,now):
     # For the audited original universe, preserve the exact per-account reference basis.
     h['currency']=info.get('financialCurrency');h['currency_basis']='provider_financialCurrency'
     hist={k:base.get(k) for k in FIELDS+['filing_period','currency']} if base else h
+    if base:
+        # Keep the exact original-source comparison. A rounded growth rate is
+        # never used to back-solve a missing prior amount from another source.
+        for key in ('revenue_previous', 'revenue_previous_period',
+                    'revenue_growth_decimal_places', 'revenue_growth_evidence'):
+            if key in base:
+                hist[key] = base[key]
     if base:hist['currency_basis']='preserved_reference_statement_currency'
     hist['basis']=base.get('statement_basis','연간 제공처 재무') if base else h.get('basis')
     c,de,e=[N(info.get(k)) for k in ('totalCash','totalDebt','ebitda')]
@@ -173,8 +180,8 @@ def main():
     for market,sym in [('US','SPY'),('KR','^KS11')]:
         try:
             session=core.latest_session(market,now)
-            frame,_=core.fetch_daily_history(yf.Ticker(sym),sym,market,session['date'],instrument_type='ETF' if sym=='SPY' else 'INDEX')
-            benchmarks[market]=core.bars_from(frame,session)
+            frame,source=core.fetch_daily_history(yf.Ticker(sym),sym,market,session['date'],instrument_type='ETF' if sym=='SPY' else 'INDEX')
+            benchmarks[market]=core.bars_from(frame,session,source_evidence=source)
         except Exception:benchmarks[market]=[]
     rows=[]
     for spec in specs:

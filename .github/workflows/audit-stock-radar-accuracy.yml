@@ -20,6 +20,12 @@ on:
       - "stock-financial-coverage.json"
       - "stock-extended-direction-forecast.json"
       - "scripts/audit_stock_display_numbers.py"
+      - "scripts/stock_revenue_evidence.py"
+      - "scripts/stock_technical_evidence.py"
+      - "scripts/stock_financial_precision.py"
+      - "scripts/test_stock_revenue_evidence.py"
+      - "scripts/test_stock_technical_evidence.py"
+      - "scripts/test_stock_financial_precision.py"
       - "scripts/test_stock_audit_publication.py"
       - "scripts/test_stock_display_number_audit.py"
       - "scripts/audit_stock_radar_accuracy.py"
@@ -33,6 +39,7 @@ on:
 permissions:
   contents: write
   pages: write
+  actions: write
 concurrency:
   group: stock-radar-independent-accuracy-audit
   cancel-in-progress: false
@@ -58,6 +65,7 @@ jobs:
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
           PYTHONPATH=scripts python -m unittest scripts.test_stock_audit_publication -v
           python -m unittest scripts.test_stock_display_number_audit -v
+          python -m unittest scripts.test_stock_revenue_evidence scripts.test_stock_technical_evidence scripts.test_stock_financial_precision -v
       - name: Recompute independent model audit and integrity gates
         run: python scripts/audit_stock_radar_accuracy.py
       - name: Recompute and publish against latest main on every retry
@@ -66,6 +74,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify the public snapshot after the final successful audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/verify-stock-world-public.yml/dispatches" -f ref=main
       - uses: actions/upload-artifact@v4
         if: always()
         with:

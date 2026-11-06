@@ -25,6 +25,11 @@ import unicodedata
 from xml.etree import ElementTree as ET
 import zipfile
 
+try:
+    from scripts.stock_financial_precision import verified_balance_precision
+except ModuleNotFoundError:
+    from stock_financial_precision import verified_balance_precision
+
 UTC = timezone.utc
 VERSION = "official-financial-coverage-v1"
 OUTPUT = Path("stock-financial-coverage.json")
@@ -393,8 +398,9 @@ def _amount(value):
 def balance_equation_issue(record):
     """Check reported totals in their original currency; never solve for a value.
 
-    At most one currency unit or floating-point representation error is allowed.
-    A percent tolerance could hide a material mismatch in a large company.
+    At most one currency unit or floating-point representation error is allowed
+    without an exact source-bound XBRL precision attestation. A percent tolerance
+    could hide a material mismatch in a large company.
     """
     metrics = record.get("metrics") or {}
     values = [_amount(metrics.get(field)) for field in BALANCE_FIELDS]
@@ -404,6 +410,8 @@ def balance_equation_issue(record):
     difference = assets - (liabilities + equity)
     tolerance = max(1.0, sum(math.ulp(value) for value in values))
     if abs(difference) <= tolerance:
+        return None
+    if verified_balance_precision(record) is not None:
         return None
     return {"reason": "reported_balance_equation_mismatch",
             "equation": "assets = liabilities + equity",
@@ -419,6 +427,9 @@ def validate_account_record(record):
     if balance_equation_issue(record):
         raise ValueError("unreconciled_reported_balance_sheet")
     check = (record.get("account_validation") or {}).get("balance_sheet") or {}
+    if check.get("status") == "verified_with_declared_precision":
+        if verified_balance_precision(record) is None:
+            raise ValueError("invalid_reported_balance_precision_evidence")
     if check.get("status") == "withheld":
         if (check.get("withheld_fields") != list(BALANCE_FIELDS) or
                 any((record.get("metrics") or {}).get(key) is not None for key in BALANCE_FIELDS) or
@@ -439,8 +450,21 @@ def guard_account_records(records, root, audited_at):
         "version": "official-financial-account-quarantine-v1",
         "not_for_display_or_analysis": True, "records": []})
     fingerprints = {entry["sha256"] for entry in archive["records"]}
+    previous = json_file(root / OUTPUT, {}).get("records") or {}
     output, changed, archive_changed = {}, [], False
     for key, original in records.items():
+        # A new API observation of the same filing may omit the prior precision
+        # proof. Carry it forward only if every issuer/period/unit/amount binding
+        # remains valid; never transfer it to a revised filing or different values.
+        cached = previous.get(key) or {}
+        if verified_balance_precision(cached) is not None and not (original.get("account_validation") or {}).get("balance_sheet"):
+            candidate = copy.deepcopy(original)
+            candidate["account_validation"] = copy.deepcopy(cached["account_validation"])
+            if verified_balance_precision(candidate) is not None:
+                note = candidate["account_validation"].get("note")
+                if note and note not in candidate.setdefault("limitations", []):
+                    candidate["limitations"].append(note)
+                original = candidate
         issue = balance_equation_issue(original)
         if not issue:
             validate_account_record(original)
@@ -479,9 +503,12 @@ def guard_account_records(records, root, audited_at):
         write_json(root / ACCOUNT_QUARANTINE_OUTPUT, archive)
     withheld = [key for key, row in output.items()
                 if ((row.get("account_validation") or {}).get("balance_sheet") or {}).get("status") == "withheld"]
+    precision_verified = [key for key, row in output.items() if verified_balance_precision(row) is not None]
     return output, {"policy": ACCOUNT_POLICY, "audited_at": audited_at,
                     "newly_withheld_records": changed, "withheld_records": len(withheld),
                     "withheld_fields": len(withheld) * len(BALANCE_FIELDS),
+                    "precision_verified_records": len(precision_verified),
+                    "precision_verified_fields": len(precision_verified) * len(BALANCE_FIELDS),
                     "quarantine_file": str(ACCOUNT_QUARANTINE_OUTPUT),
                     "quarantined_records": len(archive["records"])}
 

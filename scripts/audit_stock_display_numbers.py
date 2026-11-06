@@ -22,6 +22,9 @@ sys.path.insert(0, str(ROOT))
 from scripts.market_data_utils import market_session_clock, exchange_calendar
 from scripts.publish_widget_data import OPPORTUNITY_BINDINGS, verify_source_bindings
 from scripts.validate_stock_financial_coverage import validate as validate_financial
+from scripts.stock_revenue_evidence import comparison_issues
+from scripts.stock_technical_evidence import validate_technical_evidence
+from scripts.stock_financial_precision import verified_balance_precision
 
 
 def number(value):
@@ -50,6 +53,9 @@ class Audit:
         self.errors = []
         self.warnings = []
         self.quantization_checks = []
+        self.revenue_evidence_checks = []
+        self.technical_evidence_checks = []
+        self.official_financial_precision_checks = []
 
     def check(self, group, ok, message, **context):
         self.checks[group] += 1
@@ -68,6 +74,67 @@ class Audit:
 
     def warn(self, group, message, **context):
         self.warnings.append({'group': group, 'issue': message, **context})
+
+
+def check_official_balance_equation(a, row, identity=None):
+    """Check exact reported totals, or a separately verified XBRL precision basis.
+
+    The general display comparison's relative tolerance is deliberately not used
+    for official balance sheets. A large issuer does not receive a larger allowed
+    discrepancy. Source-declared precision is accepted only through its complete
+    issuer/filing/context/unit/amount proof and is recorded explicitly in the audit.
+    """
+    metrics = row.get('metrics') or {}
+    fields = ('assets', 'liabilities', 'equity')
+    validation = (row.get('account_validation') or {}).get('balance_sheet') or {}
+    if validation.get('status') == 'verified_with_declared_precision':
+        try:
+            result = verified_balance_precision(row)
+        except (AttributeError, TypeError, ValueError):
+            result = None
+        valid = result is not None
+        a.check('official_financial_precision', valid, 'official_balance_precision_evidence_invalid',
+                identity=identity, field='assets=liabilities+equity')
+        source_precision = validation.get('source_precision')
+        source_precision = source_precision if isinstance(source_precision, dict) else {}
+        source = source_precision.get('source')
+        source = source if isinstance(source, dict) else {}
+        evidence = {'identity': identity, 'status': 'verified' if valid else 'invalid',
+                    'field': 'assets=liabilities+equity',
+                    'published_amounts': {field: metrics.get(field) for field in fields},
+                    'currency': row.get('currency'), 'consolidation': row.get('consolidation'),
+                    'period_end': row.get('period_end'), 'context_ref': source_precision.get('context_ref'),
+                    'source_unit_ref': source_precision.get('unit_ref'),
+                    'source_precision_verified_at': source_precision.get('verified_at'),
+                    'source_rcept_no': source.get('rcept_no'),
+                    'source_package_sha256': source.get('package_sha256'),
+                    'source_instance_sha256': source.get('instance_sha256')}
+        if valid:
+            evidence.update({key: result[key] for key in
+                             ('reported_difference', 'difference_interval', 'declared_decimals')})
+            evidence['basis'] = 'unchanged_reported_values_with_verified_source_declared_precision'
+            a.check('official_financial_arithmetic', True, 'source_declared_precision_consistent',
+                    identity=identity, field='assets=liabilities+equity')
+        a.official_financial_precision_checks.append(evidence)
+        return valid
+    values = [metrics.get(field) for field in fields]
+    if not all(number(value) is not None for value in values):
+        return None  # Existing quarantined/missing accounts remain unexposed.
+    with localcontext() as context:
+        context.prec = 80
+        reported = [Decimal(str(value)) for value in values]
+        difference = reported[0] - reported[1] - reported[2]
+        # Match the collector's explicit one-currency-unit/representation policy;
+        # integers do not acquire a percentage or floating representation allowance.
+        representation = sum((Decimal(str(math.ulp(value))) for value in values if type(value) is float), Decimal(0))
+        tolerance = max(Decimal(1), representation)
+        valid = abs(difference) <= tolerance
+    a.check('official_financial_arithmetic', valid, 'arithmetic_mismatch',
+            identity=identity, field='assets=liabilities+equity',
+            published=metrics['assets'], recalculated=str(reported[1] + reported[2]),
+            reported_difference=str(difference), absolute_tolerance=str(tolerance), relative_tolerance=0,
+            basis='reported_currency_units_without_verified_precision_exception')
+    return valid
 
 
 def reward_risk_interval(close, support, resistance):
@@ -167,6 +234,88 @@ def check_daily_change(a, proof, *, identity, market, provider, currency, sessio
             a.check('daily_change', ok, 'daily_change_disagrees_with_chart_bar', identity=identity, field=field)
             bars_match &= ok
     return values_ok and contract and adjacent and quote_match and percentage_match and bars_match
+
+
+def check_revenue_source_evidence(a, row, now):
+    """Bind preserved annual observations to the numbers actually displayed."""
+    h = row.get('history') or {}
+    evidence = h.get('revenue_growth_evidence')
+    if evidence is None:
+        return
+    symbol = row.get('symbol')
+    if not isinstance(evidence, dict):
+        a.check('financial_source_evidence', False, 'revenue_evidence_invalid', identity=symbol)
+        return
+    source = evidence.get('source') or {}
+    rows = evidence.get('source_rows') or {}
+    prior = rows.get('prior') or {}
+    issues = comparison_issues(evidence, symbol=symbol, currency=h.get('currency'),
+                               current=h.get('revenue'), previous=h.get('revenue_previous'),
+                               period=h.get('filing_period'), published_growth=h.get('revenue_growth'), now=now)
+    observed = instant(source.get('observed_at'))
+    if observed is None or observed > now:
+        issues.append('future_or_invalid_source_observation')
+    published = h.get('revenue_growth') is not None
+    declared_verified = evidence.get('status') == 'verified'
+    if published or declared_verified:
+        for field in ('revenue', 'revenue_previous', 'revenue_growth'):
+            if number(h.get(field)) is None:
+                issues.append('display_input_missing:'+field)
+        if not h.get('currency') or not h.get('filing_period'):
+            issues.append('display_currency_or_period_missing')
+        if h.get('revenue_previous_period') != prior.get('period') or not h.get('revenue_previous_period'):
+            issues.append('previous_period_mismatch')
+        if h.get('revenue_growth_decimal_places') != evidence.get('published_decimal_places'):
+            issues.append('published_precision_mismatch')
+        if not declared_verified:
+            issues.append('unverified_revenue_growth_published')
+        a.check('financial_source_evidence', not issues, 'revenue_source_evidence_mismatch',
+                identity=symbol, reasons=sorted(set(issues)))
+    else:
+        a.check('financial_source_evidence', evidence.get('status') == 'withheld',
+                'revenue_evidence_unknown_status', identity=symbol)
+    a.revenue_evidence_checks.append({
+        'identity': symbol, 'status': 'verified' if declared_verified and not issues else 'withheld' if not published else 'invalid',
+        'source': source.get('name'), 'currency': source.get('currency'),
+        'current_period': (rows.get('current') or {}).get('period'), 'previous_period': prior.get('period'),
+        'source_rows_sha256': evidence.get('source_rows_sha256'), 'issues': sorted(set(issues)),
+    })
+
+
+def check_technical_source_evidence(a, row, now):
+    symbol = row.get('symbol')
+    evidence = (row.get('technical') or {}).get('evidence')
+    if not evidence:
+        a.warn('technical_source_evidence', 'original_technical_inputs_not_yet_collected', identity=symbol)
+        a.technical_evidence_checks.append({'identity': symbol, 'status': 'missing'})
+        return
+    try:
+        result = validate_technical_evidence(row, now=now)
+    except (ValueError, TypeError, KeyError, AttributeError, AssertionError, OverflowError) as exc:
+        a.check('technical_source_evidence', False, 'technical_evidence_invalid', identity=symbol, error_type=type(exc).__name__)
+        a.technical_evidence_checks.append({'identity': symbol, 'status': 'failed'})
+        return
+    a.checks['technical_source_evidence'] += result['checks']
+    a.errors.extend({'group': 'technical_source_evidence', 'identity': symbol, **error}
+                    for error in result['errors'])
+    values = result.get('recalculated') or {}
+    if result['status'] == 'verified_withheld':
+        ratio_status = values.get('reason') or 'source_inputs_insufficient'
+    elif result['status'] != 'verified':
+        ratio_status = 'unverified'
+    elif values.get('reward_risk') is not None:
+        ratio_status = 'calculated'
+    elif values['close'] <= values['support10']:
+        ratio_status = 'nonpositive_risk'
+    else:
+        ratio_status = 'nonpositive_reward'
+    a.technical_evidence_checks.append({
+        'identity': symbol, 'status': result['status'], 'checks': result['checks'],
+        'coverage': result['coverage'], 'reward_risk_status': ratio_status,
+        'reward_risk_published': (row.get('technical') or {}).get('reward_risk'),
+        'stock_rows_sha256': (evidence.get('stock') or {}).get('rows_sha256'),
+        'benchmark_rows_sha256': (evidence.get('benchmark') or {}).get('rows_sha256'),
+    })
 
 
 def forecast_counts(records):
@@ -284,6 +433,8 @@ def audit(root=ROOT, now=None, require_current=False):
             quote_counts['daily_change_withheld'] += 1
 
         f, t, h, b = (row.get(k) or {} for k in ('forecasts', 'targets', 'history', 'balance'))
+        check_revenue_source_evidence(a, row, now)
+        check_technical_source_evidence(a, row, now)
         f0, f1 = f.get('current_fy') or {}, f.get('next_fy') or {}
         a.compare('valuation', t.get('median_gap_pct'), growth(t.get('median'), p), 'targets.median_gap_pct', symbol)
         a.compare('valuation', t.get('low_gap_pct'), growth(t.get('low'), p), 'targets.low_gap_pct', symbol)
@@ -354,10 +505,11 @@ def audit(root=ROOT, now=None, require_current=False):
         a.check('official_financial_coverage', False, str(exc))
     for key, row in financial.get('records', {}).items():
         if row.get('status') != 'available':
+            if ((row.get('account_validation') or {}).get('balance_sheet') or {}).get('status') == 'verified_with_declared_precision':
+                check_official_balance_equation(a, row, key)
             continue
         m = row.get('metrics') or {}
-        if all(number(m.get(k)) is not None for k in ('assets', 'liabilities', 'equity')):
-            a.compare('official_financial_arithmetic', m['assets'], m['liabilities']+m['equity'], 'assets=liabilities+equity', key, tolerance=1)
+        check_official_balance_equation(a, row, key)
         if all(number(m.get(k)) is not None for k in ('cash_from_operations', 'capital_expenditure')):
             a.compare('official_financial_arithmetic', m.get('free_cash_flow'), m['cash_from_operations']-abs(m['capital_expenditure']), 'free_cash_flow', key, tolerance=1)
 
@@ -475,11 +627,18 @@ def audit(root=ROOT, now=None, require_current=False):
         'checks': dict(a.checks), 'check_count': sum(a.checks.values()),
         'errors': a.errors, 'warnings': a.warnings,
         'quantization_checks': a.quantization_checks,
+        'revenue_evidence_checks': a.revenue_evidence_checks,
+        'technical_evidence_checks': a.technical_evidence_checks,
+        'official_financial_precision_checks': a.official_financial_precision_checks,
         'coverage': {'catalogue': catalog['counts'], 'detailed_research': len(companies),
                      'quotes': dict(quote_counts), 'charts': dict(chart_counts),
                      'expected_completed_sessions': expected, 'ai': dict(statuses),
                      'official_financial_available': available, 'world_flow': world,
-                     'derived_records': derived_counts},
+                     'derived_records': derived_counts,
+                     'annual_revenue_source_evidence': dict(Counter(row['status'] for row in a.revenue_evidence_checks)),
+                     'technical_source_evidence': dict(Counter(row['status'] for row in a.technical_evidence_checks)),
+                     'official_financial_precision': dict(Counter(row['status'] for row in a.official_financial_precision_checks)),
+                     'reward_risk_source_results': dict(Counter(row.get('reward_risk_status', 'unverified') for row in a.technical_evidence_checks))},
         'source_sha256': hashes,
         'limitations': ['Arithmetic and source contracts are checked; vendor facts and forecasts are not guaranteed.',
                        'Analyst estimates/targets remain estimates; model probabilities are research outputs, not observed success rates.',

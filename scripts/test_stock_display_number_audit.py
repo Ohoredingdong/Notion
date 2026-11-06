@@ -1,11 +1,16 @@
 """Offline adversarial checks for actual display-audit acceptance boundaries."""
 from datetime import datetime, timezone
+import copy
+import json
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
 from audit_stock_display_numbers import (Audit, check_daily_change, forecast_counts,
     missing_chart_identities, world_current_counts, check_sentiment_observations,
-    reward_risk_interval, check_reward_risk)
+    reward_risk_interval, check_reward_risk, check_revenue_source_evidence,
+    check_official_balance_equation)
+from stock_revenue_evidence import revenue_comparison
 
 NOW = datetime(2026, 11, 6, 9, tzinfo=timezone.utc)
 PROOF = {'version': 'completed-session-change-v1', 'status': 'verified', 'market': 'US',
@@ -16,6 +21,139 @@ PROOF = {'version': 'completed-session-change-v1', 'status': 'verified', 'market
 
 
 class DisplayAuditTests(unittest.TestCase):
+    def source_precision_row(self):
+        path = Path(__file__).resolve().parents[1] / 'data-evidence/stock-financial-precision-review-20261106.json'
+        source = json.loads(path.read_text())['records']['KR:011280']['source_precision']
+        return {'symbol': '011280', 'country': 'KR', 'corp_code': '00153524',
+                'rcept_no': '20260814003299', 'report_year': 2026, 'report_code': '11012',
+                'period_end': '2026-06-30', 'consolidation': 'CFS', 'currency': 'KRW',
+                'status': 'available',
+                'metrics': {'assets': 698863343000, 'liabilities': 381374004000, 'equity': 317489340000},
+                'account_validation': {'balance_sheet': {
+                    'status': 'verified_with_declared_precision', 'source_precision': source,
+                    'reported_difference': '-1000', 'difference_interval': ['-2500', '500'],
+                    'declared_decimals': {'assets': '-3', 'liabilities': '-3', 'equity': '-3'},
+                    'reported_values_unchanged': True}}}
+
+    def test_official_source_precision_records_the_residual_and_interval_without_changing_amounts(self):
+        row = self.source_precision_row()
+        original = copy.deepcopy(row)
+        a = Audit()
+        self.assertTrue(check_official_balance_equation(a, row, 'KR:011280'))
+        self.assertEqual(row, original)
+        self.assertEqual(a.errors, [])
+        self.assertEqual(a.checks, {'official_financial_precision': 1, 'official_financial_arithmetic': 1})
+        evidence = a.official_financial_precision_checks[0]
+        self.assertEqual(evidence['status'], 'verified')
+        self.assertEqual(evidence['published_amounts'], row['metrics'])
+        self.assertEqual(evidence['reported_difference'], '-1000')
+        self.assertEqual(evidence['difference_interval'], ['-2500', '500'])
+        self.assertEqual(evidence['declared_decimals'], {'assets': '-3', 'liabilities': '-3', 'equity': '-3'})
+        self.assertEqual(evidence['source_rcept_no'], '20260814003299')
+        self.assertEqual(evidence['source_package_sha256'], row['account_validation']['balance_sheet']['source_precision']['source']['package_sha256'])
+
+    def test_official_precision_claim_cannot_survive_a_changed_issuer_period_currency_or_amount(self):
+        for field, value in (('symbol', '038110'), ('corp_code', '00139153'),
+                             ('rcept_no', '20260814003298'), ('period_end', '2026-03-31'),
+                             ('consolidation', 'OFS'), ('currency', 'USD'), ('assets', 698863344000)):
+            row = self.source_precision_row()
+            (row['metrics'] if field == 'assets' else row)[field] = value
+            a = Audit()
+            self.assertFalse(check_official_balance_equation(a, row, 'KR:011280'), field)
+            self.assertEqual(a.errors[0]['issue'], 'official_balance_precision_evidence_invalid')
+            self.assertEqual(a.official_financial_precision_checks[0]['status'], 'invalid')
+            self.assertEqual(a.checks.get('official_financial_arithmetic', 0), 0)
+
+    def test_official_precision_malformed_or_modified_proof_is_an_explicit_audit_failure(self):
+        changes = (
+            lambda v: v.pop('source_precision'),
+            lambda v: v.update(source_precision=['invalid']),
+            lambda v: v['source_precision'].update(source=['invalid']),
+            lambda v: v['source_precision']['context']['period'].update(instant='2026-03-31'),
+            lambda v: v['source_precision']['facts']['assets'].update(decimals='0'),
+            lambda v: v.update(difference_interval=['-2501', '501']),
+            lambda v: v.update(reported_values_unchanged=False),
+        )
+        for change in changes:
+            row = self.source_precision_row()
+            change(row['account_validation']['balance_sheet'])
+            a = Audit()
+            self.assertFalse(check_official_balance_equation(a, row, 'KR:011280'))
+            self.assertEqual(a.errors[0]['group'], 'official_financial_precision')
+
+    def test_official_balance_equation_has_no_percentage_tolerance_for_large_issuers(self):
+        for difference, expected in ((0, True), (1, True), (-1, True), (2, False), (5000, False)):
+            row = {'metrics': {'assets': 10**18 + difference, 'liabilities': 6 * 10**17, 'equity': 4 * 10**17}}
+            a = Audit()
+            self.assertEqual(check_official_balance_equation(a, row), expected, difference)
+            self.assertEqual(a.official_financial_precision_checks, [])
+            if not expected:
+                self.assertEqual(a.errors[0]['absolute_tolerance'], '1')
+                self.assertEqual(a.errors[0]['relative_tolerance'], 0)
+        row = self.source_precision_row()
+        del row['account_validation']
+        self.assertFalse(check_official_balance_equation(Audit(), row, 'KR:011280'))
+
+    def test_quarantined_balance_values_stay_null_without_a_precision_exception(self):
+        row = {'metrics': dict.fromkeys(('assets', 'liabilities', 'equity')),
+               'account_validation': {'balance_sheet': {'status': 'withheld_source_mismatch'}}}
+        original = copy.deepcopy(row)
+        a = Audit()
+        self.assertIsNone(check_official_balance_equation(a, row, 'KR:038110'))
+        self.assertEqual(row, original)
+        self.assertEqual(a.errors, [])
+        self.assertEqual(a.checks, {})
+        self.assertEqual(a.official_financial_precision_checks, [])
+
+    def annual_revenue_row(self):
+        evidence = revenue_comparison(symbol='TEST', source_name='Yahoo Finance',
+                    source_url='https://finance.yahoo.com/quote/TEST/financials/', provider_symbol='TEST',
+                    currency='USD', account='TotalRevenue',
+                    current={'value': 115060000.0, 'period': '2025-12-31', 'account': 'TotalRevenue'},
+                    prior={'value': 100000000.0, 'period': '2024-12-31', 'account': 'TotalRevenue'},
+                    metadata={'provider_symbol': 'TEST', 'financial_currency': 'USD',
+                              'frequency': 'yearly', 'quote_type': 'EQUITY'},
+                    observed_at='2026-11-06T08:00:00Z')
+        return {'symbol': 'TEST', 'history': {'revenue': 115060000.0,
+                'filing_period': '2025-12-31', 'currency': 'USD', **evidence}}
+
+    def test_revenue_display_binds_to_same_saved_annual_source_values(self):
+        a = Audit()
+        check_revenue_source_evidence(a, self.annual_revenue_row(), NOW)
+        self.assertEqual(a.errors, [])
+        self.assertEqual(a.revenue_evidence_checks[0]['status'], 'verified')
+
+    def test_revenue_evidence_cannot_validate_other_display_period_currency_or_amount(self):
+        for field, value in (('currency', 'KRW'), ('filing_period', '2026-12-31'),
+                             ('revenue', 115060001.0), ('revenue_previous', 100000001.0),
+                             ('revenue_growth', 15.07), ('revenue_previous_period', '2023-12-31'),
+                             ('revenue_growth_decimal_places', 8)):
+            row = self.annual_revenue_row()
+            row['history'][field] = value
+            a = Audit()
+            check_revenue_source_evidence(a, row, NOW)
+            self.assertTrue(a.errors, field)
+
+    def test_revenue_valid_label_does_not_replace_missing_published_inputs(self):
+        for field in ('revenue_previous', 'revenue', 'revenue_growth', 'currency', 'filing_period'):
+            row = self.annual_revenue_row()
+            del row['history'][field]
+            a = Audit()
+            check_revenue_source_evidence(a, row, NOW)
+            self.assertTrue(a.errors, field)
+
+    def test_modified_or_future_revenue_source_evidence_fails(self):
+        row = self.annual_revenue_row()
+        row['history']['revenue_growth_evidence']['source_rows']['prior']['value'] += 1
+        a = Audit()
+        check_revenue_source_evidence(a, row, NOW)
+        self.assertTrue(a.errors)
+        row = self.annual_revenue_row()
+        row['history']['revenue_growth_evidence']['source']['observed_at'] = '2026-11-06T10:00:00Z'
+        a = Audit()
+        check_revenue_source_evidence(a, row, NOW)
+        self.assertTrue(a.errors)
+
     def test_actual_knx_ratio_is_inside_the_documented_round8_price_intervals(self):
         close, support, resistance = 59.47000122, 59.45000076, 82.86000061
         interval = reward_risk_interval(close, support, resistance)
