@@ -145,6 +145,13 @@ def collect(spec,base,audit,benchmark,now):
     # For the audited original universe, preserve the exact per-account reference basis.
     h['currency']=info.get('financialCurrency');h['currency_basis']='provider_financialCurrency'
     hist={k:base.get(k) for k in FIELDS+['filing_period','currency']} if base else h
+    if base:
+        # Keep the exact original-source comparison. A rounded growth rate is
+        # never used to back-solve a missing prior amount from another source.
+        for key in ('revenue_previous', 'revenue_previous_period',
+                    'revenue_growth_decimal_places', 'revenue_growth_evidence'):
+            if key in base:
+                hist[key] = base[key]
     if base:hist['currency_basis']='preserved_reference_statement_currency'
     hist['basis']=base.get('statement_basis','연간 제공처 재무') if base else h.get('basis')
     c,de,e=[N(info.get(k)) for k in ('totalCash','totalDebt','ebitda')]

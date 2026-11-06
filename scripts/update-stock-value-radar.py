@@ -5,11 +5,12 @@ US: SEC CompanyFacts, last two *annual* reports (FY, NOT trailing 12 months).
 KR: OpenDART financials, only when DART_API_KEY GitHub secret exists.
 Never fill missing values with fabricated numbers.
 """
-import json, os, time, urllib.request, urllib.parse, io, zipfile
+import json, os, time, urllib.request, urllib.parse, io, zipfile, re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from stock_revenue_evidence import revenue_comparison
 
 PRICE_FILE = Path("stocks-dashboard-data.json")
 OUT_FILE = Path("stock-value-radar-data.json")
@@ -84,9 +85,40 @@ def values(facts, tags, unit="USD", min_days=300):
             points[0].get("end") if points else None, tag)
 
 def stock_sec(symbol, name, cik):
-    raw = get_json(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json")
+    source_url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
+    raw = get_json(source_url)
+    if isinstance(raw.get('cik'), bool) or str(raw.get('cik')) != str(cik):
+        raise ValueError('SEC company identity mismatch')
     facts = raw.get("facts", {}).get("us-gaap", {})
     rev, rev_prev, date, rev_tag = values(facts, REVENUE_TAGS)
+    # Keep the current and comparative observations from the SAME filing. A
+    # later restatement of one year must not silently supply the denominator.
+    points, _ = metric(facts, REVENUE_TAGS)
+    current = points[0] if points else {}
+    candidates = []
+    for point in (facts.get(rev_tag) or {}).get('units', {}).get('USD', []):
+        try:
+            annual = 300 <= (datetime.fromisoformat(point['end']) -
+                             datetime.fromisoformat(point['start'])).days <= 380
+        except (KeyError, TypeError, ValueError):
+            continue
+        if (annual and point.get('accn') == current.get('accn') and
+                point.get('form') in ('10-K', '10-K/A') and point.get('fp') == 'FY' and
+                point.get('end', '') < current.get('end', '') and number(point.get('val')) is not None):
+            candidates.append(point)
+    prior = max(candidates, key=lambda point: point['end']) if candidates else {}
+    if prior and len({number(p.get('val')) for p in candidates if p['end'] == prior['end']}) != 1:
+        prior = {}
+    def observation(point):
+        return {'value': number(point.get('val')), 'period': point.get('end'),
+                'start': point.get('start'), 'account': rev_tag,
+                'accession': point.get('accn'), 'form': point.get('form')}
+    comparison = revenue_comparison(
+        symbol=symbol, source_name='SEC CompanyFacts', source_url=source_url,
+        provider_symbol=str(cik), currency='USD', account=rev_tag,
+        current=observation(current), prior=observation(prior),
+        metadata={'cik': str(raw['cik']), 'unit': 'USD', 'taxonomy': 'us-gaap',
+                  'accession': current.get('accn')})
     op, _, _, _ = values(facts, ["OperatingIncomeLoss"])
     ni, _, _, _ = values(facts, ["NetIncomeLossAvailableToCommonStockholdersBasic", "NetIncomeLoss"])
     eps, _, _, _ = values(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasic"], "USD/shares")
@@ -98,7 +130,7 @@ def stock_sec(symbol, name, cik):
     return {"symbol":symbol, "name":name, "market":"US", "filing_source":"SEC CompanyFacts",
             "filing_url":f"https://www.sec.gov/edgar/browse/?CIK={cik}",
             "filing_period":date, "statement_basis":"최근 연간 10-K (TTM 아님)",
-            "revenue":rev, "revenue_growth":growth(rev, rev_prev),
+            "revenue":rev, **comparison,
             "operating_income":op, "operating_margin":round(op/rev*100,2) if op is not None and rev and rev>0 else None,
             "net_income":ni, "eps":eps, "fcf":fcf,
             "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
@@ -108,6 +140,10 @@ def stock_yahoo(symbol, name, market='US'):
     """Best-effort fallback: yfinance financial time series (unofficial; not SEC)."""
     import yfinance as yf
     ticker = yf.Ticker(symbol)
+    info = ticker.get_info() or {}
+    if info.get('symbol') != symbol or info.get('quoteType') != 'EQUITY':
+        raise ValueError('Yahoo financial identity mismatch')
+    financial_currency = info.get('financialCurrency')
     inc = ticker.get_income_stmt(freq="yearly")
     if inc is None or inc.empty: raise RuntimeError("Yahoo 연간 손익계산서가 비어 있음")
     inc = inc.loc[:, sorted(inc.columns, reverse=True)]
@@ -124,6 +160,17 @@ def stock_yahoo(symbol, name, market='US'):
         return None
     rev = val(inc, ["Total Revenue", "TotalRevenue", "Operating Revenue", "OperatingRevenue"], latest)
     prev = val(inc, ["Total Revenue", "TotalRevenue", "Operating Revenue", "OperatingRevenue"], prior)
+    rev_account = next((k for k in ('Total Revenue', 'TotalRevenue', 'Operating Revenue', 'OperatingRevenue')
+                        if k in inc.index), None)
+    comparison = revenue_comparison(
+        symbol=symbol.removesuffix('.KS').removesuffix('.KQ'),
+        source_name='Yahoo Finance', source_url=f'https://finance.yahoo.com/quote/{symbol}/financials/',
+        provider_symbol=symbol, currency=financial_currency, account=rev_account,
+        current={'value': rev, 'period': str(latest)[:10], 'account': rev_account},
+        prior={'value': prev, 'period': str(prior)[:10] if prior is not None else None, 'account': rev_account},
+        metadata={'provider_symbol': info.get('symbol'), 'financial_currency': financial_currency,
+                  'quote_currency': info.get('currency'), 'quote_type': info.get('quoteType'),
+                  'frequency': 'yearly'})
     op = val(inc, ["Operating Income", "OperatingIncome"], latest)
     ni = val(inc, ["Net Income", "NetIncome", "Net Income Common Stockholders", "NetIncomeCommonStockholders"], latest)
     eps = val(inc, ["Diluted EPS", "DilutedEPS", "Basic EPS", "BasicEPS"], latest)
@@ -136,11 +183,11 @@ def stock_yahoo(symbol, name, market='US'):
     return {"symbol":symbol.replace(".KS", ""),"name":name,"market":market,"filing_source":"Yahoo Finance (비공식 보조자료)",
             "filing_url":f"https://finance.yahoo.com/quote/{symbol}/financials/",
             "filing_period":str(latest)[:10],"statement_basis":"최근 연간 수치 (TTM 아님)",
-            "revenue":rev,"revenue_growth":growth(rev,prev),
+            "revenue":rev, **comparison,
             "operating_income":op,"operating_margin":round(op/rev*100,2) if op is not None and rev and rev>0 else None,
             "net_income":ni,"eps":eps,"fcf":fcf,
             "fcf_margin":round(fcf/rev*100,2) if fcf is not None and rev and rev>0 else None,
-            "capex":capex,"currency":"KRW" if market=="KR" else "USD",
+            "capex":capex,"currency":financial_currency,
             "note":"Yahoo 비공식 보조자료. 매매 전 해당 국가의 공식 정기보고서에서 매출·EPS·FCF를 교차 검증."}
 
 def dart_code_lookup(key):
@@ -162,7 +209,9 @@ def dart_rows_by_code(key, codes, year):
     return data.get("list") or []
 
 def dart_build(ticker, name, corp, rows, year):
-    subset=[x for x in rows if str(x.get("corp_code"))==corp and x.get("fs_div")=="CFS"]
+    subset=[x for x in rows if str(x.get("corp_code"))==corp and x.get("fs_div")=="CFS"
+            and x.get('stock_code') == ticker and str(x.get('bsns_year')) == str(year)
+            and x.get('reprt_code') == '11011']
     def find(labels):
         for term in labels:
             for r in subset:
@@ -170,12 +219,42 @@ def dart_build(ticker, name, corp, rows, year):
                     return number(r.get("thstrm_amount")),number(r.get("frmtrm_amount"))
         return None,None
     rev,rev_pre=find(["매출액","매출","수익(매출액)","영업수익","수익"])
+    revenue_rows = []
+    for label in ('매출액', '매출', '수익(매출액)', '영업수익', '수익'):
+        revenue_rows = [r for r in subset if r.get('account_nm') == label and r.get('sj_div') in ('IS', 'CIS')]
+        if revenue_rows:
+            break
+    row = revenue_rows[0] if revenue_rows else {}
+    signatures = {(r.get('rcept_no'), r.get('currency'), r.get('thstrm_dt'), r.get('frmtrm_dt'),
+                   number(r.get('thstrm_amount')), number(r.get('frmtrm_amount'))) for r in revenue_rows}
+    if len(signatures) != 1:
+        row = {}
+    def period_range(value):
+        found = re.findall(r'(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})', str(value or ''))
+        try:
+            dates = [datetime(int(y), int(m), int(d)).date().isoformat() for y, m, d in found]
+        except ValueError:
+            return None, None
+        return (dates[0], dates[-1]) if len(dates) == 2 else (None, dates[0]) if len(dates) == 1 else (None, None)
+    current_start, current_end = period_range(row.get('thstrm_dt'))
+    prior_start, prior_end = period_range(row.get('frmtrm_dt'))
+    rev, rev_pre = number(row.get('thstrm_amount')), number(row.get('frmtrm_amount'))
+    comparison = revenue_comparison(
+        symbol=ticker, source_name='OpenDART', source_url='https://opendart.fss.or.kr/api/fnlttMultiAcnt.json',
+        provider_symbol=corp, currency=row.get('currency'), account=row.get('account_nm'),
+        current={'value': rev, 'period': current_end, 'start': current_start, 'account': row.get('account_nm')},
+        prior={'value': rev_pre, 'period': prior_end, 'start': prior_start, 'account': row.get('account_nm')},
+        metadata={k: row.get(k) for k in ('corp_code', 'stock_code', 'bsns_year', 'reprt_code',
+                                        'fs_div', 'currency', 'rcept_no', 'sj_div')},
+        identity_verified=bool(row))
     op,_=find(["영업이익","영업이익(손실)","영업손익"])
     ni,_=find(["지배기업 소유주지분 순이익","지배기업의 소유주에게 귀속되는 당기순이익","당기순이익","당기순이익(손실)"])
     return {"symbol":ticker,"name":name,"market":"KR", "filing_source":"OpenDART",
-            "filing_url":"https://dart.fss.or.kr/", "filing_period":str(year)+"-12-31",
+            "filing_url":('https://dart.fss.or.kr/dsaf001/main.do?rcpNo='+row['rcept_no'])
+                         if re.fullmatch(r'\d{14}', str(row.get('rcept_no') or '')) else 'https://dart.fss.or.kr/',
+            "filing_period":current_end or str(year)+"-12-31",
             "statement_basis":f"{year}년 연간 연결 주요계정",
-            "revenue":rev,"revenue_growth":growth(rev,rev_pre),
+            "revenue":rev, **comparison,
             "operating_income":op,"operating_margin":round(op/rev*100,2) if op is not None and rev and rev>0 else None,
             "net_income":ni,"eps":None,"fcf":None,"fcf_margin":None,"capex":None,
             "currency":"KRW","note":"EPS·FCF는 기본 다중회사 주요계정 응답만으로 검증 불가. 별도 주석/현금흐름 연동 필요."}
