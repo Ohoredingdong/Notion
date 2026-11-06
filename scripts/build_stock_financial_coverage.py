@@ -487,7 +487,7 @@ def guard_account_records(records, root, audited_at):
         if not any(value is not None for value in record["metrics"].values()):
             record["status"] = "accounts_withheld"
             record["metrics"] = None
-        note = "공시 원문의 자산·부채·자본 합계 차이를 확인해 세 항목을 보류했습니다. 원문의 표시단위·반올림 범위와 계정을 재확인해야 합니다."
+        note = "공시의 자산·부채·자본 합계가 맞지 않아 세 항목을 보류했습니다. 현재 확인된 근거만으로는 합계의 일치가 검증되지 않습니다."
         record["account_validation"] = {
             "policy": ACCOUNT_POLICY, "audited_at": audited_at, "note": note,
             "balance_sheet": {**issue, "status": "withheld", "withheld_fields": list(BALANCE_FIELDS)},
