@@ -12,6 +12,7 @@ on:
       - '.github/radar-world-flow-request.json'
 permissions:
   contents: write
+  pages: write
 concurrency:
   group: stock-world-flow-${{ github.ref_name }}
   cancel-in-progress: false
@@ -50,6 +51,11 @@ jobs:
           python scripts/publish_widget_data.py --branch "$GITHUB_REF_NAME"
           --message 'data: publish verified worldwide market observations'
           stock-world-flow.json
+      - name: Publish refreshed observations through the existing Pages site
+        if: github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
       - uses: actions/upload-artifact@v4
         if: always()
         with:

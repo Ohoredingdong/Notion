@@ -2,7 +2,7 @@ name: Audit Stock Radar Accuracy
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ['Stock Prospective Forecasts', 'Update Stock Opportunities', 'Stock Investment Cases', 'Stock Entry Plan']
+    workflows: ['Stock Prospective Forecasts', 'Update Stock Opportunities', 'Stock Investment Cases', 'Stock Entry Plan', 'Update World Market Flow', 'Stock Official Financial Coverage']
     types: [completed]
     branches: [main]
   push:
@@ -16,6 +16,12 @@ on:
       - "stock-opportunity-summary.json"
       - "stock-investment-cases-summary.json"
       - "stock-entry-plan-summary.json"
+      - "stock-world-flow.json"
+      - "stock-financial-coverage.json"
+      - "stock-extended-direction-forecast.json"
+      - "scripts/audit_stock_display_numbers.py"
+      - "scripts/test_stock_audit_publication.py"
+      - "scripts/test_stock_display_number_audit.py"
       - "scripts/audit_stock_radar_accuracy.py"
       - "scripts/publish_stock_radar_audit.py"
       - "scripts/test_stock_data_pipeline.py"
@@ -26,6 +32,7 @@ on:
     - cron: "30 8 * * 1-5"
 permissions:
   contents: write
+  pages: write
 concurrency:
   group: stock-radar-independent-accuracy-audit
   cancel-in-progress: false
@@ -43,10 +50,26 @@ jobs:
           python-version: "3.12"
       - name: Verify audit source syntax
         run: |
+          pip install 'exchange-calendars==4.13.1'
           python -m py_compile scripts/audit_stock_radar_accuracy.py scripts/publish_stock_radar_audit.py
+          python -m py_compile scripts/audit_stock_display_numbers.py
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_audit_publication -v
+          python -m unittest scripts.test_stock_display_number_audit -v
       - name: Recompute independent model audit and integrity gates
         run: python scripts/audit_stock_radar_accuracy.py
       - name: Recompute and publish against latest main on every retry
-        run: python scripts/publish_stock_radar_audit.py
+        run: python scripts/publish_stock_radar_audit.py --include-display-numbers
+      - name: Publish the source-aligned audit through the existing Pages site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stock-display-number-audit-evidence
+          path: |
+            stock-radar-accuracy-audit.json
+            stock-display-number-audit.json
+          retention-days: 7
 

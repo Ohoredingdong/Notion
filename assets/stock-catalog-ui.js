@@ -130,6 +130,7 @@
     <b>공시 재무 요약 ${f.status==="stale"?"· 오래된 보고서":""}</b>
     <small>기간 ${esc(date)} · ${esc(f.source)} · ${esc(f.consolidation||"공시 회계기준")} · 법인 연결 확인</small>
     <div class="fx-catalog-finance-grid">${cells}</div>
+    ${typeof f.account_validation?.note==="string"&&f.account_validation.note.trim()?`<p class="fx-catalog-finance-validation">${esc(f.account_validation.note)}</p>`:""}
     <p>${f.last_refresh_error?"최근 재수집 실패 · 이전에 확인한 자료입니다. ":""}확인 시각 ${esc(f.checked_at?new Date(f.checked_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}):"미확인")} · 공시된 과거 실적의 일부 항목입니다. 미수집 항목은 공시가 없다는 뜻이 아닙니다. 다른 기간의 숫자를 합산하지 않습니다.</p>
     ${link}
   </div>`;

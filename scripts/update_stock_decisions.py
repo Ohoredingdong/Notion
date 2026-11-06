@@ -11,6 +11,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from statistics import mean
 from zoneinfo import ZoneInfo
+from stock_price_evidence import fetch_daily_history, daily_change
+from market_data_utils import exchange_calendar, session_date
 
 VERSION='decision-v7.1'
 OUT=Path('stock-decision-data.json')
@@ -68,16 +70,21 @@ def bars_from(df,session):
         rows.append({'date':date,**values,'split':num(r.get('Stock Splits')) or 0})
     return sorted(rows,key=lambda r:r['date'])
 
-def technical(bars,benchmark):
+def technical(bars,benchmark,market=None):
     if len(bars)<61:return {'status':'missing','reason':'완료 일봉 61개 이상 필요'}
+    if market is not None:
+        cal=exchange_calendar(market,int(bars[-1]['date'][:4]));day=bars[-1]['date'];expected=[day]
+        for _ in range(60):
+            day=session_date(cal.previous_session(day));expected.append(day)
+        if [row['date'] for row in bars[-61:]]!=list(reversed(expected)):
+            return {'status':'missing','reason':'최근 61개 거래소 세션 중 완료 일봉 누락; 다일 간격을 1일로 계산하지 않음'}
     b=bars[-1];c=b['close'];prev=bars[-21:-1]
     true_ranges=[max(r['high']-r['low'],abs(r['high']-bars[i-1]['close']),abs(r['low']-bars[i-1]['close'])) for i,r in enumerate(bars) if i>0]
     avgvol=mean(r['volume'] for r in prev)
     stock_by={r['date']:r['close'] for r in bars};bench_by={r['date']:r['close'] for r in benchmark}
-    common=sorted(set(stock_by)&set(bench_by))
     relative=None
-    if len(common)>=21 and common[-1]==b['date']:
-        end,start=common[-1],common[-21]
+    end,start=b['date'],bars[-21]['date']
+    if end in bench_by and start in bench_by:
         relative=change(stock_by[end],stock_by[start])-change(bench_by[end],bench_by[start])
     support=min(r['low'] for r in bars[-11:-1]);resistance=max(r['high'] for r in bars[-253:-1])
     risk=c-support;reward=resistance-c
@@ -101,15 +108,21 @@ def forecast_data(estimates,trends,info,price):
         try:nextperiod=d.replace(year=d.year+1).isoformat()
         except ValueError:nextperiod=d.replace(year=d.year+1,day=28).isoformat()
     count=num(following.get('numberOfAnalysts'))
+    quote_ccy=info.get('currency');financial_ccy=info.get('financialCurrency')
+    same_currency=bool(quote_ccy and financial_ccy and quote_ccy==financial_ccy)
+    price=num(price)
     # Positive comparison denominator only; never report turnaround as percentage growth.
     revision=change(tr.get('current'),tr.get('30daysAgo'))
-    return {'status':'ok' if valid else 'missing','current_fy':current,'next_fy':following,
+    return {'status':('ok' if same_currency else 'currency_mismatch') if valid else 'missing','current_fy':current,'next_fy':following,
             'current_fy_end_provider':period,'next_fy_end_inferred':nextperiod,
             'period_note':'0y/+1y는 제공처의 이번/다음 회계연도. +1y 결산일은 0y 표기에서 1년을 더한 표시로 52주 회계의 실제 날짜와 다를 수 있음.',
             'eps_revision30_pct':revision,'eps_trend_next_fy':tr,
-            'eps_growth_next_fy_pct':change(avg,current.get('avg')),'next_fy_pe':price/avg if valid and price and avg>0 else None,
+            'eps_growth_next_fy_pct':change(avg,current.get('avg')),'next_fy_pe':price/avg if valid and same_currency and price is not None and price>0 else None,
+            'next_fy_pe_basis':'saved_completed_close_divided_by_provider_plus1y_eps_same_currency',
+            'pe_price':price,'quote_currency':quote_ccy,'comparison_currency_verified':same_currency,
             'analysts':count,'spread':(hi-lo)/avg if valid else None,
-            'currency':info.get('financialCurrency'),'basis':'제공처 애널리스트 추정; GAAP/조정 EPS 구분 미제공. 과거 공시 EPS와 직접 성장률 비교하지 않음.',
+            'currency':financial_ccy,'currency_basis':'provider_financialCurrency; no FX conversion',
+            'basis':'제공처 애널리스트 추정; GAAP/조정 EPS 구분 미제공. 과거 공시 EPS와 직접 성장률 비교하지 않음.',
             'source_report_dates_available':False}
 
 def target_data(targets,info,price):
@@ -196,7 +209,7 @@ def collect_symbol(symbol,name,market,sector,base,audit,benchmark,now):
         except Exception as e:
             errors.append({'field':label,'error':type(e).__name__+': '+str(e)[:160]});return default
     session=latest_session(market,now)
-    raw=call('ohlcv',lambda:ticker.history(period='1y',auto_adjust=False,actions=True,raise_errors=True),None)
+    raw,price_source=call('ohlcv',lambda:fetch_daily_history(ticker,source_symbol,market,session['date']),(None,{}))
     bars=bars_from(raw,session);info=call('quote_and_balance',ticker.get_info,{})
     history_price=bars[-1]['close'] if bars else None
     estimates=frame_rows(call('earnings_estimate',ticker.get_earnings_estimate,None));trends=frame_rows(call('eps_trend',ticker.get_eps_trend,None))
@@ -206,9 +219,9 @@ def collect_symbol(symbol,name,market,sector,base,audit,benchmark,now):
     f=forecast_data(estimates,trends,info,history_price);t=target_data(targets,info,history_price)
     financial_ccy=info.get('financialCurrency');quote_ccy=info.get('currency');expected='KRW' if market=='KR' else 'USD'
     ccy_ok=financial_ccy==quote_ccy==expected
-    fresh=bool(bars and bars[-1]['date']==session['date'] and ccy_ok)
+    fresh=bool(bars and bars[-1]['date']==session['date'] and ccy_ok and price_source.get('source_identity_verified') is True)
     if not ccy_ok:errors.append({'field':'currency','error':'주가/재무 통화 일치 확인 불가'});f['status']='currency_mismatch'
-    tech=technical(bars,benchmark)
+    tech=technical(bars,benchmark,market)
     cash,debt,ebitda=[num(info.get(k)) for k in ('totalCash','totalDebt','ebitda')]
     b={'cash':cash,'debt':debt,'ebitda':ebitda,'net_debt_ebitda':(debt-cash)/ebitda if cash is not None and debt is not None and ebitda and ebitda>0 else None,'currency':financial_ccy,'asof':datetime.fromtimestamp(info['mostRecentQuarter'],UTC).date().isoformat() if num(info.get('mostRecentQuarter')) else None,'basis':'제공처 집계; EBITDA 기간·리스 포함·금융자회사 범위는 독립 대조 전'}
     if symbol in ('005380',):b['net_debt_ebitda']=None;b['basis']='자동차 금융자회사 연결 영향: 일반 기업용 순차입금/EBITDA 판정 제외'
@@ -225,6 +238,7 @@ def collect_symbol(symbol,name,market,sector,base,audit,benchmark,now):
     data_url='https://finance.yahoo.com/quote/'+source_symbol
     return {'symbol':symbol,'name':name,'market':market,'sector':sector,'collected_at':datetime.now(UTC).isoformat(),'status':'current' if fresh else 'incomplete','currency':expected,
             'price':history_price,'price_session':bars[-1]['date'] if bars else None,'expected_session':session,'technical':tech,
+            'price_source':price_source,'daily_change':daily_change(bars,market,source_symbol,expected,price_source),
             'forecasts':f,'targets':t,'balance':b,'eps_revisions':revisions,'earnings_calendar':calendar,'earnings_calendar_status':'provider_estimate_not_company_confirmed','news':links,
             'official_history':proof,'short':short_decision(tech,fresh,days),'long':long_decision(f,t,b,proof,fresh),
             'flow':{'status':'not_connected','reason':'외국인·기관 순매수는 거래량으로 추정하지 않음. 별도 수급 데이터 연결 필요.','url':'https://finance.naver.com/item/frgn.naver?code='+symbol if market=='KR' else 'https://www.sec.gov/edgar/search/'},
@@ -238,7 +252,10 @@ def main():
     bases={x.get('symbol'):x for x in base.get('rows',[])}
     benchmarks={}
     for market,sym in [('US','SPY'),('KR','^KS11')]:
-        try:benchmarks[market]=bars_from(yf.Ticker(sym).history(period='1y',auto_adjust=False,actions=True,raise_errors=True),latest_session(market,now))
+        try:
+            session=latest_session(market,now)
+            frame,_=fetch_daily_history(yf.Ticker(sym),sym,market,session['date'],instrument_type='ETF' if sym=='SPY' else 'INDEX')
+            benchmarks[market]=bars_from(frame,session)
         except Exception:benchmarks[market]=[]
     rows=[]
     for symbol,name,market,sector in UNIVERSE:

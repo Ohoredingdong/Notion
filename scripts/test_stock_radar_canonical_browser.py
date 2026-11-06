@@ -15,7 +15,7 @@ def main():
             page.goto(BASE + "stock-radar-dashboard.html?stock=005930#home", wait_until="domcontentloaded")
             page.wait_for_url("**/stock-value-radar.html?stock=005930#home", timeout=20000)
             page.wait_for_function(
-                "() => document.querySelectorAll('.fx-v5-markets .nr-index').length===4"
+                "() => document.querySelectorAll('.fx-worldflow').length===1"
                 " && document.querySelector('.fx-sent-v9-flag-svg')!==null"
                 " && document.querySelector('.fx-v5-main')!==null",
                 timeout=30000,
@@ -30,8 +30,8 @@ def main():
                 return {
                     url: location.pathname + location.search + location.hash,
                     row: box('.fx-v5-marketline'),
-                    title: box('.fx-v5-markettitle'),
-                    cards: [...document.querySelectorAll('.fx-v5-markets .nr-index')].map(el => {
+                    title: box('.fx-worldflow-head'),
+                    cards: [...document.querySelectorAll('.fx-worldflow,.fx-v5-marketline>.fx-sent-v9')].map(el => {
                       const b=el.getBoundingClientRect();return {width:b.width,height:b.height,bottom:b.bottom};
                     }),
                     flag: box('.fx-sent-v9-flag-svg'),
@@ -43,7 +43,7 @@ def main():
             print("CANONICAL_RADAR_GEOMETRY", json.dumps({"viewport":width,"metrics":info},ensure_ascii=False))
             assert info["row"] and info["row"]["height"] <= MAX_CARD_HEIGHT, "Oversized market strip"
             assert info["flag"] and 0 < info["flag"]["width"] <= 32 and 0 < info["flag"]["height"] <= 28, "Unstyled giant flag"
-            assert all(0 < c["height"] <= MAX_CARD_HEIGHT for c in info["cards"]), "Full-screen market card overlay"
+            assert len(info["cards"])==2 and all(0 < c["height"] <= MAX_CARD_HEIGHT for c in info["cards"]), "Full-screen market card overlay"
             assert info["main"] and info["main"]["y"] >= info["row"]["bottom"]-3, "Market strip overlaps research workspace"
             assert info["main"]["width"] >= width * 0.8, "Workspace unexpectedly narrow"
             page.close()

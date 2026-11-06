@@ -13,7 +13,10 @@ def main():
  now=datetime.now(timezone.utc);started=time.monotonic();discovery=discover();specs=discovery['specs']
  base=engine.core.read('stock-value-radar-data.json',{});audit=engine.core.read('stock-official-audit.json',{});bases={r['symbol']:r for r in base.get('rows',[])};benchmarks={}
  for key,symbol,market in [('US','SPY','US'),('KR','^KS11','KR'),('KQ','^KQ11','KR')]:
-  try:benchmarks[key]=engine.core.bars_from(yf.Ticker(symbol).history(period='1y',auto_adjust=False,actions=True,raise_errors=True),engine.core.latest_session(market,now))
+  try:
+   session=engine.core.latest_session(market,now)
+   frame,_=engine.core.fetch_daily_history(yf.Ticker(symbol),symbol,market,session['date'],instrument_type='ETF' if symbol=='SPY' else 'INDEX')
+   benchmarks[key]=engine.core.bars_from(frame,session)
   except Exception:benchmarks[key]=[]
  rows=[]
  for spec in specs:

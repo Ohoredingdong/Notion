@@ -23,6 +23,8 @@ on:
       - 'scripts/publish_stock_opportunities.py'
       - 'scripts/build_stock_radar_chart_cache.py'
       - 'scripts/market_data_utils.py'
+      - 'scripts/stock_price_evidence.py'
+      - 'scripts/test_stock_price_evidence.py'
       - 'scripts/verify_stock_canonical_pipeline.py'
       - 'scripts/test_stock_data_pipeline.py'
       - 'scripts/install_stock_radar_v8.py'
@@ -60,6 +62,7 @@ jobs:
           python scripts/test_stock_opportunity_dates.py
           python scripts/test_stock_discovery_v9.py
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+          python -m unittest scripts.test_stock_price_evidence -v
       - name: Discover and deeply collect real market candidates
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}

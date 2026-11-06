@@ -5,7 +5,54 @@ context. Core audited fields are never overwritten; supplemental fields merge on
 when the fiscal period matches.
 """
 from __future__ import annotations
+import math
 _CACHE={}
+
+def merge_supplemental_history(history, supplemental):
+    """Do not join a provider growth denominator to a different reported numerator."""
+    hist=dict(history);h=supplemental or {};excluded=[];added=[]
+    if not h:return hist
+    if h.get('filing_period')!=hist.get('filing_period'):
+        hist.update(supplemental_period_status='period_mismatch',supplemental_period=h.get('filing_period'))
+        return hist
+    if not hist.get('currency') or hist.get('currency')!=h.get('currency'):
+        hist['supplemental_period_status']='currency_unverified_or_mismatch'
+        return hist
+    def same(a,b):
+        if isinstance(a,bool) or isinstance(b,bool):return False
+        try:
+            a,b=float(a),float(b)
+            return math.isfinite(a) and math.isfinite(b) and abs(a-b)<=max(1e-6,abs(b)*1e-8)
+        except (TypeError,ValueError):return False
+    def metric_ok(metric):
+        if not same(hist.get(metric),h.get(metric)):return False
+        for suffix in ('_previous','_growth'):
+            key=metric+suffix
+            if hist.get(key) is not None and not same(hist[key],h.get(key)):return False
+        return True
+    # Add independent current-provider amounts first.  Preserved official None
+    # values remain unknown and are not replaced by a provider estimate.
+    derived={'roe':('net_income','equity'),'cfo_to_net_income':('cfo','net_income')}
+    delayed=[]
+    for key,value in h.items():
+        if key in hist or value is None:continue
+        if key.endswith(('_previous','_growth')) or key in derived or key=='quality_flags':
+            delayed.append((key,value))
+        else:hist[key]=value;added.append(key)
+    for key,value in delayed:
+        if key=='quality_flags':
+            ok=all(metric_ok(metric) for metric in ('revenue','net_income','cfo','capex','fcf','accounts_receivable','inventory','total_debt_statement') if h.get(metric) is not None)
+        elif key in derived:ok=all(metric_ok(metric) for metric in derived[key])
+        else:
+            metric=key.rsplit('_',1)[0]
+            if metric=='total_debt':metric='total_debt_statement'
+            ok=metric_ok(metric)
+        if ok:hist[key]=value;added.append(key)
+        else:excluded.append({'field':key,'reason':'preserved_current_amount_or_comparison_basis_mismatch'})
+    hist.update(supplemental_period_status='same_period',supplemental_fields=added,
+                supplemental_excluded_fields=excluded,
+                supplemental_basis='Yahoo annual supplemental fields; matching period/currency/current amount is necessary; official comparison remains separate')
+    return hist
 
 def install(engine):
     N=engine.N;core=engine.core;old_collect=engine.collect
@@ -36,22 +83,32 @@ def install(engine):
     engine.annual_history=annual_history
     def collect(spec,base,audit,benchmark,now):
         row=old_collect(spec,base,audit,benchmark,now);h=_CACHE.get(spec[4]) or {};hist=row.get('history') or {}
-        if h and h.get('filing_period')==hist.get('filing_period'):
-            for k,v in h.items():
-                if k not in hist and v is not None:hist[k]=v
-            hist['supplemental_period_status']='same_period'
-        elif h:
-            hist['supplemental_period_status']='period_mismatch';hist['supplemental_period']=h.get('filing_period')
-        if hist.get('cfo') is None and hist.get('fcf') is not None and hist.get('capex') is not None:hist['cfo']=hist['fcf']+hist['capex']
-        row['history']=hist;return row
+        row['history']=merge_supplemental_history(hist,h);return row
     engine.collect=collect
 
 def add_profile(row,meta):
     """Reuse the metadata request already made by run_stock_research_v9."""
     def n(x):
-        try:return float(x) if x is not None else None
+        if isinstance(x,bool):return None
+        try:
+            value=float(x)
+            return value if math.isfinite(value) else None
         except (TypeError,ValueError):return None
     roe=n(meta.get('returnOnEquity'));roa=n(meta.get('returnOnAssets'))
-    row['valuation']={'trailing_pe':n(meta.get('trailingPE')),'forward_pe':n(meta.get('forwardPE')),'price_to_book':n(meta.get('priceToBook')),'return_on_equity_pct':roe*100 if roe is not None else (row.get('history') or {}).get('roe'),'return_on_assets_pct':roa*100 if roa is not None else None,'book_value_per_share':n(meta.get('bookValue')),'trailing_eps':n(meta.get('trailingEps')),'forward_eps':n(meta.get('forwardEps')),'enterprise_to_ebitda':n(meta.get('enterpriseToEbitda')),'basis':'제공처의 최근/예상 지표. PER·PBR·ROE는 같은 기간·같은 주주범위·동종업계와 비교해야 함.'}
+    forecasts=row.get('forecasts') or {}
+    row['valuation']={'trailing_pe':n(meta.get('trailingPE')),'forward_pe':n(forecasts.get('next_fy_pe')),
+                     'provider_forward_pe':n(meta.get('forwardPE')),'price_to_book':n(meta.get('priceToBook')),
+                     'return_on_equity_pct':roe*100 if roe is not None else None,
+                     'annual_end_equity_roe_pct':n((row.get('history') or {}).get('roe')),
+                     'return_on_assets_pct':roa*100 if roa is not None else None,
+                     'book_value_per_share':n(meta.get('bookValue')),'trailing_eps':n(meta.get('trailingEps')),
+                     'forward_eps':n(meta.get('forwardEps')),'enterprise_to_ebitda':n(meta.get('enterpriseToEbitda')),
+                     'currency':meta.get('financialCurrency'),'quote_currency':meta.get('currency'),
+                     'forward_pe_basis':forecasts.get('next_fy_pe_basis'),
+                     'trailing_pe_basis':'provider_trailingPE_snapshot; not recomputed from saved close or annual EPS',
+                     'provider_forward_pe_basis':'provider_forwardPE_snapshot; period may differ from plus1y; not used as next FY PE',
+                     'return_on_equity_basis':'provider_returnOnEquity_snapshot; period and average-equity basis not independently verified',
+                     'annual_end_equity_roe_basis':'annual net income divided by same year-end equity; not average-equity ROE',
+                     'basis':'다음 FY 예상 PER만 저장 종가÷동일통화 +1y EPS. 그 외 TTM PER·PBR·ROE는 제공처 스냅샷이며 연간 실적 직접 계산과 구분.'}
     row['business']={'sector':meta.get('sector'),'industry':meta.get('industry'),'summary':str(meta.get('longBusinessSummary') or '')[:1200],'website':meta.get('website'),'employees':n(meta.get('fullTimeEmployees')),'basis':'제공처 기업 프로필. 제품별 매출·고객·원재료는 공식 사업보고서에서 추가 확인.'}
     row.setdefault('sources',{})['profile']='https://finance.yahoo.com/quote/'+row.get('source_symbol',row.get('symbol'))+'/profile/'

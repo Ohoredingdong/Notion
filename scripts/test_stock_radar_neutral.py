@@ -27,7 +27,8 @@ def test(url='http://127.0.0.1:8770/stock-value-radar.html', public=False):
                 page.goto(url, wait_until='domcontentloaded')
                 page.wait_for_function('() => window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length > 0', timeout=60000)
                 assert page.locator('.fx-stage-home').is_visible()
-                assert page.locator('.fx-v5-markets .nr-index').count() == 4
+                assert page.locator('.fx-worldflow').count() == 1
+                assert page.locator('[data-worldflow-region]').count() == 6
                 assert page.locator('.fx-nav [data-nr-screen]').count() == 7
                 assert page.locator('.fx-v5-chartarea .fx-chart-svg polyline').count() >= 1
                 assert page.locator('.nr-rail').count() == 0
