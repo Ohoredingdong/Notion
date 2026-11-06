@@ -141,7 +141,7 @@ jobs:
           fi
       - name: Persist only newly observed paper first-public proofs
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main' && steps.postplan_public.outcome == 'success' && steps.postplan_public.outputs.new_proofs == 'true'
-        run: python scripts/publish_stock_forecasts.py
+        # A CAS race must not invalidate already published frozen forecasts.\n        continue-on-error: true\n        run: python scripts/publish_stock_forecasts.py
       - uses: actions/upload-artifact@v4
         if: always() && steps.market_gate.outputs.active == 'true'
         with:
