@@ -1,0 +1,142 @@
+/* Food diary: one complete month, actual meal pictures, and a visible cash entry. */
+body[data-home="records"] #homeMonthly .journal-diary {
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:44px minmax(0,1fr) 48px!important;
+  gap:5px!important;flex:1;min-height:0;padding:0!important;overflow:hidden;
+}
+body[data-home="records"] #homeMonthly .journal-diary>* {grid-column:1!important;min-width:0;min-height:0}
+body[data-home="records"] #homeMonthly .journal-diary>.home-date-bar {
+  grid-row:1!important;grid-column:1!important;min-height:44px!important;height:44px;
+  margin:0!important;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;
+}
+body[data-home="records"] #homeMonthly .journal-diary .home-date-value {
+  min-width:0;display:flex;align-items:center;justify-content:center;padding:0!important;
+}
+body[data-home="records"] #homeMonthly .journal-diary .home-date-value strong {font-size:15px!important}
+body[data-home="records"] #homeMonthly .journal-diary .home-date-bar>button {
+  width:44px;min-width:44px;min-height:44px!important;height:44px;padding:0;
+  border-radius:8px;font-size:24px;background:#f8f3ed;color:#76563f;
+}
+body[data-home="records"] #homeMonthly .journal-calendar {
+  display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden;
+}
+body[data-home="records"] #homeMonthly .journal-calendar-weekdays {
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));flex:0 0 16px;
+  font-size:11px;line-height:16px;text-align:center;color:#8a796a;
+}
+body[data-home="records"] #homeMonthly .journal-calendar-weekdays>span:first-child {color:#b45e4a}
+body[data-home="records"] #homeMonthly .journal-calendar-weekdays>span:last-child {color:#667f9c}
+body[data-home="records"] #homeMonthly .journal-calendar-grid {
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  grid-template-rows:repeat(6,minmax(24px,1fr));gap:3px;
+  flex:1;min-height:0;overflow:hidden;
+}
+body[data-home="records"] #homeMonthly .journal-calendar-day {
+  position:relative;display:flex;align-items:center;justify-content:center;
+  min-width:0;min-height:24px;height:auto;padding:2px!important;border:1px solid #eee5da;
+  border-radius:6px;background:#fffdfa;color:#67503d;overflow:hidden;
+}
+body[data-home="records"] #homeMonthly .journal-calendar-day.has-meal {background:#fff5e8;border-color:#ecd5b8}
+body[data-home="records"] #homeMonthly .journal-calendar-day[aria-current="date"] {border-color:#af704a;box-shadow:inset 0 0 0 1px #af704a}
+body[data-home="records"] #homeMonthly .journal-calendar-day.is-today .journal-date-number {
+  color:#a65b35;font-weight:700;text-decoration:underline;text-underline-offset:2px;
+}
+body[data-home="records"] #homeMonthly .journal-date-number {
+  position:absolute;left:4px;top:3px;z-index:2;font-size:11px;line-height:1;font-weight:500;
+}
+body[data-home="records"] #homeMonthly .journal-food-stamp {
+  display:block;position:absolute;right:2px;bottom:2px;
+  width:min(72%,52px);aspect-ratio:4/3;overflow:hidden;border-radius:5px;
+}
+body[data-home="records"] #homeMonthly .journal-food-stamp>:is(svg,img),
+body[data-home="records"] #homeMonthly .journal-entry-picture>:is(svg,img) {
+  display:block;width:100%;height:100%;max-height:none;object-fit:cover;aspect-ratio:4/3;
+}
+body[data-home="records"] #homeMonthly .journal-food-stamp .journal-handwritten-meal {
+  display:grid;place-items:center;width:100%;height:100%;background:#f4e9d9;color:#8b6647;
+}
+body[data-home="records"] #homeMonthly .journal-food-stamp .journal-handwritten-meal .icon {width:19px;height:19px}
+body[data-home="records"] #homeMonthly .journal-more-meals {
+  position:absolute;right:1px;bottom:1px;z-index:3;min-width:14px;padding:1px 2px;
+  border-radius:5px;background:#846244;color:#fff;font-size:9px;line-height:1.1;
+}
+body[data-home="records"] #homeMonthly .journal-supplement-dot {
+  position:absolute;left:4px;bottom:3px;width:4px;height:4px;border-radius:50%;background:#9b88b7;
+}
+body[data-home="records"] #homeMonthly .journal-budget-link {
+  display:grid;grid-template-columns:minmax(0,1fr) auto 12px;align-items:center;gap:7px;
+  width:100%;min-height:44px;height:48px;margin:0;padding:4px 9px;border:1px solid #e6d0b7;
+  border-radius:9px;background:#fbf0e2;color:#694a32;text-align:left;
+}
+body[data-home="records"] #homeMonthly .journal-budget-link>span:first-child {display:flex;align-items:center;gap:6px;min-width:0}
+body[data-home="records"] #homeMonthly .journal-budget-link .icon {width:19px;height:19px}
+body[data-home="records"] #homeMonthly .journal-budget-link small {display:block;font-size:11px;line-height:1.1;font-weight:400;color:#8a6b50}
+body[data-home="records"] #homeMonthly .journal-budget-link strong {display:block;font-size:17px;line-height:1.1;letter-spacing:-.3px}
+body[data-home="records"] #homeMonthly .journal-budget-link strong>span {font-size:12px;margin-left:2px;font-weight:400}
+body[data-home="records"] #homeMonthly .journal-budget-remaining {text-align:right}
+body[data-home="records"] #homeMonthly .journal-budget-remaining b {display:block;font-size:12px;line-height:1.15;font-weight:600}
+body[data-home="records"] #homeMonthly .journal-budget-remaining b.is-over {color:#b4523c}
+body[data-home="records"] #homeMonthly .journal-budget-chevron {font-size:22px;text-align:right}
+
+/* A day reads as a food diary; its original meal values stay unmodified. */
+body[data-home="records"] #homeMonthly .journal-diary.is-day {
+  grid-template-rows:44px minmax(0,1fr) auto 44px!important;
+}
+body[data-home="records"] #homeMonthly .journal-day-heading {display:flex;gap:3px;min-width:0;height:44px}
+body[data-home="records"] #homeMonthly .journal-day-heading>button {
+  display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;
+  border:1px solid #e8dccd;border-radius:8px;background:#faf5ef;color:#896448;
+}
+body[data-home="records"] #homeMonthly .journal-day-heading>.home-date-bar {
+  flex:1;min-width:0;height:44px;min-height:44px!important;margin:0!important;gap:0;
+  display:grid;grid-template-columns:44px minmax(0,1fr) 44px;
+}
+body[data-home="records"] #homeMonthly .journal-day-heading .home-date-value strong {font-size:12px!important;white-space:nowrap}
+body[data-home="records"] #homeMonthly .journal-entry-content {
+  display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);align-items:center;
+  min-height:0;gap:10px;padding:8px;border:1px solid #ecdfcf;border-radius:10px;
+  background:#fffdf8;overflow:auto;
+}
+body[data-home="records"] #homeMonthly .journal-entry-picture {
+  display:flex;align-items:center;justify-content:center;
+  min-width:0;width:100%;aspect-ratio:4/3;margin:0;padding:0!important;
+  overflow:hidden;border-radius:9px;background:#f5ecdf;
+}
+body[data-home="records"] #homeMonthly .journal-entry-picture .journal-handwritten-meal {
+  display:grid;place-items:center;width:100%;aspect-ratio:4/3;color:#997657;
+}
+body[data-home="records"] #homeMonthly .journal-entry-picture .journal-handwritten-meal .icon {width:42px;height:42px}
+body[data-home="records"] #homeMonthly .journal-entry-copy {min-width:0;line-height:1.25}
+body[data-home="records"] #homeMonthly .journal-entry-copy p {font-size:11px;color:#9b7e65;margin:0 0 3px}
+body[data-home="records"] #homeMonthly .journal-entry-copy h3 {font-size:17px;line-height:1.25;margin:0 0 4px;color:#4a3525;overflow-wrap:anywhere;word-break:keep-all}
+body[data-home="records"] #homeMonthly .journal-entry-portion {display:block;font-size:12px;color:#856b55;margin:0 0 4px}
+body[data-home="records"] #homeMonthly .journal-entry-kcal {display:block;font-size:17px;color:#64482e;font-weight:600}
+body[data-home="records"] #homeMonthly .journal-entry-macros {display:flex;flex-wrap:wrap;gap:2px 6px;font-size:11px;color:#98785b;margin-top:4px}
+body[data-home="records"] #homeMonthly .journal-entry-empty {
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;text-align:center;color:#8f7158;
+}
+body[data-home="records"] #homeMonthly .journal-entry-empty .icon {width:34px;height:34px;color:#c3a27d}
+body[data-home="records"] #homeMonthly .journal-entry-empty strong {font-size:15px;font-weight:600}
+body[data-home="records"] #homeMonthly .journal-entry-empty>span {font-size:12px;line-height:1.4}
+body[data-home="records"] #homeMonthly .journal-day-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+body[data-home="records"] #homeMonthly .journal-day-actions.has-pages {grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 44px}
+body[data-home="records"] #homeMonthly .journal-day-actions>button {height:44px;min-height:44px;padding:3px;border:1px solid #e7d7c4;border-radius:8px;background:#fbf3e9;color:#7a5639;font-size:13px}
+body[data-home="records"] #homeMonthly .journal-day-actions>[data-record-page] {font-size:24px;padding:0;background:#fffdfa}
+
+@container widget-panel (max-height:350px) {
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-diary {gap:3px!important;grid-template-rows:44px minmax(0,1fr) 44px!important}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-calendar {gap:2px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-calendar-weekdays {flex-basis:12px;font-size:10px;line-height:12px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-calendar-grid {gap:2px;grid-template-rows:repeat(6,minmax(24px,1fr))}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-date-number {top:2px;left:3px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-food-stamp {width:min(55%,32px);right:1px;bottom:1px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-budget-link {height:44px;padding:3px 7px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-budget-link strong {font-size:16px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-diary.is-day {grid-template-rows:44px minmax(0,1fr) auto 44px!important}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-entry-content {gap:7px;padding:5px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-entry-copy h3 {font-size:15px;margin-bottom:3px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-entry-copy p {font-size:10px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-entry-kcal {font-size:15px}
+  body[data-mode="widget"][data-home="records"] #homeMonthly .journal-entry-macros {font-size:10px;gap:1px 5px;margin-top:2px}
+}

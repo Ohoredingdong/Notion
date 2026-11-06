@@ -1,0 +1,66 @@
+/* Eight comparable recipes share one compact header. Metadata spans the full
+   card width so cost and stock information can be read before opening detail. */
+body[data-home="meals"] #todayKitchen>.recipe-view-header {
+  display:flex;align-items:stretch;gap:4px;flex:0 0 44px;min-height:44px;margin:0;
+}
+body[data-home="meals"] .recipe-view-header>.panel-tabs {
+  display:flex;flex:1;min-width:0;min-height:44px;margin:0!important;padding:0!important;
+}
+body[data-home="meals"] .recipe-view-header>.panel-tabs>button {
+  flex:1;min-width:0;min-height:44px;padding:3px;font-size:13px;line-height:1.2;
+}
+body[data-home="meals"] .recipe-view-actions {display:flex;flex:none;gap:4px}
+body[data-home="meals"] .recipe-view-actions>button {
+  display:flex;align-items:center;justify-content:center;width:44px;min-width:44px;
+  min-height:44px;height:44px;padding:4px;border:1px solid #e7ddcf;border-radius:9px;
+  background:#fffaf3;color:#76583f;font-size:12px;line-height:1.15;
+}
+body[data-home="meals"] .recipe-view-actions>button svg {width:20px;height:20px}
+body[data-home="meals"] #todayKitchen:has(.recipe-comparison-grid.is-filtered) .recipe-view-actions>[data-wf="recipeFilters"] {
+  color:#884e31;border-color:#d69979;background:#fce9dd;
+}
+body[data-home="meals"][data-home-page="plans"] .recipe-view-actions {display:none}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-grid {gap:6px}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card {
+  display:grid;grid-template-columns:clamp(38px,8vw,64px) minmax(0,1fr);
+  grid-template-rows:minmax(24px,1fr) auto auto;align-content:center;align-items:center;
+  column-gap:5px;row-gap:2px;padding:4px 6px;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-photo {
+  grid-column:1;grid-row:1;width:100%;aspect-ratio:4/3;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-copy {
+  grid-column:2;grid-row:1;display:flex;min-width:0;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-copy>strong {
+  margin:0;font-size:13px;line-height:1.15;letter-spacing:-.35px;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-meta {
+  display:flex;align-items:center;justify-content:space-between;grid-column:1/-1;
+  gap:4px;min-width:0;font-size:12px;line-height:1.1;color:#74614f;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-meta>* {
+  flex:none;min-width:0;margin:0;font-size:inherit;line-height:inherit;
+  letter-spacing:-.3px;white-space:nowrap;
+}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card [data-recipe-kcal] {color:#423629}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card [data-recipe-cost] {color:#76533c}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card [data-stock-status="ready"] {color:#4c725b}
+body[data-home="meals"] #homeRecommendation .recipe-comparison-card [data-stock-status="check"] {color:#8a7045}
+body[data-mode="widget"][data-home="meals"] #todayKitchen>.recipe-view-header {margin-bottom:0!important}
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-comparison-card {
+  grid-template-columns:clamp(32px,13cqw,72px) minmax(0,1fr);padding:3px 5px;row-gap:1px;
+}
+@container widget-panel (max-height:350px) {
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-comparison-grid {gap:4px}
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-comparison-card {
+    grid-template-columns:30px minmax(0,1fr);grid-template-rows:minmax(24px,1fr) auto auto;
+    padding:2px 4px;column-gap:4px;row-gap:1px;
+  }
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-copy>strong {
+    font-size:12px;line-height:1.05;
+  }
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-comparison-card .recipe-grid-meta {
+    font-size:12px;line-height:1.05;
+  }
+}

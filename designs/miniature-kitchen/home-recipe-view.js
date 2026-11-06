@@ -5,27 +5,21 @@
   const planPages = new Map();
   const clamp = (value, end) => Math.max(0, Math.min(Math.max(0, end - 1), value));
   const nativePhoto = markup => markup.replaceAll('preserveAspectRatio="xMidYMid slice"', 'preserveAspectRatio="xMidYMid meet"');
-  const funnel = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8Z"/></svg>';
-
   function renderRecommendation(ctx) {
-    const {ranked, near, filters, esc, money, dish} = ctx;
+    const {ranked, filters, esc, fmt, money, dish} = ctx;
     const candidates = ranked.slice(0, 8);
-    const conditions = [filters.time ? filters.time + '분 이내' : '', filters.budget ? money(Number(filters.budget)) + ' 이내' : '', filters.exclude ? '피할 재료 반영' : ''].filter(Boolean);
-    let priority;
-    if (filters.ingredient) {
-      priority = `<span class="recipe-hub-priority">활용할 재료: <strong>${esc(filters.ingredient)}</strong></span><button type="button" class="recipe-hub-reset" data-home-filter-reset aria-label="레시피 조건 해제">×</button>`;
-    } else if (conditions.length) {
-      priority = `<span class="recipe-hub-priority">${esc(conditions.join(' · '))}</span><button type="button" class="recipe-hub-reset" data-home-filter-reset aria-label="레시피 조건 해제">×</button>`;
-    } else if (near.length) {
-      priority = `<button type="button" class="recipe-hub-priority" data-recipe-urgent="${esc(near[0].name)}" aria-label="${esc(near[0].name)} 활용 레시피 보기"><span class="recipe-hub-priority-art" aria-hidden="true">${window.MiniKitchen.getArt(near[0])}</span><span>먼저 먹을 재료: <strong>${near.slice(0, 2).map(item => esc(item.name)).join(' · ')}</strong></span></button>`;
-    } else {
-      priority = '<span class="recipe-hub-priority">냉장고 속 재료로 만드는 한 끼</span>';
-    }
+    const conditions = [filters.ingredient ? filters.ingredient+' 활용' : '', filters.time ? filters.time+'분 이내' : '', filters.budget ? money(Number(filters.budget))+' 이내' : '', filters.exclude ? '피할 재료 반영' : ''].filter(Boolean);
+    const known = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
     const content = candidates.length
-      ? candidates.map(({recipe}) => `<button type="button" class="recipe-grid-card" data-home-recipe="${esc(recipe.id)}" data-wf="recipe" data-arg="${esc(recipe.id)}" aria-label="${esc(recipe.name)} 레시피 보기"><span class="recipe-grid-photo" aria-hidden="true">${nativePhoto(dish(recipe))}</span><span class="recipe-grid-copy"><strong>${esc(recipe.name)}</strong><small>${esc(recipe.time)}</small></span></button>`).join('')
+      ? candidates.map(({recipe,nutrients,cost,availability}) => {
+        const kcalKnown=known(nutrients?.kcal),costKnown=known(cost),kcal=kcalKnown?fmt(nutrients.kcal)+' kcal':'열량 —',price=costKnown?fmt(cost)+'원':'원가 —';
+        const rows=availability?.rows||[],enough=rows.filter(row=>row.status==='enough'&&!row.quantityUnknown&&!row.unknownExpiryIds?.length).length;
+        const stock=rows.length?'충족 '+enough+'/'+rows.length:'재료 확인',status=availability?.status||'check';
+        const detail=[recipe.name,recipe.time,kcalKnown?kcal:'열량 미입력',costKnown?'입력 원가 '+price:'원가 미입력',rows.length?'수량과 기한이 확인된 재료 '+enough+'종 / '+rows.length+'종':'재료 확인 필요','레시피 자세히'].join(' · ');
+        return `<button type="button" class="recipe-grid-card recipe-comparison-card" data-home-recipe="${esc(recipe.id)}" data-wf="recipe" data-arg="${esc(recipe.id)}" aria-label="${esc(detail)}"><span class="recipe-grid-photo" aria-hidden="true">${nativePhoto(dish(recipe))}</span><span class="recipe-grid-copy"><strong>${esc(recipe.name)}</strong></span><span class="recipe-grid-meta recipe-grid-nutrition"><small data-recipe-time>${esc(recipe.time)}</small><span data-recipe-kcal data-value="${kcalKnown?nutrients.kcal:''}" title="${kcalKnown?'입력한 레시피 1회분 열량':'열량 미입력'}">${esc(kcal)}</span></span><span class="recipe-grid-meta recipe-grid-preparation"><span data-recipe-cost data-value="${costKnown?cost:''}" title="${costKnown?'입력한 레시피 1회분 재료 원가':'원가 미입력'}">${esc(price)}</span><span data-recipe-stock data-stock-status="${esc(status)}" data-ready-count="${enough}" data-required-count="${rows.length}" title="수량과 기한을 함께 확인한 재료">${esc(stock)}</span></span></button>`;
+      }).join('')
       : '<section class="recipe-hub-empty"><p>조건에 맞는 레시피가 없어요.</p><button type="button" class="small-action" data-home-filter-reset>조건 초기화</button></section>';
-    const catalogLabel = Object.values(filters).some(Boolean) ? '요리 목록 보기' : '전체 요리 보기';
-    return `<div class="recipe-hub-toolbar">${priority}<button type="button" class="recipe-hub-catalog recipe-grid-catalog" data-wf="recipeCatalog" aria-label="${catalogLabel}">전체 목록</button><button type="button" class="recipe-hub-filter" data-wf="recipeFilters" aria-label="레시피 조건 조정">${funnel}</button></div><div class="recipe-hub-grid" aria-label="추천 레시피" aria-live="polite">${content}</div>`;
+    return `<p class="recipe-comparison-context sr-only">${esc(conditions.join(' · ')||'냉장고 재료 기준 추천')} · 열량과 원가는 입력한 1회분 기준이며, —는 미입력입니다. 충족 수는 기록된 수량과 기한을 함께 확인한 재료입니다.</p><div class="recipe-hub-grid recipe-comparison-grid${conditions.length?' is-filtered':''}" aria-label="${esc('추천 레시피 비교'+(conditions.length?' · '+conditions.join(' · '):''))}" aria-live="polite">${content}</div>`;
   }
 
   function renderPlans(ctx) {

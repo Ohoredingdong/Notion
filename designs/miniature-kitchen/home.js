@@ -9,10 +9,11 @@ const routeButton=(label,route,extra='')=>`<button type="button" data-workflow="
 const action=(label,route,arg,cls='')=>`<button type="button" class="${cls}" data-wf="${route}" data-arg="${esc(arg)}">${label}</button>`;
 const dish=(r,fit)=>window.KitchenStoryboardArt.dish(r,fit),nutrient=(v,u)=>v===null||v===undefined?'미입력':fmt(v)+u;
 const panelIds={fridge:'panel-fridge',meals:'todayKitchen',records:'panel-records',kitchen:'panel-kitchen'};
-const pageGroups={recommendation:'meals',plans:'meals',nutrition:'records',budget:'records',supplements:'records',monthly:'records',growth:'kitchen',decor:'kitchen',connections:'kitchen'};
+const pageGroups={recommendation:'meals',plans:'meals',nutrition:'records',budget:'records',supplements:'records',monthly:'records',growth:'kitchen',decor:'kitchen',health:'kitchen',connections:'kitchen'};
 let ranked=[],updating=false,recordDay=today(),planDay=today(),monthView=today().slice(0,7),recipeFilters={time:'',budget:'',exclude:'',ingredient:''},calendarExpanded=false;
 function showTab(name,{focus=false,sync=true}={}){
  if(!panelIds[name])return;
+ if(name!=='kitchen'&&document.body.dataset.home==='kitchen'&&document.body.dataset.homePage==='decor')K.cancelDecorEdit?.();
  for(const [key,id]of Object.entries(panelIds))document.getElementById(id).hidden=key!==name;
  document.body.dataset.home=name;
  for(const tab of document.querySelectorAll('[data-home-tab]')){const active=tab.dataset.homeTab===name;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
@@ -21,15 +22,17 @@ function showTab(name,{focus=false,sync=true}={}){
  if(focus)document.querySelector(`[data-home-tab="${name}"]`)?.focus({preventScroll:true});
 }
 function selectSubtab(name,{focus=false,sync=true}={}){
+ if(name!=='decor'&&document.body.dataset.home==='kitchen'&&document.body.dataset.homePage==='decor')K.cancelDecorEdit?.();
  const group=pageGroups[name];if(!group)return;showTab(group,{sync:false});const panel=document.getElementById(panelIds[group]);
  for(const page of panel.querySelectorAll('[data-home-page]'))page.hidden=page.dataset.homePage!==name;
  for(const tab of panel.querySelectorAll('.panel-tabs [data-home-subtab]')){const active=tab.dataset.homeSubtab===name;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
  panel.scrollTop=0;document.body.dataset.homePage=name;if(sync)syncScene();
  if(focus){const target=panel.querySelector(`[data-home-subtab="${name}"]`);(target?.getClientRects().length?target:panel.querySelector(".hub-heading button"))?.focus({preventScroll:true});}
 }
+function openMainTab(name,focus=false){if(name==='records'){window.KitchenRecordHub.showCalendar?.();update();selectSubtab('monthly');}else if(name==='kitchen')selectSubtab('decor');else showTab(name);if(focus)document.querySelector(`[data-home-tab="${name}"]`)?.focus({preventScroll:true});}
 function syncScene(){if(document.body.dataset.home==='fridge')K.setCamera('fridge');else if(document.body.dataset.home==='kitchen'&&!$('#homeDecor').hidden)K.setCamera('counter');}
 function showScene(camera){
- if(camera==='counter')selectSubtab('decor',{sync:false});else{if(!$('#homeDecor').hidden)selectSubtab('growth',{sync:false});showTab('fridge',{sync:false});}
+ if(camera==='counter')selectSubtab('decor',{sync:false});else showTab('fridge',{sync:false});
  const host=camera==='counter'?$('#decorStage'):$('#fridgeSceneHost'),view=$('.kitchen-view');if(view.parentElement!==host)host.appendChild(view);
 }
 function showPlans(day=planDay){if(F.day(day))planDay=day;update();selectSubtab('plans');return planDay;}
@@ -78,6 +81,8 @@ function update(){
   const currentMonth=F.monthly(flow,play,monthView),remaining=currentMonth.budget===null?null:currentMonth.budget-currentMonth.spending,shopping=flow.shopping,shoppingKnown=shopping.filter(s=>s.estimate!==null&&s.estimate!==undefined),estimate=shoppingKnown.reduce((n,s)=>n+Number(s.estimate||0),0);
   $('#homeBudget').innerHTML=window.KitchenRecordHub.renderBudget({record,flow,play,catalog:C,recordDay,day,monthView,month,currentMonth,remaining,shopping,shoppingKnown,estimate,dateMarkup:dateBar('homeBudgetMonth',monthView,'month'),esc,fmt,money,dish,action,routeButton,macroStrip});
   $('#homeSupplements').innerHTML=window.KitchenRecordHub.renderSupplements({record,flow,play,catalog:C,recordDay,day,esc,fmt,money,dish,action,routeButton,macroStrip});
+  $('#homeSupplementsShelf').innerHTML=window.KitchenLivingView.renderShelf({flow,day,esc,fmt});
+  $('#homeHealth').innerHTML=window.KitchenLivingView.renderHealth();
   $('#homeMonthly').innerHTML=window.KitchenRecordHub.renderMonthly({record,flow,play,catalog:C,recordDay,day,monthView,month,currentMonth,ratioMarkup:ratioView(record),calendarMarkup:monthlyCalendar(flow,play),dateMarkup:dateBar('homeMonth',monthView,'month'),dayDateMarkup:dateBar('homeMonthDay',recordDay),esc,fmt,money,dish,action,routeButton,macroStrip});
   const owned=M.roomRewards.filter(id=>M.ownsRoomReward(play,world,id)).map(id=>M.REWARDS[id].name),goal=daily.goal,firstDone=play.awarded.length>0;
   $('#homeGrowth').dataset.screenId='D1';
@@ -90,7 +95,10 @@ function update(){
  }finally{updating=false;}
 }
 document.addEventListener('click',event=>{
- const tab=event.target.closest('[data-home-tab]');if(tab){showTab(tab.dataset.homeTab);return;}
+ const tab=event.target.closest('[data-home-tab]');if(tab){openMainTab(tab.dataset.homeTab);return;}
+ const shelf=event.target.closest('[data-living-supplements]');if(shelf){showRecords(today(),'supplements');return;}
+ const dose=event.target.closest('[data-home-supplement-today]');if(dose){const id=dose.dataset.homeSupplementToday,day=today();try{J.transact(({flow})=>{const row=flow.supplements.find(s=>s.id===id);if(!row)throw new Error('등록한 영양제를 확인해 주세요.');const done=row.days.includes(day);row.days=row.days.filter(d=>d!==day);if(!done)row.days.push(day);});$(`[data-home-supplement-today="${CSS.escape(id)}"]`)?.focus({preventScroll:true});}catch(e){K.announce(e.message);}return;}
+ const article=event.target.closest('[data-living-article]');if(article){window.KitchenLivingView.openArticle(article.dataset.livingArticle);return;}
  const sub=event.target.closest('[data-home-subtab],[data-home-open]');if(sub){selectSubtab(sub.dataset.homeSubtab||sub.dataset.homeOpen);return;}
  const calendar=event.target.closest('[data-home-calendar-toggle]');if(calendar){calendarExpanded=!calendarExpanded;update();return;}
  const source=event.target.closest('[data-home-sourceinfo]');if(source){const report=J.summary(recordDay);K.showTray('성분·식사 정보',`<p class="workflow-hint">식사와 영양은 직접 입력한 기록 기준이에요. 확인되지 않은 영양값은 미입력으로 남겨요.</p>${report.rows.length?report.rows.map(m=>`<section class="workflow-card"><strong>${esc(m.name)}</strong><p>${esc(m.portion||'분량 메모 없음')}</p><small>${['kcal','carb','protein','fat'].map(k=>M.NUTRIENTS[k][0]+' '+nutrient(m.nutrients[k],M.NUTRIENTS[k][1])).join(' · ')}</small></section>`).join(''):'<p>이 날짜에 등록된 식사가 없어요.</p>'}<p class="workflow-note">영양 합계는 입력한 값만 더해요. 목표는 직접 설정한 값이며 공식 개인 권장량과 자동 연동하지 않아요.</p>`,'RECORD');return;}
@@ -102,7 +110,7 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{
  const tab=event.target.closest('[data-home-tab],[data-home-subtab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
  const tabs=[...tab.parentElement.querySelectorAll('[role="tab"]')],index=tabs.indexOf(tab),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
- event.preventDefault();const target=tabs[next];if(target.dataset.homeTab)showTab(target.dataset.homeTab,{focus:true});else selectSubtab(target.dataset.homeSubtab,{focus:true});
+ event.preventDefault();const target=tabs[next];if(target.dataset.homeTab)openMainTab(target.dataset.homeTab,true);else selectSubtab(target.dataset.homeSubtab,{focus:true});
 });
 document.addEventListener('change',event=>{
  const input=event.target;

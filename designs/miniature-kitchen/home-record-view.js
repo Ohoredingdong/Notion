@@ -42,10 +42,35 @@ function supplementDay(ctx){
  if(rows.length>2)return `<button type="button" class="record-day-supplements record-supplement-link" data-home-open="supplements">영양제 복용 ${rows.filter(r=>r.days.includes(ctx.recordDay)).length} / ${rows.length}　›</button>`;
  return `<div class="record-day-supplements"><span>복용</span>${rows.map(r=>`<label><input type="checkbox" data-home-supplement="${esc(r.id)}" ${r.days.includes(ctx.recordDay)?'checked':''}><span>${esc(r.name)}</span></label>`).join('')}</div>`;
 }
+function mealPicture(ctx,meal){
+ const photo=[meal?.photo,meal?.attachment].find(value=>typeof value==='string'&&value.length<250000&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value));
+ if(photo)return `<img class="journal-meal-photo" src="${esc(photo)}" alt="${esc(meal.name)} 기록 사진">`;
+ const recipe=meal?.recipeId&&ctx.catalog.find(row=>row.id===meal.recipeId);
+ return recipe?ctx.dish(recipe):`<span class="journal-handwritten-meal" aria-label="직접 입력한 식사">${icon('diary')}</span>`;
+}
+function calendarMarkup(ctx){
+ const [year,month]=ctx.monthView.split('-').map(Number),offset=new Date(year,month-1,1).getDay(),days=new Date(year,month,0).getDate(),byDay=new Map();
+ for(const meal of (ctx.month||ctx.currentMonth).meals){const list=byDay.get(meal.day)||[];list.push(meal);byDay.set(meal.day,list);}
+ const cells=Array.from({length:42},(_,index)=>{
+  const date=index-offset+1;if(date<1||date>days)return '<span class="journal-calendar-blank" aria-hidden="true"></span>';
+  const day=ctx.monthView+'-'+String(date).padStart(2,'0'),meals=byDay.get(day)||[],checked=ctx.flow.supplements.some(row=>row.days.includes(day)),current=day===ctx.recordDay;
+  return `<button type="button" class="journal-calendar-day${meals.length?' has-meal':''}${day===ctx.day?' is-today':''}" data-home-day="${day}" ${current?'aria-current="date"':''} aria-label="${month}월 ${date}일 · ${meals.length?meals.map(meal=>meal.name).join(', '):'식사 기록 없음'}${checked?' · 영양제 복용 기록 있음':''}"><span class="journal-date-number">${date}</span>${meals.length?`<span class="journal-food-stamp" aria-hidden="true">${mealPicture(ctx,meals[0])}</span>${meals.length>1?`<small class="journal-more-meals">+${meals.length-1}</small>`:''}`:''}${checked?'<span class="journal-supplement-dot" aria-hidden="true"></span>':''}</button>`;
+ }).join('');
+ return `<div class="journal-calendar-weekdays" aria-hidden="true">${['일','월','화','수','목','금','토'].map(name=>`<span>${name}</span>`).join('')}</div><div class="journal-calendar-grid" aria-label="${year}년 ${month}월 음식 그림일기">${cells}</div>`;
+}
+function journalBudget(ctx){
+ const month=ctx.month||ctx.currentMonth,remaining=month.budget===null?null:month.budget-month.spending;
+ return `<button type="button" class="journal-budget-link" data-home-open="budget" aria-label="${ctx.monthView} 식비 관리 · 실제 지출 ${fmt(month.spending)}원${remaining===null?' · 예산 미설정':' · 남은 예산 '+fmt(remaining)+'원'}"><span>${icon('basket')}<span><small>${Number(ctx.monthView.slice(5))}월 실제 식비</small><strong>${fmt(month.spending)}<span>원</span></strong></span></span><span class="journal-budget-remaining"><small>${remaining===null?'예산 미설정':remaining<0?'예산 초과':'남은 예산'}</small>${remaining===null?'':`<b class="${remaining<0?'is-over':''}">${fmt(Math.abs(remaining))}원</b>`}</span><span class="journal-budget-chevron" aria-hidden="true">›</span></button>`;
+}
+function journalEntry(ctx){
+ const meal=selectedMeal(ctx,'dayMeal'),count=ctx.record.rows.length,recipe=meal?.recipeId&&ctx.catalog.find(row=>row.id===meal.recipeId),transaction=meal&&ctx.flow.transactions.find(row=>row.mealId===meal.id&&row.active),slot={breakfast:'아침',lunch:'점심',dinner:'저녁'}[transaction?.slot]||'식사 기록';
+ const picture=mealPicture(ctx,meal),pictureMarkup=recipe?`<button type="button" class="journal-entry-picture" data-wf="recipe" data-arg="${esc(recipe.id)}" aria-label="${esc(meal.name)} 레시피 자세히">${picture}</button>`:`<span class="journal-entry-picture">${picture}</span>`;
+ const content=meal?`${pictureMarkup}<div class="journal-entry-copy"><p>${esc(slot)}${count>1?' · '+(ui.dayMeal+1)+' / '+count:''}</p><h3>${esc(meal.name)}</h3>${meal.portion?`<span class="journal-entry-portion">${esc(meal.portion)}</span>`:''}<strong class="journal-entry-kcal">${meal.nutrients.kcal===null?'열량 미입력':fmt(meal.nutrients.kcal)+' kcal'}</strong><div class="journal-entry-macros">${['carb','protein','fat'].map((key,index)=>`<span>${['탄','단','지'][index]} ${meal.nutrients[key]===null?'—':fmt(meal.nutrients[key])+'g'}</span>`).join('')}</div></div>`:`<div class="journal-entry-empty">${icon('diary')}<strong>아직 비어 있는 하루예요</strong><span>먹은 식사를 기록하면 이곳에 그림이 남아요.</span></div>`;
+ return `<div class="record-hub record-hub-monthly journal-diary is-day"><header class="journal-day-heading"><button type="button" data-record-month-view="calendar" aria-label="음식 그림일기 달력으로 돌아가기">${icon('diary')}</button>${ctx.dayDateMarkup}</header><div class="journal-entry-content">${content}</div>${supplementDay(ctx)}<footer class="journal-day-actions${count>1?' has-pages':''}">${count>1?`<button type="button" data-record-page="dayMeal|-1" aria-label="이전 식사" ${ui.dayMeal===0?'disabled':''}>‹</button>`:''}<button type="button" data-home-open="recommendation">＋ 식사 추가</button><button type="button" data-home-open="budget">식비 관리</button>${count>1?`<button type="button" data-record-page="dayMeal|1" aria-label="다음 식사" ${ui.dayMeal===count-1?'disabled':''}>›</button>`:''}</footer></div>`;
+}
 function renderMonthly(ctx){
- const month=ctx.month||ctx.currentMonth,mode=ui.monthView,nutritionDays=new Set(month.meals.filter(m=>['carb','protein','fat'].some(k=>m.nutrients[k]!==null)).map(m=>m.day)).size;
- if(mode==='day')return `<div class="record-hub record-hub-monthly is-day">${tabs('month',[['calendar','달력'],['day','선택일 기록']],mode)}${ctx.dayDateMarkup}<div class="record-day-summary"><section class="record-day-ratio">${ctx.ratioMarkup}</section><section class="record-day-meals">${mealCard(ctx,selectedMeal(ctx,'dayMeal'),true)}${pager('dayMeal',ctx.record.rows.length,'식사')}</section></div>${supplementDay(ctx)}<footer class="record-two-actions record-hub-footer"><button type="button" data-home-open="nutrition">기록 보기</button><button type="button" data-home-open="budget">식비 관리</button></footer></div>`;
- return `<div class="record-hub record-hub-monthly is-calendar">${tabs('month',[['calendar','달력'],['day','선택일 기록']],mode)}${ctx.dateMarkup}<div class="home-month-calendar">${ctx.calendarMarkup}</div><div class="home-month-stats"><span>식사 <b>${month.meals.length}<small>회</small></b></span><span>영양 기록 <b>${nutritionDays}<small>일</small></b></span><span>실제 식비 <b>${fmt(month.spending)}<small>원</small></b></span></div></div>`;
+ if(ui.monthView==='day')return journalEntry(ctx);
+ return `<div class="record-hub record-hub-monthly journal-diary is-calendar">${ctx.dateMarkup}<div class="journal-calendar" aria-label="먹은 식사 그림일기">${calendarMarkup(ctx)}</div>${journalBudget(ctx)}</div>`;
 }
 function renderBudget(ctx){
  const month=ctx.currentMonth||ctx.month,receipts=month.expenses.filter(e=>e.receipt).slice().reverse();
@@ -67,9 +92,14 @@ document.addEventListener('click',event=>{
  const budget=event.target.closest('[data-record-budget-view]');if(budget){ui.budgetView=budget.dataset.recordBudgetView;refresh(`[data-record-budget-view="${ui.budgetView}"]`);}
 },true);
 document.addEventListener('keydown',event=>{
- const tab=event.target.closest('[data-record-month-view],[data-record-budget-view]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+ const calendarDay=event.target.closest('.journal-calendar-day[data-home-day]');
+ if(calendarDay&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)){
+  event.preventDefault();event.stopImmediatePropagation();const entries=[...calendarDay.parentElement.querySelectorAll('[data-home-day]')],index=entries.indexOf(calendarDay),column=new Date(calendarDay.dataset.homeDay+'T12:00:00').getDay(),step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7,Home:-column,End:6-column}[event.key];
+  entries[Math.max(0,Math.min(entries.length-1,index+step))]?.focus({preventScroll:true});return;
+ }
+ const tab=event.target.closest('[role="tab"][data-record-month-view],[role="tab"][data-record-budget-view]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
  event.preventDefault();event.stopImmediatePropagation();const entries=[...tab.parentElement.querySelectorAll('[role=tab]')],index=entries.indexOf(tab),target=entries[event.key==='Home'?0:event.key==='End'?entries.length-1:(index+(event.key==='ArrowRight'?1:-1)+entries.length)%entries.length];
  if(target.dataset.recordMonthView){ui.monthView=target.dataset.recordMonthView;refresh(`[data-record-month-view="${ui.monthView}"]`);}else{ui.budgetView=target.dataset.recordBudgetView;refresh(`[data-record-budget-view="${ui.budgetView}"]`);}
 },true);
-window.KitchenRecordHub=Object.freeze({renderNutrition,renderSupplements,renderMonthly,renderBudget,getViewState:()=>({...ui})});
+window.KitchenRecordHub=Object.freeze({renderNutrition,renderSupplements,renderMonthly,renderBudget,showCalendar(){ui.monthView='calendar';ui.dayMeal=0;},getViewState:()=>({...ui})});
 })();
