@@ -1,13 +1,13 @@
-.home-supplements-shelf{position:absolute;z-index:27;left:22%;right:5%;top:15%;height:66px;pointer-events:none}
+.home-supplements-shelf{position:absolute;z-index:27;left:50%;right:auto;top:116px;width:73%;height:66px;transform:translateX(-50%);pointer-events:none}
 .shelf-compact{display:none}
-.shelf-wide{display:flex;align-items:center;gap:9px;min-height:64px;padding:3px 6px 6px;border-radius:10px;background:#fffaf1ee;box-shadow:0 5px 0 #c5a57d,0 7px 6px #62462816;pointer-events:auto}
+.shelf-wide{display:grid;grid-template-columns:92px minmax(0,1fr) 92px;align-items:center;gap:8px;height:100%;min-height:66px;padding:3px 6px 6px;border-radius:10px;background:#fffaf1ee;box-shadow:0 5px 0 #c5a57d,0 7px 6px #62462816;pointer-events:auto}
 .supplement-shelf-label{flex:none;display:flex;flex-direction:column;gap:3px;color:#614b35}
 .supplement-shelf-label strong{font-size:12px;font-weight:600}.supplement-shelf-label small{font-size:11px;color:#88715a}
 .shelf-bottles{display:flex;flex:1;justify-content:center;gap:8px;min-width:0}
 .supplement-bottle{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-width:0;max-width:72px;min-height:56px;padding:0;border-radius:6px;color:#5c4a35}
 .supplement-bottle svg{width:24px;height:32px;flex:none}.supplement-bottle span{max-width:100%;font-size:11px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.supplement-bottle small{font-size:10px;line-height:1.2;color:#8b7158}
 .supplement-bottle[aria-pressed=true]{background:#edf1e5}.supplement-bottle[aria-pressed=true] small{color:#4f704e}
-.shelf-manage{flex:none;min-height:44px;padding:4px 8px;border:1px solid #e2d3bf;border-radius:7px;background:#fffdf8;color:#75573c;font-size:12px}
+.shelf-manage{flex:none;min-width:0;min-height:44px;padding:4px 6px;border:1px solid #e2d3bf;border-radius:7px;background:#fffdf8;color:#75573c;font-size:12px;white-space:nowrap}
 .health-hub{display:flex;flex:1;flex-direction:column;gap:8px;min-height:0;height:100%}.health-hub>header{flex:none;font-size:13px;color:#66513c}.health-hub>header span{font-weight:600}.health-hub>header p{font-size:12px;color:#8a7661;margin-top:2px}
 .health-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));flex:1;min-height:0;gap:7px}
 .health-guide-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:44px;min-width:0;text-align:left;padding:10px;border:1px solid #e6ddcf;border-radius:10px;background:#fffdf8;gap:5px;color:#3f352a}
@@ -19,8 +19,10 @@ body[data-mode=app] #homeHealth{display:flex;flex:1;min-height:0;overflow:hidden
 body[data-mode=app] #homeHealth[hidden]{display:none!important}
 body[data-mode=app] #homeHealth .health-hub{height:auto;flex:1;min-height:0}
 body[data-mode=app][data-home-page=health] #panel-kitchen{display:flex!important;flex-direction:column;flex:1;min-height:0!important;overflow:hidden}
-body[data-mode=widget] .home-supplements-shelf{top:max(96px,15cqw)}
-@container kitchen-widget (max-width:599px){
+/* Keep both the card and its bottle column on the kitchen centreline.
+   Below 680px the nutrition summary and a full shelf do not fit above the
+   photographed refrigerator; the centred header button opens the same list. */
+@container kitchen-widget (max-width:679px){
  body[data-mode=widget][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .shell>.masthead{height:44px!important;min-height:44px!important;padding:0 6px!important}
  body[data-mode=widget] .shell .brand h1{font-size:12px!important;letter-spacing:-.4px}
  body[data-mode=widget] .shell .brand #todayStamp{display:none!important}
@@ -30,7 +32,7 @@ body[data-mode=widget] .home-supplements-shelf{top:max(96px,15cqw)}
  body[data-mode=widget] #dailyBalance .balance-name{font-size:10px!important}
  body[data-mode=widget] #dailyBalance .balance-number strong{font-size:14px!important}
  body[data-mode=widget] #dailyBalance .balance-track{height:3px!important;margin-top:1px!important}
- body[data-mode=widget] .home-supplements-shelf{inset:4px 76px auto 110px;height:44px;pointer-events:auto}
+ body[data-mode=widget] .home-supplements-shelf{inset:4px auto auto 50%;width:max(92px,calc(100% - 220px));height:44px;pointer-events:auto}
  body[data-mode=widget] .shelf-wide{display:none}
  body[data-mode=widget] .shelf-compact{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:44px;padding:2px 3px;border-radius:8px;background:#f2eadc;color:#745337}
  .shelf-compact svg{width:20px;height:29px;flex:none}.shelf-compact>span{display:flex;flex-direction:column;text-align:left;gap:1px;min-width:0}.shelf-compact strong{font-size:12px;font-weight:600;line-height:1.2}.shelf-compact small{font-size:10px;line-height:1.2;white-space:nowrap;color:#8c7155}
@@ -45,20 +47,33 @@ body[data-mode=widget] .home-supplements-shelf{top:max(96px,15cqw)}
  body[data-mode=widget] .health-guide-card strong{font-size:13px;line-height:1.25}
  body[data-mode=widget] .health-guide-card>span{font-size:12px;line-height:1.25}
 }
-body[data-mode=widget]:has(#panel-fridge[data-screen-id=D6]) .home-supplements-shelf{display:none}
+body:has(#panel-fridge[data-screen-id=D6]) .home-supplements-shelf{display:none}
 
 body:not([data-home=fridge]) .home-supplements-shelf{display:none!important}
+/* The app's scaled header previously grew into the shelf. Only its home
+   header uses a fixed reading size; the room and other app screens keep theirs. */
+body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .shell>.masthead{--home-ui-scale:1;inset:4px 9px auto!important;width:auto!important;height:22px!important;min-height:22px!important;margin:0!important;padding:0 8px!important}
+body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) #dailyBalance{--home-ui-scale:1;inset:24px 9px auto!important;width:auto!important;padding:5px 8px 5px!important}
+body[data-mode=app] #dailyBalance .balance-head{min-height:14px!important;margin-bottom:2px!important}
+body[data-mode=app] #dailyBalance .balance-number{min-height:17px!important;line-height:1.1}
+body[data-mode=app] #dailyBalance .balance-number strong{font-size:15px!important;line-height:1.15}
+body[data-mode=app] #dailyBalance .balance-track{height:4px!important;margin-top:2px!important}
 @media(max-width:600px){
  body[data-mode=app] .health-guide-card{padding:7px;gap:3px}
  body[data-mode=app] .health-guide-card strong{font-size:13px;line-height:1.25}
  body[data-mode=app] .health-guide-card>span{font-size:12px;line-height:1.25}
- body[data-mode=app] .home-supplements-shelf{inset:8px 88px auto 132px;height:44px;pointer-events:auto}
+}
+@media(max-width:681px){
+ body[data-mode=app] .home-supplements-shelf{inset:8px auto auto 50%;width:max(92px,calc(100% - 264px));height:44px;pointer-events:auto}
  body[data-mode=app] .shelf-wide{display:none}
  body[data-mode=app] .shelf-compact{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;width:100%;padding:2px 3px;border-radius:8px;background:#f2eadc;color:#745337}
  body[data-mode=app] .shelf-compact svg{width:20px;height:29px;flex:none}
  body[data-mode=app] .shelf-compact>span{display:flex;flex-direction:column;min-width:0;text-align:left;gap:1px}
  body[data-mode=app] .shelf-compact strong{font-size:12px;line-height:1.2}
  body[data-mode=app] .shelf-compact small{font-size:10px;line-height:1.2;white-space:nowrap}
- body[data-mode=app] .brand #todayStamp{display:none!important}
- body[data-mode=app][data-home=fridge] #dailyBalance{top:54px!important}
+ body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .shell>.masthead{height:44px!important;min-height:44px!important}
+ body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .brand{gap:4px!important}
+ body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .brand h1{font-size:12px!important}
+ body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) .brand p#todayStamp{display:none!important}
+ body[data-mode=app][data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) #dailyBalance{top:54px!important}
 }

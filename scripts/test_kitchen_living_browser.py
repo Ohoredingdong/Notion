@@ -22,7 +22,7 @@ import test_kitchen_widget_browser as old
 
 DAY = '2026-11-05'
 MONTH = '2026-11'
-PROFILES = (*old.PROFILES, (720, 800), (599, 800), (600, 800))
+PROFILES = (*old.PROFILES, (720, 800), (681, 800), (682, 800))
 POPULATED_PROFILES = ((320, 360), (390, 480), (800, 600), (720, 800))
 ENTRIES = old.ENTRIES
 REPO = Path(__file__).resolve().parents[1]
@@ -839,11 +839,11 @@ def main():
     report['complete']=len(report['cases'])==expected and len({c['id'] for c in report['cases']})==expected
     if not args.quick:
         for kind in ENTRIES:
-            pair=[next(c for c in report['cases'] if c['id']==kind+'-'+str(w)+'x800-empty') for w in (599,600)]
+            pair=[next(c for c in report['cases'] if c['id']==kind+'-'+str(w)+'x800-empty') for w in (681,682)]
             stages=[c.get('screens',{}).get('fridge',{}).get('scene',{}).get('stage') for c in pair]
             ratio=stages[1]['width']/stages[0]['width'] if all(stages) and stages[0]['width'] else None
             check(pair[1],ratio is not None and .97<=ratio<=1.03,
-                  'Supplement shelf599/600 breakpoint preserves the natural fridge projection',
+                  'Supplement shelf681/682 breakpoint preserves the natural fridge projection',
                   {'stages':stages,'ratio':ratio},layout=True)
             old.finish_case(pair[1])
     report['baseline_unchanged']=before_hashes==input_hashes(baseline) if baseline else None

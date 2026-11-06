@@ -47,3 +47,5 @@ python scripts/test_kitchen_closed_browser.py --root /tmp/kitchen-frozen \
 별도 앱 기능 검사4사례·956단언은16가지 문 조합과 저장/재로딩을 통과했다. [앱 검사 원문](kitchen-closed-20261106/app-smoke-results.json.gz)은 앱 전체 시각 승인을 뜻하지 않는다. [기존 앱 전용 겹침](kitchen-closed-20261106/known-app-overlap.json)은720/1024의 큰 앱 영양 헤더와 영양제 선반이66px 겹치는 문제다. 기준 `c6ed129d`와 동일한 경계/해시로 재현됐으며 이번 위젯 비율 수정에서 앱 레이아웃까지 재설계하지 않았다. 공유하는 `mobile/widget.html`에는 이 앱 헤더를 사용하지 않는다.
 
 실제 Notion·Safari·휴대폰과 공개 HTMLPreview 실행은 미검증이다. 이 환경은 HTMLPreview/GitHub API에403을 반환하므로 원본 공개 파일 HTTP 접근과 로컬 opaque 실행을 따로 보고한다. PR 생성도 기존 PR 조회가 가능할 때 진행하며, 조회 차단 상태에서 중복 여부를 추측해 생성하지 않는다. 전체 원시 실행 자료는 체크아웃 밖 `/workspace/.notion-cloud/kitchen-closed-20261106/`에 보존했다.
+
+후속 [영양제 중앙 정렬 수정](KITCHEN_SUPPLEMENT_ALIGNMENT_2026-11-06.md)에서 위에 남긴 큰 앱의 영양판/카드66px 겹침도 수정했다. 해당 문서의 새 실제 compact 검증 결과를 최신 상태로 보며, 이 문서의 `f63f308d` 기준 실패·검토 이력은 그대로 보존한다.
