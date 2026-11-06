@@ -49,6 +49,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Verify audit source syntax
+        env:
+          PYTHONPATH: scripts
         run: |
           pip install 'exchange-calendars==4.13.1'
           python -m py_compile scripts/audit_stock_radar_accuracy.py scripts/publish_stock_radar_audit.py

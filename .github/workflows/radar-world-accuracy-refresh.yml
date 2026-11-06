@@ -32,6 +32,8 @@ jobs:
       - name: Install source readers and exchange calendars
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'beautifulsoup4==4.14.3' 'requests>=2.32,<3'
       - name: Check original and new numerical source gates
+        env:
+          PYTHONPATH: scripts
         run: |
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
           PYTHONPATH=scripts python -m unittest scripts.test_market_context scripts.test_stock_world_flow scripts.test_stock_price_evidence -v
