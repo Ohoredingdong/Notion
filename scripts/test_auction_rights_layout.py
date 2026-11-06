@@ -13,7 +13,7 @@ from pathlib import Path
 from playwright.sync_api import expect, sync_playwright
 
 
-URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html")
+URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html")
 KEY = "auction-study-v1"
 DESKTOPS = [(1280, 720), (1366, 768), (1440, 900), (1920, 1080)]
 DATES = {"base": "2026-11-05", "move": "2026-11-06", "fixed": "2026-11-07", "demand": "2026-11-08"}
@@ -276,7 +276,7 @@ def learning_resources(page, label):
     before = page.evaluate("key => localStorage.getItem(key)", KEY)
     lesson = page.locator(".rights-layout .study-example")
     summary = lesson.locator(":scope > summary")
-    expect(summary).to_contain_text("서류 예시·용어·원문")
+    expect(summary).to_contain_text("서류 예시·용어")
     summary.focus()
     summary.press("Enter")
     expect(lesson.locator(".example-answer")).to_be_visible()

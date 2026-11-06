@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-const model = require('../assets/auction-study-model.js');
+const model = require('../_auction/assets/auction-study-model.js');
 
 function near(actual, expected, tolerance = 1e-8) {
   assert.ok(Math.abs(actual - expected) < tolerance, `${actual} differs from ${expected}`);
@@ -253,7 +253,7 @@ test('unusable whole inputs and overflowing calculations fail validation', () =>
 
 test('browser global exposes the same API without a module loader', () => {
   const context = {};
-  vm.runInNewContext(fs.readFileSync(require.resolve('../assets/auction-study-model.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../_auction/assets/auction-study-model.js'), 'utf8'), context);
   assert.equal(context.AuctionModel.calculate().profit, 3774);
   assert.equal(context.AuctionModel.defaults().bid, 28000);
   assert.equal(context.AuctionModel.compareAmounts(0.1 + 0.2, 0.3), 0);

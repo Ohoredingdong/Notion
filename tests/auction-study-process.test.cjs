@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const processData = require('../assets/auction-study-process.js');
+const processData = require('../_auction/assets/auction-study-process.js');
 
 const requiredStages = ['application', 'commencement', 'investigation', 'distribution-deadline', 'sale-preparation', 'sale-notice', 'bidding', 'permission', 'finalization', 'payment', 'registration', 'distribution', 'delivery', 'failed-auction', 'reauction', 'complete'];
 const text = value => typeof value === 'string' && value.trim().length > 0;
@@ -58,22 +58,22 @@ test('decision points distinguish ownership, registration, deposit rules and law
   const stage = id => processData.stages.find(item => item.id === id);
   assert.match(stage('payment').description, /매각대금을 다 낸 때/);
   assert.match(stage('payment').description, /이전등기.*인도.*별도/);
-  assert.match(stage('finalization').timingNote, /확정만으로 소유권.*않아요/);
+  assert.match(stage('finalization').timingNote, /확정만으로 소유권.*않습니다/);
   assert.deepEqual(stage('payment').branches.map(branch => branch.to), ['registration', 'distribution', 'delivery', 'reauction']);
-  assert.match(stage('payment').timingNote, /병행.*고정된 순서가 아니/);
+  assert.match(stage('payment').timingNote, /병행.*고정된 순서가 아닙니다/);
   assert.match(stage('bidding').actions.join(' '), /최저매각가격 × 보증 비율/);
   assert.match(stage('bidding').actions.join(' '), /재매각.*비율이 달라/);
   assert.match(stage('sale-notice').actions.join(' '), /사유 공간.*허락 없이 들어가지/);
   assert.match(stage('delivery').actions.join(' '), /신청기간.*상대방.*권원/);
-  assert.match(stage('delivery').actions.join(' '), /임의로 문을 열거나.*않아요/);
+  assert.match(stage('delivery').actions.join(' '), /임의로 문을 열거나.*옮기지 마세요/);
   assert.match(stage('reauction').description, /단순 유찰.*구분/);
 });
 
 test('the map uses actual court schedules instead of a universal flowchart timetable', () => {
   const copy = JSON.stringify(processData);
   assert.match(processData.disclaimer, /법원 공고·사건 진행·기한을 직접 확인/);
-  assert.match(processData.disclaimer, /학습 지도/);
-  assert.match(processData.disclaimer, /투자를 권하는 판단이 아닙니다/);
+  assert.match(processData.disclaimer, /학습 자료/);
+  assert.match(processData.disclaimer, /권리·인수금액은 별도 검토가 필요/);
   assert.doesNotMatch(copy, /10\s*[:시]\s*00|11\s*[:시]\s*10|\d+\s*일\s*(이내|후|전|내)|\d+\s*%/);
   for (const milestone of processData.milestones) {
     assert.ok(text(milestone.id) && text(milestone.title));
@@ -87,7 +87,7 @@ test('the browser export is immutable and works without network or notebook acce
   const forbidden = () => { throw new Error('process learning map must not access network or storage'); };
   const sandbox = {fetch: forbidden, localStorage: {getItem: forbidden, setItem: forbidden}};
   vm.createContext(sandbox);
-  vm.runInContext(fs.readFileSync(require.resolve('../assets/auction-study-process.js'), 'utf8'), sandbox);
+  vm.runInContext(fs.readFileSync(require.resolve('../_auction/assets/auction-study-process.js'), 'utf8'), sandbox);
   assert.ok(sandbox.AuctionProcessData);
   assert.deepEqual(JSON.parse(JSON.stringify(sandbox.AuctionProcessData)), JSON.parse(JSON.stringify(processData)));
   assert.throws(() => { processData.stages[0].title = 'changed'; }, TypeError);

@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const lessons = require('../assets/auction-study-lessons.js');
+const lessons = require('../_auction/assets/auction-study-lessons.js');
 
 test('both fictional cases cover all six reading tasks with usable source excerpts', () => {
   const topicIds = ['identity', 'priority', 'tenant', 'occupancy', 'costs', 'exceptions'];
@@ -127,7 +127,7 @@ test('the browser export loads and grades without storage, network or notebook a
     fetch() { throw new Error('fictional source excerpts must not make live requests'); },
   };
   vm.createContext(sandbox);
-  vm.runInContext(fs.readFileSync(require.resolve('../assets/auction-study-lessons.js'), 'utf8'), sandbox);
+  vm.runInContext(fs.readFileSync(require.resolve('../_auction/assets/auction-study-lessons.js'), 'utf8'), sandbox);
   const browser = sandbox.AuctionLessons;
   assert.ok(browser);
   assert.deepEqual(JSON.parse(JSON.stringify(browser.topics)), lessons.topics);

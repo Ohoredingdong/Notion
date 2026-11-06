@@ -5,8 +5,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const data = require('../assets/auction-study-simulation-data.js');
-const model = require('../assets/auction-study-model.js');
+const data = require('../_auction/assets/auction-study-simulation-data.js');
+const model = require('../_auction/assets/auction-study-model.js');
+const format = require('../_auction/assets/auction-study-format.js');
 
 const kinds = ['sale', 'register', 'occupancy', 'appraisal', 'building', 'fees', 'comparables', 'fieldnotes'];
 const money = number => number.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '만원';
@@ -183,10 +184,10 @@ test('senior lease unpaid balance is explicit, arithmetic is coherent, and it ch
 });
 
 test('rendered senior-case explanations agree with current cash inputs rather than its initial funding shortage', () => {
-  const script = fs.readFileSync(path.join(__dirname, '../assets/auction-study-simulation.js'), 'utf8');
+  const script = fs.readFileSync(path.join(__dirname, '../_auction/assets/auction-study-simulation.js'), 'utf8');
   function renderWith(inputs) {
     const sandbox = {
-      window: { AuctionSimulationData: data, AuctionModel: model, addEventListener() {} }, AuctionModel: model,
+      window: { AuctionSimulationData: data, AuctionModel: model, AuctionFormat: format, addEventListener() {} }, AuctionModel: model,
       localStorage: { getItem() { return null; }, setItem() {} },
       document: { addEventListener() {} },
     };
@@ -306,6 +307,60 @@ test('photo observations are visibly staged and cannot serve as proof of legal r
   }
 });
 
+test('case photo sheets exist, have 4:3 cells, and agree with the documented building type', () => {
+  for (const item of data.cases) {
+    const photos = item.photoSet;
+    assert.ok(photos, item.id + ' needs its own photo mapping');
+    assert.equal(photos.fictional, true);
+    assert.equal(photos.aiGenerated, true);
+    assert.ok(Number.isInteger(photos.columns) && photos.columns > 1);
+    assert.ok(Number.isInteger(photos.rows) && photos.rows > 1);
+    assert.match(photos.src, /^\.\/assets\/auction-practice\/[a-z-]+\.png$/);
+    const source = fs.readFileSync(path.resolve(__dirname, '..', '_auction', photos.src));
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+    const width = source.readUInt32BE(16), height = source.readUInt32BE(20);
+    approximately((width / photos.columns) / (height / photos.rows), 4 / 3);
+    const use = rowValue(doc(item, 'building'), '주용도');
+    assert.equal(photos.buildingType, use.includes('아파트') ? 'apartment' : 'multifamily');
+    const positions = new Set();
+    for (const observation of item.observations) {
+      const position = photos.positions[observation.photoKey];
+      assert.equal(typeof position, 'string', item.id + ': missing cell for ' + observation.photoKey);
+      const match = position.match(/^(\d+(?:\.\d+)?)% (\d+(?:\.\d+)?)%$/);
+      assert.ok(match, 'invalid contact-sheet coordinate ' + position);
+      const [x, y] = match.slice(1).map(Number);
+      assert.ok(x <= 100 && y <= 100);
+      const column = x / 100 * (photos.columns - 1), row = y / 100 * (photos.rows - 1);
+      assert.ok(Math.abs(column - Math.round(column)) < 1e-6 && Math.abs(row - Math.round(row)) < 1e-6, 'coordinate must select a whole cell');
+      assert.ok(!positions.has(position), 'different observations must not reuse the same photo');
+      positions.add(position);
+    }
+  }
+});
+
+test('two different low-rise case photo sets replace the apartment reuse and preserve the original asset', () => {
+  assert.equal(basic.photoSet.src, './assets/auction-practice/field-contact-sheet.png');
+  assert.ok(fs.existsSync(path.resolve(__dirname, '..', basic.photoSet.src)));
+  for (const item of [senior, hold]) {
+    assert.notEqual(item.photoSet.src, basic.photoSet.src, 'a multifamily case must not use the apartment sheet');
+    assert.equal(item.photoSet.buildingType, 'multifamily');
+  }
+  const identity = (item, key) => item.photoSet.src + '|' + item.photoSet.positions[key];
+  const seniorCells = new Set(senior.observations.map(observation => identity(senior, observation.photoKey)));
+  for (const observation of hold.observations) {
+    assert.ok(!seniorCells.has(identity(hold, observation.photoKey)), 'the two low-rise properties must not reuse a scene');
+  }
+  const windowScene = senior.observations.find(observation => observation.photoKey === 'damage');
+  assert.equal(senior.photoSet.damageLocation, 'window');
+  assert.match(windowScene.title + windowScene.text, /창가|창틀/);
+  assert.match(senior.quiz.find(question => question.id.endsWith('-damage')).question, /창가/);
+  assert.match(documentText(doc(senior, 'appraisal')), /창가 얼룩/);
+  const wallScene = hold.observations.find(observation => observation.photoKey === 'damage');
+  assert.equal(hold.photoSet.damageLocation, 'wall-ceiling');
+  assert.match(wallScene.title + wallScene.text, /천장.*벽면/);
+  assert.doesNotMatch(wallScene.title + wallScene.text, /창가|창틀/);
+});
+
 test('all nested practice values are frozen to protect shared canonical exercises', () => {
   const check = value => {
     if (value && typeof value === 'object') {
@@ -319,7 +374,7 @@ test('all nested practice values are frozen to protect shared canonical exercise
 });
 
 test('browser UMD exposes the same dataset without reading storage, network, or another widget', () => {
-  const script = fs.readFileSync(path.join(__dirname, '../assets/auction-study-simulation-data.js'), 'utf8');
+  const script = fs.readFileSync(path.join(__dirname, '../_auction/assets/auction-study-simulation-data.js'), 'utf8');
   const context = vm.createContext({});
   for (const name of ['localStorage', 'document', 'fetch', 'AuctionModel', 'AuctionLessons']) {
     Object.defineProperty(context, name, { get() { throw new Error('unexpected external access: ' + name); } });

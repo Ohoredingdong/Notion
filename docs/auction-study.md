@@ -2,27 +2,29 @@
 
 `auction-study.html`은 권리분석, 자금 계산, 지역 비교, 검토 결론을 연결하는 한국어 경매 공부 웹앱입니다. 기존 부동산 판단 연습 페이지와 별도로 실행합니다. 빌드와 가입, API 키가 필요하지 않습니다.
 
+운영 링크는 기존 `auction-study.html`입니다. 개발 원본은 `_auction/`에 있으며, 로컬에서 수정본을 볼 때는 `/_auction/auction-study.html`을 엽니다.
+
 ## 실행과 사용
 
 ### 모의경매로 한 건 끝까지 연습하기
 
-메뉴의 **모의경매 연습** 또는 `auction-study.html?view=simulation`을 엽니다. 입문 아파트, 선순위 임차인이 있는 빌라, 위반·권리 미확인으로 보류해야 하는 다세대의 세 사례를 제공합니다.
+메뉴의 **모의경매** 또는 `auction-study.html?view=simulation`을 엽니다. 입문 아파트, 선순위 임차인이 있는 빌라, 위반·권리 미확인으로 보류해야 하는 다세대의 세 사례를 제공합니다.
 
-1. **자료 모음:** 매각물건명세서·등기사항전부증명서·현황조사서·감정평가서·건축물대장·관리비 메모·거래/지역 자료·현장 확인 자료를 읽습니다. 사진 6장은 AI로 만든 가상 현장입니다. 실제 사건·등기·사진·시세가 아니며 공식 서류 원본의 형식을 재현하지 않았습니다. **서류 세트 받기**로 가상 자료를 HTML 파일로 내려받을 수 있습니다.
+1. **자료 모음:** 매각물건명세서·등기사항전부증명서·현황조사서·감정평가서·건축물대장·관리비 메모·거래/지역 자료·현장 확인 자료를 읽습니다. 사진 6장은 AI로 만든 가상 현장입니다. 실제 사건·등기·사진·시세가 아니며 공식 서류 원본의 형식을 재현하지 않았습니다. **서류 받기**로 가상 자료를 HTML 파일로 내려받을 수 있습니다.
 2. **권리 확인:** 사례별 6문제에 답하고, 해설의 근거 서류로 돌아가 확인합니다. 서류를 열거나 정답을 맞혔다고 실제 물건의 권리가 확인되는 것은 아닙니다.
 3. **모의 입찰:** 입찰가·대출·가용현금을 바꾸어 필요 현금과 기준/보수적 손익을 비교합니다. 입찰 검토 또는 보류를 선택하고 판단 근거를 적어 제출합니다.
-4. **결과 해설:** 빠뜨린 자료·오답·인수 비용·손실·자금 부족을 대조합니다. 인수액을 확정할 수 없는 사례는 계산상 이익이 있어도 보류합니다. 필요하면 **내 분석노트로 복사**해 계산을 더 바꿔 봅니다. 복사는 가상 물건을 새로 추가하며 기존 물건을 덮어쓰지 않습니다. 권리 확인 상태는 미확인으로 시작합니다.
+4. **결과 해설:** 빠뜨린 자료·오답·인수 비용·손실·자금 부족을 대조합니다. 인수액을 확정할 수 없는 사례는 계산상 이익이 있어도 보류합니다. 필요하면 **노트로 복사**해 계산을 더 바꿔 봅니다. 복사는 가상 물건을 새로 추가하며 기존 물건을 덮어쓰지 않습니다. 권리 확인 상태는 미확인으로 시작합니다.
 
 연습 기록은 `auction-simulation-v1`에 저장하며 기존 `auction-study-v1` 기록과 분리됩니다. 다른 브라우저·기기로 자동 동기화되지 않습니다. 저장을 차단한 환경에서는 실패 안내를 표시합니다.
 
-**경매 절차·서류** 또는 `auction-study.html?view=process`에서는 올려주신 절차도의 신청→조사→공고→입찰→허가→대금 납부→등기·배당·인도와 유찰/재경매 분기를 16단계로 읽을 수 있습니다. 준비 서류 9종의 용도·열람 경로·확인 항목도 제공합니다. 그림의 고정 일수·시각은 모든 사건에 적용하지 않고 실제 법원 공고에서 확인하도록 안내합니다.
+**경매 절차** 또는 `auction-study.html?view=process`에서는 올려주신 절차도의 신청→조사→공고→입찰→허가→대금 납부→등기·배당·인도와 유찰/재경매 분기를 16단계로 읽을 수 있습니다. 준비 서류 9종의 용도·열람 경로·확인 항목도 제공합니다. 그림의 고정 일수·시각은 모든 사건에 적용하지 않고 실제 법원 공고에서 확인하도록 안내합니다.
 
 ### 내 서류와 분석노트 사용하기
 
-첫 화면의 **서류 보며 공부**는 두 가지 방식으로 사용할 수 있습니다.
+첫 화면의 **서류 연습**는 두 가지 방식으로 사용할 수 있습니다.
 
-- **해설 있는 연습 사례:** 명세서·등기·점유·관리비 등의 가상 발췌를 읽고 답을 고릅니다. 힌트나 해설을 열면 근거가 되는 줄을 표시합니다. 입문 사례와 전입이 앞선 임차인 사례가 각각 6단계로 구성됩니다. 날짜만으로 인수금액이나 입찰 가능 여부를 확정하지 않습니다.
-- **내 경매 자료로 분석:** 법원경매정보 또는 이용 중인 경매 사이트를 열고, 내려받은 PDF를 화면 안에서 봅니다. 해당 단계의 확인 항목을 원문과 대조하고 내 물건에 근거를 기록합니다. `https://` 원문 주소를 새 창으로 열 수 있습니다. 원문 자동 수집이나 PDF 자동 판독·법률 판단 기능은 없습니다.
+- **연습 사례:** 명세서·등기·점유·관리비 등의 가상 발췌를 읽고 답을 고릅니다. 힌트나 해설을 열면 근거가 되는 줄을 표시합니다. 입문 사례와 전입이 앞선 임차인 사례가 각각 6단계로 구성됩니다. 날짜만으로 인수금액이나 입찰 가능 여부를 확정하지 않습니다.
+- **내 자료:** 법원경매정보 또는 이용 중인 경매 사이트를 열고, 내려받은 PDF를 화면 안에서 봅니다. 해당 단계의 확인 항목을 원문과 대조하고 내 물건에 근거를 기록합니다. `https://` 원문 주소를 새 창으로 열 수 있습니다. 원문 자동 수집이나 PDF 자동 판독·법률 판단 기능은 없습니다.
 
 연습 진행도는 `auction-study-lessons-v1`에 따로 저장합니다. 문제를 풀어도 기존 물건의 확인 상태·근거·금액을 바꾸지 않습니다. 실제 자료 모드의 상태와 근거만 기존 `auction-study-v1` 물건에 저장됩니다. PDF는 선택한 물건별로 현재 화면에 보관하며 서버로 업로드하지 않습니다. 새로고침하면 다시 선택해야 하고 노트 JSON에는 포함되지 않습니다. 다른 물건의 PDF를 이어 보여주지 않습니다.
 
@@ -33,7 +35,7 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 1. 첫 화면은 **가상 연습 사례**입니다. 숫자는 실제 매물이나 현재 금융·세율 조건이 아닙니다.
 2. **새 물건**에서 이름·주소·법원 사건번호·입찰일을 기록합니다. 실제 물건의 계산 입력은 빈칸으로 시작합니다. 상단 선택 메뉴로 여러 물건을 오갑니다.
 3. **권리분석**은 먼저 “서류 대조 예시”를 펼쳐 매각물건명세서와 등기 표제부를 어디서 비교하고 어떻게 근거를 적는지 살펴봅니다. 가상 예시는 실제 입력값이나 확인 상태에 자동 반영되지 않습니다. 이어서 6개 항목에 확인 상태와 서류·열람일·질문을 함께 적습니다. `확인 완료`도 근거가 비어 있으면 완료로 집계하지 않습니다. 날짜 입력만으로 대항력이나 인수 여부를 자동 판정하지 않습니다.
-4. **실제 투자금**에 모든 금액을 **만원** 단위로 입력합니다. 대출 실행 가능액, 취득 관련 세율, 중개 비용률, 양도 관련 세금은 직접 확인한 값입니다. 포함되지 않은 보유세 등은 정액 비용에 별도 반영합니다.
+4. **투자금 계산**에 모든 금액을 **만원** 단위로 입력합니다. 대출 실행 가능액, 취득 관련 세율, 중개 비용률, 양도 관련 세금은 직접 확인한 값입니다. 포함되지 않은 보유세 등은 정액 비용에 별도 반영합니다.
 5. **지역·시세 분석**에 실제 조회한 거래가·전용면적·계약일·출처를 적고 수요·공급 근거를 기록합니다. 단순 면적 환산은 참고값이며 매도 시나리오에 자동 적용하지 않습니다.
 6. **최종 검토**에서 기준·보수적 매도 시나리오, 계산상 입찰 상한, 미해결 사유와 나의 결론을 확인합니다. 직접 작성한 결론은 미확인·위험 표시를 없애지 않습니다.
 
@@ -47,7 +49,7 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 
 ## 계산 기준
 
-**실제 투자금은 직접 입력하는 계산기입니다.** 입찰가·대출·비용·보유기간·매도가를 바꾸면 즉시 다시 계산합니다. 금액 단위는 만원이며 소수 둘째 자리까지 표시합니다. 입력한 세율·대출액을 계산할 뿐 법정 세액·대출 승인 여부를 자동 판정하지 않습니다.
+**실제 투자금은 직접 입력하는 계산기입니다.** 입찰가·대출·비용·보유기간·매도가를 바꾸면 즉시 다시 계산합니다. 일반 금액은 만원 단위로 표시하며, 100원 미만 차이는 원 단위로 표시합니다. 입찰상한은 100원 단위로 내려 표시합니다. 입력한 세율·대출액을 계산할 뿐 법정 세액·대출 승인 여부를 자동 판정하지 않습니다.
 
 - 보증금 = 최저매각가격 × 공고의 보증금 비율. 낙찰대금에 충당되므로 총비용에 중복 가산하지 않습니다. 대출 실행 전 별도로 보증금을 준비할 수 있는지도 확인합니다.
 - 취득·보유 부대비용 = 낙찰가 × 취득 관련 적용률 + 법무·등기비 + 수리 + 명도 + 인수 관리비 + 별도 인수액 + 보유기간 단리 대출이자.
@@ -63,22 +65,40 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 
 ```sh
 node tests/auction-study-model.test.cjs
+node tests/auction-study-format.test.cjs
 node tests/auction-study-lessons.test.cjs
 node tests/auction-study-simulation-data.test.cjs
 node tests/auction-study-process.test.cjs
+python3 -B -m unittest discover -s tests -p test_auction_release.py
 ```
 
 브라우저 회귀 검사는 별도 터미널에서 정적 서버를 실행한 뒤 아래 명령으로 실행합니다. Python Playwright와 `/usr/bin/chromium`이 필요합니다.
 
 ```sh
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_study_browser.py
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_learning_browser.py
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_rights_layout.py
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser
-AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_study_browser.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_learning_browser.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_rights_layout.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser
 ```
 
 위 Python 경로는 준비된 클라우드 환경 기준입니다. 일반 환경에서는 Playwright 1.56.0을 설치한 Python으로 실행하고, `BROWSER_EXECUTABLE`을 생략하면 Playwright의 Chromium을 사용합니다.
 
 브라우저 검사는 독립적인 임시 컨텍스트에서 계산 입력, 권리 근거, 저장·재열기, 새 물건, 가져오기와 모바일 레이아웃을 확인합니다. 모의경매 검사는 세 사례의 서류·사진·퀴즈·서류 내려받기·결과·노트 복사, 손실/오답 보류, 저장 실패·손상 기록 보존, 데스크톱·모바일·임베드 화면을 확인하고 실행별 보고서와 스크린샷을 남깁니다. 서버를 배포하거나 실제 개인 기록을 수정하지 않습니다.
+
+## 노트 정리
+
+상단 **정리**에서 선택한 노트의 이름을 확인한 뒤 백업·취소·삭제를 선택합니다. 삭제 동의 후 해당 노트만 지우며 다른 노트와 별도 연습 기록은 유지합니다. 저장에 실패하면 화면에서도 지우지 않습니다. 마지막 노트를 삭제하면 빈 노트가 하나 생깁니다. 100개 한도에 도달한 경우 백업만으로 빈자리가 생기지는 않으므로 불필요한 노트를 정리한 뒤 추가합니다.
+
+## 검증 후 게시
+
+`_auction/`은 개발 원본이며 루트의 경매 HTML·자산은 검증된 운영 사본입니다. 루트 파일이나 `auction-release.json`을 직접 수정하지 않습니다.
+
+1. 원본을 수정하고 기존·신규 단위 및 브라우저 검사를 실행합니다.
+2. main의 자동 검사가 통과한 파일을 해시 목록과 함께 artifact로 보관합니다. 실패하면 운영 사본을 갱신하지 않습니다.
+3. 게시 작업이 최신 main의 금융 데이터와 다른 위젯을 보존하며, 검증된 경매 파일만 승격합니다. 원본이 더 바뀌었으면 오래된 artifact를 게시하지 않습니다.
+4. 기존 Pages 빌드를 요청하고 실제 공개 파일·브라우저 동작을 확인합니다.
+
+이 방식은 금융 자동화가 main에 직접 데이터를 갱신하는 구조와 기존 Pages 설정을 유지합니다. 소스 수정 커밋의 기존 사이트 빌드에서도 경매 운영 파일은 이전 검증본으로 남으며, 검증 artifact가 승격된 뒤 새 화면으로 바뀝니다. 로컬 `/_auction/`은 개발 확인 경로이고 사용자에게 제공하는 운영 링크는 기존 루트 주소입니다.

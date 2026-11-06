@@ -141,13 +141,9 @@ def answer(surface, question, index, correct):
 
 def assert_sim_cash(surface, values):
     expected = independent_cash(values)
-    near(number(surface.locator(".sim-cash-result > strong").inner_text()), expected["cash"], "simulation cash")
-    rows = surface.locator(".sim-calculation-rows > div")
-    text = rows.all_inner_texts()
-    for phrase, key in [("입찰일 먼저 필요한 보증금", "deposit"), ("취득·보유 비용 합계", "costs"), ("가용 현금 대비 순투입 현금 부족액", "cashGap"), ("대출 전 선납 보증금 부족액", "depositGap"), ("예상 매도가 기준 손익", "profit"), ("보수적 매도가 기준 손익", "downside")]:
-        matches = [row for row in text if row.split("\n")[0] == phrase]
-        assert len(matches) == 1, (phrase, text)
-        near(number(matches[0].split("\n")[-1]), expected[key], key)
+    near(number(surface.locator('[data-sim-result="cashNeeded"]').inner_text()), expected["cash"], "simulation cash")
+    for result, key in [("deposit", "deposit"), ("costs", "costs"), ("cashGap", "cashGap"), ("depositGap", "depositGap"), ("profit", "profit"), ("downsideProfit", "downside")]:
+        near(number(surface.locator(f'[data-sim-result="{result}"]').inner_text()), expected[key], key)
     return expected
 
 
@@ -175,7 +171,7 @@ def curriculum(page, context, args, artifacts):
         assert page.locator(".sim-document-tabs button").count() == 8
         for doc in scenario["documents"]:
             open_document(page, doc, reviewed=True)
-        expect(page.locator(".sim-document-footer > span")).to_have_text("8 / 8종 확인 기록")
+        expect(page.locator(".sim-document-footer > span")).to_have_text("8 / 8종 확인")
         photos = page.locator(".sim-photo")
         assert photos.count() == len(scenario["observations"]) >= 4, "The dossier must show every fictional onsite observation"
         for photo in photos.all():
@@ -276,7 +272,7 @@ def calculator(page, context, args, artifacts):
         page.locator(f'input[data-finance="{key}"]').fill(str(value))
         values[key] = value
     near(number(page.locator("[data-results] .cash-number").inner_text()), independent_cash(values)["cash"], "live calculator")
-    expect(page.locator(".calculator-guide")).to_contain_text("계산기")
+    expect(page.locator(".calculator-guide")).to_contain_text("낙찰가·대출·비용")
     page.locator('input[data-finance="available"]').fill("500")
     expect(page.locator("[data-results]")).to_contain_text("1,950만원 부족")
     page.locator('input[data-finance="bid"]').fill("")
@@ -429,7 +425,7 @@ def corrupt_storage(page, context, args, artifacts):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8765/auction-study.html"))
+    parser.add_argument("--url", default=os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/_auction/auction-study.html"))
     parser.add_argument("--artifacts", type=Path, default=Path("/tmp/auction-simulation-browser"))
     parser.add_argument("--executable", default=os.environ.get("BROWSER_EXECUTABLE"))
     args = parser.parse_args()
