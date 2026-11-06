@@ -14,7 +14,7 @@ function fixture(){
     session:'2026-11-05',previous_session:'2026-11-04',expected_session:'2026-11-05',
     observed_at:category==='index'?'2026-11-05T21:00:00Z':null,
     observed_at_precision:category==='index'?'exchange_close':'source_date',received_at:'2026-11-06T10:59:00Z',
-    source:{provider:'TEST ONLY',url:'https://example.com/observation/'+id,provider_symbol:providers[id],response_symbol:providers[id],identity_verified:true},
+    source:{provider:'TEST ONLY',url:'https://example.com/observation/'+id,provider_symbol:providers[id],response_symbol:providers[id],identity_verified:true,...(id==='us10y'?{field:'BC_10YEAR',source_unit:'percent'}:{})},
     freshness:{status:'current',next_expected_session:'2026-11-06',next_check_after:'2026-11-06T22:00:00Z'}};
   }),related_news:[{title:'TEST ONLY: reported market headline',url:'https://example.com/story',source:'TEST ONLY',published_at:'2026-11-06T10:00:00Z'}]};
 }
@@ -60,6 +60,20 @@ test('Date-only Treasury observation never acquires an invented close time',()=>
  const row=flow.model(fixture(),now).byId.us10y;assert.equal(row.raw.observed_at,null);
  assert.equal(flow.observationText(row),'2026-11-05 자료 · 발표 시각 미제공');assert.doesNotMatch(flow.observationText(row),/00:00|KST/);
  assert.equal(flow.model(mutated('us10y',{observed_at:'2026-11-05T21:00:00Z'}),now).byId.us10y.value,null);
+});
+test('A genuinely published Treasury date can precede the conservative recheck deadline, never the current ET date',()=>{
+ const early=Date.parse('2026-11-06T21:00:00Z'),feed=mutated('us10y',{
+  session:'2026-11-06',previous_session:'2026-11-05',received_at:'2026-11-06T20:59:00Z',
+  freshness:{status:'current',next_expected_session:'2026-11-09',next_check_after:'2026-11-09T23:00:00Z'}});
+ feed.generated_at='2026-11-06T21:00:00Z';
+ assert.equal(flow.model(feed,early).byId.us10y.current,true);
+ assert.equal(flow.model(feed,Date.parse('2026-11-09T23:00:00Z')).byId.us10y.current,false);
+ const row=feed.indicators.find(row=>row.id==='us10y');row.session='2026-11-07';
+ assert.equal(flow.model(feed,early).byId.us10y.value,null);
+ // UTC has rolled over while New York is still on the previous source date.
+ row.session='2026-11-06';row.received_at='2026-11-06T00:59:00Z';feed.generated_at='2026-11-06T00:59:00Z';
+ assert.equal(flow.model(feed,Date.parse('2026-11-06T01:00:00Z')).byId.us10y.value,null);
+ row.source.field='BC_2YEAR';assert.equal(flow.model(feed,early).byId.us10y.value,null);
 });
 test('A fresh wrapper does not make an older market session current',()=>{
  const feed=mutated('kospi',{expected_session:'2026-11-06'}),result=flow.model(feed,now);

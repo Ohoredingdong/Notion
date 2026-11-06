@@ -41,11 +41,13 @@
    change:null,changePct:null,changeBp:null,state:"unavailable",reason:"자료 미수집",current:false,direction:"unknown",session:null,previousSession:null};
   if(!validFeed||!raw)return item;
   const receipt=stamp(raw.received_at),observed=stamp(raw.observed_at),dateOnly=raw.observed_at_precision==="source_date";
-  const identity=source.identity_verified===true&&source.provider_symbol===PROVIDERS[id]&&source.response_symbol===source.provider_symbol&&!!item.href;
+  const treasury=id==="us10y"&&dateOnly&&source.field==="BC_10YEAR"&&source.source_unit==="percent";
+  const identity=source.identity_verified===true&&source.provider_symbol===PROVIDERS[id]&&source.response_symbol===source.provider_symbol&&!!item.href&&(id!=="us10y"||treasury);
   const schema=raw.id===id&&raw.category===category&&raw.unit===unit&&["current","stale","unavailable"].includes(raw.status);
   const observation=day(raw.session)&&finite(receipt)&&receipt<=now+300000&&
    (dateOnly?raw.observed_at===null:raw.observed_at_precision==="exchange_close"&&finite(observed)&&observed<=now+300000&&observed<=receipt+300000)&&
-   raw.session<=new Date(now+86400000).toISOString().slice(0,10);
+   raw.session<=new Date(now+86400000).toISOString().slice(0,10)&&
+   (id!=="us10y"||raw.session<=new Date(now).toLocaleDateString("sv-SE",{timeZone:"America/New_York"}));
   const basis=["exchange_regular_close","provider_daily_close","treasury_par_yield"].includes(raw.quote_basis)&&
    (category!=="yield"||raw.quote_basis==="treasury_par_yield");
   if(!identity||!schema||!observation||!basis||!finite(raw.value)||raw.value<=0||raw.status==="unavailable"){
@@ -61,11 +63,11 @@
   item.changePct=category==="yield"?null:pct;item.changeBp=category==="yield"?delta*100:null;item.direction=direction(delta);
   let expected=day(raw.expected_session)?raw.expected_session:null;
   const next=stamp(fresh.next_check_after),nextDay=day(fresh.next_expected_session)?fresh.next_expected_session:null;
-  const clock=finite(next)&&nextDay!==null&&(!expected||nextDay>expected);
+  const clock=finite(next)&&nextDay!==null&&(!expected||nextDay>expected)&&nextDay>raw.session;
   if(clock&&now>=next)expected=expected&&expected>nextDay?expected:nextDay;
   if(expected&&raw.session<expected){item.state="stale";item.reason=expected+" 자료 갱신 대기"}
   else if(!expected||!clock){item.state="stale";item.reason="시장별 갱신 일정 미확인"}
-  else if(raw.session!==expected||raw.status!=="current"||fresh.status!=="current"){
+  else if(!(raw.session===expected||(treasury&&raw.session>=expected))||raw.status!=="current"||fresh.status!=="current"){
    item.state="stale";item.reason=raw.session<expected?expected+" 자료 갱신 대기":"기준 세션 확인 필요";
   }else{item.state="current";item.reason="시장별 최신 완료 자료";item.current=true}
   return item;

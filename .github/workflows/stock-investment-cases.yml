@@ -56,7 +56,7 @@ jobs:
           python -m unittest scripts.test_stock_decision_guide -v
           python scripts/test_stock_strict_green.py
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
-          python -m unittest scripts.test_stock_price_evidence -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_price_evidence -v
       - name: Authenticate and fetch source evidence without exposing keys
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}

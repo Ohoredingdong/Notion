@@ -12,6 +12,7 @@ import math
 from pathlib import Path
 import re
 from urllib.parse import unquote, urlsplit
+from zoneinfo import ZoneInfo
 
 IDS = ('kospi', 'kosdaq', 'sp500', 'nasdaq', 'dax', 'shanghai', 'nikkei225',
        'hang_seng', 'usdkrw', 'dxy', 'us10y', 'wti', 'gold', 'vix')
@@ -52,6 +53,9 @@ def oracle(feed, now):
             assert row.get('observed_at') is None, key + ': date-only observation must not invent a clock'
         else:
             assert precision == 'exchange_close' and finite(timestamp(row.get('observed_at'))) and timestamp(row['observed_at']) <= now + 300, key
+        if key == 'us10y':
+            assert precision == 'source_date' and source.get('provider_symbol') == 'BC_10YEAR' and source.get('field') == 'BC_10YEAR' and source.get('source_unit') == 'percent', key
+            assert row.get('session', '') <= datetime.fromtimestamp(now, ZoneInfo('America/New_York')).date().isoformat(), 'Treasury source date must not be in the future in New York'
         delta = pct = bp = None
         verified = row.get('comparison_verified') is True
         if verified:
@@ -72,11 +76,12 @@ def oracle(feed, now):
         freshness = row.get('freshness', {})
         expected = row.get('expected_session')
         next_day, next_time = freshness.get('next_expected_session'), timestamp(freshness.get('next_check_after'))
-        clock = bool(expected and next_day and next_day > expected and finite(next_time))
+        clock = bool(expected and next_day and next_day > expected and next_day > row.get('session', '') and finite(next_time))
         if clock and now >= next_time:
             expected = max(expected, next_day)
+        matching = row.get('session') >= expected if key == 'us10y' and expected else row.get('session') == expected
         current = bool(verified and clock and row.get('status') == 'current'
-                       and freshness.get('status') == 'current' and row.get('session') == expected)
+                       and freshness.get('status') == 'current' and matching)
         observed[key] = {'current': current, 'value': row['value'], 'change': bp if key == 'us10y' else pct,
                          'direction': direction, 'precision': precision, 'session': row.get('session')}
     regions = {}

@@ -62,7 +62,7 @@ jobs:
           python scripts/test_stock_opportunity_dates.py
           python scripts/test_stock_discovery_v9.py
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
-          python -m unittest scripts.test_stock_price_evidence -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_price_evidence -v
       - name: Discover and deeply collect real market candidates
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
