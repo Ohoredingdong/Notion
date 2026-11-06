@@ -65,7 +65,15 @@ jobs:
       - name: Install browser dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y fonts-noto-cjk
+          for attempt in 1 2; do
+            if sudo timeout --kill-after=10s 150s apt-get -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2 --download-only install -y fonts-noto-cjk; then
+              break
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+          done
+          sudo apt-get --no-download install -y fonts-noto-cjk
           test -n "$(fc-list :lang=ko)"
           pip install 'playwright==1.56.0' beautifulsoup4 'exchange-calendars==4.13.1' 'yfinance==0.2.66'
           python -m playwright install chromium
