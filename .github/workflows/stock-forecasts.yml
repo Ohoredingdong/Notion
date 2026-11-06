@@ -114,8 +114,33 @@ jobs:
         run: python scripts/verify_stock_forecast_public.py --paper-only
       - name: Preserve forecast and paper publication evidence with the matching audit
         if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
-        # Newly registered plans wait for the next scheduled build and actual
-        # public check. Do not backdate them or request two extra Pages builds.
+        # This commit registers prospective plans only after genuine forecast
+        # HTTP proof; the optional postregistration check below can only add
+        # its own later HTTP proof, never a historical receipt.
+        run: python scripts/publish_stock_forecasts.py
+      # This is opportunistic evidence capture, NOT notification/quote evidence.
+      # The final CAS above registered new immutable paper plans. Existing
+      # automatic GitHub Pages publication may become visible later; observe
+      # the actual HTTP bytes only, with the verifier's existing finite bound.
+      # Do not request another Pages build, backdate, or fail the forecast run
+      # solely because a different CDN publication is still pending.
+      - name: Opportunistic first paper publication proof after automatic Pages build
+        id: postplan_public
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        shell: bash
+        run: |
+          before=$(sha256sum stock-forecast-paper-publication-verifications.jsonl | cut -d' ' -f1)
+          python scripts/verify_stock_forecast_public.py --paper-only
+          after=$(sha256sum stock-forecast-paper-publication-verifications.jsonl | cut -d' ' -f1)
+          if [[ "$before" != "$after" ]]; then
+            echo "new_proofs=true" >> "$GITHUB_OUTPUT"
+            echo "New first-public evidence observed at real HTTP verification time."
+          else
+            echo "No new first-public proof; skip additional commit."
+          fi
+      - name: Persist only newly observed paper first-public proofs
+        if: steps.market_gate.outputs.active == 'true' && github.ref == 'refs/heads/main' && steps.postplan_public.outcome == 'success' && steps.postplan_public.outputs.new_proofs == 'true'
         run: python scripts/publish_stock_forecasts.py
       - uses: actions/upload-artifact@v4
         if: always() && steps.market_gate.outputs.active == 'true'
