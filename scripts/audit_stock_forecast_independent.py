@@ -40,7 +40,8 @@ def audit_digest(value):
         allow_nan=False).encode('utf-8')).hexdigest()
 
 def event_key(r):
-    return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])
+    return (r['symbol'], r['market'], r['mode'], r.get('venue') or 'venue_unverified',
+            r['target']['start'], r['target']['end'])
 
 def validate(r):
     p = [finite(r['probabilities'][k]) for k in CLASSES]
@@ -426,8 +427,8 @@ def audit(records, outcomes, deliveries, cutoff):
     rows = []; last_end = {}
     # Selection is chronological and independent of the observed correctness.
     for r in sorted((r for key, r in originals.items() if key not in ambiguous_events),
-                    key=lambda x: (event_key(x)[:3], ts(x['target']['start']), ts(x['issued_at']))):
-        group = event_key(r)[:3]; start = ts(r['target']['start']); end = ts(r['target']['end'])
+                    key=lambda x: (event_key(x)[:4], ts(x['target']['start']), ts(x['issued_at']))):
+        group = event_key(r)[:4]; start = ts(r['target']['start']); end = ts(r['target']['end'])
         if group in last_end and start < last_end[group]:
             counts['overlap_excluded'] += 1; continue
         last_end[group] = end
@@ -493,6 +494,26 @@ def read_lines(path):
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 class SelfTests(unittest.TestCase):
+    def test_distinct_venues_are_not_collapsed_into_same_future_target(self):
+        # Research-only synthetic negative control. Neither label nor venue
+        # metadata authenticates a particular exchange price feed.
+        basis = {'symbol': 'TEST.KS', 'market': 'KR', 'mode': 'intraday',
+                 'status': 'research_prediction',
+                 'observed_until': '2026-10-29T03:00:00Z',
+                 'received_at': '2026-10-29T03:01:00Z',
+                 'issued_at': '2026-10-29T03:02:00Z',
+                 'target': {'start': '2026-10-29T03:30:00Z',
+                            'end': '2026-10-29T04:00:00Z'},
+                 'probabilities': {'down': .2, 'flat': .6, 'up': .2},
+                 'direction': 'flat', 'neutral_band_pct': .3}
+        krx = {**basis, 'id': 'synthetic-krx', 'venue': 'KRX'}
+        nxt = {**basis, 'id': 'synthetic-nxt', 'venue': 'NXT'}
+        check = audit([krx, nxt], [], [], ts('2026-10-29T05:00:00Z'))
+        self.assertEqual(check['status'], 'ledger_arithmetic_consistent')
+        self.assertEqual(check['unique_events'], 2)
+        self.assertEqual(check['counts']['nonoverlapping_targets'], 2)
+        self.assertEqual(check['counts']['public_not_timely'], 2)
+
     def test_public_proof_cannot_assert_unauthenticated_human_receipt(self):
         # Pre-registered synthetic RED: a canonical self-hash is not a
         # recipient's independent acknowledgment of a pushed signal.
