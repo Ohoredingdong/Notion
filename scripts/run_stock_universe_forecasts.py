@@ -264,6 +264,12 @@ class SourceIdentityError(ValueError):
         super().__init__(reason)
 
 
+class SourceRowsError(ValueError):
+    def __init__(self, reason, quality):
+        self.quality = quality
+        super().__init__(reason)
+
+
 def safe_error(exc):
     text = re.sub(r"https?://\S+", "[provider-url]", str(exc))
     return (type(exc).__name__ + ": " + text.replace("\n", " "))[:180]
@@ -371,31 +377,53 @@ def validate_provider(target, metadata):
         raise SourceIdentityError("provider_exchange_mismatch", metadata)
 
 
-def frame_rows(frame, market):
+def frame_rows(frame, market, *, quality=None, discarded_dates=None):
     import pandas as pd
+    quality = quality if quality is not None else {}
+    quality.update(basis="latest_provider_response", original_rows=0 if frame is None else len(frame),
+                   valid_rows=0, discarded_rows=0, discarded_reasons={})
     if frame is None or frame.empty:
-        raise ValueError("provider_returned_no_candles")
+        raise SourceRowsError("provider_returned_no_candles", quality)
     zone = "Asia/Seoul" if market == "KR" else "America/New_York"
     rows, seen = [], set()
+    def discard(day, reason):
+        quality["discarded_rows"] += 1
+        quality["discarded_reasons"][reason] = quality["discarded_reasons"].get(reason, 0) + 1
+        if discarded_dates is not None:
+            discarded_dates.add(day)
     for index, source in frame.iterrows():
         stamp = pd.Timestamp(index)
+        if pd.isna(stamp):
+            raise ValueError("invalid_provider_daily_date")
         day = (stamp.tz_convert(zone) if stamp.tzinfo else stamp).date().isoformat()
         if day in seen:
             raise ValueError("duplicate_provider_daily_bar")
         seen.add(day)
-        values = {key: float(source[column]) for key, column in
-                  (("open", "Open"), ("high", "High"), ("low", "Low"), ("close", "Close"))}
-        if not all(finite(value) and value > 0 for value in values.values()):
+        try:
+            values = {key: float(source[column]) for key, column in
+                      (("open", "Open"), ("high", "High"), ("low", "Low"), ("close", "Close"))}
+        except (KeyError, TypeError, ValueError, OverflowError):
+            discard(day, "invalid_ohlc_value")
+            continue
+        if not all(finite(value) for value in values.values()):
+            discard(day, "nonfinite_ohlc")
+            continue
+        if not all(value > 0 for value in values.values()):
+            discard(day, "nonpositive_ohlc")
             continue
         if values["high"] < max(values["open"], values["close"]) or values["low"] > min(values["open"], values["close"]):
-            raise ValueError("invalid_provider_ohlc_order")
+            # Match the existing normalizer: remove this invalid observation,
+            # never change its price or discard the issuer's entire history.
+            discard(day, "inconsistent_ohlc")
+            continue
         row = {"date": day, **values}
         for key, column in (("volume", "Volume"), ("splits", "Stock Splits")):
             value = source.get(column)
             row[key] = float(value) if finite(value) else None
         rows.append(row)
+        quality["valid_rows"] += 1
     if not rows:
-        raise ValueError("provider_returned_no_valid_candles")
+        raise SourceRowsError("provider_returned_no_valid_candles", quality)
     return sorted(rows, key=lambda row: row["date"])
 
 
@@ -422,6 +450,35 @@ def validate_rows(rows):
         raise ValueError("unordered_or_duplicate_cache_rows")
 
 
+def validate_row_quality(quality):
+    if not isinstance(quality, dict) or quality.get("basis") not in ("latest_provider_response", "legacy_verified_cache_rows"):
+        raise ValueError("invalid_source_row_quality_basis")
+    for key in ("original_rows", "valid_rows", "discarded_rows"):
+        if type(quality.get(key)) is not int or quality[key] < 0:
+            raise ValueError("invalid_source_row_quality_count")
+    reasons = quality.get("discarded_reasons")
+    if (not isinstance(reasons, dict) or any(type(value) is not int or value <= 0 for value in reasons.values()) or
+            sum(reasons.values()) != quality["discarded_rows"] or
+            quality["original_rows"] != quality["valid_rows"] + quality["discarded_rows"]):
+        raise ValueError("inconsistent_source_row_quality_counts")
+
+
+def cache_source_hash(value):
+    evidence = {"provider": "yahoo", "metadata": value.get("provider_metadata"), "rows": value.get("rows")}
+    if "row_quality" in value:
+        evidence["row_quality"] = value["row_quality"]
+    return sha256(canonical(evidence))
+
+
+def cache_row_quality(cache):
+    if "row_quality" in cache:
+        return cache["row_quality"]
+    # Older caches contain already validated rows but no original-response
+    # counter. Do not pretend this is the original HTTP response's row count.
+    return {"basis": "legacy_verified_cache_rows", "original_rows": len(cache["rows"]),
+            "valid_rows": len(cache["rows"]), "discarded_rows": 0, "discarded_reasons": {}}
+
+
 def load_cache(root, target, current):
     path = cache_path(root, target)
     if not path.is_file():
@@ -430,11 +487,12 @@ def load_cache(root, target, current):
         value = json.loads(gzip.decompress(path.read_bytes()))
         if (value.get("version") != CACHE_VERSION or value.get("identity") != cache_identity(target) or
                 value.get("history_sha256") != sha256(canonical(value.get("rows"))) or
-                value.get("source_sha256") != sha256(canonical({"provider": "yahoo", "metadata": value.get("provider_metadata"), "rows": value.get("rows")})) or
+                value.get("source_sha256") != cache_source_hash(value) or
                 instant(value["fetched_at"]) > current or
                 value.get("last_completed_session") != value["rows"][-1]["date"]):
             return None
         validate_rows(value["rows"])
+        validate_row_quality(cache_row_quality(value))
         validate_provider(target, value["provider_metadata"])
         return value
     except (OSError, ValueError, KeyError, TypeError, EOFError):
@@ -464,6 +522,7 @@ def price_provenance(cache, target, *, cache_hit):
             "fetched_at": cache["fetched_at"], "last_session": cache["last_completed_session"],
             "bars": len(cache["rows"]), "history_sha256": cache["history_sha256"],
             "source_sha256": cache["source_sha256"], "cache_hit": cache_hit,
+            "row_quality": cache_row_quality(cache),
             "source_response_symbol": cache["provider_metadata"]["symbol"],
             "source_response_exchange": cache["provider_metadata"]["exchangeName"],
             "source_response_timezone": cache["provider_metadata"]["exchangeTimezoneName"],
@@ -484,7 +543,8 @@ def acquire_bars(target, cache_dir, collector, model, budget, clock):
     start = (date.fromisoformat(cached["last_completed_session"]) - timedelta(days=14)).isoformat() if cached else None
     (frame, metadata), fetched = budget.fetch(collector, target, start)
     validate_provider(target, metadata)
-    rows = frame_rows(frame, target["market"])
+    quality, discarded = {}, set()
+    rows = frame_rows(frame, target["market"], quality=quality, discarded_dates=discarded)
     if cached:
         old = {row["date"]: row for row in cached["rows"]}
         # Splits/provider historical revisions require a fresh consistent series,
@@ -495,8 +555,13 @@ def acquire_bars(target, cache_dir, collector, model, budget, clock):
         if revised or new_split:
             (frame, metadata), fetched = budget.fetch(collector, target, None)
             validate_provider(target, metadata)
-            rows = frame_rows(frame, target["market"])
+            quality, discarded = {}, set()
+            rows = frame_rows(frame, target["market"], quality=quality, discarded_dates=discarded)
         else:
+            # A newly invalid overlapping observation must not silently return
+            # through the older cache. Leave the session absent for label checks.
+            for day in discarded:
+                old.pop(day, None)
             old.update({row["date"]: row for row in rows})
             rows = sorted(old.values(), key=lambda row: row["date"])
     bars = model.normalise_history(rows_frame(rows, target["market"]), target["market"], "daily", fetched)
@@ -508,8 +573,8 @@ def acquire_bars(target, cache_dir, collector, model, budget, clock):
     cache = {"version": CACHE_VERSION, "identity": cache_identity(target), "provider_metadata": metadata,
              "fetched_at": fetched.isoformat(), "last_completed_session": str(bars.iloc[-1]["session"]),
              "history_sha256": sha256(canonical(rows)),
-             "source_sha256": sha256(canonical({"provider": "yahoo", "metadata": metadata, "rows": rows})),
-             "rows": rows}
+             "rows": rows, "row_quality": quality}
+    cache["source_sha256"] = cache_source_hash(cache)
     save_cache(cache_dir, target, cache)
     return bars, fetched, price_provenance(cache, target, cache_hit=False), "fetched"
 
@@ -558,6 +623,8 @@ def process_target(target, *, model, collector, cache_dir, budget, clock):
         kind = exc.kind if isinstance(exc, CollectionStopped) else "source_identity_unverified" if isinstance(exc, SourceIdentityError) else "source_error"
         if isinstance(exc, SourceIdentityError):
             record["source_response_symbol"] = exc.metadata.get("symbol")
+        if isinstance(exc, SourceRowsError):
+            record["source_row_quality"] = exc.quality
         status = "deadline_skipped" if kind == "deadline" and not attempts else "source_error"
         return no_call({**record, "issued_at": clock().isoformat()}, collection_status=status,
                        error_kind=kind, reason=safe_error(exc))
@@ -634,6 +701,7 @@ def validate_record(record, target, completed):
                                   "exchangeName": provenance.get("source_response_exchange"),
                                   "exchangeTimezoneName": provenance.get("source_response_timezone"),
                                   "instrumentType": provenance.get("source_response_instrument_type")})
+        validate_row_quality(provenance.get("row_quality"))
         if instant(record["received_at"]) > instant(record["issued_at"]):
             raise ValueError("receipt_after_issue_time_contract")
     if record.get("recommendation") is not False or record.get("live_validated") is not False:
@@ -645,6 +713,8 @@ def validate_record(record, target, completed):
             raise ValueError("no_call_reason_missing")
         if instant(record["issued_at"]) > completed:
             raise ValueError("future_no_call_timestamp")
+        if "source_row_quality" in record:
+            validate_row_quality(record["source_row_quality"])
         return
     if record.get("status") != "research_prediction" or not record["price_available"]:
         raise ValueError("prediction_without_real_price")

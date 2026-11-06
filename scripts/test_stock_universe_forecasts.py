@@ -147,6 +147,20 @@ def candles(target, dates=None, scale=1):
     return x.rows_frame(rows, target["market"])
 
 
+def real_model_candles(model, target):
+    """TEST-ONLY synthetic prices on the production exchange calendar."""
+    import numpy as np
+    sessions = model.calendar("US", 2026).sessions_in_range("2021-01-01", "2026-11-05")[-900:]
+    rng, price, rows = np.random.default_rng(478), 100., []
+    for session in sessions:
+        opened = price * (1+rng.normal(0, .001))
+        price = opened * np.exp(rng.normal(.0001, .012))
+        rows.append({"date": session.date().isoformat(), "open": opened,
+                     "high": max(opened, price)*1.002, "low": min(opened, price)*.998,
+                     "close": price, "volume": 1000., "splits": 0.})
+    return x.rows_frame(rows, target["market"])
+
+
 class WholeUniverseTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -284,6 +298,76 @@ class WholeUniverseTests(unittest.TestCase):
         row = self.collect(manifest)["records"][0]
         self.assertEqual(row["collection_status"], "fetched")
         self.assertEqual(row["source_fetch_attempts"], 1)
+
+    def test_invalid_ohlc_rows_are_removed_with_exact_response_counts(self):
+        target = self.manifest()["targets"][0]
+        frame = candles(target)
+        frame.iloc[0, frame.columns.get_loc("High")] = frame.iloc[0]["Open"]-1
+        frame.iloc[1, frame.columns.get_loc("Close")] = float("nan")
+        frame.iloc[2, frame.columns.get_loc("Low")] = 0
+        quality = {}
+        rows = x.frame_rows(frame, "US", quality=quality)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(quality, {"basis": "latest_provider_response", "original_rows": 5,
+                                  "valid_rows": 2, "discarded_rows": 3,
+                                  "discarded_reasons": {"inconsistent_ohlc": 1, "nonfinite_ohlc": 1,
+                                                        "nonpositive_ohlc": 1}})
+
+    def test_invalid_prices_do_not_relax_duplicate_or_date_guards(self):
+        target = self.manifest()["targets"][0]
+        frame = candles(target)
+        frame["Close"] = 0
+        duplicate = pd.concat([frame, frame.iloc[[0]]])
+        with self.assertRaisesRegex(ValueError, "duplicate_provider_daily_bar"):
+            x.frame_rows(duplicate, "US")
+        frame.index = pd.DatetimeIndex([pd.NaT] + list(frame.index[1:]))
+        with self.assertRaisesRegex(ValueError, "invalid_provider_daily_date"):
+            x.frame_rows(frame, "US")
+
+    def test_all_invalid_prices_are_no_call_with_counts_and_no_fit(self):
+        manifest = self.manifest()
+        target, model = manifest["targets"][0], TestModel(self.clock)
+        frame = candles(target)
+        frame["Close"] = 0
+        record = self.collect(manifest, model=model, collector=lambda *_: (frame, metadata(target)))["records"][0]
+        self.assertEqual(record["status"], "no_call")
+        self.assertIn("no_valid_candles", record["reason"])
+        self.assertEqual(record["source_row_quality"]["original_rows"], 5)
+        self.assertEqual(record["source_row_quality"]["discarded_rows"], 5)
+        self.assertFalse(record["price_available"])
+        self.assertIsNone(record["probabilities"])
+        self.assertEqual(model.fit_calls, [])
+
+    def test_legacy_valid_cache_remains_usable_with_explicit_count_basis(self):
+        manifest = self.manifest()
+        self.collect(manifest)
+        target = manifest["targets"][0]
+        path = x.cache_path(self.cache, target)
+        cache = json.loads(gzip.decompress(path.read_bytes()))
+        cache.pop("row_quality")
+        cache["source_sha256"] = x.cache_source_hash(cache)
+        x.save_cache(self.cache, target, cache)
+        record = self.collect(manifest, collector=lambda *_: self.fail("legacy valid current cache is usable"))["records"][0]
+        self.assertEqual(record["status"], "research_prediction")
+        self.assertEqual(record["collection_status"], "cache_current")
+        quality = record["price_provenance"]["row_quality"]
+        self.assertEqual(quality["basis"], "legacy_verified_cache_rows")
+        self.assertEqual(quality["discarded_rows"], 0)
+        self.assertEqual(quality["original_rows"], len(cache["rows"]))
+
+    def test_incremental_invalid_bar_cannot_return_from_older_cache(self):
+        manifest = self.manifest()
+        self.collect(manifest)
+        self.clock.advance(4*86400)
+        target = manifest["targets"][0]
+        frame = candles(target, ["2026-11-05", "2026-11-06", "2026-11-09"])
+        frame.iloc[0, frame.columns.get_loc("High")] = 1
+        record = self.collect(manifest, collector=lambda *_: (frame, metadata(target)))["records"][0]
+        cache = x.load_cache(self.cache, target, self.clock.now())
+        self.assertNotIn("2026-11-05", [row["date"] for row in cache["rows"]])
+        self.assertEqual(record["price_provenance"]["row_quality"]["original_rows"], 3)
+        self.assertEqual(record["price_provenance"]["row_quality"]["discarded_rows"], 1)
+        self.assertEqual(record["price_provenance"]["bars"], 5)
 
     def test_rate_limit_backoff_is_bounded_and_rest_are_not_claimed_attempted(self):
         manifest = self.manifest([item(s) for s in ("AAPL", "MSFT", "NVDA", "ON")])
@@ -519,25 +603,61 @@ class WholeUniverseTests(unittest.TestCase):
 
     @unittest.skipUnless(importlib.util.find_spec("exchange_calendars"), "full model dependencies are installed in CI")
     def test_existing_real_model_contract_passes_the_full_shard_and_aggregate_path(self):
-        import numpy as np
         model = x.model_module()
         manifest = self.manifest()
         target = manifest["targets"][0]
-        sessions = model.calendar("US", 2026).sessions_in_range("2021-01-01", "2026-11-05")[-900:]
-        rng, price, rows = np.random.default_rng(478), 100., []
-        for session in sessions:
-            opened = price * (1+rng.normal(0, .001))
-            price = opened * np.exp(rng.normal(.0001, .012))
-            rows.append({"date": session.date().isoformat(), "open": opened,
-                         "high": max(opened, price)*1.002, "low": min(opened, price)*.998,
-                         "close": price, "volume": 1000., "splits": 0.})
-        frame = x.rows_frame(rows, "US")
+        frame = real_model_candles(model, target)
         shard = self.collect(manifest, model=model, collector=lambda *_: (frame, metadata(target)))
         row = shard["records"][0]
         self.assertEqual(row["status"], "research_prediction", row.get("reason"))
         result = x.aggregate(manifest, self.shard_files([shard]), self.catalog, clock=self.clock.now)
         self.assertEqual(result["coverage"]["prediction"], 1)
         self.assertEqual(row["version"], "direction-forecast-1.1")
+
+    @unittest.skipUnless(importlib.util.find_spec("exchange_calendars"), "full model dependencies are installed in CI")
+    def test_real_model_skips_few_bad_bars_without_bridging_missing_sessions(self):
+        model = x.model_module()
+        manifest = self.manifest()
+        target = manifest["targets"][0]
+        frame = real_model_candles(model, target)
+        bad_days = [frame.index[i].date().isoformat() for i in (50, 200, 300)]
+        frame.iloc[50, frame.columns.get_loc("High")] = 1
+        frame.iloc[200, frame.columns.get_loc("Close")] = float("nan")
+        frame.iloc[300, frame.columns.get_loc("Low")] = -1
+        shard = self.collect(manifest, model=model, collector=lambda *_: (frame, metadata(target)))
+        row = shard["records"][0]
+        self.assertEqual(row["status"], "research_prediction", row.get("reason"))
+        self.assertEqual(row["price_provenance"]["row_quality"]["original_rows"], 900)
+        self.assertEqual(row["price_provenance"]["row_quality"]["discarded_rows"], 3)
+        cache = x.load_cache(self.cache, target, self.clock.now())
+        self.assertEqual(len(cache["rows"]), 897)
+        self.assertEqual(cache["row_quality"], row["price_provenance"]["row_quality"])
+        bars = model.normalise_history(x.rows_frame(cache["rows"], "US"), "US", "daily", self.clock.now())
+        labels = model.target_rows(bars, "daily", market="US")
+        calendar = model.calendar("US", 2026)
+        for day in bad_days:
+            previous = str(calendar.previous_session(pd.Timestamp(day)))[:10]
+            index = bars.index[bars["session"].eq(previous)][0]
+            self.assertFalse(labels.loc[index, "valid"])
+        samples, _, _ = model.samples(bars, "daily", market="US")
+        self.assertGreaterEqual(len(samples), 500)
+        result = x.aggregate(manifest, self.shard_files([shard]), self.catalog, clock=self.clock.now)
+        self.assertEqual(result["coverage"]["prediction"], 1)
+
+    @unittest.skipUnless(importlib.util.find_spec("exchange_calendars"), "full model dependencies are installed in CI")
+    def test_invalid_latest_bar_cannot_move_an_expired_target_to_a_future_day(self):
+        model = x.model_module()
+        manifest = self.manifest()
+        target = manifest["targets"][0]
+        frame = real_model_candles(model, target)
+        frame.iloc[-1, frame.columns.get_loc("High")] = 1
+        record = self.collect(manifest, model=model, collector=lambda *_: (frame, metadata(target)))["records"][0]
+        self.assertEqual(record["status"], "no_call")
+        self.assertEqual(record["reason"], "target_already_started_or_delivery_window_too_short")
+        self.assertEqual(record["price_provenance"]["last_session"], "2026-11-04")
+        self.assertEqual(record["price_provenance"]["row_quality"]["discarded_rows"], 1)
+        self.assertIsNone(record["target"])
+        self.assertIsNone(record["probabilities"])
 
 
 if __name__ == "__main__":
