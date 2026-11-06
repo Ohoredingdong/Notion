@@ -10,11 +10,15 @@ import json
 import os
 import re
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from playwright.sync_api import sync_playwright, expect
 
 
-URL = os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html")
+_url = urlsplit(os.environ.get("AUCTION_STUDY_URL", "http://127.0.0.1:8766/auction-study.html"))
+_query = dict(parse_qsl(_url.query))
+_query["view"] = "home"  # The original dashboard is an explicit route beside the new learning home.
+URL = urlunsplit(_url._replace(query=urlencode(_query)))
 KEY = "auction-study-v1"
 
 
@@ -75,7 +79,7 @@ def shell_and_calculator(page):
     expect(page.locator(".cash-number")).to_have_count(0)
     expect(page.locator("#cashSchedule")).to_contain_text("입력 오류")
     page.locator('[data-finance="bid"]').fill("24500")
-    expect(page.locator(".cash-number")).to_contain_text("10,218")
+    expect(page.locator(".cash-number")).to_contain_text("10,217.5")
     page.reload(wait_until="domcontentloaded")
     navigate(page, "money")
     expect(page.locator('[data-finance="bid"]')).to_have_value("24500")
