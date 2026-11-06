@@ -1,10 +1,8 @@
 name: Stock Three-Year Reading
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Stock Investment Cases']
-    types: [completed]
-    branches: [main]
+  # Cases dispatch this explicitly after publication: a normal source refresh
+  # has already used all three workflow_run follow-on levels by that point.
   push:
     branches: [main]
     paths:
@@ -64,3 +62,4 @@ jobs:
             assets/stock-radar-v9.js
             assets/stock-market-groups.js
             assets/stock-investment-cases.js
+

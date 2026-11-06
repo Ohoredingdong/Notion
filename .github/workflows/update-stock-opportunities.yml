@@ -13,6 +13,10 @@ on:
     paths:
       - 'stock-opportunity-universe.json'
       - 'scripts/update_stock_opportunities.py'
+      - 'scripts/stock_revenue_evidence.py'
+      - 'scripts/test_stock_revenue_evidence.py'
+      - 'scripts/stock_technical_evidence.py'
+      - 'scripts/test_stock_technical_evidence.py'
       - 'scripts/stock_fundamental_extensions.py'
       - 'scripts/test_stock_opportunities.py'
       - 'scripts/finalize_stock_opportunities.py'
@@ -63,6 +67,8 @@ jobs:
           python scripts/test_stock_discovery_v9.py
           python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
           PYTHONPATH=scripts python -m unittest scripts.test_stock_price_evidence -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_revenue_evidence -v
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_technical_evidence -v
       - name: Discover and deeply collect real market candidates
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
@@ -102,3 +108,4 @@ jobs:
             assets/stock-radar-v9.js
       - name: Publish research and chart snapshot together safely
         run: python scripts/publish_stock_opportunities.py
+

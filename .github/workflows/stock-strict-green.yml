@@ -2,7 +2,8 @@ name: Strict Green Review
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ['Stock Investment Cases', 'Stock Three-Year Reading']
+    # Cases already compute this gate; re-evaluate once the new reading exists.
+    workflows: ['Stock Three-Year Reading']
     types: [completed]
     branches: [main]
   push:
@@ -73,4 +74,5 @@ jobs:
             scripts/install_stock_term_labels.py
             scripts/install_stock_decision_guide.py
             scripts/publish_stock_investment_cases.py
+
 

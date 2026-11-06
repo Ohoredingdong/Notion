@@ -39,7 +39,7 @@ jobs:
           body=Path('stock-value-radar-data.json').read_bytes()
           data=json.loads(body)
           rows=[]
-          for row in data['companies']:
+          for row in data['rows']:
               evidence=row.get('revenue_growth_evidence') or {}
               issues=comparison_issues(evidence,symbol=row['symbol'],currency=row.get('currency'),
                       current=row.get('revenue'),period=row.get('filing_period'),
