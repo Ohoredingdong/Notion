@@ -320,12 +320,36 @@ function toggleStar(id){const c=company(id);if(!c)return;const v=selectionId(c);
 
 function deep(id){const c=company(id);if(!c)return;if(c.catalog_only){choose(selectionId(c));goto("stockdetail");return}window.open("./stock-value-radar-advanced.html?symbol="+encodeURIComponent(String(c.symbol)),"_blank","noopener");}
 
+function extendedForecastFreshness(feed,now=Date.now()){
+ const records=Array.isArray(feed?.records)?feed.records:[],full=feed?.generation_mode==="full_universe"||!!feed?.coverage;
+ if(!records.length)return {full,warning:"확장 AI 분석 아직 미발행",note:"발행 결과 대기"};
+ const generated=Date.parse(feed.generated_at||"");
+ if(!Number.isFinite(generated)||generated>now)return {full,warning:"확장 AI 분석 기준시각 확인 필요",note:"기준시각 확인 필요"};
+ const age=(now-generated)/60000;
+ if(!full)return {full,rollingDelayed:age>240,warning:null,note:"순환 분석"};
+ // Full-universe work runs on weekdays at 06:55 UTC. Allow three hours for
+ // collection and publication; elapsed wall hours alone do not expire a target.
+ const started=Date.parse(feed.run?.started_at||""),anchor=Number.isFinite(started)?started:generated;
+ const due=new Date(anchor);due.setUTCHours(6,55,0,0);
+ if(due.getTime()<=anchor)due.setUTCDate(due.getUTCDate()+1);
+ while([0,6].includes(due.getUTCDay()))due.setUTCDate(due.getUTCDate()+1);
+ const deadline=due.getTime()+3*60*60*1000;
+ let predicted=0,active=0;
+ for(const r of records){
+  if(r?.status!=="research_prediction")continue;
+  predicted++;const issued=Date.parse(r.issued_at||""),start=Date.parse(r.target?.start||""),end=Date.parse(r.target?.end||"");
+  if(issued<=now&&issued<start&&start<end&&end>now)active++;
+ }
+ return {full,active,nextDue:due.toISOString(),deadline:new Date(deadline).toISOString(),
+  warning:now>deadline?"전체 AI 일간 갱신 지연":null,
+  note:predicted&&active===0?"이전 예측 기간 종료 · 다음 발행 대기":"전체 AI 일간 분석"};
+}
 function ageMinutes(value){const d=Date.parse(value||"");return Number.isFinite(d)?Math.max(0,Math.round((Date.now()-d)/60000)):null}
 function render(){
  const host=document.getElementById("nr-home-content");if(!host)return;
  host.innerHTML=window.StockRadarFlowV2?.render?.()||'<div class="nr-panel" style="padding:24px">투자 레이더 분석 화면을 불러오는 중입니다.</div>';
  const status=document.getElementById("source-status");if(!status)return;
- const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),extendedAge=ageMinutes(D.extended?.generated_at),catalogAge=ageMinutes(D.catalog?.generated_at),warnings=[];
+ const p=ageMinutes(D.raw?.generated_at),m=ageMinutes(D.macro?.generated_at),n=ageMinutes(D.newsLink?.generated_at),ai=ageMinutes(D.direction?.generated_at),extendedFreshness=extendedForecastFreshness(D.extended),catalogAge=ageMinutes(D.catalog?.generated_at),warnings=[];
  if(p!==null&&p>480)warnings.push("종목 자료 "+Math.round(p/60)+"시간 전");
  if(m!==null&&m>360)warnings.push("시장 지표 "+Math.round(m/60)+"시간 전");
  const utcHour=new Date().getUTCHours(),utcDay=new Date().getUTCDay();
@@ -337,8 +361,8 @@ function render(){
  if(!D.financial?.records)extraWarnings.push("공식 재무제표 수집 대기");
  else if(D.financial.refresh_status==="blocked")extraWarnings.push("공식 재무 최근 수집 중단 · 이전 확인값만 유지");
  else if(D.financial.refresh_status==="partial")extraWarnings.push(D.financial.current_run_failed?"공식 재무 일부 수집 실패":"공식 재무 일부 미확인");
-  if(!D.extended?.records?.length)extraWarnings.push("확장 AI 분석 아직 미발행");
- else if(extendedAge!==null&&extendedAge>240&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
+ if(extendedFreshness.warning)extraWarnings.push(extendedFreshness.warning);
+ else if(extendedFreshness.rollingDelayed&&researchHours)extraWarnings.push("확장 AI 분석 갱신 지연");
  if(ai>75&&researchHours)warnings.push("AI 예측 자동 갱신 지연 "+ai+"분");
   if(n===null)warnings.push("뉴스 수집 확인 전");
  else if(n>90||D.newsLink?.stale===true)warnings.push("뉴스 수집 지연 "+n+"분");
@@ -353,7 +377,7 @@ function render(){
  (D.direction?.generated_at?" · AI 파일 확인 "+T(D.direction.generated_at):" · AI 파일 확인 전")+
  (issued?" · 실제 예측 발행 "+T(issued):" · 실제 예측 발행 전 · 미확인");
  const extras=(D.catalog?.generated_at?" · 상장명부 "+T(D.catalog.generated_at):"")+
-  (D.extended?.generated_at?" · 확장 AI "+T(D.extended.generated_at):"")+
+  (D.extended?.generated_at?" · "+(extendedFreshness.full?extendedFreshness.note:"확장 AI")+" "+T(D.extended.generated_at):"")+
    (D.financial?.generated_at?" · 공식 재무 "+T(D.financial.generated_at):"");
  status.textContent=(mobile?sourceSummary+" · AI 발행 "+(issued?T(issued):"전 · 미확인"):summary+extras)+
   (warnings.length?" · 주의: "+warnings.join(" / "):"")+

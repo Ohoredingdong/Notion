@@ -277,14 +277,15 @@ with sync_playwright() as play:
         page.unroute("**/stock-opportunity-data.json*")
         page.evaluate("""() => {
             const snap=window.StockRadarV2Bridge.snapshot();
+            const now=Date.now();
             snap.data.raw.companies.push({
                 symbol:"TEST-BAD",name:"Bad Forecast Sample",market:"US",
                 currency:"USD",price:100,price_session:"2026-11-02"
             });
             snap.data.direction.records.push({
-                symbol:"TEST-BAD",mode:"daily",status:"research_prediction",
-                direction:"up",issued_at:"2026-11-02T01:00:00Z",
-                target:{end:"2026-11-05T01:00:00Z"},
+                symbol:"TEST-BAD",market:"US",mode:"daily",status:"research_prediction",
+                direction:"up",issued_at:new Date(now-60000).toISOString(),
+                target:{start:new Date(now+60000).toISOString(),end:new Date(now+3660000).toISOString()},
                 probabilities:{up:0.9,flat:0.8,down:0.7}
             });
             window.StockRadarV2Bridge.select("TEST-BAD");

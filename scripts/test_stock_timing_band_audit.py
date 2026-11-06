@@ -51,5 +51,16 @@ class FrozenBandAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'missing_frozen_band_feature'):
             validate(r)
 
+    def test_session_complete_policy_preserves_independent_band_check(self):
+        for mode in ('daily', 'intraday'):
+            with self.subTest(mode=mode):
+                r=self.record(mode=mode,vol20=0.018)
+                r.update(version='direction-forecast-1.1',
+                         policy_revision='session-complete-targets-v2')
+                validate(r)
+                r['neutral_band_pct'] += 0.2
+                with self.assertRaisesRegex(ValueError,'neutral_band_policy_mismatch'):
+                    validate(r)
+
 if __name__=='__main__':
     unittest.main()

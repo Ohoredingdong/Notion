@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   canonical-visual-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
       - name: Install browser
         run: |
           pip install 'playwright==1.56.0'
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
       - name: Serve canonical pages
         run: |
           python -m http.server 8765 >/tmp/radar-canonical.log 2>&1 &

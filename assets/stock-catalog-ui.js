@@ -185,7 +185,7 @@
   const x=catalogItem(c,ctx);if(!x)return null;
   const s=sig(c,ctx),cat=ctx.data.catalog,id=selectionId(c),source=safeSource(x.source_url);
   const has=!!s?.active&&!s.stale&&!s.unknown&&typeof s.value==="number"&&Number.isFinite(s.value)&&s.value>=0&&s.value<=1;
-  const headline=has?s.label+" "+n(s.value*100)+"%":s?.stale?"기간 종료 · 과거 예측":s?.r?.status==="no_call"?"미발행 · 자료 대기":"미발행 · 검증 대기";
+  const headline=has?s.label+" "+n(s.value*100)+"%":s?.headline||(s?.stale?"기간 종료 · 과거 예측":s?.r?.status==="no_call"?"미발행 · 자료 대기":"미발행 · 검증 대기");
   const description=s?.status||"아직 유효한 AI 연구 신호가 없습니다.";
   const saved=(ctx.favorites||[]).some(value=>resolve(value,ctx)?.universe_key===c.universe_key);
   return `<section class="fx-panel fx-catalog-preview" aria-label="선택 기업 종합 분석">
