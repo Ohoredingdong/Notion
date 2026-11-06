@@ -373,8 +373,19 @@ def run_view(browser, width, height, root, source):
                total == len(expected) and shown == len(ids) and set(ids) <= expected,
                {'expected': len(expected), 'displayed': total, 'first_ids': ids[:4]})
     now = page.evaluate('Date.now() / 1000')
-    forecast_keys = {identity(row) for feed in ('direction', 'extended') for row in source[feed].get('records', [])}
+    forecast_keys = set().union(*(source['forecast_rows'][feed] for feed in ('direction', 'extended')))
     active = {key: active_forecast(key, source, now) for key in forecast_keys if key in source['union']}
+    eligible_classes = {key for key, rows in source['forecast_rows']['extended'].items()
+                        if key.startswith('US:') and '.' in key and eligible_forecast(rows[0], now)}
+    for canonical, provider in (('US:BRK.B', 'BRK-B'), ('US:MOG.A', 'MOG-A')):
+        rows = source['forecast_rows']['extended'].get(canonical, [])
+        if rows:
+            row = rows[0]
+            verify(f'{width}: provider class {provider} retains canonical identity {canonical}',
+                   row['symbol'] == provider and canonical in forecast_keys
+                   and row.get('catalog_symbol') == canonical.split(':', 1)[1]
+                   and (not eligible_forecast(row, now) or active.get(canonical) is not None),
+                   {'provider': provider, 'canonical': canonical, 'active': active.get(canonical) is not None})
     for filter_name in ('ai', 'up', 'down'):
         expected = {source['union'][key]['selection'] for key, row in active.items()
                     if row and (filter_name == 'ai' or row['direction'] == filter_name)}
@@ -383,7 +394,10 @@ def run_view(browser, width, height, root, source):
         ids = visible_ids(page)
         verify(f'{width}: {filter_name} shows only actual period-valid research signals',
                total == len(expected) and shown == len(ids) and set(ids) <= expected,
-               {'expected_ids': sorted(expected), 'visible_ids': ids, 'denominator': total})
+               {'expected_count': len(expected), 'visible_count': len(ids), 'denominator': total,
+                'unexpected_visible_ids': sorted(set(ids) - expected),
+                'eligible_class_count': len(eligible_classes),
+                'missing_class_ids': sorted(eligible_classes - active.keys())})
     reset_list(page)
     # All fixtures are checked against catalog-minus-raw before browser startup.
     # Fabrinet is already a raw company; it cannot prove access beyond raw104.
