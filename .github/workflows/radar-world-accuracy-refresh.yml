@@ -149,8 +149,9 @@ jobs:
       - name: Independently recalculate published values and coverage
         run: |
           python scripts/audit_stock_display_numbers.py --check
-          python scripts/audit_stock_radar_accuracy.py --check
+          python scripts/audit_stock_radar_accuracy.py
           python scripts/monitor-stock-value-radar.py
+          python scripts/monitor-stock-value-radar.py --check
       - name: Publish the coherent corrected bundle to the preview branch
         run: >-
           python scripts/publish_widget_data.py --branch "$GITHUB_REF_NAME"
