@@ -1,0 +1,44 @@
+name: Research-only Pages deployment stale-lock relief
+on:
+  push:
+    branches:
+      - research/pages-deployment-stale-recovery-20261107
+    paths:
+      - .github/workflows/research-pages-deployment-stale-recovery.yml
+permissions:
+  contents: read
+  pages: write
+concurrency:
+  group: research-pages-stale-lock-once-20261107
+  cancel-in-progress: false
+jobs:
+  cancel-only-confirmed-stale-deployment:
+    if: github.repository == 'Ohoredingdong/Notion' && github.ref == 'refs/heads/research/pages-deployment-stale-recovery-20261107'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEPLOYMENT_ID: 1efe6baa057fa1ea1bf72a71ad297df89148526a
+    steps:
+      - name: Verify server-side status and cancel exactly the stuck Pages deployment if still active
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="repos/${GITHUB_REPOSITORY}/pages/deployments/${DEPLOYMENT_ID}"
+          status="$(gh api "${target}" --jq '.status')"
+          echo "Target Pages deployment status before action: ${status}"
+          echo "One-target recovery; this workflow never runs a forecast or triggers a Pages build." >> "$GITHUB_STEP_SUMMARY"
+          case "${status}" in
+            pending|in_progress|queued)
+              gh api --method POST "${target}/cancel" --silent
+              echo 'One specific stale Pages deployment cancellation API request was accepted (HTTP 204).' >> "$GITHUB_STEP_SUMMARY"
+              echo 'Cancellation is not proof of successful site redeployment.' >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            succeed|deployed|canceled|cancelled|failed|errored)
+              echo "Target already terminal (${status}); no cancellation was sent." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "Unrecognized deployment status ${status}; fail closed without cancellation." >&2
+              exit 1
+              ;;
+          esac
