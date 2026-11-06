@@ -1,0 +1,55 @@
+name: Inspect Official Financial Source Record
+on:
+  push:
+    branches: [feat/radar-world-flow-20261106]
+    paths: ['.github/radar-financial-probe-request.json']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'requests>=2.32,<3'
+      - name: Read the exact official accounts without logging credentials
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,requests
+          req=json.load(open('.github/radar-financial-probe-request.json'))
+          assert req['branch']==os.environ['GITHUB_REF_NAME']=='feat/radar-world-flow-20261106'
+          assert req['operation']=='inspect-official-balance-sheet'
+          assert req['corp_code']=='01201970' and req['bsns_year']=='2026' and req['reprt_code']=='11012'
+          key=os.environ.get('DART_API_KEY')
+          if not key:raise SystemExit('Configured DART credential is unavailable')
+          out=pathlib.Path('financial-source-evidence');out.mkdir(exist_ok=True)
+          for endpoint in ('fnlttMultiAcnt.json','fnlttSinglAcntAll.json'):
+              params={k:req[k] for k in ('corp_code','bsns_year','reprt_code')}
+              params['crtfc_key']=key
+              if endpoint=='fnlttSinglAcntAll.json':params['fs_div']='CFS'
+              try:
+                  response=requests.get('https://opendart.fss.or.kr/api/'+endpoint,params=params,timeout=30)
+                  if response.status_code!=200:raise RuntimeError('official_http_'+str(response.status_code))
+                  body=response.json()
+              except Exception as exc:
+                  raise SystemExit('Official source read failed: '+type(exc).__name__) from None
+              (out/endpoint).write_text(json.dumps(body,ensure_ascii=False,indent=2)+'\n')
+              rows=body.get('list') or []
+              print(json.dumps({'endpoint':endpoint,'status':body.get('status'),'rows':len(rows)},ensure_ascii=False))
+              for row in rows:
+                  name=row.get('account_nm','')
+                  if name in ('자산총계','부채총계','자본총계','자본총액','총자산','총부채','총자본'):
+                      print(json.dumps({'endpoint':endpoint,**{k:row.get(k) for k in ('rcept_no','corp_code','fs_div','sj_div','account_id','account_nm','thstrm_nm','thstrm_dt','thstrm_amount','ord')}},ensure_ascii=False))
+              if body.get('status')!='000':raise SystemExit('Official source did not return accounts')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-financial-account-source-evidence
+          path: financial-source-evidence/
+          retention-days: 14
