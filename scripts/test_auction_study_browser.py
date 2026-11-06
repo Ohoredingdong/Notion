@@ -79,7 +79,7 @@ def shell_and_calculator(page):
     expect(page.locator(".cash-number")).to_have_count(0)
     expect(page.locator("#cashSchedule")).to_contain_text("입력 오류")
     page.locator('[data-finance="bid"]').fill("24500")
-    expect(page.locator(".cash-number")).to_contain_text("10,218")
+    expect(page.locator(".cash-number")).to_contain_text("10,217.5")
     page.reload(wait_until="domcontentloaded")
     navigate(page, "money")
     expect(page.locator('[data-finance="bid"]')).to_have_value("24500")
