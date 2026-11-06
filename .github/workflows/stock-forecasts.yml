@@ -34,7 +34,7 @@ concurrency:
 jobs:
   research:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     env:
       OMP_NUM_THREADS: '1'
@@ -92,7 +92,7 @@ jobs:
       - name: Test actual forecast and autonomous status screens
         if: steps.market_gate.outputs.active == 'true'
         run: |
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
           python -m http.server 8769 >/tmp/forecast-http.log 2>&1 &
           python scripts/test_stock_forecast_browser.py
           python scripts/test_stock_forecast_learning_browser.py
