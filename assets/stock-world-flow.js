@@ -111,7 +111,7 @@
    <div class="fx-worldflow-values"><strong data-worldflow-value>${E(valueText(row))}</strong><b class="is-${row.direction}" data-worldflow-change>${E(changeText(row))}</b></div>
    <p>${E(observationText(row))}</p><p>직전 비교: ${E(row.previousSession||"세션 미확인")} · ${E(previous)}${row.category==="yield"?" · 1bp = 0.01%p":""}</p>
    <p>${E(precision)}${row.category==="commodity"?" 연속선물 가격으로 현물 가격과 다릅니다.":""}</p>
-   <footer>${link(row.href,(row.source.provider||"제공처")+" 원문 ↗")}<span>수신 ${E(time(row.raw.received_at))}</span></footer>
+   <div class="fx-worldflow-source">${link(row.href,(row.source.provider||"제공처")+" 원문 ↗")}<span>수신 ${E(time(row.raw.received_at))}</span></div>
   </article>`;
  }
  function render(ctx,now=Date.now()){

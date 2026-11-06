@@ -121,6 +121,8 @@ test('Reported news is safely escaped and future or stale news is excluded',()=>
 });
 test('All fourteen indicator details retain independent dates, source links and units',()=>{
  const html=flow.render({data:{worldFlow:fixture()}},now);assert.equal((html.match(/data-worldflow-indicator=/g)||[]).length,14);
+ assert.equal((html.match(/<div class="fx-worldflow-source"><a /g)||[]).length,14);
+ assert.doesNotMatch(html,/<footer\b/);
  assert.match(html,/원 \/ 1 USD/);assert.match(html,/USD \/ 배럴/);assert.match(html,/USD \/ 트로이온스/);assert.match(html,/1bp = 0\.01%p/);
 });
 console.log('WORLD_FLOW_CONTRACT_PASS',count);

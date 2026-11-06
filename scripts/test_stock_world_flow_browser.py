@@ -189,11 +189,20 @@ def main():
                                     check(f'{width}: {key} change value and unit match independently computed source', number is not None and abs(float(number.group().replace(',', '')) - row['change']) <= .0051 and ('bp' in text if key == 'us10y' else '%' in text), text)
                                 if row.get('precision') == 'source_date':
                                     check(f'{width}: {key} date-only source has no invented observation clock', row['session'] + ' 자료 · 발표 시각 미제공' in detail.inner_text())
-                                check(f'{width}: {key} source opens its saved HTTPS URL', detail.locator('footer a').get_attribute('href') == next(item['source']['url'] for item in feed['indicators'] if item['id'] == key))
+                                source_link = detail.locator('.fx-worldflow-source a')
+                                check(f'{width}: {key} source opens its saved HTTPS URL', source_link.get_attribute('href') == next(item['source']['url'] for item in feed['indicators'] if item['id'] == key))
+                                check(f'{width}: {key} source link is rendered visibly', source_link.is_visible())
+                                source_link.scroll_into_view_if_needed()
+                                # Trial click checks real pointer actionability without opening the provider.
+                                source_link.click(trial=True, timeout=5000)
+                                source_link.focus()
+                                check(f'{width}: {key} source link accepts focus and keyboard navigation', source_link.evaluate('(link) => document.activeElement === link && link.tabIndex >= 0'))
                         check(f'{width}: dialog fits the viewport and its own body scrolls', page.evaluate("""() => {
                             const d=document.querySelector('.fx-worldflow-dialog'),b=d.getBoundingClientRect(),body=d.querySelector('.fx-worldflow-dialog-body');
                             return b.x>=0&&b.right<=innerWidth+1&&b.y>=0&&b.bottom<=innerHeight+1&&body.clientHeight>0&&body.scrollWidth<=body.clientWidth+1;
                         }"""))
+                        dialog.locator('[data-worldflow-close]').focus()
+                        dialog.locator('.fx-worldflow-dialog-body').evaluate('(body) => { body.scrollTop = 0; }')
                         shot = out / f'world-flow-{width}-sources.png'
                         page.screenshot(path=str(shot), full_page=True)
                         report['screenshots'].append(str(shot))
