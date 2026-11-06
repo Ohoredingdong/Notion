@@ -28,7 +28,8 @@ from playwright.sync_api import sync_playwright
 REPO = Path(__file__).resolve().parents[1]
 KEY = 'miniature-kitchen-preview-v1'
 CLOCK = datetime.fromisoformat('2026-11-05T03:00:00+00:00')
-PROFILES = ((320, 360), (390, 480), (720, 500), (800, 600), (390, 844))
+PROFILES = ((320, 360), (390, 480), (720, 500), (800, 600), (390, 844),
+            (561, 800), (562, 800))
 TABS = ('fridge', 'meals', 'records', 'kitchen')
 ENTRIES = {'native': 'miniature-kitchen-widget.html', 'opaque': 'mobile/widget.html'}
 B6_PROFILES = ((320, 360), (320, 568), (390, 480))
@@ -66,7 +67,68 @@ def state(frame):
     }''')
 
 
-METRICS = '''()=>{
+PAINT_HELPERS = '''
+  const boxOf=e=>{if(!e||!e.getClientRects().length)return null;
+    const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,
+      right:r.right,bottom:r.bottom}};
+  const overlap=(...rs)=>{if(rs.some(r=>!r))return null;
+    const x=Math.max(...rs.map(r=>r.x)),y=Math.max(...rs.map(r=>r.y));
+    const right=Math.min(...rs.map(r=>r.right)),bottom=Math.min(...rs.map(r=>r.bottom));
+    return {x,y,right,bottom,width:Math.max(0,right-x),height:Math.max(0,bottom-y)}};
+  const paintedPhoto=async container=>{
+    const svg=container?.querySelector('svg.recipe-photo[data-recipe-photo]');
+    const frame=boxOf(container),box=boxOf(svg);
+    if(!frame||!box||frame.width<=0||frame.height<=0||box.width<=0||box.height<=0)return null;
+    const vb=svg.viewBox.baseVal,m=svg.getScreenCTM();if(!m)return null;
+    const points=[[vb.x,vb.y],[vb.x+vb.width,vb.y],[vb.x,vb.y+vb.height],
+      [vb.x+vb.width,vb.y+vb.height]].map(([x,y])=>new DOMPoint(x,y).matrixTransform(m));
+    const x=Math.min(...points.map(p=>p.x)),y=Math.min(...points.map(p=>p.y));
+    const right=Math.max(...points.map(p=>p.x)),bottom=Math.max(...points.map(p=>p.y));
+    const projected={x,y,right,bottom,width:right-x,height:bottom-y};
+    const visible=overlap(projected,box,frame),sx=Math.hypot(m.a,m.b),sy=Math.hypot(m.c,m.d);
+    if(!sx||!sy)return null;
+    const image=svg.querySelector('image[href]'),clip=svg.querySelector('clipPath rect');
+    const atlas={decoded:false};
+    if(image){try{const probe=new Image();probe.src=image.getAttribute('href');await probe.decode();
+      atlas.decoded=true;atlas.naturalWidth=probe.naturalWidth;atlas.naturalHeight=probe.naturalHeight;
+      atlas.width=image.width.baseVal.value;atlas.height=image.height.baseVal.value;
+      atlas.x=image.x.baseVal.value;atlas.y=image.y.baseVal.value;
+    }catch(_){atlas.error='Actual recipe atlas failed to decode'}}
+    return {frame,svg:box,projected,visible,recipe:svg.dataset.recipePhoto,
+      viewBox:{x:vb.x,y:vb.y,width:vb.width,height:vb.height},
+      atlas,clip:clip?{x:clip.x.baseVal.value,y:clip.y.baseVal.value,
+        width:clip.width.baseVal.value,height:clip.height.baseVal.value}:null,
+      scale:{x:sx,y:sy,shear:(m.a*m.c+m.b*m.d)/(sx*sy)},
+      blankFraction:1-visible.width*visible.height/(frame.width*frame.height)};
+  };
+  const textRanges=root=>{
+    if(!root||!boxOf(root))return [];
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),rows=[];
+    for(let node;node=walker.nextNode();){const text=node.textContent.trim(),element=node.parentElement;
+      if(!text||!element||element.closest('.sr-only,[hidden],[aria-hidden="true"]')||!boxOf(element))continue;
+      // Icon glyph line boxes may intentionally exceed their painted arrow;
+      // accessible button hit targets are checked separately from recipe data.
+      if(element.closest('button[aria-label]')&&/^[›‹×↶←→]+$/.test(text))continue;
+      const range=document.createRange();range.selectNodeContents(node);
+      for(const r of range.getClientRects()){
+        if(!r.width||!r.height)continue;
+        let readable=r.left>=-1&&r.right<=innerWidth+1&&r.top>=-1&&r.bottom<=innerHeight+1;
+        for(let ancestor=element;ancestor;ancestor=ancestor.parentElement){
+          const css=getComputedStyle(ancestor),b=ancestor.getBoundingClientRect();
+          if(css.visibility==='hidden'||Number(css.opacity)===0)readable=false;
+          if(/hidden|clip|auto|scroll/.test(css.overflowX)&&
+            (r.left<b.left-1||r.right>b.right+1))readable=false;
+          if(/hidden|clip|auto|scroll/.test(css.overflowY)&&
+            (r.top<b.top-1||r.bottom>b.bottom+1))readable=false;
+        }
+        rows.push({text:text.slice(0,100),x:r.x,y:r.y,width:r.width,height:r.height,readable});
+      }
+    }return rows;
+  };
+'''
+
+
+METRICS = '''async()=>{''' + PAINT_HELPERS + '''
   const rect=e=>{if(!e||!e.getClientRects().length)return null;
     const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,
       height:r.height,right:r.right,bottom:r.bottom}};
@@ -83,19 +145,31 @@ METRICS = '''()=>{
   return {viewport:{width:innerWidth,height:innerHeight},
     document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
     shell:one('.shell'),header:one('.shell>.masthead'),nav:one('.home-shortcuts'),
+    headerPosition:getComputedStyle(document.querySelector('.masthead')).position,
+    navCount:[...document.querySelectorAll('.home-shortcuts')].filter(e=>e.getClientRects().length).length,
+    visibleMainTabs:[...document.querySelectorAll('[data-home-tab]')].filter(e=>e.getClientRects().length).length,
     panel:panel?{id:panel.id,rect:rect(panel),width:panel.clientWidth,height:panel.clientHeight,
       scrollWidth:panel.scrollWidth,scrollHeight:panel.scrollHeight}:null,
     tabs:[...document.querySelectorAll('.home-shortcuts [data-home-tab]')].map(control),
     add:control(document.querySelector('#addFood')),
     scene:{host:one('#fridgeSceneHost'),photo:rect(photo),world:rect(world),
+      canvas:rect(panel),
       stage:one('#fridgeSceneHost .fridge-stage'),
       natural:photo?{width:photo.naturalWidth,height:photo.naturalHeight,complete:photo.complete}:null,
       matrix:matrix?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d}:null},
+    balance:[...document.querySelectorAll('#dailyBalance [data-balance]')].map(e=>({
+      key:e.dataset.balance,rect:rect(e),text:e.textContent.trim()})),
+    recipe:{card:one('#homeRecommendation .recipe-hub-card'),
+      id:document.querySelector('#homeRecommendation .home-recipe-photo')?.dataset.arg,
+      photo:await paintedPhoto(document.querySelector('#homeRecommendation .home-recipe-photo')),
+      open:control(document.querySelector('#homeRecommendation .home-recipe-arrow')),
+      copy:one('#homeRecommendation .home-recipe-copy'),
+      text:textRanges(document.querySelector('#homeRecommendation .home-recipe-copy'))},
     home:document.body.dataset.home};
 }'''
 
 
-DETAIL = '''()=>{
+DETAIL = '''async()=>{''' + PAINT_HELPERS + '''
   const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,
     width:r.width,height:r.height,right:r.right,bottom:r.bottom}};
   const pane=document.querySelector('#tray .recipe-ingredients-section'),bounds=rect(pane);
@@ -109,6 +183,8 @@ DETAIL = '''()=>{
     return {text:e.textContent.trim(),rect:r,centerHit:hit===e||e.contains(hit)}});
   return {viewport:{width:innerWidth,height:innerHeight},tray,
     pane:bounds,scrollHeight:pane.scrollHeight,scrollTop:pane.scrollTop,scrollY,rows,actions,
+    photo:await paintedPhoto(document.querySelector('#tray .recipe-hero')),
+    text:textRanges(document.querySelector('#tray .recipe-detail-overview')),
     documentWidth:document.documentElement.scrollWidth};
 }'''
 
@@ -128,18 +204,83 @@ SUCCESS = '''()=>{
 }'''
 
 
+REGISTRATION = '''()=>{
+  const rect=e=>{if(!e||!e.getClientRects().length)return null;
+    const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,
+      right:r.right,bottom:r.bottom}};
+  const tray=document.querySelector('#tray'),content=document.querySelector('#trayContent');
+  const control=e=>{const r=rect(e);if(!r)return {rect:null};
+    const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+    const clip={x:0,y:0,right:innerWidth,bottom:innerHeight};
+    for(let parent=e.parentElement;parent;parent=parent.parentElement){
+      const css=getComputedStyle(parent),b=parent.getBoundingClientRect();
+      if(/hidden|clip|auto|scroll/.test(css.overflowX)){
+        clip.x=Math.max(clip.x,b.left);clip.right=Math.min(clip.right,b.right)}
+      if(/hidden|clip|auto|scroll/.test(css.overflowY)){
+        clip.y=Math.max(clip.y,b.top);clip.bottom=Math.min(clip.bottom,b.bottom)}
+    }
+    return {text:e.textContent.replace(/\\s+/g,' ').trim(),workflow:e.dataset.wf,
+      title:e.querySelector('strong')?.textContent.trim(),rect:r,clip,
+      disabled:!!e.disabled,centerHit:hit===e||e.contains(hit)};
+  };
+  const methods=[...document.querySelectorAll('#tray .registration-method')].map(control);
+  const actions=[...document.querySelectorAll('#tray .photo-read-actions>button,'+
+    '#tray .registration-secondary [data-wf="manualNoPhoto"]')].map(control);
+  const fields=[...document.querySelectorAll('#addIngredientForm .registration-primary [name]')]
+    .map(e=>({...control(e),name:e.name}));
+  return {route:tray.dataset.workflowRoute,viewport:{width:innerWidth,height:innerHeight},
+    tray:rect(tray),content:{rect:rect(content),scrollTop:content.scrollTop},
+    methods,actions,photoSlots:[...document.querySelectorAll('#tray .photo-slot')].map(e=>({
+      axis:e.querySelector('[data-photo]')?.dataset.photo,
+      label:e.querySelector('.photo-slot-title')?.textContent.trim(),
+      control:control(e.querySelector('.photo-slot-media'))})),
+    save:control(document.querySelector('#addIngredientForm [type="submit"]')),fields};
+}'''
+
+
 class Audit:
     def __init__(self, evidence):
         self.evidence = evidence
 
-    def check(self, value, message, detail=None):
-        row = {'passed': bool(value), 'name': message}
+    def check(self, value, message, detail=None, category='functional'):
+        row = {'passed': bool(value), 'name': message, 'category': category}
         if detail is not None:
             row['detail'] = detail
         self.evidence.setdefault('checks', []).append(row)
 
     def caught(self, error):
         self.check(False, 'Browser journey completes', str(error))
+
+
+def finish_case(evidence):
+    checks = evidence['checks']
+    reference = [c for c in checks if c['category'] == 'reference-composition']
+    if evidence.get('reference_checks_required') and not reference:
+        Audit(evidence).check(False, 'Reference composition checks actually ran', category='reference-composition')
+        reference = [checks[-1]]
+    evidence['functional_passed'] = all(c['passed'] for c in checks if c['category'] == 'functional')
+    evidence['reference_composition_check_count'] = len(reference)
+    evidence['reference_composition_checks_passed'] = all(c['passed'] for c in reference) if reference else None
+    evidence['passed'] = all(c['passed'] for c in checks)
+    return evidence
+
+
+def breakpoint_continuity(cases, kind):
+    pair = [next(c for c in cases if c['id'] == f'{kind}-{width}x800') for width in (561, 562)]
+    frames = [c['screens'].get('fridge') for c in pair]
+    audit = Audit(pair[1])
+    stages = [m['scene']['stage'] if m else None for m in frames]
+    ratio = stages[1]['width']/stages[0]['width'] if all(stages) and stages[0]['width'] > 0 else None
+    audit.check(ratio is not None and .97 <= ratio <= 1.03,
+                'A one-pixel host change at561/562 does not abruptly shrink the fridge projection',
+                {'stage_widths': [s['width'] if s else None for s in stages], 'ratio': ratio},
+                category='reference-composition')
+    fonts = [[t.get('fontSize') for t in m['tabs']] if m else [] for m in frames]
+    audit.check(len(fonts[0]) == len(fonts[1]) == 4
+                and all(abs(a-b) <= 1 for a, b in zip(*fonts)),
+                'UI text sizing is independent of the fridge breakpoint projection', fonts,
+                category='reference-composition')
+    finish_case(pair[1])
 
 
 def inside(inner, outer, tolerance=1):
@@ -162,16 +303,22 @@ def primary(audit, control, width, height, label):
 
 def main_geometry(audit, metrics, width, height, reference):
     shell, header, nav, panel = (metrics[k] for k in ('shell', 'header', 'nav', 'panel'))
-    audit.check(bool(shell and abs(shell['width']-width) <= 1 and abs(shell['x']) <= 1),
-                'Widget fills actual host width without height-driven narrowing', shell)
-    audit.check(bool(shell and shell['y'] >= -1 and shell['bottom'] <= height+1
-                     and min(height, 300) <= shell['height'] <= min(height, 520)+1),
-                'Widget height fits the host and remains bounded at 520px', shell)
-    audit.check(bool(header and 43.5 <= header['height'] <= 48.5 and abs(header['y']) <= 1),
-                'Compact brand header stays at the top and 44–48px high', header)
-    audit.check(bool(nav and 43.5 <= nav['height'] <= 48.5 and header
-                     and abs(nav['y']-header['bottom']) <= 1),
-                'Text navigation stays below the header and 44–48px high', nav)
+    audit.check(bool(shell and shell['width'] > 0 and shell['height'] > 0
+                     and inside(shell, viewport_box(width, height))),
+                'Natural widget canvas fits available host space without overflow', shell)
+    audit.check(bool(nav and shell and metrics['navCount'] == 1
+                     and metrics['visibleMainTabs'] == 4 and abs(nav['bottom']-shell['bottom']) <= 2),
+                'Reference main navigation appears once at the bottom of the canvas',
+                {'nav': nav, 'shell': shell, 'count': metrics['navCount']}, category='reference-composition')
+    if metrics['home'] == 'fridge':
+        audit.check(bool(header and panel and inside(header, panel['rect'])
+                         and metrics['headerPosition'] == 'absolute'),
+                    'Fridge branding overlays the photograph rather than reserving a chrome row',
+                    {'header': header, 'position': metrics['headerPosition']}, category='reference-composition')
+    else:
+        audit.check(header is None and bool(panel and abs(panel['rect']['y']-shell['y']) <= 2),
+                    'Non-fridge tabs start with their own content, without an extra brand header',
+                    {'header': header, 'panel': panel}, category='reference-composition')
     audit.check([c['label'] for c in metrics['tabs']] == ['냉장고', '레시피', '기록', '내 부엌']
                 and sum(c.get('selected') == 'true' for c in metrics['tabs']) == 1
                 and sum(c.get('tabIndex') == 0 for c in metrics['tabs']) == 1,
@@ -193,7 +340,7 @@ def main_geometry(audit, metrics, width, height, reference):
         primary(audit, control, frame_width, frame_height, control['label'])
 
 
-def scene_geometry(audit, scene, width, height):
+def scene_geometry(audit, scene, width, height, balance):
     photo, world, stage, host = (scene[k] for k in ('photo', 'world', 'stage', 'host'))
     natural, matrix = scene['natural'], scene['matrix']
     audit.check(bool(natural and natural['complete']
@@ -204,26 +351,176 @@ def scene_geometry(audit, scene, width, height):
                      and abs(matrix['b']) < .001 and abs(matrix['c']) < .001
                      and abs(photo['width']-photo['height']) <= 1
                      and all(abs(photo[k]-world[k]) <= 1 for k in ('x', 'y', 'width', 'height'))),
-                'Kitchen art uses one uniform projection, with no stretched photo', scene)
+                'Kitchen art uses one uniform projection, with no stretched photo', scene,
+                category='reference-composition')
     if photo and stage:
         scale = photo['width']/1254
         expected = {'x': photo['x']+278*scale, 'y': photo['y']+352*scale,
                     'width': 699*scale, 'height': 776*scale}
         audit.check(all(abs(stage[k]-expected[k]) <= 1 for k in expected),
                     'Fridge cabinet remains registered to native photograph coordinates',
-                    {'actual': stage, 'expected': expected})
+                    {'actual': stage, 'expected': expected}, category='reference-composition')
     else:
-        audit.check(False, 'Fridge photograph and projected cabinet exist', scene)
+        audit.check(False, 'Fridge photograph and projected cabinet exist', scene, category='reference-composition')
     # The surrounding background may intentionally crop. The actual cabinet
     # corners must remain inside its scene host and the embed viewport.
     audit.check(inside(stage, host) and inside(stage, viewport_box(width, height)),
-                'Actual fridge cabinet corners are not cropped by the scene host', scene)
+                'Actual fridge cabinet corners are not cropped by the scene host', scene,
+                category='reference-composition')
+    canvas = scene['canvas']
+    if photo and canvas:
+        covered_width = max(0, min(photo['right'], canvas['right'])-max(photo['x'], canvas['x']))
+        covered_height = max(0, min(photo['bottom'], canvas['bottom'])-max(photo['y'], canvas['y']))
+        coverage = covered_width*covered_height/(canvas['width']*canvas['height'])
+    else:
+        coverage = 0
+    audit.check(coverage >= .945,
+                'One continuous kitchen photograph covers the home canvas without a large blank band or sidebar',
+                {'photo_coverage': coverage, 'photo': photo, 'canvas': canvas}, category='reference-composition')
+    audit.check(bool(canvas and natural and canvas['height'] > 0
+                     and abs(canvas['width']/canvas['height']-natural['width']/natural['height']) <= .055),
+                'The home canvas follows the native photograph composition instead of forcing a wide host crop',
+                canvas, category='reference-composition')
+    rows = [b['rect'] for b in balance if b['rect']]
+    audit.check(len(rows) == 3 and {b['key'] for b in balance} == {'carb', 'protein', 'fat'}
+                and max(r['y'] for r in rows)-min(r['y'] for r in rows) <= 1.5
+                and all(inside(r, canvas) for r in rows)
+                and rows[0]['right'] <= rows[1]['x']+1 and rows[1]['right'] <= rows[2]['x']+1,
+                'Reference nutrition summary keeps all three values in one horizontal row',
+                balance, category='reference-composition')
+
+
+def recipe_photo_geometry(audit, photo, label, recipe_id):
+    number = int(recipe_id.removeprefix('recipe-')) if recipe_id and recipe_id.removeprefix('recipe-').isdigit() else 0
+    expected_viewbox = {'x': (number-1) % 2 * 512, 'y': (number-1) // 2 * 384, 'width': 512, 'height': 384}
+    audit.check(bool(photo and 1 <= number <= 8 and photo['recipe'] == recipe_id
+                     and photo['viewBox'] == expected_viewbox and photo['clip'] == expected_viewbox
+                     and photo['atlas']['decoded']
+                     and photo['atlas']['naturalWidth'] == photo['atlas']['width'] == 1024
+                     and photo['atlas']['naturalHeight'] == photo['atlas']['height'] == 1536
+                     and photo['atlas']['x'] == photo['atlas']['y'] == 0),
+                label+' uses the actual selected recipe photograph', photo)
+    audit.check(bool(photo and photo['scale']['x'] > 0
+                     and photo['scale']['y'] > 0
+                     and abs(photo['scale']['x']/photo['scale']['y']-1) <= .005
+                     and abs(photo['scale']['shear']) <= .005),
+                label+' preserves the actual photograph aspect while allowing a crop',
+                photo, category='reference-composition')
+    audit.check(bool(photo and photo['blankFraction'] <= .055),
+                label+' painted photograph leaves at most about 5% blank frame area',
+                photo, category='reference-composition')
+
+
+def recipe_home_geometry(audit, metrics):
+    recipe, panel = metrics['recipe'], metrics['panel']
+    recipe_photo_geometry(audit, recipe['photo'], 'Recommended recipe', recipe['id'])
+    audit.check(bool(recipe['text']) and all(t['readable'] for t in recipe['text']),
+                'Actual recommendation name, timing and nutrition text remain readable', recipe['text'])
+    primary(audit, recipe['open'], metrics['viewport']['width'], metrics['viewport']['height'],
+            'Recommended recipe detail control')
+    card, copy, photo = recipe['card'], recipe['copy'], recipe['photo']
+    if not card or not copy or not photo:
+        return
+    frame = photo['frame']
+    overlap_width = max(0, min(frame['right'], copy['right'])-max(frame['x'], copy['x']))
+    overlap_height = max(0, min(frame['bottom'], copy['bottom'])-max(frame['y'], copy['y']))
+    audit.check(overlap_width <= 1 or overlap_height <= 1,
+                'Recipe photograph and actual information do not overlap',
+                {'photo': frame, 'copy': copy}, category='reference-composition')
+    side_by_side = frame['right'] <= copy['x']+1 and min(frame['bottom'], copy['bottom']) > max(frame['y'], copy['y'])
+    # These targets distinguish a short embed from a reference-sized card;
+    # they do not claim that exact canvas dimensions are user-approved.
+    normal_space = panel['height'] >= 360
+    if normal_space:
+        audit.check(frame['width'] >= card['width']*.94 and copy['y'] >= frame['bottom']-1,
+                    'With normal vertical space the reference hero spans the card above its copy',
+                    {'card': card, 'photo': frame, 'copy': copy}, category='reference-composition')
+    if side_by_side:
+        audit.check(not normal_space and abs(frame['width']/frame['height']-4/3) <= .04,
+                    'A short-card photo/copy arrangement uses a matched 4:3 photograph frame',
+                    {'panel_height': panel['height'], 'photo': frame, 'copy': copy}, category='reference-composition')
+
+
+def registration_targets(audit, controls, geometry, label):
+    for control in controls:
+        primary(audit, control, geometry['viewport']['width'], geometry['viewport']['height'],
+                label+' '+(control.get('title') or control.get('text') or 'control'))
+        audit.check(inside(control.get('rect'), geometry['tray'])
+                    and inside(control.get('rect'), control.get('clip')),
+                    label+' target is initially inside the modal and every clipping ancestor', control)
+    overlaps = []
+    for index, first in enumerate(controls):
+        for second in controls[index+1:]:
+            a, b = first.get('rect'), second.get('rect')
+            if not a or not b:
+                continue
+            width = max(0, min(a['right'], b['right'])-max(a['x'], b['x']))
+            height = max(0, min(a['bottom'], b['bottom'])-max(a['y'], b['y']))
+            if width*height > .01:
+                overlaps.append({'first': first.get('workflow', first.get('text')),
+                                 'second': second.get('workflow', second.get('text')),
+                                 'width': width, 'height': height, 'area': width*height})
+    audit.check(not overlaps, label+' initial hitboxes do not overlap', overlaps)
+
+
+def registration_journey(audit, page, frame, folder, label, original, screens):
+    # These routes remain read-only: no file selection, OCR or form submission.
+    # Actual two-file selection/save is covered by the separate business suite.
+    close_tray(frame)
+    frame.locator('.home-shortcuts [data-home-tab="fridge"]').click()
+    frame.locator('#addFood').click()
+    methods = capture(page, frame, folder, label+'-ingredient-methods', REGISTRATION)
+    screens['ingredient-methods'] = methods
+    audit.check(methods['route'] == 'add'
+                and [(m.get('workflow'), m.get('title')) for m in methods['methods']] == [
+                    ('photos', '제품·기한 사진 2장'), ('manualAdd', '직접 입력'), ('fridgePhoto', '사진 보며 입력')],
+                'A2 retains all three actual registration choices', methods['methods'])
+    registration_targets(audit, methods['methods'], methods, 'A2 registration method')
+    preservation(audit, frame, original, 'Read-only registration choices preserve exact stored records')
+    frame.locator('#tray [data-wf="photos"]').click()
+    photos = capture(page, frame, folder, label+'-ingredient-photos', REGISTRATION)
+    screens['ingredient-photos'] = photos
+    audit.check(photos['route'] == 'photos'
+                and [(p['axis'], p['label']) for p in photos['photoSlots']] == [
+                    ('product', '제품 사진'), ('expiry', '기한 사진')],
+                'A3 retains separate real product and expiry photo inputs', photos['photoSlots'])
+    audit.check({a.get('workflow') for a in photos['actions']} == {
+        'retakePhotos', 'readPhotos', 'manualNoPhoto'} and len(photos['actions']) == 3,
+        'A3 retains retake, read and manual-entry actions', photos['actions'])
+    read = next((a for a in photos['actions'] if a.get('workflow') == 'readPhotos'), None)
+    audit.check(bool(read and read['disabled']),
+                'Recognition stays disabled while the required two photos are absent')
+    registration_targets(audit, [p['control'] for p in photos['photoSlots']], photos, 'A3 photo input')
+    registration_targets(audit, photos['actions'], photos, 'A3 photo/manual action')
+    preservation(audit, frame, original, 'Read-only photo selection screen preserves exact stored records')
+    frame.locator('#tray [data-wf="manualNoPhoto"]').click()
+    manual = capture(page, frame, folder, label+'-ingredient-manual', REGISTRATION)
+    screens['ingredient-manual'] = manual
+    audit.check(manual['route'] == 'manualAdd'
+                and {f['name'] for f in manual['fields']} == {'name', 'quantity', 'expiry', 'zone'},
+                'A4 retains the actual ingredient name, quantity, expiry and location fields')
+    registration_targets(audit, [manual['save']], manual, 'A4 manual ingredient save')
+    preservation(audit, frame, original, 'Opening the unsubmitted manual form preserves exact stored records')
+    close_tray(frame)
+    preservation(audit, frame, original, 'Closing read-only registration preserves original v1 text and envelope')
 
 
 def open_page(browser, origin, path, width, height, errors, requests, raw=None):
     context = browser.new_context(viewport={'width': width, 'height': height},
                                   locale='ko-KR', timezone_id='Asia/Seoul',
                                   has_touch=width < 500, reduced_motion='reduce')
+    # One context init script also runs before opaque srcdoc startup. Do not
+    # combine it with page.clock: child-frame Date initialization can otherwise
+    # race between the actual day and the fixed QA day.
+    context.add_init_script('''(()=>{
+      const RealDate=Date,fixed='''+str(int(CLOCK.timestamp()*1000))+''';
+      function ReviewDate(...args){
+        if(!new.target)return new RealDate(fixed).toString();
+        return Reflect.construct(RealDate,args.length?args:[fixed],new.target);
+      }
+      Object.setPrototypeOf(ReviewDate,RealDate);ReviewDate.prototype=RealDate.prototype;
+      ReviewDate.now=()=>fixed;globalThis.Date=ReviewDate;
+    })();''')
     def route(request_route):
         request = request_route.request
         parsed = urlsplit(request.url)
@@ -238,7 +535,6 @@ def open_page(browser, origin, path, width, height, errors, requests, raw=None):
     page = context.new_page()
     page.set_default_timeout(12000)
     page.on('pageerror', lambda error: errors.append(str(error)))
-    page.clock.install(time=CLOCK)
     if raw is not None:
         # Seed exactly once on a script-free same-origin directory listing.
         # A persistent init script could silently reseed a deleted key on
@@ -272,7 +568,7 @@ def capture(page, frame, folder, name, metrics=METRICS):
 def widget_case(browser, origin, kind, width, height, folder):
     label = f'{kind}-{width}x{height}'
     evidence = {'id': label, 'entry': ENTRIES[kind], 'width': width, 'height': height,
-                'screens': {}, 'page_errors': [], 'blocked_requests': []}
+                'screens': {}, 'page_errors': [], 'blocked_requests': [], 'reference_checks_required': True}
     audit = Audit(evidence)
     context = page = None
     try:
@@ -307,7 +603,9 @@ def widget_case(browser, origin, kind, width, height, folder):
                 primary(audit, metrics['add'], metrics['viewport']['width'],
                         metrics['viewport']['height'], 'Ingredient add')
                 scene_geometry(audit, metrics['scene'], metrics['viewport']['width'],
-                               metrics['viewport']['height'])
+                               metrics['viewport']['height'], metrics['balance'])
+            if tab == 'meals':
+                recipe_home_geometry(audit, metrics)
             preservation(audit, frame, original, 'Read-only '+tab+' navigation preserves exact stored text and envelope')
         frame.locator('.home-shortcuts [data-home-tab="meals"]').click()
         recipe = frame.locator('#todayKitchen [data-wf="recipe"]:visible').first
@@ -317,6 +615,9 @@ def widget_case(browser, origin, kind, width, height, folder):
         frame.wait_for_function('document.querySelector("#tray[open][data-workflow-route=recipe]")')
         details = capture(page, frame, folder, label+'-recipe-detail', DETAIL)
         evidence['screens']['recipe-detail'] = details
+        recipe_photo_geometry(audit, details['photo'], 'Recipe detail hero', recipe_id)
+        audit.check(bool(details['text']) and all(t['readable'] for t in details['text']),
+                    'Actual recipe detail title and nutrition text remain readable', details['text'])
         detail_width, detail_height = details['viewport']['width'], details['viewport']['height']
         audit.check(inside(details['tray'], viewport_box(detail_width, detail_height))
                     and details['documentWidth'] <= detail_width+1
@@ -349,6 +650,7 @@ def widget_case(browser, origin, kind, width, height, folder):
         for action in scrolled['actions']:
             primary(audit, action, detail_width, detail_height, action['text']+' after ingredient scrolling')
         preservation(audit, frame, original, 'Read-only recipe detail and scrolling preserve exact records')
+        registration_journey(audit, page, frame, folder, label, original, evidence['screens'])
     except Exception as error:
         audit.caught(error)
         evidence['traceback'] = traceback.format_exc()
@@ -359,8 +661,7 @@ def widget_case(browser, origin, kind, width, height, folder):
         audit.check(not evidence['blocked_requests'], 'No external-provider or write request is attempted', evidence['blocked_requests'])
         if context:
             context.close()
-    evidence['passed'] = all(c['passed'] for c in evidence['checks'])
-    return evidence
+    return finish_case(evidence)
 
 
 def legacy_case(browser, origin, folder):
@@ -409,8 +710,7 @@ def legacy_case(browser, origin, folder):
         audit.check(not evidence['blocked_requests'], 'Legacy fixture attempts no provider/write request', evidence['blocked_requests'])
         if context:
             context.close()
-    evidence['passed'] = all(c['passed'] for c in evidence['checks'])
-    return evidence
+    return finish_case(evidence)
 
 
 def reveal(locator):
@@ -569,8 +869,7 @@ def meal_success_case(browser, origin, kind, width, height, folder):
         audit.check(not evidence['blocked_requests'], 'B6 journey attempts no provider or network write', evidence['blocked_requests'])
         if context:
             context.close()
-    evidence['passed'] = all(c['passed'] for c in evidence['checks'])
-    return evidence
+    return finish_case(evidence)
 
 
 def app_screens(browser, origin, folder):
@@ -648,8 +947,12 @@ def main():
               'B6 cases type labelled QA inputs and save/undo/resave a meal in isolated contexts only; '
               'no OCR/provider or outside-context writes. '
               'Before failures are observations; only candidate contracts and optional app preservation gate this run.',
-              'clock': CLOCK.isoformat(), 'source_sha256': inputs, 'cases': [], 'baseline_observations': [],
-              'comparisons': [], 'entry_geometry_comparisons': [], 'errors': []}
+              'clock': CLOCK.isoformat(), 'clock_method': 'Single context-init Date; native timers/RAF',
+              'source_sha256': inputs, 'cases': [], 'baseline_observations': [],
+              'comparisons': [], 'entry_geometry_comparisons': [], 'errors': [], 'visual_regressions': [],
+              'manual_reference_review': {'required': True, 'status': 'not-assessed-by-automation',
+                'note': 'Passing geometric/photo checks is not design approval. Review same-state screenshots '
+                        'against the supplied A1–D6 reference composition and record any remaining differences.'}}
     servers = []
     try:
         with sync_playwright() as playwright:
@@ -674,6 +977,8 @@ def main():
                     for width, height in PROFILES:
                         case = widget_case(browser, origin, kind, width, height, folder)
                         target.append(case)
+                        if width == 562 and height == 800:
+                            breakpoint_continuity(target, kind)
                         print(f'{label.upper()} {"PASS" if case["passed"] else "FAIL"} {case["id"]}', flush=True)
                 if label == 'after':
                     report['cases'].append(legacy_case(browser, origin, folder))
@@ -702,17 +1007,21 @@ def main():
                 comparisons = []
                 for tab in TABS:
                     screens = [c['screens'].get(tab) for c in pair]
-                    equal = bool(all(screens)) and all(
-                        s[box] for s in screens for box in ('shell', 'header', 'nav')) and all(
-                        abs(screens[0][box][key]-screens[1][box][key]) <= 1.5
-                        for box in ('shell', 'header', 'nav')
-                        for key in ('x', 'y', 'width', 'height'))
+                    equal = bool(all(screens))
+                    if equal:
+                        for box in ('shell', 'header', 'nav'):
+                            a, b = screens[0][box], screens[1][box]
+                            if a is None or b is None:
+                                equal = equal and a is b
+                            else:
+                                equal = equal and all(abs(a[key]-b[key]) <= 1.5
+                                                      for key in ('x', 'y', 'width', 'height'))
                     comparisons.append({'screen': tab, 'same_geometry': equal})
                 row = {'profile': f'{width}x{height}', 'screens': comparisons,
                        'passed': all(c['same_geometry'] for c in comparisons)}
                 report['entry_geometry_comparisons'].append(row)
                 if not row['passed']:
-                    report['errors'].append('Native/opaque widget geometry differs: '+row['profile'])
+                    report['visual_regressions'].append('Native/opaque widget geometry differs: '+row['profile'])
             browser.close()
         for key, original in inputs.items():
             label, relative = key.split('/', 1)
@@ -721,11 +1030,20 @@ def main():
                 report['errors'].append('Generated input changed during browser verification: '+key)
         if args.check_app_unchanged:
             app = [c for c in report['comparisons'] if c['app_unchanged_required']]
-            if len(app) != len(TABS)*2 or not all(c['pixelsEqual'] for c in app):
-                report['errors'].append('App preservation screenshots differ or are missing; inspect comparison evidence.')
+            report['app_preservation_passed'] = len(app) == len(TABS)*2 and all(c['pixelsEqual'] for c in app)
+            if not report['app_preservation_passed']:
+                report['visual_regressions'].append('App preservation screenshots differ or are missing; inspect comparison evidence.')
             if any(c['page_errors'] or c['blocked_requests'] for c in report['after_app']):
                 report['errors'].append('App preservation journey emitted browser errors or blocked requests.')
-        report['passed'] = bool(report['cases']) and all(c['passed'] for c in report['cases']) and not report['errors']
+        else:
+            report['app_preservation_passed'] = None
+        report['functional_passed'] = bool(report['cases']) and all(c['functional_passed'] for c in report['cases']) and not report['errors']
+        reference_cases = [c for c in report['cases'] if c.get('reference_checks_required')]
+        report['reference_composition_checks_passed'] = bool(reference_cases) and all(
+            c['reference_composition_checks_passed'] for c in reference_cases)
+        report['entry_geometry_passed'] = len(report['entry_geometry_comparisons']) == len(PROFILES) and all(
+            c['passed'] for c in report['entry_geometry_comparisons'])
+        report['passed'] = report['functional_passed'] and report['reference_composition_checks_passed'] and not report['visual_regressions']
     except Exception as error:
         report['errors'].append(str(error))
         report['traceback'] = traceback.format_exc()
@@ -739,7 +1057,10 @@ def main():
                                    if not check['passed']})}
                 for case in report['cases'] if not case['passed']]
     print(json.dumps({'passed': report['passed'], 'candidate_cases': len(report['cases']),
-                      'failures': failures, 'errors': report['errors'],
+                      'functional_passed': report.get('functional_passed'),
+                      'reference_composition_checks_passed': report.get('reference_composition_checks_passed'),
+                      'manual_reference_review_required': True,
+                      'failures': failures, 'errors': report['errors'], 'visual_regressions': report['visual_regressions'],
                       'report': str(out/'results.json')}, ensure_ascii=False), flush=True)
     raise SystemExit(0 if report['passed'] else 1)
 

@@ -11,10 +11,6 @@
   const A=window.UMFKitchenArt, $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const mode=document.body.dataset.mode==='widget'?'widget':'app';
-  if(mode==='widget'){
-    // A widget action belongs to its compact header, not over the photograph.
-    $('.masthead .header-actions')?.before($('#homeWorktop'));
-  }
   const date=(offset=0)=>{const d=new Date();d.setDate(d.getDate()+offset);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
   // Native photo coordinates: a single continuous kitchen, with no wall tiling.
   const STAGE_HEIGHT=776;
@@ -191,9 +187,9 @@
       const host=$(document.body.dataset.camera==='counter'?'#decorStage':'#fridgeSceneHost');
       // Fit the photograph and its hit targets together. The iframe's height
       // must never shrink the entire widget's width or stretch the scene.
-      const visibleRatio=!inRoom&&shell.clientWidth>=560?.86:1;
-      width=Math.min(host?.clientWidth||shell.clientWidth,
-        Math.max(1,host?.clientHeight||innerHeight)*(inRoom?2:1/visibleRatio));
+      width=inRoom
+        ? Math.min(host?.clientWidth||shell.clientWidth,Math.max(1,host?.clientHeight||innerHeight)*2)
+        : (host?.clientWidth||shell.clientWidth);
     }else if(inRoom)width=($(document.body.dataset.camera==='counter'?'#decorStage':'#fridgeSceneHost')?.clientWidth||shell.clientWidth);
     else width=($('#fridgeSceneHost')?.clientWidth||shell.clientWidth);
     room.style.setProperty('--room-fit-width',width+'px');
