@@ -3,10 +3,10 @@
   "source": {
     "learning_generated_at": "2026-11-06T01:07:04.877139+00:00",
     "forecasts_generated_at": "2026-11-06T01:07:04.877139+00:00",
-    "opportunity_generated_at": "2026-11-05T20:59:01.717218+00:00",
+    "opportunity_generated_at": "2026-11-06T02:20:53.660935+00:00",
     "market_generated_at": "2026-11-05T21:00:11.884332+00:00",
-    "chart_generated_at": "2026-11-05T20:59:17.461414+00:00",
-    "chart_source_generated_at": "2026-11-05T20:59:01.717218+00:00",
+    "chart_generated_at": "2026-11-06T02:21:05.437247+00:00",
+    "chart_source_generated_at": "2026-11-06T02:20:53.660935+00:00",
     "cases_generated_at": "2026-11-05T21:00:03.133548+00:00",
     "entry_generated_at": "2026-11-05T16:46:09.983270+00:00"
   },
@@ -100,19 +100,33 @@
   },
   "chart_integrity": {
     "series_checked": 108,
-    "provider_status_ok": 55,
+    "provider_status_ok": 53,
     "invalid_series": [],
     "date_order_and_price_values_valid": true,
     "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote."
   },
-  "index_date_mismatch": [],
+  "index_date_mismatch": [
+    {
+      "market": "NASDAQ",
+      "index_snapshot": "2026-11-04",
+      "chart_history_through": "2026-11-05",
+      "policy": "display dates separately; do not claim history chart is current"
+    },
+    {
+      "market": "S&P 500",
+      "index_snapshot": "2026-11-04",
+      "chart_history_through": "2026-11-05",
+      "policy": "display dates separately; do not claim history chart is current"
+    }
+  ],
   "data_integrity": {
     "check_passed": true,
     "errors": [],
     "warnings": [
       "Insufficient independent observations and/or sessions for promotion",
       "Paired Brier gain below configured policy threshold",
-      "No independently proven live trading profitability"
+      "No independently proven live trading profitability",
+      "Market index snapshots have dates different from sparkline histories"
     ],
     "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
   }
