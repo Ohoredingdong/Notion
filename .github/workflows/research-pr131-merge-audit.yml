@@ -1,0 +1,50 @@
+name: Research-only PR131 synthetic merge independent verification
+on:
+  push:
+    branches:
+      - research/pages-deployment-stale-recovery-20261107
+    paths:
+      - .github/workflows/research-pr131-merge-audit.yml
+permissions:
+  contents: read
+jobs:
+  independent-merge-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      PYTHONPATH: scripts
+      EXPECTED_PR131_HEAD: 27ec1e63f5cdf75a1e4ea1e9c57dd5aaac332c4b
+    steps:
+      - name: Checkout current GitHub-generated merge of existing PR 131 and main
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/131/merge
+          fetch-depth: 2
+      - name: Ensure merge applies precisely the preregistered PR 131 head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^2)" = "$EXPECTED_PR131_HEAD"
+          echo "Synthetic merge SHA $(git rev-parse HEAD)"
+          echo "Target base SHA $(git rev-parse HEAD^1)"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independent immutable evidence and timing-usefulness refusal gates
+        run: |
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - name: Validate supported source versions and display JS
+        run: |
+          node --check assets/stock-forecast.js
+          node scripts/test_stock_forecast_ui.cjs
+      - name: Validate actual v1.1 data in browser without production publishing
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          python -m http.server 8769 >/tmp/pr131-merge-http.log 2>&1 &
+          python scripts/test_stock_forecast_browser.py
