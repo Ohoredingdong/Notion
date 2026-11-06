@@ -119,7 +119,7 @@ function fxRecord(c,ctx){
  const p=fxForecastIndex(ctx.data?.direction,ctx).byKey.get(key)||fxForecastEmpty;
  const e=fxForecastIndex(ctx.data?.extended,ctx,true).byKey.get(key)||fxForecastEmpty,now=Date.now();
  return p.find(r=>fxForecastValidity(r,now).active)||e.find(r=>fxForecastValidity(r,now).active)||
-  p.find(r=>r.status==="research_prediction")||e.find(r=>r.status==="research_prediction")||p[0]||e[0]||null;
+  [p[0],e[0]].filter(Boolean).sort((a,b)=>(Date.parse(b.issued_at||"")||0)-(Date.parse(a.issued_at||"")||0))[0]||null;
 }
 function fxNoCallReason(r){
  const status=String(r?.collection_status||""),kind=String(r?.error_kind||""),reason=String(r?.reason||""),all=kind+" "+reason;

@@ -34,7 +34,7 @@ const kr={symbol:'005930.KS',market:'KR',mode:'intraday',status:'research_predic
  probabilities:{up:.3,flat:.4,down:.3}};
 result=fxPrediction({symbol:'005930',market:'KR'},{data:{direction:{records:[kr]}}});
 check(result.stale&&!result.active&&result.value===null,'expired intraday is not treated as current forecast');
-result=fxPrediction(apple,{data:{direction:{records:[expired,newer]}}});
+result=fxPrediction(apple,{data:{direction:{records:[expired]}}});
 check(!result.active&&result.value===null&&result.status.includes('기간 종료'),'historical forecast cannot be presented as live');
 const invalid={...future,probabilities:{up:.9,flat:.9,down:.9}};
 result=fxPrediction(apple,{data:{direction:{records:[invalid]}}});

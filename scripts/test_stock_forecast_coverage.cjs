@@ -138,6 +138,20 @@ test('An active core call survives a newer no-call and an active extended call s
   target:{start:'2026-11-05T00:00:00Z',end:'2026-11-05T06:30:00Z'}})]};
  assert.equal(ui.signal(c,ctx).value,.7);
 });
+test('The latest terminal result explains a current full-run failure after all predictions expire',()=>{
+ const item=us(),current=noCall(item,{error_kind:'insufficient_history',reason:'fewer_than_500_daily_training_samples'});
+ const ctx=fixture([item],[current]),{ui,selected}=runtime(ctx),c=selected('US:KO');
+ const expired=record(item,{issued_at:'2026-11-04T07:00:00Z',received_at:undefined,observed_until:undefined,
+  target:{start:'2026-11-05T14:30:00Z',end:'2026-11-05T21:00:00Z'}});
+ ctx.data.direction={records:[expired]};
+ const failure=ui.signal(c,ctx);assert.equal(failure.r,current);assert.equal(failure.value,null);
+ assert.match(failure.headline,/생성 불가.*가격 이력 부족/);assert.equal(failure.stale,false);
+ const later=noCall(item,{issued_at:'2026-11-06T07:05:00Z',error_kind:'rate_limited',reason:'429'});
+ ctx.data.direction={records:[expired,later]};assert.equal(ui.signal(c,ctx).r,later);
+ const stillActive=record(item,{issued_at:'2026-11-06T06:58:00Z',received_at:'2026-11-06T06:57:00Z'});
+ ctx.data.direction={records:[stillActive,later]};
+ assert.equal(ui.signal(c,ctx).r,stillActive);assert.equal(ui.signal(c,ctx).active,true);
+});
 test('Clock advance expires both the selected signal and its cached coverage meta',()=>{
  const item=us(),ctx=fixture([item],[record(item)]),{ui,selected,clock}=runtime(ctx),c=selected('US:KO');
  assert.equal(ui.forecastMeta(ctx).active,1);clock(Date.parse('2026-11-09T06:30:01Z'));
