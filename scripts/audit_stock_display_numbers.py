@@ -8,7 +8,9 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from datetime import datetime, timezone
+from decimal import Decimal, localcontext
 import hashlib
+from itertools import product
 import json
 import math
 from pathlib import Path
@@ -47,6 +49,7 @@ class Audit:
         self.checks = Counter()
         self.errors = []
         self.warnings = []
+        self.quantization_checks = []
 
     def check(self, group, ok, message, **context):
         self.checks[group] += 1
@@ -65,6 +68,61 @@ class Audit:
 
     def warn(self, group, message, **context):
         self.warnings.append({'group': group, 'issue': message, **context})
+
+
+def reward_risk_interval(close, support, resistance):
+    """Propagate the source serializer's documented round(x, 8), not a loose tolerance.
+
+    update_stock_decisions.clean rounds all output floats to eight decimal places
+    and run_stock_research_v9 applies that clean function to the published record.
+    Each serialized price therefore represents a closed +/- 0.5e-8 interval.
+    The same close is used in both numerator and denominator at every corner.
+    """
+    if any(number(value) is None for value in (close, support, resistance)):
+        return {'status': 'unverifiable', 'reason': 'reward_risk_missing_price_inputs'}
+    with localcontext() as context:
+        context.prec = 50
+        half = Decimal('0.000000005')
+        c, s, r = (Decimal(str(value)) for value in (close, support, resistance))
+        intervals = [(value-half, value+half) for value in (c, s, r)]
+        denominator = (intervals[0][0]-intervals[1][1], intervals[0][1]-intervals[1][0])
+        if denominator[0] <= 0 <= denominator[1]:
+            return {'status': 'unverifiable', 'reason': 'reward_risk_denominator_interval_crosses_zero',
+                    'denominator_interval': [str(value) for value in denominator]}
+        if denominator[1] <= 0:
+            return {'status': 'unverifiable', 'reason': 'reward_risk_nonpositive_risk'}
+        values = [(resistance_value-close_value)/(close_value-support_value)
+                  for close_value, support_value, resistance_value in product(*intervals)]
+        # Outward Decimal rounding covers only the 50-digit division operation.
+        lower, upper = min(values).next_minus(), max(values).next_plus()
+        return {'status': 'bounded', 'source_decimal_places': 8,
+                'input_half_quantum': str(half), 'lower': str(lower), 'upper': str(upper),
+                'denominator_interval': [str(value) for value in denominator]}
+
+
+def check_reward_risk(a, published, close, support, resistance, identity=None):
+    interval = reward_risk_interval(close, support, resistance)
+    if interval['status'] != 'bounded':
+        if published is None:
+            a.warn('technical', interval['reason'], field='reward_risk', identity=identity)
+            return True
+        a.check('technical', False, interval['reason'], field='reward_risk', identity=identity,
+                published=published, quantization=interval, required_action='withhold_unverifiable_ratio')
+        return False
+    if published is None:
+        return True
+    valid = number(published) is not None and published >= 0
+    if valid:
+        with localcontext() as context:
+            context.prec = 50
+            value, half = Decimal(str(published)), Decimal('0.000000005')
+            # The ratio itself passes through the same round8 serializer.
+            valid = value+half >= Decimal(interval['lower']) and value-half <= Decimal(interval['upper'])
+    evidence = {'identity': identity, 'field': 'reward_risk', 'published': published, **interval, 'verified': valid}
+    a.quantization_checks.append(evidence)
+    a.check('technical', valid, 'reward_risk_quantization_interval_mismatch', field='reward_risk',
+            identity=identity, published=published, quantization=interval)
+    return valid
 
 
 def check_daily_change(a, proof, *, identity, market, provider, currency, session, close, now, bars=None):
@@ -286,8 +344,7 @@ def audit(root=ROOT, now=None, require_current=False):
                 close = number(tech.get('close'))
                 if close is not None and support is not None and close > support:
                     a.compare('technical', tech.get('support_loss_pct'), (close-support)/close*100, 'support_loss_pct', symbol)
-                    if resistance is not None and resistance > close:
-                        a.compare('technical', tech.get('reward_risk'), (resistance-close)/(close-support), 'reward_risk', symbol)
+                check_reward_risk(a, tech.get('reward_risk'), close, support, resistance, symbol)
 
     try:
         available = validate_financial(catalog, financial)
@@ -417,6 +474,7 @@ def audit(root=ROOT, now=None, require_current=False):
         'status': 'passed_with_limitations' if not a.errors else 'failed',
         'checks': dict(a.checks), 'check_count': sum(a.checks.values()),
         'errors': a.errors, 'warnings': a.warnings,
+        'quantization_checks': a.quantization_checks,
         'coverage': {'catalogue': catalog['counts'], 'detailed_research': len(companies),
                      'quotes': dict(quote_counts), 'charts': dict(chart_counts),
                      'expected_completed_sessions': expected, 'ai': dict(statuses),

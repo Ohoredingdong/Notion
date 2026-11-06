@@ -6,6 +6,7 @@ on:
     paths: ['.github/radar-number-refresh-request.json']
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: radar-numerical-refresh-${{ github.ref_name }}
   cancel-in-progress: false
@@ -22,12 +23,17 @@ jobs:
         with:
           python-version: '3.12'
       - name: Validate the explicitly requested preview refresh
+        id: request
         run: |
           python - <<'PY'
           import json,os
           request=json.load(open('.github/radar-number-refresh-request.json'))
           assert request['branch'] == os.environ['GITHUB_REF_NAME'] == 'feat/radar-world-flow-20261106'
           assert request['operation'] == 'refresh-and-audit-radar-numbers'
+          mode=request.get('mode','refresh')
+          assert mode in ('refresh','revalidate-collected-artifact')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('reuse='+str(mode=='revalidate-collected-artifact').lower()+'\n')
           PY
       - name: Install source readers and exchange calendars
         run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'beautifulsoup4==4.14.3' 'requests>=2.32,<3'
@@ -47,11 +53,52 @@ jobs:
           python scripts/test_stock_strict_green.py
           python -m unittest scripts.test_stock_recommendations -v
           python scripts/verify_stock_canonical_pipeline.py
+      - name: Restore the exact previously collected observations after checking provenance
+        if: steps.request.outputs.reuse == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,stat,subprocess,zipfile
+          req=json.load(open('.github/radar-number-refresh-request.json'))
+          commit='7cfee6eae7dfee7b0330c61494d36565c825565e'
+          run=42195319836
+          artifact=13492555695
+          digest='e436560aa6943b3f72990611293837f3ac8129f7319c91d4c3739c93e1f2ee30'
+          assert req['collection_commit']==commit and req['collection_run_id']==run
+          assert req['artifact_id']==artifact and req['artifact_sha256']==digest
+          changed=subprocess.check_output(['git','diff','--name-only',commit,'HEAD','--','scripts'],text=True).splitlines()
+          assert set(changed)<= {'scripts/audit_stock_display_numbers.py','scripts/test_stock_display_number_audit.py'}, changed
+          repo=os.environ['GITHUB_REPOSITORY']
+          meta=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{artifact}']))
+          assert meta['workflow_run']['id']==run and meta['workflow_run']['head_sha']==commit
+          assert meta['digest']=='sha256:'+digest and not meta['expired']
+          jobs=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs/{run}/jobs?filter=latest&per_page=100']))
+          stages={s['name']:s['conclusion'] for j in jobs['jobs'] for s in j['steps']}
+          for name in ('Collect the actual completed-session company snapshot and charts','Refresh market observations and sourced news','Rebuild all price-bound research and entry displays'):
+              assert stages.get(name)=='success',name
+          archive=pathlib.Path('/tmp/radar-real-collection.zip')
+          with archive.open('wb') as out:
+              subprocess.run(['gh','api',f'repos/{repo}/actions/artifacts/{artifact}/zip'],stdout=out,check=True)
+          assert hashlib.sha256(archive.read_bytes()).hexdigest()==digest
+          with zipfile.ZipFile(archive) as source:
+              for entry in source.infolist():
+                  name=entry.filename;p=pathlib.PurePosixPath(name)
+                  assert not p.is_absolute() and '..' not in p.parts and name.endswith('.json')
+                  assert not stat.S_ISLNK(entry.external_attr >> 16)
+                  assert (len(p.parts)==1 and (name.startswith('stock-') or name=='fear-greed-data.json')) or name=='data-quarantine/stock-financial-accounts.json'
+                  data=source.read(entry);json.loads(data)
+                  dest=pathlib.Path(name);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data)
+          print(json.dumps({'restored_source_run':run,'collection_commit':commit,'artifact_sha256':digest,'observation_times_preserved':True}))
+          PY
+          python -m scripts.validate_stock_financial_coverage
       - name: Withhold inconsistent official accounts without changing their reported basis
+        if: steps.request.outputs.reuse != 'true'
         run: |
           python -m scripts.build_stock_financial_coverage --repair-existing
           python -m scripts.validate_stock_financial_coverage
       - name: Collect the actual completed-session company snapshot and charts
+        if: steps.request.outputs.reuse != 'true'
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
@@ -61,6 +108,7 @@ jobs:
           python scripts/curate_stock_decisions_v9.py
           python scripts/build_stock_radar_chart_cache.py
       - name: Refresh market observations and sourced news
+        if: steps.request.outputs.reuse != 'true'
         run: |
           python scripts/run_market_context.py
           python scripts/update-news-link-hub.py
@@ -77,6 +125,7 @@ jobs:
               print('KOREAN_SENTIMENT_SOURCE_UNAVAILABLE',type(exc).__name__,'existing observation date preserved')
           PY
       - name: Rebuild all price-bound research and entry displays
+        if: steps.request.outputs.reuse != 'true'
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: |
@@ -85,6 +134,15 @@ jobs:
           python scripts/stock_reading_depth.py
           python scripts/stock_strict_green.py
           python scripts/build_stock_decision_guide.py
+          python scripts/update_stock_event_risks.py
+          python scripts/build_stock_recommendations.py
+          python scripts/build_stock_entry_plan.py
+      - name: Rebuild uncaptured news, event and entry evidence from the preserved real prices
+        if: steps.request.outputs.reuse == 'true'
+        run: |
+          python scripts/update-news-link-hub.py
+          python scripts/update-market-events.py
+          python scripts/build_stock_event_outlook.py
           python scripts/update_stock_event_risks.py
           python scripts/build_stock_recommendations.py
           python scripts/build_stock_entry_plan.py
@@ -136,3 +194,8 @@ jobs:
             stock-entry-plan*.json
             stock-financial-coverage.json
             data-quarantine/stock-financial-accounts.json
+            news-link-data.json
+            market-events-data.json
+            stock-event-outlook.json
+            stock-event-risks.json
+            stock-entry-ledger.jsonl

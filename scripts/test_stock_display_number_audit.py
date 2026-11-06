@@ -4,7 +4,8 @@ import unittest
 from unittest.mock import patch
 
 from audit_stock_display_numbers import (Audit, check_daily_change, forecast_counts,
-    missing_chart_identities, world_current_counts, check_sentiment_observations)
+    missing_chart_identities, world_current_counts, check_sentiment_observations,
+    reward_risk_interval, check_reward_risk)
 
 NOW = datetime(2026, 11, 6, 9, tzinfo=timezone.utc)
 PROOF = {'version': 'completed-session-change-v1', 'status': 'verified', 'market': 'US',
@@ -15,6 +16,37 @@ PROOF = {'version': 'completed-session-change-v1', 'status': 'verified', 'market
 
 
 class DisplayAuditTests(unittest.TestCase):
+    def test_actual_knx_ratio_is_inside_the_documented_round8_price_intervals(self):
+        close, support, resistance = 59.47000122, 59.45000076, 82.86000061
+        interval = reward_risk_interval(close, support, resistance)
+        self.assertAlmostEqual(float(interval['lower']), 1169.47248639657, places=8)
+        self.assertAlmostEqual(float(interval['upper']), 1169.47365684272, places=8)
+        a = Audit()
+        self.assertTrue(check_reward_risk(a, 1169.47320237, close, support, resistance, 'KNX'))
+        self.assertEqual(a.errors, [])
+        self.assertEqual(a.quantization_checks[0]['source_decimal_places'], 8)
+
+    def test_incorrect_ratio_is_not_rescued_by_a_small_denominator_or_display_rounding(self):
+        for value in (1169.47, 1169.4737, 1200, '1169.47320237'):
+            a = Audit()
+            self.assertFalse(check_reward_risk(a, value, 59.47000122, 59.45000076, 82.86000061, 'KNX'))
+            self.assertTrue(a.errors)
+        a = Audit()
+        self.assertTrue(check_reward_risk(a, 2.0, 100.0, 90.0, 120.0, 'CONTROL'))
+        self.assertFalse(check_reward_risk(Audit(), 2.0001, 100.0, 90.0, 120.0, 'CONTROL'))
+
+    def test_denominator_interval_touching_zero_requires_withholding_the_ratio(self):
+        for close, support in ((1.0, 1.0), (1.00000001, 1.0)):
+            interval = reward_risk_interval(close, support, 2.0)
+            self.assertEqual(interval['reason'], 'reward_risk_denominator_interval_crosses_zero')
+            a = Audit()
+            self.assertFalse(check_reward_risk(a, 1e8, close, support, 2.0))
+            self.assertEqual(a.errors[0]['required_action'], 'withhold_unverifiable_ratio')
+            a = Audit()
+            self.assertTrue(check_reward_risk(a, None, close, support, 2.0))
+            self.assertEqual(a.errors, [])
+            self.assertEqual(a.warnings[0]['issue'], 'reward_risk_denominator_interval_crosses_zero')
+
     def daily(self, proof, bars=None):
         audit = Audit()
         result = check_daily_change(audit, proof, identity='TEST', market='US', provider='TEST',
