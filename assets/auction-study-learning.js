@@ -14,9 +14,12 @@
       this.sources = new Map();
       this.hint = false;
       this.persistent = true;
+      this.savedRaw = null;
+      this.persistenceNotice = '';
       this.progress = {version:1,caseId:AuctionLessons.cases[0].id,answers:{}};
       try {
         const raw = localStorage.getItem(KEY);
+        this.savedRaw = raw;
         if (raw) {
           const data = JSON.parse(raw);
           if (!data || data.version !== 1 || !data.answers || typeof data.answers !== 'object' || Array.isArray(data.answers)) throw Error('Invalid progress');
@@ -31,7 +34,16 @@
             }
           }
         }
-      } catch (_) { this.persistent = false; }
+      } catch (_) {
+        this.persistent = false;
+        this.persistenceNotice = '저장된 학습 기록을 읽지 못했어요. 원본을 보존하고 이번 학습은 화면에서만 유지해요.';
+      }
+      window.addEventListener('storage', event => {
+        if (!this.persistent || (event.key !== KEY && event.key !== null)) return;
+        try {
+          if (localStorage.getItem(KEY) !== this.savedRaw) this.stopSaving('다른 탭에서 학습 기록이 바뀌었어요. 이 화면의 답은 유지하지만 추가 저장은 멈췄어요. 최신 기록은 새로고침해서 확인하세요.');
+        } catch (_) { this.stopSaving('학습 기록을 저장할 수 없어요. 이번 학습은 화면에서만 유지해요.'); }
+      });
       document.addEventListener('click', event => this.click(event));
       document.addEventListener('change', event => this.change(event));
       document.addEventListener('input', event => {
@@ -46,9 +58,36 @@
       return this.sources.get(this.current.id);
     }
     save() {
-      if (!this.persistent) return;
-      try { localStorage.setItem(KEY,JSON.stringify(this.progress)); }
-      catch (_) { this.persistent = false; }
+      if (!this.persistent) return false;
+      try {
+        if (localStorage.getItem(KEY) !== this.savedRaw) {
+          this.stopSaving('다른 탭에서 학습 기록이 바뀌었어요. 이 화면의 답은 유지하지만 추가 저장은 멈췄어요. 최신 기록은 새로고침해서 확인하세요.');
+          return false;
+        }
+        const raw = JSON.stringify(this.progress);
+        localStorage.setItem(KEY,raw);
+        this.savedRaw = raw;
+        return true;
+      } catch (_) {
+        this.stopSaving('학습 기록을 저장하지 못했어요. 이번 학습은 화면에서만 유지해요.');
+        return false;
+      }
+    }
+    stopSaving(message) {
+      this.persistent = false;
+      this.persistenceNotice = message;
+      const root = document.querySelector('.learning-workspace');
+      if (!root) return;
+      let warning = root.querySelector('.study-storage-warning');
+      if (!warning) {
+        warning = document.createElement('div');
+        warning.className = 'notice warning study-storage-warning';
+        warning.setAttribute('role','alert');
+        root.prepend(warning);
+      }
+      warning.textContent = message;
+      const progress = root.querySelector('.study-progress');
+      if (progress && this.mode === 'practice') progress.textContent = '학습 '+Object.values(this.answers()).filter(item=>item.checked).length+' / 6 · 저장 안 됨';
     }
     render(current) {
       this.current = current;
@@ -59,6 +98,7 @@
       const count = Object.values(this.answers()).filter(item => item.checked).length;
       const practice = this.mode === 'practice';
       return `<div class="learning-workspace" data-mode="${this.mode}" data-pane="${this.pane}">
+        ${this.persistenceNotice?`<div class="notice warning study-storage-warning" role="alert">${escapeHTML(this.persistenceNotice)}</div>`:''}
         <div class="study-toolbar"><div class="study-mode-switch" role="group" aria-label="공부할 자료 선택"><button type="button" data-study-mode="practice" aria-pressed="${practice}">해설 있는 연습 사례</button><button type="button" data-study-mode="case" aria-pressed="${!practice}">내 경매 자료로 분석</button></div>${practice?`<label class="study-case-select"><span class="sr-only">연습 사례 선택</span><select id="studyCaseSelect">${AuctionLessons.cases.map(item=>`<option value="${item.id}" ${item.id===lesson.id?'selected':''}>${escapeHTML(item.title)}</option>`).join('')}</select></label>`:`<span class="study-current-case" title="${escapeHTML(current.name)}">${current.demo?'<span class="badge amber">연습 노트</span> ':''}${escapeHTML(current.name)}</span>`}<span class="study-progress">${practice?`학습 ${count} / 6${this.persistent?'':' · 저장 안 됨'}`:'내 기록에 직접 저장'}</span></div>
         <div class="study-steps" role="group" aria-label="서류 읽기 단계">${AuctionLessons.topics.map((topic,index)=>`<button type="button" data-study-step="${index}" aria-pressed="${index===this.step}"><span>${String(index+1).padStart(2,'0')}</span>${escapeHTML(topic.label)}${practice&&this.answers()[topic.id]?.checked?'<i aria-label="해설 확인함">✓</i>':''}</button>`).join('')}</div>
         <div class="study-pane-tabs" role="group" aria-label="학습 화면 선택"><button type="button" data-study-pane="document" aria-pressed="${this.pane==='document'}">자료 보기</button><button type="button" data-study-pane="guide" aria-pressed="${this.pane==='guide'}">${practice?'함께 분석':'내 기록'}</button></div>
@@ -82,7 +122,7 @@
 
     realGuide(step) {
       const item = this.current.rights[this.step];
-      return `<section id="studyGuidePane" class="study-card study-guide study-real-guide"><header class="study-card-header"><div><span class="study-kicker">STEP ${this.step+1} · 원문과 대조하기</span><h2>${escapeHTML(step.title)}</h2></div></header><div class="study-guide-body"><p class="study-real-prompt">${escapeHTML(step.evidencePrompt)}</p><ul class="study-read-checks">${step.checklist.map(text=>`<li>${escapeHTML(text)}</li>`).join('')}</ul><div class="study-source-links">${step.sources.map(source=>`<a href="${escapeHTML(source.href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.name)} ↗</a>`).join('')}</div><div class="study-record-status"><label for="studyRightStatus">확인 상태</label><select id="studyRightStatus" data-right="${this.step}">${[['unknown','미확인'],['checking','확인 중'],['clear','확인 완료'],['risk','위험 발견']].map(([value,label])=>`<option value="${value}" ${item.status===value?'selected':''}>${label}</option>`).join('')}</select></div><label class="study-evidence-label" for="studyEvidence">내가 읽은 내용·확인 근거<textarea id="studyEvidence" data-evidence="${this.step}" rows="3" placeholder="서류명과 열람일, 해당 기재, 아직 확인하지 못한 내용을 남겨보세요.">${escapeHTML(item.evidence)}</textarea></label><p class="study-record-note">직접 기록한 내용만 내 물건에 저장돼요. 연습 문제의 답은 옮겨 적지 않아요.</p></div>${this.footer()}</section>`;
+      return `<section id="studyGuidePane" class="study-card study-guide study-real-guide"><header class="study-card-header"><div><span class="study-kicker">STEP ${this.step+1} · 원문과 대조하기</span><h2>${escapeHTML(step.title)}</h2></div></header><div class="study-guide-body"><p class="study-real-prompt">${escapeHTML(step.evidencePrompt)}</p><ul class="study-read-checks">${step.checklist.map(text=>`<li>${escapeHTML(text)}</li>`).join('')}</ul><div class="study-source-links">${step.sources.map(source=>`<a href="${escapeHTML(source.href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.name)} ↗</a>`).join('')}</div><div class="study-record-status"><label for="studyRightStatus">확인 상태</label><select id="studyRightStatus" data-right="${this.step}">${[['unknown','미확인'],['checking','확인 중'],['clear','확인 완료'],['risk','위험 발견']].map(([value,label])=>`<option value="${value}" ${item.status===value?'selected':''}>${label}</option>`).join('')}</select></div><label class="study-evidence-label" for="studyEvidence">내가 읽은 내용·확인 근거<textarea id="studyEvidence" data-evidence="${this.step}" maxlength="20000" rows="3" placeholder="서류명과 열람일, 해당 기재, 아직 확인하지 못한 내용을 남겨보세요.">${escapeHTML(item.evidence)}</textarea></label><p class="study-record-note">직접 기록한 내용만 내 물건에 저장돼요. 연습 문제의 답은 옮겨 적지 않아요.</p></div>${this.footer()}</section>`;
     }
 
     footer() {
@@ -141,6 +181,7 @@
       if (input.id==='studyCaseSelect') {
         if (!AuctionLessons.cases.some(item=>item.id===input.value)) return;
         this.progress.caseId=input.value;this.step=0;this.hint=false;this.save();this.paint();
+        document.querySelector('#studyCaseSelect')?.focus({preventScroll:true});
       } else if (input.name==='studyAnswer') {
         const step=this.lesson().steps[this.step];
         if (!AuctionLessons.validateAnswer(this.lesson().id,this.step,input.value).valid) return;

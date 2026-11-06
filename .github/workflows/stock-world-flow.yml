@@ -1,0 +1,65 @@
+name: Update World Market Flow
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '35 * * * 1-5'
+  push:
+    branches: [main, feat/radar-world-flow-20261106]
+    paths:
+      - 'scripts/build_stock_world_flow.py'
+      - 'scripts/test_stock_world_flow.py'
+      - '.github/workflows/stock-world-flow.yml'
+      - '.github/radar-world-flow-request.json'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: stock-world-flow-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require the explicit preview branch or production destination
+        run: |
+          python - <<'PY'
+          import json,os
+          branch=os.environ['GITHUB_REF_NAME']
+          if branch != 'main':
+              request=json.load(open('.github/radar-world-flow-request.json'))
+              assert branch == request['branch'] == 'feat/radar-world-flow-20261106'
+              assert request['operation'] == 'collect-world-market-flow'
+          PY
+      - name: Install pinned source readers
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1'
+      - name: Check currencies, source identities, sessions and arithmetic
+        run: python -m unittest scripts.test_stock_world_flow -v
+      - name: Collect actual worldwide market observations
+        run: |
+          python scripts/build_stock_world_flow.py --output stock-world-flow.json --news news-link-data.json --request-delay 0.75 --timeout 20 --max-seconds 240
+          python scripts/build_stock_world_flow.py --validate stock-world-flow.json
+      - name: Publish only the verified observation feed
+        run: >-
+          python scripts/publish_widget_data.py --branch "$GITHUB_REF_NAME"
+          --message 'data: publish verified worldwide market observations'
+          stock-world-flow.json
+      - name: Publish refreshed observations through the existing Pages site
+        if: github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: world-market-flow-source-evidence
+          path: stock-world-flow.json
+          retention-days: 14
+          if-no-files-found: warn

@@ -51,12 +51,28 @@ function chartFor(id){
  const appended={date:nowDate,close:c.price,volume:null,origin:"latest_research_snapshot",not_interpolated:true};
  return {...source,bars:[...original,appended],chart_status:"snapshot_appended",historical_end:last.date};
 }
+function dailyChangeValue(c,proof){
+ if(!c||!proof||N(c.price)===null||c.price<=0)return null;
+ const symbol=String(c.source_symbol||c.symbol||""),market=String(c.market||c.country||"").toUpperCase();
+ const day=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
+ if(proof.version!=="completed-session-change-v1"||proof.status!=="verified"||
+  proof.source_identity_verified!==true||proof.consecutive_sessions!==true||proof.basis!=="provider_close_auto_adjust_false"||
+  !["KR","US"].includes(market)||proof.market!==market||proof.provider_symbol!==symbol||!c.currency||proof.currency!==c.currency||
+  proof.price_session!==c.price_session||!day(proof.price_session)||!day(proof.previous_session)||
+  proof.previous_session>=proof.price_session||proof.previous_session!==proof.expected_previous_session||
+  N(proof.close)===null||N(proof.previous_close)===null||proof.close<=0||proof.previous_close<=0||
+  Math.abs(proof.close-c.price)>Math.max(1e-6,Math.abs(c.price)*1e-8)||N(proof.change_1d_pct)===null)return null;
+ const value=(proof.close/proof.previous_close-1)*100;
+ return Math.abs(value-proof.change_1d_pct)<=1e-5+Math.abs(value)*1e-8?value:null;
+}
 function change(c){
- if(!c||N(c.price)===null)return null;
- const x=chartFor(String(c?.symbol)),b=x?.bars;
- if(!c||!x||!["aligned","snapshot_appended"].includes(x.chart_status)||b.length<2)return null;
- const before=b.at(-2)?.close,last=b.at(-1)?.close;
- return N(before)!==null&&N(last)!==null&&before!==0?(last/before-1)*100:null;
+ // Dated chart points remain useful for a period chart. They do not establish
+ // that the last two points are consecutive exchange sessions.
+ const raw=dailyChangeValue(c,c?.daily_change),x=chartFor(String(c?.symbol||""));
+ const aligned=x?.chart_status==="aligned"&&x.bars?.at(-1)?.date===c?.price_session;
+ const chart=aligned?dailyChangeValue(c,x.daily_change):null;
+ if(raw!==null&&chart!==null&&Math.abs(raw-chart)>1e-5)return null;
+ return raw!==null?raw:chart;
 }
 function pointData(ids,period){
  const sets=ids.map(chartFor);
@@ -213,7 +229,7 @@ async function load(){
  if(busy)return;
  lastLoadStartedAt=Date.now();
  busy=true;render();
- const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json",catalog:"stock-universe-catalog.json",extended:"stock-extended-direction-forecast.json",financial:"stock-financial-coverage.json"};
+ const files={raw:"stock-opportunity-data.json",charts:"stock-radar-chart-data.json",direction:"stock-direction-forecast.json",learning:"stock-forecast-learning.json",markets:"stock-market-groups.json",events:"stock-event-risks.json",macro:"stock-market-context.json",worldFlow:"stock-world-flow.json",cases:"stock-investment-cases.json",autopilot:"stock-forecast-autopilot.json",entry:"stock-entry-plan-summary.json",green:"stock-green-review-summary.json",toss:"toss-live-config.json",outcomes:"stock-forecast-outcomes.jsonl",sentiment:"fear-greed-data.json",koreaSentiment:"stock-korea-fear-greed.json",accuracyAudit:"stock-radar-accuracy-audit.json",opportunitySummary:"stock-opportunity-summary.json",caseSummary:"stock-investment-cases-summary.json",newsLink:"news-link-data.json",eventOutlook:"stock-event-outlook.json",catalog:"stock-universe-catalog.json",extended:"stock-extended-direction-forecast.json",financial:"stock-financial-coverage.json"};
  const keys=Object.keys(files),updated={...D},problems=[];
  try{
   const results=await Promise.allSettled(keys.map(key=>read(files[key])));
@@ -231,6 +247,7 @@ async function load(){
    if(okay&&key==="opportunitySummary")okay=!!val?.counts&&N(val.counts.tracked)!==null;
    if(okay&&key==="caseSummary")okay=!!val?.counts&&N(val.counts.attractive)!==null;
    if(okay&&key==="newsLink")okay=Array.isArray(val?.items)&&Number.isFinite(Date.parse(val?.generated_at||""));
+   if(okay&&key==="worldFlow")okay=val?.version==="stock-world-flow-v1"&&Array.isArray(val.indicators)&&Array.isArray(val.regions)&&Number.isFinite(Date.parse(val.generated_at||""))&&Date.parse(val.generated_at)<=Date.now()+300000;
    if(okay&&key==="eventOutlook")okay=val?.version==="stock-event-outlook-v1"&&Array.isArray(val?.events)&&val.research_only===true&&val.automatic_orders===false;
    if(okay&&key==="catalog")okay=val?.version==="radar-universe-catalog-v1"&&val.identifier_policy==="kr-six-character-alphanumeric-v2"&&Array.isArray(val.items)&&val.items.length>=1000&&val.counts?.total===val.items.length&&val.items.every(x=>x.country!=="KR"||/^[A-Z0-9]{6}$/.test(x.symbol));
    if(okay&&key==="extended")okay=val?.version==="stock-extended-direction-v1"&&val.source_identity_policy==="kr-six-character-alphanumeric-v2"&&Array.isArray(val.records)&&val.records.every(r=>r.identity_verified===true&&r.source_identity_policy==="kr-six-character-alphanumeric-v2")&&val.automatic_orders===false;

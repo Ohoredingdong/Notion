@@ -85,4 +85,13 @@ check('Public filing source labels and links cannot inject HTML',()=>{
   const panel=ui.statementPanel(issuer,ctx);
   assert.doesNotMatch(panel,/<img|href="javascript:/);assert.match(panel,/&lt;img/);
 });
+check('Withheld reported-account mismatch is distinguished from simple missing data and escaped',()=>{
+  const ctx=context({...record,metrics:{revenue:123456789,assets:null,liabilities:null,equity:null},
+    account_validation:{balance_sheet:{status:'withheld',reason:'reported_balance_equation_mismatch',withheld_fields:['assets','liabilities','equity']},
+      note:'공시 원문 자산·부채·자본 불일치로 3개 항목 보류 <img src=x>'}});
+  const panel=ui.statementPanel(issuer,ctx);
+  assert.match(panel,/공시 원문 자산·부채·자본 불일치/);assert.match(panel,/1\.235억 원/);
+  assert.match(panel,/&lt;img/);assert.doesNotMatch(panel,/<img/);
+  assert.doesNotMatch(ui.statementPanel(issuer,context()),/fx-catalog-finance-validation/);
+});
 console.log('CATALOG_INTEGRITY_PASS',checks);

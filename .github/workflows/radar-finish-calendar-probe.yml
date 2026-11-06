@@ -1,0 +1,74 @@
+name: Radar Decision Calendar Probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/radar-complete-numeric-evidence-20261106]
+    paths: ['.github/radar-finish-proof-request.json']
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/fix/radar-complete-numeric-evidence-20261106'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      matrix:
+        calendar: ['4.11.3', '4.13.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the collector and calendar versions under investigation
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==${{ matrix.calendar }}'
+      - name: Trace one real collector call without publishing data
+        env:
+          PYTHONPATH: scripts
+        run: |
+          python - <<'PY'
+          import importlib.metadata
+          import json
+          import traceback
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import update_stock_decisions as collector
+
+          result = {
+              'checked_at': datetime.now(timezone.utc).isoformat(),
+              'source_commit': __import__('os').environ['GITHUB_SHA'],
+              'versions': {name: importlib.metadata.version(name) for name in
+                           ('yfinance', 'exchange-calendars', 'pandas', 'numpy')},
+              'read_only_probe': True,
+          }
+          now = datetime.now(timezone.utc)
+          for market in ('US', 'KR'):
+              try:
+                  result.setdefault('calendar', {})[market] = collector.latest_session(market, now)
+              except Exception:
+                  result.setdefault('calendar', {})[market] = {'traceback': traceback.format_exc()}
+          try:
+              row = collector.collect_symbol('AAPL', 'Apple', 'US', '소비자 기술', {}, {}, [], now)
+              result['status'] = 'completed'
+              result['row'] = row
+          except Exception as error:
+              result['status'] = 'failed'
+              result['error_type'] = type(error).__name__
+              result['traceback'] = traceback.format_exc()
+          Path('radar-decision-calendar-probe.json').write_text(
+              json.dumps(collector.clean(result), ensure_ascii=False, indent=2, allow_nan=False) + '\n'
+          )
+          print(json.dumps({key: value for key, value in result.items() if key != 'row'}, ensure_ascii=False, indent=2))
+          if result['status'] != 'completed':
+              raise SystemExit('Decision collector probe failed; source traceback preserved in artifact')
+          print(json.dumps({'symbol': row.get('symbol'), 'status': row.get('status'),
+                            'price': row.get('price'), 'price_session': row.get('price_session'),
+                            'source_identity_verified': row.get('price_source', {}).get('source_identity_verified'),
+                            'errors': row.get('errors')}, ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-decision-calendar-${{ matrix.calendar }}
+          path: radar-decision-calendar-probe.json
+          retention-days: 7

@@ -1,0 +1,29 @@
+name: Inspect Withheld Financial Source Precision
+on:
+  push:
+    branches: [fix/radar-complete-numeric-evidence-20261106]
+    paths: ['.github/radar-finish-proof-request.json']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source precision parser
+        run: python -m unittest discover -s scripts -p test_stock_financial_reconciliation_probe.py -v
+      - run: pip install 'requests>=2.32,<3'
+      - name: Collect the four official sources without changing production data
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/probe_stock_financial_reconciliation.py --request .github/radar-finish-proof-request.json --output financial-source-precision-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-financial-source-precision-evidence
+          path: financial-source-precision-evidence/
+          retention-days: 14

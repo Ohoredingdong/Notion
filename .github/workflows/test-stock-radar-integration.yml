@@ -9,6 +9,9 @@ on:
       - 'assets/stock-radar-clean-bridge.js'
       - 'assets/stock-radar-flow-v2.js'
       - 'assets/stock-catalog-ui.js'
+      - 'assets/stock-world-flow.js'
+      - 'scripts/test_stock_world_flow.cjs'
+      - 'scripts/test_stock_display_numbers.cjs'
       - 'scripts/test_stock_catalog_model.cjs'
       - 'scripts/build_stock_event_outlook.py'
       - 'scripts/publish_widget_data.py'
@@ -85,6 +88,9 @@ jobs:
           node --check assets/stock-radar-flow-v2.js
           node --check assets/stock-catalog-ui.js
           node --check assets/stock-world-brief.js
+          node --check assets/stock-world-flow.js
+          node scripts/test_stock_world_flow.cjs
+          node scripts/test_stock_display_numbers.cjs
           node scripts/test_stock_catalog_integrity.cjs
           node scripts/test_stock_catalog_model.cjs
           python -m py_compile scripts/test_stock_radar_flow_browser.py

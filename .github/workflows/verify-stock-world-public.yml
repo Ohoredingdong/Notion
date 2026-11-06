@@ -1,0 +1,44 @@
+name: Verify Public World Market Update
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'stock-value-radar.html'
+      - 'assets/stock-world-flow.js'
+      - 'assets/stock-radar-clean-bridge.js'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'assets/stock-catalog-ui.js'
+      - 'scripts/verify_stock_world_public.py'
+      - 'scripts/test_verify_stock_world_public.py'
+      - '.github/workflows/verify-stock-world-public.yml'
+permissions:
+  contents: read
+concurrency:
+  group: verify-public-world-market-update
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'exchange-calendars==4.13.1'
+      - name: Reject stale observations and incomplete source proofs
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest scripts.test_verify_stock_world_public -v
+      - name: Verify deployed code, actual observations and the exact numerical audit
+        run: python scripts/verify_stock_world_public.py --ui-commit "$GITHUB_SHA" --attempts 36
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-world-market-update-evidence
+          path: radar-world-flow-evidence/publication.json
+          retention-days: 14

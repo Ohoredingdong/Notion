@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 from urllib.parse import urlparse, parse_qs
 
@@ -108,6 +109,131 @@ def many_issuers(root, count, *, matching_names=True):
 
 
 class FinanceTests(unittest.TestCase):
+    def test_actual_reported_cfs_mismatch_withholds_only_totals_and_preserves_evidence(self):
+        # Both official endpoints returned these same CFS totals in Actions
+        # 42192877631 / filing 20260814003475; never plug equity to balance them.
+        row = {**verified_record(symbol="352770", name="셀레스트라", corp="01201970"),
+               "rcept_no":"20260814003475", "consolidation":"CFS", "currency":"KRW",
+               "metrics":{"revenue":24087300, "operating_income":-700732497,
+                          "net_income":-533508217, "assets":18025046401,
+                          "liabilities":25135078987, "equity":-6665884778}}
+        issue = f.balance_equation_issue(row)
+        self.assertEqual(issue["reported_difference"], -444147808)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            result, audit = f.guard_account_records({"KR:352770":row}, root, "2026-11-06T09:20:00Z")
+            repaired = result["KR:352770"]
+            self.assertEqual(repaired["status"], "partial")
+            self.assertEqual(repaired["checked_at"], row["checked_at"])
+            self.assertEqual(repaired["consolidation"], "CFS")
+            self.assertEqual(repaired["metrics"]["revenue"], 24087300)
+            self.assertEqual(repaired["metrics"]["net_income"], -533508217)
+            self.assertTrue(all(repaired["metrics"][k] is None for k in f.BALANCE_FIELDS))
+            self.assertEqual(row["metrics"]["equity"], -6665884778)  # input not mutated
+            archive = json.loads((root/f.ACCOUNT_QUARANTINE_OUTPUT).read_text())
+            self.assertTrue(archive["not_for_display_or_analysis"])
+            self.assertEqual(archive["records"][0]["record"], row)
+            self.assertEqual(audit["withheld_fields"], 3)
+            before = (root/f.ACCOUNT_QUARANTINE_OUTPUT).read_bytes()
+            again, second = f.guard_account_records(result, root, "2026-11-06T10:00:00Z")
+            self.assertEqual(again, result)
+            self.assertEqual(second["newly_withheld_records"], [])
+            self.assertEqual((root/f.ACCOUNT_QUARANTINE_OUTPUT).read_bytes(), before)
+
+    def test_balance_guard_has_no_percentage_tolerance_or_negative_equity_rejection(self):
+        valid = {"metrics":{"assets":100, "liabilities":120, "equity":-20}}
+        self.assertIsNone(f.balance_equation_issue(valid))
+        large = {"metrics":{"assets":1_000_000_000_000, "liabilities":600_000_000_000,
+                            "equity":399_999_999_000}}
+        self.assertEqual(f.balance_equation_issue(large)["reported_difference"], 1000)
+        incomplete = {"metrics":{"assets":100, "liabilities":120, "equity":None}}
+        self.assertIsNone(f.balance_equation_issue(incomplete))
+
+    def test_financial_validator_rejects_unreconciled_or_reexposed_totals(self):
+        row = verified_record()
+        row["metrics"].update(assets=100, liabilities=110, equity=10)
+        with self.assertRaisesRegex(ValueError, "unreconciled"):
+            f.validate_account_record(row)
+        with tempfile.TemporaryDirectory() as tmp:
+            result, _ = f.guard_account_records({"KR:005930":row}, Path(tmp), "audit-time")
+            repaired = result["KR:005930"]
+            repaired["metrics"]["assets"] = 100
+            with self.assertRaisesRegex(ValueError, "reexposed"):
+                f.validate_account_record(repaired)
+
+    def test_guard_preserves_every_other_record_and_does_not_create_empty_archive(self):
+        rows = {"KR:005930":verified_record(), "KR:000001":verified_record(symbol="000001")}
+        with tempfile.TemporaryDirectory() as tmp:
+            result, audit = f.guard_account_records(rows, Path(tmp), "audit-time")
+            self.assertEqual(result, rows)
+            self.assertIs(result["KR:005930"], rows["KR:005930"])
+            self.assertEqual(audit["newly_withheld_records"], [])
+            self.assertFalse((Path(tmp)/f.ACCOUNT_QUARANTINE_OUTPUT).exists())
+
+    def test_new_collection_cannot_republish_same_inconsistent_source_totals(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = catalog(root)
+            def get(url, **kwargs):
+                if url.startswith(f.DART_MULTI):
+                    payload = official_rows(report="11014")
+                    for row in payload["list"]:
+                        if row["account_nm"] == "자산총계": row["thstrm_amount"] = "8000"
+                    return json.dumps(payload).encode()
+                return corp_zip()
+            with patch("builtins.print"):
+                result = f.build(root,us_batch=0,kr_batch=1,getter=get,dart_key="offline",
+                                 agent="",throttle=0,as_of=date(2026,11,6))
+            row = result["records"]["KR:005930"]
+            self.assertEqual(row["status"], "partial")
+            self.assertIsNone(row["metrics"]["assets"])
+            self.assertEqual(row["metrics"]["operating_income"], -50)
+            self.assertEqual(row["metric_sources"]["assets"]["account_nm"], "자산총계")
+            self.assertEqual(row["metric_sources"]["assets"]["fs_div"], "CFS")
+            self.assertEqual(row["metric_sources"]["assets"]["sj_div"], "BS")
+            self.assertEqual(len(row["metric_sources"]["assets"]["source_row_sha256"]), 64)
+            self.assertEqual(result["account_integrity"]["withheld_records"], 1)
+            self.assertTrue((root/f.ACCOUNT_QUARANTINE_OUTPUT).exists())
+            source = json.loads((root/'stock-universe-catalog.json').read_text())
+            self.assertEqual(validate(source, result), {"KR":1,"US":0})
+
+    def test_offline_repair_keeps_source_time_counters_and_is_idempotent_without_network(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); catalog(root)
+            with patch("builtins.print"):
+                original = f.build(root,us_batch=0,kr_batch=1,getter=dart_getter(),
+                                   dart_key="offline",agent="",throttle=0,as_of=date(2026,11,6))
+            original["records"]["KR:005930"]["metrics"]["assets"] = 8000
+            f.write_json(root/f.OUTPUT, original)
+            with patch.object(f, "read_url", side_effect=AssertionError("offline repair must not fetch")):
+                audit = f.repair_existing_accounts(root, "2026-11-06T09:20:00Z")
+            repaired = json.loads((root/f.OUTPUT).read_text())
+            for key in ("generated_at", "last_successful_observation_at", "run", "cursor", "refresh_status", "current_run_failed"):
+                self.assertEqual(repaired[key], original[key])
+            self.assertEqual(repaired['records']['KR:005930']['checked_at'], original['records']['KR:005930']['checked_at'])
+            self.assertEqual(audit["newly_withheld_records"], ["KR:005930"])
+            before = (root/f.OUTPUT).read_bytes()
+            f.repair_existing_accounts(root, "2026-11-06T10:00:00Z")
+            self.assertEqual((root/f.OUTPUT).read_bytes(), before)
+
+    def test_all_accounts_withheld_are_not_counted_as_usable_financial_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); catalog(root)
+            def get(url, **kwargs):
+                if url.startswith(f.DART_MULTI):
+                    payload = official_rows(report="11014")
+                    payload['list'] = [row for row in payload['list'] if row['sj_div']=='BS']
+                    payload['list'][0]['thstrm_amount'] = '8000'
+                    return json.dumps(payload).encode()
+                return corp_zip()
+            with patch("builtins.print"):
+                doc = f.build(root,us_batch=0,kr_batch=1,getter=get,dart_key="offline",
+                              agent="",throttle=0,as_of=date(2026,11,6))
+            self.assertEqual(doc['financial_available'], {'KR':0, 'US':0})
+            self.assertEqual(doc['run']['KR']['available'], 0)
+            self.assertEqual(doc['records']['KR:005930']['status'], 'accounts_withheld')
+            self.assertIsNone(doc['records']['KR:005930']['metrics'])
+            self.assertEqual(validate(json.loads((root/'stock-universe-catalog.json').read_text()), doc), {'KR':0, 'US':0})
+
     def test_companyfacts_one_same_interval(self):
         d=f.parse_sec_companyfacts(sec_facts(),symbol="AAPL",cik=320193,checked_at="2026-11-05T00:00:00Z")
         self.assertEqual(d["status"],"available")

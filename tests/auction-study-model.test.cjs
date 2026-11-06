@@ -256,4 +256,84 @@ test('browser global exposes the same API without a module loader', () => {
   vm.runInNewContext(fs.readFileSync(require.resolve('../assets/auction-study-model.js'), 'utf8'), context);
   assert.equal(context.AuctionModel.calculate().profit, 3774);
   assert.equal(context.AuctionModel.defaults().bid, 28000);
+  assert.equal(context.AuctionModel.compareAmounts(0.1 + 0.2, 0.3), 0);
+});
+
+test('amount comparisons tolerate binary arithmetic noise without rounding real money differences away', () => {
+  assert.equal(model.compareAmounts(0.1 + 0.2, 0.3), 0);
+  assert.equal(model.compareAmounts(9882.900000000001, 9882.9), 0);
+  assert.equal(model.compareAmounts(1999.9999999999964, 2000), 0);
+  assert.equal(model.compareAmounts(9882.91, 9882.9), 1);
+  assert.equal(model.compareAmounts(9882.89, 9882.9), -1);
+  assert.equal(model.compareAmounts(0.000001, 0), 1);
+  assert.equal(model.compareAmounts(-0.000001, 0), -1);
+  // A relative epsilon alone would erase this representable 0.01만원 difference.
+  assert.equal(model.compareAmounts(1e13 + 0.01, 1e13), 1);
+  for (const value of [NaN, Infinity, undefined, null, '0']) {
+    assert.equal(Number.isNaN(model.compareAmounts(value, 0)), true);
+    assert.equal(Number.isNaN(model.compareAmounts(0, value)), true);
+  }
+});
+
+test('an exactly funded decimal budget has no fictitious zero-won shortfall', () => {
+  // 24,500 + 269.5 tax + 1,370 fixed costs + 43.4 interest - 16,800 + 500.
+  const input = { bid: 24500, minimum: 24500, loan: 16800, loanRate: 3.1,
+    months: 1, available: 9882.9 };
+  const funded = model.calculate(input);
+  assert.equal(funded.valid, true);
+  near(funded.cashNeeded, 9882.9);
+  assert.equal(funded.cashGap, 0);
+  const short = model.calculate({ ...input, available: 9882.89 });
+  near(short.cashGap, 0.01);
+  assert.ok(short.cashGap > 0);
+});
+
+test('an exactly funded decimal deposit is not flagged while a 0.01만원 shortage is retained', () => {
+  // 1,024.4 × 30% = 307.32 exactly in decimal arithmetic.
+  const input = { minimum: 1024.4, depositRate: 30, available: 307.32 };
+  const funded = model.calculate(input);
+  assert.equal(funded.valid, true);
+  assert.equal(funded.depositGap, 0);
+  near(funded.deposit, 307.32);
+  const short = model.calculate({ ...input, available: 307.31 });
+  near(short.depositGap, 0.01);
+  assert.ok(short.depositGap > 0);
+});
+
+test('decimal break-even proceeds produce zero rather than a phantom loss or negative zero', () => {
+  // Sale 33,100 - 99.3 selling cost - 500 exit tax = cost basis 32,500.7.
+  const input = { bid: 24500, minimum: 24500, loan: 16800, loanRate: 3.1,
+    months: 1, sale: 33100, downside: 33100, sellingRate: 0.3,
+    saleTax: 500, repairs: 7117.8 };
+  const even = model.calculate(input);
+  assert.equal(even.valid, true);
+  assert.equal(even.profit, 0);
+  assert.equal(even.downsideProfit, 0);
+  assert.equal(Object.is(even.profit, -0), false);
+  const loss = model.calculate({ ...input, repairs: 7117.81 });
+  const gain = model.calculate({ ...input, repairs: 7117.79 });
+  near(loss.profit, -0.01);
+  near(gain.profit, 0.01);
+  assert.ok(loss.profit < 0 && gain.profit > 0);
+});
+
+test('target profit at the algebraic ceiling compares equal, but a 0.01만원 higher bid misses it', () => {
+  const input = { minimum: 10000, loan: 10000, sale: 28000, downside: 28000,
+    acquisitionRate: 3.5, saleTax: 500, available: 50000, targetProfit: 2000 };
+  const ceiling = model.calculate(input).maxBid;
+  const atCeiling = model.calculate({ ...input, bid: ceiling });
+  const above = model.calculate({ ...input, bid: ceiling + 0.01 });
+  assert.equal(atCeiling.valid, true);
+  assert.equal(model.compareAmounts(atCeiling.profit, 2000), 0);
+  assert.equal(model.compareAmounts(above.profit, 2000), -1);
+  near(atCeiling.profit - above.profit, 0.01035);
+});
+
+test('minimum-price and loan-price boundaries ignore only arithmetic noise', () => {
+  assert.equal(model.calculate({ bid: 24500 - 4e-12 }).valid, true);
+  assert.equal(model.calculate({ loan: 28000 + 4e-12 }).valid, true);
+  assert.equal(model.calculate({ bid: 24499.99 }).valid, false);
+  assert.equal(model.calculate({ loan: 28000.01 }).valid, false);
+  assert.equal(model.compareAmounts(24500 + 4e-12, 24500), 0);
+  assert.equal(model.compareAmounts(24499.99, 24500), -1);
 });

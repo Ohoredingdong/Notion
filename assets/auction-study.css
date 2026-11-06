@@ -816,3 +816,50 @@ dialog::backdrop{background:#17263e55;backdrop-filter:blur(3px)}
   .decision-details::details-content{content-visibility:visible}
   .rights-verdict .decision-details .reason-list{display:block!important}
 }
+
+/* Short embeds and landscape phones need room to read, rather than smaller text.
+   The browser page stays fixed; its working surface can move to a full panel. */
+@media screen and (max-height:560px){
+  .workspace{padding-bottom:6px}
+  .topbar{min-height:34px;margin-bottom:4px}
+  .page-heading{min-height:30px;margin-bottom:6px}
+  .page-heading h1{font-size:20px}
+  .case-banner{min-height:31px;margin-bottom:6px;padding-top:5px;padding-bottom:5px}
+  .workspace>.notice{max-height:70px;margin-bottom:6px;padding:8px 10px;font-size:12px;line-height:1.7;overflow:auto;overscroll-behavior:contain}
+  .page-content{overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+  .page-content>.split-layout{height:auto;min-height:100%;overflow:visible}
+  .page-content>.home-screen{height:auto;min-height:100%;overflow:visible;padding-bottom:3px}
+  .home-screen>.overview-layout{flex:1 0 300px;height:300px;min-height:300px;max-height:none}
+  .home-screen .overview-layout .panel{min-height:300px}
+  .home-screen .analysis-progress{min-height:180px}
+  .home-screen .overview-layout .panel-body{min-height:180px}
+}
+@media screen and (max-height:560px) and (max-width:760px){
+  .sidebar{height:44px;min-height:44px;padding-top:4px;padding-bottom:4px}
+  .sidebar .nav-item{min-height:32px;padding-top:6px;padding-bottom:6px}
+  .page-heading h1{font-size:19px}
+}
+@media screen and (max-height:560px) and (min-width:761px){
+  .sidebar{padding-top:14px;padding-bottom:12px}
+  .brand{margin-bottom:14px}
+  .nav-label{margin-bottom:8px}
+  .nav-item{min-height:36px;margin-bottom:3px;padding-top:8px;padding-bottom:8px}
+  .sidebar-bottom{padding-top:10px}
+}
+@media screen{
+  /* A visible storage warning must not leave a document too short to read. */
+  .page-content:has(.simulation-workspace [data-sim-action="export-progress"]:not([hidden])),
+  .workspace:has(> #storageWarning:not([hidden]))>.page-content{overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+  .workspace:has(> #storageWarning:not([hidden])) .home-screen{height:auto;min-height:100%;overflow:visible;padding-bottom:3px}
+  .workspace:has(> #storageWarning:not([hidden])) .home-screen>.overview-layout{flex:1 0 240px;height:240px;min-height:240px;max-height:none}
+  .workspace:has(> #storageWarning:not([hidden])) .home-screen .overview-layout .panel{min-height:240px}
+  .workspace:has(> #storageWarning:not([hidden])) .home-screen .analysis-progress,
+  .workspace:has(> #storageWarning:not([hidden])) .home-screen .overview-layout .panel-body{min-height:160px}
+}
+@media screen and (max-height:600px) and (max-width:480px){
+  .page-content[data-view=home]{overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+  .page-content[data-view=home]>.home-screen{height:auto;min-height:100%;overflow:visible;padding-bottom:3px}
+  .home-screen>.overview-layout{flex:1 0 240px;height:240px;min-height:240px;max-height:none}
+  .home-screen .overview-layout .panel{min-height:240px}
+  .home-screen .analysis-progress,.home-screen .overview-layout .panel-body{min-height:160px}
+}

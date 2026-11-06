@@ -149,6 +149,12 @@
 .sim-navigation>span{color:#96a1b2;font-size:12px}
 .sim-live{flex-shrink:0;min-height:18px;max-height:44px;margin:0;color:#95a0b1;font-size:12px;line-height:1.6;overflow:auto;overscroll-behavior:contain}
 .sim-live.has-notice{color:#6d7e97}
+.sim-live [data-sim-action="export-progress"]{display:block;margin-top:4px;font-size:12px;text-align:left}
+.sim-live:has([data-sim-action="export-progress"]:not([hidden])){max-height:none;overflow:visible;color:#916d31}
+.simulation-workspace:has([data-sim-action="export-progress"]:not([hidden])),
+.workspace:has(> #storageWarning:not([hidden])) .simulation-workspace{height:auto;min-height:100%;overflow:visible}
+.simulation-workspace:has([data-sim-action="export-progress"]:not([hidden])) .sim-layout,
+.workspace:has(> #storageWarning:not([hidden])) .simulation-workspace .sim-layout{flex:1 0 270px;min-height:270px}
 .sim-pane-tabs{display:none}
 @media screen and (max-width:1200px){.sim-analysis>.sim-scroll,.sim-paper{padding:18px}.sim-section-heading h2{font-size:20px}.sim-document-tabs{padding:8px;gap:2px}.sim-document-tabs button{font-size:12px}.sim-document-tabs button>span{display:none}.sim-metric{padding:11px}.sim-metric>strong{font-size:26px}.sim-source-list{grid-template-columns:minmax(0,1fr)}.sim-source-list button{min-height:36px}.sim-fiction-label{max-width:140px;white-space:normal;line-height:1.5}}
 @media screen and (max-width:900px){
@@ -166,4 +172,9 @@
   .sim-document-footer,.sim-navigation{padding:10px 13px}.sim-numbers{gap:9px}.sim-metric>strong{font-size:26px}.sim-photos{grid-template-columns:minmax(0,1fr);gap:14px}.sim-photos figcaption{padding:12px}.sim-photos figcaption p{font-size:13px}.sim-source-list{gap:0 10px}.sim-source-list button{gap:5px}.sim-source-list button>span{display:none}.sim-source-list em{font-size:12px}.sim-section-heading h2{font-size:21px}.sim-question legend{font-size:18px}.sim-question label{padding:11px;font-size:14px}.sim-bid-inputs label{font-size:13px}.sim-bid-inputs label>span{flex-basis:190px}.sim-cash-result>strong{font-size:30px}.sim-calculation-rows>div{gap:8px;font-size:12px}.sim-learning-score{gap:6px}.sim-learning-score>div{padding:10px 7px}.sim-learning-score span{font-size:12px}.sim-learning-score strong{font-size:26px}.sim-live{font-size:12px;max-height:39px}.sim-photo-preview{width:63px;height:auto}.sim-photo-link{gap:10px}.sim-photo-link strong{font-size:13px}
 }
 @media screen and (max-height:660px){.simulation-workspace{gap:6px}.sim-stages button{min-height:34px}.sim-toolbar{min-height:34px}.sim-case-picker select{min-height:34px}.sim-live{max-height:20px}.sim-pane-tabs button{min-height:27px}.sim-document-tabs button{min-height:29px}.sim-document-footer,.sim-navigation{padding-top:8px;padding-bottom:8px}}
+@media screen and (max-height:560px){
+  .simulation-workspace{height:auto;min-height:100%;overflow:visible;padding-bottom:3px}
+  .simulation-workspace .sim-layout{flex:1 0 340px;height:340px;min-height:340px}
+  .simulation-workspace .sim-live{max-height:none;overflow:visible}
+}
 @media print{.simulation-workspace,.sim-layout,.sim-card,.sim-scroll{height:auto!important;max-height:none!important;overflow:visible!important}.sim-toolbar,.sim-stages,.sim-pane-tabs,.sim-document-tabs,.sim-navigation,.sim-document-footer,.sim-live{display:none!important}.sim-layout{display:block}.sim-analysis,.sim-documents{display:block!important}.sim-paper,.sim-analysis>.sim-scroll{padding:15px}.sim-card{break-inside:auto;margin-bottom:20px}.sim-photos figure{break-inside:avoid}}

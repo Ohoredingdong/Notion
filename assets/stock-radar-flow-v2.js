@@ -428,7 +428,7 @@ function fxV5Facts(c){
   ["예상 PER",fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,1)+"배"],
   ["EPS 수정",fxPct(f.eps_revision30_pct)],
   ["매출 변화",fxN(h.revenue_growth)===null?"—":fxPct(h.revenue_growth)],
-  ["현금흐름 FCF",fxAmount(h.fcf,c.currency)],
+  ["현금흐름 FCF",fxAmount(h.fcf,h.currency)],
   ["순차입금/EBITDA",fxN(b.net_debt_ebitda)===null?"—":fxNum(b.net_debt_ebitda,1)+"배"],
   ["20일 거래량",fxN(t.volume_ratio)===null?"—":fxNum(t.volume_ratio,2)+"배"]
  ];
@@ -594,12 +594,12 @@ function fxV5Cockpit(ctx){
  </div>
  <div class="fx-v5-bottom">
    <section><div class="fx-v5-subhead"><h3>실적 · 성장 점검</h3></div><div class="fx-v5-bottom-facts">
-     <div><small>매출</small><strong>${fxAmount(history.revenue,c.currency)}</strong></div>
+     <div><small>매출</small><strong>${fxAmount(history.revenue,history.currency)}</strong></div>
      <div><small>EPS 전망 수정</small><strong class="${fxN(f.eps_revision30_pct)===null?'':f.eps_revision30_pct>=0?'nr-up':'nr-down'}">${fxPct(f.eps_revision30_pct)}</strong></div>
      <div><small>다음 FY EPS 성장</small><strong>${fxPct(f.eps_growth_next_fy_pct)}</strong></div></div>
      <small class="fx-v5-datanote">회계기간 ${fxEscape(history.filing_period||"확인 전")} · 결산기 비교</small>
    </section>
-   <section><div class="fx-v5-subhead"><h3>재무 안정성 · 밸류</h3></div><div class="fx-v5-bottom-facts"><div><small>FCF</small><strong>${fxAmount(history.fcf,c.currency)}</strong></div><div><small>순차입금/EBITDA</small><strong>${fxN(b.net_debt_ebitda)===null?"—":fxNum(b.net_debt_ebitda,2)+"배"}</strong></div><div><small>예상 PER</small><strong>${fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,1)+"배"}</strong></div></div><small class="fx-v5-datanote">출처 및 최신 기간은 상세 분석에서 확인</small></section>
+   <section><div class="fx-v5-subhead"><h3>재무 안정성 · 밸류</h3></div><div class="fx-v5-bottom-facts"><div><small>FCF</small><strong>${fxAmount(history.fcf,history.currency)}</strong></div><div><small>순차입금/EBITDA</small><strong>${fxN(b.net_debt_ebitda)===null?"—":fxNum(b.net_debt_ebitda,2)+"배"}</strong></div><div><small>예상 PER</small><strong>${fxN(f.next_fy_pe)===null?"—":fxNum(f.next_fy_pe,1)+"배"}</strong></div></div><small class="fx-v5-datanote">출처 및 최신 기간은 상세 분석에서 확인</small></section>
    <section><div class="fx-v5-subhead"><h3>수급 대신 거래량 정보</h3></div><div class="fx-v5-bottom-facts">
     <div><small>20일 거래량 배수</small><strong>${fxN(tech.volume_ratio)===null?"—":fxNum(tech.volume_ratio,2)+"배"}</strong></div>
     <div><small>시장 대비 20일</small><strong>${fxN(tech.relative20_pp)===null?"—":fxPct(tech.relative20_pp)+"p"}</strong></div>
@@ -610,6 +610,22 @@ function fxV5Cockpit(ctx){
  </section>`;
 }
 
+function fxSentimentObservation(ctx,korea,now=Date.now()){
+ const feed=korea?ctx.data?.koreaSentiment:ctx.data?.sentiment,source=feed||{};
+ const score=fxN(korea?source.kospi?.index:source.headline?.score);
+ const observed=korea?String(source.date||""):source.source_timestamp||source.headline?.timestamp;
+ const stamp=Date.parse(observed||""),day=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
+ const today=new Date(now).toLocaleDateString("sv-SE",{timeZone:korea?"Asia/Seoul":"America/New_York"});
+ const actualDay=korea?observed:Number.isFinite(stamp)?new Date(stamp).toLocaleDateString("sv-SE",{timeZone:"America/New_York"}):"";
+ const world=ctx.data?.worldFlow,row=world?.version==="stock-world-flow-v1"?(world.indicators||[]).find(x=>x.id===(korea?"kospi":"sp500")):null;
+ let expected=day(row?.expected_session)?row.expected_session:null;
+ const fresh=row?.freshness||{},next=Date.parse(fresh.next_check_after||"");
+ if(expected&&Number.isFinite(next)&&now>=next&&day(fresh.next_expected_session)&&fresh.next_expected_session>expected)expected=fresh.next_expected_session;
+ const valid=source.market===(korea?"kr":"us")&&score!==null&&score>=0&&score<=100&&
+  (korea?day(observed)&&observed<=today&&(!expected||observed<=expected):Number.isFinite(stamp)&&stamp<=now);
+ const stale=valid&&!!expected&&actualDay<expected;
+ return {valid,score:valid?score:null,observed,actualDay,expected,stale};
+}
 function fxV5Sentiment(ctx){
  const korea=fxLocal.sentimentMarket==="kr";
  const us=ctx.data?.sentiment||{},kr=ctx.data?.koreaSentiment||{};
@@ -617,20 +633,19 @@ function fxV5Sentiment(ctx){
  const krScore=fxN(kr.kospi?.index);
  const usScore=fxN(us.headline?.score);
  const usTime=us.source_timestamp||us.headline?.timestamp;
- const validKorea=kr.market==="kr"&&/^\d{4}-\d{2}-\d{2}$/.test(time)&&Number.isFinite(Date.parse(time+"T00:00:00Z"))&&krScore!==null&&krScore>=0&&krScore<=100;
- const validUS=us.market==="us"&&usScore!==null&&usScore>=0&&usScore<=100&&Number.isFinite(Date.parse(usTime||""));
+ const krObservation=fxSentimentObservation(ctx,true),usObservation=fxSentimentObservation(ctx,false);
+ const validKorea=krObservation.valid,validUS=usObservation.valid;
  const valid=korea?validKorea:validUS,score=valid?(korea?krScore:usScore):null;
  const clamp=v=>v===null?null:v>=0&&v<=100?v:null;
  const grade=v=>v===null?"정보 없음":v<25?"극단적 공포":v<45?"공포":v<55?"중립":v<75?"탐욕":"극단적 탐욕";
  const tone=v=>v===null?"missing":v<25?"extreme-fear":v<45?"fear":v<55?"neutral":v<75?"greed":"extreme-greed";
  const label=korea&&validKorea&&typeof kr.kospi?.label==="string"&&kr.kospi.label?kr.kospi.label:grade(score);
- const secondScore=korea?(validKorea?clamp(fxN(kr.kosdaq?.index)):null):clamp(fxN(us.headline?.previous_1_week));
- const secondLabel=korea&&typeof kr.kosdaq?.label==="string"&&kr.kosdaq.label?kr.kosdaq.label:grade(secondScore);
+ const secondScore=korea?(validKorea?clamp(fxN(kr.kosdaq?.index)):null):(validUS?clamp(fxN(us.headline?.previous_1_week)):null);
+ const secondLabel=korea&&validKorea&&secondScore!==null&&typeof kr.kosdaq?.label==="string"&&kr.kosdaq.label?kr.kosdaq.label:grade(secondScore);
  const color=score===null?"#aebed1":score<45?"#ef8b80":score<55?"#d5ad67":"#49b78a";
  const sweep=(score===null?0:Math.max(0,Math.min(100,score))*2.7).toFixed(1)+"deg";
- const todayKst=new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"});
- const priorKoreaSession=validKorea&&time<todayKst;
- const dateText=korea?(validKorea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2")+(priorKoreaSession?" 이전 장 마감":" 장 마감"):"기준일 미확인"):(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"})+" "+(us.source_cadence==="intraday"?"발표":"기준"):"기준일 미확인");
+ const observation=korea?krObservation:usObservation;
+ const dateText=(korea?(validKorea?time.replace(/^\d{4}-(\d\d)-(\d\d)$/,"$1.$2")+" 마감 기준":"기준일 미확인"):(validUS?new Date(usTime).toLocaleDateString("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit"})+" "+(us.source_cadence==="intraday"?"발표":"기준"):"기준일 미확인"))+(observation.stale?" · 갱신 대기":valid&&!observation.expected?" · 일정 미확인":"");
  const sourceName=korea?"한국 공포탐욕지수":"CNN Fear & Greed";
  const sourceHref=korea?"https://www.koreafeargreed.com":"https://www.cnn.com/markets/fear-and-greed";
  const description=korea?"한국 코스피·코스닥의 민간 산출 심리지수이며, 미국 CNN 지수와 산출법이 다릅니다. 매매 신호가 아닙니다.":"미국 CNN 공포·탐욕 지수입니다. 한국 지수와 산출법이 다르며 매매 신호가 아닙니다.";
@@ -680,7 +695,7 @@ function fxV5Sentiment(ctx){
 function fxHome(ctx){
  const h=fxHelpers(),c=fxChosen(ctx),connected=!!(ctx.data?.toss?.enabled&&ctx.data.toss.api_base);
  return `<div class="fx-v5-home">
-  <section class="fx-v5-marketline"><div class="fx-v5-markettitle"><h2>시장 현황</h2><p>제공처 저장 지수 · 기준일 확인</p></div><div class="fx-v5-markets nr-market-grid">${h.indices?.()||""}</div>${fxV5Sentiment(ctx)}</section>
+  <section class="fx-v5-marketline fx-world-marketline">${window.StockWorldFlow?.render(ctx)||'<section class="fx-worldflow"><h2>세계시장 흐름</h2><p>시장 자료를 확인하고 있습니다.</p></section>'}${fxV5Sentiment(ctx)}</section>
   <div class="fx-v5-main">${fxStockPanel(ctx,false)}
    <div class="fx-v5-central" id="fx-focus-slot">${fxV5Cockpit(ctx)}</div>${fxV5Side(ctx,c)}
   </div>
@@ -696,6 +711,7 @@ function fxStockPage(ctx){
 
 function fxAmount(v,c){
  if(fxN(v)===null)return "—";
+ if(typeof c!=="string"||!(Intl.supportedValuesOf?.("currency")||["KRW","USD","CNY","JPY","GBP","EUR","HKD"]).includes(c))return "통화 미확인";
  const n=Math.abs(v);
  if(c==="KRW")return n>=1e12?fxNum(v/1e12,2)+"조원":n>=1e8?fxNum(v/1e8,1)+"억원":fxNum(v,0)+"원";
  if(c==="USD")return n>=1e9?fxNum(v/1e9,2)+"B USD":n>=1e6?fxNum(v/1e6,2)+"M USD":fxMoney(v,c);
@@ -862,10 +878,10 @@ function fxDetail(ctx){
     </section>
     <section class="fx-panel fx-d-metrics"><div class="fx-panel-heading fx-d-heading"><div><h3>${helper.I?.("chart")||"◇"} 실적 · 현금흐름</h3><small>사업이 만든 이익과 실제 현금의 흐름입니다.</small></div><span>${fxEscape(h.filing_period||"회계기간 확인 전")}</span></div>
      <div class="fx-d-facts">
-      ${fxFact("매출",fxAmount(h.revenue,c.currency),h.basis||"회계기간 확인","제품·서비스를 판매해 벌어들인 돈")}
-      ${fxFact("영업이익",fxAmount(h.operating_income,c.currency),"본업의 이익","본업에서 비용을 제외한 이익")}
-      ${fxFact("당기순이익",fxAmount(h.net_income,c.currency),"세금·이자 반영","세금·이자 등을 반영한 최종 이익")}
-      ${fxFact("FCF",fxAmount(h.fcf,c.currency),"현금흐름·설비투자 대조","영업현금흐름에서 설비투자를 뺀 돈")}
+      ${fxFact("매출",fxAmount(h.revenue,h.currency),h.basis||"회계기간 확인","제품·서비스를 판매해 벌어들인 돈")}
+      ${fxFact("영업이익",fxAmount(h.operating_income,h.currency),"본업의 이익","본업에서 비용을 제외한 이익")}
+      ${fxFact("당기순이익",fxAmount(h.net_income,h.currency),"세금·이자 반영","세금·이자 등을 반영한 최종 이익")}
+      ${fxFact("FCF",fxAmount(h.fcf,h.currency),"현금흐름·설비투자 대조","영업현금흐름에서 설비투자를 뺀 돈")}
      </div>
     </section>
    </div>

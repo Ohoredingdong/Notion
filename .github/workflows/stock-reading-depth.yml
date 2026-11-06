@@ -1,10 +1,8 @@
 name: Stock Three-Year Reading
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Stock Investment Cases']
-    types: [completed]
-    branches: [main]
+  # Cases dispatch this explicitly after publication: a normal source refresh
+  # has already used all three workflow_run follow-on levels by that point.
   push:
     branches: [main]
     paths:
@@ -13,6 +11,7 @@ on:
       - '.github/workflows/stock-reading-depth.yml'
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: stock-reading-depth
   cancel-in-progress: false
@@ -37,6 +36,11 @@ jobs:
       - name: Publish reading snapshot only
         run: >-
           python scripts/publish_widget_data.py --message 'research: publish three-year statements with shareholder-scope ROE' stock-reading-depth.json stock-reading-depth-summary.json
+      - name: Request accuracy audit after successful publication
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/workflows/audit-stock-radar-accuracy.yml/dispatches" -f ref=main
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -58,3 +62,4 @@ jobs:
             assets/stock-radar-v9.js
             assets/stock-market-groups.js
             assets/stock-investment-cases.js
+

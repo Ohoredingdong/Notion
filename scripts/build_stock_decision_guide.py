@@ -44,13 +44,13 @@ def cash_reading(row):
  return {'items':items,'flags':flags}
 
 def valuation_reading(row,case):
- v=row.get('valuation') or {};h=row.get('history') or {};peer=case.get('peer_context') or {};src=row.get('sources') or {};trailing=num(v.get('trailing_pe'));forward=num(v.get('forward_pe')) or num((row.get('forecasts') or {}).get('next_fy_pe'));pbr=num(v.get('price_to_book'));roe=num(v.get('return_on_equity_pct')) or num(h.get('roe'))
+ v=row.get('valuation') or {};h=row.get('history') or {};peer=case.get('peer_context') or {};src=row.get('sources') or {};trailing=num(v.get('trailing_pe'));forward=num((row.get('forecasts') or {}).get('next_fy_pe'));pbr=num(v.get('price_to_book'));roe=num(v.get('return_on_equity_pct'))
  items=[term('PER(주가수익비율)','주가가 1주당 이익의 몇 배인지',trailing,'낮다고 무조건 싼 주식은 아니에요. 이익이 줄어들 것으로 예상되면 낮아질 수 있어요.','info',src.get('estimates')),term('예상 PER','주가가 앞으로의 예상 EPS의 몇 배인지',forward,('같은 업종 예상 PER 중앙값 '+f"{peer.get('median'):.1f}배" if num(peer.get('median')) is not None else '같은 업종 비교자료가 부족해요.'),'info',src.get('estimates')),term('PBR(주가순자산비율)','주가가 장부상 주주 몫의 몇 배인지',pbr,'PBR만 낮으면 싸다고 보지 말고 ROE와 함께 봐요.','info',src.get('balance')),term('ROE(자기자본이익률)','주주 몫의 자본으로 얼마나 잘 벌었는지',roe,'자기자본 100원으로 순이익 약 '+f'{roe:.1f}원'+'을 낸 셈이에요.' if roe is not None else '같은 주주범위의 순이익·자기자본 자료가 필요해요.','good' if roe is not None and roe>=15 else 'info',src.get('balance'))]
  warnings=[]
  if roe is not None and roe>=20 and num(h.get('equity_growth')) is not None and h['equity_growth']<0:warnings.append('ROE가 높지만 자기자본이 줄어 올라간 것인지 확인해야 해요.')
  if pbr is not None and pbr<1 and (roe is None or roe<5):warnings.append('PBR이 낮아도 ROE가 낮으면 자산을 잘 활용하지 못하는 가치함정일 수 있어요.')
  if num(h.get('eps')) is not None and h['eps']<=0:warnings.append('적자기업의 음수 PER은 싸다는 뜻이 아니에요.')
- return {'items':items,'warnings':warnings,'historical_per':{'status':'not_connected','reading':'과거 PER 범위는 아직 자동 연결하지 않았어요. 현재는 같은 업종 예상 PER과 과거 실적을 함께 봐요.'}}
+ return {'items':items,'warnings':warnings,'basis':{'next_fy_pe':(row.get('forecasts') or {}).get('next_fy_pe_basis'),'trailing_pe':v.get('trailing_pe_basis'),'roe':v.get('return_on_equity_basis')},'historical_per':{'status':'not_connected','reading':'과거 PER 범위는 아직 자동 연결하지 않았어요. 현재는 같은 업종 예상 PER과 과거 실적을 함께 봐요.'}}
 
 def macro_exposure(row,macro):
  i=macro.get('indicators') or {};interp=macro.get('interpretation') or {};sector=str(row.get('sector') or '').lower();lev=num((row.get('balance') or {}).get('net_debt_ebitda'));notes=[];ten=num((i.get('us_10y') or {}).get('value'));fx=num((i.get('usdkrw') or {}).get('change_20_sessions_pct'))

@@ -14,6 +14,12 @@ on:
       - 'scripts/test_stock_extended_forecasts.py'
       - 'scripts/test_stock_universe_browser.py'
       - 'scripts/test_stock_catalog_model.cjs'
+      - 'scripts/build_stock_world_flow.py'
+      - 'scripts/test_stock_world_flow.py'
+      - 'scripts/test_stock_world_flow_browser.py'
+      - 'scripts/test_stock_world_flow.cjs'
+      - 'scripts/test_stock_display_numbers.cjs'
+      - 'scripts/audit_stock_display_numbers.py'
       - 'scripts/compare_radar_before_after.py'
       - '.github/workflows/*stock*'
       - '.github/workflows/radar-universe-pr-qa.yml'
@@ -86,18 +92,21 @@ jobs:
           node scripts/test_stock_catalog_integrity.cjs
           node scripts/test_stock_catalog_model.cjs
           node scripts/test_stock_radar_freshness.cjs
+          node --check assets/stock-world-flow.js
+          node scripts/test_stock_world_flow.cjs
+          node scripts/test_stock_display_numbers.cjs
       - name: Install Chromium (browser runs only on a local server)
         run: |
           sudo apt-get update
           for attempt in 1 2; do
-            if sudo timeout --kill-after=10s 150s apt-get -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2 --download-only install -y fonts-noto-cjk; then
+            if sudo timeout --kill-after=10s 150s apt-get -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2 --download-only install -y fonts-nanum; then
               break
             fi
             if [ "$attempt" -eq 2 ]; then
               exit 1
             fi
           done
-          sudo apt-get --no-download install -y fonts-noto-cjk
+          sudo apt-get --no-download install -y fonts-nanum
           test -n "$(fc-list :lang=ko)"
           python -m pip install 'playwright==1.56.0'
           python -m playwright install chromium
@@ -112,6 +121,7 @@ jobs:
           python -m http.server 8765 >/tmp/radar-universe-qa.log 2>&1 &
           python scripts/test_stock_universe_browser.py
           python scripts/test_stock_detail_v6.py
+          python scripts/test_stock_world_flow_browser.py --data-root . --out radar-world-flow-evidence
       - name: Compare unchanged home and detailed stock views before/after
         run: |
           python -m pip install 'Pillow==11.3.0'
@@ -125,5 +135,6 @@ jobs:
           path: |
             radar-universe-evidence/
             detail-v6-artifacts/
+            radar-world-flow-evidence/
           retention-days: 7
           if-no-files-found: warn

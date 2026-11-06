@@ -6,6 +6,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from zoneinfo import ZoneInfo
 from market_data_utils import market_session_clock
+from stock_price_evidence import fetch_daily_history, daily_change
 UTC=dt.timezone.utc
 INDEX=[('^KS11','코스피','KR','KRW'),('^KQ11','코스닥','KR','KRW'),('^IXIC','나스닥','US','USD'),('^GSPC','S&P 500','US','USD')]
 def build(root=Path('.'), now=None):
@@ -24,7 +25,7 @@ def build(root=Path('.'), now=None):
     def collect(r):
         if not re.fullmatch(r'[A-Za-z0-9.^=-]{1,24}',r['provider']):return r['symbol'],{**r,'status':'unavailable','bars':[],'error':'invalid_provider_symbol'}
         try:
-            frame=yf.Ticker(r['provider']).history(period='6mo',interval='1d',auto_adjust=False,actions=True,repair=False,timeout=12,raise_errors=True)
+            frame,price_source=fetch_daily_history(yf.Ticker(r['provider']),r['provider'],r['market'],cutoff[r['market']],currency=r['currency'],period='6mo',calendar=calendars[r['market']])
             bars=[];events=[]
             for stamp,row in frame.iterrows():
                 date=stamp.date().isoformat();close=float(row.get('Close',float('nan')))
@@ -36,7 +37,9 @@ def build(root=Path('.'), now=None):
                 if math.isfinite(split) and split:events.append({'date':date,'split':split})
             bars=sorted({b['date']:b for b in bars}.values(),key=lambda b:b['date'])
             if len(bars)<2:raise ValueError('insufficient_dated_closes')
-            return r['symbol'],{**r,'status':'ok' if bars[-1]['date']==cutoff[r['market']] else 'stale','collected_at':dt.datetime.now(UTC).isoformat(),'price_session':bars[-1]['date'],'expected_session':cutoff[r['market']],'source_url':'https://finance.yahoo.com/quote/'+r['provider'],'bars':bars,'corporate_actions':events}
+            split_by={event['date']:event['split'] for event in events}
+            change=daily_change([{**b,'split':split_by.get(b['date'],0)} for b in bars],r['market'],r['provider'],r['currency'],price_source,calendar=calendars[r['market']])
+            return r['symbol'],{**r,'status':'ok' if bars[-1]['date']==cutoff[r['market']] else 'stale','collected_at':dt.datetime.now(UTC).isoformat(),'price_session':bars[-1]['date'],'expected_session':cutoff[r['market']],'source_url':'https://finance.yahoo.com/quote/'+r['provider'],'bars':bars,'corporate_actions':events,'price_source':price_source,'daily_change':change}
         except Exception as e:return r['symbol'],{**r,'status':'unavailable','bars':[],'error':type(e).__name__}
     series={}
     with ThreadPoolExecutor(max_workers=3) as pool:
@@ -54,7 +57,7 @@ def build(root=Path('.'), now=None):
             value['collection_attempts']=2
             value['first_collection_error']=previous['error']
             series[key]=value
-    payload={'version':'radar-display-closes-1.0','generated_at':dt.datetime.now(UTC).isoformat(),'source_generated_at':raw['generated_at'],'source':'Yahoo Finance via yfinance; unofficial delayed data','basis':'제공처 Close · 완료 정규장 일봉 · 배당 재투자·환율 반영 없음','calendar_cutoff':cutoff,'counts':{k:sum(v['status']==k for v in series.values()) for k in ['ok','stale','unavailable']},'series':series,'orders_enabled':False,'used_for_investment_approval':False}
+    payload={'version':'radar-display-closes-1.1','generated_at':dt.datetime.now(UTC).isoformat(),'source_generated_at':raw['generated_at'],'source':'Yahoo Finance via yfinance; unofficial delayed data','basis':'제공처 Close · 완료 정규장 일봉 · 배당 재투자·환율 반영 없음; 1일 등락률은 거래소 직전 세션이 실제 확보된 경우만','calendar_cutoff':cutoff,'counts':{k:sum(v['status']==k for v in series.values()) for k in ['ok','stale','unavailable']},'series':series,'orders_enabled':False,'used_for_investment_approval':False}
     (root/'stock-radar-chart-data.json').write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'),allow_nan=False)+'\n')
     print(json.dumps({'chart_cache':payload['counts'],'cutoff':cutoff},ensure_ascii=False))
     return payload

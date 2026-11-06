@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 from datetime import date, datetime, timedelta, timezone
 import hashlib
 import io
@@ -24,10 +25,18 @@ import unicodedata
 from xml.etree import ElementTree as ET
 import zipfile
 
+try:
+    from scripts.stock_financial_precision import verified_balance_precision
+except ModuleNotFoundError:
+    from stock_financial_precision import verified_balance_precision
+
 UTC = timezone.utc
 VERSION = "official-financial-coverage-v1"
 OUTPUT = Path("stock-financial-coverage.json")
 QUARANTINE_OUTPUT = Path("data-quarantine/stock-financial-coverage.json")
+ACCOUNT_QUARANTINE_OUTPUT = Path("data-quarantine/stock-financial-accounts.json")
+ACCOUNT_POLICY = "reported-account-consistency-v1"
+BALANCE_FIELDS = ("assets", "liabilities", "equity")
 CATALOG_POLICY = "kr-six-character-alphanumeric-v2"
 IDENTITY_POLICY = "official-issuer-identity-v2"
 PROJECT_AGENT = "GeoyeonInvestmentRadar/1.0 (+https://github.com/Ohoredingdong/Notion)"
@@ -372,6 +381,8 @@ def parse_sec_companyfacts(raw, *, symbol, cik, checked_at):
 
 
 def _amount(value):
+    if isinstance(value, bool):
+        return None
     if isinstance(value, (int, float)):
         return float(value) if math.isfinite(float(value)) else None
     raw = str(value or "").strip().replace(",", "")
@@ -382,6 +393,148 @@ def _amount(value):
         return parsed if math.isfinite(parsed) else None
     except ValueError:
         return None
+
+
+def balance_equation_issue(record):
+    """Check reported totals in their original currency; never solve for a value.
+
+    At most one currency unit or floating-point representation error is allowed
+    without an exact source-bound XBRL precision attestation. A percent tolerance
+    could hide a material mismatch in a large company.
+    """
+    metrics = record.get("metrics") or {}
+    values = [_amount(metrics.get(field)) for field in BALANCE_FIELDS]
+    if any(value is None for value in values):
+        return None
+    assets, liabilities, equity = values
+    difference = assets - (liabilities + equity)
+    tolerance = max(1.0, sum(math.ulp(value) for value in values))
+    if abs(difference) <= tolerance:
+        return None
+    if verified_balance_precision(record) is not None:
+        return None
+    return {"reason": "reported_balance_equation_mismatch",
+            "equation": "assets = liabilities + equity",
+            "reported_difference": difference, "tolerance": tolerance,
+            "currency": record.get("currency"),
+            "consolidation": record.get("consolidation"),
+            "period_end": record.get("period_end"),
+            "rcept_no": record.get("rcept_no")}
+
+
+def validate_account_record(record):
+    """The issuer identity check alone does not validate financial arithmetic."""
+    if balance_equation_issue(record):
+        raise ValueError("unreconciled_reported_balance_sheet")
+    check = (record.get("account_validation") or {}).get("balance_sheet") or {}
+    if check.get("status") == "verified_with_declared_precision":
+        if verified_balance_precision(record) is None:
+            raise ValueError("invalid_reported_balance_precision_evidence")
+    if check.get("status") == "withheld":
+        if (check.get("withheld_fields") != list(BALANCE_FIELDS) or
+                any((record.get("metrics") or {}).get(key) is not None for key in BALANCE_FIELDS) or
+                not set(BALANCE_FIELDS).issubset(record.get("missing_metrics") or []) or
+                record.get("status") not in {"partial", "stale", "accounts_withheld"}):
+            raise ValueError("withheld_balance_sheet_reexposed")
+    return True
+
+
+def guard_account_records(records, root, audited_at):
+    """Withhold an incoherent triple; retain the complete source record separately.
+
+    This is used both by collection publication and by the offline repair CLI.
+    It does not refresh source timestamps or silently switch CFS to OFS.
+    """
+    root = Path(root)
+    archive = json_file(root / ACCOUNT_QUARANTINE_OUTPUT, {
+        "version": "official-financial-account-quarantine-v1",
+        "not_for_display_or_analysis": True, "records": []})
+    fingerprints = {entry["sha256"] for entry in archive["records"]}
+    previous = json_file(root / OUTPUT, {}).get("records") or {}
+    output, changed, archive_changed = {}, [], False
+    for key, original in records.items():
+        # A new API observation of the same filing may omit the prior precision
+        # proof. Carry it forward only if every issuer/period/unit/amount binding
+        # remains valid; never transfer it to a revised filing or different values.
+        cached = previous.get(key) or {}
+        if verified_balance_precision(cached) is not None and not (original.get("account_validation") or {}).get("balance_sheet"):
+            candidate = copy.deepcopy(original)
+            candidate["account_validation"] = copy.deepcopy(cached["account_validation"])
+            if verified_balance_precision(candidate) is not None:
+                note = candidate["account_validation"].get("note")
+                if note and note not in candidate.setdefault("limitations", []):
+                    candidate["limitations"].append(note)
+                original = candidate
+        issue = balance_equation_issue(original)
+        if not issue:
+            validate_account_record(original)
+            output[key] = original
+            continue
+        original_hash = hashlib.sha256(json.dumps([key, original], ensure_ascii=False,
+            sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+        if original_hash not in fingerprints:
+            archive["records"].append({"sha256": original_hash, "previous_key": key,
+                "reason": issue["reason"], "quarantined_at": audited_at,
+                "source_checked_at": original.get("checked_at"),
+                "arithmetic_evidence": issue, "record": original})
+            fingerprints.add(original_hash)
+            archive_changed = True
+        record = copy.deepcopy(original)
+        for field in BALANCE_FIELDS:
+            record["metrics"][field] = None
+        record["status"] = "stale" if original.get("status") == "stale" else "partial"
+        record["missing_metrics"] = [field for field, value in record["metrics"].items() if value is None]
+        if not any(value is not None for value in record["metrics"].values()):
+            record["status"] = "accounts_withheld"
+            record["metrics"] = None
+        note = "공시 원문의 자산·부채·자본 합계 차이를 확인해 세 항목을 보류했습니다. 원문의 표시단위·반올림 범위와 계정을 재확인해야 합니다."
+        record["account_validation"] = {
+            "policy": ACCOUNT_POLICY, "audited_at": audited_at, "note": note,
+            "balance_sheet": {**issue, "status": "withheld", "withheld_fields": list(BALANCE_FIELDS)},
+            "quarantine_file": str(ACCOUNT_QUARANTINE_OUTPUT), "quarantine_sha256": original_hash}
+        record["limitations"] = list(record.get("limitations") or [])
+        if note not in record["limitations"]:
+            record["limitations"].append(note)
+        validate_account_record(record)
+        output[key] = record
+        changed.append(key)
+    if archive_changed:
+        archive["updated_at"] = audited_at
+        write_json(root / ACCOUNT_QUARANTINE_OUTPUT, archive)
+    withheld = [key for key, row in output.items()
+                if ((row.get("account_validation") or {}).get("balance_sheet") or {}).get("status") == "withheld"]
+    precision_verified = [key for key, row in output.items() if verified_balance_precision(row) is not None]
+    return output, {"policy": ACCOUNT_POLICY, "audited_at": audited_at,
+                    "newly_withheld_records": changed, "withheld_records": len(withheld),
+                    "withheld_fields": len(withheld) * len(BALANCE_FIELDS),
+                    "precision_verified_records": len(precision_verified),
+                    "precision_verified_fields": len(precision_verified) * len(BALANCE_FIELDS),
+                    "quarantine_file": str(ACCOUNT_QUARANTINE_OUTPUT),
+                    "quarantined_records": len(archive["records"])}
+
+
+def repair_existing_accounts(root=Path("."), audited_at=None):
+    """Offline-only repair: unchanged observed_at/run/cursor and genuine raw values."""
+    root = Path(root)
+    data = json_file(root / OUTPUT, {})
+    if not isinstance(data.get("records"), dict):
+        raise ValueError("financial_snapshot_records_missing")
+    corrected, audit = guard_account_records(data["records"], root, audited_at or iso())
+    result = {**data, "records": corrected}
+    if audit["newly_withheld_records"]:
+        result["account_integrity"] = audit
+        result["financial_available"] = {
+            country: sum(key.startswith(country + ":") and verified_financial_record(row, key)
+                         for key, row in corrected.items()) for country in ("KR", "US")}
+    # Import after module initialization; keep the direct CLI and -m paths valid.
+    try:
+        from scripts.validate_stock_financial_coverage import validate
+    except ModuleNotFoundError:
+        from validate_stock_financial_coverage import validate
+    validate(json_file(root / "stock-universe-catalog.json", {}), result)
+    if audit["newly_withheld_records"]:
+        write_json(root / OUTPUT, result)
+    return audit
 
 
 def parse_dart_multi(raw, *, corp_map, checked_at, report_year, report_code, identities=None):
@@ -468,7 +621,13 @@ def parse_dart_multi(raw, *, corp_map, checked_at, report_year, report_code, ide
             if amount is not None:
                 vals[key] = amount
                 metric_sources[key] = {"field": field, "reported_period": row.get("thstrm_dt"),
-                                       "rcept_no": receipt, "period_end": end}
+                    "rcept_no": receipt, "period_end": end,
+                    "account_nm": row.get("account_nm"), "account_id": row.get("account_id"),
+                    "fs_div": row.get("fs_div"), "sj_div": row.get("sj_div"),
+                    "currency": currency, "corp_code": row.get("corp_code"),
+                    "stock_code": row.get("stock_code"), "ord": row.get("ord"),
+                    "source_row_sha256": hashlib.sha256(json.dumps(row, ensure_ascii=False,
+                        sort_keys=True, separators=(",", ":")).encode()).hexdigest()}
         if not vals:
             continue
         identity = (identities or {}).get(stock)
@@ -673,6 +832,8 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
         if result.get("source_checks_deferred") is True:
             counter["deferred"] += 1
         if result.get("status") in FINANCIAL_STATUSES:
+            result = guard_account_records({country+":"+symbol: result}, root, now)[0][country+":"+symbol]
+        if result.get("status") in FINANCIAL_STATUSES:
             if not verified_financial_record(result, country+":"+symbol, item):
                 raise ValueError("refusing_unverified_financial_record:"+country+":"+symbol)
             counter["available"] += 1
@@ -840,10 +1001,13 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
                     result["issuer_mapping_verified"]=True
                 save_result(item, result)
     allowed={(x["country"]+":"+x["symbol"]) for x in items}
-    count={country:sum(k.startswith(country+":") and verified_financial_record(rec, k)
-                      for k,rec in known.items() if k in allowed)
-           for country in ("KR","US")}
     published={k:v for k,v in known.items() if k in allowed}
+    # Single publication boundary: includes new observations AND retained old
+    # records, so neither failed refreshes nor only-missing runs can re-expose
+    # a numerically inconsistent source triple.
+    published, account_integrity = guard_account_records(published, root, now)
+    count={country:sum(k.startswith(country+":") and verified_financial_record(rec, k)
+                      for k,rec in published.items()) for country in ("KR","US")}
     for country,counter in stats.items():
         budgets=([source_requests[country]] if country=="US" else
                  [source_requests[country],dart_identity_request,dart_accounts_request])
@@ -872,7 +1036,8 @@ def build(root=Path("."), *, us_batch=60, kr_batch=240, getter=None,
         "universe":catalog.get("counts"),"processed":len(published),
         "financial_available":count,"run":stats,"issues":issues[:60],
         "quarantined_records":quarantine_count,"quarantine_file":str(QUARANTINE_OUTPUT),
-        "cursor":{"US":next_us,"KR":next_kr},"records":published}
+        "cursor":{"US":next_us,"KR":next_kr},"records":published,
+        "account_integrity":account_integrity}
     write_json(root/OUTPUT,result)
     print("FINANCIAL_COVERAGE",result["universe"],"real_statements",count,"this_run",stats,
           "issues",len(issues))
@@ -885,7 +1050,12 @@ def main():
     parser.add_argument("--kr-batch",type=int,default=240)
     parser.add_argument("--only-missing",action="store_true",
                         help="Recovery only: collect issuers without verified accounts; preserve normal rotation cursors")
+    parser.add_argument("--repair-existing", action="store_true",
+                        help="No network: withhold inconsistent reported totals, preserving originals and source timestamps")
     args=parser.parse_args()
+    if args.repair_existing:
+        print("FINANCIAL_ACCOUNT_REPAIR", json.dumps(repair_existing_accounts(), ensure_ascii=False))
+        return
     result=build(us_batch=args.us_batch,kr_batch=args.kr_batch,only_missing=args.only_missing)
     if result["current_run_failed"]:
         raise SystemExit("Current financial refresh was blocked or incomplete; prior verified accounts were retained. See run/issues, not accumulated coverage counts.")

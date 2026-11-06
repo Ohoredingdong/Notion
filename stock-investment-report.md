@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-06T05:39:11.468298+09:00
+- 계산일: 2026-11-06T20:47:56.877997+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -11,15 +11,15 @@
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
 | Apple (AAPL) | 15.1% | 33.0% | 양수 | 38.3배 | warning |
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 30.1배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 37.2배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.9배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 37.1배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.4배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.3배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 315.3배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 318.2배 | warning |
 
 ## 데이터 이상·제약
 - AAPL: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [임장은 수십번 다니지만 '기본'은 놓치는 투자자들…신간 - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE04Z1dGUVlOYmJTTVlqbUdOTUFpb0p2RnNhanJLb2F1M1VtNmxsWWV5ak5LRlhBUXk2NUFUZDJndkN1WDlDaTdZY0tLNzAtRnhFYjRUOHRtc1lhdw?oc=5)
-- [美 중간선거 후 금융시장 출렁···정부, AI 규제·관세 영향 점검 - 여성경제신문](https://news.google.com/rss/articles/CBMic0FVX3lxTE1WRzU2N1YzVkhyQjAyUG9QU2FaMmgwT2QxYTdHd21hVUhDV2g1blBLcG9kR1hHZ18yaW94TUZEb1FnWDhvYU5MS2dNTGQ1a1VYTGx1b1JZRTFvekpfN3ZJMDZsV1hHX1V6cGlZVmR0RnVucUHSAXdBVV95cUxNeVBvS2tvMXpSYk5WS1JPMmx6bUhJdFVVLUN2RmIxS0txQ1FrZlYtZ2VWZGlVYUJvazlBbERuUjctcld2T2F0b1h6SG56NHlvSXJITl9rbU1FaWl6dGhLbGRuNm9kZkVwMU5xVjlzYlBSX29vbFhYMA?oc=5)
-- [(르포) 삼전닉스·마이크론, 중국 수입박람회서 '메모리 모듈' 경쟁 - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE1hUlV5N0NLMmItX09va25oZGhDTWo1Y3dVWGU5U0tKZVJjZjNBZGQ3ODk3LUNqeUgwY1NBUHJzLUZlVldqdUFpVjdOdEpvSkNUai1ReUYwYnNGcWhRazhfQdIBYEFVX3lxTE1hUlV5N0NLMmItX09va25oZGhDTWo1Y3dVWGU5U0tKZVJjZjNBZGQ3ODk3LUNqeUgwY1NBUHJzLUZlVldqdUFpVjdOdEpvSkNUai1ReUYwYnNGcWhRazhfQQ?oc=5)
-- [(단독) 美서 'HBM 기반' 만드는 삼성 … TSMC 대안 찾는 빅테크 공략 - 매일경제](https://news.google.com/rss/articles/CBMiVkFVX3lxTE9ZaS1GUUh5dzNTbk56OVpBQk9Hc25xVU9FQlM4S24xN2NhOG05VGtOeVlQWkdra3dEMDhpemh2WnFSN0ZubWRIamY4S0dwUUtPSDhxZG53?oc=5)
+- [신한증권 "美 블루웨이브에 국고채 금리 급락…추가 하락 제한" - 연합뉴스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE9TWWZjTXlCeTBZc1ctaTVvTDFEQXAyenl4NkRKQTdtdEV2WFFDRk5vSVpveWJVUHBwWmtrOXNsWWdqMFNFVW9tdE4ydk90LVNTaTNkZ1pHV2U3cnVkUFhXc9IBYEFVX3lxTE9TWWZjTXlCeTBZc1ctaTVvTDFEQXAyenl4NkRKQTdtdEV2WFFDRk5vSVpveWJVUHBwWmtrOXNsWWdqMFNFVW9tdE4ydk90LVNTaTNkZ1pHV2U3cnVkUFhXcw?oc=5)
+- [(국제금융리포트) 美 기술주 급락에 코스피 5%대 하락…고유가·금리 인상 우려도 - 아주경제](https://news.google.com/rss/articles/CBMiWEFVX3lxTE9NQ0xzWktlcjlEd0pjU0s5NjRhLV80b2dpcWtEV1FIRm9tbVNaRkt2a2oteFZNZWxWTzhrdW1oOG4ydUJ4WVFZbG9qcGh2SklRUWJwczdXMHHSAVhBVV95cUxPTUNMc1pLZXI5RHdKY1NLOTY0YS1fNG9naXFrRFdRSEZvbW1TWkZLdmtqLXhWTWVsVk84a3VtaDhuMnVCeFlRWWxvanBodkpJUVFicHM3VzBx?oc=5)
+- [삼성·SK, HBM 공급자서 SW 수요자로…엔비디아 ‘AI 동맹’ 고도화 - 뉴스토마토](https://news.google.com/rss/articles/CBMiX0FVX3lxTE15WWR2WE5xem1QSUlRalRuMm0yNTBMN1d5UWFrQlNETDVtSFpCaGlWVWdQbXN6YU5ia0d5WUlPNFYyR2QwMm5OMFVyN0liMG9Tb3g5LTVNQ0dCMlBpa1RN?oc=5)
+- [삼성·SK·LG, 9일 엔비디아 'AI 데이 서울' 총출동…기술 활용 사례 선보인다 - 더팩트](https://news.google.com/rss/articles/CBMiVEFVX3lxTE1fYk5Pb0VMLXNtYzRzTHFsdUcyblBYbEJ5QXVyaTJnMkIwSnk5RTViQlhTWFUxb0tiLWNmNkRXdlU0NTFleVk0dGd6RWNaVUdfTXdyUtIBVEFVX3lxTE1fYk5Pb0VMLXNtYzRzTHFsdUcyblBYbEJ5QXVyaTJnMkIwSnk5RTViQlhTWFUxb0tiLWNmNkRXdlU0NTFleVk0dGd6RWNaVUdfTXdyUg?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
