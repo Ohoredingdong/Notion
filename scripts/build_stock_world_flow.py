@@ -71,7 +71,7 @@ INDICATORS = (
     Indicator('us10y', '미 국채 10년', 'US', 'yield', 'BC_10YEAR', 'SIFMA_US_2026', ('America/New_York',), (), 'PAR_YIELD', None, 'percent', None, 'treasury_par_yield', '재무부 10년 par yield. 원문 단위는 %, 변화는 bp(1bp=0.01%p)입니다.'),
     Indicator('wti', 'WTI 선물', 'GLOBAL', 'commodity', 'CL=F', 'us_futures', ('America/New_York',), ('NYM',), 'FUTURE', 'USD', 'USD_per_barrel', 'USD', 'provider_daily_close', 'Yahoo 연속선물 일별 가격; 현물 가격이나 거래소 공식 정산가가 아니며 만기 교체 영향을 포함할 수 있습니다.'),
     Indicator('gold', '금 선물', 'GLOBAL', 'commodity', 'GC=F', 'us_futures', ('America/New_York',), ('CMX',), 'FUTURE', 'USD', 'USD_per_troy_ounce', 'USD', 'provider_daily_close', 'Yahoo 연속선물 일별 가격; 현물 가격이나 거래소 공식 정산가가 아니며 만기 교체 영향을 포함할 수 있습니다.'),
-    Indicator('vix', 'VIX', 'US', 'volatility', '^VIX', 'XCBF', ('America/Chicago', 'America/New_York'), ('WCBF', 'CBO'), 'INDEX', 'USD', note='SPX 옵션으로 계산한 30일 기대 변동성 지수입니다. 주가 방향이나 수익 확률이 아닙니다.'),
+    Indicator('vix', 'VIX', 'US', 'volatility', '^VIX', 'XCBF', ('America/Chicago', 'America/New_York'), ('WCBF', 'CBO', 'CXI'), 'INDEX', 'USD', note='SPX 옵션으로 계산한 30일 기대 변동성 지수입니다. 주가 방향이나 수익 확률이 아닙니다.'),
 )
 BY_ID = {item.id: item for item in INDICATORS}
 REGIONS = (

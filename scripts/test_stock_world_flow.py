@@ -152,6 +152,19 @@ class ValuesAndIdentity(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'mismatch'):
                     flow.verify_metadata(spec, data)
 
+    def test_actual_vix_cxi_metadata_is_specific_to_vix_and_keeps_other_checks(self):
+        # Actions 42192615887 returned this exact quote identity on 2026-11-06.
+        actual = {'symbol': '^VIX', 'instrumentType': 'INDEX', 'exchangeName': 'CXI',
+                  'exchangeTimezoneName': 'America/Chicago', 'currency': 'USD'}
+        self.assertTrue(flow.verify_metadata(flow.BY_ID['vix'], actual)['identity_verified'])
+        for key, value in (('symbol', '^VXO'), ('instrumentType', 'FUTURE'),
+                           ('exchangeTimezoneName', 'Asia/Seoul'), ('currency', 'KRW')):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'mismatch'):
+                flow.verify_metadata(flow.BY_ID['vix'], {**actual, key: value})
+        sp500 = metadata(flow.BY_ID['sp500'])
+        with self.assertRaisesRegex(ValueError, 'exchange_mismatch'):
+            flow.verify_metadata(flow.BY_ID['sp500'], {**sp500, 'exchangeName': 'CXI'})
+
     def test_source_date_duplicates_and_naive_time_rejected(self):
         spec = flow.BY_ID['kospi']
         with self.assertRaisesRegex(ValueError, 'duplicate'):
