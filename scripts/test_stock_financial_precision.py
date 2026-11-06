@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 from scripts import build_stock_financial_coverage as builder
-from scripts.reconcile_stock_financial_precision import apply_review
+from scripts.reconcile_stock_financial_precision import apply_review, RESTORED_NOTE
 from scripts.stock_financial_precision import precision_facts_check, verified_balance_precision
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -118,10 +118,83 @@ class FinancialPrecisionTests(unittest.TestCase):
             self.assertEqual(after['generated_at'], data['generated_at'])
             self.assertEqual(after['records']['KR:011280']['checked_at'], before['KR:011280']['checked_at'])
             self.assertEqual(after['records']['KR:011280']['metrics'], before['KR:011280']['metrics'])
-            for key in ('KR:038110', 'KR:264450', 'KR:352770'): self.assertEqual(after['records'][key], held[key])
+            for key in ('KR:038110', 'KR:264450', 'KR:352770'):
+                actual = copy.deepcopy(after['records'][key])
+                review = actual['account_validation']['balance_sheet'].pop('source_review')
+                self.assertEqual(review['status'], 'completed_source_mismatch')
+                self.assertEqual(review['difference_interval'], REVIEW['records'][key]['source_interval_result']['difference_interval'])
+                self.assertEqual(review['reviewed_at'], REVIEW['records'][key]['source_precision']['verified_at'])
+                self.assertTrue(all(actual['metrics'][field] is None for field in builder.BALANCE_FIELDS))
+                self.assertNotIn('재확인해야', actual['account_validation']['note'])
+                actual['account_validation']['note'] = held[key]['account_validation']['note']
+                actual['limitations'] = held[key]['limitations']
+                self.assertEqual(actual, held[key])
             self.assertEqual((root / builder.ACCOUNT_QUARANTINE_OUTPUT).read_bytes(), archive)
             self.assertEqual(after['account_integrity']['withheld_fields'], 9)
             self.assertEqual(after['account_integrity']['precision_verified_fields'], 3)
+
+    def test_already_restored_snapshot_gets_only_review_copy_then_is_byte_idempotent(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = {f'KR:{symbol}': original(symbol) for symbol in ('011280', '038110', '264450', '352770')}
+            held, audit = builder.guard_account_records(source, root, '2026-11-06T09:29:26+00:00')
+            data = {'generated_at': '2026-11-05T12:12:44+00:00', 'records': held, 'account_integrity': audit}
+            (root / builder.OUTPUT).write_text(json.dumps(data))
+            apply_review(root, REVIEW)
+            previous = json.loads((root / builder.OUTPUT).read_text())
+            previous['records']['KR:011280']['account_validation']['note'] = '공시에 적힌 세 금액을 그대로 표시합니다.'
+            previous['records']['KR:011280']['limitations'] = ['공시에 적힌 세 금액을 그대로 표시합니다.']
+            for key in ('KR:038110', 'KR:264450', 'KR:352770'):
+                previous['records'][key]['account_validation']['balance_sheet'].pop('source_review')
+                previous['records'][key]['account_validation']['note'] = '원문을 재확인해야 합니다.'
+                previous['records'][key]['limitations'] = ['원문을 재확인해야 합니다.']
+            (root / builder.OUTPUT).write_text(json.dumps(previous))
+            archive = (root / builder.ACCOUNT_QUARANTINE_OUTPUT).read_bytes()
+            result = apply_review(root, REVIEW)
+            after = json.loads((root / builder.OUTPUT).read_text())
+            self.assertEqual(result['restored_fields'], 0)
+            self.assertEqual(len(result['changed_records']), 4)
+            self.assertEqual(after['account_integrity'], previous['account_integrity'])
+            self.assertEqual(after['generated_at'], previous['generated_at'])
+            for key, row in after['records'].items():
+                self.assertEqual(row['metrics'], previous['records'][key]['metrics'])
+                self.assertEqual(row['checked_at'], previous['records'][key]['checked_at'])
+                self.assertEqual(row['account_validation']['audited_at'], previous['records'][key]['account_validation']['audited_at'])
+            self.assertEqual(after['records']['KR:011280']['account_validation']['note'], RESTORED_NOTE)
+            self.assertEqual(after['records']['KR:011280']['account_validation']['balance_sheet'],
+                             previous['records']['KR:011280']['account_validation']['balance_sheet'])
+            written = (root / builder.OUTPUT).read_bytes()
+            again = apply_review(root, REVIEW)
+            self.assertEqual(again['status'], 'already_reconciled')
+            self.assertEqual(again['changed_records'], [])
+            self.assertEqual((root / builder.OUTPUT).read_bytes(), written)
+            self.assertEqual((root / builder.ACCOUNT_QUARANTINE_OUTPUT).read_bytes(), archive)
+
+    def test_completed_review_rejects_changed_source_proof_record_or_archive(self):
+        for alteration in ('proof_amount', 'proof_period', 'claimed_interval', 'current_receipt', 'archive_amount'):
+            with self.subTest(alteration=alteration), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                source = {f'KR:{symbol}': original(symbol) for symbol in ('011280', '038110', '264450', '352770')}
+                held, audit = builder.guard_account_records(source, root, '2026-11-06T09:29:26+00:00')
+                review = copy.deepcopy(REVIEW)
+                if alteration == 'proof_amount':
+                    review['records']['KR:038110']['source_precision']['facts']['assets']['value'] = '1'
+                elif alteration == 'proof_period':
+                    review['records']['KR:038110']['source_precision']['context']['period']['instant'] = '2026-03-31'
+                elif alteration == 'claimed_interval':
+                    review['records']['KR:038110']['source_interval_result']['difference_interval'] = ['1', '2']
+                elif alteration == 'current_receipt':
+                    held['KR:038110']['rcept_no'] = '20261116000001'
+                else:
+                    archive = json.loads((root / builder.ACCOUNT_QUARANTINE_OUTPUT).read_text())
+                    next(row for row in archive['records'] if row['previous_key'] == 'KR:038110')['record']['metrics']['assets'] += 1
+                    (root / builder.ACCOUNT_QUARANTINE_OUTPUT).write_text(json.dumps(archive))
+                (root / builder.OUTPUT).write_text(json.dumps({'generated_at': '2026-11-05T12:12:44+00:00',
+                                                              'records': held, 'account_integrity': audit}))
+                snapshot = (root / builder.OUTPUT).read_bytes()
+                with self.assertRaises(ValueError):
+                    apply_review(root, review)
+                self.assertEqual((root / builder.OUTPUT).read_bytes(), snapshot)
 
 
 if __name__ == '__main__':

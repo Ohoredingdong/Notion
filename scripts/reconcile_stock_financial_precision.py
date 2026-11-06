@@ -34,6 +34,9 @@ REVIEWED_RECEIPT = "20260814003299"
 RUN_ID = 42208426915
 ARTIFACT_ID = 13498570932
 ARTIFACT_SHA256 = "94f2ee1d86f5078a5dc391b9fdcd24707702b9e7e5ad27b5cfb29ebd71fba991"
+REVIEW_EVIDENCE = Path("data-evidence/stock-financial-precision-review-20261106.json")
+RESTORED_NOTE = ("공시 원문 XBRL의 천원 단위 정확도를 확인했습니다. 자산·부채·자본 합계의 1,000원 차이는 명시된 반올림 범위 안입니다. "
+                 "공시 원값을 유지하며, 화면 금액은 표시 단위에 맞춰 반올림합니다.")
 
 
 def digest(body):
@@ -165,6 +168,87 @@ def build_source_review(artifact_path):
     return result
 
 
+def replace_review_note(record, note):
+    previous = record["account_validation"].get("note")
+    record["account_validation"]["note"] = note
+    record["limitations"] = [value for value in record.get("limitations", []) if value not in (previous, note)] + [note]
+
+
+def bound_original(key, current, quarantine):
+    source_hash = current["account_validation"]["quarantine_sha256"]
+    entries = [row for row in quarantine["records"] if row["previous_key"] == key and row["sha256"] == source_hash]
+    if len(entries) != 1:
+        raise ValueError("original_quarantined_record_not_unambiguous")
+    original = entries[0]["record"]
+    original_hash = digest(json.dumps([key, original], ensure_ascii=False,
+                                     sort_keys=True, separators=(",", ":"), allow_nan=False).encode())
+    if original_hash != source_hash:
+        raise ValueError("original_quarantine_record_hash_mismatch")
+    return original, source_hash
+
+
+def completed_withheld_review(key, current, review, reference, quarantine):
+    """Bind a completed, unsuccessful reconciliation to the unchanged source record.
+
+    This metadata does not authorize displaying any of the three withheld values.
+    The reviewed facts are the already preserved, pinned probe evidence; this
+    operation does not perform another source collection or update source clocks.
+    """
+    reviewed = review["records"][key]
+    recorded = reference["records"][key]
+    proof = recorded["source_precision"]
+    # Regenerating a review of the same pinned artifact may have a new review
+    # timestamp. Its source facts must still match the preserved evidence exactly.
+    comparable = lambda value: {name: body for name, body in value.items() if name != "verified_at"}
+    if (reviewed.get("resolution") != "keep_withheld"
+            or reviewed.get("source_interval_result") != recorded["source_interval_result"]
+            or comparable(reviewed["source_precision"]) != comparable(proof)
+            or review.get("source_artifact_sha256") != ARTIFACT_SHA256
+            or proof["source"]["artifact_sha256"] != ARTIFACT_SHA256):
+        raise ValueError("withheld_review_source_evidence_changed")
+    validate_account_record(current)
+    balance = current["account_validation"]["balance_sheet"]
+    if balance.get("status") != "withheld":
+        raise ValueError("reviewed_withheld_record_not_withheld")
+    original, source_hash = bound_original(key, current, quarantine)
+    expected = {"country": "KR", "symbol": proof["issuer"]["symbol"],
+                "corp_code": proof["issuer"]["corp_code"], "rcept_no": proof["source"]["rcept_no"],
+                "period_end": proof["context"]["period"]["instant"],
+                "consolidation": "CFS", "currency": "KRW"}
+    if (key != "KR:" + expected["symbol"] or any(current.get(field) != value or original.get(field) != value
+                                                 for field, value in expected.items())
+            or any(str(row.get("report_year")) != str(proof["source"]["bsns_year"])
+                   or str(row.get("report_code")) != str(proof["source"]["reprt_code"])
+                   for row in (current, original))):
+        raise ValueError("withheld_review_record_binding_changed")
+    amounts = {field: Decimal(proof["facts"][field]["value"]) for field in BALANCE_FIELDS}
+    if any(Decimal(str(original["metrics"][field])) != amounts[field] for field in BALANCE_FIELDS):
+        raise ValueError("withheld_review_original_amount_changed")
+    difference = amounts["assets"] - amounts["liabilities"] - amounts["equity"]
+    half_range = sum(Decimal(10) ** -int(proof["facts"][field]["decimals"]) / 2 for field in BALANCE_FIELDS)
+    interval = [difference - half_range, difference + half_range]
+    result = recorded["source_interval_result"]
+    if (result.get("status") != "outside_declared_precision" or interval[0] <= 0 <= interval[1]
+            or difference != Decimal(result["reported_difference"])
+            or interval != [Decimal(value) for value in result["difference_interval"]]
+            or Decimal(str(balance["reported_difference"])) != difference):
+        raise ValueError("withheld_review_interval_binding_changed")
+    return {"version": "official-financial-source-review-v1", "status": "completed_source_mismatch",
+            "reviewed_at": proof["verified_at"], "issuer": proof["issuer"],
+            **{field: expected[field] for field in ("rcept_no", "period_end", "consolidation", "currency")},
+            "context_ref": proof["context_ref"], "unit_ref": proof["unit_ref"],
+            "reported_amounts": {field: proof["facts"][field]["value"] for field in BALANCE_FIELDS},
+            "reported_difference": result["reported_difference"], "difference_interval": result["difference_interval"],
+            "declared_decimals": result["declared_decimals"],
+            "source_run_url": proof["source"]["run_url"], "source_artifact_sha256": ARTIFACT_SHA256,
+            "source_package_sha256": proof["source"]["package_sha256"],
+            "source_instance_sha256": proof["source"]["instance_sha256"],
+            "review_evidence_file": str(REVIEW_EVIDENCE),
+            "source_precision_sha256": digest(json.dumps(proof, ensure_ascii=False, sort_keys=True,
+                                                         separators=(",", ":"), allow_nan=False).encode()),
+            "original_quarantine_sha256": source_hash, "withheld_fields": list(BALANCE_FIELDS)}
+
+
 def apply_review(root, review):
     root = Path(root)
     data = json.loads((root / OUTPUT).read_text(encoding="utf-8"))
@@ -174,48 +258,54 @@ def apply_review(root, review):
     if current.get("rcept_no") != REVIEWED_RECEIPT:
         raise ValueError("reviewed_record_changed_filing")
     proof = review["records"][REVIEWED_KEY]["source_precision"]
-    if verified_balance_precision(current) is not None:
-        return {"status": "already_reconciled", "restored_fields": 0}
-    validation = (current.get("account_validation") or {}).get("balance_sheet") or {}
-    if validation.get("status") != "withheld" or any(current["metrics"].get(key) is not None for key in BALANCE_FIELDS):
-        raise ValueError("expected_withheld_triple_missing")
-    source_hash = current["account_validation"]["quarantine_sha256"]
-    entries = [row for row in quarantine["records"] if row["previous_key"] == REVIEWED_KEY and row["sha256"] == source_hash]
-    if len(entries) != 1:
-        raise ValueError("original_quarantined_record_not_unambiguous")
-    original = entries[0]["record"]
-    original_hash = digest(json.dumps([REVIEWED_KEY, original], ensure_ascii=False,
-                                     sort_keys=True, separators=(",", ":"), allow_nan=False).encode())
-    if original_hash != source_hash:
-        raise ValueError("original_quarantine_record_hash_mismatch")
     restored = copy.deepcopy(current)
-    for field in BALANCE_FIELDS:
-        restored["metrics"][field] = original["metrics"][field]
-    check = precision_facts_check(restored, proof)
-    if check is None:
-        raise ValueError("reviewed_precision_not_bound_to_original_values")
-    old_note = current["account_validation"].get("note")
-    note = "공시 원문 XBRL의 천원 단위 정확도를 확인했습니다. 자산·부채·자본 합계의 1,000원 차이는 명시된 반올림 범위 안이며, 공시에 적힌 세 금액을 그대로 표시합니다."
-    restored["status"] = "stale" if current.get("status") == "stale" else original["status"]
-    restored["missing_metrics"] = [key for key, value in restored["metrics"].items() if value is None]
-    restored["limitations"] = [value for value in restored.get("limitations", []) if value != old_note] + [note]
-    restored["account_validation"] = {"policy": ACCOUNT_POLICY, "audited_at": proof["verified_at"], "note": note,
-        "balance_sheet": {"status": "verified_with_declared_precision", "equation": "assets = liabilities + equity",
-                          **check, "source_precision": proof, "reported_values_unchanged": True},
-        "original_withheld_at": current["account_validation"].get("audited_at"),
-        "quarantine_file": str(ACCOUNT_QUARANTINE_OUTPUT), "quarantine_sha256": source_hash}
+    restored_fields = 0
+    if verified_balance_precision(current) is None:
+        validation = (current.get("account_validation") or {}).get("balance_sheet") or {}
+        if validation.get("status") != "withheld" or any(current["metrics"].get(key) is not None for key in BALANCE_FIELDS):
+            raise ValueError("expected_withheld_triple_missing")
+        original, source_hash = bound_original(REVIEWED_KEY, current, quarantine)
+        for field in BALANCE_FIELDS:
+            restored["metrics"][field] = original["metrics"][field]
+        check = precision_facts_check(restored, proof)
+        if check is None:
+            raise ValueError("reviewed_precision_not_bound_to_original_values")
+        restored["status"] = "stale" if current.get("status") == "stale" else original["status"]
+        restored["missing_metrics"] = [key for key, value in restored["metrics"].items() if value is None]
+        restored["account_validation"] = {"policy": ACCOUNT_POLICY, "audited_at": proof["verified_at"],
+            "note": current["account_validation"].get("note"),
+            "balance_sheet": {"status": "verified_with_declared_precision", "equation": "assets = liabilities + equity",
+                              **check, "source_precision": proof, "reported_values_unchanged": True},
+            "original_withheld_at": current["account_validation"].get("audited_at"),
+            "quarantine_file": str(ACCOUNT_QUARANTINE_OUTPUT), "quarantine_sha256": source_hash}
+        restored_fields = 3
+    replace_review_note(restored, RESTORED_NOTE)
     validate_account_record(restored)
     updated = {**data["records"], REVIEWED_KEY: restored}
+    reference = json.loads((Path(__file__).resolve().parent.parent / REVIEW_EVIDENCE).read_text(encoding="utf-8"))
+    for key in ("KR:038110", "KR:264450", "KR:352770"):
+        row = copy.deepcopy(data["records"][key])
+        checked_review = completed_withheld_review(key, row, review, reference, quarantine)
+        row["account_validation"]["balance_sheet"]["source_review"] = checked_review
+        difference_label = format(Decimal(checked_review["reported_difference"]), "+,.0f")
+        replace_review_note(row, "공시 원문과 XBRL의 계정·표시단위를 대조했습니다. 자산−부채−자본 차이 "
+                            + difference_label + "원은 공시 정밀도를 반영해도 0이 되지 않아 세 항목을 계속 보류합니다.")
+        updated[key] = row
     checked, account_audit = guard_account_records(updated, root, proof["verified_at"])
-    if any(checked[key] != row for key, row in data["records"].items() if key != REVIEWED_KEY):
+    review_keys = {"KR:011280", "KR:038110", "KR:264450", "KR:352770"}
+    if any(checked[key] != row for key, row in data["records"].items() if key not in review_keys):
         raise ValueError("unreviewed_record_would_change")
     if (root / ACCOUNT_QUARANTINE_OUTPUT).read_bytes() != archive_bytes:
         raise ValueError("quarantine_must_remain_unchanged")
+    changed_records = [key for key, row in data["records"].items() if checked[key] != row]
     data["records"] = checked
-    data["account_integrity"] = {**account_audit, "precision_reviewed_at": proof["verified_at"],
-                                 "source_collection_timestamps_unchanged": True}
-    write_json(root / OUTPUT, data)
-    return {"status": "reconciled", "restored_record": REVIEWED_KEY, "restored_fields": 3,
+    if restored_fields:
+        data["account_integrity"] = {**account_audit, "precision_reviewed_at": proof["verified_at"],
+                                     "source_collection_timestamps_unchanged": True}
+    if changed_records:
+        write_json(root / OUTPUT, data)
+    return {"status": "reconciled" if restored_fields else "review_notes_updated" if changed_records else "already_reconciled",
+            "restored_record": REVIEWED_KEY, "restored_fields": restored_fields, "changed_records": changed_records,
             "withheld_records": account_audit["withheld_records"], "withheld_fields": account_audit["withheld_fields"],
             "source_checked_at_preserved": current["checked_at"] == restored["checked_at"],
             "generated_at_preserved": data["generated_at"], "quarantine_preserved": True}
