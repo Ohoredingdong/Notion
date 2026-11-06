@@ -172,6 +172,7 @@ def deposit_liquidity_guard(page):
     # Total equity is affordable; the pre-loan deposit is deliberately not.
     c["finance"]["available"] = 15000
     seed(page, data)
+    navigate(page, "home")
     expect(page.locator(".verdict-heading")).to_have_text("입찰 판단을 보류하고 있어요.")
     expect(page.locator(".overview-tasks")).to_contain_text("보증금")
     navigate(page, "money")
@@ -182,6 +183,7 @@ def deposit_liquidity_guard(page):
         "arrears": 0, "assumed": 0, "loanRate": 0,
     })
     seed(page, data)
+    navigate(page, "home")
     expect(page.locator(".verdict-heading")).to_have_text("입찰 판단을 보류하고 있어요.")
     expect(page.locator(".overview-tasks")).to_contain_text("보증금")
 

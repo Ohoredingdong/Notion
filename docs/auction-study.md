@@ -39,6 +39,10 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 
 브라우저의 `localStorage`에 저장하며 서버로 분석 내용을 보내지 않습니다. 같은 출처의 같은 브라우저에서만 이어집니다. 기기 이동이나 저장소 삭제에 대비해 **전체 노트 내보내기**로 JSON 파일을 보관하고 **노트 가져오기**로 추가할 수 있습니다. 가져오기는 기존 노트를 지우지 않습니다. 기기 저장이 실패하거나 기존 파일이 손상되어 읽히지 않으면 저장 성공으로 표시하지 않고 내보내기를 안내합니다. 현재 노트 인쇄도 지원합니다.
 
+다른 탭에서 같은 기록이 바뀌면 오래된 화면의 자동 저장을 멈추고 충돌을 알립니다. 저장된 원본과 현재 작성 중인 내용은 서로 덮어쓰지 않습니다. 필요한 메모를 내보내기로 보관한 뒤 새로고침해 최신 기록을 확인하세요. 분석노트·모의경매·기존 학습 진행도는 각각 충돌을 확인하며, 전체 노트 내보내기는 분석노트만 포함합니다. 모의경매 저장이 중지되면 **이 화면의 연습 기록 보관**으로 현재 연습 내용을 별도 JSON 파일에 보관할 수 있습니다.
+
+분석 화면을 바꾸면 주소의 `view`도 함께 바뀝니다. 새로고침·뒤로 가기·앞으로 가기로 해당 화면을 다시 열 수 있습니다. 가로 모드나 높이가 작은 임베드에서는 본문과 버튼이 잘리지 않도록 작업 영역 안에서 이동하며, 일반 화면에서는 기존 패널 배치를 유지합니다.
+
 첫 화면은 **보류 사유 → 예상 필요 현금·대출 전 보증금·보수적 손익 → 권리 확인 진행 → 다음 확인 행동** 순서로 읽습니다. 매도 세금이 반영되지 않았다면 손익 옆에 바로 표시합니다. 계산상 입찰 상한은 최종 검토에서 가정과 함께 확인하며 첫 화면의 추천 금액처럼 강조하지 않습니다.
 
 ## 계산 기준
@@ -51,6 +55,7 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 - 보증금 부족액과 전체 순투입 현금 부족액은 따로 표시합니다. 대출 가정이 잔금·취득 관련 정산액보다 크면 정산 반환 가정도 분리하며, 실제 지급·반환 시점은 금융기관에서 확인해야 합니다.
 - 손익 = 매도가 − 매도 비례 비용 − 양도 관련 세금 − 낙찰가 − 취득·보유 부대비용. 예비비는 지출로 간주하지 않습니다.
 - 계산상 입찰 상한은 입력한 매도가·대출·고정 비용·양도 세금·목표 수익을 고정하고 낙찰가와 그에 비례하는 취득비를 역산합니다. 대출 승인 한도나 자동 입찰 추천이 아닙니다.
+- 역산 상한이 최저매각가격보다 낮거나 고정한 대출금보다 낮으면 실행 가능한 목표 입찰 상한으로 쓰지 않습니다. 대출·가격 가정을 다시 설정하도록 별도 안내합니다. 임대수익은 현재 계산에 포함하지 않으며, 보유세·관리비 등의 지출만 기타 정액비용에 반영합니다.
 
 최종 검토는 법률 판단이나 자동 투자 추천을 대신하지 않습니다. 확인되지 않은 권리, 부족한 자금, 보수적 매도 손실, 목표 수익 미달, 0원으로 미반영된 매도 세금, 부족한 지역 근거를 드러냅니다. 서비스는 실시간 법원 사건·등기·시세를 수집하지 않습니다. 원문 확인 링크를 통해 사용자가 직접 조회합니다.
 
@@ -70,6 +75,8 @@ AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/u
 AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_learning_browser.py
 AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_rights_layout.py
 AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser
 ```
 
 위 Python 경로는 준비된 클라우드 환경 기준입니다. 일반 환경에서는 Playwright 1.56.0을 설치한 Python으로 실행하고, `BROWSER_EXECUTABLE`을 생략하면 Playwright의 Chromium을 사용합니다.

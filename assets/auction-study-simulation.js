@@ -18,12 +18,15 @@
       this.cases = window.AuctionSimulationData?.cases || [];
       this.persistent = true;
       this.notice = '';
+      this.storageNotice = '';
+      this.storedSnapshot = null;
       this.hint = false;
       this.state = {version:1,caseId:this.cases[0]?.id,stage:0,pane:'document',records:{}};
       this.restore();
       document.addEventListener('click', event => this.click(event));
       document.addEventListener('change', event => this.change(event));
       document.addEventListener('input', event => this.input(event));
+      window.addEventListener('storage', event => this.storageChanged(event));
     }
 
     scenario() { return this.cases.find(item => item.id === this.state.caseId) || this.cases[0]; }
@@ -41,6 +44,7 @@
     restore() {
       try {
         const raw = localStorage.getItem(KEY);
+        this.storedSnapshot = raw;
         if (!raw) return;
         const parsed = JSON.parse(raw);
         if (!parsed || parsed.version !== 1 || !parsed.records || typeof parsed.records !== 'object' || Array.isArray(parsed.records)) throw Error('Invalid saved practice');
@@ -72,18 +76,47 @@
         }
       } catch (_) {
         // Keep a corrupt or inaccessible original untouched; work remains usable in memory.
-        this.persistent = false;
-        this.notice = '저장된 연습 기록을 읽지 못했어요. 원본은 보존하고, 이번 연습은 이 화면에서만 유지해요.';
+        this.storageFailed('저장된 연습 기록을 읽지 못했어요. 원본은 보존하고, 이번 연습은 이 화면에서만 유지해요. 새로고침 전에 연습 기록을 파일로 보관해 주세요.');
+      }
+    }
+    statusMessage() {
+      return this.storageNotice || this.notice || '연습 기록은 이 브라우저에만 저장돼요. 실제 내 노트와 분리되어 있어요.';
+    }
+    updateStatus() {
+      const notice = document.querySelector('.simulation-workspace .sim-live');
+      if (!notice) return;
+      notice.classList.toggle('has-notice',Boolean(this.storageNotice || this.notice));
+      notice.querySelector('[data-sim-storage-message]').textContent = this.statusMessage();
+      notice.querySelector('[data-sim-action="export-progress"]').hidden = this.persistent;
+    }
+    storageFailed(message) {
+      this.persistent = false;
+      this.storageNotice = message;
+      // Updating only the status preserves an active input, caret and its draft.
+      this.updateStatus();
+      return false;
+    }
+    storageChanged(event) {
+      if (!this.persistent || (event.key !== KEY && event.key !== null)) return;
+      try {
+        // Queued events can be stale; compare the current value with our last successful write.
+        if (event.storageArea && event.storageArea !== localStorage) return;
+        if (localStorage.getItem(KEY) !== this.storedSnapshot) this.storageFailed('다른 탭에서 연습 기록이 바뀌었어요. 저장된 원본과 이 화면의 작성 중 기록을 보존했으며, 덮어쓰기를 중지했어요. 새로고침 전에 이 화면의 연습 기록을 파일로 보관해 주세요.');
+      } catch (_) {
+        this.storageFailed('브라우저의 연습 기록을 읽지 못했어요. 작성 중인 내용은 이 화면에 유지돼요. 새로고침 전에 연습 기록을 파일로 보관해 주세요.');
       }
     }
     save() {
-      if (!this.persistent) return;
-      try { localStorage.setItem(KEY,JSON.stringify(this.state)); }
+      if (!this.persistent) { this.updateStatus(); return false; }
+      try {
+        if (localStorage.getItem(KEY) !== this.storedSnapshot) return this.storageFailed('다른 탭에서 연습 기록이 바뀌었어요. 저장된 원본과 이 화면의 작성 중 기록을 보존했으며, 덮어쓰기를 중지했어요. 새로고침 전에 이 화면의 연습 기록을 파일로 보관해 주세요.');
+        const serialized = JSON.stringify(this.state);
+        localStorage.setItem(KEY,serialized);
+        this.storedSnapshot = serialized;
+        return true;
+      }
       catch (_) {
-        this.persistent = false;
-        this.notice = '브라우저에 연습 기록을 저장하지 못했어요. 이번 화면에서는 계속 연습할 수 있어요.';
-        const notice = document.querySelector('.simulation-workspace .sim-live');
-        if (notice) notice.textContent = this.notice;
+        return this.storageFailed('브라우저에 연습 기록을 저장하지 못했어요. 작성 중인 내용은 이 화면에서만 유지돼요. 새로고침 전에 연습 기록을 파일로 보관해 주세요.');
       }
     }
     calculation() {
@@ -104,7 +137,7 @@
         <nav class="sim-stages" aria-label="모의경매 연습 단계">${STAGES.map((title,index) => `<button type="button" data-sim-go-stage="${index}" aria-current="${this.state.stage===index?'step':'false'}"><span>${index+1}</span>${title}</button>`).join('')}</nav>
         <div class="sim-pane-tabs" role="group" aria-label="모의경매 화면 선택"><button type="button" data-sim-pane="document" aria-pressed="${this.state.pane==='document'}">서류 · 현장 사진</button><button type="button" data-sim-pane="analysis" aria-pressed="${this.state.pane==='analysis'}">${esc(STAGES[this.state.stage])} 도우미</button></div>
         <div class="sim-layout">${this.documentPane(scenario,record)}<section class="sim-card sim-analysis" aria-label="연습 도우미"><div class="sim-scroll" data-sim-scroll="analysis">${[()=>this.overview(scenario,record),()=>this.questions(scenario,record),()=>this.bidding(scenario,record),()=>this.results(scenario,record)][this.state.stage]()}</div>${this.footer()}</section></div>
-        <p class="sim-live ${this.notice?'has-notice':''}" role="status" aria-live="polite">${esc(this.notice || (this.persistent?'연습 기록은 이 브라우저에만 저장돼요. 실제 내 노트와 분리되어 있어요.':'이번 연습 기록은 화면에서만 유지돼요.'))}</p>
+        <div class="sim-live ${this.storageNotice||this.notice?'has-notice':''}" role="status" aria-live="polite"><span data-sim-storage-message>${esc(this.statusMessage())}</span><button type="button" class="text-link" data-sim-action="export-progress" ${this.persistent?'hidden':''}>이 화면의 연습 기록 보관 ↓</button></div>
       </div>`;
     }
 
@@ -148,7 +181,7 @@
       const cashInsufficient = result.valid && result.cashGap > 0;
       const depositGap = result.valid ? result.depositGap ?? Math.max(0,result.deposit-result.input.available) : 0;
       const loss = result.valid && result.profit < 0;
-      const targetMissed = result.valid && result.profit < result.input.targetProfit;
+      const targetMissed = result.valid && AuctionModel.compareAmounts(result.profit,result.input.targetProfit) < 0;
       const downsideLoss = result.valid && result.downsideProfit < 0;
       const financialHold = cashInsufficient || depositGap > 0 || targetMissed || downsideLoss;
       const hold = unresolved || !result.valid || financialHold || missing.length > 0 || correct.length < scenario.quiz.length;
@@ -249,6 +282,7 @@
         }
         record.submitted = true; this.save(); this.goStage(3);
       } else if (data.simAction === 'download') this.download();
+      else if (data.simAction === 'export-progress') this.exportProgress();
       else if (data.simAction === 'copy') {
         if (!this.calculation().valid) {
           this.notice = '입력 오류가 있는 금액은 복사할 수 없어요. 모의 입찰 단계에서 먼저 수정해 주세요.';
@@ -311,6 +345,18 @@
         this.notice = '가상 서류 8종을 HTML 파일로 저장했어요. 열어서 인쇄하거나 PDF로 저장할 수 있어요.';
       } catch (_) { this.notice = '서류를 내려받지 못했어요. 이 화면에서 자료를 계속 확인할 수 있어요.'; }
       this.paint('[data-sim-action="download"]');
+    }
+    exportProgress() {
+      try {
+        const payload = {type:'auction-simulation-progress',version:1,fictional:true,exportedAt:new Date().toISOString(),progress:this.state};
+        const url = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}));
+        const link = document.createElement('a');
+        link.href = url; link.download = 'auction-simulation-progress.json'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url),1000);
+      } catch (_) {
+        this.storageNotice = '연습 기록 파일을 만들지 못했어요. 새로고침 전에 작성 중인 메모와 입찰 금액을 직접 복사해 보관해 주세요. 저장된 원본은 변경하지 않았어요.';
+        this.updateStatus();
+      }
     }
   }
   window.AuctionSimulation = Object.freeze({create:callbacks => new Simulation(callbacks)});

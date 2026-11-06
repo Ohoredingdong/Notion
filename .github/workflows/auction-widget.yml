@@ -14,6 +14,8 @@ on:
       - 'scripts/test_auction_rights_layout.py'
       - 'scripts/test_auction_learning_browser.py'
       - 'scripts/test_auction_simulation_browser.py'
+      - 'scripts/test_auction_review_browser.py'
+      - 'scripts/test_auction_accessibility_browser.py'
       - '.github/workflows/auction-widget.yml'
   pull_request:
     branches: [main]
@@ -29,6 +31,8 @@ on:
       - 'scripts/test_auction_rights_layout.py'
       - 'scripts/test_auction_learning_browser.py'
       - 'scripts/test_auction_simulation_browser.py'
+      - 'scripts/test_auction_review_browser.py'
+      - 'scripts/test_auction_accessibility_browser.py'
       - '.github/workflows/auction-widget.yml'
   workflow_dispatch:
 
@@ -73,6 +77,8 @@ jobs:
           python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-layout.log
           python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-learning.log
           python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser | tee /tmp/auction-simulation.log
+          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser | tee /tmp/auction-review.log
+          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser | tee /tmp/auction-accessibility.log
       - name: Record browser verification results
         if: always()
         run: |
@@ -80,7 +86,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility']:
                   log = Path('/tmp/auction-' + name + '.log')
                   summary.write('### Auction ' + name + ' browser checks\n\n')
                   summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
@@ -94,6 +100,8 @@ jobs:
             /tmp/auction-study-*.png
             /tmp/auction-study-learning-report.json
             /tmp/auction-simulation-browser/
+            /tmp/auction-review-browser/
+            /tmp/auction-accessibility-browser/
 
   publish:
     needs: validate
@@ -142,7 +150,7 @@ jobs:
                           assert hashlib.sha256(response.read()).hexdigest() == wanted, name
                   print('VERIFIED_PUBLIC_AUCTION_WIDGET', os.environ['RELEASE_SHA'], expected, flush=True)
                   with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-                      summary.write('Public HTML, CSS and both JavaScript files match commit `' + os.environ['RELEASE_SHA'] + '`.\n\n')
+                      summary.write('Public HTML and all runtime assets match commit `' + os.environ['RELEASE_SHA'] + '`.\n\n')
                   break
               except Exception as error:
                   if attempt == 35:
@@ -159,6 +167,8 @@ jobs:
           python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-public-layout.log
           python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-public-learning.log
           python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-public-simulation | tee /tmp/auction-public-simulation.log
+          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-public-review | tee /tmp/auction-public-review.log
+          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-public-accessibility | tee /tmp/auction-public-accessibility.log
       - name: Record public browser verification results
         if: always()
         run: |
@@ -166,7 +176,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility']:
                   log = Path('/tmp/auction-public-' + name + '.log')
                   summary.write('### Public auction ' + name + ' browser checks\n\n')
                   summary.write('```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
@@ -180,3 +190,5 @@ jobs:
             /tmp/auction-study-*.png
             /tmp/auction-study-learning-report.json
             /tmp/auction-public-simulation/
+            /tmp/auction-public-review/
+            /tmp/auction-public-accessibility/

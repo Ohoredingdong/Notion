@@ -182,6 +182,53 @@ test('senior lease unpaid balance is explicit, arithmetic is coherent, and it ch
   assert.match(senior.answer.plainConclusion, /부족|서두르지/);
 });
 
+test('rendered senior-case explanations agree with current cash inputs rather than its initial funding shortage', () => {
+  const script = fs.readFileSync(path.join(__dirname, '../assets/auction-study-simulation.js'), 'utf8');
+  function renderWith(inputs) {
+    const sandbox = {
+      window: { AuctionSimulationData: data, AuctionModel: model, addEventListener() {} }, AuctionModel: model,
+      localStorage: { getItem() { return null; }, setItem() {} },
+      document: { addEventListener() {} },
+    };
+    vm.createContext(sandbox);
+    vm.runInContext(script, sandbox, { timeout: 1000 });
+    const simulation = sandbox.window.AuctionSimulation.create();
+    simulation.state.caseId = senior.id;
+    const record = simulation.record();
+    Object.assign(record.inputs, inputs);
+    record.reviewed = senior.documents.map(document => document.id);
+    for (const question of senior.quiz) {
+      record.answers[question.id] = { choiceId: question.answerId, checked: true };
+    }
+    record.decision = 'hold';
+    record.submitted = true;
+    const result = simulation.calculation();
+    assert.equal(result.valid, true);
+    const html = simulation.results(senior, record);
+    const text = html.replace(/<[^>]*>/g, ' ');
+    // Check the whole rendered explanation, including reusable case findings: a correct
+    // dynamic shortage row must not coexist with an obsolete claim elsewhere on screen.
+    const claimsInsufficientCash = text.split(/\.(?!\d)/).some(sentence =>
+      /(?:순투입|필요)\s*현금.*가용\s*현금.*(?:부족|넘|초과)/.test(sentence));
+    assert.equal(claimsInsufficientCash, result.cashGap > 0, 'cash conclusions must follow the current inputs');
+    const shortage = text.match(/가용 현금보다\s+([\d,]+(?:\.\d+)?)만원 부족해요/);
+    assert.equal(Boolean(shortage), result.cashGap > 0);
+    if (shortage) approximately(Number(shortage[1].replaceAll(',', '')), result.cashGap);
+    return result;
+  }
+
+  const initial = renderWith({});
+  const moreCash = renderWith({ available: '30000' });
+  const moreLoan = renderWith({ loan: '20000' });
+  approximately(initial.cashGap, 464.5);
+  approximately(moreCash.cashGap, 0);
+  approximately(moreLoan.cashGap, 0);
+  approximately(initial.cashNeeded, moreCash.cashNeeded);
+  approximately(initial.profit, moreCash.profit);
+  assert.ok(moreLoan.cashNeeded < initial.cashNeeded, 'loan changes affect current funding needs');
+  assert.ok(moreLoan.profit < initial.profit, 'larger financing also changes interest costs');
+});
+
 test('unresolved title and violation case remains on hold even when its incomplete model has a positive profit', () => {
   assert.equal(hold.financialAssumptionsConfirmed, false);
   assert.equal(hold.answer.riskLevel, 'hold');
