@@ -245,6 +245,7 @@ class PostregistrationPagesEvidenceTests(unittest.TestCase):
                       workflow[check:persist])
         self.assertIn("steps.postplan_public.outcome == 'success'", workflow[persist:])
         self.assertIn("steps.postplan_public.outputs.new_proofs == 'true'", workflow[persist:])
+        self.assertIn("continue-on-error: true", workflow[persist:workflow.index("      - uses: actions/upload-artifact", persist)])
         self.assertEqual(workflow.count('gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"'), 1)
 
 
