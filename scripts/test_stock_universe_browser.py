@@ -347,7 +347,8 @@ def run_view(browser, width, height, root, source):
     ready(page)
     verify(f'{width}: real source snapshot loaded',
            page.evaluate('window.StockRadarV2Bridge.snapshot().data.catalog.generated_at') == source['catalog']['generated_at'])
-    verify(f'{width}: existing market dashboard intact', page.locator('.fx-v5-markets .nr-index').count() == 4
+    verify(f'{width}: world market summary and sentiment available', page.locator('.fx-worldflow').count() == 1
+           and page.locator('[data-worldflow-region]').count() == 6
            and page.locator('.fx-sent-v9').count() == 1)
     verify(f'{width}: home denominator is entire union', list_count(page) == (9, len(source['union'])))
     screenshot(page, f'{width}-home')
@@ -509,7 +510,8 @@ def main():
                     page.set_content(f'<iframe name="notion-test" title="Notion-sized embed" src="{BASE}" style="width:{width}px;height:{height}px;border:0"></iframe>')
                     frame = page.frame(name='notion-test')
                     ready(frame)
-                    verify(f'embed-{width}: existing index cards intact', frame.locator('.fx-v5-markets .nr-index').count() == 4)
+                    verify(f'embed-{width}: world summary accessible', frame.locator('.fx-worldflow').count() == 1
+                           and frame.locator('[data-worldflow-region]').count() == 6)
                     select_search(frame, 'KR:0001A0', source, f'embed-{width}/home')
                     catalog_profile(frame, 'KR:0001A0', source, f'embed-{width}/home')
                     screenshot(page, f'embed-{width}-catalog-home')

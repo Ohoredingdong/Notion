@@ -96,7 +96,7 @@ with sync_playwright() as play:
         assets=page.locator("script[src]").evaluate_all(
             "(nodes) => nodes.map(n => n.getAttribute('src'))")
         expected_modules=("stock-radar-clean-bridge.js","stock-radar-flow-v2.js",
-                          "stock-catalog-ui.js","stock-world-brief.js",
+                          "stock-catalog-ui.js","stock-world-brief.js","stock-world-flow.js",
                           "stock-forecast.js","stock-forecast-learning.js",
                           "stock-forecast-directions.js","stock-forecast-autopilot.js")
         check("Approved V5 runtime modules and independent forecast screens only",
@@ -104,8 +104,10 @@ with sync_playwright() as play:
               for name in expected_modules) and not any("stock-radar-v8.js" in x
               or "stock-radar-v9.js" in x for x in assets),
             str(assets))
-        check("Market index cards",
-            page.locator(".fx-v5-markets .nr-index").count() == 4)
+        check("World market summary replaces the four index tiles",
+            page.locator(".fx-worldflow").count() == 1 and
+            page.locator("[data-worldflow-region]").count() == 6 and
+            page.locator(".fx-v5-markets .nr-index").count() == 0)
         check("Market strip has separate spacing before analysis",
             page.evaluate("""() => {
                 const upper=document.querySelector('.fx-v5-marketline')?.getBoundingClientRect();
@@ -147,8 +149,12 @@ with sync_playwright() as play:
         check("Strict checklist cannot be mistaken for an investment approval",
             "매수 성공 확률 아님" in page.locator(".fx-v5-sidecheck .fx-v5-footnote").inner_text() and
             "실사" in page.locator(".fx-v5-sidecheck .fx-v5-footnote").inner_text())
-        check("Index card discloses historical sparkline date",
-            all(any(label in x for label in ("일봉","추이","지표 저장값","완료 정규장 종가")) for x in page.locator(".fx-v5-markets .nr-index .nr-sub").all_text_contents()))
+        page.locator('[data-worldflow-open]').click()
+        check("World flow exposes all fourteen dated observations",
+            page.locator('.fx-worldflow-dialog[open]').count()==1 and
+            page.locator('[data-worldflow-indicator]').count()==14 and
+            '국가별 마감일은 서로 다를 수 있습니다' in page.locator('.fx-worldflow-dialog').inner_text())
+        page.locator('[data-worldflow-close]').click()
         page.locator('.fx-nav [data-nr-screen="stocks"]').click()
         check("Stock list opens",page.locator(".fx-page-grid .fx-row").count() > 0)
         page.locator('[data-rf-market="NASDAQ"]').first.click()

@@ -12,7 +12,8 @@ class MarketContextTests(unittest.TestCase):
         from scripts.market_data_utils import completed_daily_points
         import pandas as pd
         frame = pd.DataFrame({'Close': [100, 999]}, index=pd.to_datetime(['2026-11-04', '2026-11-05']))
-        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame))
+        meta={'symbol':'^KS11','instrumentType':'INDEX','exchangeName':'KSC','exchangeTimezoneName':'Asia/Seoul','currency':'KRW'}
+        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame,_price_history=SimpleNamespace(_history_metadata=meta)))
         now = datetime(2026, 11, 5, 3, tzinfo=timezone.utc)
         def completed(points, market, cutoff):
             return completed_daily_points(points, market, cutoff, Calendar(market))
@@ -27,7 +28,8 @@ class MarketContextTests(unittest.TestCase):
         from scripts.market_data_utils import completed_daily_points
         import pandas as pd
         frame = pd.DataFrame({'Close': [100]}, index=pd.to_datetime(['2026-11-04']))
-        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame))
+        meta={'symbol':'^KS11','instrumentType':'INDEX','exchangeName':'KSC','exchangeTimezoneName':'Asia/Seoul','currency':'KRW'}
+        provider = SimpleNamespace(Ticker=lambda symbol: SimpleNamespace(history=lambda **kwargs: frame,_price_history=SimpleNamespace(_history_metadata=meta)))
         now = datetime(2026, 11, 5, 10, tzinfo=timezone.utc)
         def completed(points, market, cutoff):
             return completed_daily_points(points, market, cutoff, Calendar(market))

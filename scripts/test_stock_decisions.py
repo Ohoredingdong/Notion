@@ -15,7 +15,7 @@ class MathSafety(unittest.TestCase):
  def test_targets_inverted(self):self.assertEqual(m.target_data({'low':200,'median':100,'high':150},{},100)['status'],'missing')
  def test_missing_estimates(self):self.assertEqual(m.forecast_data({}, {}, {},100)['status'],'missing')
  def test_forecast_real_revision(self):
-  f=m.forecast_data({'0y':{'avg':10},'+1y':{'avg':12,'low':11,'high':13,'numberOfAnalysts':8}}, {'+1y':{'current':12,'30daysAgo':10}}, {'financialCurrency':'USD'},100)
+  f=m.forecast_data({'0y':{'avg':10},'+1y':{'avg':12,'low':11,'high':13,'numberOfAnalysts':8}}, {'+1y':{'current':12,'30daysAgo':10}}, {'currency':'USD','financialCurrency':'USD'},100)
   self.assertAlmostEqual(f['eps_revision30_pct'],20);self.assertAlmostEqual(f['next_fy_pe'],100/12)
  def test_no_revisions_is_unknown(self):
   f=m.forecast_data({'+1y':{'avg':12,'low':11,'high':13}},{},{},100)

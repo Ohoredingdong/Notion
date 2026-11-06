@@ -6,13 +6,15 @@ It never turns one indicator into a deterministic stock-market forecast.
 from __future__ import annotations
 import csv, io, json, math, re, urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from bs4 import BeautifulSoup
 try:
-    from .market_data_utils import completed_daily_points
+    from .market_data_utils import completed_daily_points, market_session_clock, exchange_calendar, session_date
+    from .stock_price_evidence import fetch_daily_history, daily_change
 except ImportError:
-    from market_data_utils import completed_daily_points
+    from market_data_utils import completed_daily_points, market_session_clock, exchange_calendar, session_date
+    from stock_price_evidence import fetch_daily_history, daily_change
 
 NOW=datetime.now(timezone.utc)
 OUT=Path('stock-market-context.json')
@@ -169,16 +171,30 @@ def fred_unrate(body):
 def market_series(symbol,label,now=None):
     import yfinance as yf
     collected_at=now or datetime.now(timezone.utc)
-    frame=yf.Ticker(symbol).history(period='3mo',interval='1d',auto_adjust=False,actions=False,raise_errors=True)
-    if frame is None or frame.empty:raise ValueError(label+'_empty')
     market={'^KS11':'KR','^KQ11':'KR','^GSPC':'US','^IXIC':'US','KRW=X':'FX'}[symbol]
+    cutoff=(collected_at.date()-timedelta(days=1)).isoformat() if market=='FX' else market_session_clock(market,collected_at)['expected_session']
+    currency='KRW' if market in ('KR','FX') else 'USD'
+    frame,price_source=fetch_daily_history(yf.Ticker(symbol),symbol,market,cutoff,currency=currency,period='3mo')
+    if frame is None or frame.empty:raise ValueError(label+'_empty')
     values,clock=completed_daily_points([(str(i.date()),num(v)) for i,v in frame['Close'].items()],market,collected_at)
     if not values:raise ValueError(label+'_no_close')
-    latest=values[-1];prior=values[-2] if len(values)>1 else latest;old=values[-21] if len(values)>=21 else values[0]
+    latest=values[-1];prior=values[-2] if len(values)>1 else None;old=values[-21] if len(values)>=21 else None
+    split_by={str(stamp.date()):num(row.get('Stock Splits')) for stamp,row in frame.iterrows()}
+    change=daily_change([{'date':day,'close':value,'split':split_by.get(day)} for day,value in values],market,symbol,currency,price_source)
+    period_change=None;period_start=None
+    if market in ('KR','US'):
+        cal=exchange_calendar(market,int(latest[0][:4]));period_start=latest[0]
+        for _ in range(20):period_start=session_date(cal.previous_session(period_start))
+        period_change=pct_change(latest[1],dict(values).get(period_start))
     status='ok' if clock['expected_session'] is None or latest[0]==clock['expected_session'] else 'stale'
     basis=('제공처 일봉 중 UTC 날짜가 완전히 지난 값; 단일 거래소 확정 환율·실시간 환율 아님' if market=='FX'
            else '정규장 종료 후 30분이 지난 완료 세션의 제공처 종가; 실시간 아님')
-    return {'date':latest[0],'value':latest[1],'change_1d_pct':pct_change(latest[1],prior[1]),'change_20_sessions_pct':pct_change(latest[1],old[1]),'source_url':'https://finance.yahoo.com/quote/'+symbol,'basis':basis,
+    return {'date':latest[0],'value':latest[1],'currency':currency,'change_1d_pct':change['change_1d_pct'],
+            'change_previous_observation_pct':pct_change(latest[1],prior[1]) if prior else None,'previous_observation_date':prior[0] if prior else None,
+            'change_20_sessions_pct':period_change,'change_20_start_date':period_start,
+            'change_20_observations_pct':pct_change(latest[1],old[1]) if market=='FX' and old else None,
+            'change_20_basis':'exact 20 previous exchange sessions' if market!='FX' else '20 available completed provider dates; not an exchange-session return',
+            'daily_change':change,'price_source':price_source,'source_url':'https://finance.yahoo.com/quote/'+symbol,'basis':basis,
             'market':market,'status':status,'collected_at':collected_at.isoformat(),
             'price_basis':'elapsed_UTC_daily_bar' if market=='FX' else 'completed_regular_session_close',
             'expected_session':clock['expected_session'],'session_clock':clock}
@@ -195,8 +211,9 @@ def interpretation(i):
     if level is not None and (level>=4.5 or (move is not None and move>=.25)):
         label='장기금리 부담이 큰 환경';notes.append('미국 10년물 국채금리가 높거나 최근 올랐어요. 먼 미래 이익의 현재가치가 낮아져 고PER 성장주의 평가 부담이 커질 수 있어요.')
     elif level is not None and level<3.5 and (move or 0)<=0:label='장기금리 부담이 낮아지는 환경'
-    if fx.get('change_20_sessions_pct') is not None:
-        notes.append('원/달러 환율은 최근 20거래일 '+('올랐어요. 원화 약세는 수출매출 환산에 유리할 수 있지만 수입 원가에는 불리할 수 있어요.' if fx['change_20_sessions_pct']>0 else '내렸어요. 원화 강세는 수입 원가에는 유리할 수 있지만 수출매출 환산에는 불리할 수 있어요.'))
+    fx_move=fx.get('change_20_observations_pct')
+    if fx_move is not None:
+        notes.append('원/달러 환율은 최근 20개 완료 일별 관측 사이에 '+('올랐어요. 원화 약세는 수출매출 환산에 유리할 수 있지만 수입 원가에는 불리할 수 있어요.' if fx_move>0 else '내렸어요. 원화 강세는 수입 원가에는 유리할 수 있지만 수출매출 환산에는 불리할 수 있어요.'))
     return {'label':label,'summary':' '.join(notes),'not_causality':'금리·국채금리·환율 하나만으로 주가 방향을 확정하지 않아요. 변화의 원인과 기업별 노출을 같이 확인합니다.','questions':[{'term':'기준금리','meaning':'중앙은행이 정하는 돈의 기본 가격','question':'왜 올리거나 내렸나요?','check':'물가 안정, 경기 둔화, 금융안정 중 무엇이 결정의 핵심이었는지 공식 회의문에서 확인'},{'term':'국채금리','meaning':'정부가 장기로 돈을 빌릴 때 시장이 요구하는 금리','question':'왜 시장금리가 움직였나요?','check':'기준금리 기대, 물가 기대, 장기채 위험보상 중 무엇이 변했는지 확인'},{'term':'환율','meaning':'1달러를 사는 데 필요한 원화','question':'이 기업에 유리한가요?','check':'매출 통화, 비용 통화, 해외자산·환헤지 여부를 구분'}]}
 
 def main():

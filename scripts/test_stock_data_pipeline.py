@@ -266,7 +266,10 @@ class CanonicalAndAuditTests(unittest.TestCase):
                 if symbol=='^KQ11' and attempts[symbol]==1:
                     raise sqlite3.OperationalError('database is locked')
                 return Frame()
-            return SimpleNamespace(history=history)
+            market='KR' if symbol in ('^KS11','^KQ11') else 'US'
+            meta={'symbol':symbol,'instrumentType':'INDEX','exchangeName':{'^KS11':'KSC','^KQ11':'KOE','^GSPC':'SNP','^IXIC':'NIM'}[symbol],
+                  'exchangeTimezoneName':'Asia/Seoul' if market=='KR' else 'America/New_York','currency':'KRW' if market=='KR' else 'USD'}
+            return SimpleNamespace(history=history,_price_history=SimpleNamespace(_history_metadata=meta))
         yf=SimpleNamespace(Ticker=ticker,set_tz_cache_location=lambda path:None)
         xc=SimpleNamespace(get_calendar=lambda name,**kwargs:Calendar('KR' if name=='XKRX' else 'US'))
         with tempfile.TemporaryDirectory() as temp:

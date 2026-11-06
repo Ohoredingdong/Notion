@@ -104,7 +104,8 @@ jobs:
           if ! git diff --quiet "$RADAR_SOURCE_SHA" "$RADAR_CHECKED_REMOTE_SHA" -- \
             scripts/build_stock_universe_catalog.py scripts/build_stock_financial_coverage.py \
             scripts/validate_stock_financial_coverage.py .github/workflows/stock-financial-coverage.yml \
-            stock-universe-catalog.json stock-financial-coverage.json data-quarantine/stock-financial-coverage.json; then
+            stock-universe-catalog.json stock-financial-coverage.json data-quarantine/stock-financial-coverage.json \
+            data-quarantine/stock-financial-accounts.json; then
             echo 'Collector inputs changed during execution; refusing a stale publication'
             exit 1
           fi
@@ -113,6 +114,9 @@ jobs:
           git add stock-universe-catalog.json stock-financial-coverage.json
           if [ -f data-quarantine/stock-financial-coverage.json ]; then
             git add data-quarantine/stock-financial-coverage.json
+          fi
+          if [ -f data-quarantine/stock-financial-accounts.json ]; then
+            git add data-quarantine/stock-financial-accounts.json
           fi
           if git diff --cached --quiet; then
             echo 'Official data unchanged'
@@ -147,5 +151,6 @@ jobs:
             stock-universe-catalog.json
             stock-financial-coverage.json
             data-quarantine/stock-financial-coverage.json
+            data-quarantine/stock-financial-accounts.json
           retention-days: 7
           if-no-files-found: warn

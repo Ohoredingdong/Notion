@@ -2,10 +2,16 @@
 import json
 from pathlib import Path
 
-from scripts.build_stock_financial_coverage import (
-    CATALOG_POLICY, IDENTITY_POLICY, FINANCIAL_STATUSES, KR_SYMBOL,
-    verified_financial_record,
-)
+try:
+    from scripts.build_stock_financial_coverage import (
+        CATALOG_POLICY, IDENTITY_POLICY, FINANCIAL_STATUSES, KR_SYMBOL,
+        verified_financial_record, validate_account_record,
+    )
+except ModuleNotFoundError:
+    from build_stock_financial_coverage import (
+        CATALOG_POLICY, IDENTITY_POLICY, FINANCIAL_STATUSES, KR_SYMBOL,
+        verified_financial_record, validate_account_record,
+    )
 
 
 def validate(catalog, data):
@@ -29,6 +35,7 @@ def validate(catalog, data):
             assert verified_financial_record(row, key, by_key[key]), "Unverified financial record: "+key
             assert row.get("full_financial_statements") is False, "Selected accounts labelled as full statements"
             assert row.get("source") in ("DART periodic reports", "SEC EDGAR XBRL"), "Unsupported financial source"
+            validate_account_record(row)
             available[row["country"]] += 1
     assert data["financial_available"] == available, "Historical coverage counter is inaccurate"
     failed = False

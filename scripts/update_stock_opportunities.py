@@ -18,7 +18,7 @@ OUT=Path('stock-opportunity-data.json')
 N=core.num
 
 
-def price_integrity(info,bars,session,expected_currency):
+def price_integrity(info,bars,session,expected_currency,price_source=None):
     """Preserve observed currency/session causes without relaxing the existing gate."""
     actual_session=bars[-1]['date'] if bars else None
     quote_currency=info.get('currency')
@@ -27,6 +27,7 @@ def price_integrity(info,bars,session,expected_currency):
     if actual_session!=session['date']:reasons.append('completed_price_session_missing_or_stale')
     if quote_currency!=expected_currency:reasons.append('quote_currency_missing_or_mismatch')
     if financial_currency!=expected_currency:reasons.append('financial_currency_missing_or_mismatch')
+    if price_source is not None and price_source.get('source_identity_verified') is not True:reasons.append('price_source_identity_unverified')
     return {'price_session':actual_session,'expected_session':session['date'],
             'completed_session_match':bool(bars and actual_session==session['date']),
             'quote_currency':quote_currency,'financial_currency':financial_currency,
@@ -134,20 +135,23 @@ def collect(spec,base,audit,benchmark,now):
         try:v=fn();time.sleep(.12);return v
         except Exception as e:errors.append({'field':label,'error':type(e).__name__+': '+str(e)[:120]});return default
     session=core.latest_session(market,now)
-    bars=core.bars_from(call('bars',lambda:ticker.history(period='1y',auto_adjust=False,actions=True,raise_errors=True),None),session)
+    frame,price_source=call('bars',lambda:core.fetch_daily_history(ticker,source_symbol,market,session['date']),(None,{}))
+    bars=core.bars_from(frame,session)
     info=call('quote',ticker.get_info,{}) or {};price=bars[-1]['close'] if bars else None;expected='KRW' if market=='KR' else 'USD'
-    fresh=bool(bars and bars[-1]['date']==session['date'] and info.get('currency')==info.get('financialCurrency')==expected)
+    fresh=bool(bars and bars[-1]['date']==session['date'] and info.get('currency')==info.get('financialCurrency')==expected and price_source.get('source_identity_verified') is True)
     estimates=core.frame_rows(call('EPS',ticker.get_earnings_estimate,None));trend=core.frame_rows(call('EPS trend',ticker.get_eps_trend,None));targets=call('targets',ticker.get_analyst_price_targets,{}) or {}
     forecasts=core.forecast_data(estimates,trend,info,price);target=core.target_data(targets,info,price)
     calendar=core.clean(call('calendar',lambda:ticker.calendar,{}) or {});h=annual_history(ticker,errors)
     # For the audited original universe, preserve the exact per-account reference basis.
-    hist={k:base.get(k) for k in FIELDS+['filing_period']} if base else h
+    h['currency']=info.get('financialCurrency');h['currency_basis']='provider_financialCurrency'
+    hist={k:base.get(k) for k in FIELDS+['filing_period','currency']} if base else h
+    if base:hist['currency_basis']='preserved_reference_statement_currency'
     hist['basis']=base.get('statement_basis','연간 제공처 재무') if base else h.get('basis')
     c,de,e=[N(info.get(k)) for k in ('totalCash','totalDebt','ebitda')]
-    balance={'cash':c,'debt':de,'ebitda':e,'net_debt_ebitda':(de-c)/e if c is not None and de is not None and e is not None and e>0 else None,'asof':datetime.fromtimestamp(info['mostRecentQuarter'],timezone.utc).date().isoformat() if N(info.get('mostRecentQuarter')) else None,'basis':'제공처 연결 집계; 만기·리스·EBITDA 기간은 별도 검증'}
+    balance={'cash':c,'debt':de,'ebitda':e,'net_debt_ebitda':(de-c)/e if c is not None and de is not None and e is not None and e>0 else None,'currency':info.get('financialCurrency'),'asof':datetime.fromtimestamp(info['mostRecentQuarter'],timezone.utc).date().isoformat() if N(info.get('mostRecentQuarter')) else None,'basis':'제공처 연결 집계; 만기·리스·EBITDA 기간은 별도 검증'}
     if symbol=='005380':balance['net_debt_ebitda']=None;balance['basis']='자동차 금융자회사 연결 영향으로 일반기업 비율 판정 제외'
     proof=core.historical_audit({**hist,'symbol':symbol},audit,now)
-    tech=core.technical(bars,benchmark);turnover=mean(r['close']*r['volume'] for r in bars[-20:]) if len(bars)>=20 else None
+    tech=core.technical(bars,benchmark,market);turnover=mean(r['close']*r['volume'] for r in bars[-20:]) if len(bars)>=20 and tech.get('status')=='ok' else None
     earnings=calendar.get('Earnings Date') or [];days=None
     if earnings:
         try:days=(datetime.fromisoformat(str(earnings[0])[:10]).date()-now.date()).days
@@ -155,7 +159,9 @@ def collect(spec,base,audit,benchmark,now):
     cap=N(info.get('marketCap'));root='https://finance.yahoo.com/quote/'+source_symbol
     official=proof.get('source_url') or ir or ('https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm='+quote(name) if market=='KR' else 'https://www.sec.gov/edgar/search/')
     row={'symbol':symbol,'name':name,'market':market,'sector':sector,'cohort':cohort,'source_symbol':source_symbol,'currency':expected,'status':'current' if fresh else 'incomplete','collected_at':datetime.now(timezone.utc).isoformat(),'price':price,'price_session':bars[-1]['date'] if bars else None,'expected_session':session,'market_cap':cap,'size_group':size_group(cap,market),'technical':tech,'forecasts':forecasts,'targets':target,'balance':balance,'history':hist,'official_history':proof,'liquidity':{'avg_turnover20':turnover,'currency':expected,'period':'last 20 completed sessions'},'earnings_calendar':calendar,'short':core.short_decision(tech,fresh,days),'sources':{'history':root+'/history/','estimates':root+'/analysis/','cashflow':root+'/cash-flow/','balance':root+'/balance-sheet/','official':official},'errors':errors,'flow_status':'외국인·기관 수급 미연결; 거래량과 구분','forecast_basis':'단일 제공처 애널리스트 추정; 독립 대조 전·개별 리포트 날짜 미제공'}
-    row['price_integrity']=price_integrity(info,bars,session,expected)
+    row['price_source']=price_source
+    row['daily_change']=core.daily_change(bars,market,source_symbol,expected,price_source)
+    row['price_integrity']=price_integrity(info,bars,session,expected,price_source)
     row['priority']=priority_score(row);row['assessment']=assessment(row)
     return row
 
@@ -165,7 +171,10 @@ def main():
     now=datetime.now(timezone.utc);specs=core.read('stock-opportunity-universe.json',{})['companies'];base=core.read('stock-value-radar-data.json',{});audit=core.read('stock-official-audit.json',{});bases={r['symbol']:r for r in base.get('rows',[])}
     benchmarks={}
     for market,sym in [('US','SPY'),('KR','^KS11')]:
-        try:benchmarks[market]=core.bars_from(yf.Ticker(sym).history(period='1y',auto_adjust=False,actions=True,raise_errors=True),core.latest_session(market,now))
+        try:
+            session=core.latest_session(market,now)
+            frame,_=core.fetch_daily_history(yf.Ticker(sym),sym,market,session['date'],instrument_type='ETF' if sym=='SPY' else 'INDEX')
+            benchmarks[market]=core.bars_from(frame,session)
         except Exception:benchmarks[market]=[]
     rows=[]
     for spec in specs:

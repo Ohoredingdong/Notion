@@ -31,8 +31,9 @@ with sync_playwright() as play:
                 "() => (window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length || 0) > 0",
                 timeout=50000,
             )
-            home_cards = page.locator(".fx-v5-markets .nr-index").count()
-            require(f"{width}: home index cards unchanged", home_cards == 4, home_cards)
+            home_cards = page.locator(".fx-worldflow").count()
+            require(f"{width}: home world summary accessible", home_cards == 1
+                    and page.locator('[data-worldflow-region]').count() == 6, home_cards)
             page.locator('.fx-nav [data-nr-screen="stockdetail"]').first.click()
             page.locator(".fx-detail-v6").wait_for(timeout=20000)
             require(f"{width}: three top cards",
