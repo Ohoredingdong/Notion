@@ -1,7 +1,7 @@
 /* Miniature scene; the journal adapter persists only its separate preview key. */
 (() => {
   'use strict';
-  const FRIDGE = './designs/miniature-kitchen/assets/fridge-front-reference-v1.png';
+  const FRIDGE = './designs/miniature-kitchen/assets/fridge-original-closed-v1.png';
   const KITCHEN_SCENE = './designs/miniature-kitchen/assets/kitchen-original-open-v1.png';
   const KITCHEN_REVEAL = './designs/miniature-kitchen/assets/kitchen-original-reveal-v1.png';
   const ROOM_FRIDGE = './designs/miniature-kitchen/assets/fridge-slim-white-v2.png';
@@ -125,14 +125,25 @@
     const id='mini-crop-'+(++cropSerial),[x,y,w,h]=box;
     return `<svg class="${cls}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs><image href="${asset}" x="0" y="0" width="${total[0]}" height="${total[1]}" clip-path="url(#${id})"/></svg>`;
   }
-  const frontArt=(cls='',panel=null)=>{
-    const fresh=panel?panel.y<.5:null,box=!panel?[808,115,620,828]:[808+620*panel.x,fresh?115:646,620*panel.w,fresh?531:297];
-    return crop(FRIDGE,box,[1536,1024],cls,fresh?'xMidYMax slice':'xMidYMin slice');
+  // Every closed face shares one camera scale. The lower doors naturally stop
+  // above the original metal plinth and feet; no panel is stretched or sliced.
+  const FRONT_SCALE=448/572,FRONT_CENTER=627.5;
+  const frontBoxes={freshLeft:[176,174,450,572],freshRight:[629,174,450,572],frozenLeft:[176,747,450,400],frozenRight:[629,747,450,400]};
+  const closedBox=key=>{const [x,y,w,h]=frontBoxes[key];return [349.5+(x-FRONT_CENTER)*FRONT_SCALE,(y-174)*FRONT_SCALE,w*FRONT_SCALE,h*FRONT_SCALE];};
+  const frontArt=key=>crop(FRIDGE,frontBoxes[key],[1254,1254],'closed-door-face','xMidYMid meet');
+  // The background is continuous for all sixteen door combinations. Only the
+  // metal cabinet and open-door silhouettes are sampled from the open photo.
+  const openPhotos={
+    freshLeft:{box:[108,336,192,465],points:'109,337 298,373 298,795 108,800'},
+    freshRight:{box:[958,336,168,466],points:'958,375 1122,337 1125,799 958,802'},
+    frozenLeft:{box:[108,800,191,387],points:'108,815 298,800 298,1126 108,1186'},
+    frozenRight:{box:[958,800,168,387],points:'958,800 1124,815 1125,1186 958,1126'}
   };
+  function openDoorArt(key){const {box,points}=openPhotos[key],id='native-door-'+(++cropSerial);return `<svg class="original-open-door" viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" style="--door-paint-width:${box[2]}px;--door-paint-height:${box[3]}px"><defs><clipPath id="${id}"><polygon points="${points}"/></clipPath></defs><image href="${KITCHEN_SCENE}" x="0" y="0" width="1254" height="1254" clip-path="url(#${id})"/></svg>`;}
   function scenePhoto(){
-    const photo=document.createElement('img');photo.className='original-kitchen-photo';photo.src=KITCHEN_SCENE;photo.alt='';photo.draggable=false;$('.scene-world').prepend(photo);
-    const reveal=document.createElement('div');reveal.className='original-door-reveals';reveal.setAttribute('aria-hidden','true');
-    reveal.innerHTML=Object.entries(panels).map(([key,p])=>{const [x,y,w,h]=p.open;return `<div data-reveal="${key}" style="left:${278+x}px;top:${352+y}px;width:${w}px;height:${h+6}px"><img src="${KITCHEN_REVEAL}" alt="" style="left:${-278-x}px;top:${-352-y}px"></div>`;}).join('');$('.scene-world').appendChild(reveal);
+    const photo=document.createElement('img');photo.className='original-kitchen-photo';photo.src=KITCHEN_REVEAL;photo.alt='';photo.draggable=false;$('.scene-world').prepend(photo);
+    const body=document.createElement('div'),id='native-cabinet-'+(++cropSerial);body.className='original-fridge-body';body.setAttribute('aria-hidden','true');
+    body.innerHTML=`<svg viewBox="0 0 1254 1254" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="${id}"><rect x="278" y="352" width="699" height="776"/><rect x="588" y="351" width="59" height="28" rx="5"/></clipPath><clipPath id="${id}-left"><rect x="253" y="348" width="45" height="30" rx="5"/></clipPath><clipPath id="${id}-right"><rect x="937" y="348" width="59" height="31" rx="5"/></clipPath></defs><image href="${KITCHEN_SCENE}" x="0" y="0" width="1254" height="1254" clip-path="url(#${id})"/><image class="native-left-hinge" href="${KITCHEN_SCENE}" x="0" y="0" width="1254" height="1254" clip-path="url(#${id}-left)"/><image class="native-right-hinge" href="${KITCHEN_SCENE}" x="0" y="0" width="1254" height="1254" clip-path="url(#${id}-right)"/></svg>`;$('.scene-world').appendChild(body);
   }
   const roomFridgeArt=(cls='')=>crop(ROOM_FRIDGE,[106,115,812,1344],[1024,1536],cls,'xMidYMax meet');
   const roomCamera=()=>document.body.dataset.camera==='counter'||$('#panel-fridge').dataset.screenId==='D6';
@@ -460,8 +471,9 @@
   }
   function render(preview=false) {
     document.body.classList.toggle('is-decorating',decorating);if($('#decorationTools'))$('#decorationTools').hidden=!decorating;$('#decorate')?.setAttribute('aria-pressed',String(decorating));const decorateLabel=$('#decorate>span:last-child');if(decorateLabel)decorateLabel.textContent=decorating?'꾸미기 완료':'꾸미기';
+    const nativeBody=$('.original-fridge-body');nativeBody?.classList.toggle('left-open',doors.freshLeft);nativeBody?.classList.toggle('right-open',doors.freshRight);
     for(const [key,p] of Object.entries(panels)) {
-      const door=$('[data-door="'+key+'"]'),open=doors[key];door.innerHTML=open?'':frontArt('',p);const [ox,oy,ow,oh]=p.open;Object.assign(door.style,open?{left:ox+'px',top:oy+'px',width:ow+'px',height:oh+'px'}:{left:p.x*100+'%',top:p.y*100+'%',width:p.w*100+'%',height:p.h*100+'%'});$('[data-reveal="'+key+'"]').hidden=open;door.classList.toggle('is-open',open);door.setAttribute('aria-expanded',String(open));door.setAttribute('aria-label',p.name+' 문 '+(open?'닫기':'열기'));door.tabIndex=0;
+      const door=$('[data-door="'+key+'"]'),open=doors[key];door.innerHTML=open?openDoorArt(key):frontArt(key);const [ox,oy,ow,oh]=p.open,[cx,cy,cw,ch]=closedBox(key);Object.assign(door.style,open?{left:ox+'px',top:oy+'px',width:ow+'px',height:oh+'px'}:{left:cx+'px',top:cy+'px',width:cw+'px',height:ch+'px'});door.classList.toggle('is-open',open);door.setAttribute('aria-expanded',String(open));door.setAttribute('aria-label',p.name+' 문 '+(open?'닫기':'열기'));door.tabIndex=0;
       const zone=$('[data-zone="'+key+'"]');zone.hidden=!open;zone.inert=!open;
       const cargo=$('[data-cargo="'+key+'"]');Object.assign(cargo.style,{left:(ox+20)+'px',top:(oy+38)+'px',width:(ow-40)+'px',height:(oh-65)+'px'});cargo.hidden=!open;cargo.classList.toggle('is-open',open);cargo.classList.toggle('is-closing',closing.has(key));cargo.inert=!open;
     }

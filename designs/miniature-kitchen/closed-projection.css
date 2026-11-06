@@ -1,0 +1,12 @@
+/* One native photograph, cabinet silhouette, and four independently painted
+   doors. Opening never swaps a rectangular patch of kitchen background. */
+.original-fridge-body{position:absolute;inset:0;width:1254px;height:1254px;max-width:none;z-index:1;pointer-events:none;user-select:none}
+.original-fridge-body>svg{display:block;width:100%;height:100%}
+.original-fridge-body:not(.left-open) .native-left-hinge,.original-fridge-body:not(.right-open) .native-right-hinge{display:none}
+body .shell .door.is-open{overflow:visible!important}
+body .shell .door>.original-open-door{width:var(--door-paint-width)!important;height:var(--door-paint-height)!important;display:block;overflow:hidden;transform:none!important;background:transparent}
+body .shell .door>.closed-door-face{display:block;width:100%;height:100%;overflow:hidden}
+body[data-camera=counter] .original-fridge-body,body:has(#panel-fridge[data-screen-id=D6]) .original-fridge-body{display:none}
+/* The open-fridge photo has a different counter plane from the room editor.
+   Preserve saved props and show them on the room camera, not on its wall. */
+body[data-home=fridge]:not(:has(#panel-fridge[data-screen-id=D6])) #homeSceneDecor{display:none!important}
