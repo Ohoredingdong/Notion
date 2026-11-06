@@ -1,5 +1,5 @@
 /* Widget panels use a fixed reading scale inside the bounded embed frame.
-   Only presentation changes here: data, routes and app layouts stay in their modules. */
+   The shared recipe grid keeps its data and detail routes in the existing modules. */
 body[data-mode="widget"] .shell>.home-panel:not([hidden]) {
   gap:4px!important;padding:6px 9px!important;line-height:1.35;
 }
@@ -15,8 +15,7 @@ body[data-mode="widget"] .shell>.home-panel>.home-card {
   min-width:0;min-height:0;margin:0!important;padding:0!important;
 }
 
-/* B1 follows the reference: a wide food photograph with the recipe below.
-   Only a genuinely short panel switches to an intentionally cropped side view. */
+/* B1 shows up to eight real recipes together; cards keep a fixed reading scale. */
 body[data-mode="widget"][data-home="meals"] #homeRecommendation,
 body[data-mode="widget"][data-home="meals"] #homePlans {
   gap:4px!important;overflow:hidden;min-height:0;
@@ -44,61 +43,61 @@ body[data-mode="widget"] .recipe-hub-pager .recipe-hub-catalog {
   flex-direction:row!important;align-items:center!important;justify-content:center!important;
   gap:6px!important;line-height:1.2!important;background:#f8f1e7;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card.home-featured-recipe {
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr) auto;min-height:0;flex:1;
-  container-type:inline-size;border:1px solid #e3c3ad;border-radius:10px;background:#fffdfa;
+/* Shared app/widget recipe grid. The card is the one detail action; favorites,
+   quantities, nutrition and planning remain in the existing recipe detail. */
+body[data-home="meals"] #homeRecommendation .recipe-hub-grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(4,minmax(44px,1fr));gap:6px;
+  flex:1;min-width:0;min-height:0;overflow:hidden;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-photo {
-  display:block;height:100%!important;min-height:0!important;max-height:none!important;
-  width:100%;overflow:hidden;background:#f4ede1;
+body[data-home="meals"] #homeRecommendation .recipe-grid-card {
+  display:grid;grid-template-columns:clamp(44px,13vw,88px) minmax(0,1fr);
+  align-items:center;gap:7px;min-width:0;min-height:44px;
+  margin:0;padding:5px;border:1px solid #e8ddd0;border-radius:9px;
+  background:#fffdf9;color:#3e332a;text-align:left;box-shadow:none;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish {
-  display:flex;align-items:center;justify-content:center;width:100%;
-  height:100%!important;min-height:0!important;max-height:none!important;
-  aspect-ratio:auto!important;overflow:hidden;
+body[data-home="meals"] #homeRecommendation .recipe-grid-card:hover {
+  border-color:#d9a588;background:#fff8ef;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.recipe-photo,
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.dish-art {
-  display:block;flex:none;width:100%!important;height:auto!important;
-  min-height:100%;aspect-ratio:4/3!important;object-fit:cover;
+body[data-home="meals"] #homeRecommendation .recipe-grid-card:focus-visible {
+  outline:2px solid #c46d48;outline-offset:-3px;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy {
-  position:static;display:flex;flex-direction:column;align-items:stretch;min-height:0;
-  justify-content:flex-start;gap:3px!important;padding:7px 10px!important;overflow:auto;
+body[data-home="meals"] #homeRecommendation .recipe-grid-photo {
+  display:block;align-self:center;width:100%;aspect-ratio:4/3;
+  overflow:hidden;border-radius:6px;background:#f5ede1;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy h3 {
-  font-size:17px!important;line-height:1.2;margin:0;letter-spacing:-.4px;color:#312921;
+body[data-home="meals"] #homeRecommendation .recipe-grid-photo>.recipe-photo,
+body[data-home="meals"] #homeRecommendation .recipe-grid-photo>.dish-art {
+  display:block;width:100%;height:100%;aspect-ratio:4/3;
+  object-fit:contain;filter:none;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-facts {
-  display:flex;flex-direction:row!important;gap:10px!important;font-size:12px!important;
-  line-height:1.25;color:#6c5847;
+body[data-home="meals"] #homeRecommendation .recipe-grid-copy {
+  display:flex;flex-direction:column;gap:3px;min-width:0;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-facts>span {display:flex}
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-bottom {
-  display:flex;align-items:center;gap:6px;width:100%;margin:0;min-height:0;
+body[data-home="meals"] #homeRecommendation .recipe-grid-copy strong {
+  display:block;font-size:14px;line-height:1.2;font-weight:600;
+  letter-spacing:-.35px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros {
-  display:flex!important;align-items:baseline;flex-wrap:wrap;gap:3px 8px!important;
-  flex:1;min-width:0;width:auto;padding:0;line-height:1.2;
+body[data-home="meals"] #homeRecommendation .recipe-grid-copy small {
+  display:block;font-size:12px;line-height:1.2;color:#7d6855;white-space:nowrap;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros>b {
-  font-size:15px!important;line-height:1.2;white-space:nowrap;color:#372b23;
+body[data-home="meals"] #homeRecommendation .recipe-grid-catalog {
+  display:grid;place-items:center;flex:0 0 68px;min-width:68px;
+  min-height:44px;margin:0;padding:3px 5px;border:1px solid #e7ddcf;
+  border-radius:9px;background:#fffaf3;color:#6a503d;font-size:12px;line-height:1.2;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros>span {
-  display:block;font-size:12px!important;white-space:normal;line-height:1.2;color:#6c5847;
+body[data-home="meals"] #homeRecommendation .recipe-hub-grid>.recipe-hub-empty {
+  grid-column:1/-1;grid-row:1/-1;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-favorite {
-  left:auto!important;right:6px!important;top:6px!important;background:#fffdf7ed;
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-card {
+  grid-template-columns:clamp(42px,13cqw,88px) minmax(0,1fr);
+  gap:6px;padding:4px;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-arrow {
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  position:static;flex:none;inset:auto!important;
-  width:80px;min-width:80px;min-height:44px;height:44px;margin:0;padding:4px 7px;
-  border:1px solid #e17855;border-radius:8px;background:#ed7957;color:#fff;font-size:25px;line-height:1;
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-copy strong {
+  font-size:13px;line-height:1.15;
 }
-body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-arrow:before {
-  content:'자세히';font-size:12px;font-weight:600;line-height:1;
+body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-copy small {
+  line-height:1.1;
 }
 
 /* B5 has its own readable recipe, action and browsing rows. */
@@ -145,33 +144,16 @@ body[data-mode="widget"] .recipe-plan-empty>span,
 body[data-mode="widget"] .recipe-plan-empty>p {font-size:13px!important}
 
 @container widget-panel (max-height:350px) {
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card.home-featured-recipe {
-    grid-template-columns:48% minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr);
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-grid {gap:4px}
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-card {
+    grid-template-columns:38px minmax(0,1fr);gap:5px;padding:2px 4px;
   }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-photo {
-    align-self:center;height:auto!important;aspect-ratio:4/3!important;
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-copy {gap:1px}
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-copy strong {
+    font-size:12.5px;line-height:1.1;letter-spacing:-.35px;
   }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.recipe-photo,
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-dish>.dish-art {
-    width:auto!important;height:100%!important;min-width:100%;min-height:0;aspect-ratio:4/3!important;
-  }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy {
-    position:relative;justify-content:center;padding:6px 7px 25px!important;gap:4px!important;
-  }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-copy h3 {font-size:16px!important}
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-facts {flex-direction:column!important;gap:2px!important}
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros {gap:2px 5px!important}
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-macros>b {width:100%}
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-favorite {
-    left:calc(48% - 50px)!important;right:auto!important;top:calc(50% - 18cqw + 6px)!important;
-  }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-arrow {
-    position:absolute;inset:0!important;display:block;width:100%;height:100%;
-    min-width:0;min-height:44px;padding:0;border:0;border-radius:0;background:none;
-    color:#ad593a;font-size:0;z-index:1;
-  }
-  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-hub-card .home-recipe-arrow:before {
-    content:'자세히 ›';position:absolute;right:7px;bottom:5px;line-height:16px;
+  body[data-mode="widget"][data-home="meals"] #homeRecommendation .recipe-grid-copy small {
+    font-size:12px;line-height:1.05;
   }
 }
 

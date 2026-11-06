@@ -159,12 +159,21 @@ METRICS = '''async()=>{''' + PAINT_HELPERS + '''
       matrix:matrix?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d}:null},
     balance:[...document.querySelectorAll('#dailyBalance [data-balance]')].map(e=>({
       key:e.dataset.balance,rect:rect(e),text:e.textContent.trim()})),
-    recipe:{card:one('#homeRecommendation .recipe-hub-card'),
-      id:document.querySelector('#homeRecommendation .home-recipe-photo')?.dataset.arg,
-      photo:await paintedPhoto(document.querySelector('#homeRecommendation .home-recipe-photo')),
-      open:control(document.querySelector('#homeRecommendation .home-recipe-arrow')),
-      copy:one('#homeRecommendation .home-recipe-copy'),
-      text:textRanges(document.querySelector('#homeRecommendation .home-recipe-copy'))},
+    recipe:{grid:one('#homeRecommendation .recipe-hub-grid'),
+      gridColumns:document.querySelector('#homeRecommendation .recipe-hub-grid')?
+        getComputedStyle(document.querySelector('#homeRecommendation .recipe-hub-grid'))
+          .gridTemplateColumns.split(/\\s+/).filter(Boolean).length:0,
+      filters:window.KitchenHome?.getRecipeFilters?.(),
+      catalog:(window.KitchenCatalog||[]).map(r=>({id:r.id,name:r.name,time:r.time})),
+      cards:await Promise.all([...document.querySelectorAll('#homeRecommendation .recipe-grid-card')]
+        .map(async e=>({id:e.dataset.homeRecipe,rect:rect(e),
+          title:e.querySelector('.recipe-grid-copy strong')?.textContent.trim(),
+          time:e.querySelector('.recipe-grid-copy small')?.textContent.trim(),
+          open:control(e.matches('button[data-wf="recipe"]')?e:e.querySelector('button[data-wf="recipe"]')),
+          photo:await paintedPhoto(e.querySelector('.recipe-grid-photo')),
+          copy:rect(e.querySelector('.recipe-grid-copy')),text:textRanges(e.querySelector('.recipe-grid-copy'))}))),
+      singleRecipePager:[...document.querySelectorAll('#homeRecommendation [data-recipe-hub-nav]')]
+        .filter(e=>e.getClientRects().length).length},
     home:document.body.dataset.home};
 }'''
 
@@ -411,34 +420,61 @@ def recipe_photo_geometry(audit, photo, label, recipe_id):
                 photo, category='reference-composition')
 
 
-def recipe_home_geometry(audit, metrics):
+def recipe_home_geometry(audit, metrics, expected_ids=None):
     recipe, panel = metrics['recipe'], metrics['panel']
-    recipe_photo_geometry(audit, recipe['photo'], 'Recommended recipe', recipe['id'])
-    audit.check(bool(recipe['text']) and all(t['readable'] for t in recipe['text']),
-                'Actual recommendation name, timing and nutrition text remain readable', recipe['text'])
-    primary(audit, recipe['open'], metrics['viewport']['width'], metrics['viewport']['height'],
-            'Recommended recipe detail control')
-    card, copy, photo = recipe['card'], recipe['copy'], recipe['photo']
-    if not card or not copy or not photo:
-        return
-    frame = photo['frame']
-    overlap_width = max(0, min(frame['right'], copy['right'])-max(frame['x'], copy['x']))
-    overlap_height = max(0, min(frame['bottom'], copy['bottom'])-max(frame['y'], copy['y']))
-    audit.check(overlap_width <= 1 or overlap_height <= 1,
-                'Recipe photograph and actual information do not overlap',
-                {'photo': frame, 'copy': copy}, category='reference-composition')
-    side_by_side = frame['right'] <= copy['x']+1 and min(frame['bottom'], copy['bottom']) > max(frame['y'], copy['y'])
-    # These targets distinguish a short embed from a reference-sized card;
-    # they do not claim that exact canvas dimensions are user-approved.
-    normal_space = panel['height'] >= 360
-    if normal_space:
-        audit.check(frame['width'] >= card['width']*.94 and copy['y'] >= frame['bottom']-1,
-                    'With normal vertical space the reference hero spans the card above its copy',
-                    {'card': card, 'photo': frame, 'copy': copy}, category='reference-composition')
-    if side_by_side:
-        audit.check(not normal_space and abs(frame['width']/frame['height']-4/3) <= .04,
-                    'A short-card photo/copy arrangement uses a matched 4:3 photograph frame',
-                    {'panel_height': panel['height'], 'photo': frame, 'copy': copy}, category='reference-composition')
+    catalog = {row['id']: row for row in recipe['catalog']}
+    cards, grid = recipe['cards'], recipe['grid']
+    expected = set(catalog) if expected_ids is None else set(expected_ids)
+    actual = [card['id'] for card in cards]
+    audit.check(len(cards) == min(8, len(expected)) and len(set(actual)) == len(actual)
+                and set(actual) <= expected and (len(expected) > 8 or set(actual) == expected),
+                'Recommendation grid shows up to eight distinct actual matching catalog recipes',
+                {'expected_ids': sorted(expected), 'actual_ids': actual})
+    grid_inside = bool(grid and panel and inside(grid, panel['rect'])
+                       and inside(grid, viewport_box(metrics['viewport']['width'], metrics['viewport']['height'])))
+    audit.check(grid_inside if cards else grid is None or grid_inside,
+                'The complete recommendation grid stays inside its panel and viewport',
+                {'grid': grid, 'panel': panel}, category='reference-composition')
+    if cards:
+        columns = recipe['gridColumns']
+        rows = len({round(card['rect']['y'], 1) for card in cards if card['rect']})
+        audit.check(columns in (2, 4) and rows <= 4 and (len(cards) < 8 or columns*rows == 8),
+                    'Eight recommendations form a two-by-four or four-by-two card grid',
+                    {'columns': columns, 'rows': rows}, category='reference-composition')
+    audit.check(recipe['singleRecipePager'] == 0 if len(expected) <= 8 else True,
+                'Eight or fewer recipes do not require one-card paging', recipe['singleRecipePager'])
+    for card in cards:
+        expected_row = catalog.get(card['id'])
+        audit.check(bool(expected_row and card['title'] == expected_row['name']
+                         and card['time'] and expected_row['time'] in card['time']),
+                    card['id']+' displays its actual full catalog name and cooking time', card)
+        audit.check(bool(expected_row and card['text']) and all(t['readable'] for t in card['text'])
+                    and any(t['text'] == expected_row['name'] for t in card['text'])
+                    and any(expected_row['time'] in t['text'] for t in card['text']),
+                    card['id']+' name and cooking time are readable without clipping', card['text'])
+        primary(audit, card['open'], metrics['viewport']['width'], metrics['viewport']['height'],
+                card['id']+' recipe card')
+        audit.check(inside(card['rect'], grid) and inside(card['open'].get('rect'), card['rect']),
+                    card['id']+' full card and hit target fit the initial grid',
+                    {'card': card['rect'], 'target': card['open']}, category='reference-composition')
+        recipe_photo_geometry(audit, card['photo'], card['id']+' grid thumbnail', card['id'])
+        photo, copy = card['photo'], card['copy']
+        if photo and copy:
+            frame = photo['frame']
+            overlap_width = max(0, min(frame['right'], copy['right'])-max(frame['x'], copy['x']))
+            overlap_height = max(0, min(frame['bottom'], copy['bottom'])-max(frame['y'], copy['y']))
+            audit.check(inside(frame, card['rect']) and inside(copy, card['rect'])
+                        and (overlap_width <= 1 or overlap_height <= 1),
+                        card['id']+' actual thumbnail and information do not overlap',
+                        {'photo': frame, 'copy': copy}, category='reference-composition')
+    overlaps = []
+    for index, first in enumerate(cards):
+        for second in cards[index+1:]:
+            a, b = first['rect'], second['rect']
+            if a and b and min(a['right'], b['right'])-max(a['x'], b['x']) > .5 \
+                    and min(a['bottom'], b['bottom'])-max(a['y'], b['y']) > .5:
+                overlaps.append([first['id'], second['id']])
+    audit.check(not overlaps, 'Recipe card hit areas do not overlap one another', overlaps)
 
 
 def registration_targets(audit, controls, geometry, label):
@@ -565,6 +601,74 @@ def capture(page, frame, folder, name, metrics=METRICS):
     return result
 
 
+def recipe_grid_journey(audit, page, frame, folder, label, original, screens):
+    """Use every real card and visible filter controls without saving records."""
+    close_tray(frame)
+    frame.locator('.home-shortcuts [data-home-tab="meals"]').click()
+    recommendation = frame.locator('[data-home-subtab="recommendation"]:visible')
+    if recommendation.count():
+        recommendation.click()
+    ready(frame)
+    initial = frame.evaluate(METRICS)
+    catalog = {row['id']: row for row in initial['recipe']['catalog']}
+    expected_ids = set(catalog)
+    cards = initial['recipe']['cards']
+    visited = []
+    for card in cards:
+        recipe_id = card['id']
+        target = frame.locator(
+            f'#homeRecommendation [data-home-recipe="{recipe_id}"][data-wf="recipe"], '
+            f'#homeRecommendation [data-home-recipe="{recipe_id}"] [data-wf="recipe"]').first
+        target.click()
+        frame.wait_for_function('document.querySelector("#tray[open][data-workflow-route=recipe]")')
+        ready(frame)
+        actual = frame.evaluate('''()=>({
+          id:document.querySelector('#tray .recipe-favorite')?.dataset.arg,
+          name:document.querySelector('#tray .recipe-detail-name')?.textContent.trim(),
+          photoId:document.querySelector('#tray svg.recipe-photo')?.dataset.recipePhoto})''')
+        audit.check(actual == {'id': recipe_id, 'name': catalog[recipe_id]['name'], 'photoId': recipe_id},
+                    recipe_id+' actual card opens its own matching recipe detail and photograph', actual)
+        preservation(audit, frame, original, recipe_id+' read-only card detail preserves exact v1 records')
+        visited.append(actual)
+        close_tray(frame)
+    audit.check(len(visited) == min(8, len(expected_ids))
+                and {row['id'] for row in visited} == expected_ids,
+                'All eight distinct recipe cards are individually reachable through actual clicks', visited)
+    screens['recipe-grid-clicks'] = visited
+
+    def apply_time(value):
+        frame.locator('#homeRecommendation [data-wf="recipeFilters"]').click()
+        form = frame.locator('#tray [data-wf-form="recipeFilters"]')
+        for name in ('time', 'budget', 'exclude'):
+            form.locator(f'[name="{name}"]').fill(value if name == 'time' else '')
+        form.locator('[name="ingredient"]').select_option('')
+        form.locator('[type="submit"]').click()
+        frame.wait_for_function('!document.querySelector("#tray[open]")')
+        ready(frame)
+        return frame.evaluate(METRICS)
+
+    filtered_ids = {row['id'] for row in catalog.values()
+                    if int(''.join(c for c in row['time'] if c.isdigit())) <= 15}
+    filtered = apply_time('15')
+    audit.check(0 < len(filtered_ids) < len(catalog),
+                'Explicit 15-minute fixture condition selects a genuine catalog subset', sorted(filtered_ids))
+    recipe_home_geometry(audit, filtered, filtered_ids)
+    preservation(audit, frame, original, 'Visible time filtering preserves exact records and unknown facts')
+    screens['recipe-grid-filtered'] = filtered
+    empty = apply_time('1')
+    audit.check(not empty['recipe']['cards']
+                and frame.locator('#homeRecommendation .recipe-hub-empty:visible').count() == 1,
+                'No-match conditions show the real empty state instead of filling eight fake cards')
+    preservation(audit, frame, original, 'No-match condition does not seed or rewrite stored data')
+    frame.locator('#homeRecommendation [data-home-filter-reset]').last.click()
+    ready(frame)
+    restored = frame.evaluate(METRICS)
+    recipe_home_geometry(audit, restored)
+    audit.check(not any(restored['recipe']['filters'].values()),
+                'Visible reset removes every transient recommendation filter')
+    preservation(audit, frame, original, 'Resetting recipe conditions restores all cards without a storage write')
+
+
 def widget_case(browser, origin, kind, width, height, folder):
     label = f'{kind}-{width}x{height}'
     evidence = {'id': label, 'entry': ENTRIES[kind], 'width': width, 'height': height,
@@ -607,6 +711,7 @@ def widget_case(browser, origin, kind, width, height, folder):
             if tab == 'meals':
                 recipe_home_geometry(audit, metrics)
             preservation(audit, frame, original, 'Read-only '+tab+' navigation preserves exact stored text and envelope')
+        recipe_grid_journey(audit, page, frame, folder, label, original, evidence['screens'])
         frame.locator('.home-shortcuts [data-home-tab="meals"]').click()
         recipe = frame.locator('#todayKitchen [data-wf="recipe"]:visible').first
         recipe_id = recipe.get_attribute('data-arg')
@@ -872,18 +977,32 @@ def meal_success_case(browser, origin, kind, width, height, folder):
     return finish_case(evidence)
 
 
-def app_screens(browser, origin, folder):
+def app_screens(browser, origin, folder, verify_recipe_grid=False):
     results = []
     for width, height in ((390, 844), (800, 600)):
         errors, requests = [], []
         context, page, frame = open_page(browser, origin, 'miniature-kitchen-app.html', width, height, errors, requests)
         try:
+            original = state(frame)
+            recipe_snapshot = recipe_result = None
             for tab in TABS:
                 if tab != 'fridge':
                     frame.locator(f'.home-shortcuts [data-home-tab="{tab}"]').click()
                 metrics = capture(page, frame, folder, f'app-{width}x{height}-{tab}')
-                results.append({'id': f'app-{width}x{height}-{tab}', 'shell': metrics['shell'],
-                                'page_errors': errors, 'blocked_requests': requests})
+                result = {'id': f'app-{width}x{height}-{tab}', 'shell': metrics['shell'],
+                          'page_errors': errors, 'blocked_requests': requests}
+                if verify_recipe_grid and tab == 'meals':
+                    recipe_snapshot, recipe_result = metrics, result
+                results.append(result)
+            # Compare identical four-tab histories before either snapshot set
+            # gets extra modal/filter activity. The new grid journey is still
+            # checked fully, after all preservation screenshots are captured.
+            if verify_recipe_grid:
+                grid = {'id': recipe_result['id']+'-grid', 'reference_checks_required': True, 'screens': {}}
+                audit = Audit(grid)
+                recipe_home_geometry(audit, recipe_snapshot)
+                recipe_grid_journey(audit, page, frame, folder, recipe_result['id'], original, grid['screens'])
+                recipe_result['recipe_grid_result'] = finish_case(grid)
         finally:
             context.close()
     return results
@@ -924,6 +1043,9 @@ def main():
     parser.add_argument('--baseline-root', type=Path, help='Optional external build of the previous revision')
     parser.add_argument('--check-app-unchanged', action='store_true',
                         help='Require baseline app screenshots to have identical decoded pixels')
+    parser.add_argument('--allow-app-recipe-grid-change', action='store_true',
+                        help='With --check-app-unchanged, validate the intentional recipe grid change '
+                             'while requiring the other six app screenshots to remain pixel-identical')
     args = parser.parse_args()
     root, out = args.root.resolve(), args.output.resolve()
     baseline = args.baseline_root.resolve() if args.baseline_root else None
@@ -933,6 +1055,8 @@ def main():
         parser.error('Evidence must not overwrite the baseline build.')
     if args.check_app_unchanged and not baseline:
         parser.error('--check-app-unchanged requires --baseline-root.')
+    if args.allow_app_recipe_grid_change and not args.check_app_unchanged:
+        parser.error('--allow-app-recipe-grid-change requires --check-app-unchanged and --baseline-root.')
     paths = list(ENTRIES.values())+(['miniature-kitchen-app.html'] if args.check_app_unchanged else [])
     inputs = {}
     for label, source in [('after', root)]+([('before', baseline)] if baseline else []):
@@ -950,6 +1074,8 @@ def main():
               'clock': CLOCK.isoformat(), 'clock_method': 'Single context-init Date; native timers/RAF',
               'source_sha256': inputs, 'cases': [], 'baseline_observations': [],
               'comparisons': [], 'entry_geometry_comparisons': [], 'errors': [], 'visual_regressions': [],
+              'intentional_app_change': 'Recommendation tab uses up to eight real recipe cards'
+                if args.allow_app_recipe_grid_change else None,
               'manual_reference_review': {'required': True, 'status': 'not-assessed-by-automation',
                 'note': 'Passing geometric/photo checks is not design approval. Review same-state screenshots '
                         'against the supplied A1–D6 reference composition and record any remaining differences.'}}
@@ -988,7 +1114,8 @@ def main():
                             report['cases'].append(case)
                             print(f'AFTER {"PASS" if case["passed"] else "FAIL"} {case["id"]}', flush=True)
                 if args.check_app_unchanged:
-                    report[label+'_app'] = app_screens(browser, origin, folder)
+                    report[label+'_app'] = app_screens(browser, origin, folder,
+                        verify_recipe_grid=label == 'after' and args.allow_app_recipe_grid_change)
             if baseline:
                 compare_out = out/'comparison'
                 compare_out.mkdir(exist_ok=True)
@@ -997,7 +1124,10 @@ def main():
                     if after.is_file():
                         result = compare_png(browser, before, after, compare_out/before.name)
                         result['image'] = before.name
-                        result['app_unchanged_required'] = args.check_app_unchanged and before.name.startswith('app-')
+                        is_app = before.name.startswith('app-')
+                        expected_grid_change = args.allow_app_recipe_grid_change and is_app and before.name.endswith('-meals.png')
+                        result['app_unchanged_required'] = args.check_app_unchanged and is_app and not expected_grid_change
+                        result['app_change_expected'] = expected_grid_change
                         report['comparisons'].append(result)
             # Native embeds and the opaque delivery wrapper must show the same
             # component, even when the outer phone browser is much taller.
@@ -1030,17 +1160,31 @@ def main():
                 report['errors'].append('Generated input changed during browser verification: '+key)
         if args.check_app_unchanged:
             app = [c for c in report['comparisons'] if c['app_unchanged_required']]
-            report['app_preservation_passed'] = len(app) == len(TABS)*2 and all(c['pixelsEqual'] for c in app)
+            all_app = [c for c in report['comparisons'] if c['image'].startswith('app-')]
+            expected_unchanged = (len(TABS)-int(args.allow_app_recipe_grid_change))*2
+            grids = [row['recipe_grid_result'] for row in report['after_app'] if 'recipe_grid_result' in row]
+            report['app_recipe_grid_passed'] = len(grids) == 2 and all(row['passed'] for row in grids) \
+                if args.allow_app_recipe_grid_change else None
+            report['app_recipe_grid_functional_passed'] = len(grids) == 2 and all(
+                row['functional_passed'] for row in grids) if args.allow_app_recipe_grid_change else None
+            report['app_recipe_grid_reference_passed'] = len(grids) == 2 and all(
+                row['reference_composition_checks_passed'] for row in grids) if args.allow_app_recipe_grid_change else None
+            report['app_preservation_passed'] = len(all_app) == len(TABS)*2 \
+                and len(app) == expected_unchanged and all(c['pixelsEqual'] for c in app) \
+                and (not args.allow_app_recipe_grid_change or report['app_recipe_grid_passed'])
             if not report['app_preservation_passed']:
                 report['visual_regressions'].append('App preservation screenshots differ or are missing; inspect comparison evidence.')
             if any(c['page_errors'] or c['blocked_requests'] for c in report['after_app']):
                 report['errors'].append('App preservation journey emitted browser errors or blocked requests.')
         else:
             report['app_preservation_passed'] = None
-        report['functional_passed'] = bool(report['cases']) and all(c['functional_passed'] for c in report['cases']) and not report['errors']
+        report['functional_passed'] = bool(report['cases']) and all(c['functional_passed'] for c in report['cases']) \
+            and not report['errors'] and (not args.allow_app_recipe_grid_change
+                                         or report.get('app_recipe_grid_functional_passed') is True)
         reference_cases = [c for c in report['cases'] if c.get('reference_checks_required')]
         report['reference_composition_checks_passed'] = bool(reference_cases) and all(
-            c['reference_composition_checks_passed'] for c in reference_cases)
+            c['reference_composition_checks_passed'] for c in reference_cases) \
+            and (not args.allow_app_recipe_grid_change or report.get('app_recipe_grid_reference_passed') is True)
         report['entry_geometry_passed'] = len(report['entry_geometry_comparisons']) == len(PROFILES) and all(
             c['passed'] for c in report['entry_geometry_comparisons'])
         report['passed'] = report['functional_passed'] and report['reference_composition_checks_passed'] and not report['visual_regressions']

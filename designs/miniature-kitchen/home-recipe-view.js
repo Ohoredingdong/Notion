@@ -1,7 +1,6 @@
 /* Recipe and plan pages share the home frame; paging is ephemeral UI state. */
 (() => {
   'use strict';
-  let recipeId = null, recipeIds = [], recipeFilterKey = '';
   let mealSlot = 'dinner', viewedDay = null, knownPlans = null, pendingPlan = null, planCount = 0;
   const planPages = new Map();
   const clamp = (value, end) => Math.max(0, Math.min(Math.max(0, end - 1), value));
@@ -9,13 +8,8 @@
   const funnel = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8Z"/></svg>';
 
   function renderRecommendation(ctx) {
-    const {ranked, near, filters, esc, fmt, money, recommendationView} = ctx;
-    const filterKey = JSON.stringify(filters);
-    recipeIds = ranked.map(candidate => candidate.recipe.id);
-    if (filterKey !== recipeFilterKey || !recipeIds.includes(recipeId)) recipeId = recipeIds[0] || null;
-    recipeFilterKey = filterKey;
-    const index = Math.max(0, recipeIds.indexOf(recipeId));
-    const candidate = ranked[index];
+    const {ranked, near, filters, esc, money, dish} = ctx;
+    const candidates = ranked.slice(0, 8);
     const conditions = [filters.time ? filters.time + '분 이내' : '', filters.budget ? money(Number(filters.budget)) + ' 이내' : '', filters.exclude ? '피할 재료 반영' : ''].filter(Boolean);
     let priority;
     if (filters.ingredient) {
@@ -27,11 +21,11 @@
     } else {
       priority = '<span class="recipe-hub-priority">냉장고 속 재료로 만드는 한 끼</span>';
     }
-    const content = candidate
-      ? `<article class="home-featured-recipe recipe-hub-card" data-home-recipe="${esc(candidate.recipe.id)}">${nativePhoto(recommendationView(candidate))}</article>`
+    const content = candidates.length
+      ? candidates.map(({recipe}) => `<button type="button" class="recipe-grid-card" data-home-recipe="${esc(recipe.id)}" data-wf="recipe" data-arg="${esc(recipe.id)}" aria-label="${esc(recipe.name)} 레시피 보기"><span class="recipe-grid-photo" aria-hidden="true">${nativePhoto(dish(recipe))}</span><span class="recipe-grid-copy"><strong>${esc(recipe.name)}</strong><small>${esc(recipe.time)}</small></span></button>`).join('')
       : '<section class="recipe-hub-empty"><p>조건에 맞는 레시피가 없어요.</p><button type="button" class="small-action" data-home-filter-reset>조건 초기화</button></section>';
     const catalogLabel = Object.values(filters).some(Boolean) ? '요리 목록 보기' : '전체 요리 보기';
-    return `<div class="recipe-hub-toolbar">${priority}<button type="button" class="recipe-hub-filter" data-wf="recipeFilters" aria-label="레시피 조건 조정">${funnel}</button></div><div class="recipe-hub-deck" aria-live="polite">${content}</div><div class="recipe-hub-pager"><button type="button" data-recipe-hub-nav="-1" aria-label="이전 추천 요리" ${recipeIds.length < 2 ? 'disabled' : ''}>‹</button><button type="button" class="recipe-hub-catalog" data-wf="recipeCatalog"><span>${recipeIds.length ? fmt(index + 1) : '0'} / ${fmt(recipeIds.length)}</span><strong>${catalogLabel} <span aria-hidden="true">›</span></strong></button><button type="button" data-recipe-hub-nav="1" aria-label="다음 추천 요리" ${recipeIds.length < 2 ? 'disabled' : ''}>›</button></div>`;
+    return `<div class="recipe-hub-toolbar">${priority}<button type="button" class="recipe-hub-catalog recipe-grid-catalog" data-wf="recipeCatalog" aria-label="${catalogLabel}">전체 목록</button><button type="button" class="recipe-hub-filter" data-wf="recipeFilters" aria-label="레시피 조건 조정">${funnel}</button></div><div class="recipe-hub-grid" aria-label="추천 레시피" aria-live="polite">${content}</div>`;
   }
 
   function renderPlans(ctx) {
@@ -72,13 +66,6 @@
     if (selector) document.querySelector(selector)?.focus({preventScroll: true});
   }
   document.addEventListener('click', event => {
-    const previous = event.target.closest('[data-recipe-hub-nav]');
-    if (previous && !previous.disabled && recipeIds.length) {
-      const step = Number(previous.dataset.recipeHubNav), index = Math.max(0, recipeIds.indexOf(recipeId));
-      recipeId = recipeIds[(index + step + recipeIds.length) % recipeIds.length];
-      refresh(`[data-recipe-hub-nav="${step}"]`);
-      return;
-    }
     const urgent = event.target.closest('[data-recipe-urgent]');
     if (urgent) return window.KitchenHome.showRecipes({ingredient: urgent.dataset.recipeUrgent});
     const slot = event.target.closest('[data-recipe-meal-slot]');
