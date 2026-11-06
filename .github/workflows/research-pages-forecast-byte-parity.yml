@@ -1,0 +1,37 @@
+name: Research-only independent deployed forecast byte parity
+on:
+  push:
+    branches:
+      - research/pages-deployment-stale-recovery-20261107
+    paths:
+      - .github/workflows/research-pages-forecast-byte-parity.yml
+permissions:
+  contents: read
+jobs:
+  actual-pages-forecast-bytes:
+    if: github.repository == 'Ohoredingdong/Notion'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Freeze operating main source without touching it
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify real Pages public JSON and JavaScript with existing strict verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Pinned checkout SHA $(git rev-parse HEAD)"
+          python scripts/verify_stock_forecast_public.py
+      - name: Preserve only the newly observed public proof in a research artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: read-only-public-byte-parity
+          retention-days: 7
+          path: |
+            stock-forecast-deliveries.jsonl
