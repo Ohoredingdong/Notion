@@ -189,6 +189,67 @@ class PublicPlanEvidenceTests(unittest.TestCase):
         self.assertFalse((self.root / paper.EVIDENCE_FILE).exists())
 
 
+
+class PostregistrationPagesEvidenceTests(unittest.TestCase):
+    """One fixed hypothesis: a same-run postregistration probe can be truthful."""
+
+    def test_postregistration_local_plan_needs_new_actual_http_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            policy = paper.policy_for(None, NOW)
+            paper.write_json(root / paper.POLICY_FILE, policy)
+            (root / paper.PLAN_FILE).write_text("")
+            old_page = {name: (root / name).read_bytes()
+                        for name in (paper.POLICY_FILE, paper.PLAN_FILE)}
+            candidate = plan()
+            (root / paper.PLAN_FILE).write_text(json.dumps(candidate) + "\n")
+
+            # The post-registration local plan is not itself a public response.
+            with self.assertRaisesRegex(ValueError, "public_paper_bytes_not_equal"):
+                public.verify_paper_publication(
+                    root, old_page.__getitem__, lambda: NOW + timedelta(minutes=1))
+            self.assertFalse((root / paper.PUBLICATION_FILE).exists())
+
+            actual_page = {name: (root / name).read_bytes()
+                           for name in (paper.POLICY_FILE, paper.PLAN_FILE)}
+            checked_at = NOW + timedelta(minutes=2)
+            report = public.verify_paper_publication(
+                root, actual_page.__getitem__, lambda: checked_at)
+            self.assertEqual(report["new_checks"], 1)
+            self.assertEqual(report["before_target"], 1)
+            proofs = paper.read_lines(root / paper.PUBLICATION_FILE)
+            self.assertEqual(proofs[0]["verified_at"], checked_at.isoformat())
+            self.assertFalse(proofs[0]["human_notification_received"])
+            self.assertEqual(
+                public.verify_paper_publication(
+                    root, actual_page.__getitem__,
+                    lambda: checked_at + timedelta(minutes=1))["new_checks"], 0)
+            self.assertEqual(len(paper.read_lines(root / paper.PUBLICATION_FILE)), 1)
+
+    def test_workflow_has_bounded_optional_postregistration_proof_without_extra_build(self):
+        workflow = (Path(__file__).resolve().parents[1]
+                    / ".github/workflows/stock-forecasts.yml").read_text()
+        last_publish = workflow.index(
+            "name: Preserve forecast and paper publication evidence with the matching audit")
+        check = workflow.index(
+            "name: Opportunistic first paper publication proof after automatic Pages build")
+        persist = workflow.index(
+            "name: Persist only newly observed paper first-public proofs")
+        self.assertLess(last_publish, check)
+        self.assertLess(check, persist)
+        self.assertIn("id: postplan_public", workflow[check:persist])
+        self.assertIn("continue-on-error: true", workflow[check:persist])
+        self.assertIn("python scripts/verify_stock_forecast_public.py --paper-only",
+                      workflow[check:persist])
+        self.assertIn("sha256sum stock-forecast-paper-publication-verifications.jsonl",
+                      workflow[check:persist])
+        self.assertIn("steps.postplan_public.outcome == 'success'", workflow[persist:])
+        self.assertIn("steps.postplan_public.outputs.new_proofs == 'true'", workflow[persist:])
+        self.assertIn("        continue-on-error: true\n        run: python scripts/publish_stock_forecasts.py",
+                      workflow[persist:workflow.index("      - uses: actions/upload-artifact", persist)])
+        self.assertEqual(workflow.count('gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"'), 1)
+
+
 class RegistrationTests(unittest.TestCase):
     def test_only_future_plan_and_no_duplicate_registration(self):
         r = frozen(); policy = paper.policy_for(None, NOW)
