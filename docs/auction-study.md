@@ -4,6 +4,21 @@
 
 ## 실행과 사용
 
+### 모의경매로 한 건 끝까지 연습하기
+
+메뉴의 **모의경매 연습** 또는 `auction-study.html?view=simulation`을 엽니다. 입문 아파트, 선순위 임차인이 있는 빌라, 위반·권리 미확인으로 보류해야 하는 다세대의 세 사례를 제공합니다.
+
+1. **자료 모음:** 매각물건명세서·등기사항전부증명서·현황조사서·감정평가서·건축물대장·관리비 메모·거래/지역 자료·현장 확인 자료를 읽습니다. 사진 6장은 AI로 만든 가상 현장입니다. 실제 사건·등기·사진·시세가 아니며 공식 서류 원본의 형식을 재현하지 않았습니다. **서류 세트 받기**로 가상 자료를 HTML 파일로 내려받을 수 있습니다.
+2. **권리 확인:** 사례별 6문제에 답하고, 해설의 근거 서류로 돌아가 확인합니다. 서류를 열거나 정답을 맞혔다고 실제 물건의 권리가 확인되는 것은 아닙니다.
+3. **모의 입찰:** 입찰가·대출·가용현금을 바꾸어 필요 현금과 기준/보수적 손익을 비교합니다. 입찰 검토 또는 보류를 선택하고 판단 근거를 적어 제출합니다.
+4. **결과 해설:** 빠뜨린 자료·오답·인수 비용·손실·자금 부족을 대조합니다. 인수액을 확정할 수 없는 사례는 계산상 이익이 있어도 보류합니다. 필요하면 **내 분석노트로 복사**해 계산을 더 바꿔 봅니다. 복사는 가상 물건을 새로 추가하며 기존 물건을 덮어쓰지 않습니다. 권리 확인 상태는 미확인으로 시작합니다.
+
+연습 기록은 `auction-simulation-v1`에 저장하며 기존 `auction-study-v1` 기록과 분리됩니다. 다른 브라우저·기기로 자동 동기화되지 않습니다. 저장을 차단한 환경에서는 실패 안내를 표시합니다.
+
+**경매 절차·서류** 또는 `auction-study.html?view=process`에서는 올려주신 절차도의 신청→조사→공고→입찰→허가→대금 납부→등기·배당·인도와 유찰/재경매 분기를 16단계로 읽을 수 있습니다. 준비 서류 9종의 용도·열람 경로·확인 항목도 제공합니다. 그림의 고정 일수·시각은 모든 사건에 적용하지 않고 실제 법원 공고에서 확인하도록 안내합니다.
+
+### 내 서류와 분석노트 사용하기
+
 첫 화면의 **서류 보며 공부**는 두 가지 방식으로 사용할 수 있습니다.
 
 - **해설 있는 연습 사례:** 명세서·등기·점유·관리비 등의 가상 발췌를 읽고 답을 고릅니다. 힌트나 해설을 열면 근거가 되는 줄을 표시합니다. 입문 사례와 전입이 앞선 임차인 사례가 각각 6단계로 구성됩니다. 날짜만으로 인수금액이나 입찰 가능 여부를 확정하지 않습니다.
@@ -28,9 +43,12 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 
 ## 계산 기준
 
+**실제 투자금은 직접 입력하는 계산기입니다.** 입찰가·대출·비용·보유기간·매도가를 바꾸면 즉시 다시 계산합니다. 금액 단위는 만원이며 소수 둘째 자리까지 표시합니다. 입력한 세율·대출액을 계산할 뿐 법정 세액·대출 승인 여부를 자동 판정하지 않습니다.
+
 - 보증금 = 최저매각가격 × 공고의 보증금 비율. 낙찰대금에 충당되므로 총비용에 중복 가산하지 않습니다. 대출 실행 전 별도로 보증금을 준비할 수 있는지도 확인합니다.
 - 취득·보유 부대비용 = 낙찰가 × 취득 관련 적용률 + 법무·등기비 + 수리 + 명도 + 인수 관리비 + 별도 인수액 + 보유기간 단리 대출이자.
 - 예상 순투입 현금 = 낙찰가 + 취득·보유 부대비용 − 대출 실행 예상액 + 현금 예비비. 자금 실행 순서에 따른 실제 순간 최대 유동성을 보장하는 값은 아닙니다.
+- 보증금 부족액과 전체 순투입 현금 부족액은 따로 표시합니다. 대출 가정이 잔금·취득 관련 정산액보다 크면 정산 반환 가정도 분리하며, 실제 지급·반환 시점은 금융기관에서 확인해야 합니다.
 - 손익 = 매도가 − 매도 비례 비용 − 양도 관련 세금 − 낙찰가 − 취득·보유 부대비용. 예비비는 지출로 간주하지 않습니다.
 - 계산상 입찰 상한은 입력한 매도가·대출·고정 비용·양도 세금·목표 수익을 고정하고 낙찰가와 그에 비례하는 취득비를 역산합니다. 대출 승인 한도나 자동 입찰 추천이 아닙니다.
 
@@ -39,13 +57,21 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 ## 검증
 
 ```sh
-node --test tests/auction-study-model.test.cjs
+node tests/auction-study-model.test.cjs
+node tests/auction-study-lessons.test.cjs
+node tests/auction-study-simulation-data.test.cjs
+node tests/auction-study-process.test.cjs
 ```
 
 브라우저 회귀 검사는 별도 터미널에서 정적 서버를 실행한 뒤 아래 명령으로 실행합니다. Python Playwright와 `/usr/bin/chromium`이 필요합니다.
 
 ```sh
-PYTHONPATH=/workspace/.notion-python python3 -B scripts/test_auction_study_browser.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_study_browser.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_learning_browser.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_rights_layout.py
+AUCTION_STUDY_URL=http://127.0.0.1:8766/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser
 ```
 
-브라우저 검사는 독립적인 임시 컨텍스트에서 계산 입력, 권리 근거, 저장·재열기, 새 물건, 가져오기와 모바일 레이아웃을 확인합니다. 서버를 배포하거나 실제 개인 기록을 수정하지 않습니다.
+위 Python 경로는 준비된 클라우드 환경 기준입니다. 일반 환경에서는 Playwright 1.56.0을 설치한 Python으로 실행하고, `BROWSER_EXECUTABLE`을 생략하면 Playwright의 Chromium을 사용합니다.
+
+브라우저 검사는 독립적인 임시 컨텍스트에서 계산 입력, 권리 근거, 저장·재열기, 새 물건, 가져오기와 모바일 레이아웃을 확인합니다. 모의경매 검사는 세 사례의 서류·사진·퀴즈·서류 내려받기·결과·노트 복사, 손실/오답 보류, 저장 실패·손상 기록 보존, 데스크톱·모바일·임베드 화면을 확인하고 실행별 보고서와 스크린샷을 남깁니다. 서버를 배포하거나 실제 개인 기록을 수정하지 않습니다.

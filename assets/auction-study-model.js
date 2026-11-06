@@ -61,7 +61,12 @@
     // The deposit is part of the purchase price, not an additional expense.
     // Floor the later-payment estimate at zero: excess financing is never a negative cash payment.
     // Deposit cash must still be available before any assumed loan disbursement.
-    const balanceCash = Math.max(0, input.bid - deposit - input.loan + tax + input.legal);
+    const balanceSettlement = input.bid - deposit - input.loan + tax + input.legal;
+    const balanceCash = Math.max(0, balanceSettlement);
+    // A loan larger than the remaining settlement creates a modelled cash credit,
+    // not a negative payment. Keep it visible so the payment ledger reconciles.
+    // Actual loan disbursement/refund timing must be confirmed separately.
+    const balanceCredit = Math.max(0, -balanceSettlement);
     const profit = input.sale * (1 - input.sellingRate / 100) - input.saleTax - totalCost;
     const downsideProfit = input.downside * (1 - input.sellingRate / 100) - input.saleTax - totalCost;
     const roi = equity > 0 ? profit / equity * 100 : null;
@@ -70,7 +75,10 @@
     const maxBid = (input.sale * (1 - input.sellingRate / 100) - input.saleTax - fixedCosts - input.targetProfit)
       / (1 + input.acquisitionRate / 100);
     const cashGap = Math.max(0, cashNeeded - input.available);
-    const result = { deposit, tax, interest, costs, totalCost, cashNeeded, balanceCash, profit, downsideProfit, roi, maxBid, cashGap };
+    // Net cash can be below the deposit if financing is high. The deposit is due
+    // before that financing, so a zero net shortfall does not imply readiness.
+    const depositGap = Math.max(0, deposit - input.available);
+    const result = { deposit, tax, interest, costs, totalCost, cashNeeded, balanceCash, balanceCredit, profit, downsideProfit, roi, maxBid, cashGap, depositGap };
     if (Object.values(result).some(value => value !== null && !Number.isFinite(value))) {
       return { valid: false, errors: ['입력값이 계산 가능한 범위를 초과했습니다. 금액과 기간을 확인해 주세요.'], input };
     }
