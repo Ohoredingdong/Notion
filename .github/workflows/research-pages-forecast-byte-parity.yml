@@ -27,6 +27,12 @@ jobs:
           set -euo pipefail
           echo "Pinned checkout SHA $(git rev-parse HEAD)"
           python scripts/verify_stock_forecast_public.py
+      - name: Independently audit current immutable research evidence (no model training)
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
       - name: Preserve only the newly observed public proof in a research artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -35,3 +41,7 @@ jobs:
           retention-days: 7
           path: |
             stock-forecast-deliveries.jsonl
+            stock-forecast-independent-audit.json
+            stock-forecast-learning-audit.json
+            stock-forecast-attempt-coverage-audit.json
+            stock-timing-acceptance-guard.json
