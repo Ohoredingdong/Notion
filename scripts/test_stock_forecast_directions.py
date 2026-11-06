@@ -31,15 +31,18 @@ def fixture(i=0, actual='down', candidate=None, old=None):
 
 def prices(n=700):
     rng=np.random.default_rng(77)
-    sessions=pd.bdate_range('2021-01-04',periods=n)
+    cal=b.calendar('US',2026)
+    sessions=cal.sessions_in_range('2021-01-04','2026-10-20')[:n]
     changes=rng.normal(0,.012,n)
     opens=100*np.exp(np.cumsum(rng.normal(0,.005,n)))
     closes=opens*np.exp(changes)
-    return pd.DataFrame({'open':opens,'close':closes,'high':np.maximum(opens,closes)*1.003,
+    result=pd.DataFrame({'open':opens,'close':closes,'high':np.maximum(opens,closes)*1.003,
                          'low':np.minimum(opens,closes)*.997,
-                         'start':pd.to_datetime(sessions,utc=True),
-                         'end':pd.to_datetime(sessions,utc=True)+pd.Timedelta(hours=6),
+                         'start':cal.opens.reindex(sessions).to_numpy(),
+                         'end':cal.closes.reindex(sessions).to_numpy(),
                          'session':sessions.strftime('%Y-%m-%d')})
+    result.attrs.update(market='US',mode='daily')
+    return result
 
 class DirectionMetricsTests(unittest.TestCase):
     def test_flat_collapse_is_not_direction_skill(self):
@@ -160,3 +163,4 @@ class FeatureTests(unittest.TestCase):
         for k in d.SPECIALISTS:self.assertEqual(one['candidates'][k]['model_sha256'],two['candidates'][k]['model_sha256'])
 
 if __name__=='__main__':unittest.main()
+

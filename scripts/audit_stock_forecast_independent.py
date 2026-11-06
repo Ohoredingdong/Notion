@@ -212,8 +212,9 @@ def validate(r):
     # provider-latency forecasts, instead of trusting the number that itself
     # decides whether a stored return is up, down, or flat. Older unknown
     # policies keep their historical path; no old forecast is backfilled.
-    if (r.get('version') == 'direction-forecast-1.0' and
-            r.get('policy_revision') == 'provider-latency-30m-v1'):
+    if (r.get('version'), r.get('policy_revision')) in {
+            ('direction-forecast-1.0', 'provider-latency-30m-v1'),
+            ('direction-forecast-1.1', 'session-complete-targets-v2')}:
         mode = r.get('mode')
         if mode not in ('daily', 'intraday'):
             raise ValueError('unknown_frozen_band_mode')

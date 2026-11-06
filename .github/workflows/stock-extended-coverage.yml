@@ -1,108 +1,186 @@
-name: Stock Extended Research Coverage
+name: Stock Full Universe AI
 on:
   workflow_dispatch:
   schedule:
-    # Bounded rotation, independent from the core prospective-forecast ledger.
-    - cron: '13,43 0-7,13-22 * * 1-5'
+    # After KR closes, before the US opens: keep the learned next-session horizon.
+    - cron: '55 6 * * 1-5'
   push:
-    branches: [fix/radar-integrity-20261105]
-    paths: ['.github/radar-extended-recovery-request.json']
+    branches: [feat/radar-all-ai-20261106]
+    paths: ['.github/radar-all-ai-request.json']
 permissions:
-  contents: write
-  pages: write
+  contents: read
 concurrency:
-  group: stock-extended-coverage-${{ github.ref_name }}
+  group: stock-full-universe-${{ github.ref_name }}
   cancel-in-progress: false
+
+env:
+  OMP_NUM_THREADS: '1'
+  OPENBLAS_NUM_THREADS: '1'
+  MKL_NUM_THREADS: '1'
 jobs:
-  research:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/radar-integrity-20261105'
-    runs-on: ubuntu-latest
-    timeout-minutes: 18
-    env:
-      OMP_NUM_THREADS: '1'
-      OPENBLAS_NUM_THREADS: '1'
-      MKL_NUM_THREADS: '1'
+  prepare:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/radar-all-ai-20261106'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the pinned source and model
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy==2.3.5' 'pandas==2.2.3' 'scipy==1.17.0'
+      - name: Record the installed model runtime
+        run: |
+          mkdir -p universe-evidence
+          pip freeze > universe-evidence/requirements-used.txt
+      - name: Require model, identity and complete-accounting contracts
+        run: PYTHONPATH=scripts python -m unittest scripts.test_stock_forecasts scripts.test_stock_universe_forecasts scripts.test_stock_extended_forecasts scripts.test_stock_timing_band_audit -v
+      - name: Check actual KR and US histories before the sweep
+        run: python scripts/check_stock_universe_source.py --output universe-evidence/source-preflight.json
+      - name: Freeze every issuer and source provenance
+        run: >-
+          python scripts/run_stock_universe_forecasts.py manifest
+          --catalog stock-universe-catalog.json
+          --output universe-evidence/manifest.json --shards 32
+          --run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          --source-commit "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-manifest
+          path: universe-evidence/
+          retention-days: 7
+          if-no-files-found: error
+  collect:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe-manifest
+          path: universe-evidence
+      - uses: actions/cache/restore@v4
+        with:
+          path: .cache/radar-universe/${{ matrix.shard }}
+          key: radar-daily-ohlc-v2-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: radar-daily-ohlc-v2-${{ matrix.shard }}-
+      - name: Install fixed dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy==2.3.5' 'pandas==2.2.3' 'scipy==1.17.0'
+      - name: Collect real histories and issue prospective research
+        id: collect
+        run: >-
+          python -u scripts/run_stock_universe_forecasts.py shard
+          --manifest universe-evidence/manifest.json
+          --shard-index ${{ matrix.shard }}
+          --output universe-evidence/shard-${{ matrix.shard }}.json
+          --cache-dir .cache/radar-universe/${{ matrix.shard }}
+          --max-seconds 1800 --request-delay 0.75
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: .cache/radar-universe/${{ matrix.shard }}
+          key: radar-daily-ohlc-v2-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-shard-${{ matrix.shard }}
+          path: universe-evidence/shard-${{ matrix.shard }}.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Preserve actual inputs briefly for independent reproduction
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-price-inputs-${{ matrix.shard }}
+          path: .cache/radar-universe/${{ matrix.shard }}/
+          include-hidden-files: true
+          retention-days: 2
+          if-no-files-found: warn
+  aggregate:
+    needs: [prepare, collect]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # UI may be improved while collection runs. The manifest validates
+          # exact model/audit code and catalogue hashes before aggregation;
+          # the publisher separately leases those inputs against the source SHA.
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Pin the verified source and bounded request
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe-manifest
+          path: universe-evidence
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: universe-shard-*
+          path: universe-evidence/shards
+          merge-multiple: true
+      - name: Verify every shard against the exact catalogue
+        run: >-
+          python scripts/run_stock_universe_forecasts.py aggregate
+          --manifest universe-evidence/manifest.json
+          --shard-dir universe-evidence/shards
+          --catalog stock-universe-catalog.json
+          --output stock-extended-direction-forecast.json
+      - name: Check indexed UI contracts
         run: |
-          python - <<'PY'
-          import json,os,subprocess
-          from pathlib import Path
-          batch=12
-          if os.environ['GITHUB_EVENT_NAME']=='push':
-              request=json.loads(Path('.github/radar-extended-recovery-request.json').read_text())
-              batch=int(request['batch_size'])
-          assert 1<=batch<=16,'Unbounded extended research request'
-          with open(os.environ['GITHUB_ENV'],'a') as out:
-              out.write(f'RADAR_EXTENDED_BATCH={batch}\n')
-              out.write('RADAR_SOURCE_SHA='+subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()+'\n')
-          PY
-      - name: Test source identity, rotation and unverified forecast rejection
-        run: python -m unittest scripts.test_stock_extended_forecasts -v
-      - name: Install market source and model dependencies
-        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
-      - name: Run bounded prospective research from the verified catalogue
-        run: python scripts/run_stock_extended_forecasts.py --batch-size "$RADAR_EXTENDED_BATCH"
-      - name: Validate actual research with issuer identity and no-order disclosure
+          node scripts/test_stock_forecast_coverage.cjs
+          node scripts/test_stock_catalog_model.cjs
+      - name: Install the browser for the actual full snapshot
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          d=json.loads(Path('stock-extended-direction-forecast.json').read_text())
-          assert d['version']=='stock-extended-direction-v1'
-          assert d['source_identity_policy']=='kr-six-character-alphanumeric-v2'
-          assert d['automatic_orders'] is False and not d['real_time_connected']
-          assert d['run']['attempted']<=16
-          assert d['run']['no_call']+d['run']['research_prediction']==d['run']['attempted']
-          for row in d['records']:
-              assert row['identity_verified'] is True
-              assert row['source_identity_policy']=='kr-six-character-alphanumeric-v2'
-              assert row['status'] in ('no_call','research_prediction')
-              if row['status']=='no_call':
-                  assert row['probabilities'] is None
-              else:
-                  assert abs(sum(row['probabilities'].values())-1)<.025
-                  assert row.get('target',{}).get('start') and row['target']['end']
-          print('VERIFIED_IDENTIFIER_EXTENDED_RESEARCH',d['run'],d['universe'])
-          PY
-      - name: Publish this branch snapshot without overwriting newer source inputs
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+      - name: Check full-universe AI selection and mobile views
+        run: |
+          python -m http.server 8765 >/tmp/stock-full-universe-browser.log 2>&1 &
+          python scripts/test_stock_forecast_coverage_browser.py --data-root . --require-full
+      - name: Publish one coherent snapshot with a source lease
         id: publish
-        run: |
-          git fetch origin "$GITHUB_REF_NAME"
-          RADAR_CHECKED_REMOTE=$(git rev-parse "origin/$GITHUB_REF_NAME")
-          if ! git diff --quiet "$RADAR_SOURCE_SHA" "$RADAR_CHECKED_REMOTE" -- scripts/run_stock_extended_forecasts.py scripts/stock_forecast_model.py scripts/stock_forecast_sources.py stock-universe-catalog.json stock-opportunity-summary.json stock-extended-direction-forecast.json data-quarantine/stock-extended-direction-forecast.json .github/workflows/stock-extended-coverage.yml; then
-            echo 'Extended research inputs changed during collection; refusing stale publication'
-            exit 1
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add stock-extended-direction-forecast.json
-          if [ -f data-quarantine/stock-extended-direction-forecast.json ]; then
-            git add data-quarantine/stock-extended-direction-forecast.json
-          fi
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'research: refresh extended forecasts from verified issuer identifiers'
-          git rebase "$RADAR_CHECKED_REMOTE"
-          git push origin "HEAD:$GITHUB_REF_NAME"
-          echo 'published=true' >> "$GITHUB_OUTPUT"
-      - name: Publish the new main snapshot to the public radar
+        run: python scripts/publish_stock_universe_forecasts.py --source-commit "$GITHUB_SHA" --branch "$GITHUB_REF_NAME"
+      - name: Refresh main public Pages
         if: github.ref_name == 'main' && steps.publish.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
+      - name: Verify actual main publication before counting delivery
+        if: github.ref_name == 'main' && steps.publish.outputs.published == 'true'
+        run: python scripts/verify_stock_universe_public.py --commit '${{ steps.publish.outputs.commit }}' --output universe-evidence/publication.json --attempts 30 --interval 10
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bounded-extended-forecast-evidence
+          name: full-universe-ai-evidence
           path: |
             stock-extended-direction-forecast.json
-            data-quarantine/stock-extended-direction-forecast.json
+            universe-evidence/manifest.json
+            universe-evidence/source-preflight.json
+            universe-evidence/requirements-used.txt
+            universe-evidence/publication.json
+            radar-forecast-coverage-evidence/
           retention-days: 7
           if-no-files-found: warn

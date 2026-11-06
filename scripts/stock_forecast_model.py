@@ -17,12 +17,16 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 UTC = timezone.utc
-VERSION = 'direction-forecast-1.0'
+VERSION = 'direction-forecast-1.1'
 CLASSES = ['down', 'flat', 'up']
 FEATURES = ['r1', 'r3', 'r6', 'r12', 'r20', 'vol20', 'ma5', 'ma20',
             'range', 'body', 'drawdown20', 'rebound20']
 POLICY = {'daily_floor_pct': 0.30, 'intraday_floor_pct': 0.15,
-          'volatility_band_factor': 0.35, 'intraday_gap_minutes': 30, 'policy_revision': 'provider-latency-30m-v1',
+          'volatility_band_factor': 0.35, 'intraday_gap_minutes': 30, 'policy_revision': 'session-complete-targets-v2',
+          'daily_target_policy': 'next_exchange_session_open_to_close',
+          'daily_label_requires_exact_session_boundaries': True,
+          'input_time_contract': 'observed_until<=received_at<=issued_at<target.start',
+          'no_call_target_policy': 'none',
           'intraday_target_minutes': 30, 'minimum_sessions_intraday': 30,
           'minimum_daily_samples': 500, 'minimum_independent_test_samples': 40,
           'minimum_test_sessions': 6, 'logistic_C': 0.2,
@@ -81,6 +85,9 @@ def normalise_history(frame, market, mode, received_at):
     data = pd.DataFrame(rows).sort_values('start').reset_index(drop=True)
     if data['start'].duplicated().any():
         raise ValueError('duplicate_bar_timestamp')
+    # Preserve the verified exchange identity for existing two-argument model
+    # callers. Serialized caches can supply market explicitly instead.
+    data.attrs.update(market=market, mode=mode, received_at=received.isoformat())
     return data
 
 
@@ -103,14 +110,41 @@ def features(bars, mode):
     return f[FEATURES].replace([np.inf, -np.inf], np.nan), band
 
 
-def target_rows(bars, mode):
-    """Fixed provider-latency gap, then 6 bars (30m); never cross a session."""
+def history_market(bars, market=None):
+    """An exchange must be explicit or come from normalization, never guessed."""
+    recorded = bars.attrs.get('market')
+    if market is not None and recorded is not None and market != recorded:
+        raise ValueError('history_market_mismatch')
+    selected = market if market is not None else recorded
+    if selected not in ('KR', 'US'):
+        raise ValueError('history_market_required')
+    return selected
+
+
+def target_rows(bars, mode, market=None):
+    """Daily means the next exchange session; intraday keeps its fixed 30m gap."""
     gap = POLICY['intraday_gap_minutes']//5
     first, last = (1, 1) if mode == 'daily' else (gap+1, gap+6)
     future_open = bars['open'].shift(-first)
     future_close = bars['close'].shift(-last)
     valid = future_open.notna() & future_close.notna()
-    if mode == 'intraday':
+    if mode == 'daily':
+        selected = history_market(bars, market)
+        starts, ends = pd.DatetimeIndex(bars['start']), pd.DatetimeIndex(bars['end'])
+        if starts.tz is None or ends.tz is None:
+            raise ValueError('daily_session_timezone_missing')
+        cal = calendar(selected, ends[-1].year)
+        sessions = pd.DatetimeIndex(bars['session'])
+        positions = pd.Series(cal.sessions.get_indexer(sessions), index=bars.index)
+        exact = pd.Series(
+            (starts == pd.DatetimeIndex(cal.opens.reindex(sessions))) &
+            (ends == pd.DatetimeIndex(cal.closes.reindex(sessions))), index=bars.index)
+        # A provider may omit a trading day or a halted security's bar. Its next
+        # available row is not necessarily the next exchange session. Weekends,
+        # holidays, daylight saving and early closes follow the actual calendar.
+        valid &= positions.ge(0) & positions.shift(-1).eq(positions + 1)
+        valid &= exact & exact.shift(-1, fill_value=False)
+    else:
         for k in range(1, last+1):
             valid &= bars['session'].eq(bars['session'].shift(-k))
             valid &= (bars['start'].shift(-k)-bars['start']).eq(pd.Timedelta(minutes=5*k))
@@ -120,9 +154,9 @@ def target_rows(bars, mode):
                          'valid': valid})
 
 
-def samples(bars, mode):
+def samples(bars, mode, market=None):
     x, band = features(bars, mode)
-    target = target_rows(bars, mode)
+    target = target_rows(bars, mode, market=market)
     usable = x.notna().all(axis=1) & target['valid']
     # Unresolved extreme OHLC discontinuities are excluded, not treated as alpha.
     jumps = bars['close'].pct_change().abs().rolling(21, min_periods=1).max() > .40
@@ -214,8 +248,9 @@ def evaluate_model(y, p, baseline, test):
             'confusion_matrix': [[int(((y == i) & (prediction == j)).sum()) for j in range(3)] for i in range(3)]}
 
 
-def fit_model(bars, mode):
-    data, x, bands = samples(bars, mode)
+def fit_model(bars, mode, market=None):
+    market = history_market(bars, market) if mode == 'daily' else market or bars.attrs.get('market')
+    data, x, bands = samples(bars, mode, market=market)
     if mode == 'daily' and len(data) < POLICY['minimum_daily_samples']:
         raise ValueError('fewer_than_500_daily_training_samples')
     if mode == 'intraday' and data.session.nunique() < POLICY['minimum_sessions_intraday']:
@@ -230,10 +265,13 @@ def fit_model(bars, mode):
     baseline = (np.bincount(train.y, minlength=3)+1)/(len(train)+3)
     metrics = evaluate_model(test.y.to_numpy(), p, baseline, test)
     scaler, logistic = model.steps[0][1], model.steps[-1][1]
-    fingerprint = digest({'version': VERSION, 'policy': POLICY, 'coef': logistic.coef_.tolist(),
+    policy_hash = digest(POLICY)
+    fingerprint = digest({'version': VERSION, 'policy': POLICY, 'market': market, 'mode': mode,
+                          'coef': logistic.coef_.tolist(),
                           'intercept': logistic.intercept_.tolist(), 'mean': scaler.mean_.tolist(),
                           'scale': scaler.scale_.tolist(), 'temperature': temperature})
-    return {'model': model, 'temperature': temperature, 'metrics': metrics,
+    return {'model': model, 'version': VERSION, 'policy_sha256': policy_hash,
+            'market': market, 'mode': mode, 'temperature': temperature, 'metrics': metrics,
             'features': x, 'bands': bands, 'baseline': baseline,
             'trained_through': train.target_end.max().isoformat(),
             'calibrated_through': cal.target_end.max().isoformat(),
@@ -261,7 +299,8 @@ def future_target(last, market, mode, issued_at):
 
 
 def make_prediction(bars, fitted, symbol, market, mode, received_at, issued_at=None):
-    issued = stamp(issued_at or datetime.now(UTC))
+    clock_now = stamp(datetime.now(UTC))
+    issued = stamp(issued_at) if issued_at is not None else clock_now
     received = stamp(received_at)
     last = bars.iloc[-1]
     base = {'symbol': symbol, 'market': market, 'mode': mode, 'version': VERSION,
@@ -273,7 +312,7 @@ def make_prediction(bars, fitted, symbol, market, mode, received_at, issued_at=N
             'validation': fitted['metrics'], 'recommendation': False, 'strict_green_override': False,
             'status': 'no_call', 'probabilities': None, 'direction': None,
             'delivery_verified': False, 'source_type': 'provider_historical_prices',
-            'policy_revision': POLICY['policy_revision'],
+            'policy_revision': POLICY['policy_revision'], 'policy_sha256': fitted.get('policy_sha256'),
             'input_age_seconds': float((issued-last['end']).total_seconds()),
             'lead_minutes_from_observation': POLICY['intraday_gap_minutes'] if mode == 'intraday' else None,
             'history_is_point_in_time_vintage': False,
@@ -283,13 +322,20 @@ def make_prediction(bars, fitted, symbol, market, mode, received_at, issued_at=N
     target, reason = future_target(last, market, mode, issued)
     if received > issued or last['end'] > received:
         reason = 'future_input_timestamp'
+    if issued > clock_now:
+        reason = 'future_issue_timestamp'
+    if (fitted.get('version') != VERSION or fitted.get('policy_sha256') != digest(POLICY)):
+        reason = 'model_policy_mismatch'
+    if (fitted.get('mode') != mode or fitted.get('market') not in (None, market) or
+            bars.attrs.get('market') not in (None, market)):
+        reason = 'model_input_market_or_mode_mismatch'
     if (bars['close'].pct_change().tail(21).abs() > .40).any():
         reason = 'unresolved_price_discontinuity'
     if reason:
-        return {**base, 'reason': reason, 'target': target}
+        return {**base, 'reason': reason, 'target': None}
     vals = fitted['features'].iloc[[-1]]
     if vals.isna().any(axis=None):
-        return {**base, 'reason': 'latest_features_missing', 'target': target}
+        return {**base, 'reason': 'latest_features_missing', 'target': None}
     prob = temperature_scale(fitted['model'].predict_proba(vals), fitted['temperature'])[0]
     band = float(fitted['bands'].iloc[-1])
     features_record = {key: float(vals.iloc[0][key]) for key in FEATURES}

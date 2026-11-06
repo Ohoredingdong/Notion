@@ -1,0 +1,33 @@
+name: Full Universe AI Contracts
+on:
+  pull_request:
+    branches: [main]
+    paths: ['scripts/*stock*forecast*', 'scripts/*stock*universe*', 'scripts/test_stock_timing_band_audit.py', 'assets/stock-*.js', 'stock-value-radar.html', '.github/workflows/*stock*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: full-universe-contracts-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy==2.3.5' 'pandas==2.2.3' 'scipy==1.17.0'
+      - name: Test model, collection accounting and publication contracts
+        run: |
+          PYTHONPATH=scripts python -m unittest scripts.test_stock_forecasts scripts.test_stock_universe_forecasts scripts.test_stock_extended_forecasts scripts.test_stock_timing_band_audit scripts.test_stock_universe_public -v
+          node scripts/test_stock_forecast_coverage.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+          node scripts/test_stock_catalog_model.cjs
