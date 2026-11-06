@@ -68,6 +68,53 @@ def load_oracle(root):
              for key in catalog.keys() | raw.keys()}
     source.update(catalog_by_key=catalog, raw_by_key=raw, union=union,
                   by_selection={row['selection']: key for key, row in union.items()})
+    # Build an independent, country-qualified oracle once. A full-universe feed
+    # must not turn every list assertion into another full scan of all records.
+    aliases = {}
+    for key, item in catalog.items():
+        spellings = {key}
+        if item['country'] == 'KR' and item['exchange'] in ('KOSPI', 'KOSDAQ'):
+            spellings.add(key + ('.KS' if item['exchange'] == 'KOSPI' else '.KQ'))
+        elif item['country'] == 'US' and re.fullmatch(r'[A-Z]{1,5}[.-][A-Z]', item['symbol']):
+            spellings.update((key.replace('.', '-'), key.replace('-', '.')))
+        for spelling in spellings:
+            aliases[spelling] = key if spelling not in aliases or aliases[spelling] == key else None
+    indexes, rejected = {}, {}
+    for name in ('direction', 'extended'):
+        index, invalid = {}, 0
+        feed = source[name]
+        for row in feed.get('records', []):
+            country = str(row.get('market') or row.get('country') or '').upper()
+            supplied = country + ':' + str(row.get('symbol') or '').upper()
+            key = supplied if supplied in catalog else aliases.get(supplied, supplied)
+            valid = country in ('KR', 'US') and bool(row.get('symbol'))
+            if name == 'extended':
+                key = country + ':' + str(row.get('catalog_symbol') or '')
+                item = catalog.get(key)
+                provider = row.get('provider_symbol', row.get('symbol'))
+                provider_key = country + ':' + str(provider or '')
+                provider_match = (row.get('status') == 'no_call' and row.get('symbol') == (item or {}).get('symbol')) if provider is None else (
+                    row.get('symbol') == provider and (provider_key if provider_key in catalog else aliases.get(provider_key)) == key)
+                valid = (valid and item is not None and row.get('identity_verified') is True and
+                         feed.get('source_identity_policy') == 'kr-six-character-alphanumeric-v2' and
+                         row.get('source_identity_policy') == 'kr-six-character-alphanumeric-v2' and
+                         row.get('name') == item['name'] == row.get('catalog_name') and
+                         row.get('catalog_exchange') == item['exchange'] and provider_match)
+                provenance = row.get('price_provenance') or {}
+                if provenance.get('provider_symbol') is not None:
+                    valid = valid and provenance['provider_symbol'] == provider
+                if (feed.get('generation_mode') == 'full_universe' or feed.get('coverage')) and row.get('status') == 'research_prediction':
+                    valid = valid and verified_price(row) and math.isfinite(timestamp(row.get('observed_until')))
+            if not valid or key is None:
+                invalid += 1
+                continue
+            index.setdefault(key, []).append(row)
+        if name == 'extended':
+            for key in list(index):
+                if len(index[key]) != 1:
+                    invalid += len(index.pop(key))
+        indexes[name], rejected[name] = index, invalid
+    source.update(forecast_rows=indexes, forecast_rejections=rejected)
     return source
 
 
@@ -88,18 +135,32 @@ def statement(key, source):
     return row if re.fullmatch(pattern, corporate_id) else None
 
 
+def verified_price(row):
+    provenance = row.get('price_provenance') or {}
+    provider = row.get('provider_symbol', row.get('symbol'))
+    return (row.get('price_available') is True and row.get('source_identity_verified') is True
+            and row.get('source_response_symbol') == provider == provenance.get('provider_symbol')
+            and all(re.fullmatch(r'[0-9a-f]{64}', str(provenance.get(key, ''))) for key in ('history_sha256', 'source_sha256'))
+            and timestamp(provenance.get('fetched_at')) <= timestamp(row.get('received_at'))
+            and math.isfinite(timestamp(row.get('received_at'))))
+
+
+def eligible_forecast(row, now, active=True):
+    probabilities, target = row.get('probabilities') or {}, row.get('target') or {}
+    issued, start, end = [timestamp(value) for value in
+                          (row.get('issued_at'), target.get('start'), target.get('end'))]
+    received = timestamp(row['received_at']) if row.get('received_at') is not None else issued
+    observed = timestamp(row['observed_until']) if row.get('observed_until') is not None else received
+    values = [probabilities.get(name) for name in ('up', 'flat', 'down')]
+    return (row.get('status') == 'research_prediction' and row.get('direction') in ('up', 'flat', 'down')
+            and set(probabilities) == {'up', 'flat', 'down'} and all(finite(value) and 0 <= value <= 1 for value in values)
+            and abs(sum(values) - 1) <= .001 and all(math.isfinite(value) for value in (issued, start, end, received, observed))
+            and observed <= received <= issued <= now and issued < start < end and (not active or end > now))
+
+
 def active_forecast(key, source, now):
-    def eligible(row):
-        probabilities, target = row.get('probabilities') or {}, row.get('target') or {}
-        issued, start, end = [timestamp(value) for value in
-                              (row.get('issued_at'), target.get('start'), target.get('end'))]
-        values = [probabilities.get(name) for name in ('up', 'flat', 'down')]
-        return (row.get('status') == 'research_prediction' and row.get('direction') in ('up', 'flat', 'down')
-                and all(finite(value) and 0 <= value <= 1 for value in values)
-                and abs(sum(values) - 1) < .025 and all(math.isfinite(value) for value in (issued, start, end))
-                and issued <= now + 300 and issued <= start < end and end > now)
     for feed in ('direction', 'extended'):
-        matching = [row for row in source[feed].get('records', []) if identity(row) == key and eligible(row)]
+        matching = [row for row in source['forecast_rows'][feed].get(key, []) if eligible_forecast(row, now)]
         if matching:
             return max(matching, key=lambda row: timestamp(row['issued_at']))
     return None
@@ -246,7 +307,7 @@ def catalog_profile(page, key, source, label):
                and forecast['target']['end'] in detail and '연구용' in detail)
     else:
         verify(f'{label}: no fabricated AI probability', '%' not in headline and
-               any(word in headline for word in ('미발행', '미확인', '기간 종료')), headline)
+               any(word in headline for word in ('미발행', '미확인', '기간 종료', '생성 불가', '미처리', '명부 확인', '검증 대기')), headline)
     row = statement(key, source)
     if row and row.get('status') in ('available', 'partial', 'stale'):
         finance = profile.locator('.fx-catalog-finance')

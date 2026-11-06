@@ -21,41 +21,195 @@ function fxSearchText(c){return window.StockCatalogUI?.searchText?.(c)||String(c
 
 const fxPoolCache=new WeakMap();
 
-/* A future valid forecast must outrank a later no-call snapshot. */
-/* Live target selection from independent core and rolling extended research. */
+const fxForecastEmpty=[];
+const fxForecastIndexCache=new WeakMap(),fxCatalogueIndexCache=new WeakMap(),fxForecastMetaCache=new WeakMap(),fxCoverageCache=new WeakMap();
+const fxIdentityPolicy="kr-six-character-alphanumeric-v2";
+const fxUpper=v=>String(v??"").trim().toUpperCase();
+const fxCountry=c=>fxUpper(c?.country||c?.market);
+const fxCanonical=(country,symbol)=>country==="KR"?fxUpper(symbol).replace(/\.(KS|KQ)$/,""):fxUpper(symbol);
+function fxCatalogueIndex(ctx){
+ const feed=ctx.data?.catalog,items=feed?.identifier_policy===fxIdentityPolicy&&Array.isArray(feed.items)?feed.items:fxForecastEmpty;
+ const cached=feed&&fxCatalogueIndexCache.get(feed);
+ if(cached?.items===items&&cached.length===items.length&&cached.generation===feed.generated_at)return cached;
+ const byKey=new Map(),aliases=new Map();
+ const add=(alias,key)=>{if(!aliases.has(alias))aliases.set(alias,key);else if(aliases.get(alias)!==key)aliases.set(alias,null)};
+ for(const item of items){
+  const country=fxCountry(item),symbol=fxUpper(item?.symbol);if(!["KR","US"].includes(country)||!symbol)continue;
+  const key=country+":"+symbol;
+  if(byKey.has(key)){byKey.set(key,null);continue}
+  byKey.set(key,item);add(key,key);
+  if(country==="KR"){
+   const suffix=({KOSPI:".KS",KOSDAQ:".KQ"})[item.exchange];if(suffix)add(country+":"+symbol+suffix,key);
+  }else if(/^[A-Z]{1,5}[.-][A-Z]$/.test(symbol)){
+   add(country+":"+symbol.replace(".","-"),key);add(country+":"+symbol.replace("-","."),key);
+  }
+ }
+ const out={items,length:items.length,generation:feed?.generated_at,byKey,aliases};
+ if(feed&&typeof feed==="object")fxCatalogueIndexCache.set(feed,out);
+ return out;
+}
+function fxKeyForSymbol(country,symbol,catalogue){
+ if(!["KR","US"].includes(country)||!fxUpper(symbol))return null;
+ const supplied=country+":"+fxUpper(symbol);
+ // Canonical keys retain identity even when a provider alias is ambiguous.
+ if(catalogue.byKey.get(supplied))return supplied;
+ if(catalogue.aliases.has(supplied))return catalogue.aliases.get(supplied);
+ const key=country+":"+fxCanonical(country,symbol);
+ if(catalogue.byKey.has(key))return null; // A wrong KR venue suffix is not an alias.
+ return key;
+}
+function fxCompanyKey(c,ctx,catalogue=fxCatalogueIndex(ctx)){
+ const country=fxCountry(c);
+ if(!["KR","US"].includes(country))return null;
+ const official=c?.catalog_entry;
+ if(official&&fxCountry(official)===country)return country+":"+fxUpper(official.symbol);
+ return fxKeyForSymbol(country,c?.symbol,catalogue);
+}
+function fxForecastIndex(feed,ctx,extended=false){
+ const records=Array.isArray(feed?.records)?feed.records:fxForecastEmpty,catalogue=fxCatalogueIndex(ctx);
+ const cached=feed&&fxForecastIndexCache.get(feed);
+ if(cached?.records===records&&cached.length===records.length&&cached.generation===feed.generated_at&&
+    cached.catalogue===catalogue&&cached.extended===extended&&cached.policy===feed.source_identity_policy)return cached;
+ const byKey=new Map();let rejected=0;
+ for(const r of records){
+  if(!r||typeof r!=="object"){rejected++;continue}
+  const country=fxCountry(r);let key=null;
+  if(extended){
+   key=country+":"+fxUpper(r.catalog_symbol);const item=catalogue.byKey.get(key);
+   const provider=r.provider_symbol===undefined?r.symbol:r.provider_symbol;
+   const validProvider=provider===null?r.status==="no_call"&&r.symbol===item?.symbol:
+    fxUpper(r.symbol)===fxUpper(provider)&&fxKeyForSymbol(country,provider,catalogue)===key;
+   const quoteSymbol=r.price_provenance?.provider_symbol,full=feed?.generation_mode==="full_universe"||!!feed?.coverage;
+   const provenance=r.price_provenance,priced=!full||r.status!=="research_prediction"||
+    (r.price_available===true&&r.source_identity_verified===true&&r.source_response_symbol===provider&&
+     provenance&&["history_sha256","source_sha256"].every(k=>/^[0-9a-f]{64}$/.test(provenance[k]||""))&&
+     Number.isFinite(Date.parse(provenance.fetched_at))&&Date.parse(provenance.fetched_at)<=Date.parse(r.received_at)&&
+     Number.isFinite(Date.parse(r.observed_until))&&Number.isFinite(Date.parse(r.received_at)));
+   if(feed?.source_identity_policy!==fxIdentityPolicy||r.source_identity_policy!==fxIdentityPolicy||r.identity_verified!==true||
+      !item||r.catalog_name!==item.name||r.name!==item.name||r.catalog_exchange!==item.exchange||!validProvider||!priced||
+      (quoteSymbol!=null&&fxUpper(quoteSymbol)!==fxUpper(provider))){rejected++;continue}
+  }else key=fxKeyForSymbol(country,r.symbol,catalogue);
+  if(!key){rejected++;continue}
+  if(!byKey.has(key))byKey.set(key,[]);
+  byKey.get(key).push(r);
+ }
+ for(const [key,rows] of byKey){
+  if(extended&&rows.length!==1){rejected+=rows.length;byKey.delete(key);continue}
+  rows.sort((a,b)=>(Date.parse(b.issued_at||"")||0)-(Date.parse(a.issued_at||"")||0));
+ }
+ const out={records,length:records.length,generation:feed?.generated_at,policy:feed?.source_identity_policy,
+  catalogue,extended,byKey,rejected};
+ if(feed&&typeof feed==="object")fxForecastIndexCache.set(feed,out);
+ return out;
+}
+function fxForecastValidity(r,now=Date.now()){
+ const p=r?.probabilities||{},names=["up","flat","down"],values=names.map(k=>fxN(p[k]));
+ const valid=Object.keys(p).length===3&&values.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(values.reduce((a,b)=>a+b,0)-1)<=.001;
+ const issued=Date.parse(r?.issued_at||""),start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||"");
+ const dates=Number.isFinite(issued)&&Number.isFinite(start)&&Number.isFinite(end)&&issued<=now&&issued<start&&start<end;
+ const received=r?.received_at==null?null:Date.parse(r.received_at),observed=r?.observed_until==null?null:Date.parse(r.observed_until);
+ const inputs=(received===null||Number.isFinite(received)&&received<=issued)&&
+  (observed===null||Number.isFinite(observed)&&observed<=(received??issued));
+ const base=r?.status==="research_prediction"&&valid&&names.includes(r.direction)&&dates&&inputs;
+ return {base,active:base&&end>now,stale:base&&end<=now,unknown:r?.status==="research_prediction"&&!Number.isFinite(end),issued,start,end};
+}
+/* One indexed bucket per exact country/company. A later no-call cannot erase an unexpired call. */
 function fxRecord(c,ctx){
- const key=String(c?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,""),now=Date.now();
- const country=String(c?.country||c?.market||"").toUpperCase();
- const matches=r=>{const rc=String(r?.country||r?.market||"").toUpperCase();return String(r?.symbol||"").toUpperCase().replace(/\.(KS|KQ)$/,"")===key&&(!["KR","US"].includes(country)||!["KR","US"].includes(rc)||country===rc)};
- const primary=(ctx.data?.direction?.records||[]).filter(matches);
- const extended=(ctx.data?.extended?.records||[]).filter(matches);
- const valid=r=>{
-  const p=r?.probabilities||{},start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||""),issued=Date.parse(r?.issued_at||"");
-  return r?.status==="research_prediction"&&Number.isFinite(start)&&Number.isFinite(end)&&start<end&&end>now&&
-   Number.isFinite(issued)&&issued<=now+300000&&issued<=start&&["up","down","flat"].includes(r.direction)&&
-   ["up","down","flat"].every(k=>typeof p[k]==="number"&&Number.isFinite(p[k])&&p[k]>=0&&p[k]<=1)&&
-   Math.abs(p.up+p.down+p.flat-1)<.025;
- };
- const newer=(xs)=>xs.slice().sort((a,b)=>Date.parse(b.issued_at||"")-Date.parse(a.issued_at||""));
- const p=newer(primary),e=newer(extended);
- return p.find(valid)||e.find(valid)||p.find(r=>r?.status==="research_prediction")||
-        e.find(r=>r?.status==="research_prediction")||p[0]||e[0]||null;
+ const key=fxCompanyKey(c,ctx);if(!key)return null;
+ const p=fxForecastIndex(ctx.data?.direction,ctx).byKey.get(key)||fxForecastEmpty;
+ const e=fxForecastIndex(ctx.data?.extended,ctx,true).byKey.get(key)||fxForecastEmpty,now=Date.now();
+ return p.find(r=>fxForecastValidity(r,now).active)||e.find(r=>fxForecastValidity(r,now).active)||
+  p.find(r=>r.status==="research_prediction")||e.find(r=>r.status==="research_prediction")||p[0]||e[0]||null;
+}
+function fxNoCallReason(r){
+ const status=String(r?.collection_status||""),kind=String(r?.error_kind||""),reason=String(r?.reason||""),all=kind+" "+reason;
+ if(status==="deadline_skipped")return {key:"deadline",label:"미처리 · 시간 제한",text:"이번 실행의 수집 시간이 끝나 아직 처리하지 않았습니다.",pending:true};
+ if(status==="circuit_skipped")return {key:"provider_circuit_open",label:"미처리 · 수집 대기",text:"제공처 오류가 이어져 추가 요청을 중단했습니다. 아직 처리하지 않은 종목입니다.",pending:true};
+ if(/unsupported_symbol|unsupported.*symbol/i.test(all)||status==="unsupported")return {key:"unsupported_symbol",label:"종목 형식 미지원",text:"공식 명부에는 있지만 가격 제공처가 이 종목코드 형식을 지원하지 않습니다.",pending:false};
+ if(/provider_collision|identity|issuer.*mismatch/i.test(all))return {key:"identity",label:"종목 연결 확인 필요",text:"공식 종목과 가격 제공처의 연결을 확인하지 못해 예측을 생성하지 않았습니다.",pending:false};
+ if(/rate_limited|RateLimit|Too Many Requests|\b429\b/i.test(all))return {key:"rate_limited",label:"제공처 요청 제한",text:"가격 제공처의 요청 제한으로 필요한 이력을 받지 못했습니다.",pending:false};
+ if(/target_already_started|publication_window_missed|prospective_target/i.test(all))return {key:"target_window",label:"발행 시간 경과",text:"예측 대상 거래가 이미 시작됐거나 공개할 시간이 부족해 발행하지 않았습니다.",pending:false};
+ if(/insufficient_regular_session_time/i.test(all))return {key:"session",label:"거래시간 부족",text:"정규장 자료 또는 남은 거래시간이 부족합니다.",pending:false};
+ if(/insufficient_history|fewer_than_|insufficient_train_calibration|insufficient_direction_classes/i.test(all))return {key:"insufficient_history",label:"가격 이력 부족",text:"학습·확률 보정·평가에 필요한 가격 이력 또는 방향별 표본이 부족합니다.",pending:false};
+ if(/unresolved_price_discontinuity|quote.*unit|price_discontinuity|split_review/i.test(all))return {key:"price_integrity",label:"가격 변동 검증 대기",text:"가격 단위·분할 또는 큰 변동을 확인하기 전에는 방향 확률을 표시하지 않습니다.",pending:false};
+ if(/source_error|no_candles|no_completed|provider_returned|delisted|timeout|connection|HTTP/i.test(all)||status==="source_error")return {key:"source_error",label:"가격 자료 미확보",text:"가격 제공처 응답에서 검증 가능한 완료 거래일 이력을 확보하지 못했습니다.",pending:false};
+ if(/future_input|timezone|timestamp/i.test(all))return {key:"input_time",label:"자료 시각 확인 필요",text:"가격 이력의 관측·수신 시각을 검증하지 못했습니다.",pending:false};
+ if(/model_error|features_missing|fit|calibrat/i.test(all))return {key:"model_error",label:"모델 계산 불가",text:"자료를 처리했지만 모델의 학습·보정 조건을 충족하지 못했습니다.",pending:false};
+ if(kind==="model_gate")return {key:"model_gate",label:"모델 검증 조건 미충족",text:"자료는 확보했지만 모델의 발행 조건을 충족하지 못해 방향 확률을 만들지 않았습니다.",pending:false};
+ return {key:"model_conditions",label:"자료·모형 조건 미충족",text:"이번 확인에서는 자료·모형 조건을 충족하지 못해 예측을 발행하지 않았습니다.",pending:false};
 }
 function fxForecastMeta(ctx){
- const data=ctx.data?.direction||{},more=ctx.data?.extended||{},now=Date.now();
- const records=[...(data.records||[]),...(more.records||[])];
- const known=new Set(records.filter(r=>r?.symbol&&!String(r.symbol).startsWith("^")).map(r=>String(r.symbol).toUpperCase().replace(/\.(KS|KQ)$/,"")));
+ const primary=fxForecastIndex(ctx.data?.direction,ctx),extended=fxForecastIndex(ctx.data?.extended,ctx,true),now=Date.now();
+ const cached=fxForecastMetaCache.get(ctx);
+ if(cached?.primary===primary&&cached.extended===extended&&now>=cached.at&&now<cached.until)return cached.value;
+ const known=new Set([...primary.byKey.keys(),...extended.byKey.keys()].filter(k=>!k.split(":")[1]?.startsWith("^")));
+ const fallback=new Map((ctx.data?.raw?.companies||[]).map(c=>[fxCompanyKey(c,ctx),c]));
+ const resolver=typeof window!=="undefined"?window.StockCatalogUI?.resolve:null;
+ let active=0,until=Math.floor(now/60000)*60000+60000;
+ for(const key of known){
+  const c=resolver?resolver(key,ctx):fallback.get(key);if(!c)continue;
+  const selected=fxRecord(c,ctx),state=fxForecastValidity(selected,now);if(state.active)active++;
+  for(const boundary of [state.issued,state.end])if(boundary>now)until=Math.min(until,boundary);
+ }
  const tracked=ctx.data?.raw?.companies?.length??null;
- const age=Date.parse(data.generated_at||""),ext=Date.parse(more.generated_at||"");
- const updated=Math.max(Number.isFinite(age)?age:0,Number.isFinite(ext)?ext:0);
- const ageMinutes=updated?Math.max(0,Math.round((now-updated)/60000)):null;
- const available=typeof window!=="undefined"&&window.StockCatalogUI?.resolve;
- const candidates=available?[...known].map(id=>window.StockCatalogUI.resolve(id,ctx)).filter(Boolean):(ctx.data?.raw?.companies||[]);
- const active=candidates.filter(c=>fxPrediction(c,ctx).active).length;
- return {modeled:known.size,tracked,active,age:ageMinutes,delayed:ageMinutes!==null&&ageMinutes>180,
-  summary:tracked===null?"AI 모델 범위 확인 전":
-   "AI 연구 이력 "+known.size+"개 기업 · 현재 유효 "+active+"개 · 심층 자료 "+tracked+"개"};
+ const times=[ctx.data?.direction?.generated_at,ctx.data?.extended?.generated_at].map(x=>Date.parse(x||"")).filter(Number.isFinite);
+ const updated=times.length?Math.max(...times):null,age=updated===null?null:Math.max(0,Math.round((now-updated)/60000));
+ const value={modeled:known.size,tracked,active,age,delayed:age!==null&&age>180,
+  summary:tracked===null?"AI 모델 범위 확인 전":"AI 기록 "+known.size.toLocaleString("ko-KR")+"개 기업 · 현재 유효 "+active.toLocaleString("ko-KR")+"개 · 심층 자료 "+tracked+"개"};
+ fxForecastMetaCache.set(ctx,{primary,extended,at:now,until,value});return value;
 }
+function fxForecastCoverage(ctx){
+ const feed=ctx.data?.extended,catalogue=fxCatalogueIndex(ctx),index=fxForecastIndex(feed,ctx,true),total=catalogue.items.length;
+ const cached=feed&&fxCoverageCache.get(feed);
+ if(cached?.index===index&&cached.coverage===feed.coverage&&cached.run===feed.run)return cached.value;
+ let prediction=0,failed=0,notAttempted=0,missing=0,invalid=index.rejected,priceAvailable=0;const reasons=new Map();
+ const reasonCount=(item)=>{const old=reasons.get(item.key);if(old)old.count++;else reasons.set(item.key,{...item,count:1})};
+ for(const [key,item] of catalogue.byKey){
+  if(!item){invalid++;continue}
+  const r=index.byKey.get(key)?.[0];
+  if(!r){missing++;notAttempted++;continue}
+  if(r.price_available===true)priceAvailable++;
+  if(r.status==="research_prediction"&&fxForecastValidity(r).base)prediction++;
+  else if(r.status==="no_call"&&r.probabilities===null&&r.target===null){
+   const reason=fxNoCallReason(r);if(reason.pending)notAttempted++;else failed++;reasonCount(reason);
+  }else{invalid++;notAttempted++;}
+ }
+ const coverage=feed?.coverage,run=feed?.run||{},full=feed?.generation_mode==="full_universe"||!!coverage;
+ const expected={total,attempted:prediction+failed,prediction,no_call:failed+notAttempted,failed,not_attempted:notAttempted,price_available:priceAvailable};
+ const countsMatch=!!coverage&&Object.entries(expected).every(([k,v])=>Number.isInteger(coverage[k])&&coverage[k]===v);
+ const sourceAligned=!!feed?.source_catalog_generated_at&&feed.source_catalog_generated_at===ctx.data?.catalog?.generated_at;
+ const runMatches=run.research_prediction===prediction&&run.no_call===failed&&run.attempted===prediction+failed&&run.not_attempted===notAttempted;
+ const started=Date.parse(run.started_at||""),completed=Date.parse(run.completed_at||""),generated=Date.parse(feed?.generated_at||"");
+ const timesMatch=[started,completed,generated].every(Number.isFinite)&&started<=completed&&completed===generated&&generated<=Date.now()&&
+  [...index.byKey.values()].every(rows=>rows[0].status!=="research_prediction"||
+   (Date.parse(rows[0].issued_at)>=started&&Date.parse(rows[0].issued_at)<=completed));
+ const valid=full&&total>0&&countsMatch&&runMatches&&timesMatch&&sourceAligned&&missing===0&&invalid===0&&prediction+failed+notAttempted===total&&
+  coverage.manifest_complete===true&&coverage.coverage_complete===(notAttempted===0);
+ const value={...expected,priceAvailable,missing,invalid,full,valid,sourceAligned,
+  complete:valid&&notAttempted===0,recorded:index.byKey.size,
+  generatedAt:feed?.generated_at||null,startedAt:run.started_at||null,completedAt:run.completed_at||null,
+  reasons:[...reasons.values()].sort((a,b)=>b.count-a.count),runId:run.id||feed?.run_id||run.run_id||null};
+ if(feed&&typeof feed==="object")fxCoverageCache.set(feed,{index,coverage:feed.coverage,run:feed.run,value});return value;
+}
+function fxCoveragePanel(ctx){
+ const c=fxForecastCoverage(ctx),n=x=>x.toLocaleString("ko-KR"),when=c.completedAt||c.generatedAt;
+ const formatTime=value=>{const t=Date.parse(value||"");return Number.isFinite(t)?new Date(t).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",hour12:false})+" KST":"확인 전"};
+ const state=c.valid?(c.complete?"전종목 처리 완료":"일부 종목 미처리"):c.full?"집계·명부 일치 확인 필요":"전종목 실행 결과 대기";
+ const reasons=c.reasons.map(r=>`<span title="${fxEscape(r.text)}">${fxEscape(r.label)} ${n(r.count)}개</span>`).join("");
+ return `<section class="fx-ai-coverage" aria-label="전체 AI 생성 현황" data-coverage-valid="${c.valid}">
+ <div class="fx-ai-coverage-head"><strong>전체 AI 생성 현황</strong><span>${state}</span><small>기준 ${fxEscape(formatTime(when))}</small></div>
+ <div class="fx-ai-coverage-counts"><span>공식 명부 <b data-fx-coverage="total">${n(c.total)}</b>개</span>
+ <span>이번 생성 <b data-fx-coverage="prediction">${c.valid?n(c.prediction):"확인 전"}</b>${c.valid?"개":""}</span>
+ <span>생성 불가 <b data-fx-coverage="failed">${c.valid?n(c.failed):"확인 전"}</b>${c.valid?"개":""}</span>
+ <span>미처리 <b data-fx-coverage="not-attempted">${c.valid?n(c.not_attempted):"확인 전"}</b>${c.valid?"개":""}</span>
+ <span>현재 유효 <b data-fx-coverage="active">${n(fxForecastMeta(ctx).active)}</b>개</span></div>
+ <details class="fx-ai-coverage-reasons"><summary>${c.valid?"생성 불가·미처리 사유와 기준":"확인된 기록 "+n(c.recorded)+"개 · 전체 실행 상태 확인"}</summary>
+ <div>${reasons||"기록된 생성 불가 사유가 없습니다."}</div>
+ <p>${c.valid?"이번 실행에서 가격 이력과 모델 조건을 충족해 발행한 연구 예측입니다. 처리 완료에는 생성 불가도 포함됩니다.":"명부와 실행 결과가 일치한 뒤 이번 생성·불가·미처리를 집계합니다. 이전에 발행된 유효 예측은 개별 기업에서 확인할 수 있습니다."}</p>
+ ${c.startedAt?`<p>실행 시작 ${fxEscape(formatTime(c.startedAt))} · 완료 ${fxEscape(formatTime(c.completedAt))}</p>`:""}
+ </details></section>`;
+}
+
 function fxModelQuality(ctx){
  const learning=ctx.data?.learning||{},overall=learning.overall||{},policy=learning.policy||{};
  const audit=ctx.data?.accuracyAudit||null;
@@ -71,28 +225,18 @@ function fxModelQuality(ctx){
  return {status:!hasEnough?"표본·기간 부족":!hasBrier?"확률 품질 개선 미달":accepted?"검증 범위 제한 확인":"실전 효용 미입증",accepted,aligned,n,correct,days,acc,up,minN,minDays,brier,threshold,hasEnough,hasBrier};
 }
 function fxPrediction(c,ctx){
- const r=fxRecord(c,ctx),p=r?.probabilities||{},now=Date.now();
- const names=["up","flat","down"],values=names.map(k=>fxN(p[k]));
- const valid=values.every(n=>n!==null&&n>=0&&n<=1)&&Math.abs(values.reduce((a,b)=>a+b,0)-1)<.025;
- const issued=Date.parse(r?.issued_at||""),start=Date.parse(r?.target?.start||""),end=Date.parse(r?.target?.end||"");
- const dates=Number.isFinite(issued)&&Number.isFinite(start)&&Number.isFinite(end)&&issued<=now+300000&&issued<=start&&start<end;
- const base=r?.status==="research_prediction"&&valid&&names.includes(r.direction)&&dates;
- const stale=base&&end<=now,unknown=r?.status==="research_prediction"&&!Number.isFinite(end);
- const active=base&&!stale,val=active?fxN(p[r.direction]):null;
- const reason=String(r?.reason||"");
- const explanations={
-  target_already_started_or_delivery_window_too_short:"예측 대상 거래가 이미 시작돼 발행하지 않았습니다.",
-  insufficient_regular_session_time:"정규장 자료 또는 남은 거래시간이 부족합니다.",
-  publication_window_missed:"자료 공개가 늦어 예측 유효시간을 놓쳤습니다.",
-  provider_returned_no_candles:"제공처 원자료가 누락됐습니다."
- };
- const status=!r?"이 종목은 현재 AI 예측 모델 대상이 아닙니다.":
-  r.status==="no_call"?(explanations[reason]||(/RateLimit|Too Many Requests/i.test(reason)?"데이터 제공처 요청 제한":"자료·모형 조건 미충족")):
-  r.status!=="research_prediction"?"예측 발행 상태 확인 필요":
-  !base?"예측 확률·발행시각 검증 실패":stale?"기간 종료 · 과거 예측":start>now?"다음 거래기간 예측 · 연구용":"현재 거래기간 예측 · 연구용";
- const label=active?r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보":!r?"대상 외":stale?"기간 종료":"미산출";
- const klass=!active?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat";
- return {r,p,label,klass,value:val,stale,unknown,active,status};
+ const r=fxRecord(c,ctx),p=r?.probabilities||{},state=fxForecastValidity(r),now=Date.now();
+ const reason=r?.status==="no_call"?fxNoCallReason(r):null;
+ const hasCatalogue=!!c?.catalog_entry||!!fxCatalogueIndex(ctx).byKey.get(fxCompanyKey(c,ctx));
+ const emptyLabel=hasCatalogue?"미처리 · 결과 대기":"명부 확인 필요";
+ const status=!r?(hasCatalogue?"현재 공식 명부에는 있으나 이 종목의 AI 생성 결과가 아직 없습니다.":"현재 공식 명부와의 연결을 확인한 뒤 AI 생성 여부를 확인할 수 있습니다."):
+  reason?reason.text:r.status!=="research_prediction"?"예측 발행 상태 확인 필요":
+  !state.base?"예측 확률·발행시각 검증 실패":state.stale?"기간 종료 · 과거 예측":state.start>now?"다음 거래기간 예측 · 연구용":"현재 거래기간 예측 · 연구용";
+ const label=state.active?r.direction==="up"?"상승":r.direction==="down"?"하락":"횡보":!r?emptyLabel:state.stale?"기간 종료":reason?(reason.pending?"미처리":"생성 불가"):"검증 대기";
+ const note=state.active?"연구용":!r?(hasCatalogue?"결과 대기":"명부 확인"):state.stale?"과거 예측":reason?reason.label:"검증 대기";
+ const headline=state.active?label:!r?emptyLabel:state.stale?"기간 종료 · 과거 예측":reason?(reason.pending?reason.label:"생성 불가 · "+reason.label):"미발행 · 검증 대기";
+ return {r,p,label,note,headline,klass:!state.active?"stale":r.direction==="up"?"up":r.direction==="down"?"down":"flat",
+  value:state.active?fxN(p[r.direction]):null,stale:state.stale,unknown:state.unknown,active:state.active,status,reason};
 }
 
 function fxUniverse(ctx){
@@ -128,7 +272,7 @@ function fxChosen(ctx){
  return arr.find(c=>fxId(c)===id)||arr[0]||null;
 }
 
-function fxListCount(ctx,pool,cap){return Math.min(pool.length,cap).toLocaleString("ko-KR")+" / "+pool.length.toLocaleString("ko-KR")+"개 · AI 이력 "+fxForecastMeta(ctx).modeled+"개";}
+function fxListCount(ctx,pool,cap){return Math.min(pool.length,cap).toLocaleString("ko-KR")+" / "+pool.length.toLocaleString("ko-KR")+"개 · 유효 AI "+fxForecastMeta(ctx).active.toLocaleString("ko-KR")+"개";}
 
 function fxListFooter(ctx,pool,cap,expanded){return `<span id="fx-result-count" title="${fxEscape(fxUniverseNote(ctx))}">${fxListCount(ctx,pool,cap)}</span>${pool.length>cap?`<button type="button" ${expanded?"data-fx-more":"data-nr-screen=\"stocks\""}>${expanded?"더 보기":"전체 보기"}</button>`:'<button type="button" data-nr-screen="stocks">신호 필터 →</button>'}`;}
 
@@ -139,7 +283,7 @@ function fxUniverseNote(ctx){
 
 function fxSignalChip(c,ctx){
  const x=fxPrediction(c,ctx);
- return `<span class="fx-signal ${x.klass}" title="${fxEscape(x.status)}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note" title="${fxEscape(x.status)}">${x.active?"연구용":!x.r?"대상 외":x.stale?"기간 종료":x.r?.status==="no_call"?"자료 대기":"검증 대기"}</small>`;
+ return `<span class="fx-signal ${x.klass}" title="${fxEscape(x.status)}">${fxEscape(x.label)}${x.value===null?"":" "+fxNum(x.value*100,0)+"%"}</span><small class="fx-signal-note" title="${fxEscape(x.status)}">${fxEscape(x.note)}</small>`;
 }
 function fxStockRows(ctx,expanded){
  const h=fxHelpers(),pool=fxUniverse(ctx),cap=expanded?fxLocal.limit:9,chosen=fxId(fxChosen(ctx));
@@ -545,6 +689,7 @@ function fxHome(ctx){
 function fxStockPage(ctx){
  return `<div class="fx-stock-directory-page">
  <div class="fx-intro"><div><h2>국내·미국 전체 종목</h2><p>${fxEscape(fxUniverseNote(ctx))} · 공식 재무 확인 ${(window.StockCatalogUI?.verifiedCount?.(ctx)||0).toLocaleString("ko-KR")}개</p></div><span class="fx-stamp">저장된 데이터 · 실시간 호가 아님</span></div>
+ ${fxCoveragePanel(ctx)}
  <div class="fx-page-grid">${fxStockPanel(ctx,true)}<div class="fx-focus-slot" id="fx-focus-slot">${fxFocus(ctx)}</div></div>${fxSteps(ctx)}
  </div>`;
 }
@@ -874,7 +1019,7 @@ function fxHandleInput(e){
 }
 const fxLocal={filter:'all',search:'',limit:36,period:'1M',sentimentMarket:'us'};
 document.addEventListener('click',fxHandleClick);document.addEventListener('input',fxHandleInput);
-window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,version:'ux-flow-20261105-unified-universe'};
+window.StockRadarFlowV2={render:fxRender,pick:()=>fxChosen(fxContext()),signal:(c,ctx)=>fxPrediction(c,ctx||fxContext()),ensureSelectedVisible:fxEnsureSelectedVisible,forecastMeta:ctx=>fxForecastMeta(ctx||fxContext()),coverage:ctx=>fxForecastCoverage(ctx||fxContext()),version:'ux-flow-20261106-full-ai'};
 const fxBoot=()=>{try{const previous=localStorage.getItem("radar-sentiment-market");if(previous==="kr"||previous==="us")fxLocal.sentimentMarket=previous}catch{}window.StockRadarV2Bridge?.render?.()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fxBoot);else fxBoot();
 })();
