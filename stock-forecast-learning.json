@@ -1,6 +1,6 @@
 {
   "version": "delayed-forward-learning-1.0",
-  "generated_at": "2026-11-06T07:03:28.202036+00:00",
+  "generated_at": "2026-11-06T07:54:02.428924+00:00",
   "policy": {
     "minimum_paired_targets": 120,
     "minimum_sessions": 20,
@@ -320,13 +320,13 @@
     "legacy_baseline_not_backfilled": true
   },
   "coverage": {
-    "attempts": 1584,
-    "prediction_attempts": 688,
-    "no_calls": 896,
-    "call_rate": 0.43434343434343436,
+    "attempts": 1624,
+    "prediction_attempts": 708,
+    "no_calls": 916,
+    "call_rate": 0.43596059113300495,
     "definition": "scheduler-attempt coverage, not whole-market coverage",
     "no_call_reasons": {
-      "insufficient_regular_session_time": 672,
+      "insufficient_regular_session_time": 692,
       "OperationalError: database is locked": 2,
       "YFRateLimitError: Too Many Requests. Rate limited. Try after a while.": 1,
       "target_already_started_or_delivery_window_too_short": 221
@@ -334,116 +334,11 @@
   },
   "learning": {
     "training_updates": 188,
-    "state_revision": 58,
+    "state_revision": 59,
     "adaptive_groups": 0,
     "promotions": 0,
     "rollbacks": 0,
-    "fresh_events": [
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "f92ad0d2a52d7d7b0c27ebfd406f71a60a11e19dac8ad0f4afe2077950d05827",
-        "event_key": "f2408f0ec87403fe67f6ab0d806ee097a163492e9e080e56d5547c3623386d63",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "^KS11|daily|provider-latency-30m-v1",
-        "actual": "down",
-        "weights_before": "f9a1116162452a3326cee510904b68a40ea5deb8d7629b81754c83c4ff5a0c68",
-        "weights_after": "ce2911c7e661cc6a233443ebe2fcd7293622ee2ed10ac023b7558522e51bce52",
-        "not_rescored": true,
-        "id": "a6934b300a2677349f83211f5ee7368bf1b1b6b340a527e044f2870fb1eb7b3a"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "da40f16d275070bdc0ac12e98d699dfaddcd574d1de6ccb79f99fe85be74323e",
-        "event_key": "22ea945714412b9f0373f20871a07f60d55257a7626e0febdf47b126062aa04d",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "^KQ11|daily|provider-latency-30m-v1",
-        "actual": "down",
-        "weights_before": "1f8ac8f6f1050aad58a6d67559a81d957c8ba66ef34097a54ae0749801ab50c3",
-        "weights_after": "0b4e96af071428b2c487234b9b93ee8757026470be9a1177b43e2c390217b94a",
-        "not_rescored": true,
-        "id": "99193579545bf2312cf2cfc8dfe2c5308cbc2c3e0ac0487b87ca587ecc1c7ace"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "1cdcc5cba4a9970728e954f189a474fd765fda41d0571c87049529835a24b868",
-        "event_key": "fc1c910630cac184ba0301171a33805c93b133eb0efa85fcfe56f962fabeacf1",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "005930.KS|daily|provider-latency-30m-v1",
-        "actual": "up",
-        "weights_before": "c081f2929205db05ce2bda021c2db98f5b2ba72588810641fd98b9a40d91c6bf",
-        "weights_after": "1e142cf84511e111ada494fa860922008c3fc6ede09a5a5a73af7afa2dbd5de0",
-        "not_rescored": true,
-        "id": "b8c875bc21f3804d8d5636a5e423116500c205de6d2bbc9ea3c686da21ce0007"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "8fabeee0519799a70dfad5bca6bb63bd85fda39e16b47628262b1f20bf20b50e",
-        "event_key": "a9a1d4376f71e7f9763636ea54b0dcf63f18b75b51e6ede34ac0a20b25bd5231",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "000660.KS|daily|provider-latency-30m-v1",
-        "actual": "up",
-        "weights_before": "2997562940d0f2a088be893be32c892ae0e5981bca203f2e834ec1c530576e82",
-        "weights_after": "9f882e4aba081c1610678c317e0829521a605cdf2dd7ea0e3e327de8579c813a",
-        "not_rescored": true,
-        "id": "88fec621fb884467c21601917953180e13b581d887d9535d5ebce36f990b8ab8"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "795eda520af7d0fcab10acfa7a7c3812841b856fb11bab234fb707ba9115252d",
-        "event_key": "27bfa798d1443efc806016eb171cbbdbd0ee2c4a42cbfe258fc2d8dd17510c51",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "035420.KS|daily|provider-latency-30m-v1",
-        "actual": "up",
-        "weights_before": "becc96ddd196f0351c46e99d310af89b830d1391f54715ea7707f416c367b830",
-        "weights_after": "4194731b9d784189a1fcc5c4ba1ed5e639aa4a0c39965f7c5f52efbb5f913b1a",
-        "not_rescored": true,
-        "id": "915b640fcdb7a26d5c96bf5d851e180cdfd3e4b4d8ec5b744ac63089179867b1"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "be5d22f9603ee33c0130896217d2a2bcea33cadb98db1b9afa10663463138fa0",
-        "event_key": "2649f6c34aa5ee2f7d64313f7734e85aaaf768dc541fa073177e6e4164498ea8",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "403870.KQ|daily|provider-latency-30m-v1",
-        "actual": "up",
-        "weights_before": "12c42715c84abf5a68123ecfce0ce37eecd1c576ac1b0cdd6c3ac492d169cabe",
-        "weights_after": "082439363ef5d800a51317ba951c0684320c8ac96866a9512875517b1b8a35ca",
-        "not_rescored": true,
-        "id": "59654420f745ac00b763edb594b8db9218fd3c74594130b96a809fe2ab2b1848"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "1efe36855a8597e03a7ee9294f190be31b5e2eb823bb530f9ac22b8eb53cba16",
-        "event_key": "55aa0f21a724218edaa7a68ef5a50b5014501f2c51ef650d20d99e6252ca5c0c",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "207940.KS|daily|provider-latency-30m-v1",
-        "actual": "flat",
-        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
-        "weights_after": "e2a5b6ee38cf3e8cefcab43e847ac3b0be462dc64f21be54eeccf7bd07b7e03b",
-        "not_rescored": true,
-        "id": "a92ce01f9ab08869dcb7e1b8da5f7202ef83a40c0353ba45bd700f05376c7553"
-      },
-      {
-        "kind": "learn_after_score",
-        "prediction_id": "bd5839987ecd174870a4dcf38d4b2074fcc2a72a1534d2a92a33740a67f8fdf0",
-        "event_key": "456f3f2d1caeb37ecc03346d96ca71038651c260db66f06db87899f9388da0fa",
-        "available_at": "2026-11-06T07:03:28.015398+00:00",
-        "learned_at": "2026-11-06T07:03:28.015398+00:00",
-        "group": "005380.KS|daily|provider-latency-30m-v1",
-        "actual": "up",
-        "weights_before": "ea165d153f6c5dad75c71db2a0b51ede3e30132e0d2bb6ae8ea2361ffa22599f",
-        "weights_after": "391499c61ced86138e7b987689c6c204f736c88f26964b043dabc8731f8daa84",
-        "not_rescored": true,
-        "id": "6c58115e7b2f3007687a736f503098344556e6b2da5f7886c82a676bf84b45bf"
-      }
-    ]
+    "fresh_events": []
   },
   "groups": {
     "000660.KS|daily|provider-latency-30m-v1": {
@@ -11358,21 +11253,21 @@
               5
             ]
           ],
-          "brier_loss": 0.6469698802134285,
-          "log_loss": 1.1006818770430629,
+          "brier_loss": 0.6469698802134294,
+          "log_loss": 1.1006818770430609,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "b3d0e89c8d57990fd1a8579f8194d32b2f4300ced1c4ba30642eb0f5232ca881",
+            "model_sha256": "a52b35dbb2f28bd6845d547454c290768b3d013e1c25bf21b72feb38999a5ba9",
             "probabilities": {
-              "down": 0.46539581199409863,
-              "flat": 0.36010641516478054,
-              "up": 0.17449777284112086
+              "down": 0.4653958119956454,
+              "flat": 0.36010641516481195,
+              "up": 0.17449777283954276
             },
             "direction": "down",
-            "temperature": 2.0138799306037747,
+            "temperature": 2.01387993057817,
             "validation": {
               "samples": 119,
               "correct": 49,
@@ -11430,8 +11325,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6455331159423016,
-              "log_loss": 1.1151097269483854,
+              "brier_loss": 0.6455331159424738,
+              "log_loss": 1.1151097269494965,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -11444,14 +11339,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "fba3a2975faaeb7323674bfd478d24ad2607519b83811e441b06c2ce4f56b27b",
+            "model_sha256": "b55cd111183d30e276144c59a2dc58f7edf971d809c0f6d2339d9ff7f7f728c9",
             "probabilities": {
-              "down": 0.5123324679819766,
-              "flat": 0.27681659014993665,
-              "up": 0.2108509418680867
+              "down": 0.5123324679943625,
+              "flat": 0.27681659014341214,
+              "up": 0.21085094186222525
             },
             "direction": "down",
-            "temperature": 2.649401520541452,
+            "temperature": 2.6494015203943677,
             "validation": {
               "samples": 119,
               "correct": 52,
@@ -11509,8 +11404,8 @@
                   5
                 ]
               ],
-              "brier_loss": 0.6368017676209121,
-              "log_loss": 1.078912939383654,
+              "brier_loss": 0.6368017676199903,
+              "log_loss": 1.0789129393844952,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -11666,21 +11561,21 @@
               0
             ]
           ],
-          "brier_loss": 0.6036714886327732,
-          "log_loss": 1.0130294501220924,
+          "brier_loss": 0.6036714886328804,
+          "log_loss": 1.0130294501219725,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "7d082ca39f49f6a64c2c2f9507b42d30d894592be0048ed7003ec39545f22c8f",
+            "model_sha256": "29aa1137b4b528fb2dd3c126f08c3aa3e2cafcb3bed37754426e431a6aa041ff",
             "probabilities": {
-              "down": 0.34401533972092474,
-              "flat": 0.3201743796582598,
-              "up": 0.3358102806208154
+              "down": 0.3440153397212189,
+              "flat": 0.3201743796579059,
+              "up": 0.3358102806208752
             },
             "direction": "down",
-            "temperature": 1.5759586779506132,
+            "temperature": 1.575958677907843,
             "validation": {
               "samples": 119,
               "correct": 61,
@@ -11738,8 +11633,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6420326447207337,
-              "log_loss": 1.0757217790753757,
+              "brier_loss": 0.6420326447210553,
+              "log_loss": 1.0757217790768971,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -11752,14 +11647,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "154b2ff87f587a291cc8cf0f7b4834a15b28b3b74137de86ff186363b265eb13",
+            "model_sha256": "2a90b2297e69505dadfb5bfe923bc6e5c5e253503c1ce022cd529fe9607d01d3",
             "probabilities": {
-              "down": 0.3505525787529395,
+              "down": 0.35055257875293944,
               "flat": 0.30236661670148696,
-              "up": 0.34708080454557355
+              "up": 0.3470808045455736
             },
             "direction": "down",
-            "temperature": 4.99999462945008,
+            "temperature": 4.999994629450079,
             "validation": {
               "samples": 119,
               "correct": 48,
@@ -11818,7 +11713,7 @@
                 ]
               ],
               "brier_loss": 0.6596676768874448,
-              "log_loss": 1.0889732960066756,
+              "log_loss": 1.0889732960066758,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -11896,7 +11791,7 @@
                   9
                 ]
               ],
-              "brier_loss": 0.6767987933222377,
+              "brier_loss": 0.6767987933222376,
               "log_loss": 1.1148979653973594,
               "single_class_collapse": false,
               "collapsed_to": null
@@ -11974,8 +11869,8 @@
               5
             ]
           ],
-          "brier_loss": 0.6283302730014794,
-          "log_loss": 1.0465005587491876,
+          "brier_loss": 0.628330273001452,
+          "log_loss": 1.0465005587491745,
           "single_class_collapse": false,
           "collapsed_to": null
         },
@@ -11983,9 +11878,9 @@
           "movement_then_direction": {
             "model_sha256": "604a23434896cd1ba716c45b140391293266c96147e1d739791162a665426b07",
             "probabilities": {
-              "down": 0.33872761867932377,
-              "flat": 0.3436348200768452,
-              "up": 0.3176375612438311
+              "down": 0.3387276186793147,
+              "flat": 0.3436348200768632,
+              "up": 0.317637561243822
             },
             "direction": "flat",
             "temperature": 4.999993385008071,
@@ -12046,8 +11941,8 @@
                   0
                 ]
               ],
-              "brier_loss": 0.6442738145581142,
-              "log_loss": 1.084489554412868,
+              "brier_loss": 0.6442738145581155,
+              "log_loss": 1.084489554412866,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12062,9 +11957,9 @@
           "balanced_linear": {
             "model_sha256": "68b295c833f730958710526cc7d773420625500d827b063665a53ecb85e16ca6",
             "probabilities": {
-              "down": 0.3501263877183998,
-              "flat": 0.31708523175612946,
-              "up": 0.3327883805254708
+              "down": 0.35012638771839094,
+              "flat": 0.31708523175608394,
+              "up": 0.332788380525525
             },
             "direction": "down",
             "temperature": 4.999994159747667,
@@ -12125,8 +12020,8 @@
                   6
                 ]
               ],
-              "brier_loss": 0.647374745574198,
-              "log_loss": 1.0810512692601846,
+              "brier_loss": 0.6473747455741949,
+              "log_loss": 1.0810512692601175,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12282,21 +12177,21 @@
               2
             ]
           ],
-          "brier_loss": 0.6647039990799691,
-          "log_loss": 1.144909124483597,
+          "brier_loss": 0.6647039990792954,
+          "log_loss": 1.1449091244812293,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "d1c473eb195317794ec2228865974a105451ffb0acdbeb8f1a4b7d52a185073d",
+            "model_sha256": "1a9ed1fcc2293259cd3fe8d39cc011789b355cfbbbe5c5dc1dee5a49a56e95b2",
             "probabilities": {
-              "down": 0.12476779415432158,
-              "flat": 0.36229823235000935,
-              "up": 0.512933973495669
+              "down": 0.12476779415446451,
+              "flat": 0.36229823235002667,
+              "up": 0.5129339734955088
             },
             "direction": "up",
-            "temperature": 0.9705806430527611,
+            "temperature": 0.9705806430537621,
             "validation": {
               "samples": 119,
               "correct": 54,
@@ -12354,8 +12249,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6581674046203085,
-              "log_loss": 1.1104201763397168,
+              "brier_loss": 0.6581674046202441,
+              "log_loss": 1.1104201763395491,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12368,14 +12263,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "3c66d58597c626bc4a5745b7a6bd23d7f4446aa80d8075cd3e47d0015c4b3c38",
+            "model_sha256": "b775208fe15b2cf5ed1bb5f4dfd209dc0545ae933611e05df9f7088e97cb616c",
             "probabilities": {
-              "down": 0.23984882304063382,
-              "flat": 0.24723655458389873,
-              "up": 0.5129146223754675
+              "down": 0.23984882304382646,
+              "flat": 0.24723655458665564,
+              "up": 0.5129146223695179
             },
             "direction": "up",
-            "temperature": 1.5758531329924859,
+            "temperature": 1.5758531330435814,
             "validation": {
               "samples": 119,
               "correct": 46,
@@ -12433,8 +12328,8 @@
                   5
                 ]
               ],
-              "brier_loss": 0.6581377066616073,
-              "log_loss": 1.092518412210899,
+              "brier_loss": 0.6581377066611331,
+              "log_loss": 1.092518412209738,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12447,14 +12342,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "c0e695ec3e097b879be2f04366dc12ccb7851f365374ba442a165270298adee1",
+            "model_sha256": "069bbe8bd7bdb840c61b6a2f06abc712c42c93733b9395c5acf3686c67fde530",
             "probabilities": {
-              "down": 0.35793889100705073,
-              "flat": 0.4071185652710883,
-              "up": 0.23494254372186088
+              "down": 0.3579388910070519,
+              "flat": 0.4071185652710932,
+              "up": 0.23494254372185494
             },
             "direction": "flat",
-            "temperature": 1.4659118212094435,
+            "temperature": 1.4659118212093452,
             "validation": {
               "samples": 119,
               "correct": 45,
@@ -12512,8 +12407,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6831938718020922,
-              "log_loss": 1.128317699877498,
+              "brier_loss": 0.6831938718020957,
+              "log_loss": 1.128317699877504,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12590,21 +12485,21 @@
               2
             ]
           ],
-          "brier_loss": 0.6354790317819022,
-          "log_loss": 1.0531125779441186,
+          "brier_loss": 0.635479031778731,
+          "log_loss": 1.0531125779400607,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "c35b5ee18f76741343ec37b0a64eef380c27298e0156096254941d4f577871f6",
+            "model_sha256": "a0c38eaa5abb1234b40c4da0f2fefb821a2210d504fc4ed523735aafdead104d",
             "probabilities": {
-              "down": 0.3286748202378733,
-              "flat": 0.3110287177943498,
-              "up": 0.3602964619677768
+              "down": 0.3286748202382627,
+              "flat": 0.3110287177959952,
+              "up": 0.3602964619657421
             },
             "direction": "up",
-            "temperature": 1.8816864072405413,
+            "temperature": 1.881686407380507,
             "validation": {
               "samples": 119,
               "correct": 64,
@@ -12662,8 +12557,8 @@
                   4
                 ]
               ],
-              "brier_loss": 0.6307917728351612,
-              "log_loss": 1.0628018058767337,
+              "brier_loss": 0.6307917728362987,
+              "log_loss": 1.0628018058756745,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12678,9 +12573,9 @@
           "balanced_linear": {
             "model_sha256": "8d754828344fed15f29b3ebf411563d8f306731a147219832587f88edb1168e1",
             "probabilities": {
-              "down": 0.34544848883928625,
-              "flat": 0.29407934051568474,
-              "up": 0.360472170645029
+              "down": 0.3454484888392865,
+              "flat": 0.29407934051568446,
+              "up": 0.3604721706450291
             },
             "direction": "up",
             "temperature": 4.999994484029743,
@@ -12741,8 +12636,8 @@
                   10
                 ]
               ],
-              "brier_loss": 0.6689101424720217,
-              "log_loss": 1.1026274973743604,
+              "brier_loss": 0.668910142472022,
+              "log_loss": 1.1026274973743606,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12898,21 +12793,21 @@
               3
             ]
           ],
-          "brier_loss": 0.6397827132722446,
-          "log_loss": 1.0679545981346255,
+          "brier_loss": 0.6397827132720082,
+          "log_loss": 1.0679545981347927,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "f2564f580a6049f80476444505cbcfc7d1ee83bf4a52c9354eac9734c0215b2d",
+            "model_sha256": "49bf8114b7b07aaf183aeca5f3ed6f3192f886b675f067a8b967e47338630bf3",
             "probabilities": {
-              "down": 0.36941624653156585,
-              "flat": 0.3397354894177723,
-              "up": 0.2908482640506617
+              "down": 0.36941624653142285,
+              "flat": 0.3397354894177533,
+              "up": 0.29084826405082387
             },
             "direction": "down",
-            "temperature": 1.6083878114579517,
+            "temperature": 1.6083878114643118,
             "validation": {
               "samples": 120,
               "correct": 50,
@@ -12970,8 +12865,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6519259688301813,
-              "log_loss": 1.1374092986740507,
+              "brier_loss": 0.6519259688301303,
+              "log_loss": 1.1374092986735815,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -12984,14 +12879,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "1a32a8e8dc32aa4baa5fba050e8b523ec1959239dc149c837ae078d350bd249a",
+            "model_sha256": "4407a805f421a3425aaffd73a43eaef203782ea1f3e9aaf333b29d586c82e9c1",
             "probabilities": {
-              "down": 0.4012642115054285,
-              "flat": 0.272580803605369,
-              "up": 0.3261549848892024
+              "down": 0.40126421150713915,
+              "flat": 0.2725808036039311,
+              "up": 0.32615498488892986
             },
             "direction": "down",
-            "temperature": 2.2813689950834366,
+            "temperature": 2.2813689950275653,
             "validation": {
               "samples": 120,
               "correct": 51,
@@ -13049,8 +12944,8 @@
                   11
                 ]
               ],
-              "brier_loss": 0.6631514533333169,
-              "log_loss": 1.118835414269508,
+              "brier_loss": 0.6631514533333313,
+              "log_loss": 1.1188354142707841,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13063,14 +12958,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "081890e9c47b53188bda417ab8f41571f960f23b21e9ef616ba682c59581e775",
+            "model_sha256": "3d3c7f7c0e807f5f6796b053a009806fc996d4beb2a4246fa128cbfe3fd78a21",
             "probabilities": {
-              "down": 0.36183874815604333,
-              "flat": 0.24754745290559774,
-              "up": 0.39061379893835896
+              "down": 0.3618387481556732,
+              "flat": 0.24754745290684443,
+              "up": 0.3906137989374823
             },
             "direction": "up",
-            "temperature": 1.6299914065626542,
+            "temperature": 1.629991406588672,
             "validation": {
               "samples": 120,
               "correct": 47,
@@ -13128,8 +13023,8 @@
                   7
                 ]
               ],
-              "brier_loss": 0.6626298959666725,
-              "log_loss": 1.0917260304150893,
+              "brier_loss": 0.6626298959663124,
+              "log_loss": 1.0917260304145453,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13206,21 +13101,21 @@
               7
             ]
           ],
-          "brier_loss": 0.6554263246497659,
-          "log_loss": 1.084009949273242,
+          "brier_loss": 0.6554263246497665,
+          "log_loss": 1.0840099492732407,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "7a02342f775fd01b59c3c0c7290ef5cfb7a367538caf670bfff513ca355ac41d",
+            "model_sha256": "68539059198d1558ac12d3bee02e1394bc74bc76c1a38c1bfe3a3cc7fd6c48ec",
             "probabilities": {
-              "down": 0.2767912450887984,
-              "flat": 0.37298836770924493,
-              "up": 0.3502203872019567
+              "down": 0.27679124508975994,
+              "flat": 0.3729883677085994,
+              "up": 0.3502203872016406
             },
             "direction": "flat",
-            "temperature": 2.357579589634713,
+            "temperature": 2.357579589678601,
             "validation": {
               "samples": 120,
               "correct": 51,
@@ -13278,8 +13173,8 @@
                   12
                 ]
               ],
-              "brier_loss": 0.6448239358983138,
-              "log_loss": 1.0686527605955651,
+              "brier_loss": 0.6448239358983423,
+              "log_loss": 1.0686527605955172,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13292,14 +13187,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "ac2a1ecaee85b5014e833da800e6f8eb6caeaaf14ab4878364e3c3cc9b353149",
+            "model_sha256": "07566de2709b7a5774f0eb6507532798965c19189572cc2cbd77bc408d40e06f",
             "probabilities": {
-              "down": 0.3017631431927599,
-              "flat": 0.3120639742592779,
-              "up": 0.3861728825479622
+              "down": 0.3017631432046191,
+              "flat": 0.3120639742678087,
+              "up": 0.3861728825275722
             },
             "direction": "up",
-            "temperature": 2.8962149564619604,
+            "temperature": 2.8962149575398843,
             "validation": {
               "samples": 120,
               "correct": 51,
@@ -13357,8 +13252,8 @@
                   17
                 ]
               ],
-              "brier_loss": 0.6462565159725888,
-              "log_loss": 1.0682280357273986,
+              "brier_loss": 0.6462565159756253,
+              "log_loss": 1.0682280357317842,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13514,8 +13409,8 @@
               4
             ]
           ],
-          "brier_loss": 0.6341488927585913,
-          "log_loss": 1.052881529426404,
+          "brier_loss": 0.6341488927585929,
+          "log_loss": 1.052881529426406,
           "single_class_collapse": false,
           "collapsed_to": null
         },
@@ -13523,9 +13418,9 @@
           "movement_then_direction": {
             "model_sha256": "5df58a4d89cbd65cb984f515216fa603cd2372da679cb4c2b94606ba3f28bdc6",
             "probabilities": {
-              "down": 0.31348368502675766,
-              "flat": 0.35445218019396185,
-              "up": 0.33206413477928043
+              "down": 0.31348368502675816,
+              "flat": 0.35445218019396085,
+              "up": 0.33206413477928093
             },
             "direction": "flat",
             "temperature": 4.999994325266238,
@@ -13587,7 +13482,7 @@
                 ]
               ],
               "brier_loss": 0.6420385609467603,
-              "log_loss": 1.0644366502473395,
+              "log_loss": 1.0644366502473397,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13602,9 +13497,9 @@
           "balanced_linear": {
             "model_sha256": "7593096c2e71e3ba89d2d4c488b154639739ec483d7b720833de590477da1411",
             "probabilities": {
-              "down": 0.3256243792604488,
-              "flat": 0.32301079473803856,
-              "up": 0.3513648260015126
+              "down": 0.3256243792604502,
+              "flat": 0.3230107947380391,
+              "up": 0.35136482600151064
             },
             "direction": "up",
             "temperature": 4.99999402522096,
@@ -13665,8 +13560,8 @@
                   19
                 ]
               ],
-              "brier_loss": 0.6465739299835837,
-              "log_loss": 1.0694499537693731,
+              "brier_loss": 0.6465739299835851,
+              "log_loss": 1.0694499537693751,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13679,14 +13574,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "9c517232acb2d7dcd2a693f28c27d47c3d75353dcdbdd7fe6c8a1fb04298b3d2",
+            "model_sha256": "ea43852c192f84b69a5989e2efd446719e3f637ffb633dfe5de1f613f0bfde1b",
             "probabilities": {
-              "down": 0.30577854079342504,
-              "flat": 0.33544509919188903,
-              "up": 0.35877636001468594
+              "down": 0.30577854079252687,
+              "flat": 0.3354450991919357,
+              "up": 0.3587763600155374
             },
             "direction": "up",
-            "temperature": 2.592774095110298,
+            "temperature": 2.592774095024155,
             "validation": {
               "samples": 120,
               "correct": 52,
@@ -13744,8 +13639,8 @@
                   11
                 ]
               ],
-              "brier_loss": 0.6293390879457427,
-              "log_loss": 1.0455800114932612,
+              "brier_loss": 0.6293390879448698,
+              "log_loss": 1.0455800114920468,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13822,21 +13717,21 @@
               0
             ]
           ],
-          "brier_loss": 0.631799087378507,
-          "log_loss": 1.046259372171173,
+          "brier_loss": 0.6317990873794772,
+          "log_loss": 1.0462593721726274,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "81781f5c5a52f2d8621367075e57e140320b3305c6186697f7e5db3d39076b13",
+            "model_sha256": "6aac8291ebc98eb7d508a4129ae66fe530843eae2b27f87ca400eace11fa0ca0",
             "probabilities": {
-              "down": 0.2836970924869429,
-              "flat": 0.3299190583458298,
-              "up": 0.3863838491672273
+              "down": 0.2836970924872038,
+              "flat": 0.3299190583458625,
+              "up": 0.38638384916693364
             },
             "direction": "up",
-            "temperature": 3.598421171394984,
+            "temperature": 3.598421171414793,
             "validation": {
               "samples": 132,
               "correct": 62,
@@ -13894,8 +13789,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6401621508901955,
-              "log_loss": 1.0588553290828944,
+              "brier_loss": 0.6401621508902755,
+              "log_loss": 1.0588553290830185,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -13910,9 +13805,9 @@
           "balanced_linear": {
             "model_sha256": "8f38a660c07eeaddc554da8b02ab3c17c264364a6215aae8ecba659f8a55acdb",
             "probabilities": {
-              "down": 0.30408232492017484,
-              "flat": 0.2939916229167953,
-              "up": 0.40192605216302985
+              "down": 0.30408232492021664,
+              "flat": 0.2939916229167795,
+              "up": 0.40192605216300387
             },
             "direction": "up",
             "temperature": 4.9999950001611335,
@@ -13973,8 +13868,8 @@
                   12
                 ]
               ],
-              "brier_loss": 0.6637211061955592,
-              "log_loss": 1.0930161178069222,
+              "brier_loss": 0.6637211061955478,
+              "log_loss": 1.0930161178069067,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14130,21 +14025,21 @@
               3
             ]
           ],
-          "brier_loss": 0.611228549518969,
-          "log_loss": 1.0200804243939947,
+          "brier_loss": 0.6112285495197108,
+          "log_loss": 1.0200804243953296,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "91ee5266a10189a6338b4fa06fc78dafbc6cb427a36566abd8a88180c4877146",
+            "model_sha256": "c5c1767b6002df24327b1fde653f60539f3a81e26f87c23dd0c69b0470139a2e",
             "probabilities": {
-              "down": 0.4470999132457234,
-              "flat": 0.23732885651241184,
-              "up": 0.31557123024186484
+              "down": 0.4470999132466995,
+              "flat": 0.23732885651159652,
+              "up": 0.3155712302417041
             },
             "direction": "down",
-            "temperature": 1.6309510136122605,
+            "temperature": 1.6309510135973198,
             "validation": {
               "samples": 132,
               "correct": 64,
@@ -14202,8 +14097,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6146579571469422,
-              "log_loss": 1.0252961371132956,
+              "brier_loss": 0.6146579571468863,
+              "log_loss": 1.0252961371132905,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14216,14 +14111,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "8ac4b39e939d525168440d81f408719814ac7c13e49ef5f3530bda1c3f56cd1d",
+            "model_sha256": "b1d1422d8333f6ffeb849f9678223152f784721d0da817321f7bdc42fb2879b2",
             "probabilities": {
-              "down": 0.49144465808646626,
-              "flat": 0.20528139236316123,
-              "up": 0.3032739495503725
+              "down": 0.4914446580407708,
+              "flat": 0.2052813923952292,
+              "up": 0.303273949564
             },
             "direction": "down",
-            "temperature": 2.3467469897362387,
+            "temperature": 2.3467469904041574,
             "validation": {
               "samples": 132,
               "correct": 45,
@@ -14281,8 +14176,8 @@
                   9
                 ]
               ],
-              "brier_loss": 0.6456067517104644,
-              "log_loss": 1.0680324664540193,
+              "brier_loss": 0.6456067517105647,
+              "log_loss": 1.0680324664539749,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14438,21 +14333,21 @@
               4
             ]
           ],
-          "brier_loss": 0.6686443906291456,
-          "log_loss": 1.1025149096791775,
+          "brier_loss": 0.6686443906291516,
+          "log_loss": 1.1025149096791829,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "c412748abc6cb51051f4fa035d88d472302d68b8e0e178184d1f9b38b986e90c",
+            "model_sha256": "dddd906f8160214d4322c67081ac8ddaa1f24aa44e7dc2dfc5a665901466b473",
             "probabilities": {
-              "down": 0.4269987344331568,
-              "flat": 0.36910943119024087,
-              "up": 0.2038918343766023
+              "down": 0.4269987344329763,
+              "flat": 0.3691094311901973,
+              "up": 0.2038918343768264
             },
             "direction": "down",
-            "temperature": 1.0778669071949343,
+            "temperature": 1.0778669071971505,
             "validation": {
               "samples": 132,
               "correct": 47,
@@ -14510,8 +14405,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6641133098104484,
-              "log_loss": 1.0910049339808492,
+              "brier_loss": 0.6641133098103492,
+              "log_loss": 1.091004933980714,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14524,14 +14419,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "230bab3f1e428a9243ceef50a68692ac1159552e2645af0588b79e2502f57618",
+            "model_sha256": "64281a8e003fa35449d8f53fe715f2ef0b6e9cd0f02546052fa9ff9b8264077c",
             "probabilities": {
-              "down": 0.5241512054961373,
-              "flat": 0.22876959304154929,
-              "up": 0.24707920146231338
+              "down": 0.5241512054969899,
+              "flat": 0.22876959304123945,
+              "up": 0.24707920146177054
             },
             "direction": "down",
-            "temperature": 1.0981114799393505,
+            "temperature": 1.0981114799348486,
             "validation": {
               "samples": 132,
               "correct": 51,
@@ -14589,8 +14484,8 @@
                   16
                 ]
               ],
-              "brier_loss": 0.6688166238529463,
-              "log_loss": 1.1000730681469655,
+              "brier_loss": 0.6688166238530442,
+              "log_loss": 1.100073068147139,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14746,21 +14641,21 @@
               1
             ]
           ],
-          "brier_loss": 0.6228697016474951,
-          "log_loss": 1.0337617007011297,
+          "brier_loss": 0.6228697016474977,
+          "log_loss": 1.03376170070113,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "b1cc652d5ccd5843d637358ecae1fd45441465f792e5a94e3a3cf883fcea2681",
+            "model_sha256": "b1ba082482cec4e18fc88d55a0756d8e523af47b53766590cd3600433ad8d1a2",
             "probabilities": {
-              "down": 0.14634888141092567,
-              "flat": 0.5589416553470313,
-              "up": 0.29470946324204306
+              "down": 0.14634888141221625,
+              "flat": 0.5589416553450459,
+              "up": 0.2947094632427378
             },
             "direction": "flat",
-            "temperature": 0.8452082014979452,
+            "temperature": 0.8452082015057463,
             "validation": {
               "samples": 132,
               "correct": 67,
@@ -14818,8 +14713,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6281866164123963,
-              "log_loss": 1.0447734695094046,
+              "brier_loss": 0.6281866164119144,
+              "log_loss": 1.0447734695085384,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14832,14 +14727,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "c4e86888ccd66c89dbac9cd4d1c9aef698b65a54321cd04c90591a50ed7b581b",
+            "model_sha256": "0360140320a5aaee332915b97266d395b5a4414a2897cf64b68ea2a0d9fac986",
             "probabilities": {
-              "down": 0.24463991712204275,
-              "flat": 0.36496830299533123,
-              "up": 0.3903917798826261
+              "down": 0.24463991712205282,
+              "flat": 0.36496830299524186,
+              "up": 0.39039177988270524
             },
             "direction": "up",
-            "temperature": 1.0827859490872964,
+            "temperature": 1.0827859490875837,
             "validation": {
               "samples": 132,
               "correct": 52,
@@ -14897,8 +14792,8 @@
                   9
                 ]
               ],
-              "brier_loss": 0.6553725418107283,
-              "log_loss": 1.0814427925359036,
+              "brier_loss": 0.6553725418107167,
+              "log_loss": 1.0814427925358845,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -14911,14 +14806,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "40e3bbb7e4c6bd8f67937add33371e9e4603b0263bf32dc1cb98199f9a134532",
+            "model_sha256": "4486a795eaec6104a5ef3a34eb2a62c6641ee4272572da98036e00e58a80f48e",
             "probabilities": {
-              "down": 0.41948232731837337,
-              "flat": 0.21686877847355515,
-              "up": 0.36364889420807145
+              "down": 0.41948232731835006,
+              "flat": 0.21686877847358377,
+              "up": 0.363648894208066
             },
             "direction": "down",
-            "temperature": 0.8887469566159745,
+            "temperature": 0.8887469566162268,
             "validation": {
               "samples": 132,
               "correct": 51,
@@ -14976,8 +14871,8 @@
                   13
                 ]
               ],
-              "brier_loss": 0.6678694699702133,
-              "log_loss": 1.1023764164301093,
+              "brier_loss": 0.6678694699701997,
+              "log_loss": 1.1023764164300864,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15054,21 +14949,21 @@
               4
             ]
           ],
-          "brier_loss": 0.702644123118691,
-          "log_loss": 1.18364078335114,
+          "brier_loss": 0.7026441231182986,
+          "log_loss": 1.1836407833499238,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "9f1e68aa32d6db8bd8f69538852e52b486a7451cb3f3450010e6b73db1f5f049",
+            "model_sha256": "fa466d59671c68715875df512de8a10d699034232d9a7ee2e5db5d8e2926f8fc",
             "probabilities": {
-              "down": 0.25254902339880375,
-              "flat": 0.3774021578202131,
-              "up": 0.3700488187809831
+              "down": 0.2525490233970423,
+              "flat": 0.37740215782118774,
+              "up": 0.37004881878177
             },
             "direction": "flat",
-            "temperature": 2.1956382007094972,
+            "temperature": 2.1956382006574295,
             "validation": {
               "samples": 132,
               "correct": 41,
@@ -15126,8 +15021,8 @@
                   3
                 ]
               ],
-              "brier_loss": 0.6985351400232689,
-              "log_loss": 1.1776042858021,
+              "brier_loss": 0.6985351400246339,
+              "log_loss": 1.1776042858059825,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15140,14 +15035,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "b5551916e46d95affea755e724a97d3e79cb06d42ff53a94ca51f48720cf2c03",
+            "model_sha256": "f2c8ee500b6442a5dd8b6fede2e18b2646b4c2d809f1404c8540a331ddf2c03a",
             "probabilities": {
-              "down": 0.2571713819111227,
-              "flat": 0.29740684433248155,
-              "up": 0.4454217737563957
+              "down": 0.25717138191036804,
+              "flat": 0.2974068443320319,
+              "up": 0.44542177375759995
             },
             "direction": "up",
-            "temperature": 1.9751432945230096,
+            "temperature": 1.9751432945029,
             "validation": {
               "samples": 132,
               "correct": 58,
@@ -15205,8 +15100,8 @@
                   15
                 ]
               ],
-              "brier_loss": 0.6764540832737127,
-              "log_loss": 1.1530893579230608,
+              "brier_loss": 0.6764540832739546,
+              "log_loss": 1.1530893579243051,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15219,14 +15114,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "191ab12517d5fe831c3d6aa259c5228f8dd116ae6148139785735d3482948bf6",
+            "model_sha256": "db6d01efa6454ff307eae6bccfec66395096c9f9b57f014488ed4cb6c1976f35",
             "probabilities": {
-              "down": 0.27817208971481006,
-              "flat": 0.35025290175345986,
-              "up": 0.3715750085317301
+              "down": 0.2781720897171368,
+              "flat": 0.3502529017528042,
+              "up": 0.371575008530059
             },
             "direction": "up",
-            "temperature": 2.1109196430129016,
+            "temperature": 2.1109196431066803,
             "validation": {
               "samples": 132,
               "correct": 48,
@@ -15284,8 +15179,8 @@
                   17
                 ]
               ],
-              "brier_loss": 0.6638733336535394,
-              "log_loss": 1.0994521717840546,
+              "brier_loss": 0.6638733336529292,
+              "log_loss": 1.0994521717827632,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15362,21 +15257,21 @@
               2
             ]
           ],
-          "brier_loss": 0.6072903799259195,
-          "log_loss": 1.005733090157005,
+          "brier_loss": 0.6072903799259212,
+          "log_loss": 1.0057330901570085,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "5055985019df36e27f4f79071e97024cdea57a8163fcc750e5ee96634252cff5",
+            "model_sha256": "16c9823690de1d714151231b9cfd533fcfbe1fc36d139a6e2dd5a14114271660",
             "probabilities": {
-              "down": 0.5280114426169663,
-              "flat": 0.21623776117756063,
-              "up": 0.25575079620547303
+              "down": 0.5280114426174384,
+              "flat": 0.21623776117729424,
+              "up": 0.2557507962052674
             },
             "direction": "down",
-            "temperature": 0.9904141649588112,
+            "temperature": 0.990414164956437,
             "validation": {
               "samples": 132,
               "correct": 60,
@@ -15434,8 +15329,8 @@
                   0
                 ]
               ],
-              "brier_loss": 0.6303509685939861,
-              "log_loss": 1.0376664725269729,
+              "brier_loss": 0.6303509685940565,
+              "log_loss": 1.037666472527048,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15450,9 +15345,9 @@
           "balanced_linear": {
             "model_sha256": "e86335dc25824aafb0f16a4524eeb9c28373abb67ce8ad5fed3eefa8152d041c",
             "probabilities": {
-              "down": 0.3880625200687412,
-              "flat": 0.2791553900692786,
-              "up": 0.3327820898619801
+              "down": 0.38806252006875797,
+              "flat": 0.27915539006927076,
+              "up": 0.3327820898619713
             },
             "direction": "down",
             "temperature": 4.99999357235434,
@@ -15513,8 +15408,8 @@
                   10
                 ]
               ],
-              "brier_loss": 0.6600515557681137,
-              "log_loss": 1.0888832229689571,
+              "brier_loss": 0.6600515557681126,
+              "log_loss": 1.0888832229689556,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15670,21 +15565,21 @@
               3
             ]
           ],
-          "brier_loss": 0.6044840626695821,
-          "log_loss": 1.0429946061198145,
+          "brier_loss": 0.60448406266968,
+          "log_loss": 1.0429946061200996,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "4b662df06134b28723821a6c3a565c3c6803fd94740deb79c58da57a39e2ba42",
+            "model_sha256": "d308c20196456235b9bb0a06906e62d7ec0842d99d5b977e773861f8a40482ca",
             "probabilities": {
-              "down": 0.04602281229202066,
-              "flat": 0.6778109950327317,
-              "up": 0.2761661926752476
+              "down": 0.046022812292131045,
+              "flat": 0.6778109950324954,
+              "up": 0.27616619267537346
             },
             "direction": "flat",
-            "temperature": 0.6642282500726608,
+            "temperature": 0.6642282500733847,
             "validation": {
               "samples": 132,
               "correct": 60,
@@ -15742,8 +15637,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6649781261004262,
-              "log_loss": 1.1681105482166756,
+              "brier_loss": 0.6649781261003246,
+              "log_loss": 1.1681105482163745,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15756,14 +15651,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "0e93db057145ccb2639596dfdade3d817d1806c64c809e9e3bca410a8d183236",
+            "model_sha256": "e5c5c3d2fb8e24c3f8eba685d2675f18ff425a0de254ac1f3eef1acfb934bf59",
             "probabilities": {
-              "down": 0.23703995872398118,
-              "flat": 0.3678731761647597,
-              "up": 0.3950868651112591
+              "down": 0.23703995872397052,
+              "flat": 0.3678731761647666,
+              "up": 0.39508686511126273
             },
             "direction": "up",
-            "temperature": 2.239049340138445,
+            "temperature": 2.239049340138144,
             "validation": {
               "samples": 132,
               "correct": 34,
@@ -15821,8 +15716,8 @@
                   6
                 ]
               ],
-              "brier_loss": 0.6798152618020536,
-              "log_loss": 1.1330099054442002,
+              "brier_loss": 0.6798152618020556,
+              "log_loss": 1.1330099054442067,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -15900,7 +15795,7 @@
                   9
                 ]
               ],
-              "brier_loss": 0.6697715121105533,
+              "brier_loss": 0.6697715121105532,
               "log_loss": 1.1036832079999404,
               "single_class_collapse": false,
               "collapsed_to": null
@@ -15978,21 +15873,21 @@
               1
             ]
           ],
-          "brier_loss": 0.5822747122582791,
-          "log_loss": 0.9856299186432549,
+          "brier_loss": 0.5822747122584552,
+          "log_loss": 0.9856299186434536,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "91898d2e5890cfcb63e5f6ae01ecf1fe88eca32a64cdfce0b18663aa6991d4fd",
+            "model_sha256": "bc8b7c5408ec5ef16ed2f9a1462d305d4c0b33244ff9504e77955c45016eb50c",
             "probabilities": {
-              "down": 0.578792716969281,
-              "flat": 0.32461717163981746,
-              "up": 0.09659011139090158
+              "down": 0.5787927169691861,
+              "flat": 0.3246171716398505,
+              "up": 0.09659011139096332
             },
             "direction": "down",
-            "temperature": 1.2293397869370708,
+            "temperature": 1.2293397869376372,
             "validation": {
               "samples": 132,
               "correct": 65,
@@ -16050,8 +15945,8 @@
                   1
                 ]
               ],
-              "brier_loss": 0.6076971289547975,
-              "log_loss": 1.015248822713725,
+              "brier_loss": 0.6076971289547931,
+              "log_loss": 1.0152488227137182,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16066,9 +15961,9 @@
           "balanced_linear": {
             "model_sha256": "0167ff7c4b7c28cd3a7bbe2f2824a5720a589f3b51de20ddfff2d1d44cc7b44b",
             "probabilities": {
-              "down": 0.4255652478283679,
-              "flat": 0.3098947262283619,
-              "up": 0.2645400259432703
+              "down": 0.42556524782844357,
+              "flat": 0.3098947262283663,
+              "up": 0.26454002594319015
             },
             "direction": "down",
             "temperature": 4.9999948082570205,
@@ -16129,8 +16024,8 @@
                   5
                 ]
               ],
-              "brier_loss": 0.6553612165613458,
-              "log_loss": 1.0833556394420754,
+              "brier_loss": 0.655361216561369,
+              "log_loss": 1.0833556394421089,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16286,21 +16181,21 @@
               7
             ]
           ],
-          "brier_loss": 0.6585057561635143,
-          "log_loss": 1.0890095925820915,
+          "brier_loss": 0.658505756163659,
+          "log_loss": 1.0890095925824728,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "3253cb98bfb8eb0a1dfc413d487011b4bb53e137b4d31f2bc277e26bbf23ff28",
+            "model_sha256": "076c44bf28e89f05650a41ee1d5a460b84a9038ba7e3669c1a32aef732bb3a3f",
             "probabilities": {
-              "down": 0.316853408168921,
-              "flat": 0.35105767831059254,
-              "up": 0.3320889135204865
+              "down": 0.3168534081959658,
+              "flat": 0.35105767828100887,
+              "up": 0.3320889135230252
             },
             "direction": "flat",
-            "temperature": 2.8955929205028146,
+            "temperature": 2.8955929252940713,
             "validation": {
               "samples": 132,
               "correct": 46,
@@ -16358,8 +16253,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6573443968206595,
-              "log_loss": 1.0872399992067117,
+              "brier_loss": 0.657344396816132,
+              "log_loss": 1.0872399991943011,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16372,14 +16267,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "e8d4adc369a76a0cee642a0f11c3f83a8152e1bfe47f91a923d4c17b1a1a4141",
+            "model_sha256": "22084845ddf32171b05463bdd40a3e950999c52692d5c989da9b935db2000b94",
             "probabilities": {
-              "down": 0.3429921886261476,
-              "flat": 0.31815444563749923,
-              "up": 0.3388533657363531
+              "down": 0.3429921958944654,
+              "flat": 0.31815443429859813,
+              "up": 0.33885336980693653
             },
             "direction": "down",
-            "temperature": 4.497321204647282,
+            "temperature": 4.497317804606736,
             "validation": {
               "samples": 132,
               "correct": 60,
@@ -16437,8 +16332,8 @@
                   13
                 ]
               ],
-              "brier_loss": 0.6592426294240187,
-              "log_loss": 1.0881993627893551,
+              "brier_loss": 0.6592426256927068,
+              "log_loss": 1.0881993581692981,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16594,21 +16489,21 @@
               3
             ]
           ],
-          "brier_loss": 0.6118236364008218,
-          "log_loss": 1.015845888839635,
+          "brier_loss": 0.6118236364007701,
+          "log_loss": 1.0158458888395445,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "5d10cce6ed90d5c76b00936d738222faf530399735292c94678e00605ba01ac6",
+            "model_sha256": "d0877a42a66527643f22abe975210ad3609ac896cfa8a43ba13152e033ce99ae",
             "probabilities": {
-              "down": 0.2308463117514207,
-              "flat": 0.5022142061550912,
-              "up": 0.2669394820934882
+              "down": 0.2308463117509566,
+              "flat": 0.5022142061556792,
+              "up": 0.26693948209336416
             },
             "direction": "flat",
-            "temperature": 1.2309398872853223,
+            "temperature": 1.230939887281188,
             "validation": {
               "samples": 132,
               "correct": 67,
@@ -16666,8 +16561,8 @@
                   2
                 ]
               ],
-              "brier_loss": 0.6096396061356623,
-              "log_loss": 1.0170607480286264,
+              "brier_loss": 0.609639606135768,
+              "log_loss": 1.0170607480288447,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16682,9 +16577,9 @@
           "balanced_linear": {
             "model_sha256": "d2669c3a410bc1a035688722183f333f839055ebf314ca123b6dfd9a0e09a534",
             "probabilities": {
-              "down": 0.32445148867833656,
-              "flat": 0.34188339842073734,
-              "up": 0.3336651129009261
+              "down": 0.3244514886783406,
+              "flat": 0.34188339842073495,
+              "up": 0.33366511290092454
             },
             "direction": "flat",
             "temperature": 4.999993984733345,
@@ -16746,7 +16641,7 @@
                 ]
               ],
               "brier_loss": 0.6454138419720395,
-              "log_loss": 1.0688403375735933,
+              "log_loss": 1.068840337573593,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16902,21 +16797,21 @@
               0
             ]
           ],
-          "brier_loss": 0.4486621015657205,
-          "log_loss": 0.7862471772170733,
+          "brier_loss": 0.44866210156573016,
+          "log_loss": 0.7862471772170756,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "3f33384da92473f51665c803e2305e03f74b59dbff3f04e5e3cc3b9be25ff5da",
+            "model_sha256": "904309505bbf94f3a2b6c60ab28d5c438993a47aeaad8fcc4cfe590adbac2652",
             "probabilities": {
-              "down": 4.366779350821623e-07,
-              "flat": 0.27492389916968896,
-              "up": 0.725075664152376
+              "down": 4.366779351100533e-07,
+              "flat": 0.27492389917051824,
+              "up": 0.7250756641515466
             },
             "direction": "up",
-            "temperature": 0.6101889697628793,
+            "temperature": 0.6101889697656492,
             "validation": {
               "samples": 132,
               "correct": 77,
@@ -16974,8 +16869,8 @@
                   7
                 ]
               ],
-              "brier_loss": 0.5967596711067787,
-              "log_loss": 1.4904165052834581,
+              "brier_loss": 0.5967596711066094,
+              "log_loss": 1.4904165052798928,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -16988,14 +16883,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "e8d0c1e4a2b29314a644dfeaefcd033a804f67c9d570e01d919030191852fb4b",
+            "model_sha256": "cf33769bd79e5421db60882cd1ffa2d4f0149f4ba0c61e470eab5402c4d1be7a",
             "probabilities": {
-              "down": 0.0012870052386679879,
-              "flat": 0.029371706888890712,
-              "up": 0.9693412878724413
+              "down": 0.0012870052388109976,
+              "flat": 0.0293717068905582,
+              "up": 0.9693412878706308
             },
             "direction": "up",
-            "temperature": 1.8989190704866448,
+            "temperature": 1.898919070519046,
             "validation": {
               "samples": 132,
               "correct": 57,
@@ -17053,8 +16948,8 @@
                   9
                 ]
               ],
-              "brier_loss": 0.7314010471482633,
-              "log_loss": 1.335551818905622,
+              "brier_loss": 0.731401047147461,
+              "log_loss": 1.3355518188993776,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -17067,14 +16962,14 @@
             }
           },
           "balanced_nonlinear": {
-            "model_sha256": "baeff85b8bf518b42e7bdd379324145fda57cf3bea20529e82a58764f0aa1b5b",
+            "model_sha256": "bf829583e45be6c1f4f38e805c516dc2cc24e9548d938f172307faa72a6c3be1",
             "probabilities": {
-              "down": 0.24193737251406336,
-              "flat": 0.14539225894855054,
-              "up": 0.6126703685373861
+              "down": 0.24193737251495942,
+              "flat": 0.14539225894964283,
+              "up": 0.6126703685353978
             },
             "direction": "up",
-            "temperature": 1.1416011345479504,
+            "temperature": 1.1416011345564887,
             "validation": {
               "samples": 132,
               "correct": 65,
@@ -17132,8 +17027,8 @@
                   9
                 ]
               ],
-              "brier_loss": 0.6558729591447967,
-              "log_loss": 1.0946031189818999,
+              "brier_loss": 0.655872959144276,
+              "log_loss": 1.0946031189808505,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -17210,21 +17105,21 @@
               3
             ]
           ],
-          "brier_loss": 0.5947970366467522,
-          "log_loss": 1.0169760435817152,
+          "brier_loss": 0.5947970366467363,
+          "log_loss": 1.0169760435816797,
           "single_class_collapse": false,
           "collapsed_to": null
         },
         "candidates": {
           "movement_then_direction": {
-            "model_sha256": "103cb5a9c478462db82b8bbf576cb4523d6ee8bc5ceb3985d6cd803260827c48",
+            "model_sha256": "c9b8701c183f7e37ac86e2c9c241ad9aca2d7e2d43f81bcf3292de4c9f7c17b6",
             "probabilities": {
-              "down": 0.0011802428689474055,
-              "flat": 0.4231030899979507,
-              "up": 0.5757166671331019
+              "down": 0.0011802428689527435,
+              "flat": 0.42310308999770807,
+              "up": 0.5757166671333391
             },
             "direction": "up",
-            "temperature": 0.7049963828833183,
+            "temperature": 0.7049963828837865,
             "validation": {
               "samples": 132,
               "correct": 67,
@@ -17282,8 +17177,8 @@
                   7
                 ]
               ],
-              "brier_loss": 0.6843123340622341,
-              "log_loss": 1.2960054110144623,
+              "brier_loss": 0.6843123340621792,
+              "log_loss": 1.2960054110141128,
               "single_class_collapse": false,
               "collapsed_to": null
             },
@@ -17296,14 +17191,14 @@
             }
           },
           "balanced_linear": {
-            "model_sha256": "b7b6aed54289098fde2ab242bd53af25dd11c17c3582ef801d477dc8cfe7fe32",
+            "model_sha256": "b618ac95d5a45dc031d02ae52c775adecf65f074ebc00f2935ac6a29b71e3070",
             "probabilities": {
-              "down": 0.10782288297211721,
-              "flat": 0.2696223516156969,
-              "up": 0.6225547654121858
+              "down": 0.10782288305085912,
+              "flat": 0.2696223516777616,
+              "up": 0.6225547652713793
             },
             "direction": "up",
-            "temperature": 2.8668802960910225,
+            "temperature": 2.8668802976543635,
             "validation": {
               "samples": 132,
               "correct": 50,
@@ -17361,8 +17256,8 @@
                   13
                 ]
               ],
-              "brier_loss": 0.7010540621493059,
-              "log_loss": 1.1581293681439004,
+              "brier_loss": 0.7010540621224892,
+              "log_loss": 1.158129368091269,
               "single_class_collapse": false,
               "collapsed_to": null
             },
