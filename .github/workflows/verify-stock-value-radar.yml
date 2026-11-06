@@ -7,6 +7,25 @@ on:
       - "stock-value-radar.html"
       - "assets/stock-radar-clean-bridge.js"
       - "assets/stock-radar-flow-v2.js"
+      - "assets/stock-world-flow.js"
+      - "scripts/build_stock_world_flow.py"
+      - "scripts/test_stock_world_flow.cjs"
+      - "scripts/test_stock_display_numbers.cjs"
+      - "scripts/update-news-link-hub.py"
+      - "scripts/build-stock-investment-intelligence.py"
+      - "scripts/monitor-stock-value-radar.py"
+      - "scripts/update-stock-value-radar.py"
+      - ".github/workflows/verify-stock-value-radar.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "stock-value-radar.html"
+      - "assets/stock-radar-clean-bridge.js"
+      - "assets/stock-radar-flow-v2.js"
+      - "assets/stock-world-flow.js"
+      - "scripts/build_stock_world_flow.py"
+      - "scripts/test_stock_world_flow.cjs"
+      - "scripts/test_stock_display_numbers.cjs"
       - "scripts/update-news-link-hub.py"
       - "scripts/build-stock-investment-intelligence.py"
       - "scripts/monitor-stock-value-radar.py"
@@ -23,6 +42,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install pinned calendar for source-contract validation
+        run: python -m pip install exchange_calendars==4.13.1
       - name: Python syntax and data quality unit checks
         run: |
           python -m py_compile scripts/update-stock-value-radar.py scripts/build-stock-investment-intelligence.py scripts/monitor-stock-value-radar.py
@@ -45,7 +66,7 @@ jobs:
           assert m.rank({"revenue_growth":None,"operating_margin":20})["score"] is None
           print("PASS data validation and negative test cases")
           PY
-      - name: Verify deployed V5 UI, data provenance and script syntax
+      - name: Verify current UI, world-flow provenance and script syntax
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -56,11 +77,15 @@ jobs:
           rss=Path("scripts/update-news-link-hub.py").read_text(encoding="utf-8")
           sources=re.findall(r'<script(?:\s+defer)?\s+src="([^"]+)"',html)
           assert len(sources)==len(set(x.split("?")[0] for x in sources)), "duplicate runtime scripts"
-          for name in ("stock-radar-clean-bridge.js","stock-radar-flow-v2.js"):
+          for name in ("stock-radar-clean-bridge.js","stock-radar-flow-v2.js","stock-world-flow.js"):
               assert sum(name in x for x in sources)==1, name
+          runtime=[x.split("?")[0].rsplit("/",1)[-1] for x in sources]
+          assert runtime.index("stock-world-flow.js") < runtime.index("stock-radar-flow-v2.js"), "world-flow must load before its renderer"
           for required in ('id="nr-home-content"','id="view-home"','class="fx-root"','v9: one isolated fear/greed component'):
               assert required in html, required
-          assert "function fxHome(ctx)" in flow and 'fx-v5-markets nr-market-grid' in flow
+          assert "function fxHome(ctx)" in flow and 'window.StockWorldFlow?.render(ctx)' in flow
+          assert 'worldFlow:"stock-world-flow.json"' in bridge
+          assert 'if(okay&&key==="worldFlow")' in bridge and 'val?.version==="stock-world-flow-v1"' in bridge
           assert "function fxV5StockNews(ctx,c)" in flow and 'ctx.data?.newsLink' in flow
           assert 'newsLink:"news-link-data.json"' in bridge
           assert "function policyDigest()" in bridge and "function autoRefreshIfDue()" in bridge
@@ -71,9 +96,13 @@ jobs:
           for x in data["items"][:20]:
               assert x.get("url","").startswith("https://")
               assert x.get("source") and x.get("published_at")
-          print("V5 radar current UI, policy data, time metadata, 5-minute refresh PASS")
+          print("Radar current UI, world-flow wiring, policy data, time metadata, 5-minute refresh PASS")
           PY
+          python scripts/build_stock_world_flow.py --validate stock-world-flow.json
+          node scripts/test_stock_world_flow.cjs
+          node scripts/test_stock_display_numbers.cjs
           node --check assets/stock-radar-clean-bridge.js
           node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-world-flow.js
           python -m py_compile scripts/update-news-link-hub.py
           echo "Updated radar script syntax PASS"
