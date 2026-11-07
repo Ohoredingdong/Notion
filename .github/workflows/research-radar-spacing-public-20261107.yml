@@ -1,0 +1,93 @@
+name: Research radar spacing actual public verification
+on:
+  push:
+    branches: [research/radar-spacing-repair-20261107]
+    paths: ['.github/workflows/research-radar-spacing-public-20261107.yml']
+permissions:
+  contents: read
+jobs:
+  public-layout:
+    if: github.repository == 'Ohoredingdong/Notion' && github.ref_name == 'research/radar-spacing-repair-20261107'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 15d6f3fec1388a80e06618f430868c7b9d549e9f
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install screenshot browser and Korean font
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=20 install -y --no-install-recommends fonts-nanum
+      - name: Verify actual public bytes and capture unmodified live dashboard
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          import hashlib,json,sys,time,urllib.request
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          sys.path.insert(0,'scripts')
+          from test_stock_radar_spacing_browser import MEASURE
+          root='https://ohoredingdong.github.io/Notion/'
+          release='15d6f3fec1388a80e06618f430868c7b9d549e9f'
+          names=('stock-value-radar.html','assets/stock-radar-spacing.css')
+          expected={name:Path(name).read_bytes() for name in names}
+          out=Path('/tmp/radar-spacing-live');out.mkdir(parents=True,exist_ok=True)
+          report={'release_commit':release,'public_byte_match':False,'views':[]}
+          for attempt in range(18):
+              try:
+                  actual={}
+                  for name in names:
+                      request=urllib.request.Request(root+name+'?spacing-audit='+release[:12],headers={'Cache-Control':'no-cache','User-Agent':'RadarLayoutVerification/1.0'})
+                      with urllib.request.urlopen(request,timeout=15) as response:
+                          assert response.status==200
+                          actual[name]=response.read()
+                  if all(actual[name]==expected[name] for name in names):
+                      report['public_byte_match']=True
+                      report['verified_at']=datetime.now(timezone.utc).isoformat()
+                      report['sha256']={name:hashlib.sha256(actual[name]).hexdigest() for name in names}
+                      print('PUBLIC_RADAR_SPACING_HTML_CSS_VERIFIED',report['verified_at'],release)
+                      break
+              except Exception as exc:
+                  print('PUBLIC_PARITY_PENDING',attempt+1,type(exc).__name__)
+              if attempt<17:time.sleep(8)
+          assert report['public_byte_match'],'Deployed files have not matched release; no success claim'
+          with sync_playwright() as play:
+              browser=play.chromium.launch(headless=True)
+              try:
+                  for width,height in ((1245,768),(1440,900),(390,844)):
+                      context=browser.new_context(viewport={'width':width,'height':height},color_scheme='light',reduced_motion='reduce')
+                      page=context.new_page();errors=[]
+                      page.on('pageerror',lambda error:errors.append(str(error)))
+                      page.goto(root+'stock-value-radar.html?stock=NVMI&v=spacing-20261107-1',wait_until='domcontentloaded',timeout=60000)
+                      page.wait_for_function("() => document.querySelectorAll('[data-worldflow-index]').length===5 && !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length",timeout=60000)
+                      page.evaluate('() => document.fonts.ready')
+                      if page.locator('.fx-sent-v9.is-us').count():
+                          page.locator('[data-fx-sentiment-next]').click()
+                          page.locator('.fx-sent-v9.is-korea').wait_for()
+                      page.evaluate('() => window.scrollTo(0,0)')
+                      page.wait_for_timeout(300)
+                      metrics=page.evaluate(MEASURE)
+                      minimum=20 if width<=850 else 24
+                      assert metrics['gap']>=minimum-.75,metrics
+                      assert metrics['horizontalOverflow']<=1,metrics
+                      assert metrics['worldOverflow']<=1,metrics
+                      assert all(not tile['overflowing'] for tile in metrics['tiles']),metrics
+                      assert not errors,errors
+                      page.screenshot(path=str(out/f'radar-live-{width}x{height}.png'),full_page=False)
+                      report['views'].append({'width':width,'height':height,'metrics':metrics,'runtime_errors':errors,'url':page.url})
+                      print('PUBLIC_BROWSER_SPACING_PASS',width,height,'gap',metrics['gap'])
+                      context.close()
+              finally:browser.close()
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print('PUBLIC_RADAR_SPACING_COMPLETE')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-spacing-live
+          path: /tmp/radar-spacing-live
+          retention-days: 14
