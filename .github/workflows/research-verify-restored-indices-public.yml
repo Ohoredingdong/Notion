@@ -1,0 +1,50 @@
+name: Research-only live index tiles public byte verification
+on:
+  push:
+    branches: [research/restore-market-index-cards-20261107]
+    paths: ['.github/workflows/research-verify-restored-indices-public.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 398210a87280bf8ea76433ac1a07bf4ba55ea628
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare actual public HTML and JS with fixed released Git bytes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,time,urllib.request
+          from pathlib import Path
+          names=('stock-value-radar.html','assets/stock-world-flow.js')
+          expected={name:Path(name).read_bytes() for name in names}
+          assert b'data-worldflow-index' in expected['assets/stock-world-flow.js']
+          assert b'index-tiles-restored-20261107' in expected['stock-value-radar.html']
+          root='https://ohoredingdong.github.io/Notion/'
+          last_error=None
+          for attempt in range(18):
+              try:
+                  bodies={}
+                  for name in names:
+                      req=urllib.request.Request(root+name+'?audit=index-cards-20261107',headers={'Cache-Control':'no-cache','User-Agent':'WorldIndexAudit/1.0'})
+                      with urllib.request.urlopen(req,timeout=12) as response:
+                          assert response.status==200
+                          bodies[name]=response.read()
+                  if all(bodies[name]==expected[name] for name in names):
+                      print('RESTORED_MARKET_INDEX_PUBLIC_BYTES_VERIFIED', 'attempt',attempt+1)
+                      for name in names:
+                          print(name,hashlib.sha256(bodies[name]).hexdigest())
+                      break
+                  last_error='public_bytes_not_yet_released'
+              except Exception as exc:
+                  last_error=type(exc).__name__
+              if attempt<17:time.sleep(8)
+          else:
+              raise RuntimeError('restored_market_index_public_bytes_unverified: '+str(last_error))
+          PY
