@@ -20,6 +20,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 8
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -28,8 +29,9 @@ jobs:
           pip install 'playwright==1.56.0'
           python -m playwright install chromium
           sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=20 install -y --no-install-recommends fonts-nanum
-      - name: Capture original actual dashboard and reproduce the insufficient gap
+      - name: Capture the frozen original dashboard, not a previously repaired version
         run: |
+          git show 392c1a1f8baa56908b8c068d0a62f21312fe71f4:stock-value-radar.html > stock-value-radar.html
           python -m http.server 8765 >/tmp/radar-spacing-server.log 2>&1 &
           python scripts/test_stock_radar_spacing_browser.py --capture-only --label before --out /tmp/radar-spacing-evidence/before
           python - <<'PY'
@@ -39,10 +41,11 @@ jobs:
           desktop=[v['metrics'] for v in p['views'] if v['width']>=1180 and 'metrics' in v]
           assert desktop, 'No baseline evidence'
           reproduced=any(v['gap']<23.25 or v['worldOverflow']>1 for v in desktop)
+          assert reproduced, 'The claimed baseline problem was not reproduced'
           print('ORIGINAL_SPACING_DEFECT_REPRODUCED', reproduced)
           print('BASELINE_GAPS',[(v['viewport']['width'],v['gap'],v['worldOverflow']) for v in desktop])
           PY
-      - name: Link exactly the scoped stylesheet in this branch only
+      - name: Apply scoped stylesheet and update only the superseded layout-size contract
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -57,23 +60,37 @@ jobs:
               text=text.replace(anchor,'</style>\n'+link+'\n<script defer src="./assets/stock-radar-clean-bridge.js',1)
               path.write_text(text)
           assert text.count(link)==1
-          print('SCOPED_STYLESHEET_LINKED_NO_OTHER_HTML_CHANGE')
+          test=Path('scripts/test_stock_world_flow_browser.py')
+          content=test.read_text()
+          old="check(f'{width}: desktop strip preserves its bounded height', closed['strip']['h'] <= 150, closed)"
+          new="check(f'{width}: desktop summary protects readable content and 24px separation', 156 <= closed['strip']['h'] <= 240 and closed['main']['y'] >= max(closed['card']['bottom'], closed['strip']['bottom']) + 23, closed)"
+          if old in content:
+              assert content.count(old)==1
+              test.write_text(content.replace(old,new,1))
+          else:
+              assert content.count(new)==1, 'Unexpected prior layout contract'
+          print('SOURCE_VALUE_AND_FRESHNESS_CHECKS_UNCHANGED')
           PY
       - name: Validate spacing and controls at eight sizes plus a Notion-size iframe
         run: |
           node scripts/test_stock_world_flow.cjs
           python scripts/test_stock_radar_spacing_browser.py --label after --out /tmp/radar-spacing-evidence/after
-      - name: Preserve tested HTML patch on the research branch only
+          python scripts/test_stock_world_flow_browser.py --out /tmp/radar-spacing-evidence/source-regression
+      - name: Preserve only tested layout changes on the research branch
         run: |
           set -euo pipefail
           test "$GITHUB_REF_NAME" = 'research/radar-spacing-repair-20261107'
-          changed="$(git diff --name-only)"
-          if test -n "$changed"; then
-            test "$changed" = 'stock-value-radar.html'
+          python - <<'PY'
+          import subprocess
+          allowed={'stock-value-radar.html','scripts/test_stock_world_flow_browser.py'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= allowed, changed
+          PY
+          if ! git diff --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add stock-value-radar.html
-            git commit -m 'fix: load verified radar spacing without fixed-height market overlap'
+            git add stock-value-radar.html scripts/test_stock_world_flow_browser.py
+            git commit -m 'test: require content-driven market height and protected 24px workspace separation'
             git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
           fi
           echo "TESTED_BRANCH_HEAD=$(git rev-parse HEAD)"
