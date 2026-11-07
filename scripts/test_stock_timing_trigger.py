@@ -117,5 +117,58 @@ class TriggerTests(unittest.TestCase):
         self.assertIn("python scripts/test_stock_timing_trigger.py -v", source)
 
 
+    def test_observed_20261107_news_gate_only_run_requires_no_evidence_audit(self):
+        # Names/statuses transcribed from archived upstream run 42318896899,
+        # independent of EXPECTED_STEPS (which is the implementation under test).
+        names = (
+            "Set up job",
+            "Skip news-triggered runs outside regular research hours",
+            "Run actions/checkout@v4",
+            "Run actions/setup-python@v5",
+            "Install model and session readers",
+            "Test future targets, transaction rejection and bounded recovery",
+            "Execute bounded autonomous research transaction",
+            "Test actual forecast and autonomous status screens",
+            "Publish forecast and learning state atomically",
+            "Request public build",
+            "Verify public autonomous cycle and code",
+            "Verify paper plans in the same public build",
+            "Preserve forecast and paper publication evidence with the matching audit",
+            "Opportunistic first paper publication proof after automatic Pages build",
+            "Persist only newly observed paper first-public proofs",
+            "Run actions/upload-artifact@v4",
+            "Complete job",
+        )
+        event, jobs = fixture()
+        event["workflow_run"]["id"] = 42318896899
+        event["workflow_run"]["head_sha"] = "842bf27d7768182a916a5f113d22b96766cba33a"
+        job = jobs["jobs"][0]
+        job.update(run_id=42318896899,
+                   head_sha="842bf27d7768182a916a5f113d22b96766cba33a")
+        job["steps"] = [
+            {"name": name, "status": "completed",
+             "conclusion": "success" if i in (0, 1, len(names) - 1) else "skipped"}
+            for i, name in enumerate(names)
+        ]
+        self.assertEqual(
+            classify("workflow_run", event, jobs, REPO),
+            {"audit_required": False, "reason": "observed_news_gate_only_noop",
+             "upstream_run_id": 42318896899, "upstream_run_attempt": 1},
+        )
+
+    def test_gated_catalogue_matches_forecast_workflow_steps(self):
+        # Catch workflow step additions before another all-skipped run is mistaken
+        # for an executed forecast; production must fail closed on unknown steps.
+        import re
+        source = (Path(__file__).resolve().parents[1] /
+                  ".github/workflows/stock-forecasts.yml").read_text()
+        names = []
+        for raw in source.splitlines():
+            m = re.match(r"^      - (name|uses): (.+)$", raw)
+            if m:
+                names.append("Run " + m.group(2) if m.group(1) == "uses" else m.group(2))
+        self.assertEqual(tuple(names), (EXPECTED_STEPS[1], *GATED_STEPS))
+
+
 if __name__ == "__main__":
     unittest.main()
