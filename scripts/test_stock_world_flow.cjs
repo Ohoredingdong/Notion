@@ -125,4 +125,24 @@ test('All fourteen indicator details retain independent dates, source links and 
  assert.doesNotMatch(html,/<footer\b/);
  assert.match(html,/원 \/ 1 USD/);assert.match(html,/USD \/ 배럴/);assert.match(html,/USD \/ 트로이온스/);assert.match(html,/1bp = 0\.01%p/);
 });
+test('Restored index tiles show four real source values and no fabricated Dow quote',()=>{
+ const html=flow.render({data:{worldFlow:fixture()}},now);
+ const cards=['kospi','kosdaq','nasdaq','sp500','dow'];
+ for(const key of cards)assert(html.includes('data-worldflow-index="'+key+'"'));
+ assert.equal(html.split('data-worldflow-index="').length-1,5);
+ const kospi=html.split('data-worldflow-index="kospi"')[1].split('</article>')[0];
+ const dow=html.split('data-worldflow-index="dow"')[1].split('</article>')[0];
+ assert(kospi.includes('data-worldflow-index-value>101'));
+ assert(dow.includes('data-worldflow-index-value>—'));
+ assert(dow.includes('수집 미연결'));
+ assert.equal(html.split('data-worldflow-region="').length-1,6);
+});
+test('Stale index closes fail closed instead of showing old numbers',()=>{
+ const feed=fixture();
+ feed.indicators.find(x=>x.id==='kospi').freshness.next_check_after='2026-11-06T10:00:00Z';
+ const html=flow.render({data:{worldFlow:feed}},now);
+ const tile=html.split('data-worldflow-index="kospi"')[1].split('</article>')[0];
+ assert(tile.includes('data-worldflow-index-value>—'));
+ assert(tile.includes('갱신 대기'));
+});
 console.log('WORLD_FLOW_CONTRACT_PASS',count);

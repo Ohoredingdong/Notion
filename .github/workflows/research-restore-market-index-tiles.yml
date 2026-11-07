@@ -1,0 +1,42 @@
+name: Research-only world index tiles restoration QA
+on:
+  push:
+    branches: [research/restore-market-index-cards-20261107]
+    paths:
+      - 'assets/stock-world-flow.js'
+      - 'stock-value-radar.html'
+      - 'scripts/test_stock_world_flow.cjs'
+      - 'scripts/test_stock_world_flow_browser.py'
+      - '.github/workflows/research-restore-market-index-tiles.yml'
+permissions:
+  contents: read
+jobs:
+  test-restored-market-index-tiles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned market-source test dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'pandas>=2.2,<3'
+      - name: Test source identity, freshness, missing Dow and saved price arithmetic
+        run: |
+          node --check assets/stock-world-flow.js
+          node scripts/test_stock_world_flow.cjs
+          python -m unittest scripts.test_stock_world_flow -v
+          python scripts/test_stock_world_flow_browser.py --oracle-only
+      - name: Test actual desktop and mobile public dashboard at five viewports
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          python -m http.server 8765 >/tmp/market-index-tiles-http.log 2>&1 &
+          python scripts/test_stock_world_flow_browser.py --out /tmp/world-index-tiles-evidence
+      - name: Save actual comparison screenshots and report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: restored-index-tiles-browser-evidence
+          path: /tmp/world-index-tiles-evidence
+          retention-days: 7
