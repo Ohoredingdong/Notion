@@ -1,0 +1,91 @@
+name: Research radar spacing repair and screenshots
+on:
+  push:
+    branches: [research/radar-spacing-repair-20261107]
+    paths:
+      - 'assets/stock-radar-spacing.css'
+      - 'scripts/test_stock_radar_spacing_browser.py'
+      - '.github/workflows/research-radar-spacing-20261107.yml'
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-spacing-repair-20261107
+  cancel-in-progress: false
+jobs:
+  verify-layout:
+    if: github.repository == 'Ohoredingdong/Notion' && github.ref_name == 'research/radar-spacing-repair-20261107'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser and Korean screenshot fonts
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=20 install -y --no-install-recommends fonts-nanum
+      - name: Capture original actual dashboard and reproduce the insufficient gap
+        run: |
+          python -m http.server 8765 >/tmp/radar-spacing-server.log 2>&1 &
+          python scripts/test_stock_radar_spacing_browser.py --capture-only --label before --out /tmp/radar-spacing-evidence/before
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('/tmp/radar-spacing-evidence/before/report.json').read_text())
+          desktop=[v['metrics'] for v in p['views'] if v['width']>=1180 and 'metrics' in v]
+          assert desktop, 'No baseline evidence'
+          reproduced=any(v['gap']<23.25 or v['worldOverflow']>1 for v in desktop)
+          print('ORIGINAL_SPACING_DEFECT_REPRODUCED', reproduced)
+          print('BASELINE_GAPS',[(v['viewport']['width'],v['gap'],v['worldOverflow']) for v in desktop])
+          PY
+      - name: Link exactly the scoped stylesheet in this branch only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          path=Path('stock-value-radar.html')
+          text=path.read_text()
+          link='<link rel="stylesheet" href="./assets/stock-radar-spacing.css?v=spacing-20261107-1">'
+          if link not in text:
+              assert subprocess.check_output(['git','hash-object',str(path)],text=True).strip()=='60bb6072d527d52b349f08273d21b6c674b1383d', 'Source HTML changed; stop rather than clobber'
+              anchor='</style>\n<script defer src="./assets/stock-radar-clean-bridge.js'
+              assert text.count(anchor)==1, 'Unexpected HTML structure'
+              text=text.replace(anchor,'</style>\n'+link+'\n<script defer src="./assets/stock-radar-clean-bridge.js',1)
+              path.write_text(text)
+          assert text.count(link)==1
+          print('SCOPED_STYLESHEET_LINKED_NO_OTHER_HTML_CHANGE')
+          PY
+      - name: Validate spacing and controls at eight sizes plus a Notion-size iframe
+        run: |
+          node scripts/test_stock_world_flow.cjs
+          python scripts/test_stock_radar_spacing_browser.py --label after --out /tmp/radar-spacing-evidence/after
+      - name: Preserve tested HTML patch on the research branch only
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'research/radar-spacing-repair-20261107'
+          changed="$(git diff --name-only)"
+          if test -n "$changed"; then
+            test "$changed" = 'stock-value-radar.html'
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add stock-value-radar.html
+            git commit -m 'fix: load verified radar spacing without fixed-height market overlap'
+            git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          fi
+          echo "TESTED_BRANCH_HEAD=$(git rev-parse HEAD)"
+      - name: Save actual screenshots, geometry and tested source
+        if: always()
+        run: |
+          mkdir -p /tmp/radar-spacing-evidence/source
+          cp stock-value-radar.html /tmp/radar-spacing-evidence/source/
+          cp assets/stock-radar-spacing.css /tmp/radar-spacing-evidence/source/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-spacing-before-after
+          path: /tmp/radar-spacing-evidence
+          retention-days: 14
