@@ -1,0 +1,108 @@
+name: Research radar spacing repair and screenshots
+on:
+  push:
+    branches: [research/radar-spacing-repair-20261107]
+    paths:
+      - 'assets/stock-radar-spacing.css'
+      - 'scripts/test_stock_radar_spacing_browser.py'
+      - '.github/workflows/research-radar-spacing-20261107.yml'
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-spacing-repair-20261107
+  cancel-in-progress: false
+jobs:
+  verify-layout:
+    if: github.repository == 'Ohoredingdong/Notion' && github.ref_name == 'research/radar-spacing-repair-20261107'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 8
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser and Korean screenshot fonts
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=20 install -y --no-install-recommends fonts-nanum
+      - name: Capture the frozen original dashboard, not a previously repaired version
+        run: |
+          git show 392c1a1f8baa56908b8c068d0a62f21312fe71f4:stock-value-radar.html > stock-value-radar.html
+          python -m http.server 8765 >/tmp/radar-spacing-server.log 2>&1 &
+          python scripts/test_stock_radar_spacing_browser.py --capture-only --label before --out /tmp/radar-spacing-evidence/before
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('/tmp/radar-spacing-evidence/before/report.json').read_text())
+          desktop=[v['metrics'] for v in p['views'] if v['width']>=1180 and 'metrics' in v]
+          assert desktop, 'No baseline evidence'
+          reproduced=any(v['gap']<23.25 or v['worldOverflow']>1 for v in desktop)
+          assert reproduced, 'The claimed baseline problem was not reproduced'
+          print('ORIGINAL_SPACING_DEFECT_REPRODUCED', reproduced)
+          print('BASELINE_GAPS',[(v['viewport']['width'],v['gap'],v['worldOverflow']) for v in desktop])
+          PY
+      - name: Apply scoped stylesheet and update only the superseded layout-size contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          path=Path('stock-value-radar.html')
+          text=path.read_text()
+          link='<link rel="stylesheet" href="./assets/stock-radar-spacing.css?v=spacing-20261107-1">'
+          if link not in text:
+              assert subprocess.check_output(['git','hash-object',str(path)],text=True).strip()=='60bb6072d527d52b349f08273d21b6c674b1383d', 'Source HTML changed; stop rather than clobber'
+              anchor='</style>\n<script defer src="./assets/stock-radar-clean-bridge.js'
+              assert text.count(anchor)==1, 'Unexpected HTML structure'
+              text=text.replace(anchor,'</style>\n'+link+'\n<script defer src="./assets/stock-radar-clean-bridge.js',1)
+              path.write_text(text)
+          assert text.count(link)==1
+          test=Path('scripts/test_stock_world_flow_browser.py')
+          content=test.read_text()
+          old="check(f'{width}: desktop strip preserves its bounded height', closed['strip']['h'] <= 150, closed)"
+          new="check(f'{width}: desktop summary protects readable content and 24px separation', 156 <= closed['strip']['h'] <= 240 and closed['main']['y'] >= max(closed['card']['bottom'], closed['strip']['bottom']) + 23, closed)"
+          if old in content:
+              assert content.count(old)==1
+              test.write_text(content.replace(old,new,1))
+          else:
+              assert content.count(new)==1, 'Unexpected prior layout contract'
+          print('SOURCE_VALUE_AND_FRESHNESS_CHECKS_UNCHANGED')
+          PY
+      - name: Validate spacing and controls at eight sizes plus a Notion-size iframe
+        run: |
+          node scripts/test_stock_world_flow.cjs
+          python scripts/test_stock_radar_spacing_browser.py --label after --out /tmp/radar-spacing-evidence/after
+          python scripts/test_stock_world_flow_browser.py --out /tmp/radar-spacing-evidence/source-regression
+      - name: Preserve only tested layout changes on the research branch
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'research/radar-spacing-repair-20261107'
+          python - <<'PY'
+          import subprocess
+          allowed={'stock-value-radar.html','scripts/test_stock_world_flow_browser.py'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= allowed, changed
+          PY
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add stock-value-radar.html scripts/test_stock_world_flow_browser.py
+            git commit -m 'test: require content-driven market height and protected 24px workspace separation'
+            git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          fi
+          echo "TESTED_BRANCH_HEAD=$(git rev-parse HEAD)"
+      - name: Save actual screenshots, geometry and tested source
+        if: always()
+        run: |
+          mkdir -p /tmp/radar-spacing-evidence/source
+          cp stock-value-radar.html /tmp/radar-spacing-evidence/source/
+          cp assets/stock-radar-spacing.css /tmp/radar-spacing-evidence/source/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-spacing-before-after
+          path: /tmp/radar-spacing-evidence
+          retention-days: 14

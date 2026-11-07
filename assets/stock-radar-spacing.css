@@ -1,0 +1,106 @@
+/* Home-only spacing repair. No source data, forecasting, or storage behavior changes. */
+.fx-stage-home > .fx-v5-home {
+  gap: 24px !important;
+}
+.fx-stage-home > .fx-v5-home > .fx-v5-marketline.fx-world-marketline {
+  display: grid !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+.fx-stage-home > .fx-v5-home > .fx-v5-main {
+  margin-top: 0 !important;
+}
+.fx-world-marketline > .fx-worldflow {
+  height: auto !important;
+  min-height: 156px;
+  max-height: none !important;
+  padding: 14px 16px !important;
+  gap: 8px !important;
+  box-sizing: border-box;
+}
+.fx-world-marketline .fx-worldflow-head,
+.fx-world-marketline .fx-worldflow-indices,
+.fx-world-marketline .fx-worldflow-cues,
+.fx-world-marketline .fx-worldflow-news {
+  flex: 0 0 auto;
+}
+.fx-world-marketline .fx-worldflow-head h2 { font-size: 14px; }
+.fx-world-marketline .fx-worldflow-indices {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.fx-world-marketline .fx-worldflow-index {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  min-height: 64px;
+  padding: 8px 10px;
+  gap: 3px;
+  box-sizing: border-box;
+}
+.fx-world-marketline .fx-worldflow-index > span {
+  grid-column: auto;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.fx-world-marketline .fx-worldflow-index > strong {
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+.fx-world-marketline .fx-worldflow-index > b {
+  justify-self: start;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.fx-world-marketline .fx-worldflow-index.is-pending > b { font-size: 10px; }
+.fx-world-marketline .fx-worldflow-cues {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  column-gap: 18px;
+  row-gap: 6px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.fx-world-marketline .fx-worldflow-news {
+  min-height: 14px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.fx-world-marketline > .fx-sent-v9 {
+  height: auto !important;
+  min-height: 156px !important;
+  max-height: none !important;
+  padding: 14px 16px !important;
+  box-sizing: border-box;
+}
+.fx-world-marketline .fx-sent-v9-content { align-items: center; }
+/* Medium embeds need wider individual tiles, not smaller figures. */
+@media (min-width: 851px) and (max-width: 1179px) {
+  .fx-world-marketline .fx-worldflow-indices {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 850px) {
+  .fx-stage-home > .fx-v5-home { gap: 20px !important; }
+  .fx-stage-home > .fx-v5-home > .fx-v5-marketline.fx-world-marketline {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+  .fx-world-marketline .fx-worldflow-indices {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .fx-world-marketline .fx-worldflow-index { padding: 8px; }
+  .fx-world-marketline .fx-worldflow-index > strong { font-size: 16px; }
+}
+@media (max-width: 540px) {
+  .fx-world-marketline .fx-worldflow-indices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fx-world-marketline .fx-worldflow-news { gap: 6px; }
+}
