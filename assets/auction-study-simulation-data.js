@@ -96,8 +96,13 @@
   const basic = {
     id: 'simulation-basic', title: '아파트 · 뒤에 들어온 임차인', level: '입문', fictional: true,
     address: '연습시 가상구 모의로 10, 연습누리 101동 803호', area: 59.8,
-    summary: '같은 물건인지부터 날짜·점유·관리비를 대조하고, 비용을 넣어 남는 현금을 계산하는 사례예요.',
+    summary: '물건 표시·권리·점유를 대조하고, 비용과 필요한 현금을 계산해요.',
     appraised: 32000, minimum: 25600, financialAssumptionsConfirmed: true,
+    photoSet: {
+      src: './assets/auction-practice/field-contact-sheet.png', columns: 3, rows: 2,
+      fictional: true, aiGenerated: true, buildingType: 'apartment',
+      positions: { exterior: '0% 0%', entrance: '50% 0%', interior: '100% 0%', neighborhood: '50% 100%' },
+    },
     defaults: {
       bid: 27000, minimum: 25600, depositRate: 10, loan: 16200, loanRate: 4.5,
       months: 6, acquisitionRate: 1.1, legal: 120, repairs: 600, eviction: 250,
@@ -112,10 +117,10 @@
       fees: { common: 90, private: 50, late: 12 },
     },
     observations: [
-      { id: 'basic-exterior', title: '단지 외관', photoKey: 'exterior', text: '연습 사진에서 외벽과 동 표시가 보여요. 사진만으로 균열·구조 안전을 판정하지 않아요.' },
-      { id: 'basic-entrance', title: '공동현관', photoKey: 'entrance', text: '현관에 생활 흔적이 있어요. 조사 기록의 임차인과 현재 점유자가 같은지는 별도 확인해요.' },
-      { id: 'basic-interior', title: '실내 연출', photoKey: 'interior', text: '도배·바닥 교체를 연습하기 위한 실내 이미지예요. 예산 600만원은 견적이 아닌 학습 가정이에요.' },
-      { id: 'basic-neighborhood', title: '주변 보행 환경', photoKey: 'neighborhood', text: '주변 길을 살펴보는 상황이에요. 출퇴근 시간·소음·학교·상권은 날짜와 시간을 바꿔 조사해요.' },
+      { id: 'basic-exterior', title: '단지 외관', photoKey: 'exterior', text: '아파트 외관이에요. 구조 안전은 사진으로 판단하지 않아요.' },
+      { id: 'basic-entrance', title: '공동현관', photoKey: 'entrance', text: '공동현관 사진이에요. 현재 점유자는 조사 기록과 별도로 확인해요.' },
+      { id: 'basic-interior', title: '실내 연출', photoKey: 'interior', text: '도배·바닥 수리를 가정한 실내예요. 수리비 600만원은 견적 전 예산이에요.' },
+      { id: 'basic-neighborhood', title: '주변 보행 환경', photoKey: 'neighborhood', text: '보행 환경을 살펴봐요. 출퇴근 시간·소음·통학·상권은 시간대를 바꿔 조사해요.' },
     ],
     comparables: [
       { price: 32700, area: 59.8, date: '2026-08-03', description: '같은 단지 중층 · 보통 수리 · 가상 거래' },
@@ -124,7 +129,7 @@
     ],
     answer: {
       riskLevel: 'review', assumedCost: 0,
-      estimatedCostsDescription: '인수액 0만원과 관리비 90만원은 아래 명세서의 모의 조건을 전제로 한 연습값이에요. 실제 권리·정산액·세금·대출은 원문과 당사자 확인이 필요해요.',
+      estimatedCostsDescription: '인수액 0만원·관리비 90만원은 명세서의 모의 조건이에요. 실제 권리·정산·세금·대출은 원문과 당사자 확인이 필요해요.',
       mainFindings: [
         '근저당 2020-04-15보다 전입 2023-03-02가 늦어요. 이 비교만으로 모든 권리 소멸이나 전액 배당을 확정하지 않아요.',
         '모의 조건은 별도 인수액을 0만원으로 놓지만, 인도 협의와 수리·관리비는 별도 비용이에요.',
@@ -132,7 +137,7 @@
         '체납 합계 152만원과 계산에 반영한 공용부분 90만원을 구분해요. 예비비는 손익 비용이 아니에요.',
       ],
       nextChecks: ['최신 등기·명세서·특별매각조건 재열람', '현재 점유자·인도 일정·수리 견적 확인', '공용 체납의 인수 근거와 실제 대출·세금 확인'],
-      plainConclusion: '숫자상 검토를 이어갈 수 있는 연습 사례예요. 양의 손익은 입찰 허가나 안전 보장이 아니며, 남은 권리·현장·자금 확인을 마친 뒤 판단해요.',
+      plainConclusion: '숫자상 검토를 이어갈 수 있어요. 양의 손익은 입찰 허가나 안전 보장이 아니므로 남은 권리·현장·자금을 확인해요.',
     },
   };
 
@@ -200,8 +205,13 @@
   const senior = {
     id: 'simulation-senior', title: '빌라 · 먼저 들어온 임차인', level: '중급', fictional: true,
     address: '연습시 가상구 배움길 22, 모의마루 2동 302호', area: 54.2,
-    summary: '선순위 임차인의 보증금 중 일부가 남는다는 모의 조건을 읽고, 추가 인수액이 현금과 손익을 바꾸는지 연습해요.',
+    summary: '모의 조건에서 미회수 보증금이 현금·손익에 미치는 영향을 살펴봐요.',
     appraised: 30000, minimum: 24000, financialAssumptionsConfirmed: true,
+    photoSet: {
+      src: './assets/auction-practice/multifamily-contact-sheet.png', columns: 2, rows: 4,
+      fictional: true, aiGenerated: true, buildingType: 'multifamily', damageLocation: 'window',
+      positions: { exterior: '0% 0%', entrance: '100% 0%', damage: '0% 33.333333%', neighborhood: '100% 33.333333%' },
+    },
     defaults: {
       bid: 24500, minimum: 24000, depositRate: 10, loan: 14000, loanRate: 5,
       months: 9, acquisitionRate: 1.1, legal: 150, repairs: 700, eviction: 400,
@@ -216,10 +226,10 @@
       fees: { common: 120, private: 55, late: 15 },
     },
     observations: [
-      { id: 'senior-exterior', title: '빌라 외관', photoKey: 'exterior', text: '연습 사진의 건물과 서류의 동호수를 대조하는 상황이에요. 외관만으로 대지권이나 내진 성능을 판단하지 않아요.' },
-      { id: 'senior-entrance', title: '점유 흔적', photoKey: 'entrance', text: '우편물과 생활 흔적을 관찰하는 연출이에요. 누가 언제부터 점유했는지는 진술과 전입·계약 자료로 확인해요.' },
-      { id: 'senior-damage', title: '창가 얼룩', photoKey: 'damage', text: '창가에 얼룩이 보이는 가상 상황이에요. 결로·누수 원인과 수리 범위는 사진으로 확정할 수 없어요.' },
-      { id: 'senior-neighborhood', title: '골목 주차', photoKey: 'neighborhood', text: '골목 주차와 진입 폭을 살펴봐요. 야간 혼잡·주차 권리·실제 매도 수요는 별도 조사해요.' },
+      { id: 'senior-exterior', title: '빌라 외관', photoKey: 'exterior', text: '저층 다세대 외관이에요. 대지권·내진 성능은 서류와 별도 조사로 확인해요.' },
+      { id: 'senior-entrance', title: '공동현관·우편함', photoKey: 'entrance', text: '우편함이 보이는 공동현관이에요. 점유자·점유 기간은 전입·계약·현황 자료로 확인해요.' },
+      { id: 'senior-damage', title: '창가 얼룩', photoKey: 'damage', text: '창틀 옆 얼룩과 들뜬 마감이 보여요. 결로·누수 원인과 수리 범위는 별도 점검이 필요해요.' },
+      { id: 'senior-neighborhood', title: '골목 주차', photoKey: 'neighborhood', text: '좁은 골목에 주차된 차가 보여요. 야간 혼잡·주차 권리·매도 수요는 별도 조사해요.' },
     ],
     comparables: [
       { price: 33200, area: 54.2, date: '2026-08-08', description: '같은 가상 생활권 · 중층 · 수리 완료 · 가상 거래' },
@@ -228,15 +238,15 @@
     ],
     answer: {
       riskLevel: 'review', assumedCost: 5000,
-      estimatedCostsDescription: '보증금 12,000만원 중 가상 배당 7,000만원, 미회수 5,000만원을 인수한다고 명시적으로 가정해요. 실제 배당표·선순위 채권·대항요건을 계산한 결과가 아니에요.',
+      estimatedCostsDescription: '가상 배당 7,000만원을 전제로 보증금 12,000만원 중 5,000만원 인수를 가정해요. 실제 배당표·선순위 채권·대항요건을 검토한 결과가 아니에요.',
       mainFindings: [
         '전입 2019-02-18이 근저당 2021-03-15보다 빠르며, 점유·대항요건이 유지된다는 모의 조건이 있어요.',
         '가상 조건의 보증금 잔액 12,000 − 7,000 = 5,000만원을 낙찰가 외 별도 인수액에 넣어야 해요.',
         '배당요구를 했다는 사실만으로 전액 회수나 임대차 종료를 보장하지 않아요.',
-        '미회수 보증금을 비용에 반영한 뒤, 현재 입력한 입찰가·대출·가용 현금으로 목표 이익과 보수적 손익·현금 여력을 함께 대조해요.',
+        '미회수 보증금을 반영하고 현재 입찰가·대출·가용 현금으로 목표 이익·보수적 손익·현금 여력을 비교해요.',
       ],
       nextChecks: ['대항요건 유지·계약서·보증금·점유와 전입의 실제 관계 확인', '배당표·선순위 채권·배당액과 인수 잔액을 전문가와 확인', '부족한 현금·인도 기간·수리 견적·매도 수요 재검토'],
-      plainConclusion: '현재 가정으로는 입찰을 서두르지 않아요. 선순위 여부만 알아내는 데서 멈추지 말고, 미회수 보증금과 자금 부족·보수적 손실까지 함께 검토해요.',
+      plainConclusion: '현재 가정으로는 입찰을 서두르지 않아요. 미회수 보증금·현금 부족·보수적 손실을 함께 검토해요.',
     },
   };
   senior.documents = documentsFor(senior, {
@@ -304,8 +314,13 @@
   const hold = {
     id: 'simulation-hold', title: '다세대 · 대지권과 위반 표시', level: '주의', fictional: true,
     address: '연습시 가상구 확인길 7, 가상뜰 401호', area: 44.5,
-    summary: '싼 가격과 양의 계산 결과보다, 대지권 미등기·위반건축·점유 미확인을 먼저 해결해야 하는 보류 사례예요.',
+    summary: '대지권·위반건축·점유 미확인을 읽고, 계산에서 빠진 비용을 찾아봐요.',
     appraised: 21000, minimum: 16800, financialAssumptionsConfirmed: false,
+    photoSet: {
+      src: './assets/auction-practice/multifamily-contact-sheet.png', columns: 2, rows: 4,
+      fictional: true, aiGenerated: true, buildingType: 'multifamily', damageLocation: 'wall-ceiling',
+      positions: { exterior: '0% 66.666667%', entrance: '100% 66.666667%', damage: '0% 100%', neighborhood: '100% 100%' },
+    },
     defaults: {
       bid: 17000, minimum: 16800, depositRate: 10, loan: 8000, loanRate: 5.5,
       months: 12, acquisitionRate: 1.1, legal: 200, repairs: 1500, eviction: 600,
@@ -319,10 +334,10 @@
       fees: { common: 240, private: 80, late: 20 },
     },
     observations: [
-      { id: 'hold-exterior', title: '외관과 확장 흔적', photoKey: 'exterior', text: '외관에 발코니 확장처럼 보이는 부분을 연출했어요. 허가 여부·면적·구조는 사진이 아닌 도면과 관청 자료로 확인해요.' },
-      { id: 'hold-entrance', title: '닫힌 출입문', photoKey: 'entrance', text: '방문 시 문이 닫혀 연락하지 못한 가상 상황이에요. 빈집이나 점유권리 없음으로 결론 내릴 수 없어요.' },
-      { id: 'hold-damage', title: '벽면 흔적', photoKey: 'damage', text: '벽면 얼룩·노후 마감이 보이는 연습 사진이에요. 수리 1,500만원에는 미확정 원상복구·이행강제금·권리 확보 비용이 포함되지 않았어요.' },
-      { id: 'hold-neighborhood', title: '골목과 대지 경계', photoKey: 'neighborhood', text: '좁은 진입로를 관찰하는 연출이에요. 통행권·경계·대지사용권은 지적도·등기·계약과 현장 측량 등으로 확인해야 해요.' },
+      { id: 'hold-exterior', title: '외관·발코니', photoKey: 'exterior', text: '상층 발코니의 다른 창호가 보여요. 확장·허가 여부와 면적·구조는 도면과 관청 자료로 확인해요.' },
+      { id: 'hold-entrance', title: '닫힌 출입문', photoKey: 'entrance', text: '닫힌 출입문이에요. 빈집인지, 어떤 권리가 있는지는 이 사진으로 알 수 없어요.' },
+      { id: 'hold-damage', title: '천장·벽면 흔적', photoKey: 'damage', text: '천장·벽면 얼룩이 보여요. 수리비 1,500만원에는 미확정 원상복구·이행강제금·대지권 확보 비용이 빠져 있어요.' },
+      { id: 'hold-neighborhood', title: '골목과 대지 경계', photoKey: 'neighborhood', text: '좁은 진입로예요. 통행권·경계·대지사용권은 등기·지적도·계약·측량 등으로 확인해요.' },
     ],
     comparables: [
       { price: 23100, area: 44.5, date: '2026-08-12', description: '대지권 표시 있고 위반 표시 없는 가상 비교물건' },
@@ -331,7 +346,7 @@
     ],
     answer: {
       riskLevel: 'hold', assumedCost: null,
-      estimatedCostsDescription: '인수액은 미확정이에요. 계산의 0만원은 빠진 비용의 영향을 비교하기 위한 하한 가정이며, 확인된 0원이 아니에요. 대지권 확보·위반 시정·보증금·추가 정산 비용은 포함하지 못했어요.',
+      estimatedCostsDescription: '인수액은 미확정이에요. 계산의 0만원은 하한 가정이며, 확인된 0원이 아니에요. 대지권 확보·위반 시정·보증금·추가 정산 비용은 미반영이에요.',
       mainFindings: [
         '대지권 미등기는 대지사용권이 없다는 확정도, 있다는 보장도 아니에요. 미등기 원인과 매각 범위를 확인해야 해요.',
         '건축물대장의 위반 표시와 현장 확장 부분을 대조하고 시정·이행강제금·원상복구·대출 영향 등을 확인해야 해요.',
@@ -339,7 +354,7 @@
         '0만원으로 놓은 미확정 인수액과 누락 비용 때문에 계산 결과가 좋아 보여도 입찰 판단에 사용할 수 없어요.',
       ],
       nextChecks: ['토지·집합건물 등기와 대지사용권의 원인·매각 범위 확인', '관청의 위반 내용·시정 절차·이행강제금·원상복구 견적 확인', '실제 점유·임대차·전입·보증금과 최신 명세서 대조', '확인된 비용과 가능한 대출액으로 자금 시나리오를 다시 계산'],
-      plainConclusion: '입찰 보류예요. 자료가 부족한 상태를 낮은 인수액이나 임의의 안전 판정으로 메우지 않아요. 권리·위반·점유와 비용을 확인한 뒤 처음부터 다시 계산해요.',
+      plainConclusion: '입찰 보류예요. 미확정 금액을 0원으로 확정하지 말고 권리·위반·점유·비용을 확인한 뒤 다시 계산해요.',
     },
   };
   hold.documents = documentsFor(hold, {
