@@ -120,18 +120,25 @@
   const dates=sessions.length?[sessions[0],sessions.at(-1)].filter((value,index,list)=>index===0||value!==list[0]):[];
   const dateLabel=dates.length?dates.map(value=>value.slice(5).replace("-",".")).join("–")+" 기준":"기준일 미확인";
   const regions=m.regions.map(row=>`<span class="fx-worldflow-region is-${row.direction}" data-worldflow-region="${row.id}" data-direction="${row.direction}" title="${E(row.label)} · 비교 확인 ${row.basisIds.length}/${row.ids.length}"><span>${E(row.id==="EU"?"독일 참고":row.label)}</span><b>${arrows[row.direction]} ${words[row.direction]}</b>${row.status==="partial"?'<i>일부</i>':""}</span>`).join("");
+  // Display verified completed-session closes; Dow has no collected source yet.
+  const indexCards=[["kospi","코스피"],["kosdaq","코스닥"],["nasdaq","나스닥"],["sp500","S&P 500"],["dow","다우"]].map(([id,label])=>{
+   const row=m.byId[id],current=row?.current===true;
+   const reason=current?row.session+" · 완료 정규장 종가":id==="dow"?"다우 지수 자료 미연결":row?.reason||"자료 미수집";
+   const change=current?changeText(row):id==="dow"?"수집 미연결":"갱신 대기";
+   return `<article class="fx-worldflow-index ${current?"":"is-pending"}" data-worldflow-index="${id}" title="${E(label+" · "+reason)}"><span>${E(label)}</span><strong data-worldflow-index-value>${current?E(num(row.value,2)):"—"}</strong><b data-worldflow-index-change class="${current?"is-"+row.direction:"is-unknown"}">${E(change)}</b></article>`;
+  }).join("");
   const cues=[["us10y","미 10년"],["dxy","달러지수"],["usdkrw","원/달러"],["wti","WTI 선물"],["gold","금 선물"]].map(([id,label])=>{
    const row=m.byId[id];
    return `<span data-worldflow-cue="${id}" class="${row.current?"":"is-pending"}" title="${E(valueText(row)+" · "+observationText(row)+" · "+row.reason)}"><span>${label}</span><b>${row.current?E(row.category==="yield"?num(row.value,2)+"%":""):"갱신 대기"}</b>${row.current?`<em>${E(changeText(row))}</em>`:""}</span>`;
   }).join("");
   return `<section class="fx-worldflow" aria-label="세계시장 흐름" data-worldflow-version="${VERSION}">
    <div class="fx-worldflow-head"><h2>세계시장 흐름</h2><p data-worldflow-headline>${E(m.headline)}</p><button type="button" data-worldflow-open aria-haspopup="dialog">기준·출처 <span aria-hidden="true">↗</span></button></div>
-   <div class="fx-worldflow-regions" aria-label="지역별 주가지수 방향">${regions}</div>
+   <div class="fx-worldflow-indices" aria-label="주요 주가지수 정규장 종가">${indexCards}</div>
    <div class="fx-worldflow-cues" aria-label="금리·환율·원자재 변화">${cues}</div>
    <div class="fx-worldflow-news"><span>관련 보도</span>${top?link(top.url,top.title,`title="${E(top.title+" · "+(top.source||"제공처")+" · "+time(top.published_at))}"`):'<span>최근 확인된 보도 없음</span>'}<small data-worldflow-current="${m.current}" title="${E(dates.join(" ~ "))} · 시장별 마감·일별 자료 · 현재 비교 가능 ${m.current}/${m.total}">${E(dateLabel)} · 확인 ${m.current}/${m.total}</small></div>
    <dialog class="fx-worldflow-dialog" aria-labelledby="fx-worldflow-dialog-title">
     <div class="fx-worldflow-dialog-head"><div><h3 id="fx-worldflow-dialog-title">세계시장 흐름 · 기준과 출처</h3><p>${E(m.scope)}</p></div><button type="button" data-worldflow-close aria-label="시장 자료 닫기">닫기 ×</button></div>
-    <div class="fx-worldflow-dialog-body"><p class="fx-worldflow-method">지역 방향은 최신 비교가 확인된 지수의 부호만 반영합니다. 같은 지역 안에서 상승·하락·보합이 섞이면 ‘혼조’로 표시합니다. 국가별 마감일은 서로 다를 수 있습니다. 금리·달러·유가·금은 별도 관측이며 주가 변동의 원인으로 단정하지 않습니다.</p>
+    <div class="fx-worldflow-dialog-body"><div class="fx-worldflow-regions" aria-label="지역별 주가지수 방향">${regions}</div><p class="fx-worldflow-method">지역 방향은 최신 비교가 확인된 지수의 부호만 반영합니다. 같은 지역 안에서 상승·하락·보합이 섞이면 ‘혼조’로 표시합니다. 국가별 마감일은 서로 다를 수 있습니다. 금리·달러·유가·금은 별도 관측이며 주가 변동의 원인으로 단정하지 않습니다.</p>
      <p class="fx-worldflow-method">파일 수집 ${E(time(m.generatedAt))} · 현재 비교 가능 ${m.current}/${m.total} · 자료 갱신 시각으로 개별 시장의 신선도를 대신하지 않습니다.</p>
      <div class="fx-worldflow-observations">${m.indicators.map(detailRow).join("")}</div>
      <section class="fx-worldflow-reports"><h4>관련 보도 원문</h4><p>보도 제목을 그대로 연결합니다. 시장 변화의 인과관계 검증 자료는 아닙니다.</p>${m.news.length?m.news.slice(0,4).map(row=>`<article>${link(row.url,row.title)}<small>${E(row.source||"기사 제공처")} · ${E(time(row.published_at))}</small></article>`).join(""):'<p>최근 확인된 보도 없음</p>'}</section>

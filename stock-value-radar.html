@@ -1266,13 +1266,20 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 .fx-catalog-finance>a:hover{text-decoration:underline}
 @media(max-width:410px){.fx-catalog-finance-grid{grid-template-columns:1fr 1fr}.fx-catalog-finance-cell strong{font-size:11px}}
 
-/* Source-dated world summary replaces only the four-index market strip. */
+/* Show verified major index closes first; regional direction summary remains in source dialog. */
 .fx-v5-marketline.fx-world-marketline{grid-template-columns:minmax(0,1fr) minmax(315px,26%)!important;align-items:stretch!important}
 .fx-worldflow{position:relative;display:flex;flex-direction:column;gap:5px;min-width:0;padding:10px 13px;background:#fff;border:1px solid #e2e9f3;border-radius:14px;box-shadow:0 5px 18px rgba(33,62,104,.045);color:#29405d}
 .fx-worldflow-head{display:flex;align-items:center;gap:11px;min-width:0;line-height:1.25}
 .fx-worldflow-head h2{margin:0;flex:0 0 auto;font-size:13px;letter-spacing:-.4px;font-weight:800}
 .fx-worldflow-head p{margin:0;min-width:0;font-size:10px;color:#647c99;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fx-worldflow-head>button{margin-left:auto;flex:0 0 auto;border:0;background:#f4f7fb;padding:3px 7px;border-radius:6px;color:#53769d;font:inherit;font-size:9px;cursor:pointer}
+.fx-worldflow-indices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;min-width:0}
+.fx-worldflow-index{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;gap:0 5px;min-width:0;padding:4px 7px;background:#f7f9fc;border:1px solid #e7edf5;border-radius:8px;font-variant-numeric:tabular-nums}
+.fx-worldflow-index>span{grid-column:1/-1;white-space:nowrap;color:#7186a1;font-size:9px;font-weight:730}
+.fx-worldflow-index>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#294565;font-size:13px;line-height:1.25}
+.fx-worldflow-index>b{justify-self:end;align-self:center;white-space:nowrap;font-size:10px}
+.fx-worldflow-index.is-pending>strong{color:#94a3b8}.fx-worldflow-index.is-pending>b{font-size:9px;color:#8d99aa}
+.fx-worldflow-dialog-body>.fx-worldflow-regions{margin-bottom:12px}
 .fx-worldflow-regions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;min-width:0}
 .fx-worldflow-region{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;font-size:10px;background:#f7f9fc;border:1px solid #edf1f7;border-radius:6px;padding:3px 6px;line-height:1.25;white-space:nowrap}
 .fx-worldflow-region>span{color:#7086a0;font-size:9px}.fx-worldflow-region b{font-size:10px;font-weight:700}.fx-worldflow-region i{font-style:normal;font-size:8px;color:#9c8558}
@@ -1288,12 +1295,13 @@ body.neutral-ready:has(#view-home:not([hidden])) .app{width:100%!important;max-w
 .fx-worldflow-observation{border:1px solid #e4ebf4;border-radius:11px;padding:11px 12px;min-width:0}.fx-worldflow-observation-head{display:flex;align-items:center;gap:6px;justify-content:space-between}.fx-worldflow-observation h4{margin:0;font-size:12px}.fx-worldflow-observation-head>span{font-size:9px;color:#8193a9;text-align:right}.fx-worldflow-observation.is-stale .fx-worldflow-observation-head>span,.fx-worldflow-observation.is-unverified .fx-worldflow-observation-head>span{color:#ad8a54}.fx-worldflow-values{display:flex;align-items:baseline;gap:12px;margin:8px 0}.fx-worldflow-values strong{font-size:17px;font-weight:760}.fx-worldflow-values b{font-size:11px}.fx-worldflow-observation p{font-size:10px;line-height:1.55;color:#8293a8;margin:4px 0;overflow-wrap:anywhere}.fx-worldflow-source{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;margin-top:9px;color:#95a3b5}.fx-worldflow-source a{color:#5b83ad;text-decoration:none}.fx-worldflow-reports{margin-top:17px}.fx-worldflow-reports h4{font-size:12px;margin:0 0 5px}.fx-worldflow-reports>p{font-size:10px;color:#8396ad;line-height:1.5}.fx-worldflow-reports article{display:flex;flex-direction:column;gap:4px;margin-top:10px}.fx-worldflow-reports a{font-size:11px;color:#587ca5;text-decoration:none;line-height:1.5}.fx-worldflow-reports small{font-size:9px;color:#8da0b7}
 @media(min-width:1180px) and (max-height:780px){.fx-worldflow{gap:4px;padding-top:8px;padding-bottom:8px}}
 @media(min-width:851px) and (max-width:1179px){.fx-v5-marketline.fx-world-marketline{grid-template-columns:minmax(0,1fr) minmax(315px,36%)!important}.fx-worldflow-regions{grid-template-columns:repeat(3,minmax(0,1fr))}.fx-worldflow-head{flex-wrap:wrap;gap:5px}.fx-worldflow-head p{order:3;flex:1 1 100%;white-space:normal}.fx-worldflow-cues{flex-wrap:wrap;justify-content:flex-start;gap:7px 13px}.fx-worldflow-news>small{display:none}}
+@media(max-width:850px){.fx-worldflow-indices{grid-template-columns:repeat(3,minmax(0,1fr))}.fx-worldflow-index>strong{font-size:13px}.fx-worldflow-index>b{font-size:9px}}
 @media(max-width:850px){.fx-v5-marketline.fx-world-marketline{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}.fx-worldflow{padding:13px;gap:10px}.fx-worldflow-head{flex-wrap:wrap;gap:7px}.fx-worldflow-head h2{font-size:14px}.fx-worldflow-head p{order:3;flex:1 1 100%;white-space:normal;line-height:1.5;font-size:11px}.fx-worldflow-head>button{font-size:10px}.fx-worldflow-regions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.fx-worldflow-region{padding:6px 7px}.fx-worldflow-region>span,.fx-worldflow-region b{font-size:10px}.fx-worldflow-cues{flex-wrap:wrap;justify-content:flex-start;gap:9px 13px;font-size:10px}.fx-worldflow-news{font-size:10px;line-height:1.45;flex-wrap:wrap}.fx-worldflow-news>a{flex:1 1 70%}.fx-worldflow-news>small{font-size:9px}.fx-worldflow-dialog{max-height:calc(100dvh - 24px)}.fx-worldflow-dialog-head{padding:15px}.fx-worldflow-dialog-head h3{font-size:14px}.fx-worldflow-dialog-body{padding:13px 15px 17px}.fx-worldflow-observations{grid-template-columns:1fr}.fx-worldflow-values strong{font-size:16px}}
 </style>
 <script defer src="./assets/stock-radar-clean-bridge.js?v=e8ffda06d59f"></script>
 <script defer src="./assets/stock-catalog-ui.js?v=fd43cdfea16b"></script>
 <script defer src="./assets/stock-world-brief.js?v=ed064e984b6d"></script>
-<script defer src="./assets/stock-world-flow.js?v=ff443222c549"></script>
+<script defer src="./assets/stock-world-flow.js?v=index-tiles-restored-20261107"></script>
 <script defer src="./assets/stock-radar-flow-v2.js?v=32592862f172"></script>
 <script src="./assets/stock-forecast.js?v=direction-forecast-1.1-ui-compat" defer></script>
 <script src="./assets/stock-forecast-learning.js?v=forward-learning-1.0" defer></script>
