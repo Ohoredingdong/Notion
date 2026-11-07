@@ -4,7 +4,12 @@ import json
 from playwright.sync_api import sync_playwright
 
 BASE = "http://127.0.0.1:8765/"
-MAX_CARD_HEIGHT = 150
+# The user requested readable market cards and whitespace, replacing the old
+# <=150px compressed-strip design. Keep an upper bound AND test actual card edges.
+MIN_CARD_HEIGHT = 156
+MAX_CARD_HEIGHT = 240
+MIN_WORKSPACE_GAP = 24
+
 
 def main():
     with sync_playwright() as browser_api:
@@ -41,14 +46,17 @@ def main():
                 };
             }""")
             print("CANONICAL_RADAR_GEOMETRY", json.dumps({"viewport":width,"metrics":info},ensure_ascii=False))
-            assert info["row"] and info["row"]["height"] <= MAX_CARD_HEIGHT, "Oversized market strip"
+            assert info["row"] and MIN_CARD_HEIGHT <= info["row"]["height"] <= MAX_CARD_HEIGHT, "Market strip does not fit the readable content-height contract"
             assert info["flag"] and 0 < info["flag"]["width"] <= 32 and 0 < info["flag"]["height"] <= 28, "Unstyled giant flag"
-            assert len(info["cards"])==2 and all(0 < c["height"] <= MAX_CARD_HEIGHT for c in info["cards"]), "Full-screen market card overlay"
-            assert info["main"] and info["main"]["y"] >= info["row"]["bottom"]-3, "Market strip overlaps research workspace"
+            assert len(info["cards"])==2 and all(MIN_CARD_HEIGHT <= c["height"] <= MAX_CARD_HEIGHT for c in info["cards"]), "Full-screen or compressed market card"
+            actual_bottom = max(info["row"]["bottom"], *(c["bottom"] for c in info["cards"]))
+            assert info["main"] and info["main"]["y"] >= actual_bottom + MIN_WORKSPACE_GAP - .75, "Visible market cards consume the protected 24px workspace gap"
             assert info["main"]["width"] >= width * 0.8, "Workspace unexpectedly narrow"
+            assert info["main"]["bottom"] <= height + 1, "Desktop analysis workspace falls outside the viewport"
             page.close()
         browser.close()
     print("CANONICAL_RADAR_VISUAL_SMOKE_PASSED")
+
 
 if __name__ == "__main__":
     main()
