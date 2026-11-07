@@ -151,6 +151,22 @@ def main():
                         check(f'{width}: one world summary and six regional directions', card.count() == 1 and card.locator('[data-worldflow-region]').count() == 6)
                         check(f'{width}: current count uses per-market observation clocks', card.locator('[data-worldflow-current]').get_attribute('data-worldflow-current') == str(expected['current'])
                               and f"확인 {expected['current']}/14" in card.locator('[data-worldflow-current]').inner_text())
+                        check(f'{width}: five restored major index tiles',
+                              card.locator('[data-worldflow-index]').count() == 5)
+                        for key in ('kospi', 'kosdaq', 'nasdaq', 'sp500'):
+                            tile = card.locator(f'[data-worldflow-index="{key}"]')
+                            shown = tile.locator('[data-worldflow-index-value]').inner_text()
+                            observation = expected['rows'][key]
+                            if observation['current']:
+                                number = re.search(r'[0-9,]+(?:[.][0-9]+)?', shown)
+                                check(f'{width}: {key} index close matches verified source',
+                                      number is not None and abs(float(number.group().replace(',', '')) - observation['value']) <= .0051,
+                                      {'displayed': shown, 'source': observation['value']})
+                            else:
+                                check(f'{width}: {key} unavailable or stale close hidden', shown == '—')
+                        dow = card.locator('[data-worldflow-index="dow"]')
+                        check(f'{width}: unconnected Dow is never a synthetic number',
+                              dow.count() == 1 and dow.locator('[data-worldflow-index-value]').inner_text() == '—')
                         for key, region in expected['regions'].items():
                             chip = card.locator(f'[data-worldflow-region="{key}"]')
                             check(f'{width}: {key} regional direction agrees with its source signs', chip.get_attribute('data-direction') == region['direction'])
