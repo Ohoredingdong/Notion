@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-07T19:03:32.386800+09:00
+- 계산일: 2026-11-08T03:04:27.942029+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -37,7 +37,7 @@
 - [(11월 첫째 주 세계경제동향 브리핑) 코스피·코스닥 11%대 동반 폭락…美 증시도 급락 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTE9qUlZmY2NFbEFiYmEwcFhFS1dqeXdsT0d0NDdtQXpSRDNsemxxYVVWNnp2cWpRdVVVZElXMW9CNHNUcXBrd3JOcUFQQWpaV2lWWUMxN1REQ0NjVUNzV1NNd3ZHNUxjdmtVbFNYaTJvbw?oc=5)
 - ["이례적으로 강한 고용"…미국 금리인상 확률 '매우 높음' - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE9Id3ByeDlINEpXcHB6M1JWZnFwdENFc29US19wMXhKN29KNm9TVEI3YXUtNFRNWG5iN21TRGRmZG1zU0E3aXFuNTVSQ1pfMXpGYnpWMGJaM0twdw?oc=5)
 - [TSMC, 엔비디아 요청에 3D D램 검토…삼성·SK하이닉스와 경쟁하나 - AI타임스](https://news.google.com/rss/articles/CBMiakFVX3lxTFBSZGZTQThOS3ZtN2FUTDJzcG00bHIxVXFMbHN0TzdlQUxTNllMNk5TR1lSZkJWQm1JYkw3U3h1Y0NCMnZZVTVSYUhUeGZCSDJBQm1ZSXRfQjh4MV9ESUw4NFV1Uy1ja2hnSkE?oc=5)
-- [삼성·SK, HBM 공급자서 SW 수요자로…엔비디아 ‘AI 동맹’ 고도화 - 뉴스토마토](https://news.google.com/rss/articles/CBMiYEFVX3lxTFAxQkhfZ0V6REJEY1MxWXlNNjhfcmhocFFxZTJxV2szTkNOYTMtYTIxVVhETEhjLVVHSTZ1TEFSc2VqNEJWTUwxUWx0QXZ0dXlTMHh1VGJqS2xwNFJWTmlRMA?oc=5)
+- [엔비디아 요청에 TSMC가 D램 생산 검토…삼성·SK하이닉스 '협력사'가 '경쟁자'로 - 콕스뉴스](https://news.google.com/rss/articles/CBMiakFVX3lxTE5DMXZ0Y3psejE1NEpwR0thMkg5TnlSbEpXZ2tMQmRHWERpVG15RWtNTVBMWGJzU2NrQUpzbnVBVlNPLVhNWS1KaEtXRHR1cnI0dWFYZHZYaVQzeEcwdVZkNlRlbHRxVVBwYlE?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
