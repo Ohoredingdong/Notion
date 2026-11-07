@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-07T05:00:14.140277+09:00
+- 계산일: 2026-11-07T19:03:32.386800+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -10,16 +10,16 @@
 
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
-| Apple (AAPL) | 15.1% | 33.0% | 양수 | 38.3배 | warning |
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.7배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 37.9배 | warning |
+| Apple (AAPL) | 15.1% | 33.0% | 양수 | 38.1배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.6배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 38.1배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
-| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.5배 | warning |
+| Amazon (AMZN) | 12.4% | 11.2% | 양수 | 36.2배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 332.1배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 331.7배 | warning |
 
 ## 데이터 이상·제약
 - AAPL: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
+- [(11월 첫째 주 세계경제동향 브리핑) 코스피·코스닥 11%대 동반 폭락…美 증시도 급락 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTE9qUlZmY2NFbEFiYmEwcFhFS1dqeXdsT0d0NDdtQXpSRDNsemxxYVVWNnp2cWpRdVVVZElXMW9CNHNUcXBrd3JOcUFQQWpaV2lWWUMxN1REQ0NjVUNzV1NNd3ZHNUxjdmtVbFNYaTJvbw?oc=5)
 - ["이례적으로 강한 고용"…미국 금리인상 확률 '매우 높음' - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE9Id3ByeDlINEpXcHB6M1JWZnFwdENFc29US19wMXhKN29KNm9TVEI3YXUtNFRNWG5iN21TRGRmZG1zU0E3aXFuNTVSQ1pfMXpGYnpWMGJaM0twdw?oc=5)
-- [미국증시 나스닥 1.65% 반등·다우 하락…엔비디아 6.56% 급등, 고용 호조에 금리 부담 - 톱스타뉴스](https://news.google.com/rss/articles/CBMickFVX3lxTE9CVGFNZkFjYUZYV3JxOVhPOFVEcGE4Sm45dVJZVmtLV2NzU05GaU5pUFREbmtKXzB4RC16bTJGZkxBR2JjckRUdG9UcWdaMTAtdzh0Q1VoUnJXOHNZR1k0NHBzMEo3MGMycVJtbWpKQVVFZw?oc=5)
-- [삼성·SK, HBM 공급자서 SW 수요자로…엔비디아 ‘AI 동맹’ 고도화 - 뉴스토마토](https://news.google.com/rss/articles/CBMiX0FVX3lxTE15WWR2WE5xem1QSUlRalRuMm0yNTBMN1d5UWFrQlNETDVtSFpCaGlWVWdQbXN6YU5ia0d5WUlPNFYyR2QwMm5OMFVyN0liMG9Tb3g5LTVNQ0dCMlBpa1RN?oc=5)
-- [삼성·SK·LG, 9일 엔비디아 'AI 데이 서울' 총출동…기술 활용 사례 선보인다 - 더팩트](https://news.google.com/rss/articles/CBMiVEFVX3lxTE1fYk5Pb0VMLXNtYzRzTHFsdUcyblBYbEJ5QXVyaTJnMkIwSnk5RTViQlhTWFUxb0tiLWNmNkRXdlU0NTFleVk0dGd6RWNaVUdfTXdyUtIBVEFVX3lxTE1fYk5Pb0VMLXNtYzRzTHFsdUcyblBYbEJ5QXVyaTJnMkIwSnk5RTViQlhTWFUxb0tiLWNmNkRXdlU0NTFleVk0dGd6RWNaVUdfTXdyUg?oc=5)
+- [TSMC, 엔비디아 요청에 3D D램 검토…삼성·SK하이닉스와 경쟁하나 - AI타임스](https://news.google.com/rss/articles/CBMiakFVX3lxTFBSZGZTQThOS3ZtN2FUTDJzcG00bHIxVXFMbHN0TzdlQUxTNllMNk5TR1lSZkJWQm1JYkw3U3h1Y0NCMnZZVTVSYUhUeGZCSDJBQm1ZSXRfQjh4MV9ESUw4NFV1Uy1ja2hnSkE?oc=5)
+- [삼성·SK, HBM 공급자서 SW 수요자로…엔비디아 ‘AI 동맹’ 고도화 - 뉴스토마토](https://news.google.com/rss/articles/CBMiYEFVX3lxTFAxQkhfZ0V6REJEY1MxWXlNNjhfcmhocFFxZTJxV2szTkNOYTMtYTIxVVhETEhjLVVHSTZ1TEFSc2VqNEJWTUwxUWx0QXZ0dXlTMHh1VGJqS2xwNFJWTmlRMA?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
