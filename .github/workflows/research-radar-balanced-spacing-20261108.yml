@@ -1,0 +1,122 @@
+name: Research balanced radar spacing and screenshots
+on:
+  push:
+    branches: [research/radar-balanced-spacing-20261108]
+    paths: ['.github/workflows/research-radar-balanced-spacing-20261108.yml']
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-balanced-spacing-20261108
+  cancel-in-progress: false
+jobs:
+  balanced-layout:
+    if: github.ref == 'refs/heads/research/radar-balanced-spacing-20261108'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: a526b3a9c56b36152c82f5584ce1d1fc60067afe
+          path: production-reference
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install screenshot browser and Korean fonts
+        run: |
+          pip install 'playwright==1.56.0' 'Pillow==11.3.0'
+          python -m playwright install chromium
+          sudo timeout 90s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 90s apt-get install -y fonts-nanum -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          test -n "$(fc-list :lang=ko)"
+      - name: Capture the actual over-spacious baseline
+        run: |
+          python -m http.server 8765 >/tmp/balanced-radar-http.log 2>&1 &
+          python -m http.server 8776 --directory production-reference >/tmp/balanced-reference-http.log 2>&1 &
+          python scripts/test_stock_radar_spacing_browser.py --out /tmp/radar-balanced/before --capture-only --label before
+      - name: Apply only the user-authorized compact spacing and its design contracts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          def edit(path, changes):
+              p=Path(path); text=p.read_text(encoding='utf-8')
+              for old,new in changes:
+                  assert old in text, (path,'missing expected source',old)
+                  text=text.replace(old,new)
+              p.write_text(text,encoding='utf-8')
+          edit('assets/stock-radar-spacing.css',[
+              ('gap: 24px !important;', 'gap: 12px !important;'),
+              ('gap: 20px !important;', 'gap: 12px !important;'),
+              ('gap: 16px !important;', 'gap: 12px !important;'),
+              ('min-height: 156px', 'min-height: 128px'),
+              ('padding: 14px 16px !important;', 'padding: 9px 12px !important;'),
+              ('gap: 8px !important;', 'gap: 5px !important;'),
+              ('min-height: 64px;', 'min-height: 52px;'),
+              ('padding: 8px 10px;', 'padding: 3px 8px;'),
+              ('gap: 3px;', 'gap: 1px;'),
+              ('.fx-worldflow-index { padding: 8px; }', '.fx-worldflow-index { padding: 3px 8px; }'),
+          ])
+          edit('stock-value-radar.html',[
+              ('stock-radar-spacing.css?v=spacing-20261107-1','stock-radar-spacing.css?v=balanced-20261108-1')
+          ])
+          edit('scripts/test_stock_radar_spacing_browser.py',[
+              ('minimum_gap = 20 if width <= 850 else 24', 'minimum_gap = 12'),
+              ("metrics['gap'] >= minimum_gap - .75", "abs(metrics['gap'] - minimum_gap) <= .75"),
+              ("+ 23 <= metrics['main']['y']", "+ 11.25 <= metrics['main']['y']"),
+              ("if switched['gap'] < (20 if width <= 850 else 24) - .75:", "if abs(switched['gap'] - 12) > .75:"),
+              ("if metrics['gap'] < 23.25 or metrics['horizontalOverflow'] > 1:", "if abs(metrics['gap'] - 12) > .75 or metrics['horizontalOverflow'] > 1:"),
+              ("if width >= 1180:\n            checks['both_top_cards_end_before_main']", "if width >= 1180:\n            checks['compact_desktop_market_height'] = 128 <= metrics['market']['height'] <= 156\n            checks['both_top_cards_end_before_main']"),
+          ])
+          edit('scripts/test_stock_radar_canonical_browser.py',[
+              ('# The user requested readable market cards and whitespace, replacing the old\n# <=150px compressed-strip design. Keep an upper bound AND test actual card edges.', '# User refined the previous oversized cards: content-driven height and exactly 12px gap.\n# Keep both size bounds, visible-edge checks and all overflow protections.'),
+              ('MIN_CARD_HEIGHT = 156', 'MIN_CARD_HEIGHT = 128'),
+              ('MAX_CARD_HEIGHT = 240', 'MAX_CARD_HEIGHT = 156'),
+              ('MIN_WORKSPACE_GAP = 24', 'MIN_WORKSPACE_GAP = 12'),
+              ('info["main"]["y"] >= actual_bottom + MIN_WORKSPACE_GAP - .75', 'abs(info["main"]["y"] - actual_bottom - MIN_WORKSPACE_GAP) <= .75'),
+              ('protected 24px workspace gap', 'requested 12px workspace gap'),
+          ])
+          edit('scripts/test_stock_world_flow_browser.py',[
+              ('desktop summary protects readable content and 24px separation', 'desktop summary protects readable content and compact 12px separation'),
+              ("156 <= closed['strip']['h'] <= 240 and closed['main']['y'] >= max(closed['card']['bottom'], closed['strip']['bottom']) + 23", "128 <= closed['strip']['h'] <= 156 and abs(closed['main']['y'] - max(closed['card']['bottom'], closed['strip']['bottom']) - 12) <= .75"),
+          ])
+          edit('scripts/compare_radar_before_after.py',[
+              ('24px desktop / 20px mobile', '12px desktop / 12px mobile'),
+              ('required_gap = 20 if width <= 850 else 24', 'required_gap = 12'),
+          ])
+          print('SCOPED_DESIGN_REFINEMENT_APPLIED: original font sizes and all data untouched')
+          PY
+      - name: Validate real source, card edges, all eight viewports and iframe
+        run: |
+          node scripts/test_stock_world_flow.cjs
+          python scripts/test_stock_radar_spacing_browser.py --out /tmp/radar-balanced/after --label after
+          python scripts/test_stock_radar_canonical_browser.py
+          python scripts/test_stock_world_flow_browser.py --out /tmp/radar-balanced/source-browser
+          python scripts/compare_radar_before_after.py --real-data . --out /tmp/radar-balanced/protected-comparison
+      - name: Preserve only the six successfully tested changes on this branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'research/radar-balanced-spacing-20261108'
+          git add assets/stock-radar-spacing.css stock-value-radar.html scripts/test_stock_radar_spacing_browser.py scripts/test_stock_radar_canonical_browser.py scripts/test_stock_world_flow_browser.py scripts/compare_radar_before_after.py
+          python - <<'PY'
+          import subprocess
+          allowed={'assets/stock-radar-spacing.css','stock-value-radar.html','scripts/test_stock_radar_spacing_browser.py','scripts/test_stock_radar_canonical_browser.py','scripts/test_stock_world_flow_browser.py','scripts/compare_radar_before_after.py'}
+          actual=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          assert actual == allowed, actual
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'style: halve radar workspace gap and reduce oversized card padding without shrinking text'
+          git push origin HEAD:refs/heads/research/radar-balanced-spacing-20261108
+          echo "TESTED_BRANCH_COMMIT=$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-balanced-spacing-before-after
+          path: /tmp/radar-balanced
+          retention-days: 7
