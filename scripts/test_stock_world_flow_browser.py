@@ -183,7 +183,7 @@ def main():
                               and closed['contentHeight'] <= closed['clientHeight'] + 2, closed)
                         check(f'{width}: market strip does not overlap research workspace', closed['main']['y'] >= closed['strip']['bottom'] - 1, closed)
                         if width >= 1180:
-                            check(f'{width}: desktop summary protects readable content and 24px separation', 156 <= closed['strip']['h'] <= 240 and closed['main']['y'] >= max(closed['card']['bottom'], closed['strip']['bottom']) + 23, closed)
+                            check(f'{width}: desktop summary protects readable content and compact 12px separation', 128 <= closed['strip']['h'] <= 156 and abs(closed['main']['y'] - max(closed['card']['bottom'], closed['strip']['bottom']) - 12) <= .75, closed)
                         shot = out / f'world-flow-{width}-summary.png'
                         page.screenshot(path=str(shot), full_page=True)
                         report['screenshots'].append(str(shot))

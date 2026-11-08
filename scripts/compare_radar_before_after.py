@@ -1,6 +1,6 @@
 """Compare protected radar panels using identical genuine data.
 
-The user authorized readable market height and a 24px desktop / 20px mobile
+The user authorized readable market height and a 12px desktop / 12px mobile
 workspace gap. Normalize ONLY those two layout inputs on the baseline before
 comparing protected workspace geometry/pixels. Preserve original screenshots,
 4px geometry tolerance, 12% pixel tolerance, and full-page detail checks.
@@ -49,7 +49,7 @@ def main():
     out = Path(args.out)
     out.mkdir(exist_ok=True)
     report = {'note': 'Identical genuine repository JSON for both views, read-only',
-              'intentional_region': 'Market row content height and 24px desktop / 20px mobile gap only',
+              'intentional_region': 'Market row content height and 12px desktop / 12px mobile gap only',
               'protected_contract': 'Baseline normalized by ONLY those two top-layout inputs; header, workspace and detail keep 4px / 12% gates',
               'screens': [], 'failures': []}
 
@@ -108,7 +108,7 @@ def main():
                     if not before['market'] or not after['market']:
                         report['failures'].append(name + ': missing intended market region')
                         continue
-                    required_gap = 20 if width <= 850 else 24
+                    required_gap = 12
                     after_gap = after['bounds']['y'] - after['market']['y'] - after['market']['h']
                     visible_bottom = max(after['market']['y'] + after['market']['h'], *(c['bottom'] for c in after['cards']))
                     if abs(after_gap - required_gap) > .75 or after['bounds']['y'] < visible_bottom + required_gap - .75:
