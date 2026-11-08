@@ -44,9 +44,9 @@ def main():
     failures = []
 
     def record_checks(metrics, errors, width):
-        minimum_gap = 20 if width <= 850 else 24
+        minimum_gap = 12
         checks = {
-            'protected_workspace_gap': metrics['gap'] >= minimum_gap - .75,
+            'protected_workspace_gap': abs(metrics['gap'] - minimum_gap) <= .75,
             'all_five_indices_retained': len(metrics['tiles']) == 5,
             'no_clipped_index_text': all(not t['overflowing'] for t in metrics['tiles']),
             'market_content_stays_inside_its_card': all(c['bottom'] <= metrics['world']['bottom'] + .75 for c in metrics['content']),
@@ -55,7 +55,8 @@ def main():
             'no_browser_runtime_error': not errors,
         }
         if width >= 1180:
-            checks['both_top_cards_end_before_main'] = max(metrics['world']['bottom'], metrics['sentiment']['bottom']) + 23 <= metrics['main']['y']
+            checks['compact_desktop_market_height'] = 128 <= metrics['market']['height'] <= 156
+            checks['both_top_cards_end_before_main'] = max(metrics['world']['bottom'], metrics['sentiment']['bottom']) + 11.25 <= metrics['main']['y']
         if width >= 1180 and metrics['viewport']['height'] >= 768:
             checks['desktop_main_fits_available_viewport'] = metrics['main']['bottom'] <= metrics['viewport']['height'] + 1
         return checks
@@ -93,7 +94,7 @@ def main():
                             page.wait_for_timeout(150)
                             switched = page.evaluate(MEASURE)
                             view['switched_gap'] = switched['gap']
-                            if switched['gap'] < (20 if width <= 850 else 24) - .75:
+                            if abs(switched['gap'] - 12) > .75:
                                 failures.append(f'{width}: sentiment switch collapsed spacing')
                         page.locator('[data-worldflow-open]').click()
                         dialog = page.locator('.fx-worldflow-dialog[open]')
@@ -118,7 +119,7 @@ def main():
                 iframe.wait_for_function("() => document.querySelectorAll('[data-worldflow-index]').length===5 && !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length", timeout=60000)
                 metrics = iframe.evaluate(MEASURE)
                 report['iframe'] = metrics
-                if metrics['gap'] < 23.25 or metrics['horizontalOverflow'] > 1:
+                if abs(metrics['gap'] - 12) > .75 or metrics['horizontalOverflow'] > 1:
                     failures.append('1245x700 iframe: protected gap or horizontal overflow')
                 page.screenshot(path=str(args.out / f'{args.label}-iframe-1245x700.png'))
                 context.close()

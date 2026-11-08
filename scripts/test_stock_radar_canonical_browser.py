@@ -4,11 +4,11 @@ import json
 from playwright.sync_api import sync_playwright
 
 BASE = "http://127.0.0.1:8765/"
-# The user requested readable market cards and whitespace, replacing the old
-# <=150px compressed-strip design. Keep an upper bound AND test actual card edges.
-MIN_CARD_HEIGHT = 156
-MAX_CARD_HEIGHT = 240
-MIN_WORKSPACE_GAP = 24
+# User refined the previous oversized cards: content-driven height and exactly 12px gap.
+# Keep both size bounds, visible-edge checks and all overflow protections.
+MIN_CARD_HEIGHT = 128
+MAX_CARD_HEIGHT = 156
+MIN_WORKSPACE_GAP = 12
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
             assert info["flag"] and 0 < info["flag"]["width"] <= 32 and 0 < info["flag"]["height"] <= 28, "Unstyled giant flag"
             assert len(info["cards"])==2 and all(MIN_CARD_HEIGHT <= c["height"] <= MAX_CARD_HEIGHT for c in info["cards"]), "Full-screen or compressed market card"
             actual_bottom = max(info["row"]["bottom"], *(c["bottom"] for c in info["cards"]))
-            assert info["main"] and info["main"]["y"] >= actual_bottom + MIN_WORKSPACE_GAP - .75, "Visible market cards consume the protected 24px workspace gap"
+            assert info["main"] and abs(info["main"]["y"] - actual_bottom - MIN_WORKSPACE_GAP) <= .75, "Visible market cards consume the requested 12px workspace gap"
             assert info["main"]["width"] >= width * 0.8, "Workspace unexpectedly narrow"
             assert info["main"]["bottom"] <= height + 1, "Desktop analysis workspace falls outside the viewport"
             page.close()
