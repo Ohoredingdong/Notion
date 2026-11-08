@@ -1,0 +1,93 @@
+name: Verify balanced radar public layout
+on:
+  push:
+    branches: [research/radar-balanced-spacing-20261108]
+    paths: ['.github/workflows/research-radar-balanced-public-20261108.yml']
+permissions:
+  contents: read
+jobs:
+  public-balanced-layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3aeda42228319fef8ec533eea9ff379fea41642b
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser and Korean screenshot fonts
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          sudo timeout 90s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 90s apt-get install -y fonts-nanum -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+      - name: Verify exact live HTML and CSS then capture the real public layout
+        run: |
+          python - <<'PY'
+          import hashlib,json,time,urllib.request
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          from scripts.test_stock_radar_spacing_browser import MEASURE
+          BASE='https://ohoredingdong.github.io/Notion/'
+          OUT=Path('/tmp/radar-balanced-live');OUT.mkdir(parents=True,exist_ok=True)
+          names=('stock-value-radar.html','assets/stock-radar-spacing.css')
+          expected={name:Path(name).read_bytes() for name in names}
+          assert b'balanced-20261108-1' in expected[names[0]]
+          report={'release_commit':'3aeda42228319fef8ec533eea9ff379fea41642b','captured_at':datetime.now(timezone.utc).isoformat(),'public_byte_match':False,'views':[],
+                  'limits':['Viewport tests, not physical device or Notion app tests. Layout-only verification, not a price audit.']}
+          try:
+              for attempt in range(18):
+                  try:
+                      actual={}
+                      for name in names:
+                          request=urllib.request.Request(BASE+name+'?layout-audit=balanced-20261108-1',headers={'Cache-Control':'no-cache','User-Agent':'RadarLayoutAudit/1.0'})
+                          with urllib.request.urlopen(request,timeout=15) as response:
+                              assert response.status==200
+                              actual[name]=response.read()
+                      if actual==expected:
+                          report['public_byte_match']=True
+                          report['hashes']={name:hashlib.sha256(data).hexdigest() for name,data in actual.items()}
+                          print('BALANCED_RADAR_PUBLIC_BYTES_VERIFIED',attempt+1)
+                          break
+                  except Exception as exc:
+                      print('PUBLIC_RETRY',attempt+1,type(exc).__name__)
+                  if attempt<17:time.sleep(8)
+              assert report['public_byte_match'],'Exact public release not yet verified'
+              with sync_playwright() as play:
+                  browser=play.chromium.launch(headless=True)
+                  try:
+                      for width,height in ((1245,768),(1440,900),(390,844)):
+                          page=browser.new_page(viewport={'width':width,'height':height},reduced_motion='reduce',color_scheme='light')
+                          errors=[]
+                          page.on('pageerror',lambda exc:errors.append(str(exc)))
+                          page.goto(BASE+'stock-value-radar.html?stock=NVMI&v=balanced-20261108-1',wait_until='domcontentloaded',timeout=60000)
+                          page.wait_for_function("() => document.querySelectorAll('[data-worldflow-index]').length===5 && !!window.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length",timeout=60000)
+                          page.evaluate('() => document.fonts.ready')
+                          switch=page.locator('[data-fx-sentiment-next]')
+                          if switch.count()==1 and '한국' in switch.inner_text():switch.click()
+                          page.wait_for_timeout(250)
+                          metrics=page.evaluate(MEASURE)
+                          assert abs(metrics['gap']-12)<=.75,metrics
+                          assert metrics['worldOverflow']<=1 and metrics['horizontalOverflow']<=1,metrics
+                          assert len(metrics['tiles'])==5 and not any(x['overflowing'] for x in metrics['tiles'])
+                          assert not errors,errors
+                          if width>=1180:
+                              assert 128<=metrics['market']['height']<=156
+                              assert metrics['main']['bottom']<=height+1
+                          filename=f'radar-balanced-live-{width}x{height}.png'
+                          page.screenshot(path=str(OUT/filename),full_page=False)
+                          report['views'].append({'width':width,'height':height,'metrics':metrics,'runtime_errors':errors,'screenshot':filename})
+                          page.close()
+                  finally:browser.close()
+              print('BALANCED_RADAR_LIVE_LAYOUT_PASSED',len(report['views']))
+          finally:
+              (OUT/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-balanced-spacing-live
+          path: /tmp/radar-balanced-live
+          retention-days: 7
