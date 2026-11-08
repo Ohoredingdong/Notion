@@ -25,6 +25,8 @@ GATED_STEPS = (
     "Verify public autonomous cycle and code",
     "Verify paper plans in the same public build",
     "Preserve forecast and paper publication evidence with the matching audit",
+    "Opportunistic first paper publication proof after automatic Pages build",
+    "Persist only newly observed paper first-public proofs",
     "Run actions/upload-artifact@v4",
 )
 EXPECTED_STEPS = ("Set up job", GATE, *GATED_STEPS, "Complete job")
