@@ -120,6 +120,8 @@ METRICS = r'''async()=>{''' + old.PAINT_HELPERS + r'''
   storageStatus:KitchenJournal.status,
   storageNotice:control(document.querySelector('#homeStorageNotice [data-wf="backupTools"]')),
   storageNoticeText:textRanges(document.querySelector('#homeStorageNotice')).filter(r=>r.readable).map(r=>r.text).join(' '),
+  storageNoticeFonts:[...document.querySelectorAll('#homeStorageNotice button span,#homeStorageNotice button strong')].filter(visible).map(e=>parseFloat(getComputedStyle(e).fontSize)),
+  brandTitle:box(document.querySelector('#refreshBrand h1')),
   balance:box(document.querySelector('#dailyBalance')),shelf:box(document.querySelector('#homeSupplementsShelf')),
   visibleShelfText:textRanges(document.querySelector('#homeSupplementsShelf')).filter(r=>r.readable).map(r=>r.text).join(' '),
   shelfManagement:control([...document.querySelectorAll('#homeSupplementsShelf [data-living-supplements]')].find(visible)),
@@ -218,6 +220,11 @@ def home_geometry(ev, m, contract, populated):
         target(ev,r['storageNotice'],'Temporary-session backup entry')
         check(ev,'임시'in r['storageNoticeText'] and '백업'in r['storageNoticeText'],
               'The opaque preview visibly identifies its temporary storage and backup action',r['storageNoticeText'])
+        check(ev,bool(r['storageNoticeFonts']) and min(r['storageNoticeFonts'])>=11,
+              'Temporary storage and backup use readable text instead of a tiny title underline',r['storageNoticeFonts'],layout=True)
+        for other,name in [(r['brandTitle'],'title'),(r['inventory']['rect'],'inventory'),(r['shelf'],'supplements')]:
+            check(ev,overlap(r['storageNotice']['rect'],other)<=1,
+                  'Temporary backup is separate from '+name,layout=True)
     for item, name in [(r['add'], 'Ingredient addition'), (r['inventory'], 'Ingredient inventory')]:
         target(ev, item, name)
     for item in m['shelf']['controls']:
@@ -321,6 +328,9 @@ def recipe_geometry(ev, frame, m, populated):
         target(ev,action,'Recipe '+action['label'])
     check(ev,{'recipeCatalog','recipeFilters'}<=set(c['workflow']for c in m['recipe']['actions']),
           'Catalog and filter actions remain visibly available beside the recipe comparison')
+    filters=[c for c in m['recipe']['actions']if c['workflow']=='recipeFilters']
+    check(ev,len(filters)==1 and '조건'in filters[0]['label'],
+          'Recipe conditions have one clearly labelled control instead of three identical fake dropdowns',filters)
 
 
 def recipe_clicks(ev,frame,original,subset=False):
@@ -359,6 +369,8 @@ def recipe_clicks(ev,frame,original,subset=False):
     frame.locator('#homeRecommendation [data-home-filter-reset]').click();old.ready(frame)
     check(ev,frame.locator('#homeRecommendation .recipe-grid-card').count()==8,
           'Actual reset restores the eight recipes')
+    check(ev,frame.evaluate('document.activeElement?.dataset.wf==="recipeFilters"'),
+          'Reset returns keyboard focus to the visible recipe-condition control')
     readonly(ev,frame,original,'Filtering and resetting never persist or seed records')
 
 

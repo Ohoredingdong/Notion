@@ -58,8 +58,7 @@
 <main class="shell" id="kitchenWidget">
   <header class="masthead" id="refreshBrand">
     <div class="brand"><span class="story-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="m3 10 9-7 9 7v11H3Z"/><path d="M9 21v-9h6v9"/></svg></span><div><h1>한끼의 부엌</h1><p id="todayStamp">오늘의 작은 부엌</p></div></div>
-    <div class="header-actions"><button type="button" data-workflow="inventory" aria-label="재료와 기한 알림"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4M12 1v1"/></svg><span class="sr-only">재료 목록</span></button></div>
-  <div id="homeStorageNotice" class="home-storage-notice" hidden></div>
+    <div class="header-actions"><div id="homeStorageNotice" class="home-storage-notice" hidden></div><button type="button" data-workflow="inventory" aria-label="재료와 기한 알림"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4M12 1v1"/></svg><span class="sr-only"><span class="inventory-wide-label">재료 목록</span><span class="inventory-short-label">재료</span></span></button></div>
   </header>
   <section id="panel-fridge" class="home-panel fridge-panel" role="tabpanel" aria-labelledby="tab-fridge">
   <p id="appliedRoomMessage" aria-hidden="true"><span>✓</span>나의 부엌에 적용했어요</p>
@@ -96,7 +95,7 @@
     <div class="recipe-view-header"><nav class="panel-tabs" role="tablist" aria-label="레시피 보기">
       <button type="button" id="sub-recommendation" role="tab" data-home-subtab="recommendation" aria-controls="homeRecommendation" aria-selected="true">추천 요리</button>
       <button type="button" id="sub-plans" role="tab" data-home-subtab="plans" aria-controls="homePlans" aria-selected="false" tabindex="-1">내 식단</button>
-    </nav><div class="recipe-view-actions"><button type="button" data-wf="recipeCatalog" aria-label="전체 레시피 목록">목록</button><button type="button" data-wf="recipeFilters" aria-label="레시피 조건 조정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8Z"/></svg></button></div></div>
+    </nav><div class="recipe-view-actions"><button type="button" data-wf="recipeCatalog" aria-label="전체 레시피 목록">목록</button><button type="button" data-wf="recipeFilters" aria-label="요리 조건 설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--filter-control-fill,#fffaf5)"/><circle cx="15" cy="17" r="3" fill="var(--filter-control-fill,#fffaf5)"/></svg><span>조건</span></button></div></div>
     <section class="home-recommendation home-card" id="homeRecommendation" data-home-page="recommendation" role="tabpanel" aria-labelledby="sub-recommendation"></section>
     <section class="home-plans home-card" id="homePlans" data-home-page="plans" role="tabpanel" aria-labelledby="sub-plans" hidden></section>
   </section>

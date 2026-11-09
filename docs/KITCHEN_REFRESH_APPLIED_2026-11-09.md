@@ -38,6 +38,16 @@ node --test tests/*.test.cjs
 
 ## 검증 상태
 
+### 같은 날 후속: 백업·요리 조건 가독성
+
+사용자가 제목 아래 `임시 · 백업`과 `시간⌄`의 배치를 지적하고 화면을 더 읽기 쉽게 해 달라고 요청했다. 백업은 오른쪽 독립 버튼으로 옮겨 상태11px·동작12px, 실제44px 클릭 영역을 확보했다. 작은 화면은 `임시 / 백업`과 `재료` 두 버튼으로 정리하며 중앙 영양제를 유지한다. 임시 저장을 영구 저장으로 바꾸거나 안내를 감추지 않는다.
+
+시간·예산·재료의 세 버튼은 원래 모두 같은 조건 창을 열었다. 개별 드롭다운처럼 보이는 문자 `⌄`를 없애고 **조건 설정 하나 + 실제 선택 조건 칩 + 초기화**로 정리했다. 작은 화면은 제목 있는 `조건` 버튼과 적용 개수를 표시한다. 기존 필터, 실제 무결과,8카드 복귀와 키보드 초점을 보존한다.
+
+[수정 전 백업](artifacts/kitchen-controls-20261109/before-720-home.png)·[수정 후](artifacts/kitchen-controls-20261109/after-720-home.png), [수정 전 조건](artifacts/kitchen-controls-20261109/before-720-recipes.png)·[수정 후](artifacts/kitchen-controls-20261109/after-720-recipes.png), [15분 조건 적용](artifacts/kitchen-controls-20261109/after-720-filtered.png)을 같은 상태로 직접 비교했다. [후속 검증 기록](artifacts/kitchen-controls-20261109/verification.json): 기존25시나리오/7,063단언과 가독성20시나리오/906단언, 닫힌 문·손상 저장소3시나리오가 통과했다. Node233·전송13개도 통과했다. 추가 검사에는559/560/561/562px 경계, 실제 백업 내용, 무결과 초기화 하나,20개 전후 프레임/원문 동일을 포함한다. 운영 배포·실제 Notion/Safari/공개 미리보기 실행은 별도로 미검증이다.
+
+아래는 최초 시안 적용 시점의 검증 이력이다.
+
 최종 `after-v6`를 검증한 뒤 **같은 바이트 그대로** `previews/miniature-kitchen-{app,widget}.html`, `previews/mobile/{app,widget}.html`에 복사했다. [검증 결과·해시·보존 목록](artifacts/kitchen-refresh-20261109/verification.json)에 실제 실행 범위를 남긴다.
 
 | 검사 | 결과 |
