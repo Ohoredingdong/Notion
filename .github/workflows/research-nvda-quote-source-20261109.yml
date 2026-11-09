@@ -1,0 +1,64 @@
+name: Research NVDA quote-source feasibility
+on:
+  push:
+    branches: [research/nvda-refresh-check-20261109]
+    paths: [.github/workflows/research-nvda-quote-source-20261109.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cd9df39e4b4e2538cc7733352cef5e2b06a6eba3
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'yfinance==0.2.66'
+      - name: Inspect original quote fields and exact public snapshot; never publish them as live without timestamp proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request,hashlib
+          from pathlib import Path
+          from datetime import datetime,timezone
+          import yfinance as yf
+          p=Path('/tmp/nvda-quote-proof');p.mkdir()
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'pinned_main':'cd9df39e4b4e2538cc7733352cef5e2b06a6eba3'}
+          def req(url,api=False):
+              h={'User-Agent':'Notion-quote-provenance/1.0','Cache-Control':'no-cache'}
+              if api:h['Authorization']='Bearer '+os.environ['GH_TOKEN']
+              with urllib.request.urlopen(urllib.request.Request(url,headers=h),timeout=20) as r:return r.read()
+          raw=Path('stock-opportunity-data.json').read_bytes(); d=json.loads(raw)
+          report['canonical']={'metadata':{k:v for k,v in d.items() if not isinstance(v,(dict,list))},'nvda':next((r for r in d['companies'] if r['symbol']=='NVDA'),None)}
+          public=req('https://ohoredingdong.github.io/Notion/stock-opportunity-data.json?audit=nvda-session-20261109')
+          report['public_equal_pin']=public==raw
+          report['public_nvda']=next((r for r in json.loads(public)['companies'] if r['symbol']=='NVDA'),None)
+          health=json.loads(Path('stock-radar-health.json').read_bytes())
+          report['health_keys']=list(health)
+          report['health_findings']={k:v for k,v in health.items() if any(t in k for t in ('issue','error','failure','warning','status'))}
+          runs=json.loads(req('https://api.github.com/repos/Ohoredingdong/Notion/actions/workflows/update-stock-opportunities.yml/runs?per_page=3',True))['workflow_runs']
+          report['actual_source_runs']=[{k:r.get(k) for k in ('id','status','conclusion','event','created_at','updated_at','head_sha')} for r in runs]
+          try:
+              info=yf.Ticker('NVDA').get_info()
+              report['provider_info']={k:v for k,v in info.items() if any(t.lower() in k.lower() for t in ('market','price','time','symbol','currency','exchange','delay','quote','source'))}
+              report['provider_received_at']=datetime.now(timezone.utc).isoformat()
+          except Exception as e:report['provider_info_error']=type(e).__name__
+          (p/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          summary={k:v for k,v in report.items() if k not in ('canonical','public_nvda')}
+          for k in ('canonical','public_nvda'):
+              row=report['canonical']['nvda'] if k=='canonical' else report[k]
+              summary[k]={a:row.get(a) for a in ('symbol','price','price_session','data_timestamp','price_source','daily_change')}
+          print('NVDA_QUOTE_SOURCE_CHECK',json.dumps(summary,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nvda-quote-source-feasibility
+          path: /tmp/nvda-quote-proof
+          retention-days: 7
