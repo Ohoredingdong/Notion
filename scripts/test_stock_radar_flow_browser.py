@@ -97,6 +97,7 @@ with sync_playwright() as play:
             "(nodes) => nodes.map(n => n.getAttribute('src'))")
         expected_modules=("stock-radar-clean-bridge.js","stock-radar-flow-v2.js",
                           "stock-catalog-ui.js","stock-world-brief.js","stock-world-flow.js",
+                          "stock-quote-context.js",
                           "stock-forecast.js","stock-forecast-learning.js",
                           "stock-forecast-directions.js","stock-forecast-autopilot.js")
         check("Approved V5 runtime modules and independent forecast screens only",
@@ -104,6 +105,15 @@ with sync_playwright() as play:
               for name in expected_modules) and not any("stock-radar-v8.js" in x
               or "stock-radar-v9.js" in x for x in assets),
             str(assets))
+        check("Saved quote basis remains visible beside the selected price",
+            page.locator('.fx-v5-quote [data-quote-session]').is_visible() and
+            page.locator('.fx-v5-quote [data-quote-view]').count()==1 and
+            ('정규장 종가' in page.locator('[data-quote-session]').inner_text() or
+             '기준일 미확인' in page.locator('[data-quote-session]').inner_text()))
+        check("External quote provider is opt-in, not a hidden default request",
+            page.locator('.radar-quote-dialog').count()==0 and
+            not page.evaluate("""() => performance.getEntriesByType('resource').some(
+                r => /tradingview(-widget)?\.com/.test(new URL(r.name).hostname))"""))
         check("World market summary replaces the four index tiles",
             page.locator(".fx-worldflow").count() == 1 and
             page.locator("[data-worldflow-region]").count() == 6 and
@@ -330,4 +340,3 @@ with sync_playwright() as play:
 REPORT["pass"] = all(c["pass"] for c in REPORT["checks"])
 (OUT/"ux-flow-report.json").write_text(json.dumps(REPORT,ensure_ascii=False,indent=2),encoding="utf-8")
 print(json.dumps({"pass":REPORT["pass"],"checks":len(REPORT["checks"]),"screenshots":REPORT["screenshots"]},ensure_ascii=False))
-
