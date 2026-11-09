@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-09T03:24:43.139659+09:00
+- 계산일: 2026-11-09T20:28:23.719622+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [(11월 첫째 주 세계경제동향 브리핑) 코스피·코스닥 11%대 동반 폭락…美 증시도 급락 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTE9qUlZmY2NFbEFiYmEwcFhFS1dqeXdsT0d0NDdtQXpSRDNsemxxYVVWNnp2cWpRdVVVZElXMW9CNHNUcXBrd3JOcUFQQWpaV2lWWUMxN1REQ0NjVUNzV1NNd3ZHNUxjdmtVbFNYaTJvbw?oc=5)
-- [“미국 물가부터 옵션 만기까지”…다음 주 증시 변수, 미리 대비하려면 - 매일경제](https://news.google.com/rss/articles/CBMiUkFVX3lxTE9VN0hOSEllYm85U1EyTW9uYk5hd01MbEd2UUQ0VnRzb0ZCQ0Z2MHhrV2JSSDhEV1hsb1JsdGU4R1MzV200bEs3Um1YT3FtbTBxanc?oc=5)
-- [엔비디아, AI 메모리 설계 영향력 확대…삼전닉스 생산 전략 주목 - 메트로신문](https://news.google.com/rss/articles/CBMiYEFVX3lxTE10QTdvZlV3WEp4WVNXakxsLWs1R3hjRkJMNFA3WXBQd2k5U1lBWGZMNlR2dVJ3UmIyOVd3cVdTTkVxOUloNnpUb2dJQ0hka29ETkQ1ZzhjRElDMmhNM1VPZQ?oc=5)
-- [TSMC '3D D램' 진출설에 드러난 엔비디아의 속내 … '삼전닉스' 메모리 주도권 시험대 - 뉴데일리](https://news.google.com/rss/articles/CBMigAFBVV95cUxPWlhrVFZubEx2U0UzbkFhcHhKclJjMm4wRTBzMGZsNDFNSzA2TWRvVXVQT2pWa1llVkpESmE0TXVoWXhDTVc2aHcxSEhwVjlwRmYtQVp3aWxHMEdEWnRCWjY4UTZkcldQSGlyME5OcTBLUWEzYi12R2htVUZabmE2d9IBgAFBVV95cUxPWlhrVFZubEx2U0UzbkFhcHhKclJjMm4wRTBzMGZsNDFNSzA2TWRvVXVQT2pWa1llVkpESmE0TXVoWXhDTVc2aHcxSEhwVjlwRmYtQVp3aWxHMEdEWnRCWjY4UTZkcldQSGlyME5OcTBLUWEzYi12R2htVUZabmE2dw?oc=5)
+- [시야가 좁아지는 때... 개미투자자라면 봐야 할 세가지 숫자 - OhmyNews](https://news.google.com/rss/articles/CBMidEFVX3lxTFBFTVpJT2dsTkpVQW9Nb0dFTU5DQUMyNUFzNTNtWEdDY2ZyOUJJUzNnTGthWS1EM3ZWSU1QVkxEaWIwVEdqbTVXaUljdTZOaHBpT2xtWi1MWDUwVGcwWTIzYUFjRTBmNk5CSWYybVV1S2hlMWhL?oc=5)
+- [미국 고용 호조에도 가계 재정 불안…한국 가계부채 주요 9개국 중 2위, 세계 경제 고물가·금리 분화 - 아시아투데이](https://news.google.com/rss/articles/CBMibkFVX3lxTE9aMU10dWhuaGFsSlNEQlVramp1U0NtaE5lV1dRNzRaelVBVURtZ1dGMmU2dEZfZUUzalo3dFMyUDE0bVV2NGcwVHB5V0ZhenFWNFVhVl9QWmxzUmhueWxwRldKa0JsRWU2bGFJcE5R?oc=5)
+- ['HBM 기술통' 삼성 이어 하이닉스도 미국총괄에 기용 - 코리아리포트](https://news.google.com/rss/articles/CBMicEFVX3lxTFB6MVFJNjJVRUVCYkNPajRsZl9KZXJtSWNwZ2lZemkycXBiMXVjdFZQSGVxN0pSYjVwQWRsVk5vUTVCdzVubVZaVWFfalp5VDRrYWduLXNZc18xWmJmTklDNWgwcW5MUC1HZlluZmlrZVI?oc=5)
+- ['젠슨 황 스캔들 파장'에 미국의 중국 반도체 규제 강화되나, 삼성전자·SK하이닉스 메모리 영향 '촉각' - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTE93X1FTWnZKTTZzY0N3dU5VUk5BQUJIdFFpWTliYndqUHdnRklpZDliXzd6aV96dmF5ejlEQ2g5OGdhY2xCUGpMVzkxY2JHWlVxNjlxZ1BZOXlVWTZ3ak5uaWUzZU92dEplRHctTW1IdjV1NGs?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
