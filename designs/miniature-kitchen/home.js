@@ -70,7 +70,7 @@ function update(){
   if($('#homeProps'))$('#homeProps').innerHTML=propMarkup;
   if($('#homeSceneDecor'))$('#homeSceneDecor').innerHTML=propMarkup;
   $('#todayStamp').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-  const notice=$('#homeStorageNotice');notice.dataset.storageStatus=J.status;notice.hidden=J.status==='saved';notice.setAttribute('aria-label',J.status==='temporary'?'임시 세션입니다. 닫기 전에 백업해 주세요.':'새 저장이 중단됐어요. 기존 기록과 백업을 확인해 주세요.');notice.innerHTML='<span>'+(J.status==='temporary'?'임시 세션':'저장 중단')+'</span>'+action('백업','backupTools','');
+  const notice=$('#homeStorageNotice');notice.dataset.storageStatus=J.status;notice.hidden=J.status==='saved';notice.setAttribute('aria-label',J.status==='temporary'?'임시 세션입니다. 닫기 전에 백업해 주세요.':'새 저장이 중단됐어요. 기존 기록과 백업을 확인해 주세요.');notice.innerHTML='<span>'+(J.status==='temporary'?'임시 세션':'저장 중단')+'</span>'+action(J.status==='temporary'?'임시 · 백업':'백업','backupTools','');
   const soon=new Date();soon.setDate(soon.getDate()+3);const near=world.items.filter(i=>['food','seasoning'].includes(i.kind)&&!i.depleted&&i.expiry&&i.expiry>=day&&i.expiry<=dayString(soon)).sort((a,b)=>a.expiry.localeCompare(b.expiry));
   $('#homeRecommendation').dataset.screenId='B1';
   $('#homeRecommendation').innerHTML=window.KitchenRecipeHub.renderRecommendation({ranked,near,filters:recipeFilters,esc,fmt,money,dish,action,routeButton,recommendationView});

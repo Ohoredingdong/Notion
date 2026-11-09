@@ -10,10 +10,26 @@ import unittest
 from build_kitchen_mobile_preview import mobile_page
 from build_miniature_kitchen_preview import (
     BASE85_DECODER_JS, DELIVERY_LIMIT, PACKED_MARKER, SAFE_BASE85_ALPHABET,
-    decode_base85, encode_base85, fit_document, pack_document, unpack_document)
+    decode_base85, encode_base85, fit_document, pack_document, unpack_document,
+    preview_mode)
 
 
 class KitchenMobileTransport(unittest.TestCase):
+    def test_body_mode_survives_additional_attributes_and_fails_closed(self):
+        for attributes in ['data-mode="app" data-design="refresh"',
+                           'data-design="refresh" data-mode="app"',
+                           "class='page' data-mode='app' data-camera='fridge'"]:
+            source = '<body '+attributes+'><p>기존 기록</p></body>'
+            widget = preview_mode(source, 'widget')
+            self.assertRegex(widget, r'data-mode=[\'\"]widget[\'\"]')
+            self.assertEqual(preview_mode(source, 'app'), source)
+            self.assertIn('<p>기존 기록</p>', widget)
+        for invalid in ['<body><p>app</p></body>', '<body data-mode="widget"></body>']:
+            with self.assertRaisesRegex(ValueError, 'Missing app mode'):
+                preview_mode(invalid, 'widget')
+        with self.assertRaisesRegex(ValueError, 'Unknown presentation'):
+            preview_mode('<body data-mode="app">', 'phone')
+
     def test_inner_document_roundtrips_without_changing_quotes_unicode_or_script_case(self):
         content = '''<!doctype html><html lang="ko"><body>우유 &amp; '두부'
 <script>const value = "한 끼"; const raw = "\\\\n</template>&notit;&#13;";</ScRiPt><!-- <script> -->

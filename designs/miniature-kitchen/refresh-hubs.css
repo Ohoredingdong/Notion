@@ -1,0 +1,180 @@
+/* Approved Nov8 board: one ivory/coral family for the three functional hubs.
+   All controls keep their existing routes; this layer never seeds records. */
+body[data-home]:not([data-home=fridge]) .shell>.home-panel:not([hidden]){background:#fffaf5!important;color:#47362c}
+body[data-home]:not([data-home=fridge]) .home-card{background:transparent;border:0;box-shadow:none}
+body[data-home]:not([data-home=fridge]) .panel-tabs{position:relative;top:auto;gap:4px!important;background:none!important;border:0;border-radius:0}
+body[data-home]:not([data-home=fridge]) .panel-tabs>button{height:44px!important;min-height:44px!important;padding:4px 6px!important;font-size:14px!important;line-height:1.2;color:#846351;border-radius:18px;background:transparent!important;box-shadow:none!important}
+body[data-home]:not([data-home=fridge]) .panel-tabs>button:before{inset:7px 0;background:none!important;border:0!important;border-radius:18px;box-shadow:none!important}
+body[data-home]:not([data-home=fridge]) .panel-tabs>button[aria-selected=true]{color:#b8563d!important;font-weight:650}
+body[data-home]:not([data-home=fridge]) .panel-tabs>button[aria-selected=true]:before{background:#ffdfd3!important}
+body[data-home]:not([data-home=fridge]) .home-primary,body[data-home]:not([data-home=fridge]) .small-action.primary{background:#ed8166!important;border-color:#ed8166!important;color:#fff!important;box-shadow:none!important}
+
+/* Titles and local tabs share the same calm row shown in the design board. */
+body[data-home=meals] .shell>#todayKitchen:not([hidden]),
+body[data-home=records] .shell>#panel-records:not([hidden]),
+body[data-home=kitchen] .shell>#panel-kitchen:not([hidden]){display:grid!important;grid-template-columns:minmax(0,130px) minmax(0,1fr);grid-template-rows:44px minmax(0,1fr);align-content:stretch;gap:8px!important;padding:6px 12px!important;min-width:0;min-height:0;overflow:hidden}
+body[data-home=meals] .shell>#todayKitchen:not([hidden]){grid-template-columns:minmax(0,42fr) minmax(0,58fr)}
+body[data-home]:not([data-home=fridge]) .shell>.home-panel>.hub-heading{display:flex!important;grid-column:1;grid-row:1;align-items:center;min-width:0;min-height:44px!important;height:44px;padding:0!important;margin:0!important;gap:0;border:0}
+body[data-home]:not([data-home=fridge]) .hub-heading>button{display:none!important}
+body[data-home]:not([data-home=fridge]) .hub-heading h2{margin:0;min-width:0;font-size:20px;font-weight:650;line-height:1.2;letter-spacing:-.55px;color:#47362c;white-space:nowrap}
+body[data-home]:not([data-home=fridge]) .shell>.home-panel>.panel-tabs,
+body[data-home=meals] #todayKitchen>.recipe-view-header{grid-column:2;grid-row:1;align-self:stretch;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;border:0}
+body[data-home]:not([data-home=fridge]) .shell>.home-panel>.home-card,
+body[data-home=kitchen] .shell>#panel-kitchen>.decor-editor{grid-column:1/-1;grid-row:2;min-height:0;min-width:0;margin:0!important}
+body[data-home=kitchen] .shell>#panel-kitchen>.hub-heading{display:flex!important}
+body[data-home=kitchen] .shell>#panel-kitchen>.panel-tabs,
+body[data-home=kitchen] #panel-kitchen:has(#homeGrowth:not([hidden]))>.panel-tabs{display:flex!important}
+
+/* Eight horizontal media cards. Time/energy/cost/stock remain visible. */
+body[data-home=meals] #homeRecommendation:not([hidden]){display:flex!important;flex-direction:column;gap:6px!important;min-height:0;overflow:hidden}
+body[data-home=meals] .recipe-view-header{gap:4px}
+body[data-home=meals] .recipe-view-header>.panel-tabs{min-width:0;gap:4px!important}
+body[data-home=meals] .recipe-view-actions>button{border:0;background:none;color:#8f6c54;border-radius:10px}
+body[data-home=meals] .recipe-view-actions>[data-wf=recipeFilters]{display:none}
+.refresh-recipe-filters{display:flex;flex:0 0 44px;align-items:stretch;gap:8px;min-width:0}
+.refresh-recipe-filters>button{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;max-width:38%;padding:5px 14px;border:1px solid #e4ccba;border-radius:18px;background:#fffaf5;color:#775a46;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden}
+.refresh-recipe-filters>button>span{flex:none;color:#9a7b63}
+.refresh-recipe-filters>[data-filter-active=true]{background:#fff0e7;border-color:#dba68c;color:#a55d43}
+body[data-home=meals] #homeRecommendation .recipe-comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(44px,1fr));gap:8px;flex:1;min-width:0;min-height:0;overflow:hidden}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card{display:grid;grid-template-columns:minmax(60px,42%) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;column-gap:10px;row-gap:4px;align-content:center;align-items:center;min-width:0;min-height:44px;padding:6px;border:1px solid #ebdcd1;border-radius:13px;background:#fffdf9;color:#47352a;box-shadow:0 2px 6px #7d584407;overflow:hidden}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-photo{grid-column:1;grid-row:1;align-self:stretch;width:100%;height:100%;min-height:0;aspect-ratio:auto;border-radius:10px;background:#f4e9dc;overflow:hidden}
+body[data-home=meals] #homeRecommendation .recipe-grid-content{display:flex;flex-direction:column;justify-content:center;align-self:stretch;gap:5px;min-width:0;min-height:0}
+body[data-home=meals] #homeRecommendation .recipe-grid-photo>.recipe-photo,
+body[data-home=meals] #homeRecommendation .recipe-grid-photo>.dish-art{display:block;width:100%;height:100%;aspect-ratio:auto;object-fit:contain;filter:none}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-copy{grid-column:2;grid-row:1;display:flex;align-self:auto;min-width:0}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-copy>strong{margin:0;font-size:16px;line-height:1.2;letter-spacing:-.5px;font-weight:650;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;grid-column:2;gap:3px 7px;min-width:0;font-size:12px;line-height:1.2;color:#896b55}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-meta>*{font-size:inherit;line-height:inherit;letter-spacing:-.2px;white-space:nowrap}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card [data-recipe-stock]{color:#826a58}
+body[data-home=meals] #homeRecommendation .recipe-comparison-card [data-stock-status=ready]{color:#5e7b63}
+body[data-home=meals] #homePlans:not([hidden]){display:flex;flex-direction:column;gap:7px!important;overflow:hidden}
+body[data-home=meals] .recipe-plan-card,body[data-home=meals] .recipe-plan-empty{background:#fffdf9;border:1px solid #ebdcd1;border-radius:12px;box-shadow:none}
+body[data-home=meals] .recipe-meal-tabs [aria-selected=true]{color:#b95c42;background:#ffded0;border-color:#e7b69f}
+
+/* A full month, selected meal, and real expenditure live in one view. */
+body[data-home=records] #homeMonthly .journal-diary.is-calendar{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:44px minmax(0,1fr) 66px 48px!important;gap:8px!important;overflow:hidden;min-height:0}
+body[data-home=records] #homeMonthly .journal-diary.is-calendar>.home-date-bar{grid-row:1!important}
+body[data-home=records] #homeMonthly .journal-diary.is-calendar>.journal-calendar{grid-row:2;gap:0;border:1px solid #ead6c7;border-radius:11px;overflow:hidden;background:#fffdf9}
+body[data-home=records] #homeMonthly .journal-calendar-weekdays{flex:0 0 25px;line-height:25px;font-size:12px;background:#f7e9df;border-bottom:1px solid #ead6c7;color:#795a45}
+body[data-home=records] #homeMonthly .journal-calendar-grid{grid-template-rows:repeat(var(--journal-week-count,6),minmax(24px,1fr))!important;gap:0!important;background:#ead6c7}
+body[data-home=records] #homeMonthly .journal-calendar-grid[data-week-count="5"]>:nth-child(n+36){display:none}
+body[data-home=records] #homeMonthly .journal-calendar-day,
+body[data-home=records] #homeMonthly .journal-calendar-blank{min-height:24px;border:0;border-right:1px solid #ead6c7;border-bottom:1px solid #ead6c7;border-radius:0;background:#fffaf6}
+body[data-home=records] #homeMonthly .journal-calendar-day:nth-child(7n){border-right:0}
+body[data-home=records] #homeMonthly .journal-calendar-day.has-meal{background:#fffaf6}
+body[data-home=records] #homeMonthly .journal-calendar-day[aria-current=date]{border:0;border-radius:8px;box-shadow:inset 0 0 0 1.5px #ef8b6f;z-index:2;background:#fff6ee}
+body[data-home=records] #homeMonthly .journal-date-number{left:7px;top:6px;font-size:12px;font-weight:500;color:#6c5141}
+body[data-home=records] #homeMonthly .journal-calendar-day:nth-child(7n+1) .journal-date-number{color:#c16e52}
+body[data-home=records] #homeMonthly .journal-food-stamp{right:4px;bottom:3px;width:min(76%,58px);aspect-ratio:4/3;border-radius:50%;background:none}
+body[data-home=records] #homeMonthly .journal-more-meals{background:#b1795d;color:#fff}
+body[data-home=records] #homeMonthly .home-date-bar>button{background:none;border:0;color:#9b775d}
+body[data-home=records] #homeMonthly .home-date-value strong{font-size:17px!important;color:#614532}
+.journal-selected-entry{grid-row:3;display:flex;align-items:center;gap:11px;min-width:0;min-height:44px;width:100%;padding:6px 12px;border:1px solid #e8d1c0;border-radius:11px;background:#fffaf5;color:#60432f;text-align:left;overflow:hidden}
+.journal-selected-picture{display:grid;place-items:center;flex:none;width:70px;height:50px;overflow:hidden;border-radius:10px;background:#fbf0e3;color:#a48368}
+.journal-selected-picture>:is(svg,img){display:block;width:100%;height:100%;object-fit:contain;filter:none}
+.journal-selected-picture>.icon{width:27px;height:27px}
+.journal-selected-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.journal-selected-copy>small{font-size:12px;line-height:1.1;color:#b46f4d}
+.journal-selected-copy>strong{font-size:16px;line-height:1.2;color:#5e422f;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.journal-selected-chevron{font-size:23px;flex:none;color:#a27c60}
+.journal-budget-strip{grid-row:4;display:flex;align-items:stretch;gap:6px;min-width:0;min-height:46px;border:1px solid #e7ceba;border-radius:10px;background:#fff9f2;overflow:hidden}
+body[data-home=records] #homeMonthly .journal-budget-link{display:grid;grid-template-columns:minmax(0,1fr) auto 10px;gap:7px;flex:1;min-width:0;width:auto;min-height:44px;height:auto;margin:0;padding:4px 8px;border:0;border-radius:0;background:none;color:#6f4d34;box-shadow:none}
+body[data-home=records] #homeMonthly .journal-budget-link>span:first-child{gap:7px}
+body[data-home=records] #homeMonthly .journal-budget-link small{font-size:11px;line-height:1.15}
+body[data-home=records] #homeMonthly .journal-budget-link strong{font-size:17px;line-height:1.1}
+body[data-home=records] #homeMonthly .journal-budget-remaining b{font-size:11px;font-weight:500;line-height:1.15;color:#8d705b}
+.journal-shopping-action{display:flex;flex:none;align-items:center;justify-content:center;align-self:center;min-width:66px;min-height:44px;padding:4px 10px;border:0;border-left:1px solid #ead6c8;background:none;color:#936445;font-size:13px;white-space:nowrap}
+body[data-home=records] #homeMonthly .journal-diary.is-day{gap:7px!important}
+body[data-home=records] .journal-entry-content,body[data-home=records] .record-receipt-card{background:#fffaf5;border-color:#ead5c3;border-radius:12px;box-shadow:none}
+body[data-home=records] .journal-day-actions>button,body[data-home=records] .record-two-actions>button,body[data-home=records] .record-supplement-footer>button{border-color:#e7cbb6;background:#fff6ed;color:#895a3d;box-shadow:none;border-radius:10px}
+body[data-home=records] .home-shopping-summary{background:#f8e9db;border-radius:10px;color:#7d563d}
+body[data-home=records] .home-supplement-row{border-color:#eddccc;border-radius:10px;background:#fffaf5}
+body[data-home=records] .budget-overview{color:#5b412e}
+
+/* Same room, an uncluttered real owned-prop palette, one coral Apply action. */
+body[data-home-page=decor] .shell>#panel-kitchen:not([hidden]){gap:0!important;padding:0 0 2px!important}
+body[data-home-page=decor] .shell>#panel-kitchen>.hub-heading{padding-left:12px!important}
+body[data-home-page=decor] .shell>#panel-kitchen>.panel-tabs{padding-right:10px!important;background:#fffaf5!important}
+body[data-home-page=decor] #homeDecor{background:#fffaf5;min-height:0}
+body[data-home-page=decor] .studio-room-settings{width:44px;height:44px;min-height:44px;border-radius:12px;border-color:#e8cfba;background:#fffaf2ed;color:#9c7355;box-shadow:none}
+body[data-home-page=decor] .studio-shelf-bar{flex:0 0 112px;min-height:48px;padding:0 10px;gap:6px;background:#fff9f1;border-color:#edd8c6}
+body[data-home-page=decor] .studio-prop-shelf{gap:7px;padding:7px 0}
+body[data-home-page=decor] .studio-prop-card{flex-direction:column!important;justify-content:center!important;width:calc((100cqw - 74px)/4);min-width:56px;max-width:112px;min-height:44px;gap:3px;padding:5px!important;border:1px solid #eddbca;border-radius:12px;background:#f9eee2;color:#765034;text-align:center!important;box-shadow:none}
+body[data-home-page=decor] .studio-prop-card[aria-pressed=true]{border-color:#ef9a79;background:#ffeadc;box-shadow:inset 0 0 0 1px #ef9a79}
+body[data-home-page=decor] .studio-prop-art{width:100%!important;height:clamp(23px,calc(100cqh - 45px),68px)!important}
+body[data-home-page=decor] .studio-prop-copy{width:100%!important;min-width:0;gap:2px}
+body[data-home-page=decor] .studio-prop-copy strong{font-size:12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-home-page=decor] .studio-prop-copy small{font-size:10px;line-height:1.1;color:#9b7d65}
+body[data-home-page=decor] .studio-more-props{border-radius:10px;background:#fff8ef;color:#9d7457;border-color:#e5c7af}
+body[data-home-page=decor] .studio-selection-summary{flex-basis:22px;min-height:22px;padding:2px 12px;background:#fffaf5;color:#997a64}
+body[data-home-page=decor] .studio-selection-summary strong{font-size:12px;font-weight:500}
+body[data-home-page=decor] .studio-command-bar{padding:2px 10px 6px;gap:8px;background:#fffaf5}
+body[data-home-page=decor] .studio-command-bar .decor-selection-toolbar{flex-basis:142px;gap:5px}
+body[data-home-page=decor] .studio-command-bar .decor-selection-toolbar>button{background:transparent;border:0;border-radius:8px;color:#9d7458;box-shadow:none}
+body[data-home-page=decor] .studio-command-bar .decor-footer{gap:8px}
+body[data-home-page=decor] .studio-command-bar .decor-footer>button{border-color:#e3bda2;background:#fff9f0;color:#a47452;border-radius:12px;box-shadow:none}
+body[data-home-page=decor] .studio-command-bar .decor-footer>.primary{background:#ed8166!important;border-color:#ed8166!important;color:#fff!important}
+body[data-home=kitchen] .growth-first-goal,body[data-home=kitchen] .health-guide-card,body[data-home=kitchen] #homeConnections .home-actions>button{border-color:#ead3c1;border-radius:12px;background:#fff9f1;color:#7d553a;box-shadow:none}
+body[data-home=kitchen] .health-guide-card strong{font-size:17px;color:#5d402e}
+body[data-home=kitchen] .health-guide-card>span{color:#96765d;font-size:13px}
+body[data-home=kitchen] .health-guide-card small{color:#bc8763}
+
+/* Narrow embeds retain readable comparison facts and all eight real cards. */
+@container kitchen-widget (max-width:559px){
+ body[data-home=meals] .shell>#todayKitchen:not([hidden]){grid-template-columns:minmax(0,1fr);gap:4px!important;padding:4px 7px!important}
+ body[data-home=meals] .shell>#todayKitchen>.hub-heading{display:none!important}
+ body[data-home=meals] #todayKitchen>.recipe-view-header{grid-column:1/-1;grid-row:1}
+ body[data-home=meals] .recipe-view-actions>[data-wf=recipeFilters]{display:flex}
+ body[data-home=meals] .refresh-recipe-filters{display:none}
+ body[data-home=meals] #homeRecommendation{gap:0!important}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-grid{gap:4px}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card{grid-template-columns:clamp(48px,14cqw,58px) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;column-gap:5px;row-gap:1px;padding:3px 4px;border-radius:9px}
+ body[data-home=meals] #homeRecommendation .recipe-grid-content{display:flex;gap:1px}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-photo{grid-row:1;min-height:0;height:100%;align-self:stretch;border-radius:6px}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-copy>strong{font-size:12px;line-height:1.05;letter-spacing:-.4px}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-meta{grid-column:1/-1;justify-content:space-between;gap:3px;font-size:12px;line-height:1.05}
+ body[data-home=records] .shell>#panel-records:not([hidden]),body[data-home=kitchen] .shell>#panel-kitchen:not([hidden]){grid-template-columns:72px minmax(0,1fr);gap:4px!important;padding:4px 7px!important}
+ body[data-home]:not([data-home=fridge]) .hub-heading h2{font-size:15px;letter-spacing:-.5px}
+ body[data-home]:not([data-home=fridge]) .panel-tabs>button{font-size:12px!important;padding:3px!important}
+ body[data-home=records] #homeMonthly .journal-diary.is-calendar{grid-template-rows:44px minmax(0,1fr) 48px 46px!important;gap:4px!important}
+ body[data-home=records] #homeMonthly .journal-calendar-weekdays{flex-basis:16px;font-size:10px;line-height:16px}
+ body[data-home=records] #homeMonthly .journal-date-number{top:4px;left:4px;font-size:10px}
+ body[data-home=records] #homeMonthly .journal-food-stamp{width:min(68%,38px);right:2px;bottom:2px}
+ .journal-selected-entry{padding:3px 7px;gap:7px;border-radius:9px}
+ .journal-selected-picture{width:44px;height:36px;border-radius:7px}
+ .journal-selected-copy>small{font-size:10px;line-height:1.1}
+ .journal-selected-copy>strong{font-size:13px;line-height:1.1}
+ .journal-budget-strip{gap:0;border-radius:8px}
+ body[data-home=records] #homeMonthly .journal-budget-link{gap:3px;padding:3px 5px;grid-template-columns:minmax(0,1fr) auto}
+ body[data-home=records] #homeMonthly .journal-budget-link>span:first-child{gap:4px}
+ body[data-home=records] #homeMonthly .journal-budget-link .icon{display:none}
+ body[data-home=records] #homeMonthly .journal-budget-link small{font-size:10px}
+ body[data-home=records] #homeMonthly .journal-budget-link strong{font-size:14px}
+ body[data-home=records] #homeMonthly .journal-budget-remaining b{font-size:10px}
+ body[data-home=records] #homeMonthly .journal-budget-chevron{display:none}
+ .journal-shopping-action{min-width:56px;font-size:12px;padding:3px 6px}
+ body[data-home-page=decor] .shell>#panel-kitchen:not([hidden]){padding:0!important}
+ body[data-home-page=decor] .shell>#panel-kitchen>.hub-heading{padding-left:7px!important}
+ body[data-home-page=decor] .studio-shelf-bar{flex-basis:64px;padding-inline:7px}
+ body[data-home-page=decor] .studio-prop-shelf{gap:5px;padding-block:3px}
+ body[data-home-page=decor] .studio-prop-card{padding:2px!important;gap:2px}
+ body[data-home-page=decor] .studio-prop-copy strong{font-size:11px}
+ body[data-home-page=decor] .studio-prop-copy small{display:none}
+ body[data-home-page=decor] .studio-selection-summary{flex-basis:18px;min-height:18px;padding-inline:7px}
+ body[data-home-page=decor] .studio-selection-summary strong{font-size:10px}
+ body[data-home-page=decor] .studio-command-bar{padding-inline:7px;gap:4px}
+ body[data-home=kitchen] .health-guide-card strong{font-size:13px}
+ body[data-home=kitchen] .health-guide-card>span{font-size:11px}
+}
+@container kitchen-widget (max-height:390px){
+ /* The strip includes two border pixels around its 44px actions. Reclaim
+    the compact row gaps so a five-week month still has five full 24px rows. */
+ body[data-home=records] .shell>#panel-records:not([hidden]){padding-block:0!important;gap:0!important}
+ body[data-home=records] #homeMonthly .journal-diary.is-calendar{grid-template-rows:44px minmax(0,1fr) 44px 46px!important;gap:0!important}
+ body[data-home=records] #homeMonthly .journal-calendar-weekdays{flex-basis:12px;font-size:10px;line-height:12px}
+ body[data-home=records] #homeMonthly .journal-diary.is-calendar:has(.journal-calendar-grid[data-week-count="6"]){grid-template-rows:44px minmax(0,1fr) 46px!important}
+ body[data-home=records] #homeMonthly .journal-diary.is-calendar:has(.journal-calendar-grid[data-week-count="6"]) .journal-selected-entry{display:none}
+ body[data-home=records] #homeMonthly .journal-diary.is-calendar:has(.journal-calendar-grid[data-week-count="6"]) .journal-budget-strip{grid-row:3}
+ body[data-home-page=decor] .studio-shelf-bar{flex-basis:48px}
+ body[data-home-page=decor] .studio-selection-summary{flex-basis:16px;min-height:16px}
+}

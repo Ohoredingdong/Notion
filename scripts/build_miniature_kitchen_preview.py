@@ -127,6 +127,16 @@ COMPACT_REGIONS = {'designs/miniature-kitchen/assets/decor-atlas.png':
 # WebP82 quality comparisons are recorded with the visual-fidelity evidence.
 # Existing miniature assets retain their previous formats and encoding levels.
 COMPACT_AVIF = {
+    'designs/miniature-kitchen/assets/refresh-20261109/closed-front-v1.png':
+        'designs/miniature-kitchen/assets/refresh-20261109/closed-front-v1.avif',
+    'designs/miniature-kitchen/assets/refresh-20261109/kitchen-open.png':
+        'designs/miniature-kitchen/assets/refresh-20261109/kitchen-open-cabinet.avif',
+    'designs/miniature-kitchen/assets/refresh-20261109/kitchen-reveal.png':
+        'designs/miniature-kitchen/assets/refresh-20261109/kitchen-reveal.avif',
+    'designs/miniature-kitchen/assets/refresh-20261109/kitchen-room.png':
+        'designs/miniature-kitchen/assets/refresh-20261109/kitchen-room.avif',
+    'designs/miniature-kitchen/assets/refresh-20261109/food-atlas-v1.png':
+        'designs/miniature-kitchen/assets/refresh-20261109/food-atlas-v1.avif',
     'designs/miniature-kitchen/assets/fridge-slim-white-v2.png':
         'designs/miniature-kitchen/assets/fridge-slim-white-v2.avif',
     'designs/miniature-kitchen/assets/room-props-fullflow-v1.png':
@@ -217,6 +227,18 @@ def web_image(path, size, boxes):
     return subprocess.run(command,check=True,capture_output=True).stdout
 
 
+def preview_mode(html, mode):
+    """Set the body mode even when other body attributes precede it."""
+    if mode not in ('app', 'widget'):
+        raise ValueError('Unknown presentation')
+    html, count = re.subn(r'(<body\b[^>]*\bdata-mode=)([\'\"])app\2',
+                         lambda match: match[1] + match[2] + mode + match[2],
+                         html, count=1)
+    if count != 1:
+        raise ValueError('Missing app mode on the source body')
+    return html
+
+
 def build(root, mode, compact=False):
     if mode not in ('app', 'widget'):
         raise ValueError('Unknown presentation')
@@ -278,7 +300,7 @@ def build(root, mode, compact=False):
             'use-me-first-kitchen-art.js': [('ATLAS','assets/food-miniatures-v2.webp'),('SEASONING_ATLAS','assets/seasoning-miniatures-v1.png')],
             'play-ui.js': [('MAGNETS','designs/miniature-kitchen/assets/magnets.png')],
             'story-art.js': [('RECIPE_PHOTOS','designs/miniature-kitchen/assets/recipe-photos-v1.png')],
-            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/fridge-original-closed-v1.png'),('KITCHEN_SCENE','designs/miniature-kitchen/assets/kitchen-original-open-v1.png'),('KITCHEN_REVEAL','designs/miniature-kitchen/assets/kitchen-original-reveal-v1.png'),('ROOM_FRIDGE','designs/miniature-kitchen/assets/fridge-slim-white-v2.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/food-original-scene-v2.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png'),('ROOM_PROPS','designs/miniature-kitchen/assets/room-props-fullflow-v1.png')]
+            'scene.js': [('FRIDGE','designs/miniature-kitchen/assets/refresh-20261109/closed-front-v1.png'),('KITCHEN_SCENE','designs/miniature-kitchen/assets/refresh-20261109/kitchen-open.png'),('KITCHEN_REVEAL','designs/miniature-kitchen/assets/refresh-20261109/kitchen-reveal.png'),('ROOM_SCENE','designs/miniature-kitchen/assets/refresh-20261109/kitchen-room.png'),('FOOD_SCENE','designs/miniature-kitchen/assets/refresh-20261109/food-atlas-v1.png'),('DECOR','designs/miniature-kitchen/assets/decor-atlas.png'),('ROOM_PROPS','designs/miniature-kitchen/assets/room-props-fullflow-v1.png')]
         }
         for key, asset in replacements.get(path.name, []):
             needle=f"const {key} = './{asset}';"
@@ -292,7 +314,7 @@ def build(root, mode, compact=False):
 
     html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', css, html)
     html = re.sub(r'<script defer src="([^"]+)"></script>', js, html)
-    html = html.replace('<body data-mode="app"',f'<body data-mode="{mode}"',1)
+    html = preview_mode(html, mode)
     html = html.replace('<!-- Source template. Generate the two self-contained previews with the builder. -->',
                         '<!-- Generated miniature preview. Separate preview storage only; production data untouched. -->')
     return html.replace('</body>','\n'.join(scripts)+'\n</body>')

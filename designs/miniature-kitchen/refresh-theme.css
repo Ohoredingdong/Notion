@@ -1,0 +1,145 @@
+/* Nov8 approved design. Shared frame, header and scene; hubs add their own content layout. */
+body[data-design=refresh]{--ink:#4b352b;--sub:#8b7466;--line:#eadbd0;--carb:#efa28f;--protein:#bda2c6;--fat:#e3bc72;display:block!important;min-height:0!important;width:100%;margin:0!important;padding:0!important;background:#f8f2ec!important;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+body[data-design=refresh] #kitchenWidget{container:kitchen-widget / size;position:relative;overflow:hidden;border:1px solid #e8d9cd;border-radius:clamp(14px,3.1vw,24px)!important;background:#fcf7f1;box-shadow:0 8px 22px #76553e0b}
+#kitchenWidget:before,#kitchenWidget>.fitted-side-counters{display:none!important}
+#kitchenWidget #refreshBrand{position:relative!important;inset:auto!important;display:flex!important;flex:none;width:100%!important;height:var(--refresh-brand)!important;min-height:var(--refresh-brand)!important;margin:0!important;padding:4px 20px!important;border:0!important;border-radius:0!important;background:#fcf7f1!important;z-index:25;justify-content:space-between;align-items:center}
+#kitchenWidget #refreshBrand .brand{gap:9px!important;justify-content:flex-start!important}
+#kitchenWidget #refreshBrand .brand h1{font-size:clamp(15px,3.6cqw,26px)!important;line-height:1.2;font-weight:650;letter-spacing:-.8px;color:#4b352b}
+#kitchenWidget #refreshBrand .story-mark{display:block!important;width:26px!important;height:28px!important;color:#c67659}
+#kitchenWidget #refreshBrand #todayStamp{display:none!important}
+#kitchenWidget #refreshBrand .header-actions{position:static!important;transform:none!important;margin:0!important}
+#kitchenWidget #refreshBrand .header-actions button{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px;width:auto!important;min-width:88px!important;height:44px!important;min-height:44px!important;padding:5px 10px!important;border:1px solid #dcbda7!important;border-radius:12px!important;background:#fffaf4!important;color:#75513c;font-size:14px!important}
+#kitchenWidget #refreshBrand .header-actions svg{display:block!important;width:18px;height:18px}
+#kitchenWidget #refreshBrand .header-actions .sr-only{position:static!important;clip:auto!important;clip-path:none!important;width:auto!important;height:auto!important;overflow:visible!important;margin:0!important;font-size:inherit!important;white-space:nowrap}
+#kitchenWidget #panel-fridge{position:relative!important;display:block;flex:1;min-height:0;width:100%;margin:0!important;padding:0!important;overflow:hidden;background:#f7ede2}
+#kitchenWidget .home-panel[hidden]{display:none!important}
+#kitchenWidget .home-panel:not([hidden]){flex:1;min-height:0;min-width:0}
+#kitchenWidget #panel-fridge:not([data-screen-id=D6]) #appliedRoomMessage{display:none!important}
+#kitchenWidget #homeOverview{position:relative;height:calc(var(--refresh-header) - var(--refresh-brand));background:#fcf7f1;z-index:26;border-radius:0 0 16px 16px;overflow:visible}
+#kitchenWidget #panel-fridge #homeOverview #dailyBalance{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:106px minmax(0,1fr);align-items:center;width:100%!important;height:calc(100% - 44px)!important;min-height:0!important;margin:0!important;padding:5px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;text-align:left;line-height:1.25}
+#kitchenWidget #homeOverview #dailyBalance .balance-head{min-height:0!important;margin:0!important;display:flex;flex-direction:column;gap:4px}
+#kitchenWidget #homeOverview #dailyBalance .balance-head b{font-size:16px!important;font-weight:650;line-height:1.3}
+#kitchenWidget #homeOverview #dailyBalance .balance-head>span{font-size:10px!important;color:#8d7666}
+#kitchenWidget #homeOverview #dailyBalance .balance-values{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;min-width:0}
+#kitchenWidget #homeOverview #dailyBalance .balance-value{position:relative;min-width:0;padding:0 12px!important;border-left:1px solid #eadbd0}
+#kitchenWidget #homeOverview #dailyBalance .balance-name{display:flex;gap:5px;align-items:center;margin-bottom:3px!important;font-size:13px!important;line-height:1.2;white-space:nowrap}
+#kitchenWidget #homeOverview #dailyBalance .balance-name:before{width:9px;height:9px}
+#kitchenWidget #homeOverview #dailyBalance .balance-number{display:flex;align-items:baseline;min-height:24px!important;gap:3px;line-height:1.15}
+#kitchenWidget #homeOverview #dailyBalance .balance-number strong{font-size:21px!important;font-weight:650;line-height:1.15;letter-spacing:-.5px}
+#kitchenWidget #homeOverview #dailyBalance .balance-number strong small,#kitchenWidget #homeOverview #dailyBalance .balance-number>span{font-size:12px!important;color:#8c7160;font-weight:400;white-space:nowrap}
+#kitchenWidget #homeOverview #dailyBalance .balance-track{height:6px!important;margin-top:5px!important;border-radius:20px;background:#eee4dc}
+#kitchenWidget #homeOverview #dailyBalance .balance-percent,#kitchenWidget #homeOverview #dailyBalance .balance-symbol,#kitchenWidget #homeOverview #dailyBalance .balance-empty,#kitchenWidget #homeOverview #dailyBalance .balance-note{display:none!important}
+#kitchenWidget #homeOverview #dailyBalance .balance-status{display:block;min-height:10px;margin-top:2px;font-size:9px;line-height:1.1;color:#9b7057}
+#kitchenWidget .balance-partial{display:none}
+#kitchenWidget #homeOverview #homeSupplementsShelf{position:relative!important;inset:auto!important;transform:none!important;width:calc(100% - 40px)!important;height:44px!important;min-height:44px;margin:0 20px!important;border-top:1px solid #e4d2c3;z-index:26;pointer-events:auto}
+#kitchenWidget #homeSupplementsShelf .shelf-wide{display:flex!important;align-items:center;justify-content:center;gap:10px;min-height:44px;height:44px;padding:0!important;border:0;border-radius:0;box-shadow:none!important;background:none!important}
+#kitchenWidget #homeSupplementsShelf .shelf-compact{display:none!important}
+#kitchenWidget #homeSupplementsShelf .supplement-shelf-label{display:flex;flex-direction:row;align-items:center;gap:7px;width:95px;min-width:0;flex:none}
+#kitchenWidget #homeSupplementsShelf .supplement-shelf-label>svg{width:17px;height:22px;flex:none;color:#9e7962}
+#kitchenWidget #homeSupplementsShelf .supplement-shelf-label strong{font-size:13px;line-height:1.2;font-weight:600;white-space:nowrap}
+#kitchenWidget #homeSupplementsShelf .supplement-shelf-label small{display:none}
+#kitchenWidget #homeSupplementsShelf .shelf-bottles{display:flex;align-items:center;justify-content:center;flex:1;min-width:0;gap:6px}
+#kitchenWidget #homeSupplementsShelf .supplement-bottle{display:flex;flex-direction:row;align-items:center;justify-content:center;flex:1;min-width:44px;max-width:112px;min-height:44px;height:44px;padding:4px 7px;border-radius:18px;background:#f7eee5;gap:5px}
+#kitchenWidget #homeSupplementsShelf .supplement-bottle[aria-pressed=true]{background:#f9ded2;color:#a65b42}
+#kitchenWidget #homeSupplementsShelf .supplement-bottle>span{font-size:12px;line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#kitchenWidget #homeSupplementsShelf .supplement-bottle>small{font-size:14px;line-height:1;flex:none}
+#kitchenWidget #homeSupplementsShelf .shelf-manage{flex:none;width:95px;min-width:95px;min-height:44px;height:44px;margin:0;padding:4px 8px!important;border:0;background:transparent;border-radius:8px;font-size:12px;white-space:nowrap}
+#kitchenWidget #homeSupplementsShelf .supplement-empty{flex:1;min-width:0;text-align:center;font-size:13px;line-height:1.2;color:#9b7c66}
+#kitchenWidget #panel-fridge #fridgeSceneHost{position:absolute!important;inset:calc(var(--refresh-header) - var(--refresh-brand)) 0 0!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#ead1b4}
+#kitchenWidget #fridgeSceneHost>.kitchen-view{display:flex!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;height:100%!important;padding:0!important;margin:0!important}
+#kitchenWidget #kitchen.room{flex:none!important;width:var(--room-fit-width)!important;height:var(--scene-height)!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;overflow:visible}
+#kitchenWidget #kitchen .scene-world{position:absolute;inset:0 auto auto 0;width:var(--scene-world-width)!important;height:var(--scene-world-height)!important;transform:scale(var(--scene-scale,1));transform-origin:top left;background:none!important}
+#kitchenWidget #kitchen .original-kitchen-photo{position:absolute;display:block!important;inset:0;width:var(--scene-world-width)!important;height:var(--scene-world-height)!important;max-width:none;object-fit:fill;z-index:0}
+#kitchenWidget #kitchen .original-fridge-body{position:absolute;display:block!important;inset:0;width:1254px;height:893px;z-index:1}
+#kitchenWidget #kitchen .original-fridge-body>svg{display:block;width:100%;height:100%}
+#kitchenWidget #kitchen .fridge-stage{left:308px!important;top:32px!important;bottom:auto!important;width:640px!important;height:790px!important;aspect-ratio:auto;perspective:none;filter:none!important}
+#kitchenWidget #kitchen .fridge-doors{z-index:4}
+#kitchenWidget #kitchen .fridge-interiors{z-index:2}
+#kitchenWidget #kitchen .door{border:0;background:none!important;box-shadow:none;border-radius:0;transform:none!important;overflow:visible}
+#kitchenWidget #kitchen .door>svg{background:transparent!important;transform:none!important}
+#kitchenWidget #kitchen .door-cargo,#kitchenWidget #kitchen .door-storage{transform:none!important;backface-visibility:visible;z-index:5}
+#kitchenWidget #kitchen .item[data-food-profile]{width:calc(var(--profile-width)*var(--food-fit,1))!important;height:calc(var(--profile-height)*var(--food-fit,1))!important;padding:0!important}
+#kitchenWidget #kitchen .item>.food-art{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:0!important;display:block;width:calc(var(--profile-width)*var(--food-fit,1))!important;height:calc(var(--profile-height)*var(--food-fit,1))!important;max-height:none!important;transform:translateX(-50%)!important;filter:none!important;object-fit:contain;clip-path:none!important}
+#kitchenWidget #kitchen .item-name,#kitchenWidget #kitchen .quantity{display:none!important}
+#kitchenWidget #kitchen .shelf-label{position:absolute;display:none!important;align-items:center;gap:calc(3px/var(--scene-scale,1));max-width:calc(120px/var(--scene-scale,1));padding:calc(2px/var(--scene-scale,1)) calc(4px/var(--scene-scale,1))!important;border:0;border-radius:calc(5px/var(--scene-scale,1));background:#fffaf1ee;box-shadow:none;opacity:1!important;transform:translate(-50%,-100%);line-height:1.15;color:#6b5040;pointer-events:none}
+#kitchenWidget #kitchen .shelf-label b{font-size:calc(10px/var(--scene-scale,1))!important;font-weight:550}
+#kitchenWidget #kitchen .shelf-label small{display:block!important;font-size:calc(9px/var(--scene-scale,1))!important;white-space:nowrap}
+#kitchenWidget #kitchen .shelf-label .label-deadline{display:none}
+#kitchenWidget #kitchen .shelf-label .label-qty{display:inline!important}
+#kitchenWidget #kitchen .shelf-label.is-selected,body[data-refresh-density=wide] #kitchenWidget #kitchen .shelf-label[data-food-name=계란],body[data-refresh-density=wide] #kitchenWidget #kitchen .shelf-label[data-food-name=우유]{display:flex!important}
+body.label-minimal #kitchenWidget #kitchen .shelf-label:not(.is-selected){display:none!important}
+#kitchenWidget #panel-fridge #homeWorktop{position:absolute!important;inset:auto 10px 8px auto!important;display:flex!important;align-items:center!important;width:auto!important;height:44px!important;min-height:44px!important;padding:0!important;margin:0!important;z-index:30}
+#kitchenWidget #panel-fridge #addFood{display:flex!important;align-items:center;justify-content:center;gap:6px;min-width:140px!important;min-height:44px!important;height:44px!important;max-height:44px!important;margin:0;padding:7px 15px!important;border:1px solid #fff9f1;border-radius:25px;background:#ed8569!important;box-shadow:0 2px 4px #8a533525!important;font-size:17px!important;font-weight:550;color:#fff}
+#kitchenWidget #addFood .icon{width:20px!important;height:20px!important}
+#kitchenWidget #refreshNavigation{position:absolute!important;inset:auto 0 0!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:center;width:100%!important;height:var(--refresh-nav)!important;min-height:var(--refresh-nav)!important;max-height:var(--refresh-nav)!important;margin:0!important;padding:4px 14px!important;border:0!important;border-top:1px solid #e5d6ca!important;border-radius:0!important;background:#fcf7f1!important;z-index:40}
+#kitchenWidget #refreshNavigation button{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0;min-height:44px!important;height:100%!important;padding:3px 6px!important;border:0;border-radius:20px!important;font-size:16px!important;font-weight:550;color:#765d4b!important;background:none!important;box-shadow:none!important}
+#kitchenWidget #refreshNavigation button[aria-selected=true]{background:#fbe1d3!important;color:#b95e42!important}
+#kitchenWidget #refreshNavigation .nav-art{display:block!important;width:24px!important;height:25px!important}
+#kitchenWidget #refreshBrand #homeStorageNotice[data-storage-status=temporary]{position:absolute!important;left:56px!important;right:auto!important;top:0!important;width:100px!important;height:var(--refresh-brand)!important;min-height:44px!important;padding:0!important;background:none!important;border:0!important;z-index:35}
+#kitchenWidget #refreshBrand #homeStorageNotice[data-storage-status=temporary]>span{display:none}
+#kitchenWidget #refreshBrand #homeStorageNotice[data-storage-status=temporary]:not([hidden]){display:flex!important}
+#kitchenWidget #refreshBrand #homeStorageNotice[data-storage-status=temporary] button{display:flex;align-items:flex-end;justify-content:flex-start;width:100%;height:100%;min-width:44px;min-height:44px;padding:0 0 1px;border:0;background:none;font-size:9px;line-height:1.1;color:#9c7b63}
+#kitchenWidget #homeStorageNotice:not([data-storage-status=temporary]):not([hidden]){z-index:45}
+#kitchenWidget #refreshBrand:has(#homeStorageNotice:not([data-storage-status=saved]):not([data-storage-status=temporary]):not([hidden])){z-index:45}
+#kitchenWidget #kitchen .counter-zone:before,#kitchenWidget #kitchen .counter-zone:after,#kitchenWidget #kitchen .seasoning-zone,#kitchenWidget #kitchen #homeSceneDecor,#kitchenWidget .freezer-glass-front{display:none!important}
+#kitchenWidget #kitchen .decor-fridge-backdrop{display:none;position:absolute;z-index:3;pointer-events:none}
+body[data-camera=counter] #kitchenWidget #kitchen .original-fridge-body,body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #kitchen .original-fridge-body,body[data-camera=counter] #kitchenWidget #kitchen .fridge-stage,body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #kitchen .fridge-stage{display:none!important}
+body[data-camera=counter] #kitchenWidget #kitchen .decor-fridge-backdrop,body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #kitchen .decor-fridge-backdrop{display:block!important}
+body[data-camera=counter] #kitchenWidget #kitchen .counter-zone,body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #kitchen .counter-zone{display:block!important;position:absolute;z-index:7;visibility:visible!important;pointer-events:none}
+#kitchenWidget #kitchen .counter-zone .item.decor{pointer-events:auto;width:var(--decor-width,110px)!important;height:var(--decor-height,150px)!important;min-width:calc(44px/var(--scene-scale,1));min-height:calc(44px/var(--scene-scale,1));padding:0!important}
+#kitchenWidget #kitchen .counter-zone .item.decor>.decor-art{position:absolute;inset:auto auto 0 50%;transform:translateX(-50%);width:var(--decor-width,110px);height:var(--decor-height,150px);max-width:none;max-height:none;filter:none}
+#kitchenWidget #kitchen .counter-zone .item.decor:not(.is-selected){outline:0;background:none}
+body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #homeSupplementsShelf{display:none!important}
+body:has(#panel-fridge[data-screen-id=D6]) #kitchenWidget #appliedRoomMessage{position:absolute;display:flex!important;align-items:center;justify-content:center;gap:7px;left:20px;right:20px;top:calc(var(--refresh-header) - var(--refresh-brand) - 44px);height:44px;margin:0;background:#fcf7f1;font-size:13px;color:#64816b;z-index:27}
+#kitchenWidget #kitchen .counter-zone>.item:not(.decor){display:none!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand{padding:0 10px!important;height:44px!important;min-height:44px!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand .brand{gap:4px!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand .brand h1{font-size:13px!important;letter-spacing:-.5px}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand .story-mark{width:16px!important;height:18px!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand .header-actions button{min-width:64px!important;font-size:11px!important;padding:3px 4px!important;border:0!important;background:none!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand .header-actions svg{display:none!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshBrand #homeStorageNotice[data-storage-status=temporary]{left:18px!important;width:76px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview{border-radius:0 0 10px 10px}
+/* The compact supplement control shares the brand row above this panel. */
+body[data-refresh-density=compact] #kitchenWidget #panel-fridge{overflow:visible!important}
+body[data-refresh-density=compact] #kitchenWidget #panel-fridge #homeOverview #dailyBalance{display:flex!important;flex-direction:column;justify-content:center;gap:4px;height:100%!important;padding:3px 9px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-head{width:100%;display:flex;flex-direction:row;justify-content:space-between;font-size:11px;line-height:1}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-head b{font-size:11px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-head>span{font-size:9px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-values{width:100%}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-value{padding:0 6px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-value:first-child{border-left:0}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-name{font-size:11px!important;margin-bottom:2px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-number{min-height:18px!important;gap:1px}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-number strong{font-size:15px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-number strong small,body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-number>span{font-size:9px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-track{height:3px!important;margin-top:2px!important}
+body[data-refresh-density=compact] #kitchenWidget #homeOverview #dailyBalance .balance-status{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden;clip-path:inset(50%)}
+body[data-refresh-density=compact] #kitchenWidget .balance-partial{display:inline;font-size:9px;color:#9b7057;font-weight:400}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf{position:absolute!important;left:50%!important;right:auto!important;top:0!important;width:max(92px,calc(100% - 220px))!important;height:44px!important;min-height:44px!important;margin:0!important;transform:translateX(-50%)!important;border:0}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-wide{display:none!important}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-compact{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:44px;height:44px;padding:2px 4px;gap:5px;border:0;border-radius:10px;background:#f6eade;color:#775842}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-compact>svg{width:16px;height:22px;flex:none}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-compact>span{display:flex;flex-direction:column;gap:1px;text-align:left;min-width:0}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-compact strong{font-size:12px;line-height:1.2;font-weight:600}
+body[data-refresh-density=compact] #kitchenWidget #homeSupplementsShelf .shelf-compact small{font-size:9px;line-height:1.2;white-space:nowrap}
+body[data-refresh-density=compact] #kitchenWidget:not(:has(#panel-fridge:not([hidden]))) #refreshBrand{display:none!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshNavigation{gap:2px;padding:0 5px!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshNavigation button{font-size:12px!important;gap:4px!important;border-radius:12px!important;padding:2px 3px!important}
+body[data-refresh-density=compact] #kitchenWidget #refreshNavigation .nav-art{width:17px!important;height:18px!important}
+#kitchenWidget #refreshNavigation{padding-top:0!important;padding-bottom:0!important;border-top:0!important;box-shadow:inset 0 1px #e5d6ca}
+body[data-design=refresh] #tray{
+ --widget-frame-width:var(--refresh-side)!important;
+ --widget-frame-height:var(--refresh-frame-height)!important;
+ --workflow-frame-height:var(--refresh-frame-height)!important;
+ position:fixed!important;left:50%!important;right:auto!important;top:0!important;bottom:auto!important;
+ width:var(--refresh-side)!important;max-width:var(--refresh-side)!important;
+ height:var(--refresh-frame-height)!important;max-height:var(--refresh-frame-height)!important;
+ margin:0!important;transform:translateX(-50%)!important;
+}
+body[data-design=refresh] #tray[data-workflow-route=item]{
+ top:auto!important;bottom:calc(100dvh - var(--refresh-frame-height))!important;
+ height:auto!important;max-height:calc(var(--refresh-frame-height) - 30px)!important;
+}
+@container kitchen-widget (max-width:480px){#kitchenWidget #panel-fridge #addFood{width:44px!important;min-width:44px!important;max-width:44px!important;padding:0!important;font-size:0!important;gap:0;border-radius:50%}#kitchenWidget #addFood .icon{width:22px!important;height:22px!important}}
+@container kitchen-widget (max-width:360px){#kitchenWidget #homeOverview #dailyBalance .balance-head{display:none!important}}
