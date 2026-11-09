@@ -824,7 +824,7 @@ function fxDetail(ctx){
  const ai=hasSignal?fxBars(c,ctx):`<div class="fx-d-ai-empty">
   <span class="fx-d-ai-icon" aria-hidden="true">${helper.I?.("chart")||"◇"}</span>
   <strong>${fxEscape(signal.status==="현재 연구 신호 없음"?"현재 연구 신호 없음":signal.status||"검증된 최신 신호 없음")}</strong>
-  <p>${fxEscape(fxForecastMeta(ctx).summary)} · 모델 미지원·자료 부족·기간 종료를 구분합니다. 임의의 확률을 만들지 않습니다.</p>
+  <p>${fxEscape(fxForecastMeta(ctx).summary)} · AI 모델 미지원·자료 부족·기간 종료를 구분합니다. 임의의 확률을 만들지 않습니다.</p>
   ${fxForecastMeta(ctx).active>0?'<button type="button" class="fx-link" data-fx-filter="ai" aria-label="현재 유효한 AI 예측 종목으로 이동">유효 예측 종목 보기 ›</button>':""}
  </div>`;
  const ticker=String(c.symbol||"—").replace(/\.(KS|KQ)$/,""),badge=ticker.replace(/[^A-Za-z0-9]/g,"").slice(0,3)||"STK";
