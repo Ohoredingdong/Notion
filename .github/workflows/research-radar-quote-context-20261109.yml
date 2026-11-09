@@ -1,0 +1,129 @@
+name: Research dated quotes and external provider view
+on:
+  push:
+    branches: [fix/radar-quote-context-20261109]
+    paths: [.github/workflows/research-radar-quote-context-20261109.yml]
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-quote-context-20261109
+  cancel-in-progress: false
+jobs:
+  quote-context:
+    if: github.ref == 'refs/heads/fix/radar-quote-context-20261109'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: 6b0b52720341890916d4d0f1c4f2b15dbbc6029a
+          path: production-reference
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual screenshot browser
+        run: |
+          pip install 'playwright==1.56.0' 'Pillow==11.3.0'
+          python -m playwright install chromium
+          sudo timeout 90s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 90s apt-get install -y fonts-nanum -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+      - name: Apply bounded integration and reproduced-mobile-height fix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/stock-radar-flow-v2.js');text=p.read_text()
+          old='<div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b class="${h.tone?.(delta)||\'\'}">${fxPct(delta)}</b></div>'
+          new='<div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b title="표시된 정규장 종가의 직전 거래일 대비 등락률" class="${h.tone?.(delta)||\'\'}">${fxPct(delta)}</b>${window.StockQuoteContext?.render?.(c)||\'<small>저장 종가 · 현재가 아님</small>\'}</div>'
+          if new not in text:
+              assert text.count(old)==1
+              text=text.replace(old,new);p.write_text(text)
+          p=Path('stock-value-radar.html');text=p.read_text()
+          tag='<script defer src="./assets/stock-radar-flow-v2.js?v=32592862f172"></script>'
+          addition='<link rel="stylesheet" href="./assets/stock-quote-context.css?v=quote-context-20261109-1">\n<script defer src="./assets/stock-quote-context.js?v=quote-context-20261109-1"></script>\n<script defer src="./assets/stock-radar-flow-v2.js?v=quote-context-20261109-1"></script>'
+          if addition not in text:
+              assert text.count(tag)==1
+              p.write_text(text.replace(tag,addition))
+          p=Path('assets/stock-quote-context.css');text=p.read_text()
+          anchor='@media(max-width:850px){.radar-quote-context'
+          replacement='@media(max-width:850px){.fx-v5-stockhead{padding-top:7px;padding-bottom:7px}.radar-quote-context'
+          if replacement not in text:
+              assert anchor in text;text=text.replace(anchor,replacement)
+          extra='\n.radar-quote-alt-source{display:inline-block;margin:3px 0 6px 12px;font-size:12px;color:#356da8}\n'
+          if '.radar-quote-alt-source{' not in text:text+=extra
+          p.write_text(text)
+          p=Path('assets/stock-quote-context.js');text=p.read_text()
+          anchor="  const source=upper(proof.provider_symbol||meta.symbol);"
+          harden=anchor+"\n  if((proof.market&&upper(proof.market)!==country)||(proof.currency&&proof.currency!==c.currency)||(meta.symbol&&upper(meta.symbol)!==source))return null;"
+          if harden not in text:
+              assert anchor in text;text=text.replace(anchor,harden)
+          anchor='  dialog.showModal();\n  if(!symbol)return;'
+          replacement="""  dialog.showModal();
+          if(symbol&&/^(NASDAQ|NYSE):[A-Z]{1,6}$/.test(symbol)){
+           const alternate=doc.createElement('a');alternate.className='radar-quote-alt-source';
+           alternate.href='https://finance.yahoo.com/quote/'+encodeURIComponent(symbol.split(':')[1])+'/';
+           alternate.target='_blank';alternate.rel='noopener noreferrer';alternate.textContent='Yahoo 시세·시간외 원본 ↗';
+           dialog.querySelector('.radar-quote-footnote').before(alternate);
+          }
+          if(!symbol)return;"""
+          if 'Yahoo 시세·시간외 원본' not in text:
+              assert anchor in text;text=text.replace(anchor,replacement)
+          anchor="  const container=doc.createElement('div');container.className='tradingview-widget-container';"
+          guard="""  const override=new URLSearchParams(root.location.search).get('tvwidgetsymbol');
+          if(override&&upper(override)!==symbol){status.textContent='URL의 외부 종목 설정이 달라 시세 로드를 중단했습니다. 위 종목의 제공처 원본을 이용하세요.';return;}
+          """+anchor
+          if 'const override=new URLSearchParams' not in text:
+              assert anchor in text;text=text.replace(anchor,guard)
+          p.write_text(text)
+          print('No data/model/monitor edits; fixed 7.69px mobile growth using header padding, not weaker tests')
+          PY
+      - name: Source identity and unchanged display contracts
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-quote-context.js
+          node scripts/test_stock_quote_context.cjs
+          node scripts/test_stock_world_flow.cjs
+          node - <<'JS'
+          const assert=require('node:assert/strict'),q=require('./assets/stock-quote-context.js');
+          const row={symbol:'NVDA',market:'US',currency:'USD',price_source:{source_identity_verified:true,provider_symbol:'NVDA',market:'US',currency:'USD',source_metadata:{symbol:'NVDA',exchangeName:'NMS'}}};
+          assert.equal(q.providerSymbol(row),'NASDAQ:NVDA');
+          row.price_source.currency='EUR';assert.equal(q.providerSymbol(row),null);row.price_source.currency='USD';
+          row.price_source.market='KR';assert.equal(q.providerSymbol(row),null);row.price_source.market='US';
+          row.price_source.source_metadata.symbol='AAPL';assert.equal(q.providerSymbol(row),null);
+          console.log('ADDITIONAL_IDENTITY_GUARDS_PASS 3');
+          JS
+      - name: Real browser tests, failures and provider availability
+        run: |
+          mkdir -p /tmp/quote-context-evidence/protected
+          python -m http.server 8765 >/tmp/quote-context-http.log 2>&1 &
+          python -m http.server 8776 --directory production-reference >/tmp/quote-context-reference.log 2>&1 &
+          python scripts/test_stock_quote_context_browser.py --out /tmp/quote-context-evidence/quotes --provider-check
+          python scripts/test_stock_radar_spacing_browser.py --out /tmp/quote-context-evidence/spacing --label quote-context
+          python scripts/test_stock_radar_canonical_browser.py
+          python scripts/compare_radar_before_after.py --real-data . --out /tmp/quote-context-evidence/protected
+      - name: Preserve only tested integration on the research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'fix/radar-quote-context-20261109'
+          git add assets/stock-radar-flow-v2.js stock-value-radar.html assets/stock-quote-context.js assets/stock-quote-context.css
+          python - <<'PY'
+          import subprocess
+          paths=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          assert paths <= {'assets/stock-radar-flow-v2.js','stock-value-radar.html','assets/stock-quote-context.js','assets/stock-quote-context.css'},paths
+          PY
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: expose dated close and isolated external quotes with preserved mobile geometry'
+          git push origin HEAD:refs/heads/fix/radar-quote-context-20261109
+          echo "TESTED_COMMIT=$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-quote-context-evidence
+          path: /tmp/quote-context-evidence
+          retention-days: 7

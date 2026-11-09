@@ -1,0 +1,77 @@
+name: Research quote integration no-signal wording regression
+on:
+  push:
+    branches: [fix/radar-quote-context-20261109]
+    paths: [.github/workflows/research-quote-no-signal-copy-20261109.yml]
+permissions:
+  contents: write
+jobs:
+  reproduce-and-verify:
+    if: github.ref == 'refs/heads/fix/radar-quote-context-20261109'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: 6b0b52720341890916d4d0f1c4f2b15dbbc6029a
+          path: production-reference
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser and protected comparison dependencies
+        run: |
+          pip install 'playwright==1.56.0' 'Pillow==11.3.0'
+          python -m playwright install chromium
+      - name: Reproduce original baseline failure before the single wording change
+        run: |
+          python -m http.server 8765 >/tmp/quote-copy-http.log 2>&1 &
+          python -m http.server 8776 --directory production-reference >/tmp/quote-copy-baseline.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess,sys
+          out=Path('/tmp/quote-copy-evidence');out.mkdir()
+          source=Path('production-reference/scripts/test_stock_detail_v6.py').read_text()
+          source=source.replace('http://127.0.0.1:8765/','http://127.0.0.1:8776/').replace('Path("detail-v6-artifacts")','Path("/tmp/quote-copy-evidence/baseline")')
+          baseline=out/'original-baseline-test.py';baseline.write_text(source)
+          result=subprocess.run([sys.executable,str(baseline)],text=True,capture_output=True)
+          log=result.stdout+result.stderr;(out/'baseline-result.txt').write_text(log)
+          assert result.returncode!=0 and 'AssertionError: No-signal view explains actual model coverage' in log,log[-2000:]
+          print('ORIGINAL_BASELINE_NO_SIGNAL_COPY_FAILURE_REPRODUCED')
+          p=Path('assets/stock-radar-flow-v2.js');text=p.read_text()
+          old=' · 모델 미지원·자료 부족·기간 종료를 구분합니다. 임의의 확률을 만들지 않습니다.'
+          new=' · AI 모델 미지원·자료 부족·기간 종료를 구분합니다. 임의의 확률을 만들지 않습니다.'
+          assert text.count(old)==1
+          p.write_text(text.replace(old,new))
+          print('ONLY_NO_SIGNAL_COPY_CHANGED; numeric and temporal rules untouched')
+          PY
+      - name: Run unchanged detail test and protected screen comparison
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node scripts/test_stock_quote_context.cjs
+          node scripts/test_stock_forecast_wiring.cjs
+          python scripts/test_stock_detail_v6.py
+          python scripts/compare_radar_before_after.py --real-data . --out /tmp/quote-copy-evidence/protected
+      - name: Preserve only the verified wording repair on the existing PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'fix/radar-quote-context-20261109'
+          git add assets/stock-radar-flow-v2.js
+          test "$(git diff --cached --name-only)" = 'assets/stock-radar-flow-v2.js'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: explicitly label AI model coverage in expired-signal empty state'
+          git push origin HEAD:refs/heads/fix/radar-quote-context-20261109
+          echo "TESTED_COPY_COMMIT=$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quote-no-signal-regression-proof
+          path: |
+            /tmp/quote-copy-evidence
+            detail-v6-artifacts
+          retention-days: 7
