@@ -24,4 +24,7 @@ test('visible label is explicit saved regular session',()=>{const out=q.render(r
 test('no price date claim for invalid source date',()=>{const out=q.render(row({price_session:'bad'}),NOW);assert(out.includes('기준일 미확인'));assert(!out.includes('bad'));});
 test('malicious selection IDs are escaped',()=>{const out=q.render(row({selection_id:'\" onclick=\"bad()'}),NOW);assert(out.includes('&quot;'));assert(!out.includes('data-quote-view="" onclick'));});
 test('no source row mutation',()=>{const r=row(),before=JSON.stringify(r);q.render(r,NOW);q.providerSymbol(r);assert.equal(JSON.stringify(r),before);});
+test('explicit source currency must match display currency',()=>{const r=row();r.price_source.currency='EUR';assert.equal(q.providerSymbol(r),null);});
+test('explicit source market must match display market',()=>{const r=row();r.price_source.market='KR';assert.equal(q.providerSymbol(r),null);});
+test('metadata identity cannot contradict the verified provider ticker',()=>{const r=row();r.price_source.source_metadata.symbol='AAPL';assert.equal(q.providerSymbol(r),null);});
 console.log('QUOTE_CONTEXT_CONTRACT_PASS',n);
