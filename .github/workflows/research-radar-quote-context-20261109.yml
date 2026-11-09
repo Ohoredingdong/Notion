@@ -1,0 +1,90 @@
+name: Research dated quotes and external provider view
+on:
+  push:
+    branches: [fix/radar-quote-context-20261109]
+    paths: [.github/workflows/research-radar-quote-context-20261109.yml]
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-quote-context-20261109
+  cancel-in-progress: false
+jobs:
+  quote-context:
+    if: github.ref == 'refs/heads/fix/radar-quote-context-20261109'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: 6b0b52720341890916d4d0f1c4f2b15dbbc6029a
+          path: production-reference
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual screenshot browser
+        run: |
+          pip install 'playwright==1.56.0' 'Pillow==11.3.0'
+          python -m playwright install chromium
+          sudo timeout 90s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 90s apt-get install -y fonts-nanum -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+      - name: Apply the two bounded runtime integration edits
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('assets/stock-radar-flow-v2.js');text=p.read_text()
+          old='<div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b class="${h.tone?.(delta)||\'\'}">${fxPct(delta)}</b></div>'
+          new='<div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b title="표시된 정규장 종가의 직전 거래일 대비 등락률" class="${h.tone?.(delta)||\'\'}">${fxPct(delta)}</b>${window.StockQuoteContext?.render?.(c)||\'<small>저장 종가 · 현재가 아님</small>\'}</div>'
+          if new not in text:
+              assert text.count(old)==1,'Unexpected selected-quote runtime'
+              text=text.replace(old,new);p.write_text(text)
+          p=Path('stock-value-radar.html');text=p.read_text()
+          tag='<script defer src="./assets/stock-radar-flow-v2.js?v=32592862f172"></script>'
+          addition='<link rel="stylesheet" href="./assets/stock-quote-context.css?v=quote-context-20261109-1">\n<script defer src="./assets/stock-quote-context.js?v=quote-context-20261109-1"></script>\n<script defer src="./assets/stock-radar-flow-v2.js?v=quote-context-20261109-1"></script>'
+          if addition not in text:
+              assert text.count(tag)==1,'Unexpected HTML cache-version anchor'
+              text=text.replace(tag,addition);p.write_text(text)
+          print('Only price provenance UI and cache-version integration changed')
+          PY
+      - name: Source identity and unchanged display contracts
+        run: |
+          node --check assets/stock-radar-flow-v2.js
+          node --check assets/stock-quote-context.js
+          node scripts/test_stock_quote_context.cjs
+          node scripts/test_stock_world_flow.cjs
+      - name: Real browser tests, failures and provider availability
+        run: |
+          mkdir -p /tmp/quote-context-evidence/protected
+          python -m http.server 8765 >/tmp/quote-context-http.log 2>&1 &
+          python -m http.server 8776 --directory production-reference >/tmp/quote-context-reference.log 2>&1 &
+          python scripts/test_stock_quote_context_browser.py --out /tmp/quote-context-evidence/quotes --provider-check
+          python scripts/test_stock_radar_spacing_browser.py --out /tmp/quote-context-evidence/spacing --label quote-context
+          python scripts/test_stock_radar_canonical_browser.py
+          python scripts/compare_radar_before_after.py --real-data . --out /tmp/quote-context-evidence/protected
+      - name: Preserve only tested integration on the research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'fix/radar-quote-context-20261109'
+          git add assets/stock-radar-flow-v2.js stock-value-radar.html
+          python - <<'PY'
+          import subprocess
+          paths=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          assert paths <= {'assets/stock-radar-flow-v2.js','stock-value-radar.html'},paths
+          PY
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: label dated regular-session close and expose separate provider quote view'
+          git push origin HEAD:refs/heads/fix/radar-quote-context-20261109
+          echo "TESTED_COMMIT=$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-quote-context-evidence
+          path: /tmp/quote-context-evidence
+          retention-days: 7
