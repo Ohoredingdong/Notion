@@ -1,0 +1,93 @@
+name: Research NVDA refresh and session audit
+on:
+  push:
+    branches: [research/nvda-refresh-check-20261109]
+    paths: [.github/workflows/research-nvda-refresh-check-20261109.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cd9df39e4b4e2538cc7733352cef5e2b06a6eba3
+          persist-credentials: false
+      - name: Read fixed source, public snapshots and actual collector runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, re, shutil, hashlib, urllib.request, urllib.error
+          from pathlib import Path
+          from datetime import datetime, timezone
+          out=Path('/tmp/nvda-refresh-audit'); out.mkdir()
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'pinned_main':'cd9df39e4b4e2538cc7733352cef5e2b06a6eba3','files':{},'public':{},'runs':{},'prs':[]}
+          def request(url,api=False):
+              headers={'User-Agent':'Notion-source-audit/1.0','Cache-Control':'no-cache'}
+              if api: headers['Authorization']='Bearer '+os.environ['GH_TOKEN']
+              with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=20) as r:return r.read()
+          def nvda(obj):
+              found=[]
+              def visit(x,path=''):
+                  if isinstance(x,dict):
+                      if x.get('symbol')=='NVDA' or x.get('provider_symbol')=='NVDA':
+                          keep={k:v for k,v in x.items() if any(w in k.lower() for w in ('price','change','session','source','generat','fetch','observ','timestamp','currency','symbol','market','status','as_of'))}
+                          found.append({'path':path,'fields':keep})
+                      for k,v in x.items():
+                          if k=='NVDA' and isinstance(v,dict):found.append({'path':path+'/NVDA','fields':{a:b for a,b in v.items() if a!='bars'},'last_bars':v.get('bars',[])[-3:]})
+                          if isinstance(v,(dict,list)):visit(v,path+'/'+str(k))
+                  elif isinstance(x,list):
+                      for i,v in enumerate(x):visit(v,path+'/'+str(i))
+              visit(obj)
+              return found[:12]
+          names=['stock-value-radar-data.json','stock-radar-chart-data.json','stock-investment-intelligence.json','stock-radar-health.json','stock-market-context.json']
+          for name in names:
+              p=Path(name)
+              if not p.exists():continue
+              raw=p.read_bytes();data=json.loads(raw)
+              report['files'][name]={'sha256':hashlib.sha256(raw).hexdigest(),'keys':list(data),'metadata':{k:v for k,v in data.items() if not isinstance(v,(dict,list))},'nvda':nvda(data)}
+              try:
+                  public=request('https://ohoredingdong.github.io/Notion/'+name+'?audit=nvda-20261109')
+                  pd=json.loads(public)
+                  report['public'][name]={'same_as_pin':public==raw,'metadata':{k:v for k,v in pd.items() if not isinstance(v,(dict,list))},'nvda':nvda(pd)}
+              except Exception as e:report['public'][name]={'error':type(e).__name__}
+          for name in ('update-stock-value-radar.yml','radar-operating-recovery.yml','radar-world-accuracy-refresh.yml','stock-forecasts.yml','update-stock-market-groups.yml'):
+              try:
+                  runs=json.loads(request('https://api.github.com/repos/Ohoredingdong/Notion/actions/workflows/'+name+'/runs?per_page=3',True))['workflow_runs']
+                  result=[]
+                  for r in runs:
+                      item={k:r.get(k) for k in ('id','name','status','conclusion','head_sha','event','created_at','updated_at')}
+                      if r['status']=='completed':
+                          jobs=json.loads(request(r['jobs_url'],True))['jobs']
+                          item['jobs']=[{'id':j['id'],'conclusion':j['conclusion'],'failed_steps':[s['name'] for s in j.get('steps',[]) if s.get('conclusion')=='failure']} for j in jobs]
+                      result.append(item)
+                  report['runs'][name]=result
+              except Exception as e:report['runs'][name]={'error':type(e).__name__}
+          try:
+              prs=json.loads(request('https://api.github.com/repos/Ohoredingdong/Notion/pulls?state=all&sort=updated&direction=desc&per_page=60',True))
+              report['prs']=[{k:p.get(k) for k in ('number','title','state','merged_at','updated_at','body')} for p in prs if re.search(r'price|quote|refresh|session|시세|갱신|recovery|fresh',p['title'],re.I)]
+          except Exception as e:report['prs_error']=type(e).__name__
+          try:
+              q=json.loads(request('https://query1.finance.yahoo.com/v8/finance/chart/NVDA?interval=1m&range=1d&includePrePost=true'))
+              v=q['chart']['result'][0]
+              report['provider_chart']={'received_at':datetime.now(timezone.utc).isoformat(),'meta':v.get('meta'),'last_timestamps':v.get('timestamp',[])[-5:],'last_closes':v['indicators']['quote'][0].get('close',[])[-5:]}
+          except Exception as e:report['provider_chart']={'error':type(e).__name__}
+          for base,pattern in [('scripts','*stock*'),('assets','stock-*.js'),('.github/workflows','*stock*'),('.github/workflows','radar-*.yml')]:
+              for p in Path(base).glob(pattern):
+                  if p.is_file() and p.suffix in ('.py','.cjs','.js','.yml'):
+                      dest=out/'source'/p;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest)
+          for name in ('stock-value-radar.html','AGENTS.md'):
+              shutil.copyfile(name,out/'source'/name)
+          (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print('NVDA_REFRESH_AUDIT',json.dumps(report,ensure_ascii=False)[:42000])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nvda-refresh-read-only-evidence
+          path: /tmp/nvda-refresh-audit
+          retention-days: 7
