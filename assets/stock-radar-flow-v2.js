@@ -576,7 +576,7 @@ function fxV5Cockpit(ctx){
  return `<section class="fx-panel fx-v5-cockpit" aria-label="선택 기업 종합 분석">
  <div class="fx-v5-stockhead">
   <div class="fx-v5-stocktitle"><small>${fxEscape(market||"시장 확인 전")} · ${fxEscape(c.sector||"업종 확인 전")}</small><div><h2>${fxEscape(c.name)}</h2><span>${fxEscape(c.symbol)}</span><button type="button" data-nr-star="${fxEscape(fxId(c))}" aria-label="관심 종목 저장" class="fx-v5-star ${(ctx.favorites||[]).includes(fxId(c))?'on':''}">${(ctx.favorites||[]).includes(fxId(c))?'★':'☆'}</button></div></div>
-  <div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b class="${h.tone?.(delta)||''}">${fxPct(delta)}</b></div>
+  <div class="fx-v5-quote"><strong>${fxMoney(c.price,c.currency)}</strong><b title="표시된 정규장 종가의 직전 거래일 대비 등락률" class="${h.tone?.(delta)||''}">${fxPct(delta)}</b>${window.StockQuoteContext?.render?.(c)||'<small>저장 종가 · 현재가 아님</small>'}</div>
   <div class="fx-v5-volume"><span>기준 거래량</span><strong>${volumeAligned?fxNum(volume,0)+"주":"동일 시점 미수집"}</strong><small>종가 ${fxEscape(c.price_session||"기준일 미확인")}</small></div>
  </div>
  <div class="fx-v5-toptrio">

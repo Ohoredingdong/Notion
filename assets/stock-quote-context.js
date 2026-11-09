@@ -16,6 +16,7 @@
   const proof=c?.price_source,meta=proof?.source_metadata||{};
   if(proof?.source_identity_verified!==true)return null;
   const source=upper(proof.provider_symbol||meta.symbol);
+  if((proof.market&&upper(proof.market)!==country)||(proof.currency&&proof.currency!==c.currency)||(meta.symbol&&upper(meta.symbol)!==source))return null;
   if(!source||source!==upper(c?.source_symbol||c?.symbol))return null;
   if(country==='US'&&c.currency==='USD'&&/^[A-Z]{1,6}$/.test(symbol)){
    const exchange=upper(meta.exchangeName||c?.catalog_entry?.exchange||c?.exchange);
@@ -60,8 +61,16 @@
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   dialog.addEventListener('click',event=>{if(event.target===dialog||event.target.closest('[data-quote-close]'))close();});
   dialog.showModal();
-  if(!symbol)return;
+if(symbol&&/^(NASDAQ|NYSE):[A-Z]{1,6}$/.test(symbol)){
+ const alternate=doc.createElement('a');alternate.className='radar-quote-alt-source';
+ alternate.href='https://finance.yahoo.com/quote/'+encodeURIComponent(symbol.split(':')[1])+'/';
+ alternate.target='_blank';alternate.rel='noopener noreferrer';alternate.textContent='Yahoo 시세·시간외 원본 ↗';
+ dialog.querySelector('.radar-quote-footnote').before(alternate);
+}
+if(!symbol)return;
   const active=dialog,host=active.querySelector('.radar-quote-provider-host'),status=active.querySelector('.radar-quote-load-status');
+  const override=new URLSearchParams(root.location.search).get('tvwidgetsymbol');
+if(override&&upper(override)!==symbol){status.textContent='URL의 외부 종목 설정이 달라 시세 로드를 중단했습니다. 위 종목의 제공처 원본을 이용하세요.';return;}
   const container=doc.createElement('div');container.className='tradingview-widget-container';
   const widget=doc.createElement('div');widget.className='tradingview-widget-container__widget';container.append(widget);
   // Preserve mandatory TradingView attribution. Do not scrape/export its frame.
