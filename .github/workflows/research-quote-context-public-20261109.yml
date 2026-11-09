@@ -1,0 +1,66 @@
+name: Read-only quote context public verification
+on:
+  push:
+    branches: [research/nvda-refresh-check-20261109]
+    paths: [.github/workflows/research-quote-context-public-20261109.yml]
+permissions:
+  contents: read
+jobs:
+  public-quote-context:
+    if: github.ref == 'refs/heads/research/nvda-refresh-check-20261109'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b795f6d6132741d24185ce8824fba05a6c2b77fc
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check the exact final source identity contracts
+        run: |
+          node --check assets/stock-quote-context.js
+          node scripts/test_stock_quote_context.cjs
+      - name: Install browser and screenshot fonts
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+          sudo timeout 90s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 90s apt-get install -y fonts-nanum -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+      - name: Require exact real public runtime bytes before testing the deployed UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,time,urllib.request
+          from datetime import datetime,timezone
+          out=Path('/tmp/quote-context-public');out.mkdir()
+          names=['stock-value-radar.html','assets/stock-radar-flow-v2.js','assets/stock-quote-context.js','assets/stock-quote-context.css']
+          expected={n:Path(n).read_bytes() for n in names}
+          report={'expected_source_commit':'b795f6d6132741d24185ce8824fba05a6c2b77fc','success':False,'attempts':[]}
+          for attempt in range(24):
+              matches={}
+              for name in names:
+                  try:
+                      req=urllib.request.Request('https://ohoredingdong.github.io/Notion/'+name+'?verify=quote-context-20261109-1',headers={'User-Agent':'Radar-quote-public-verification/1.0','Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(req,timeout=15) as response:body=response.read()
+                      matches[name]={'equal':body==expected[name],'sha256':hashlib.sha256(body).hexdigest()}
+                  except Exception as exc:matches[name]={'equal':False,'error':type(exc).__name__}
+              report['attempts'].append({'checked_at':datetime.now(timezone.utc).isoformat(),'files':matches})
+              if all(x['equal'] for x in matches.values()):
+                  report['success']=True
+                  print('PUBLIC_QUOTE_CONTEXT_EXACT_BYTES_VERIFIED',report['attempts'][-1]['checked_at'])
+                  break
+              if attempt<23:time.sleep(8)
+          (out/'public-byte-proof.json').write_text(json.dumps(report,indent=2))
+          assert report['success'],'Final reviewed quote runtime has not been verified on public Pages'
+          PY
+      - name: Exercise the actual public quote label, source failure and provider view
+        run: |
+          python scripts/test_stock_quote_context_browser.py --base https://ohoredingdong.github.io/Notion/stock-value-radar.html --out /tmp/quote-context-public/browser --provider-check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quote-context-public-proof
+          path: /tmp/quote-context-public
+          retention-days: 7
