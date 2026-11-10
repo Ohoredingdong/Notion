@@ -1,14 +1,14 @@
 {
   "version": "radar-accuracy-audit-v1",
   "source": {
-    "learning_generated_at": "2026-11-10T15:38:35.957804+00:00",
-    "forecasts_generated_at": "2026-11-10T15:38:35.957804+00:00",
+    "learning_generated_at": "2026-11-10T18:56:37.815999+00:00",
+    "forecasts_generated_at": "2026-11-10T18:56:37.815999+00:00",
     "opportunity_generated_at": "2026-11-10T15:37:19.700275+00:00",
-    "market_generated_at": "2026-11-10T11:56:33.417351+00:00",
+    "market_generated_at": "2026-11-10T15:46:18.398172+00:00",
     "chart_generated_at": "2026-11-10T15:37:37.473153+00:00",
     "chart_source_generated_at": "2026-11-10T15:37:19.700275+00:00",
-    "cases_generated_at": "2026-11-10T11:56:25.452895+00:00",
-    "entry_generated_at": "2026-11-10T04:53:26.334458+00:00"
+    "cases_generated_at": "2026-11-10T15:46:11.280984+00:00",
+    "entry_generated_at": "2026-11-10T16:36:26.067558+00:00"
   },
   "evaluation": {
     "status": "forward_validation_in_progress",
@@ -53,10 +53,10 @@
     "log_loss": 1.1265162470600438
   },
   "raw_ledger": {
-    "observed_events": 309,
+    "observed_events": 321,
     "public_before_target_verified": 297,
-    "observed_correct": 113,
-    "raw_observed_accuracy_not_independent": 0.3656957928802589,
+    "observed_correct": 121,
+    "raw_observed_accuracy_not_independent": 0.37694704049844235,
     "note": "Raw ledger includes overlaps not present in the independent scored evaluation."
   },
   "paired_baseline": {
@@ -105,28 +105,14 @@
     "date_order_and_price_values_valid": true,
     "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote."
   },
-  "index_date_mismatch": [
-    {
-      "market": "KOSPI",
-      "index_snapshot": "2026-11-10",
-      "chart_history_through": "2026-11-09",
-      "policy": "display dates separately; do not claim history chart is current"
-    },
-    {
-      "market": "KOSDAQ",
-      "index_snapshot": "2026-11-10",
-      "chart_history_through": "2026-11-09",
-      "policy": "display dates separately; do not claim history chart is current"
-    }
-  ],
+  "index_date_mismatch": [],
   "data_integrity": {
     "check_passed": true,
     "errors": [],
     "warnings": [
       "Insufficient independent observations and/or sessions for promotion",
       "Paired Brier gain below configured policy threshold",
-      "No independently proven live trading profitability",
-      "Market index snapshots have dates different from sparkline histories"
+      "No independently proven live trading profitability"
     ],
     "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
   }
