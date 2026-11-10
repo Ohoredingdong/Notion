@@ -1,0 +1,69 @@
+name: Forecast Postvalidation Source Binding
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/stock-postvalidation-binding.yml'
+      - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/audit_stock_forecast_census.py'
+      - 'scripts/test_stock_timing_source_binding.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/stock-postvalidation-binding.yml'
+      - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/audit_stock_forecast_census.py'
+      - 'scripts/test_stock_timing_source_binding.py'
+permissions:
+  contents: read
+jobs:
+  source-binding:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONPATH: scripts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze original evidence hashes
+        run: |
+          mkdir -p /tmp/postvalidation-binding
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          original={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in Path('.').glob('stock-*') if p.is_file()}
+          Path('/tmp/postvalidation-binding/original.json').write_text(json.dumps(original))
+          PY
+      - name: Reject mixed snapshots, future context and original-evidence output aliases
+        run: |
+          python -m unittest test_stock_timing_source_binding test_stock_timing_target_instants test_stock_timing_census -v
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_learning_evidence.py --self-test
+          python scripts/test_stock_timing_acceptance_guard.py -v
+      - name: Independently recalculate current saved records without training or collecting
+        run: |
+          python scripts/audit_stock_forecast_independent.py --output /tmp/postvalidation-binding/independent.json
+          python scripts/audit_stock_forecast_census.py --audit /tmp/postvalidation-binding/independent.json --output /tmp/postvalidation-binding/census.json
+          python scripts/audit_stock_learning_evidence.py --output /tmp/postvalidation-binding/learning.json
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          from audit_stock_timing_acceptance_guard import audit_acceptance,read_jsonl
+          out=Path('/tmp/postvalidation-binding')
+          report=audit_acceptance(json.loads((out/'independent.json').read_text()),read_jsonl('stock-forecast-ledger.jsonl'),json.loads(Path('stock-forecast-autopilot.json').read_text()))
+          (out/'acceptance.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          assert not report['integrity_errors'],report['integrity_errors']
+          original=json.loads((out/'original.json').read_text())
+          assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest()==digest for p,digest in original.items())
+          print('ORIGINAL_EVIDENCE_UNCHANGED',len(original))
+          print('TIMING_USEFULNESS',report['status'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-postvalidation-source-binding
+          path: /tmp/postvalidation-binding
+          retention-days: 30

@@ -1,0 +1,58 @@
+name: Research post-validation evidence export
+on:
+  push:
+    branches: [research/forecast-postvalidation-20261110]
+    paths: [.github/workflows/research-forecast-postvalidation-export.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 41072669d14b89f4cdabea3147488b61673a362c
+          persist-credentials: false
+      - name: Preserve pinned original evidence and scoped source for independent audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,re,shutil,hashlib,urllib.request,subprocess
+          from pathlib import Path
+          from datetime import datetime,timezone
+          out=Path('/tmp/forecast-postvalidation-evidence');out.mkdir()
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'pinned_main':'41072669d14b89f4cdabea3147488b61673a362c','files':{},'workflow_runs':[],'related_prs':[]}
+          patterns=['stock-forecast*','stock-direction*','stock-timing*','stock-value-radar.html','stock-radar-health.json','scripts/*stock*','assets/stock-*','docs/*stock*','docs/experiments/*','docs/research/*','.github/workflows/*stock*','.github/workflows/*forecast*','AGENTS.md']
+          chosen=set()
+          for pattern in patterns:
+              for p in Path('.').glob(pattern):
+                  if p.is_file() and p.suffix in ('.json','.jsonl','.py','.cjs','.js','.css','.html','.md','.yml'):chosen.add(p)
+          for p in sorted(chosen):
+              dest=out/'source'/p;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest)
+              report['files'][str(p)]={'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+          def api(path):
+              req=urllib.request.Request('https://api.github.com/repos/Ohoredingdong/Notion/'+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'User-Agent':'Postvalidation-independent-audit/1.0'})
+              with urllib.request.urlopen(req,timeout=25) as r:return json.load(r)
+          for w in api('actions/workflows?per_page=100').get('workflows',[]):
+              if w['name'] in ('Stock Prospective Forecasts','Independent Forecast Evidence Audit','Stock Autopilot Bounded Recovery'):
+                  for r in api('actions/workflows/'+str(w['id'])+'/runs?per_page=2').get('workflow_runs',[]):
+                      row={k:r.get(k) for k in ('id','name','status','conclusion','head_sha','event','created_at','updated_at','html_url')}
+                      row['jobs']=[{'id':j['id'],'name':j['name'],'status':j['status'],'conclusion':j['conclusion'],'steps':j.get('steps',[])} for j in api('actions/runs/'+str(r['id'])+'/jobs').get('jobs',[])]
+                      report['workflow_runs'].append(row)
+          for pr in api('pulls?state=all&sort=updated&direction=desc&per_page=100'):
+              if re.search(r'audit|forecast|timing|사후|검증',pr['title'],re.I):
+                  row={k:pr.get(k) for k in ('number','title','state','body','updated_at','merged_at','html_url')};row['head']=pr['head']['sha'];row['branch']=pr['head']['ref'];report['related_prs'].append(row)
+          report['tree']=subprocess.check_output(['git','ls-tree','-r','--name-only','HEAD'],text=True).splitlines()
+          (out/'manifest.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print('PINNED_POSTVALIDATION_EVIDENCE',report['pinned_main'],'files',len(chosen))
+          print('WORKFLOW_RESULTS',json.dumps([{'id':r['id'],'name':r['name'],'status':r['status'],'conclusion':r['conclusion']} for r in report['workflow_runs']]))
+          print('RELATED_RECENT_PRS',json.dumps([{'number':r['number'],'title':r['title'],'state':r['state']} for r in report['related_prs'][:20]],ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forecast-postvalidation-pinned-evidence
+          path: /tmp/forecast-postvalidation-evidence
+          retention-days: 7
