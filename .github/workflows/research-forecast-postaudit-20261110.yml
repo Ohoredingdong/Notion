@@ -1,0 +1,85 @@
+name: Research forecast post-audit 20261110
+on:
+  push:
+    branches: [research/forecast-postaudit-20261110]
+    paths: [.github/workflows/research-forecast-postaudit-20261110.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  capture-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 2c7aa170a70701740a1bdec7b50a51273c8ea50f
+          persist-credentials: false
+      - name: Capture only relevant immutable source and actual Actions evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,re,hashlib,shutil,os,urllib.request,urllib.parse
+          from pathlib import Path
+          from datetime import datetime,timezone
+          out=Path('/tmp/forecast-postaudit'); out.mkdir()
+          src=out/'source';src.mkdir()
+          pin='2c7aa170a70701740a1bdec7b50a51273c8ea50f'
+          manifest={'pinned_main':pin,'captured_at':datetime.now(timezone.utc).isoformat(),'files':{},'runs':{},'existing_prs':[],'errors':[],'scope':'Read-only evidence capture, not new learning or model performance'}
+          patterns=['stock-forecast*','stock-direction*','stock-timing*','stock-radar-accuracy*','stock-world-flow.json','stock-market-context.json','stock-opportunity-data.json','stock-radar-chart-data.json','stock-radar-health.json','stock-universe-catalog.json','stock-value-radar.html','AGENTS.md','scripts/*.py','scripts/*.cjs','scripts/*requirements*','assets/stock-*.js','assets/stock-*.css','docs/stock-*.md','.github/workflows/*.yml','tests/*stock*','requirements*.txt','package.json']
+          paths=set()
+          for pattern in patterns:
+              paths.update(p for p in Path('.').glob(pattern) if p.is_file())
+          for p in sorted(paths):
+              raw=p.read_bytes();dest=src/p;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(raw)
+              info={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+              if p.parent==Path('.') and p.suffix=='.jsonl':info['rows']=len(raw.splitlines())
+              if p.parent==Path('.') and p.suffix=='.json':
+                  try:
+                      d=json.loads(raw)
+                      if isinstance(d,dict):info['keys']=list(d);info['scalars']={k:v for k,v in d.items() if not isinstance(v,(dict,list))}
+                  except Exception as e:info['parse_error']=type(e).__name__
+              manifest['files'][str(p)]=info
+          def api(path,raw=False):
+              request=urllib.request.Request('https://api.github.com/repos/Ohoredingdong/Notion/'+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'User-Agent':'ForecastIndependentPostAudit/1.0','Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(request,timeout=30) as r:b=r.read()
+              if raw:return b.decode('utf-8-sig',errors='replace').replace(os.environ['GH_TOKEN'],'[REDACTED]')
+              return json.loads(b)
+          names=['Stock Prospective Forecasts','Independent Forecast Evidence Audit','Stock Autopilot Bounded Recovery']
+          logs=out/'actions';logs.mkdir()
+          for p in Path('.github/workflows').glob('*.yml'):
+              content=p.read_text()
+              name=next((name for name in names if re.search(r'^name:\s*[\"\']?'+re.escape(name)+r'[\"\']?\s*$',content,re.M)),None)
+              if not name:continue
+              try:
+                  runs=api('actions/workflows/'+urllib.parse.quote(p.name,safe='')+'/runs?per_page=3')['workflow_runs']
+                  rows=[];logged=False
+                  for r in runs:
+                      row={k:r.get(k) for k in ('id','name','head_sha','head_branch','event','status','conclusion','created_at','updated_at','run_attempt','html_url')}
+                      if r['status']=='completed':
+                          jobs=api('actions/runs/'+str(r['id'])+'/jobs?per_page=100')['jobs']
+                          row['jobs']=[{k:j.get(k) for k in ('id','name','status','conclusion','started_at','completed_at','steps')} for j in jobs]
+                          if not logged and r['conclusion'] not in ('cancelled','skipped'):
+                              for j in jobs:
+                                  text=api('actions/jobs/'+str(j['id'])+'/logs',raw=True)
+                                  (logs/(str(r['id'])+'-'+str(j['id'])+'.txt')).write_text(text)
+                              logged=True
+                      rows.append(row)
+                  manifest['runs'][name]={'workflow_path':str(p),'runs':rows}
+              except Exception as e:manifest['errors'].append({'operation':'actions '+name,'error':type(e).__name__})
+          try:
+              prs=api('pulls?state=all&sort=updated&direction=desc&per_page=100')
+              manifest['existing_prs']=[{k:p.get(k) for k in ('number','title','state','merged_at','created_at','updated_at','body','head','base')} for p in prs if re.search(r'forecast|timing|audit|paper|outcome|learning|post|예측',p['title'],re.I)]
+              for p in manifest['existing_prs']:
+                  p['head']={k:p['head'].get(k) for k in ('ref','sha')};p['base']={k:p['base'].get(k) for k in ('ref','sha')}
+          except Exception as e:manifest['errors'].append({'operation':'existing PR records','error':type(e).__name__})
+          (out/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
+          print('POST_AUDIT_CAPTURE',json.dumps({'pin':pin,'files':len(paths),'root_evidence':{k:v for k,v in manifest['files'].items() if '/' not in k and k.startswith(('stock-forecast','stock-direction','stock-timing','stock-radar-accuracy'))},'runs':{k:[{'id':r['id'],'status':r['status'],'conclusion':r['conclusion']} for r in v['runs']] for k,v in manifest['runs'].items()},'prior_prs':[{k:p[k] for k in ('number','title','state','merged_at')} for p in manifest['existing_prs']],'errors':manifest['errors']},ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-postaudit-pinned-evidence
+          path: /tmp/forecast-postaudit
+          retention-days: 7
