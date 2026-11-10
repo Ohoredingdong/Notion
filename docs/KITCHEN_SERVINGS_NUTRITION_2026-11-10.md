@@ -74,3 +74,5 @@ python scripts/test_kitchen_refresh_browser.py --root /tmp/kitchen-nutrition \
 [수정 전 720px](artifacts/kitchen-nutrition-20261110/before-nutrition-720.png) → [수정 후 720px](artifacts/kitchen-nutrition-20261110/after-nutrition-720.png), [320px](artifacts/kitchen-nutrition-20261110/after-nutrition-320.png), [개인 식사량](artifacts/kitchen-nutrition-20261110/personal-meal-720.png), [관리 기준 설정](artifacts/kitchen-nutrition-20261110/targets-320.png)을 확인한다. [부분 기록 안내 예시](artifacts/kitchen-nutrition-20261110/qa-example-partial-guidance.png)는 검증용 목표·식사 자료이며 사용자 기록이 아니다.
 
 검토 증거 경로는 `docs/artifacts/kitchen-nutrition-20261110/`이다. 실제 Notion·Safari·실물 기기·공개 HTMLPreview 실행은 미검증이다. main 병합·운영 배포와 기존 Actions·금융 자동 갱신은 변경하지 않는다.
+
+공개4개 HTML·선별 화면 PNG는 모두HTTP200 응답과 검사한 바이트 일치를 확인했다([공개 파일 검증](artifacts/kitchen-nutrition-20261110/public-access.json)). GitHub API는 환경 정책으로 차단되어 PR 생성은 완료하지 못했으며, [base·head와 검토 설명 초안](artifacts/kitchen-nutrition-20261110/PR_DRAFT.md)을 보존했다. 작업 브랜치만 게시했고 운영 배포·main 병합은 수행하지 않았다.
