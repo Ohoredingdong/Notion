@@ -13,6 +13,9 @@ on:
       - 'scripts/test_stock_timing_workflow_provenance.py'
       - 'scripts/audit_stock_timing_workflow_provenance.py'
       - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/audit_stock_forecast_census.py'
+      - 'scripts/test_stock_timing_target_instants.py'
+      - 'scripts/test_stock_timing_census.py'
       - 'scripts/test_stock_timing_shadow_catalogue.py'
       - 'scripts/stock_autopilot_recovery.cjs'
       - 'scripts/audit_stock_forecast_attempt_coverage.py'
@@ -37,6 +40,9 @@ on:
       - 'scripts/audit_stock_timing_trigger.py'
       - 'scripts/test_stock_timing_trigger.py'
       - 'scripts/audit_stock_forecast_independent.py'
+      - 'scripts/audit_stock_forecast_census.py'
+      - 'scripts/test_stock_timing_target_instants.py'
+      - 'scripts/test_stock_timing_census.py'
       - 'scripts/test_stock_timing_source_asof.py'
       - 'scripts/test_stock_timing_band_audit.py'
       - 'scripts/test_stock_timing_training_asof.py'
@@ -97,6 +103,7 @@ jobs:
           python scripts/test_stock_timing_transaction_rollback.py -v
           python scripts/test_stock_timing_workflow_provenance.py -v
           python scripts/audit_stock_forecast_independent.py --self-test
+          PYTHONPATH=scripts python -m unittest test_stock_timing_target_instants test_stock_timing_census -v
           PYTHONPATH=scripts python scripts/test_stock_timing_attempt_coverage.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_equal_issuance.py -v
           PYTHONPATH=scripts python scripts/test_stock_timing_source_asof.py -v
@@ -117,7 +124,9 @@ jobs:
             --expected-head-sha "$EXPECTED_FORECAST_HEAD_SHA"
       - name: Recompute frozen calls, public timing and stored outcome arithmetic
         if: steps.upstream.outputs.audit_required == 'true'
-        run: python scripts/audit_stock_forecast_independent.py
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_forecast_census.py
       - name: Independently verify immutable learning-event chronology and replay guards
         if: steps.upstream.outputs.audit_required == 'true'
         run: |
@@ -157,6 +166,7 @@ jobs:
           retention-days: 30
           path: |
             stock-forecast-independent-audit.json
+            stock-forecast-postvalidation-census.json
             stock-forecast-learning-evidence.json
             stock-forecast-attempt-coverage-audit.json
             stock-timing-acceptance-guard.json
