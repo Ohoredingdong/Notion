@@ -1,85 +1,85 @@
 {
   "version": "canonical-radar-health-v2",
-  "checked_at": "2026-11-10T04:09:17.985627+00:00",
+  "checked_at": "2026-11-10T04:11:19.883351+00:00",
   "status": "error",
-  "consecutive_failures": 118,
+  "consecutive_failures": 119,
   "notification_required": true,
   "data_ages": {
     "opportunity": {
       "file": "stock-opportunity-data.json",
       "generated_at": "2026-11-10T04:07:59.352664+00:00",
-      "age_hours": 0.02
+      "age_hours": 0.06
     },
     "cases": {
       "file": "stock-investment-cases-summary.json",
-      "generated_at": "2026-11-09T23:21:24.911692+00:00",
-      "age_hours": 4.8
+      "generated_at": "2026-11-10T04:10:34.107101+00:00",
+      "age_hours": 0.01
     },
     "entry": {
       "file": "stock-entry-plan-summary.json",
       "generated_at": "2026-11-09T19:05:14.768183+00:00",
-      "age_hours": 9.07
+      "age_hours": 9.1
     },
     "charts": {
       "file": "stock-radar-chart-data.json",
       "generated_at": "2026-11-10T04:08:12.128954+00:00",
-      "age_hours": 0.02
+      "age_hours": 0.05
     },
     "forecast": {
       "file": "stock-direction-forecast.json",
       "generated_at": "2026-11-10T03:30:01.884153+00:00",
-      "age_hours": 0.65,
+      "age_hours": 0.69,
       "max_hours": 2
     },
     "learning": {
       "file": "stock-forecast-learning.json",
       "generated_at": "2026-11-10T03:30:01.884153+00:00",
-      "age_hours": 0.65
+      "age_hours": 0.69
     },
     "accuracy": {
       "file": "stock-radar-accuracy-audit.json",
       "generated_at": "2026-11-10T03:30:01.884153+00:00",
-      "age_hours": 0.65
+      "age_hours": 0.69
     },
     "market": {
       "file": "stock-market-context.json",
-      "generated_at": "2026-11-09T23:21:32.631850+00:00",
-      "age_hours": 4.8
+      "generated_at": "2026-11-10T04:10:40.925202+00:00",
+      "age_hours": 0.01
     },
     "news": {
       "file": "news-link-data.json",
       "generated_at": "2026-11-10T03:28:40.382733+00:00",
-      "age_hours": 0.68,
+      "age_hours": 0.71,
       "max_hours": 6
     },
     "calendar": {
       "file": "market-events-data.json",
       "generated_at": "2026-11-10T02:43:46.650528+00:00",
-      "age_hours": 1.43,
+      "age_hours": 1.46,
       "max_hours": 18
     },
     "events": {
       "file": "stock-event-outlook.json",
       "generated_at": "2026-11-10T02:43:50.821462+00:00",
-      "age_hours": 1.42,
+      "age_hours": 1.46,
       "max_hours": 18
     },
     "catalog": {
       "file": "stock-universe-catalog.json",
       "generated_at": "2026-11-07T02:45:11.852825+00:00",
-      "age_hours": 73.4,
+      "age_hours": 73.44,
       "max_hours": 168
     },
     "financial": {
       "file": "stock-financial-coverage.json",
       "generated_at": "2026-11-07T02:45:14.993236+00:00",
-      "age_hours": 73.4,
+      "age_hours": 73.43,
       "max_hours": 48
     },
     "extended_forecast": {
       "file": "stock-extended-direction-forecast.json",
       "generated_at": "2026-11-09T17:35:49.963664+00:00",
-      "age_hours": 10.56,
+      "age_hours": 10.59,
       "freshness_policy": "weekday_0655_utc_plus_3h",
       "freshness_basis": "run.started_at",
       "next_due": "2026-11-10T06:55:00+00:00",
@@ -1397,16 +1397,14 @@
       {
         "symbol": "kospi",
         "market": "KR",
-        "session": "2026-11-06",
-        "expected_session": "2026-11-09",
-        "problem": "stale_source_session"
+        "session": "2026-11-09",
+        "expected_session": "2026-11-09"
       },
       {
         "symbol": "kosdaq",
         "market": "KR",
-        "session": "2026-11-06",
-        "expected_session": "2026-11-09",
-        "problem": "stale_source_session"
+        "session": "2026-11-09",
+        "expected_session": "2026-11-09"
       },
       {
         "symbol": "sp500",
@@ -1516,13 +1514,11 @@
   },
   "issues": [
     "financial: 73.4시간 동안 갱신되지 않았습니다. (허용 48시간)",
-    "market: 2/4개 가격의 완료 세션·원자료 확인 실패 (stale_source_session)",
     "accuracy: 현재 자료와 감사 시점 불일치 (opportunity_generated_at)",
-    "accuracy: 현재 자료와 감사 시점 불일치 (chart_generated_at)"
+    "accuracy: 현재 자료와 감사 시점 불일치 (chart_generated_at)",
+    "accuracy: 현재 자료와 감사 시점 불일치 (market_generated_at)"
   ],
   "warnings": [
-    "market: 거시지표 수집 오류 2건; 누락값을 최신값으로 취급하지 않습니다.",
-    "cases: 새 종목 스냅샷 이후 후속 분석 생성 대기; 아직 현재 자료와 일치하지 않습니다.",
     "entry: 새 종목 스냅샷 이후 후속 분석 생성 대기; 아직 현재 자료와 일치하지 않습니다.",
     "extended_forecast: 처리 후 예측 보류/실패 8585개. 실제 생성 수는 1개입니다.",
     "financial US: 이번 수집에 차단/부분 성공이 있습니다. 누적 보유량은 최신 수집 성공 건수가 아닙니다.",
@@ -1533,7 +1529,7 @@
   "repair_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-opportunities.yml",
   "verification_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/monitor-stock-value-radar.yml",
   "source_snapshot": {
-    "commit": "5f4e22f61129720b714aa90ce6a4428ae0db0f98",
+    "commit": "4600788a694e46de129ec16dc7316a45f2efcb83",
     "inputs": {
       "market-events-data.json": {
         "exists": true,
@@ -1585,11 +1581,11 @@
       },
       "stock-investment-cases-summary.json": {
         "exists": true,
-        "sha256": "b6afb29edd9f5cc3c3eafeb5a213a6ea2f8a735dc8230b0e64c0d38f0ce192be"
+        "sha256": "09ae6bec045ee581271703495e744e64546a7fae5386157288efedade50df8da"
       },
       "stock-market-context.json": {
         "exists": true,
-        "sha256": "2a4950b2fec099db3601f79f48560a915eaa8e3bf8aa3729a054461d3464e383"
+        "sha256": "2ed5799d97482a002b09e24320bd3ebf562036922b4911ad673bc45f49d164e3"
       },
       "stock-opportunity-data.json": {
         "exists": true,
@@ -1612,6 +1608,6 @@
         "sha256": "d4ba68b06398f69d5805080b55611393ead243b1541f74efc39ace874f15e64b"
       }
     },
-    "previous_health_sha256": "b0a578177724a738164660ece71b40a1e9352d2be1f4a991347a184f3cc8bce1"
+    "previous_health_sha256": "6229a18d83a5085c108fd0379d0bd65ba3ff87fd19d8ed3b70400ae52d593733"
   }
 }
