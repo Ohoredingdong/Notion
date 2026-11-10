@@ -84,7 +84,7 @@ python scripts/test_kitchen_recipe_detail_browser.py \
 | 기존 브라우저 회귀 | 최종 후보 `after-v3`에서25/25·7,073개 단언 통과. 이전25개 시나리오의 식사·취소·장보기·기록·문·꾸미기 및10쌍 자료 보존 확인 |
 | 신규 요리 상세 브라우저 | 최종 후보 `after-v3`에서18/18·1,638개 단언 통과 |
 | 독립 브라우저 화면 | 최종 위젯6개·앱2개·198개 단언 통과. 실제 PNG12장 직접 검토; 이전 후보의 가정 접두어 중복·포커스 가림을 수정한 최종 파일에서 재확인 |
-| 최종 전송물·공개 파일 | 검사한4개 HTML을 바이트 그대로 복사·해시 일치, 각1MiB 미만. 공개 접근은 게시 후 별도 검증한다 |
+| 최종 전송물·공개 파일 | 검사한4개 HTML을 바이트 그대로 복사·해시 일치, 각1MiB 미만. 공개4개 HTML·2개 화면 PNG 모두HTTP200·동일 바이트 확인([기록](artifacts/kitchen-recipe-detail-20261110/public-access.json)). HTMLPreview 공개 실행은 환경 네트워크 제한으로 미검증 |
 
 [최종 검사·입력 해시](artifacts/kitchen-recipe-detail-20261110/verification.json), [수동 화면 검토](artifacts/kitchen-recipe-detail-20261110/MANUAL_REVIEW.md), [발견·수정 및 검사 보정 이력](artifacts/kitchen-recipe-detail-20261110/harness-corrections.json)을 보존한다. 54개 런타임·생성 소스의 해시를 동결했으며 기존11개 이미지 자산은 바이트 그대로 유지했다. 전송 크기 축소는 기존 생성기의 무손실 압축 방식 선택에 따른다. 원본 이미지의 해상도를 줄이지 않았다.
 
@@ -98,3 +98,5 @@ python scripts/test_kitchen_recipe_detail_browser.py \
 [320px 상세](artifacts/kitchen-recipe-detail-20261110/after-detail-320.png), [부분 합계](artifacts/kitchen-recipe-detail-20261110/after-partial-320.png), [계산 근거](artifacts/kitchen-recipe-detail-20261110/after-cost-basis-720.png), [실제 초점 가림 수정](artifacts/kitchen-recipe-detail-20261110/after-focused-portions-390.png)도 함께 확인한다.
 
 원 공급자 직접 검증, 실시간 가격 갱신, 실제 Notion·Safari·실물 기기, 공개 HTMLPreview 실행은 미검증이다. main 병합·운영 배포는 수행하지 않았다. 중간 후보의 실패·검사 보정 이력과 최종 통과를 구분해 보존한다.
+
+검토용 작업 브랜치를 게시했다. GitHub API가 현재 환경 네트워크 정책으로 차단되어 PR 생성은 완료하지 못했으며, [base·head와 설명 초안](artifacts/kitchen-recipe-detail-20261110/PR_DRAFT.md)을 보존했다. 자동 병합·main 변경·운영 배포는 하지 않았다.
