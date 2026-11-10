@@ -81,6 +81,7 @@ def delivery(browser, origin, entry, width, height, label, variant, folder, ev):
               and initial_metrics['document']['scrollY'] == 0,
               variant+' retains the fitted frame without horizontal overflow', initial_metrics['detail']['tray'], True)
         for portion, expected in PORTIONS:
+            detail.show_recipe_ingredients(frame)
             control = center(frame.locator('#recipePortions'))
             control.fill(portion);control.dispatch_event('change');old.ready(frame)
             model = frame.evaluate(MODEL, float(portion))

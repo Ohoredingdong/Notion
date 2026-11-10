@@ -1,0 +1,91 @@
+/* Scoped, compact nutrition detail. The existing frame and scrolling stay intact. */
+body[data-design=refresh] #tray .recipe-nutrition-service{display:flex;flex-direction:column;gap:14px;min-width:0;color:#674b38;font-size:13px;line-height:1.5}
+body[data-design=refresh] #tray .recipe-nutrition-service *{box-sizing:border-box}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-section{min-width:0;margin:0;padding:0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin:0 0 9px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-heading>div{min-width:0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-heading h3{margin:0;font-size:15px!important;line-height:1.35;font-weight:650;letter-spacing:-.25px;color:#62432f}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-heading p{margin:4px 0 0;font-size:12px;line-height:1.4;color:#90745e;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-source-badge{flex:none;max-width:46%;padding:4px 6px;border-radius:6px;background:#f3eadd;font-size:11px;line-height:1.35;color:#82624b;overflow-wrap:anywhere;text-align:right}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-energy{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 9px;margin:0 0 8px;padding:9px 11px;border:1px solid #e9d6c3;border-radius:10px;background:#fbefdf}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-energy>span{font-size:12px;color:#8e6b50}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-energy>strong{font-size:22px;line-height:1.25;font-weight:650;letter-spacing:-.4px;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-energy>small{flex-basis:100%;font-size:11px;line-height:1.4;color:#946d4e;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service :is(.rn-macros,.rn-other){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-other{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:6px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact{min-width:0;padding:8px;border:1px solid #eadccf;border-radius:9px;background:#fffdf9}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact>dt{margin:0;font-size:12px;line-height:1.35;color:#8d6c53}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact>dd{margin:4px 0 0;font-size:16px;line-height:1.3;font-weight:600;letter-spacing:-.3px;color:#6d4b33;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact>small{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#96775d;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact[data-nutrient-kind=partial]>dd{font-size:13px;line-height:1.45;color:#986742}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-fact[data-nutrient-kind=unknown]>dd{font-size:14px;font-weight:450;color:#957d69}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-daily{padding-top:12px;border-top:1px solid #e9d8c9}
+body[data-design=refresh] #tray .recipe-nutrition-service :is(.rn-daily-macros,.rn-daily-limits){display:grid;grid-template-columns:1fr;gap:7px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-daily-limits{margin-top:7px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-daily-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px}
+body[data-design=refresh] #tray .recipe-nutrition-service.is-standalone .rn-daily{padding-top:0;border-top:0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison{min-width:0;margin:0;padding:9px 10px;border:1px solid #e9dacb;border-radius:10px;background:#fffdf9}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison>header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 8px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison>header>strong{font-size:13px;line-height:1.35;font-weight:600}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison>header>span{font-size:11px;line-height:1.35;color:#92735a}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-today{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:6px 0 2px;font-size:12px;color:#98775c}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-today>b{font-size:16px;line-height:1.25;font-weight:600;color:#745035;overflow-wrap:anywhere;text-align:right}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-remaining{margin:3px 0;font-size:13px;line-height:1.45;color:#6f533e;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-track{height:5px;margin-top:7px;border-radius:4px;overflow:hidden;background:#f1e9e0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-track>i{display:block;height:100%;border-radius:4px;background:#c7b191}
+body[data-design=refresh] #tray .recipe-nutrition-service [data-daily-nutrient=carb] .rn-track>i{background:#e7a78b}
+body[data-design=refresh] #tray .recipe-nutrition-service [data-daily-nutrient=protein] .rn-track>i{background:#b8a0cb}
+body[data-design=refresh] #tray .recipe-nutrition-service [data-daily-nutrient=fat] .rn-track>i{background:#d9b378}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-after{margin:7px 0 0;padding-top:6px;border-top:1px solid #eee3d6;font-size:12px;line-height:1.45;color:#8a684b;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison[data-nutrition-status=over]{border-color:#e2b59e;background:#fff4ec}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-comparison[data-nutrition-status=over] .rn-remaining{color:#a05e3e;font-weight:550}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-note{margin:8px 0 0;font-size:12px!important;line-height:1.5;color:#90735c;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-missing{color:#996b47}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-guidance{margin-top:8px;padding:9px 10px;border-radius:9px;background:#f7ebdc}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-guidance>p{margin:0;font-size:12px;line-height:1.55;color:#8c6344;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-guidance>p+p{margin-top:7px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-actions>button{display:flex;align-items:center;justify-content:center;flex:1;min-width:100px;min-height:44px!important;margin:0;padding:7px 9px!important;border:1px solid #e0c7b1;border-radius:10px;background:#fff0e0;color:#8c603d;font-size:12px!important;line-height:1.4;box-shadow:none;white-space:normal;text-align:center}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure{margin:0;border-top:1px solid #e8d8c9;border-bottom:1px solid #e8d8c9;background:none}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:44px;padding:7px 2px;font-size:13px;line-height:1.4;font-weight:550;color:#876046;cursor:pointer;list-style:none}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure>summary::-webkit-details-marker{display:none}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure>summary:after{content:'+';font-size:18px;font-weight:400}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure[open]>summary:after{content:'−'}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure>div{padding:0 2px 10px;min-width:0}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure :is(p,li){margin:0;font-size:12px;line-height:1.55;color:#8a6c54;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure p+p{margin-top:7px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure h4{margin:9px 0 4px;font-size:12px;line-height:1.4;font-weight:600;color:#78563d}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure ul{margin:0;padding-left:17px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure li+li{margin-top:5px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-disclosure a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;padding:5px 0;color:#92613f;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-roles{margin:0;padding:0 2px 8px}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-roles>div{padding:8px 0;border-top:1px solid #eee2d4}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-roles dt{margin:0;font-size:12px;line-height:1.4;font-weight:600;color:#755239}
+body[data-design=refresh] #tray .recipe-nutrition-service .rn-roles dd{margin:3px 0 0;font-size:12px;line-height:1.55;color:#8e7057;overflow-wrap:anywhere}
+@media(min-width:600px){
+ body[data-design=refresh] #tray .recipe-nutrition-service.is-standalone .rn-daily-macros{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body[data-design=refresh] #tray .recipe-nutrition-service.is-standalone .rn-daily-limits{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* The short recipe header keeps ingredients visible; nutrition has its own tab. */
+body[data-design=refresh] [data-has-nutrition-service=true] .recipe-energy-macros{display:none}
+body[data-design=refresh] #tray[data-workflow-route=recipe] .recipe-portions{gap:4px}
+body[data-design=refresh] #tray[data-workflow-route=recipe] #recipePortions{width:52px}
+
+.home-nutrition-more{min-height:44px;padding:0 6px;border:0;background:none;color:#79583f;font:inherit;font-weight:600;white-space:nowrap}
+.nutrition-limit-settings{margin:12px 0;padding:10px;border:1px solid #e8d5c4;border-radius:10px;background:#fff7ef}
+.nutrition-limit-settings legend{padding:0 4px;font-size:14px;font-weight:600}.nutrition-limit-settings p{font-size:12px;line-height:1.5;margin:0 0 8px}
+.meal-personal-note,.meal-reference-status{font-size:12px;line-height:1.45;color:#886b54;margin:6px 0}
+.meal-reference-import{min-height:44px;margin-top:6px;padding:6px 10px;border:1px solid #dfbca1;background:#fff4e8;border-radius:9px;color:#865c3d}
+
+body[data-design=refresh] #tray[data-workflow-route=recipe] .recipe-detail-toolbar[hidden]{display:none!important}
+body .meal-confirm-primary label:has(input[name=portions]){grid-template-columns:minmax(0,1fr) 52px!important;white-space:nowrap;font-size:12px}
+.rn-heading>.small-action{flex:none;min-height:44px;padding:6px 9px;font-size:12px}.rn-actions>.small-action:only-child{grid-column:1/-1}
+
+/* Keep recipe navigation in the app's flow instead of over the scrolled tabs. */
+body[data-design=refresh] #tray[data-workflow-route=recipe] .workflow-nav{position:relative!important;inset:auto!important;display:flex!important;align-items:center;width:100%!important;min-width:0;max-width:none!important;flex:0 0 44px}
+body[data-design=refresh] #tray[data-workflow-route=recipe] .workflow-nav>button{min-width:44px!important;min-height:44px!important;width:44px;height:44px}
+body[data-design=refresh] #tray[data-workflow-route=recipe] .workflow-nav>.workflow-context{position:static!important;display:block!important;transform:none!important;flex:1;min-width:0;width:auto;margin-right:44px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body .meal-confirm-primary label{grid-template-columns:42px minmax(0,1fr)!important;font-size:13px}
+
+body[data-design=refresh][data-mode=widget] #tray[data-workflow-route=recipe] .workflow-nav>.workflow-context{visibility:hidden!important}

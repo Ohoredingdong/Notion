@@ -156,6 +156,12 @@ def recipe(frame, rid='recipe-1'):
     old.ready(frame)
 
 
+def show_recipe_ingredients(frame):
+    """Use the genuine ingredient tab before editing the batch quantity."""
+    frame.locator('#tray [data-recipe-tab=ingredients]').click()
+    old.ready(frame)
+
+
 def cards(ev, m, entered=False):
     check(ev, len(m['cards']) == 8 and len({c['id'] for c in m['cards']}) == 8,
           'Eight genuine recipe cards remain initially available')
@@ -254,6 +260,7 @@ def layout_case(browser, origin, entry, width, height, folder, observe):
         detail_geometry(ev,m,expected=None if observe else EXPECTED['recipe-1'],observe=observe)
         if not observe:
             check_basis(ev,frame)
+            show_recipe_ingredients(frame)
             frame.locator('#recipePortions').focus();old.ready(frame)
             focused=frame.evaluate(METRICS)
             target(ev,focused['detail']['portion'],'Keyboard-focused serving control after expanding the cost basis')
@@ -274,11 +281,13 @@ def layout_case(browser, origin, entry, width, height, folder, observe):
                       and min(observed['fonts'])>=12 and observed['primaryText']
                       and all(t['readable']for t in observed['primaryText']),
                       'Every ingredient name and required amount is readable through the actual unclipped detail scroll',observed,visual=True)
+            show_recipe_ingredients(frame)
             portion=frame.locator('#recipePortions');old.reveal(portion).fill('2');portion.dispatch_event('change');old.ready(frame)
             m=capture(ev,page,frame,folder,label+'-two-servings')
             check(ev,m['detail']['cost']['total'] is not None and abs(m['detail']['cost']['total']-EXPECTED['recipe-1']*2)<.00001,
                   'Changing servings scales displayed estimate only')
             readonly(ev,frame,original,'Viewing two servings leaves exact stored stock, meals, prices and spending untouched')
+            show_recipe_ingredients(frame)
             old.reveal(frame.locator('#recipePortions')).fill('1');frame.locator('#recipePortions').dispatch_event('change');old.ready(frame)
             for bad in ['0','0.005','101','']:
                 invalid=old.reveal(frame.locator('#recipePortions'));invalid.fill(bad);invalid.dispatch_event('change');old.ready(frame)
@@ -302,6 +311,9 @@ def layout_case(browser, origin, entry, width, height, folder, observe):
                   tab+' opens the genuine detail content')
             if not observe:
                 for action in m['detail']['actions']:target(ev,action['control'],tab+' '+action['route'])
+                if tab=='nutrition' and frame.locator('[data-recipe-nutrition-service]').count():
+                    check(ev,not frame.locator('#recipePortions').is_visible(),
+                          'Nutrition uses its genuine first-value view instead of the ingredient batch toolbar')
         readonly(ev,frame,original,'All detail tabs and ingredient scrolling preserve exact source records')
         old.close_tray(frame)
         if not observe:
@@ -405,6 +417,7 @@ def receipt_case(browser,origin,kind,folder):
         basis=frame.locator('#tray .recipe-cost-basis').inner_text()
         check(ev,'실제' in basis and ('할인' in basis or '차이' in basis),
               'The actual cost-basis disclosure explains unallocated item/receipt cash differences',basis)
+        show_recipe_ingredients(frame)
         old.reveal(frame.locator('#recipePortions')).fill('2');frame.locator('#recipePortions').dispatch_event('change');old.ready(frame)
         m=capture(ev,page,frame,folder,label+'-two-servings')
         check(ev,m['detail']['cost']['total']==wanted*2,'Two servings scale the use amount without dividing by current fridge residue')
@@ -415,6 +428,7 @@ def receipt_case(browser,origin,kind,folder):
         future=old.state(frame);recipe(frame)
         # Recipe display portions intentionally survive closing the tray; reset
         # via its real control before comparing the one-serving future-price case.
+        show_recipe_ingredients(frame)
         old.reveal(frame.locator('#recipePortions')).fill('1');frame.locator('#recipePortions').dispatch_event('change');old.ready(frame)
         m=capture(ev,page,frame,folder,label+'-future-price')
         check(ev,m['detail']['cost']['total']==wanted,'A future receipt is never used as a present cooking unit price')

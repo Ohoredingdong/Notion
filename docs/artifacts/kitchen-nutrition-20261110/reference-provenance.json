@@ -1,0 +1,2666 @@
+{
+  "status": "Selected facts checked against pinned third-party SR28 mirror and its included original format documentation; official provider directly unverified",
+  "release": "USDA SR28 September 2015",
+  "retrievedAtUTC": "2026-11-10T10:57:14.883698+00:00",
+  "observationDay": null,
+  "dateNote": "September2015 is a source release, not the observation date of every nutrient or a current 2026 analysis. November10 is retrieval/adoption availability.",
+  "repository": "https://github.com/alyssaq/usda-sqlite",
+  "commit": "1e457b599af101ce463a195867574eba16c81acb",
+  "sourceFiles": [
+    {
+      "path": "data/FOOD_DES.txt",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+      "bytes": 1399799,
+      "sha256": "bb2047218cdad1d830da69e760386409fde3b7afabceae604c5479f280d4fa2e"
+    },
+    {
+      "path": "data/NUT_DATA.txt",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+      "bytes": 40403659,
+      "sha256": "506c9ee39a276ac8f53565d270597e430944ec3363adb53a91cc6ee8c061fac5"
+    },
+    {
+      "path": "data/NUTR_DEF.txt",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUTR_DEF.txt",
+      "bytes": 6880,
+      "sha256": "b0d6b559eaf0cf9f9a1c13e938395e1bb3513057f3c4c0f21c046b061e599fee"
+    },
+    {
+      "path": "data/WEIGHT.txt",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/WEIGHT.txt",
+      "bytes": 515531,
+      "sha256": "98484d7e26b3803467e65a9ab2ad8094bc94ed0c50375efb7e26a8bd60b1afae"
+    },
+    {
+      "path": "data/sr28_doc.pdf",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/sr28_doc.pdf",
+      "bytes": 596691,
+      "sha256": "0d6c3d90be6ad90f6cf942031e7b869d6f7f45dfaf9f0efda9c8aae20fb42314"
+    },
+    {
+      "path": "README.md",
+      "url": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/README.md",
+      "bytes": 3232,
+      "sha256": "84e1e9f455e8bd5353f7b9ac06981beb9911898187684a914bcfde02aac3fb5a"
+    }
+  ],
+  "nutrientDefinitions": {
+    "203": {
+      "id": "203",
+      "key": "protein",
+      "unit": "g",
+      "tag": "PROCNT",
+      "description": "Protein",
+      "line": 1,
+      "raw": "~203~^~g~^~PROCNT~^~Protein~^~2~^~600~"
+    },
+    "204": {
+      "id": "204",
+      "key": "fat",
+      "unit": "g",
+      "tag": "FAT",
+      "description": "Total lipid (fat)",
+      "line": 2,
+      "raw": "~204~^~g~^~FAT~^~Total lipid (fat)~^~2~^~800~"
+    },
+    "205": {
+      "id": "205",
+      "key": "carb",
+      "unit": "g",
+      "tag": "CHOCDF",
+      "description": "Carbohydrate, by difference",
+      "line": 3,
+      "raw": "~205~^~g~^~CHOCDF~^~Carbohydrate, by difference~^~2~^~1100~"
+    },
+    "208": {
+      "id": "208",
+      "key": "kcal",
+      "unit": "kcal",
+      "tag": "ENERC_KCAL",
+      "description": "Energy",
+      "line": 5,
+      "raw": "~208~^~kcal~^~ENERC_KCAL~^~Energy~^~0~^~300~"
+    },
+    "255": {
+      "id": "255",
+      "key": "water",
+      "unit": "g",
+      "tag": "WATER",
+      "description": "Water",
+      "line": 13,
+      "raw": "~255~^~g~^~WATER~^~Water~^~2~^~100~"
+    },
+    "269": {
+      "id": "269",
+      "key": "sugar",
+      "unit": "g",
+      "tag": "SUGAR",
+      "description": "Sugars, total",
+      "line": 18,
+      "raw": "~269~^~g~^~SUGAR~^~Sugars, total~^~2~^~1500~"
+    },
+    "291": {
+      "id": "291",
+      "key": "fiber",
+      "unit": "g",
+      "tag": "FIBTG",
+      "description": "Fiber, total dietary",
+      "line": 20,
+      "raw": "~291~^~g~^~FIBTG~^~Fiber, total dietary~^~1~^~1200~"
+    },
+    "301": {
+      "id": "301",
+      "key": "calcium",
+      "unit": "mg",
+      "tag": "CA",
+      "description": "Calcium, Ca",
+      "line": 21,
+      "raw": "~301~^~mg~^~CA~^~Calcium, Ca~^~0~^~5300~"
+    },
+    "307": {
+      "id": "307",
+      "key": "sodium",
+      "unit": "mg",
+      "tag": "NA",
+      "description": "Sodium, Na",
+      "line": 26,
+      "raw": "~307~^~mg~^~NA~^~Sodium, Na~^~0~^~5800~"
+    }
+  },
+  "sourceDocumentation": {
+    "per100g": "sr28_doc.pdf printed p7: mean values per100g edible portion",
+    "totalSugar": "sr28_doc.pdf printed p13: sum of mono/disaccharides; not added/free sugars",
+    "rawCooked": "sr28_doc.pdf printed p11: cooking changes mass and retention; do not interchange raw/cooked weight"
+  },
+  "reuseStatus": {
+    "repositoryLicenseFilePresent": false,
+    "officialProviderTermsDirectlyVerified": false,
+    "scope": "Only selected factual rows/derived arithmetic. No third-party application code copied and no full database should be committed."
+  },
+  "explicitNonMappings": [
+    {
+      "catalog": "애호박",
+      "reason": "No verified same-food Korean source. USDA zucchini 11477 is a different cultivar/species selection; do not silently map."
+    },
+    {
+      "catalog": "된장",
+      "reason": "USDA miso16112 is not verified equivalent to Korean doenjang; do not silently map."
+    }
+  ],
+  "measurementWarnings": [
+    "Count, bowl and spoon quantities need an explicit selected weight; no universal hidden conversion.",
+    "Egg large edible weight50g is an available USDA WEIGHT row, not every egg.",
+    "Oil tsp4.5g and soy sauce tsp5.3g are available selected-food USDA rows.",
+    "Existing app onion200g, yogurt tbsp15g and rice210g are app assumptions, not this database measurements.",
+    "Salt/pepper 조금 has unknown grams; do not assign arbitrary dash weight.",
+    "Do not include new reference estimates in historical actual meal records without provenance and availability checks."
+  ],
+  "runtimeReferenceId": "usda-sr28-selected-2015-v1",
+  "availableInAppFrom": "2026-11-10",
+  "runtimeSourceFile": "designs/miniature-kitchen/nutrition-reference.js",
+  "runtimeSourceSHA256AtSelection": "4c58d0713bcd9bf0082e7b2f2e9270eada1dc84a22a8c86feb7403c11cf6d4a9",
+  "scope": "Only the fourteen food facts selected by the runtime. No full source database or third-party application code copied.",
+  "priceReferenceRelationship": "Separate from the martmemo price reference: nutrition SR28 release2015 and price survey2026-10-23 are different sources and dates.",
+  "nutrientUnits": {
+    "kcal": "kcal",
+    "carb": "g",
+    "protein": "g",
+    "fat": "g",
+    "fiber": "g",
+    "water": "g in source only; runtime stored water mL is not inferred",
+    "calcium": "mg",
+    "sodium": "mg",
+    "sugar": "g total sugars, not free or added sugars"
+  },
+  "items": [
+    {
+      "id": "01123",
+      "name": "계란",
+      "description": "Egg, whole, raw, fresh",
+      "selectionNote": "생것, 전란, 신선",
+      "per100g": {
+        "kcal": 143.0,
+        "carb": 0.72,
+        "protein": 12.56,
+        "fat": 9.51,
+        "fiber": 0.0,
+        "water": 76.15,
+        "calcium": 56.0,
+        "sodium": 142.0,
+        "sugar": 0.37
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 112,
+        "foodDescriptionRaw": "~01123~^~0100~^~Egg, whole, raw, fresh~^~EGG,WHL,RAW,FRSH~^~~^~~^~Y~^~Shell~^12^~~^6.25^4.36^9.02^3.68",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 12.56,
+          "unit": "g",
+          "line": 10534,
+          "raw": "~01123~^~203~^12.56^12^0.102^~1~^~A~^~~^~~^1^11.81^13.06^11^12.333^12.782^~2, 3~^08/2010^",
+          "dataPoints": 12,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 9.51,
+          "unit": "g",
+          "line": 10535,
+          "raw": "~01123~^~204~^9.51^12^0.115^~1~^~A~^~~^~~^1^8.78^10.30^11^9.254^9.759^~2, 3~^08/2010^",
+          "dataPoints": 12,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 0.72,
+          "unit": "g",
+          "line": 10536,
+          "raw": "~01123~^~205~^0.72^0^^~4~^~NC~^~~^~~^^^^^^^~~^09/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 143.0,
+          "unit": "kcal",
+          "line": 10538,
+          "raw": "~01123~^~208~^143^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2011^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 76.15,
+          "unit": "g",
+          "line": 10545,
+          "raw": "~01123~^~255~^76.15^12^0.121^~1~^~A~^~~^~~^1^75.43^76.94^11^75.889^76.420^~2, 3~^08/2010^",
+          "dataPoints": 12,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.37,
+          "unit": "g",
+          "line": 10549,
+          "raw": "~01123~^~269~^0.37^6^0.008^~1~^~A~^~~^~~^1^0.34^0.40^5^0.352^0.395^~2, 3~^08/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 10551,
+          "raw": "~01123~^~291~^0.0^1^^~1~^~A~^~~^~~^^^^^^^~~^11/2002^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 56.0,
+          "unit": "mg",
+          "line": 10552,
+          "raw": "~01123~^~301~^56^6^0.697^~1~^~A~^~~^~~^1^54^58^5^54.074^57.660^~2, 3~^08/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 142.0,
+          "unit": "mg",
+          "line": 10557,
+          "raw": "~01123~^~307~^142^6^1.138^~1~^~A~^~~^~~^1^139^147^5^139.242^145.091^~2, 3~^08/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "large",
+          "grams": 50.0,
+          "sequence": 1,
+          "line": 346,
+          "raw": "~01123~^1^1^~large~^50^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "extra large",
+          "grams": 56.0,
+          "sequence": 2,
+          "line": 347,
+          "raw": "~01123~^2^1^~extra large~^56^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "jumbo",
+          "grams": 63.0,
+          "sequence": 3,
+          "line": 348,
+          "raw": "~01123~^3^1^~jumbo~^63^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup (4.86 large eggs)",
+          "grams": 243.0,
+          "sequence": 5,
+          "line": 349,
+          "raw": "~01123~^5^1^~cup (4.86 large eggs)~^243^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "medium",
+          "grams": 44.0,
+          "sequence": 6,
+          "line": 350,
+          "raw": "~01123~^6^1^~medium~^44^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "small",
+          "grams": 38.0,
+          "sequence": 7,
+          "line": 351,
+          "raw": "~01123~^7^1^~small~^38^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "개": 50,
+        "알": 50
+      },
+      "runtimeAssumption": "계란 1개는 큰 달걀의 껍질을 뺀 50g으로 계산",
+      "runtimePer100g": {
+        "kcal": 143.0,
+        "carb": 0.72,
+        "protein": 12.56,
+        "fat": 9.51,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 56.0,
+        "sodium": 142.0,
+        "sugar": 0.37
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "11282",
+      "name": "양파",
+      "description": "Onions, raw",
+      "selectionNote": "생것",
+      "per100g": {
+        "kcal": 40.0,
+        "carb": 9.34,
+        "protein": 1.1,
+        "fat": 0.1,
+        "fiber": 1.7,
+        "water": 89.11,
+        "calcium": 23.0,
+        "sodium": 4.0,
+        "sugar": 4.24
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 3030,
+        "foodDescriptionRaw": "~11282~^~1100~^~Onions, raw~^~ONIONS,RAW~^~~^~~^~Y~^~Stem ends, sprouts and defects~^10^~Allium cepa~^6.25^2.78^8.37^3.84",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 1.1,
+          "unit": "g",
+          "line": 238617,
+          "raw": "~11282~^~203~^1.10^25^0.036^~11~^~JO~^~~^~~^2^0.79^1.19^21^1.025^1.174^~2, 3~^03/2006^",
+          "dataPoints": 25,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.1,
+          "unit": "g",
+          "line": 238618,
+          "raw": "~11282~^~204~^0.10^22^0.005^~11~^~JO~^~~^~~^3^0.02^0.12^3^0.088^0.118^~1, 2, 3~^03/2006^",
+          "dataPoints": 22,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 9.34,
+          "unit": "g",
+          "line": 238619,
+          "raw": "~11282~^~205~^9.34^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2006^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 40.0,
+          "unit": "kcal",
+          "line": 238621,
+          "raw": "~11282~^~208~^40^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2006^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 89.11,
+          "unit": "g",
+          "line": 238629,
+          "raw": "~11282~^~255~^89.11^34^0.248^~11~^~JO~^~~^~~^6^85.57^93.20^3^88.313^89.909^~2, 3~^03/2006^",
+          "dataPoints": 34,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 4.24,
+          "unit": "g",
+          "line": 238633,
+          "raw": "~11282~^~269~^4.24^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2006^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 1.7,
+          "unit": "g",
+          "line": 238635,
+          "raw": "~11282~^~291~^1.7^10^0.048^~1~^~~^~~^~~^2^1.4^1.9^3^1.595^1.901^~2, 3~^03/2006^",
+          "dataPoints": 10,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 23.0,
+          "unit": "mg",
+          "line": 238636,
+          "raw": "~11282~^~301~^23^89^0.568^~6~^~JA~^~~^~~^13^10^36^49^21.524^23.806^~2, 3~^03/2006^",
+          "dataPoints": 89,
+          "sourceCode": "6",
+          "derivationCode": "JA"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 4.0,
+          "unit": "mg",
+          "line": 238641,
+          "raw": "~11282~^~307~^4^81^0.158^~6~^~JA~^~~^~~^12^1^8^21^3.253^3.912^~2, 3~^03/2006^",
+          "dataPoints": 81,
+          "sourceCode": "6",
+          "derivationCode": "JA"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup, chopped",
+          "grams": 160.0,
+          "sequence": 1,
+          "line": 5737,
+          "raw": "~11282~^1^1^~cup, chopped~^160^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup, sliced",
+          "grams": 115.0,
+          "sequence": 2,
+          "line": 5738,
+          "raw": "~11282~^2^1^~cup, sliced~^115^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tbsp chopped",
+          "grams": 10.0,
+          "sequence": 3,
+          "line": 5739,
+          "raw": "~11282~^3^1^~tbsp chopped~^10.0^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "large",
+          "grams": 150.0,
+          "sequence": 4,
+          "line": 5740,
+          "raw": "~11282~^4^1^~large~^150^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, large (1/4\" thick)",
+          "grams": 38.0,
+          "sequence": 5,
+          "line": 5741,
+          "raw": "~11282~^5^1^~slice, large (1/4\" thick)~^38^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "medium (2-1/2\" dia)",
+          "grams": 110.0,
+          "sequence": 6,
+          "line": 5742,
+          "raw": "~11282~^6^1^~medium (2-1/2\" dia)~^110^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, medium (1/8\" thick)",
+          "grams": 14.0,
+          "sequence": 7,
+          "line": 5743,
+          "raw": "~11282~^7^1^~slice, medium (1/8\" thick)~^14.0^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "small",
+          "grams": 70.0,
+          "sequence": 8,
+          "line": 5744,
+          "raw": "~11282~^8^1^~small~^70^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, thin",
+          "grams": 9.0,
+          "sequence": 9,
+          "line": 5745,
+          "raw": "~11282~^9^1^~slice, thin~^9.0^^"
+        },
+        {
+          "amount": 10.0,
+          "measure": "rings",
+          "grams": 60.0,
+          "sequence": 10,
+          "line": 5746,
+          "raw": "~11282~^10^10^~rings~^60^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "개": 200
+      },
+      "runtimeAssumption": "양파 1개를 200g으로 가정(기존 비용 계산과 같은 중량 가정)",
+      "runtimePer100g": {
+        "kcal": 40.0,
+        "carb": 9.34,
+        "protein": 1.1,
+        "fat": 0.1,
+        "fiber": 1.7,
+        "water": null,
+        "calcium": 23.0,
+        "sodium": 4.0,
+        "sugar": 4.24
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "20453",
+      "name": "밥/즉석밥",
+      "description": "Rice, white, short-grain, cooked, unenriched",
+      "selectionNote": "조리한 백미 단립종, 비강화; 특정 즉석밥 제품값 아님",
+      "per100g": {
+        "kcal": 130.0,
+        "carb": 28.73,
+        "protein": 2.36,
+        "fat": 0.19,
+        "fiber": null,
+        "water": 68.53,
+        "calcium": 1.0,
+        "sodium": 0.0,
+        "sugar": null
+      },
+      "missingNutrients": [
+        "fiber",
+        "sugar"
+      ],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 6620,
+        "foodDescriptionRaw": "~20453~^~2000~^~Rice, white, short-grain, cooked, unenriched~^~RICE,WHITE,SHORT-GRAIN,CKD,UNENR~^~~^~~^~~^~~^0^~~^5.95^3.82^8.37^4.16",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 2.36,
+          "unit": "g",
+          "line": 510427,
+          "raw": "~20453~^~203~^2.36^0^^~1~^~~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.19,
+          "unit": "g",
+          "line": 510428,
+          "raw": "~20453~^~204~^0.19^0^^~1~^~~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 28.73,
+          "unit": "g",
+          "line": 510429,
+          "raw": "~20453~^~205~^28.73^0^^~4~^~NC~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 130.0,
+          "unit": "kcal",
+          "line": 510431,
+          "raw": "~20453~^~208~^130^0^^~4~^~NC~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 68.53,
+          "unit": "g",
+          "line": 510432,
+          "raw": "~20453~^~255~^68.53^0^^~1~^~~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 1.0,
+          "unit": "mg",
+          "line": 510434,
+          "raw": "~20453~^~301~^1^0^^~1~^~~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 0.0,
+          "unit": "mg",
+          "line": 510439,
+          "raw": "~20453~^~307~^0^0^^~1~^~~^~~^~~^^^^^^^~~^10/1989^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup",
+          "grams": 205.0,
+          "sequence": 1,
+          "line": 12381,
+          "raw": "~20453~^1^1^~cup~^205^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "공기": 210
+      },
+      "runtimeAssumption": "밥 1공기를 210g으로 가정. 미국 단립종 조리된 흰쌀밥 참고값이며 특정 즉석밥 제품값 아님",
+      "runtimePer100g": {
+        "kcal": 130.0,
+        "carb": 28.73,
+        "protein": 2.36,
+        "fat": 0.19,
+        "fiber": null,
+        "water": null,
+        "calcium": 1.0,
+        "sodium": 0.0,
+        "sugar": null
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "05062",
+      "name": "닭가슴살",
+      "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+      "selectionNote": "껍질·뼈 없는 생고기; 가열한 제품 중량에 그대로 쓰면 안 됨",
+      "per100g": {
+        "kcal": 120.0,
+        "carb": 0.0,
+        "protein": 22.5,
+        "fat": 2.62,
+        "fiber": 0.0,
+        "water": 73.9,
+        "calcium": 5.0,
+        "sodium": 45.0,
+        "sugar": 0.0
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 885,
+        "foodDescriptionRaw": "~05062~^~0500~^~Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw~^~CHICKEN,BROILER OR FRYERS,BRST,SKINLESS,BNLESS,MEAT ONLY,RAW~^~~^~~^~Y~^~~^0^~~^6.25^4.27^9.02^3.87",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 22.5,
+          "unit": "g",
+          "line": 72609,
+          "raw": "~05062~^~203~^22.50^6^0.238^~1~^~A~^~~^~~^1^21.88^23.44^5^21.887^23.112^~2, 3~^04/2013^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 2.62,
+          "unit": "g",
+          "line": 72610,
+          "raw": "~05062~^~204~^2.62^6^0.220^~1~^~A~^~~^~~^1^1.86^3.45^5^2.060^3.190^~2, 3~^04/2013^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 0.0,
+          "unit": "g",
+          "line": 72611,
+          "raw": "~05062~^~205~^0.00^0^^~7~^~Z~^~~^~~^^^^^^^~~^08/1979^",
+          "dataPoints": 0,
+          "sourceCode": "7",
+          "derivationCode": "Z"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 120.0,
+          "unit": "kcal",
+          "line": 72613,
+          "raw": "~05062~^~208~^120^0^^~4~^~NC~^~~^~~^^^^^^^~~^04/2013^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 73.9,
+          "unit": "g",
+          "line": 72615,
+          "raw": "~05062~^~255~^73.90^6^0.260^~1~^~A~^~~^~~^1^72.94^74.69^5^73.230^74.567^~2, 3~^04/2013^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.0,
+          "unit": "g",
+          "line": 72619,
+          "raw": "~05062~^~269~^0.00^0^^~7~^~Z~^~~^~~^^^^^^^~~^05/2002^",
+          "dataPoints": 0,
+          "sourceCode": "7",
+          "derivationCode": "Z"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 72620,
+          "raw": "~05062~^~291~^0.0^0^^~7~^~Z~^~~^~~^^^^^^^~~^08/1979^",
+          "dataPoints": 0,
+          "sourceCode": "7",
+          "derivationCode": "Z"
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 5.0,
+          "unit": "mg",
+          "line": 72621,
+          "raw": "~05062~^~301~^5^6^0.338^~1~^~A~^~~^~~^1^4^6^5^3.862^5.598^~2, 3~^04/2009^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 45.0,
+          "unit": "mg",
+          "line": 72626,
+          "raw": "~05062~^~307~^45^6^2.309^~1~^~A~^~~^~~^1^38^52^5^39.415^51.284^~2, 3~^04/2013^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 3.0,
+          "measure": "oz",
+          "grams": 85.0,
+          "sequence": 1,
+          "line": 2097,
+          "raw": "~05062~^1^3^~oz~^85^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "piece",
+          "grams": 272.0,
+          "sequence": 2,
+          "line": 2098,
+          "raw": "~05062~^2^1^~piece~^272^13^81.254"
+        },
+        {
+          "amount": 1.0,
+          "measure": "package",
+          "grams": 926.0,
+          "sequence": 3,
+          "line": 2099,
+          "raw": "~05062~^3^1^~package~^926^13^570.981"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "껍질·뼈를 뺀 생 닭가슴살의 조리 전 가식부 중량 기준",
+      "runtimePer100g": {
+        "kcal": 120.0,
+        "carb": 0.0,
+        "protein": 22.5,
+        "fat": 2.62,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 5.0,
+        "sodium": 45.0,
+        "sugar": 0.0
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "11529",
+      "name": "토마토",
+      "description": "Tomatoes, red, ripe, raw, year round average",
+      "selectionNote": "생것, 적색, 연평균",
+      "per100g": {
+        "kcal": 18.0,
+        "carb": 3.89,
+        "protein": 0.88,
+        "fat": 0.2,
+        "fiber": 1.2,
+        "water": 94.52,
+        "calcium": 10.0,
+        "sodium": 5.0,
+        "sugar": 2.63
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 3223,
+        "foodDescriptionRaw": "~11529~^~1100~^~Tomatoes, red, ripe, raw, year round average~^~TOMATOES,RED,RIPE,RAW,YEAR RND AVERAGE~^~Includes USDA commodity food A238, A233~^~~^~Y~^~Core and stem ends~^9^~Solanum lycopersicum~^6.25^2.44^8.37^3.57",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 0.88,
+          "unit": "g",
+          "line": 254277,
+          "raw": "~11529~^~203~^0.88^19^0.039^~11~^~JO~^~~^~~^3^0.59^1.06^12^0.799^0.967^~4~^09/2002^",
+          "dataPoints": 19,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.2,
+          "unit": "g",
+          "line": 254278,
+          "raw": "~11529~^~204~^0.20^26^0.034^~11~^~JO~^~~^~~^5^0.07^0.80^19^0.132^0.275^~4~^09/2002^",
+          "dataPoints": 26,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 3.89,
+          "unit": "g",
+          "line": 254279,
+          "raw": "~11529~^~205~^3.89^0^^~4~^~NC~^~~^~~^^^^^^^~~^08/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 18.0,
+          "unit": "kcal",
+          "line": 254281,
+          "raw": "~11529~^~208~^18^0^^~4~^~NC~^~~^~~^^^^^^^~~^08/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 94.52,
+          "unit": "g",
+          "line": 254289,
+          "raw": "~11529~^~255~^94.52^39^0.139^~11~^~JO~^~~^~~^11^92.70^95.73^32^94.237^94.803^~4~^06/2010^",
+          "dataPoints": 39,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 2.63,
+          "unit": "g",
+          "line": 254293,
+          "raw": "~11529~^~269~^2.63^0^^~4~^~NC~^~~^~~^^^^^^^~~^08/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 1.2,
+          "unit": "g",
+          "line": 254295,
+          "raw": "~11529~^~291~^1.2^5^0.234^~6~^~JA~^~~^~~^2^0.7^2.0^3^0.465^1.957^~2, 3~^09/2002^",
+          "dataPoints": 5,
+          "sourceCode": "6",
+          "derivationCode": "JA"
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 10.0,
+          "unit": "mg",
+          "line": 254296,
+          "raw": "~11529~^~301~^10^69^0.291^~6~^~JA~^~~^~~^8^7^18^62^9.177^10.342^~4~^09/2002^",
+          "dataPoints": 69,
+          "sourceCode": "6",
+          "derivationCode": "JA"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 5.0,
+          "unit": "mg",
+          "line": 254301,
+          "raw": "~11529~^~307~^5^66^0.565^~6~^~JA~^~~^~~^8^1^24^59^3.395^5.655^~4~^09/2002^",
+          "dataPoints": 66,
+          "sourceCode": "6",
+          "derivationCode": "JA"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup cherry tomatoes",
+          "grams": 149.0,
+          "sequence": 1,
+          "line": 6081,
+          "raw": "~11529~^1^1^~cup cherry tomatoes~^149^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup, chopped or sliced",
+          "grams": 180.0,
+          "sequence": 2,
+          "line": 6082,
+          "raw": "~11529~^2^1^~cup, chopped or sliced~^180^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "Italian tomato",
+          "grams": 62.0,
+          "sequence": 3,
+          "line": 6083,
+          "raw": "~11529~^3^1^~Italian tomato~^62^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cherry",
+          "grams": 17.0,
+          "sequence": 4,
+          "line": 6084,
+          "raw": "~11529~^4^1^~cherry~^17^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "large whole (3\" dia)",
+          "grams": 182.0,
+          "sequence": 5,
+          "line": 6085,
+          "raw": "~11529~^5^1^~large whole (3\" dia)~^182^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "medium whole (2-3/5\" dia)",
+          "grams": 123.0,
+          "sequence": 6,
+          "line": 6086,
+          "raw": "~11529~^6^1^~medium whole (2-3/5\" dia)~^123^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, medium (1/4\" thick)",
+          "grams": 20.0,
+          "sequence": 7,
+          "line": 6087,
+          "raw": "~11529~^7^1^~slice, medium (1/4\" thick)~^20^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "plum tomato",
+          "grams": 62.0,
+          "sequence": 8,
+          "line": 6088,
+          "raw": "~11529~^8^1^~plum tomato~^62^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "small whole (2-2/5\" dia)",
+          "grams": 91.0,
+          "sequence": 9,
+          "line": 6089,
+          "raw": "~11529~^9^1^~small whole (2-2/5\" dia)~^91^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, thick/large (1/2\" thick)",
+          "grams": 27.0,
+          "sequence": 10,
+          "line": 6090,
+          "raw": "~11529~^10^1^~slice, thick/large (1/2\" thick)~^27^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "wedge (1/4 of medium tomato)",
+          "grams": 31.0,
+          "sequence": 11,
+          "line": 6091,
+          "raw": "~11529~^11^1^~wedge (1/4 of medium tomato)~^31^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice, thin/small",
+          "grams": 15.0,
+          "sequence": 12,
+          "line": 6092,
+          "raw": "~11529~^12^1^~slice, thin/small~^15.0^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "NLEA serving",
+          "grams": 148.0,
+          "sequence": 13,
+          "line": 6093,
+          "raw": "~11529~^13^1^~NLEA serving~^148^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "개": 123
+      },
+      "runtimeAssumption": "토마토 1개를 중간 크기 123g으로 계산",
+      "runtimePer100g": {
+        "kcal": 18.0,
+        "carb": 3.89,
+        "protein": 0.88,
+        "fat": 0.2,
+        "fiber": 1.2,
+        "water": null,
+        "calcium": 10.0,
+        "sodium": 5.0,
+        "sugar": 2.63
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "01116",
+      "name": "요거트",
+      "description": "Yogurt, plain, whole milk, 8 grams protein per 8 ounce",
+      "selectionNote": "무가당 플레인 전지유 요거트 대표 식품",
+      "per100g": {
+        "kcal": 61.0,
+        "carb": 4.66,
+        "protein": 3.47,
+        "fat": 3.25,
+        "fiber": 0.0,
+        "water": 87.9,
+        "calcium": 121.0,
+        "sodium": 46.0,
+        "sugar": 4.66
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 105,
+        "foodDescriptionRaw": "~01116~^~0100~^~Yogurt, plain, whole milk, 8 grams protein per 8 ounce~^~YOGURT,PLN,WHL MILK,8 GRAMS PROT PER 8 OZ~^~~^~~^~Y~^~~^0^~~^6.38^4.27^8.79^3.87",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 3.47,
+          "unit": "g",
+          "line": 9921,
+          "raw": "~01116~^~203~^3.47^0^^~1~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 3.25,
+          "unit": "g",
+          "line": 9922,
+          "raw": "~01116~^~204~^3.25^0^^~1~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 4.66,
+          "unit": "g",
+          "line": 9923,
+          "raw": "~01116~^~205~^4.66^0^^~4~^~NC~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 61.0,
+          "unit": "kcal",
+          "line": 9925,
+          "raw": "~01116~^~208~^61^0^^~4~^~NC~^~~^~~^^^^^^^~~^02/2009^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 87.9,
+          "unit": "g",
+          "line": 9927,
+          "raw": "~01116~^~255~^87.90^0^^~1~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 4.66,
+          "unit": "g",
+          "line": 9931,
+          "raw": "~01116~^~269~^4.66^0^^~4~^~NR~^~~^~~^^^^^^^~~^01/2003^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NR"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 9932,
+          "raw": "~01116~^~291~^0.0^0^^~4~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 121.0,
+          "unit": "mg",
+          "line": 9933,
+          "raw": "~01116~^~301~^121^0^^~1~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 46.0,
+          "unit": "mg",
+          "line": 9938,
+          "raw": "~01116~^~307~^46^0^^~1~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "container (6 oz)",
+          "grams": 170.0,
+          "sequence": 1,
+          "line": 318,
+          "raw": "~01116~^1^1^~container (6 oz)~^170^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "container (8 oz)",
+          "grams": 227.0,
+          "sequence": 2,
+          "line": 319,
+          "raw": "~01116~^2^1^~container (8 oz)~^227^^"
+        },
+        {
+          "amount": 0.5,
+          "measure": "container (4 oz)",
+          "grams": 113.0,
+          "sequence": 3,
+          "line": 320,
+          "raw": "~01116~^3^.5^~container (4 oz)~^113^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup (8 fl oz)",
+          "grams": 245.0,
+          "sequence": 4,
+          "line": 321,
+          "raw": "~01116~^4^1^~cup (8 fl oz)~^245^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "큰술": 15
+      },
+      "runtimeAssumption": "플레인 요거트 1큰술을 15g으로 가정. 무가당 전지유 요거트 참고값",
+      "runtimePer100g": {
+        "kcal": 61.0,
+        "carb": 4.66,
+        "protein": 3.47,
+        "fat": 3.25,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 121.0,
+        "sodium": 46.0,
+        "sugar": 4.66
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "11260",
+      "name": "버섯",
+      "description": "Mushrooms, white, raw",
+      "selectionNote": "생 흰 양송이 대표 품종; 다른 버섯과 다름",
+      "per100g": {
+        "kcal": 22.0,
+        "carb": 3.26,
+        "protein": 3.09,
+        "fat": 0.34,
+        "fiber": 1.0,
+        "water": 92.45,
+        "calcium": 3.0,
+        "sodium": 5.0,
+        "sugar": 1.98
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 3009,
+        "foodDescriptionRaw": "~11260~^~1100~^~Mushrooms, white, raw~^~MUSHROOMS,WHITE,RAW~^~~^~~^~Y~^~Trimmings~^3^~Agaricus bisporus~^6.25^2.62^8.37^3.48",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 3.09,
+          "unit": "g",
+          "line": 236770,
+          "raw": "~11260~^~203~^3.09^33^0.106^~11~^~JO~^~~^~~^5^2.25^4.03^19^2.872^3.314^~4~^05/2005^",
+          "dataPoints": 33,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.34,
+          "unit": "g",
+          "line": 236771,
+          "raw": "~11260~^~204~^0.34^33^0.032^~11~^~JO~^~~^~~^6^0.10^0.58^19^0.276^0.411^~4~^05/2005^",
+          "dataPoints": 33,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 3.26,
+          "unit": "g",
+          "line": 236772,
+          "raw": "~11260~^~205~^3.26^0^^~4~^~NC~^~~^~~^^^^^^^~~^05/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 22.0,
+          "unit": "kcal",
+          "line": 236774,
+          "raw": "~11260~^~208~^22^0^^~4~^~NC~^~~^~~^^^^^^^~~^05/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 92.45,
+          "unit": "g",
+          "line": 236782,
+          "raw": "~11260~^~255~^92.45^56^0.238^~11~^~JO~^~~^~~^9^88.20^95.20^34^91.969^92.938^~4~^08/2009^",
+          "dataPoints": 56,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 1.98,
+          "unit": "g",
+          "line": 236787,
+          "raw": "~11260~^~269~^1.98^5^0.547^~11~^~JO~^~~^~~^3^0.17^3.58^4^0.460^3.496^~4~^02/2009^",
+          "dataPoints": 5,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 1.0,
+          "unit": "g",
+          "line": 236789,
+          "raw": "~11260~^~291~^1.0^3^0.461^~11~^~JO~^~~^~~^2^0.1^1.5^2^-0.992^2.972^~1, 4~^03/2006^",
+          "dataPoints": 3,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 3.0,
+          "unit": "mg",
+          "line": 236790,
+          "raw": "~11260~^~301~^3^52^0.268^~11~^~JO~^~~^~~^11^1^8^35^2.493^3.579^~4~^05/2005^",
+          "dataPoints": 52,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 5.0,
+          "unit": "mg",
+          "line": 236795,
+          "raw": "~11260~^~307~^5^38^0.648^~11~^~JO~^~~^~~^11^2^19^33^3.539^6.175^~4~^05/2005^",
+          "dataPoints": 38,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup, pieces or slices",
+          "grams": 70.0,
+          "sequence": 1,
+          "line": 5687,
+          "raw": "~11260~^1^1^~cup, pieces or slices~^70^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup, whole",
+          "grams": 96.0,
+          "sequence": 2,
+          "line": 5688,
+          "raw": "~11260~^2^1^~cup, whole~^96^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "large",
+          "grams": 23.0,
+          "sequence": 3,
+          "line": 5689,
+          "raw": "~11260~^3^1^~large~^23^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "medium",
+          "grams": 18.0,
+          "sequence": 4,
+          "line": 5690,
+          "raw": "~11260~^4^1^~medium~^18^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice",
+          "grams": 6.0,
+          "sequence": 5,
+          "line": 5691,
+          "raw": "~11260~^5^1^~slice~^6.0^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "small",
+          "grams": 10.0,
+          "sequence": 6,
+          "line": 5692,
+          "raw": "~11260~^6^1^~small~^10.0^^"
+        },
+        {
+          "amount": 0.5,
+          "measure": "cup pieces",
+          "grams": 35.0,
+          "sequence": 7,
+          "line": 5693,
+          "raw": "~11260~^7^.5^~cup pieces~^35^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "생 흰 양송이버섯 참고값. 실제 버섯 종류가 다르면 값이 다름",
+      "runtimePer100g": {
+        "kcal": 22.0,
+        "carb": 3.26,
+        "protein": 3.09,
+        "fat": 0.34,
+        "fiber": 1.0,
+        "water": null,
+        "calcium": 3.0,
+        "sodium": 5.0,
+        "sugar": 1.98
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "16123",
+      "name": "간장",
+      "description": "Soy sauce made from soy and wheat (shoyu)",
+      "selectionNote": "대두·밀 양조간장 shoyu 대표 식품; 국내 특정 제품과 다름",
+      "per100g": {
+        "kcal": 53.0,
+        "carb": 4.93,
+        "protein": 8.14,
+        "fat": 0.57,
+        "fiber": 0.8,
+        "water": 71.15,
+        "calcium": 33.0,
+        "sodium": 5493.0,
+        "sugar": 0.4
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 4860,
+        "foodDescriptionRaw": "~16123~^~1600~^~Soy sauce made from soy and wheat (shoyu)~^~SOY SAU MADE FROM SOY&WHEAT (SHOYU)~^~~^~~^~Y~^~~^0^~~^6.25^3.50^8.40^4.00",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 8.14,
+          "unit": "g",
+          "line": 383654,
+          "raw": "~16123~^~203~^8.14^6^0.029^~1~^~A~^~~^~~^1^8.05^8.22^5^8.063^8.210^~2, 3~^06/2012^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.57,
+          "unit": "g",
+          "line": 383655,
+          "raw": "~16123~^~204~^0.57^6^0.041^~1~^~A~^~~^~~^1^0.44^0.69^5^0.463^0.674^~2, 3~^06/2012^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 4.93,
+          "unit": "g",
+          "line": 383656,
+          "raw": "~16123~^~205~^4.93^0^^~4~^~NC~^~~^~~^^^^^^^~~^06/2012^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 53.0,
+          "unit": "kcal",
+          "line": 383658,
+          "raw": "~16123~^~208~^53^0^^~4~^~NC~^~~^~~^^^^^^^~~^07/2007^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 71.15,
+          "unit": "g",
+          "line": 383665,
+          "raw": "~16123~^~255~^71.15^6^0.037^~1~^~A~^~~^~~^1^71.05^71.26^5^71.059^71.248^~2, 3~^06/2012^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.4,
+          "unit": "g",
+          "line": 383669,
+          "raw": "~16123~^~269~^0.40^0^^~1~^~AS~^~~^~~^^^^^^^~~^06/2012^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": "AS"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.8,
+          "unit": "g",
+          "line": 383671,
+          "raw": "~16123~^~291~^0.8^2^^~1~^~~^~~^~~^2^0.8^0.8^^^^~~^12/2003^",
+          "dataPoints": 2,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 33.0,
+          "unit": "mg",
+          "line": 383672,
+          "raw": "~16123~^~301~^33^6^0.178^~1~^~A~^~~^~~^1^32^34^5^32.308^33.225^~2, 3~^06/2012^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 5493.0,
+          "unit": "mg",
+          "line": 383677,
+          "raw": "~16123~^~307~^5493^6^42.869^~1~^~A~^~~^~~^1^5390^5660^5^5383.134^5603.532^~2, 3~^06/2012^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "tbsp",
+          "grams": 16.0,
+          "sequence": 1,
+          "line": 9108,
+          "raw": "~16123~^1^1^~tbsp~^16^1^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tsp",
+          "grams": 5.3,
+          "sequence": 2,
+          "line": 9109,
+          "raw": "~16123~^2^1^~tsp~^5.3^1^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup",
+          "grams": 255.0,
+          "sequence": 3,
+          "line": 9110,
+          "raw": "~16123~^3^1^~cup~^255^1^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "individual packet",
+          "grams": 8.9,
+          "sequence": 4,
+          "line": 9111,
+          "raw": "~16123~^4^1^~individual packet~^8.9^1^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "작은술": 5.3,
+        "큰술": 16
+      },
+      "runtimeAssumption": "일반 간장 참고값. 1작은술 5.3g·1큰술 16g, 제품별 나트륨 차이 있음",
+      "runtimePer100g": {
+        "kcal": 53.0,
+        "carb": 4.93,
+        "protein": 8.14,
+        "fat": 0.57,
+        "fiber": 0.8,
+        "water": null,
+        "calcium": 33.0,
+        "sodium": 5493.0,
+        "sugar": 0.4
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "11215",
+      "name": "다진마늘",
+      "description": "Garlic, raw",
+      "selectionNote": "생마늘; 다진 제품의 첨가물 미포함",
+      "per100g": {
+        "kcal": 149.0,
+        "carb": 33.06,
+        "protein": 6.36,
+        "fat": 0.5,
+        "fiber": 2.1,
+        "water": 58.58,
+        "calcium": 181.0,
+        "sodium": 17.0,
+        "sugar": 1.0
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 2968,
+        "foodDescriptionRaw": "~11215~^~1100~^~Garlic, raw~^~GARLIC,RAW~^~~^~~^~Y~^~Knob and skin~^13^~Allium sativum~^6.25^2.78^8.37^3.84",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 6.36,
+          "unit": "g",
+          "line": 233665,
+          "raw": "~11215~^~203~^6.36^8^0.203^~1~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 8,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.5,
+          "unit": "g",
+          "line": 233666,
+          "raw": "~11215~^~204~^0.50^1^^~1~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 33.06,
+          "unit": "g",
+          "line": 233667,
+          "raw": "~11215~^~205~^33.06^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2007^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 149.0,
+          "unit": "kcal",
+          "line": 233669,
+          "raw": "~11215~^~208~^149^0^^~4~^~NC~^~~^~~^^^^^^^~~^03/2007^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 58.58,
+          "unit": "g",
+          "line": 233671,
+          "raw": "~11215~^~255~^58.58^8^0.432^~1~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 8,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 1.0,
+          "unit": "g",
+          "line": 233675,
+          "raw": "~11215~^~269~^1.00^0^^~4~^~T~^~~^~~^^^^^^^~~^04/2003^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "T"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 2.1,
+          "unit": "g",
+          "line": 233676,
+          "raw": "~11215~^~291~^2.1^0^^~4~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 181.0,
+          "unit": "mg",
+          "line": 233677,
+          "raw": "~11215~^~301~^181^8^25.131^~1~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 8,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 17.0,
+          "unit": "mg",
+          "line": 233682,
+          "raw": "~11215~^~307~^17^8^1.183^~1~^~~^~~^~~^^^^^^^~~^08/1984^",
+          "dataPoints": 8,
+          "sourceCode": "1",
+          "derivationCode": ""
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup",
+          "grams": 136.0,
+          "sequence": 1,
+          "line": 5604,
+          "raw": "~11215~^1^1^~cup~^136^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tsp",
+          "grams": 2.8,
+          "sequence": 2,
+          "line": 5605,
+          "raw": "~11215~^2^1^~tsp~^2.8^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "clove",
+          "grams": 3.0,
+          "sequence": 3,
+          "line": 5606,
+          "raw": "~11215~^3^1^~clove~^3.0^^"
+        },
+        {
+          "amount": 3.0,
+          "measure": "cloves",
+          "grams": 9.0,
+          "sequence": 4,
+          "line": 5607,
+          "raw": "~11215~^4^3^~cloves~^9.0^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "작은술": 2.8
+      },
+      "runtimeAssumption": "생마늘 참고값. 1작은술 2.8g",
+      "runtimePer100g": {
+        "kcal": 149.0,
+        "carb": 33.06,
+        "protein": 6.36,
+        "fat": 0.5,
+        "fiber": 2.1,
+        "water": null,
+        "calcium": 181.0,
+        "sodium": 17.0,
+        "sugar": 1.0
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "04044",
+      "name": "식용유",
+      "description": "Oil, soybean, salad or cooking",
+      "selectionNote": "대두유 대표 식품; 다른 기름과 동일값 보장 안 됨",
+      "per100g": {
+        "kcal": 884.0,
+        "carb": 0.0,
+        "protein": 0.0,
+        "fat": 100.0,
+        "fiber": 0.0,
+        "water": 0.0,
+        "calcium": 0.0,
+        "sodium": 0.0,
+        "sugar": 0.0
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 658,
+        "foodDescriptionRaw": "~04044~^~0400~^~Oil, soybean, salad or cooking~^~OIL,SOYBN,SALAD OR COOKING~^~~^~~^~Y~^~~^0^~~^0.00^^8.84^",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 0.0,
+          "unit": "g",
+          "line": 53886,
+          "raw": "~04044~^~203~^0.00^3^0.000^~1~^~~^~~^~~^1^0.00^0.00^^^^~2, 3~^04/2007^",
+          "dataPoints": 3,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 100.0,
+          "unit": "g",
+          "line": 53887,
+          "raw": "~04044~^~204~^100.00^0^^~1~^~~^~~^~~^^^^^^^~~^06/1979^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 0.0,
+          "unit": "g",
+          "line": 53888,
+          "raw": "~04044~^~205~^0.00^0^^~1~^~~^~~^~~^^^^^^^~~^06/1979^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 884.0,
+          "unit": "kcal",
+          "line": 53890,
+          "raw": "~04044~^~208~^884^0^^~4~^~NC~^~~^~~^^^^^^^~~^06/1979^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 0.0,
+          "unit": "g",
+          "line": 53892,
+          "raw": "~04044~^~255~^0.00^4^0.000^~11~^~JO~^~~^~~^2^0.00^0.00^^^^~1, 2, 3~^03/2007^",
+          "dataPoints": 4,
+          "sourceCode": "11",
+          "derivationCode": "JO"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.0,
+          "unit": "g",
+          "line": 53896,
+          "raw": "~04044~^~269~^0.00^0^^~7~^~Z~^~~^~~^^^^^^^~~^11/2002^",
+          "dataPoints": 0,
+          "sourceCode": "7",
+          "derivationCode": "Z"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 53897,
+          "raw": "~04044~^~291~^0.0^0^^~4~^~~^~~^~~^^^^^^^~~^06/1979^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 0.0,
+          "unit": "mg",
+          "line": 53898,
+          "raw": "~04044~^~301~^0^3^0.021^~1~^~~^~~^~~^^^^^^^~~^06/1979^",
+          "dataPoints": 3,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 0.0,
+          "unit": "mg",
+          "line": 53903,
+          "raw": "~04044~^~307~^0^1^^~1~^~A~^~~^~~^^^^^^^~1~^03/2007^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "tbsp",
+          "grams": 13.6,
+          "sequence": 1,
+          "line": 1579,
+          "raw": "~04044~^1^1^~tbsp~^13.6^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup",
+          "grams": 218.0,
+          "sequence": 2,
+          "line": 1580,
+          "raw": "~04044~^2^1^~cup~^218^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tsp",
+          "grams": 4.5,
+          "sequence": 3,
+          "line": 1581,
+          "raw": "~04044~^3^1^~tsp~^4.5^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {
+        "작은술": 4.5,
+        "큰술": 13.6
+      },
+      "runtimeAssumption": "콩기름 참고값. 1작은술 4.5g·1큰술 13.6g, 넣은 기름이 모두 음식에 포함된 것으로 계산",
+      "runtimePer100g": {
+        "kcal": 884.0,
+        "carb": 0.0,
+        "protein": 0.0,
+        "fat": 100.0,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 0.0,
+        "sodium": 0.0,
+        "sugar": 0.0
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "02047",
+      "name": "소금",
+      "description": "Salt, table",
+      "selectionNote": "정제 식탁소금 대표 식품",
+      "per100g": {
+        "kcal": 0.0,
+        "carb": 0.0,
+        "protein": 0.0,
+        "fat": 0.0,
+        "fiber": 0.0,
+        "water": 0.2,
+        "calcium": 24.0,
+        "sodium": 38758.0,
+        "sugar": 0.0
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 296,
+        "foodDescriptionRaw": "~02047~^~0200~^~Salt, table~^~SALT,TABLE~^~~^~~^~Y~^~~^0^~~^0.00^^^",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 0.0,
+          "unit": "g",
+          "line": 26813,
+          "raw": "~02047~^~203~^0.00^1^^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 0.0,
+          "unit": "g",
+          "line": 26814,
+          "raw": "~02047~^~204~^0.00^1^^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 0.0,
+          "unit": "g",
+          "line": 26815,
+          "raw": "~02047~^~205~^0.00^0^^~4~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 0.0,
+          "unit": "kcal",
+          "line": 26817,
+          "raw": "~02047~^~208~^0^0^^~4~^~NC~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 0.2,
+          "unit": "g",
+          "line": 26819,
+          "raw": "~02047~^~255~^0.20^1^^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.0,
+          "unit": "g",
+          "line": 26823,
+          "raw": "~02047~^~269~^0.00^0^^~7~^~Z~^~~^~~^^^^^^^~~^10/2002^",
+          "dataPoints": 0,
+          "sourceCode": "7",
+          "derivationCode": "Z"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 26824,
+          "raw": "~02047~^~291~^0.0^0^^~4~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 24.0,
+          "unit": "mg",
+          "line": 26825,
+          "raw": "~02047~^~301~^24^3^11.857^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 3,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 38758.0,
+          "unit": "mg",
+          "line": 26830,
+          "raw": "~02047~^~307~^38758^1^^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 1,
+          "sourceCode": "1",
+          "derivationCode": ""
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "tsp",
+          "grams": 6.0,
+          "sequence": 1,
+          "line": 687,
+          "raw": "~02047~^1^1^~tsp~^6.0^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tbsp",
+          "grams": 18.0,
+          "sequence": 2,
+          "line": 688,
+          "raw": "~02047~^2^1^~tbsp~^18^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup",
+          "grams": 292.0,
+          "sequence": 3,
+          "line": 689,
+          "raw": "~02047~^3^1^~cup~^292^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "dash",
+          "grams": 0.4,
+          "sequence": 4,
+          "line": 690,
+          "raw": "~02047~^4^1^~dash~^0.4^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "소금 “조금”은 무게 미확인. 나트륨을 0으로 계산하지 않음",
+      "runtimePer100g": {
+        "kcal": 0.0,
+        "carb": 0.0,
+        "protein": 0.0,
+        "fat": 0.0,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 24.0,
+        "sodium": 38758.0,
+        "sugar": 0.0
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "01009",
+      "name": "치즈",
+      "description": "Cheese, cheddar",
+      "selectionNote": "체더치즈 대표 식품; 다른 치즈·가공 슬라이스 제품과 다름",
+      "per100g": {
+        "kcal": 404.0,
+        "carb": 3.09,
+        "protein": 22.87,
+        "fat": 33.31,
+        "fiber": 0.0,
+        "water": 37.02,
+        "calcium": 710.0,
+        "sodium": 653.0,
+        "sugar": 0.48
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 9,
+        "foodDescriptionRaw": "~01009~^~0100~^~Cheese, cheddar~^~CHEESE,CHEDDAR~^~~^~~^~Y~^~~^0^~~^^^^",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 22.87,
+          "unit": "g",
+          "line": 770,
+          "raw": "~01009~^~203~^22.87^39^0.132^~1~^~A~^~~^~~^2^22.54^24.25^21^22.593^23.143^~2, 3~^06/2015^",
+          "dataPoints": 39,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 33.31,
+          "unit": "g",
+          "line": 771,
+          "raw": "~01009~^~204~^33.31^39^0.156^~1~^~A~^~~^~~^2^32.95^33.82^17^32.976^33.635^~2, 3~^06/2015^",
+          "dataPoints": 39,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 3.09,
+          "unit": "g",
+          "line": 772,
+          "raw": "~01009~^~205~^3.09^0^^~4~^~NC~^~~^~~^^^^^^^~~^06/2015^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 404.0,
+          "unit": "kcal",
+          "line": 774,
+          "raw": "~01009~^~208~^404^0^^~4~^~NC~^~~^~~^^^^^^^~~^05/2015^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 37.02,
+          "unit": "g",
+          "line": 781,
+          "raw": "~01009~^~255~^37.02^39^0.190^~1~^~A~^~~^~~^2^36.15^37.86^19^36.625^37.420^~2, 3~^06/2015^",
+          "dataPoints": 39,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.48,
+          "unit": "g",
+          "line": 785,
+          "raw": "~01009~^~269~^0.48^0^^~1~^~AS~^~~^~~^^^^^^^~~^06/2015^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": "AS"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.0,
+          "unit": "g",
+          "line": 787,
+          "raw": "~01009~^~291~^0.0^0^^~4~^~~^~~^~~^^^^^^^~~^11/1976^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 710.0,
+          "unit": "mg",
+          "line": 788,
+          "raw": "~01009~^~301~^710^39^9.090^~1~^~A~^~~^~~^2^695^717^10^689.380^729.735^~2, 3~^06/2015^",
+          "dataPoints": 39,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 653.0,
+          "unit": "mg",
+          "line": 793,
+          "raw": "~01009~^~307~^653^39^13.172^~1~^~A~^~~^~~^2^644^673^18^625.537^680.832^~2, 3~^06/2015^",
+          "dataPoints": 39,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "cup, diced",
+          "grams": 132.0,
+          "sequence": 1,
+          "line": 29,
+          "raw": "~01009~^1^1^~cup, diced~^132^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup, melted",
+          "grams": 244.0,
+          "sequence": 2,
+          "line": 30,
+          "raw": "~01009~^2^1^~cup, melted~^244^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cup, shredded",
+          "grams": 113.0,
+          "sequence": 3,
+          "line": 31,
+          "raw": "~01009~^3^1^~cup, shredded~^113^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "oz",
+          "grams": 28.35,
+          "sequence": 4,
+          "line": 32,
+          "raw": "~01009~^4^1^~oz~^28.35^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "cubic inch",
+          "grams": 17.0,
+          "sequence": 5,
+          "line": 33,
+          "raw": "~01009~^5^1^~cubic inch~^17^^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "slice (1 oz)",
+          "grams": 28.0,
+          "sequence": 6,
+          "line": 34,
+          "raw": "~01009~^6^1^~slice (1 oz)~^28^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "체더치즈 참고값. 레시피의 대안 중 계량 가능한 20g 사용; 실제 제품 종류에 따라 다름",
+      "runtimePer100g": {
+        "kcal": 404.0,
+        "carb": 3.09,
+        "protein": 22.87,
+        "fat": 33.31,
+        "fiber": 0.0,
+        "water": null,
+        "calcium": 710.0,
+        "sodium": 653.0,
+        "sugar": 0.48
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "02030",
+      "name": "후추",
+      "description": "Spices, pepper, black",
+      "selectionNote": "검은 후추",
+      "per100g": {
+        "kcal": 251.0,
+        "carb": 63.95,
+        "protein": 10.39,
+        "fat": 3.26,
+        "fiber": 25.3,
+        "water": 12.46,
+        "calcium": 443.0,
+        "sodium": 20.0,
+        "sugar": 0.64
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 280,
+        "foodDescriptionRaw": "~02030~^~0200~^~Spices, pepper, black~^~PEPPER,BLACK~^~~^~~^~Y~^~~^0^~Piper nigrum~^5.35^1.83^8.37^3.20",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 10.39,
+          "unit": "g",
+          "line": 25513,
+          "raw": "~02030~^~203~^10.39^4^0.353^~1~^~A~^~~^~~^2^9.78^11.71^1^5.910^14.874^~2, 3~^04/2010^",
+          "dataPoints": 4,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 3.26,
+          "unit": "g",
+          "line": 25514,
+          "raw": "~02030~^~204~^3.26^198^0.166^~1~^~~^~~^~~^^^^^^^~~^01/1977^",
+          "dataPoints": 198,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 63.95,
+          "unit": "g",
+          "line": 25515,
+          "raw": "~02030~^~205~^63.95^0^^~4~^~NC~^~~^~~^^^^^^^~~^04/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 251.0,
+          "unit": "kcal",
+          "line": 25517,
+          "raw": "~02030~^~208~^251^0^^~4~^~NC~^~~^~~^^^^^^^~~^04/2010^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 12.46,
+          "unit": "g",
+          "line": 25524,
+          "raw": "~02030~^~255~^12.46^6^0.485^~1~^~A~^~~^~~^3^11.40^13.82^2^10.370^14.542^~2~^04/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.64,
+          "unit": "g",
+          "line": 25528,
+          "raw": "~02030~^~269~^0.64^2^^~1~^~A~^~~^~~^1^0.62^0.66^1^^^~~^02/2003^",
+          "dataPoints": 2,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 25.3,
+          "unit": "g",
+          "line": 25530,
+          "raw": "~02030~^~291~^25.3^6^1.677^~1~^~A~^~~^~~^3^20.2^33.7^2^18.063^32.494^~2~^04/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 443.0,
+          "unit": "mg",
+          "line": 25531,
+          "raw": "~02030~^~301~^443^6^73.167^~1~^~A~^~~^~~^3^330^652^2^127.853^757.480^~2~^04/2010^",
+          "dataPoints": 6,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 20.0,
+          "unit": "mg",
+          "line": 25536,
+          "raw": "~02030~^~307~^20^5^2.746^~1~^~A~^~~^~~^3^15^29^2^8.667^32.299^~2~^04/2010^",
+          "dataPoints": 5,
+          "sourceCode": "1",
+          "derivationCode": "A"
+        }
+      },
+      "weights": [
+        {
+          "amount": 1.0,
+          "measure": "tsp, ground",
+          "grams": 2.3,
+          "sequence": 1,
+          "line": 648,
+          "raw": "~02030~^1^1^~tsp, ground~^2.3^63^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tbsp, ground",
+          "grams": 6.9,
+          "sequence": 2,
+          "line": 649,
+          "raw": "~02030~^2^1^~tbsp, ground~^6.9^60^"
+        },
+        {
+          "amount": 1.0,
+          "measure": "tsp, whole",
+          "grams": 2.9,
+          "sequence": 3,
+          "line": 650,
+          "raw": "~02030~^3^1^~tsp, whole~^2.9^3^.1"
+        },
+        {
+          "amount": 1.0,
+          "measure": "dash",
+          "grams": 0.1,
+          "sequence": 4,
+          "line": 651,
+          "raw": "~02030~^4^1^~dash~^0.1^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "흑후추 “조금”은 무게 미확인. 미계량 성분은 전체 영양으로 표시하지 않음",
+      "runtimePer100g": {
+        "kcal": 251.0,
+        "carb": 63.95,
+        "protein": 10.39,
+        "fat": 3.26,
+        "fiber": 25.3,
+        "water": null,
+        "calcium": 443.0,
+        "sodium": 20.0,
+        "sugar": 0.64
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL."
+    },
+    {
+      "id": "16427",
+      "name": "두부",
+      "description": "Tofu, raw, regular, prepared with calcium sulfate",
+      "selectionNote": "일반 생두부, 황산칼슘 응고. Firm16426을 선택한 것이 아니며 원문 description을 그대로 보존한다. 제품·응고제에 따라 특히 칼슘 차이가 크다.",
+      "per100g": {
+        "kcal": 76.0,
+        "carb": 1.87,
+        "protein": 8.08,
+        "fat": 4.78,
+        "fiber": 0.3,
+        "water": 84.55,
+        "calcium": 350.0,
+        "sodium": 7.0,
+        "sugar": 0.62
+      },
+      "missingNutrients": [],
+      "source": {
+        "publisherClaim": "USDA National Nutrient Database for Standard Reference, Release 28",
+        "release": "September 2015",
+        "repository": "https://github.com/alyssaq/usda-sqlite",
+        "commit": "1e457b599af101ce463a195867574eba16c81acb",
+        "foodDescriptionUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/FOOD_DES.txt",
+        "foodDescriptionLine": 5014,
+        "foodDescriptionRaw": "~16427~^~1600~^~Tofu, raw, regular, prepared with calcium sulfate~^~TOFU,RAW,REG,PREP W/CA SULFATE~^~~^~~^~~^~~^0^~~^6.25^3.47^8.37^4.07",
+        "nutrientDataUrl": "https://raw.githubusercontent.com/alyssaq/usda-sqlite/1e457b599af101ce463a195867574eba16c81acb/data/NUT_DATA.txt",
+        "basis": "100g edible portion, exact selected preparation state"
+      },
+      "nutrientRows": {
+        "protein": {
+          "nutrientId": "203",
+          "value": 8.08,
+          "unit": "g",
+          "line": 392612,
+          "raw": "~16427~^~203~^8.08^44^0.308^~1~^~~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 44,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "fat": {
+          "nutrientId": "204",
+          "value": 4.78,
+          "unit": "g",
+          "line": 392613,
+          "raw": "~16427~^~204~^4.78^8^0.738^~1~^~~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 8,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "carb": {
+          "nutrientId": "205",
+          "value": 1.87,
+          "unit": "g",
+          "line": 392614,
+          "raw": "~16427~^~205~^1.87^0^^~4~^~NC~^~~^~~^^^^^^^~~^07/2015^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "kcal": {
+          "nutrientId": "208",
+          "value": 76.0,
+          "unit": "kcal",
+          "line": 392616,
+          "raw": "~16427~^~208~^76^0^^~4~^~NC~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "NC"
+        },
+        "water": {
+          "nutrientId": "255",
+          "value": 84.55,
+          "unit": "g",
+          "line": 392618,
+          "raw": "~16427~^~255~^84.55^65^0.408^~1~^~~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 65,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sugar": {
+          "nutrientId": "269",
+          "value": 0.62,
+          "unit": "g",
+          "line": 392622,
+          "raw": "~16427~^~269~^0.62^0^^~4~^~BFSN~^~16126~^~~^^^^^^^~~^07/2015^",
+          "dataPoints": 0,
+          "sourceCode": "4",
+          "derivationCode": "BFSN"
+        },
+        "fiber": {
+          "nutrientId": "291",
+          "value": 0.3,
+          "unit": "g",
+          "line": 392623,
+          "raw": "~16427~^~291~^0.3^0^^~1~^~~^~~^~~^^^^^^^~~^11/1994^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "calcium": {
+          "nutrientId": "301",
+          "value": 350.0,
+          "unit": "mg",
+          "line": 392624,
+          "raw": "~16427~^~301~^350^0^^~1~^~~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 0,
+          "sourceCode": "1",
+          "derivationCode": ""
+        },
+        "sodium": {
+          "nutrientId": "307",
+          "value": 7.0,
+          "unit": "mg",
+          "line": 392629,
+          "raw": "~16427~^~307~^7^4^3.628^~1~^~~^~~^~~^^^^^^^~~^12/1986^",
+          "dataPoints": 4,
+          "sourceCode": "1",
+          "derivationCode": ""
+        }
+      },
+      "weights": [
+        {
+          "amount": 0.5,
+          "measure": "cup",
+          "grams": 124.0,
+          "sequence": 1,
+          "line": 9314,
+          "raw": "~16427~^1^.5^~cup~^124^^"
+        },
+        {
+          "amount": 0.25,
+          "measure": "block",
+          "grams": 116.0,
+          "sequence": 2,
+          "line": 9315,
+          "raw": "~16427~^2^.25^~block~^116^^"
+        }
+      ],
+      "runtimeGramsPerUnit": {},
+      "runtimeAssumption": "일반 칼슘응고 두부 참고값. 제품·응고제에 따라 특히 칼슘 차이가 큼",
+      "runtimePer100g": {
+        "kcal": 76.0,
+        "carb": 1.87,
+        "protein": 8.08,
+        "fat": 4.78,
+        "fiber": 0.3,
+        "water": null,
+        "calcium": 350.0,
+        "sodium": 7.0,
+        "sugar": 0.62
+      },
+      "waterHandling": "Original water remains g in source per100g and sourceWaterGrams; runtime water is null, never silently converted to stored mL.",
+      "referenceNameKo": "일반 칼슘응고 두부"
+    }
+  ]
+}
