@@ -20,7 +20,8 @@
 ## Product and copy
 
 - Preserve the accepted restrained iOS-style layout. Use clear typography, simple cards, short headings, and consistent terms.
-- Standard navigation: 모의경매 / 서류 연습 / 경매 절차 / 검토 요약 / 권리 분석 / 투자금 계산 / 지역·시세 / 최종 검토.
+- Standard navigation: 학습 / 모의경매 / 서류 연습 / 경매 절차 / 검토 요약 / 권리 분석 / 투자금 계산 / 지역·시세 / 최종 검토.
+- The first page is 학습 (`view=course`), with the accepted tabs 기초 / 예제 / 실습. Teach terms before worked examples; use a different case for independent practice. Do not equate completed questions with legal competence. Preserve old lesson and notebook routes and storage.
 - Prefer short noun headings and action buttons. Keep a concise summary visible; move necessary detail into expandable explanations. Remove repeated explanations and decorative English labels.
 - Keep fictional data and AI photos clearly marked. Documents, images, observations, questions, and explanations must describe the same case.
 - Never disguise missing rights, unknown costs, invalid numbers, failed storage, or failed requests with invented results.

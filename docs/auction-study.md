@@ -6,6 +6,18 @@
 
 ## 실행과 사용
 
+### 기초부터 차례로 배우기
+
+첫 화면은 **학습** 또는 `auction-study.html?view=course`입니다. **경매 흐름 → 서류 확인 → 입찰보증금 → 필요 현금 → 확인·보류**의 다섯 단원을 같은 순서로 진행합니다.
+
+- **기초:** 먼저 알아야 할 용어와 원칙을 읽습니다.
+- **예제:** 가상 서류의 표시된 근거와 계산 과정을 함께 봅니다.
+- **실습:** 조건이 다른 새 사례에 직접 답한 뒤 해설을 확인합니다. 첫 답과 이후 수정 결과를 구분하며, 오답은 다시 풀 수 있습니다.
+
+진도는 `auction-course-v1`에 따로 저장합니다. 기존 노트·서류 연습·모의경매 기록을 바꾸지 않습니다. 다른 탭이 진도를 바꾸거나 저장이 실패하면 원본을 덮어쓰지 않고 현재 화면에 작성 내용을 유지합니다. 전체 노트 백업에는 학습 진도가 포함되지 않습니다.
+
+자료와 금액은 학습용 가정이며, 공식 서류 원본이나 법률 검토 결과가 아닙니다. 진도 완료는 실제 물건의 권리분석 능력을 보증하지 않습니다. 기관 링크는 직접 확인할 경로이며 개별 사건의 법률 검토를 대신하지 않습니다. 다섯 단원 뒤 **서류 연습**이나 **모의경매**에서 더 긴 자료를 읽어 봅니다.
+
 ### 모의경매로 한 건 끝까지 연습하기
 
 메뉴의 **모의경매** 또는 `auction-study.html?view=simulation`을 엽니다. 입문 아파트, 선순위 임차인이 있는 빌라, 위반·권리 미확인으로 보류해야 하는 다세대의 세 사례를 제공합니다.
@@ -21,7 +33,7 @@
 
 ### 내 서류와 분석노트 사용하기
 
-첫 화면의 **서류 연습**는 두 가지 방식으로 사용할 수 있습니다.
+메뉴의 **서류 연습**은 두 가지 방식으로 사용할 수 있습니다.
 
 - **연습 사례:** 명세서·등기·점유·관리비 등의 가상 발췌를 읽고 답을 고릅니다. 힌트나 해설을 열면 근거가 되는 줄을 표시합니다. 입문 사례와 전입이 앞선 임차인 사례가 각각 6단계로 구성됩니다. 날짜만으로 인수금액이나 입찰 가능 여부를 확정하지 않습니다.
 - **내 자료:** 법원경매정보 또는 이용 중인 경매 사이트를 열고, 내려받은 PDF를 화면 안에서 봅니다. 해당 단계의 확인 항목을 원문과 대조하고 내 물건에 근거를 기록합니다. `https://` 원문 주소를 새 창으로 열 수 있습니다. 원문 자동 수집이나 PDF 자동 판독·법률 판단 기능은 없습니다.
@@ -30,9 +42,9 @@
 
 PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에서는 **자료 보기 / 함께 분석·내 기록**을 전환합니다. 긴 문서는 문서 보기 안에서 이동합니다. 기존 검토 대시보드는 메뉴 또는 `auction-study.html?view=home`, 권리분석 노트는 메뉴에서 계속 사용할 수 있습니다.
 
-저장소 루트에서 `python3 -m http.server 8766 --bind 127.0.0.1`로 정적 서버를 실행하고 `auction-study.html`을 엽니다. 정적 호스팅 또는 Notion의 웹 임베드에서도 사용할 수 있습니다. 화면 전체는 브라우저 높이에 고정됩니다. 데스크톱 대시보드는 검토 순서·보류 사유·현금 계산을 나란히 보여 주고, 좁은 화면은 상세 보기 버튼으로 세 영역을 전환합니다. 권리분석·비용 입력처럼 긴 내용은 해당 패널 내부에서 이동하며 상단 메뉴와 물건 선택은 고정됩니다. 좁은 화면에서는 상단 단계 메뉴를 가로로 이동합니다.
+저장소 루트에서 `python3 -m http.server 8766 --bind 127.0.0.1`로 정적 서버를 실행하고 `/_auction/auction-study.html`을 엽니다. 정적 호스팅 또는 Notion의 웹 임베드에서도 사용할 수 있습니다. 화면 전체는 브라우저 높이에 고정됩니다. 데스크톱 대시보드는 검토 순서·보류 사유·현금 계산을 나란히 보여 주고, 좁은 화면은 상세 보기 버튼으로 세 영역을 전환합니다. 권리분석·비용 입력처럼 긴 내용은 해당 패널 내부에서 이동하며 상단 메뉴와 물건 선택은 고정됩니다. 좁은 화면에서는 상단 단계 메뉴를 가로로 이동합니다.
 
-1. 첫 화면은 **가상 연습 사례**입니다. 숫자는 실제 매물이나 현재 금융·세율 조건이 아닙니다.
+1. 분석노트의 초기 물건은 **가상 연습 사례**입니다. 숫자는 실제 매물이나 현재 금융·세율 조건이 아닙니다.
 2. **새 물건**에서 이름·주소·법원 사건번호·입찰일을 기록합니다. 실제 물건의 계산 입력은 빈칸으로 시작합니다. 상단 선택 메뉴로 여러 물건을 오갑니다.
 3. **권리분석**은 먼저 “서류 대조 예시”를 펼쳐 매각물건명세서와 등기 표제부를 어디서 비교하고 어떻게 근거를 적는지 살펴봅니다. 가상 예시는 실제 입력값이나 확인 상태에 자동 반영되지 않습니다. 이어서 6개 항목에 확인 상태와 서류·열람일·질문을 함께 적습니다. `확인 완료`도 근거가 비어 있으면 완료로 집계하지 않습니다. 날짜 입력만으로 대항력이나 인수 여부를 자동 판정하지 않습니다.
 4. **투자금 계산**에 모든 금액을 **만원** 단위로 입력합니다. 대출 실행 가능액, 취득 관련 세율, 중개 비용률, 양도 관련 세금은 직접 확인한 값입니다. 포함되지 않은 보유세 등은 정액 비용에 별도 반영합니다.
@@ -45,7 +57,7 @@ PC에서는 서류와 질문을 나란히 보고, 모바일·좁은 임베드에
 
 분석 화면을 바꾸면 주소의 `view`도 함께 바뀝니다. 새로고침·뒤로 가기·앞으로 가기로 해당 화면을 다시 열 수 있습니다. 가로 모드나 높이가 작은 임베드에서는 본문과 버튼이 잘리지 않도록 작업 영역 안에서 이동하며, 일반 화면에서는 기존 패널 배치를 유지합니다.
 
-첫 화면은 **보류 사유 → 예상 필요 현금·대출 전 보증금·보수적 손익 → 권리 확인 진행 → 다음 확인 행동** 순서로 읽습니다. 매도 세금이 반영되지 않았다면 손익 옆에 바로 표시합니다. 계산상 입찰 상한은 최종 검토에서 가정과 함께 확인하며 첫 화면의 추천 금액처럼 강조하지 않습니다.
+검토 요약 화면은 **보류 사유 → 예상 필요 현금·대출 전 보증금·보수적 손익 → 권리 확인 진행 → 다음 확인 행동** 순서로 읽습니다. 매도 세금이 반영되지 않았다면 손익 옆에 바로 표시합니다. 계산상 입찰 상한은 최종 검토에서 가정과 함께 확인하며 첫 화면의 추천 금액처럼 강조하지 않습니다.
 
 ## 계산 기준
 
@@ -69,6 +81,7 @@ node tests/auction-study-format.test.cjs
 node tests/auction-study-lessons.test.cjs
 node tests/auction-study-simulation-data.test.cjs
 node tests/auction-study-process.test.cjs
+node tests/auction-study-course.test.cjs
 python3 -B -m unittest discover -s tests -p test_auction_release.py
 ```
 
@@ -82,6 +95,7 @@ AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXEC
 AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser
 AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser
 AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser
+AUCTION_STUDY_URL=http://127.0.0.1:8766/_auction/auction-study.html BROWSER_EXECUTABLE=/usr/bin/chromium /workspace/.notion-dev/bin/python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-course-browser
 ```
 
 위 Python 경로는 준비된 클라우드 환경 기준입니다. 일반 환경에서는 Playwright 1.56.0을 설치한 Python으로 실행하고, `BROWSER_EXECUTABLE`을 생략하면 Playwright의 Chromium을 사용합니다.

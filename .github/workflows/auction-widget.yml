@@ -60,6 +60,7 @@ jobs:
           node tests/auction-study-lessons.test.cjs
           node tests/auction-study-simulation-data.test.cjs
           node tests/auction-study-process.test.cjs
+          node tests/auction-study-course.test.cjs
       - name: Prepare the browser already installed on the runner
         shell: bash
         run: |
@@ -84,6 +85,7 @@ jobs:
           python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser | tee /tmp/auction-review.log
           python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser | tee /tmp/auction-accessibility.log
           python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser | tee /tmp/auction-polish.log
+          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-course-browser | tee /tmp/auction-course.log
       - name: Package only the verified auction files
         run: python scripts/auction_release.py package --source _auction --output /tmp/auction-validated --source-sha '${{ github.sha }}'
       - uses: actions/upload-artifact@v4
@@ -98,7 +100,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish', 'course']:
                   log = Path('/tmp/auction-' + name + '.log')
                   summary.write('### Auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
           REPORT
@@ -114,6 +116,7 @@ jobs:
             /tmp/auction-review-browser/
             /tmp/auction-accessibility-browser/
             /tmp/auction-polish-browser/
+            /tmp/auction-course-browser/
 
   publish:
     needs: validate
@@ -190,6 +193,7 @@ jobs:
           python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-public-review | tee /tmp/auction-public-review.log
           python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-public-accessibility | tee /tmp/auction-public-accessibility.log
           python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-public-polish | tee /tmp/auction-public-polish.log
+          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-public-course | tee /tmp/auction-public-course.log
       - name: Record public browser results
         if: always()
         run: |
@@ -197,7 +201,7 @@ jobs:
           import os
           from pathlib import Path
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish']:
+              for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish', 'course']:
                   log = Path('/tmp/auction-public-' + name + '.log')
                   summary.write('### Public auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
           REPORT
@@ -213,3 +217,4 @@ jobs:
             /tmp/auction-public-review/
             /tmp/auction-public-accessibility/
             /tmp/auction-public-polish/
+            /tmp/auction-public-course/
