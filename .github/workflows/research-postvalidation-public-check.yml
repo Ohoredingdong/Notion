@@ -1,0 +1,91 @@
+name: Research public post-validation screen verification
+on:
+  push:
+    branches: [research/forecast-postvalidation-20261110]
+    paths: [.github/workflows/research-postvalidation-public-check.yml]
+permissions:
+  contents: read
+jobs:
+  public-postvalidation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 9814e420317ba7a3506583b4370b3ea9184a2196
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify actual public runtime and original research evidence bytes
+        run: |
+          mkdir -p /tmp/postvalidation-public
+          python - <<'PY'
+          import json,hashlib,time,urllib.request
+          from pathlib import Path
+          from datetime import datetime,timezone
+          names=['stock-value-radar.html','assets/stock-radar-flow-v2.js','assets/stock-radar-clean-bridge.js','stock-forecast-ledger.jsonl','stock-forecast-outcomes.jsonl','stock-forecast-deliveries.jsonl','stock-forecast-learning.json']
+          expected={name:Path(name).read_bytes() for name in names}
+          mismatches=[]
+          for attempt in range(8):
+              mismatches=[];proof={}
+              for name in names:
+                  try:
+                      req=urllib.request.Request('https://ohoredingdong.github.io/Notion/'+name+'?audit=postvalidation-20261110',headers={'User-Agent':'PostValidationAudit/1.0','Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(req,timeout=15) as response:data=response.read()
+                      if data!=expected[name]:mismatches.append(name)
+                      proof[name]=hashlib.sha256(data).hexdigest()
+                  except Exception as exc:mismatches.append(name+':'+type(exc).__name__)
+              if not mismatches:break
+              time.sleep(8)
+          report={'checked_at':datetime.now(timezone.utc).isoformat(),'source_commit':'9814e420317ba7a3506583b4370b3ea9184a2196','hashes':proof,'mismatches':mismatches,'scope':'Public bytes, not human notification receipt or exchange-price authenticity'}
+          Path('/tmp/postvalidation-public/public-bytes.json').write_text(json.dumps(report,indent=2))
+          assert not mismatches,mismatches
+          print('POSTVALIDATION_PUBLIC_BYTES_MATCH',report['checked_at'])
+          PY
+      - name: Install browser only
+        run: |
+          pip install 'playwright==1.56.0'
+          python -m playwright install chromium
+      - name: Inspect actual public performance screen on desktop and mobile
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          expected=json.loads(Path('stock-forecast-learning.json').read_text())['overall']
+          out=Path('/tmp/postvalidation-public');checks=[]
+          def check(name,value,detail=None):
+              checks.append({'name':name,'pass':bool(value),'detail':detail})
+              assert value,(name,detail)
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              try:
+                  for width,height in [(1440,900),(390,844)]:
+                      page=browser.new_page(viewport={'width':width,'height':height});errors=[]
+                      page.on('pageerror',lambda error:errors.append(str(error)))
+                      page.goto('https://ohoredingdong.github.io/Notion/stock-value-radar.html?screen=performance',wait_until='domcontentloaded')
+                      page.wait_for_function('() => !!window.StockRadarV2Bridge?.snapshot()?.data?.learning?.overall',timeout=45000)
+                      page.locator('.fx-nav [data-nr-screen="performance"]').first.click()
+                      page.locator('.nr-performance-grid').wait_for(timeout=20000)
+                      actual=page.evaluate('window.StockRadarV2Bridge.snapshot().data.learning.overall')
+                      check(f'{width}: same scored/correct cohort',actual['samples']==expected['samples'] and actual['correct']==expected['correct'],actual)
+                      cards=page.locator('.nr-performance-grid').inner_text()
+                      check(f'{width}: actual accuracy visible',f"{expected['accuracy']*100:.1f}%" in cards,cards)
+                      check(f'{width}: explicit scored numerator denominator',f"{expected['correct']} / {expected['samples']}" in cards,cards)
+                      check(f'{width}: missing profit evidence remains explicit','수익성 미입증' in page.locator('.fx-validation-grid').inner_text())
+                      check(f'{width}: raw outcomes separate from selected cohort','두 모수' in page.locator('.fx-table-hint').inner_text())
+                      check(f'{width}: no horizontal outer overflow',page.evaluate('document.documentElement.scrollWidth<=innerWidth+3'))
+                      check(f'{width}: no page exceptions',not errors,errors)
+                      page.screenshot(path=str(out/f'public-performance-{width}.png'),full_page=True)
+                      page.close()
+              finally:browser.close()
+          (out/'browser-checks.json').write_text(json.dumps({'pass':True,'checks':checks,'real_orders':False,'real_time_verified':False},ensure_ascii=False,indent=2))
+          print('PUBLIC_POSTVALIDATION_BROWSER_PASS',len(checks))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-postvalidation-screen-proof
+          path: /tmp/postvalidation-public
+          retention-days: 30
