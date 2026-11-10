@@ -180,7 +180,7 @@ jobs:
             python -m playwright install --with-deps chromium
           fi
       - name: Verify the public release and every runtime asset
-        run: python scripts/auction_release.py verify-public --bundle /tmp/auction-validated --url https://ohoredingdong.github.io/Notion/ --attempts 36 --delay 10
+        run: python scripts/auction_release.py verify-public --bundle /tmp/auction-validated --url https://ohoredingdong.github.io/Notion/ --attempts 72 --delay 10 --max-seconds 900
       - name: Test the actual public auction app
         shell: bash
         env:
