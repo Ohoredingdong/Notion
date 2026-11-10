@@ -1,0 +1,102 @@
+name: Research Recent Daily Model
+on:
+  push:
+    branches: [research/recent-daily-model-20261110]
+    paths: [.github/workflows/research-recent-daily-model.yml]
+permissions:
+  contents: read
+concurrency:
+  group: research-recent-daily-model-one-recipe
+  cancel-in-progress: false
+jobs:
+  bounded-model-trial:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      PYTHONPATH: scripts
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install original pinned model dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Test single candidate chronology and original invariants before accessing real diagnostic outcomes
+        shell: bash
+        run: |
+          mkdir -p /tmp/recent-daily-proof
+          python -m unittest test_stock_recent_daily -v > /tmp/recent-daily-proof/candidate-tests.log 2>&1
+          python -m unittest test_stock_forecasts test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot test_stock_forecast_paper test_stock_data_pipeline -v > /tmp/recent-daily-proof/original-regressions.log 2>&1
+          python -m unittest discover -s scripts -p 'test_stock_timing_*.py' -v > /tmp/recent-daily-proof/timing-regressions.log 2>&1
+          python scripts/audit_stock_forecast_independent.py --self-test > /tmp/recent-daily-proof/auditor-selftest.log 2>&1
+          node scripts/test_stock_forecast_ui.cjs > /tmp/recent-daily-proof/ui-contract.log
+          node scripts/stock_autopilot_recovery.cjs > /tmp/recent-daily-proof/recovery-contract.log
+      - name: Run exactly one preregistered real-history model trial and freeze fresh research-only outputs
+        run: python scripts/stock_forecast_recent_daily.py --output /tmp/recent-daily-proof/experiment
+      - name: Independently recompute every reported candidate and reference score
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,math
+          from pathlib import Path
+          from datetime import datetime
+          out=Path('/tmp/recent-daily-proof/experiment')
+          report=json.loads((out/'report.json').read_text())
+          cls=('down','flat','up'); sums={}; allrows=[]
+          def ts(v):
+              t=datetime.fromisoformat(v.replace('Z','+00:00'))
+              assert t.tzinfo is not None
+              return t
+          for path in sorted(out.glob('*.json')):
+              if path.name=='report.json':continue
+              group=json.loads(path.read_text())
+              assert group['status']=='diagnostic_completed'
+              rows=group['diagnostic_rows'];assert len(rows)==126
+              assert len(group['folds'])==6
+              for fold in group['folds']:
+                  assert ts(fold['trained_through']) < ts(fold['calibration_origin_start'])
+                  assert ts(fold['calibrated_through']) < ts(fold['origin']) < ts(fold['diagnostic_first_target'])
+              for row in rows:
+                  assert row['diagnostic_only_not_issued_forecast'] is True and 'issued_at' not in row
+                  assert row['neutral_band_pct']>0 and ts(row['target_start'])<ts(row['target_end'])
+                  for name,p in row['probabilities'].items():
+                      assert set(p)==set(cls) and all(math.isfinite(p[k]) and 0<=p[k]<=1 for k in cls)
+                      assert abs(sum(p.values())-1)<1e-8
+                      s=sums.setdefault(name,{'n':0,'correct':0,'brier':0.,'logloss':0.})
+                      y=cls.index(row['actual']);pred=max(range(3),key=lambda i:p[cls[i]])
+                      s['n']+=1;s['correct']+=pred==y
+                      s['brier']+=sum((p[k]-float(i==y))**2 for i,k in enumerate(cls))
+                      s['logloss']-=math.log(max(p[cls[y]],1e-9))
+              shadow=group['fresh_shadow']
+              assert not shadow['recommendation'] and not shadow['strict_green_override'] and not shadow['orders_enabled']
+              assert shadow['forward_scored']==0 and not shadow['public_before_target_verified']
+              if shadow['status']=='shadow_prediction':
+                  assert ts(shadow['observed_until'])<=ts(shadow['received_at'])<=ts(shadow['issued_at'])<ts(shadow['target']['start'])
+                  assert ts(shadow['calibrated_through'])<ts(shadow['observed_until'])
+          for name,s in sums.items():
+              expected=report['comparison']['metrics'][name]
+              assert s['n']==expected['samples'] and s['correct']==expected['correct']
+              assert abs(s['brier']/s['n']-expected['brier_loss'])<1e-10
+              assert abs(s['logloss']/s['n']-expected['log_loss'])<1e-10
+          assert report['requested_groups']==20 and report['recipe_trials']==1
+          assert report['candidate_forward_accuracy'] is None and not report['automatic_promotion']
+          assert not report['original_scored_accuracy_changed']
+          (out/'independent-check.json').write_text(json.dumps({'status':'stored_diagnostic_math_and_chronology_consistent','groups':20,'targets':report['comparison']['targets'],'actual_future_accuracy_proven':False,'scores':sums},indent=2))
+          print('INDEPENDENT_RECENT_MODEL_CHECK_PASSED',report['comparison']['targets'])
+          PY
+      - name: Preserve code, failed attempts and measured diagnostic results without writing production
+        if: always()
+        run: |
+          cp scripts/stock_forecast_recent_daily.py scripts/test_stock_recent_daily.py docs/experiments/recent-daily-model-20261110.md /tmp/recent-daily-proof/ || true
+          git status --porcelain > /tmp/recent-daily-proof/final-git-status.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recent-daily-model-one-recipe-proof
+          path: /tmp/recent-daily-proof
+          retention-days: 30
