@@ -39,6 +39,54 @@ def audit_digest(value):
         value, ensure_ascii=False, sort_keys=True, separators=(',', ':'),
         allow_nan=False).encode('utf-8')).hexdigest()
 
+def source_binding(records, outcomes, deliveries):
+    """Bind the audit to every input field and row, not merely scored IDs.
+
+    This canonical hash is snapshot consistency, not external authenticity.
+    Invalid JSON numbers receive no fingerprint and cannot yield a green audit.
+    """
+    sources = dict(ledger=records, outcomes=outcomes, deliveries=deliveries)
+    digests = {}
+    for name, rows in sources.items():
+        try:
+            digests[name] = audit_digest(rows)
+        except (TypeError, ValueError, OverflowError):
+            digests[name] = None
+    return {'version': 'canonical-json-rows-sha256-v1',
+            'counts': {name: len(rows) for name, rows in sources.items()},
+            'sha256': digests}
+
+
+def write_audit_report(result, output, original, protected=()):
+    """Atomically write derived output without overwriting any input evidence."""
+    import os
+    import tempfile
+    output = Path(output)
+    inputs = [Path(p) for p in original] + [Path(p) for p in protected]
+    if any(output.resolve() == p.resolve() or
+           (output.exists() and p.exists() and output.samefile(p)) for p in inputs):
+        raise ValueError('output_cannot_overwrite_evidence')
+    def unchanged():
+        if any(Path(p).read_bytes() != value for p, value in original.items()):
+            raise RuntimeError('source_changed_during_audit')
+    unchanged()
+    payload = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False)+'\n'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8',
+                dir=output.parent, prefix='.forecast-audit-', delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        unchanged()
+        os.replace(temporary, output)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+
+
 def event_key(r):
     # Equivalent ISO spellings describe the same absolute target. Normalize only
     # the derived event key; never rewrite frozen targets, IDs or fingerprints.
@@ -235,6 +283,9 @@ def validate(r):
 
 def audit(records, outcomes, deliveries, cutoff):
     counts = Counter(); errors = []; by_id = {}; originals = {}; issuance_times = {}
+    binding = source_binding(records, outcomes, deliveries)
+    if any(value is None for value in binding['sha256'].values()):
+        errors.append({'id': None, 'error': 'source_fingerprint_unavailable'})
     for r in records:
         if r.get('status') != 'research_prediction':
             # Frozen forecast ledger is append-only calls; no-call attempts live
@@ -479,6 +530,7 @@ def audit(records, outcomes, deliveries, cutoff):
         'scope': 'Ages of immutable repository evidence; not live quote/session/receipt validation.'
     }
     return {'version': 'independent-forecast-audit-1.0', 'audit_cutoff': cutoff.isoformat(),
+            'source_binding': binding,
             'generated_at': datetime.now(timezone.utc).isoformat(),
             'status': 'integrity_errors' if errors else 'ledger_arithmetic_consistent',
             'prediction_rows': len(records), 'unique_events': len(originals), 'counts': dict(counts),
@@ -1101,10 +1153,16 @@ if __name__ == '__main__':
     if args.self_test:
         result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(SelfTests))
         raise SystemExit(0 if result.wasSuccessful() else 1)
-    result = audit(read_lines(args.root/'stock-forecast-ledger.jsonl'),
-                   read_lines(args.root/'stock-forecast-outcomes.jsonl'),
-                   read_lines(args.root/'stock-forecast-deliveries.jsonl'),
-                   ts(args.cutoff) if args.cutoff else datetime.now(timezone.utc))
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
+    paths = [args.root/name for name in ('stock-forecast-ledger.jsonl',
+             'stock-forecast-outcomes.jsonl', 'stock-forecast-deliveries.jsonl')]
+    original = {p: p.read_bytes() for p in paths}
+    parsed = [[json.loads(line) for line in original[p].decode('utf-8').splitlines()
+               if line.strip()] for p in paths]
+    result = audit(*parsed, ts(args.cutoff) if args.cutoff else datetime.now(timezone.utc))
+    result['source_sha256'] = {p.name: hashlib.sha256(raw).hexdigest()
+                              for p, raw in original.items()}
+    protected = [p for p in args.root.glob('stock-*') if p.is_file()
+                 and p.name != 'stock-forecast-independent-audit.json']
+    write_audit_report(result, args.output, original, protected)
     print(json.dumps({k: result[k] for k in ('status', 'scored', 'correct', 'accuracy', 'directions', 'errors')}, ensure_ascii=False))
     raise SystemExit(1 if result['errors'] else 0)

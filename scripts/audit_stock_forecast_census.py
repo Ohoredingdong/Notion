@@ -41,6 +41,21 @@ def vector(value):
     return p
 
 
+def input_binding(records, outcomes, deliveries):
+    """Independent reconstruction of the upstream input fingerprint contract."""
+    sources = dict(ledger=records, outcomes=outcomes, deliveries=deliveries)
+    result = {'version': 'canonical-json-rows-sha256-v1', 'counts': {}, 'sha256': {}}
+    for name, rows in sources.items():
+        result['counts'][name] = len(rows)
+        try:
+            encoded = json.dumps(rows, ensure_ascii=False, sort_keys=True,
+                                 separators=(',', ':'), allow_nan=False).encode('utf-8')
+            result['sha256'][name] = hashlib.sha256(encoded).hexdigest()
+        except (TypeError, ValueError, OverflowError):
+            result['sha256'][name] = None
+    return result
+
+
 def stats(entries):
     cm = [[0]*3 for _ in CLASSES]
     briers, logs = [], []
@@ -64,6 +79,11 @@ def stats(entries):
 def census(records, outcomes, deliveries, independent, controller):
     """Use the upstream cutoff, but independently account/select/recalculate rows."""
     cutoff = instant(independent['audit_cutoff']); errors = []
+    binding = input_binding(records, outcomes, deliveries)
+    binding_verified = (binding == independent.get('source_binding') and
+                        all(value is not None for value in binding['sha256'].values()))
+    if not binding_verified:
+        errors.append('upstream_source_binding_mismatch')
     if independent.get('status') != 'ledger_arithmetic_consistent' or independent.get('errors'):
         errors.append('upstream_integrity_not_verified')
     public = {}; repeated_proofs = 0
@@ -200,7 +220,13 @@ def census(records, outcomes, deliveries, independent, controller):
     for attempt in controller.get('source_attempts',[]):
         if attempt.get('observed_until'):
             g=(attempt.get('symbol'),attempt.get('mode'))
-            try:latest[g]=max(latest.get(g,instant(attempt['observed_until'])),instant(attempt['observed_until']))
+            try:
+                observed = instant(attempt['observed_until'])
+                generated = controller.get('generated_at')
+                if observed > cutoff or (generated and instant(generated) > cutoff):
+                    errors.append('collector_context_after_cutoff')
+                    continue
+                latest[g] = max(latest.get(g, observed), observed)
             except (TypeError,ValueError):errors.append('invalid_collector_observation_clock')
     for rid in missing:
         row=valid[rid][0];last_observed=latest.get((row['symbol'],row['mode']))
@@ -212,6 +238,7 @@ def census(records, outcomes, deliveries, independent, controller):
         errors.append('independent_aggregate_mismatch')
     return {'version':'forecast-postvalidation-census-1.0','audit_cutoff':cutoff.isoformat(),
         'status':'integrity_errors' if errors else 'internal_arithmetic_and_accounting_consistent',
+        'source_binding_verified':binding_verified,'source_binding':binding,
         'ledger_rows':len(records),'outcome_rows':len(outcomes),'verified_outcome_ids':len(verified),
         'duplicate_outcome_rows':duplicate_outcomes,'row_accounting':counts,'rows':rows,
         'observed_metrics':aggregate,'per_group':per_group,
@@ -238,9 +265,13 @@ def main():
     result=census(*data,json.loads(upstream),json.loads(original[files[3]]))
     result['source_sha256']={name:hashlib.sha256(raw).hexdigest() for name,raw in original.items()}
     result['upstream_audit_sha256']=hashlib.sha256(upstream).hexdigest()
-    if any((args.root/name).read_bytes()!=raw for name,raw in original.items()):raise RuntimeError('source_changed_during_audit')
-    if args.output.resolve() in {(args.root/name).resolve() for name in files}:raise ValueError('output_cannot_overwrite_evidence')
-    args.output.write_text(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+    # Sharing only the output I/O guard does not share census selection or arithmetic.
+    from audit_stock_forecast_independent import write_audit_report
+    inputs = {args.root/name: raw for name, raw in original.items()}
+    inputs[args.audit or args.root/'stock-forecast-independent-audit.json'] = upstream
+    protected = [p for p in args.root.glob('stock-*') if p.is_file()
+                 and p.name != 'stock-forecast-postvalidation-census.json']
+    write_audit_report(result, args.output, inputs, protected)
     print(json.dumps({k:result[k] for k in ('status','ledger_rows','outcome_rows','verified_outcome_ids','row_accounting','missing_context_counts','groups_meeting_minimal_sample_gate','errors')},ensure_ascii=False))
     raise SystemExit(1 if result['errors'] else 0)
 
