@@ -19,7 +19,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from playwright.sync_api import expect, sync_playwright
 
 
-LABELS = {"simulation": "모의경매", "learn": "서류 연습", "process": "경매 절차", "home": "검토 요약", "rights": "권리 분석", "money": "투자금 계산", "area": "지역·시세", "notes": "최종 검토"}
+LABELS = {"course": "학습", "simulation": "모의경매", "learn": "서류 연습", "process": "경매 절차", "home": "검토 요약", "rights": "권리 분석", "money": "투자금 계산", "area": "지역·시세", "notes": "최종 검토"}
 
 
 def view_url(base, view):
@@ -216,7 +216,7 @@ def layout(surface, label):
     assert not clipped, (label, "button or heading text clipped", clipped)
     labels = {view: surface.locator(f'.nav-item[data-page="{view}"] > span').first.inner_text().strip() for view in LABELS}
     assert labels == LABELS, labels
-    for locator in surface.locator(".page-content [data-sim-action],.page-content [data-study-action],.topbar [data-action]").all():
+    for locator in surface.locator(".page-content [data-sim-action],.page-content [data-study-action],.page-content [data-course-action],.topbar [data-action]").all():
         if locator.is_visible():
             primary = locator.locator("strong")
             text = re.sub(r"\s+", "", primary.first.inner_text() if primary.count() else locator.inner_text())

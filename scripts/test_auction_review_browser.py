@@ -429,8 +429,11 @@ def navigation_history(page, context, browser, args):
     parts = urlsplit(view_url(args.url, "unknown"))
     query = parse_qsl(parts.query, keep_blank_values=True) + [("review", "preserve")]
     page.goto(urlunsplit(parts._replace(query=urlencode(query), fragment="history")))
+    expect(page.locator(".page-content")).to_have_attribute("data-view", "course")
+    assert dict(parse_qsl(urlsplit(page.url).query))["view"] == "course"
+    # The beginner entry changes, while the existing document route stays usable.
+    go(page, "learn")
     expect(page.locator(".page-content")).to_have_attribute("data-view", "learn")
-    assert dict(parse_qsl(urlsplit(page.url).query))["view"] == "learn"
     go(page, "simulation")
     go(page, "process")
     assert dict(parse_qsl(urlsplit(page.url).query))["view"] == "process"
