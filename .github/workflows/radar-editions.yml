@@ -1,0 +1,88 @@
+name: Radar Research and Public Edition Boundaries
+on:
+  push:
+    branches: [main, research/dual-radar-editions-20261110]
+    paths:
+      - 'radar-public/**'
+      - 'stock-radar-research.html'
+      - 'stock-radar-editions.json'
+      - 'docs/stock-radar-editions.md'
+      - 'scripts/test_radar_editions*.py'
+      - 'scripts/verify_radar_editions_public.py'
+      - '.github/workflows/radar-editions.yml'
+  pull_request:
+    paths:
+      - 'radar-public/**'
+      - 'stock-radar-research.html'
+      - 'stock-radar-editions.json'
+      - 'docs/stock-radar-editions.md'
+      - 'scripts/test_radar_editions*.py'
+      - 'scripts/verify_radar_editions_public.py'
+      - '.github/workflows/radar-editions.yml'
+permissions:
+  contents: read
+concurrency:
+  group: radar-editions-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  edition-isolation-and-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      RADAR_EDITIONS_EVIDENCE: /tmp/radar-editions-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read-only source and release boundaries
+        run: |
+          node --check radar-public/app.js
+          python scripts/test_radar_editions.py
+      - name: Install browser test library
+        run: pip install 'playwright==1.56.0'
+      - name: Desktop, mobile, arithmetic, journal conflict and network tests
+        run: python scripts/test_radar_editions_browser.py
+      - name: Package only approved public demo files
+        run: |
+          python - <<'PY'
+          import json,zipfile
+          from pathlib import Path
+          data=json.loads(Path('stock-radar-editions.json').read_text())
+          dest=Path('/tmp/radar-editions-evidence/public-demo-only.zip')
+          with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED) as z:
+              for name in data['public']['deployment_allowlist']:
+                  z.write(Path('radar-public')/name,name)
+          print('PUBLIC_PACKAGE_NO_RESEARCH_FILES',data['public']['deployment_allowlist'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-editions-tests-and-public-only-package
+          path: /tmp/radar-editions-evidence
+          retention-days: 7
+  verify-live-edition-pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: edition-isolation-and-browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      RADAR_EDITIONS_EVIDENCE: /tmp/radar-editions-live-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'playwright==1.56.0'
+      - name: Check exact public bytes and both actually served entry screens
+        run: python scripts/verify_radar_editions_public.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-editions-actual-public-proof
+          path: /tmp/radar-editions-live-evidence
+          retention-days: 7

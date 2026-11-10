@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex,nofollow">
+<title>투자 레이더 · 공개·판매용 시연판</title>
+<link rel="stylesheet" href="styles.css?v=editions-1">
+<script defer src="app.js?v=editions-1"></script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 이동</a>
+<div class="app">
+<header class="top panel">
+ <div class="brand"><span class="brand-icon" aria-hidden="true">↗</span><div><h1>투자 레이더</h1><p>공개·판매용 <span class="badge">시연판</span></p></div></div>
+ <nav aria-label="주요 메뉴"><button class="nav active" data-tab="home" aria-pressed="true">대시보드</button><button class="nav" data-tab="compare" aria-pressed="false">재무 비교</button><button class="nav" data-tab="journal" aria-pressed="false">투자 기록</button><button class="nav" data-tab="release" aria-pressed="false">출시 점검</button></nav>
+ <span class="top-note">실제 시세·예측 제공 안 함</span>
+</header>
+<div class="notice"><b>연구용 데이터와 분리된 공개 시연판입니다.</b> 아래 기업·가격·차트는 모두 가상 예시입니다. 결제·회원가입·주문 기능은 없습니다.</div>
+<main id="main">
+<section id="home" class="view">
+ <div class="market panel"><div class="head"><h2>시장 지표</h2><span class="muted">외부 표시 권한 확보 후 연결</span></div><div class="indices" id="indices"></div><p class="fine">현재가·등락률을 임의로 만들지 않습니다. 출처 표기만으로 데이터 이용권이 확보되는 것은 아닙니다.</p></div>
+ <div class="workspace">
+  <aside class="panel company-list"><div class="head"><h2>예시 기업</h2><span class="tag">가상 3개</span></div><label class="sr-only" for="search">예시 기업 검색</label><input id="search" type="search" placeholder="가상기업 검색" autocomplete="off"><div id="companies"></div><p class="fine">실제 상장사와 무관한<br>직접 작성한 시연 자료입니다.</p></aside>
+  <article class="panel analysis"><div class="company-head"><div><span class="muted" id="sector"></span><h2 id="companyName"></h2><span class="fine">가상 예시 · 투자 추천 아님</span></div><div class="price"><strong id="price"></strong><span>가상 기준가 / 실시간 아님</span></div></div>
+   <div class="chart-wrap"><div class="head"><h3>예시 가격 흐름</h3><span class="tag">합성 차트</span></div><svg id="chart" viewBox="0 0 600 170" role="img" aria-label="실제 시세가 아닌 가상 예시 가격 흐름"></svg><div class="chart-foot"><span>예시 구간 1</span><span>예시 구간 12 · 실제 거래일 없음</span></div></div>
+   <div id="metrics" class="metrics"></div>
+   <div class="analysis-bottom"><div><h3>공개용 AI 예측</h3><p>비활성화 상태입니다. 데이터 이용권과 별도 미래 검증이 갖춰지기 전에는 예측·매매신호를 제공하지 않습니다.</p></div><div><h3>현재 사용할 수 있는 기능</h3><p>가상기업 탐색 · 직접 입력 재무비율 계산 · 기기 내 메모 · JSON 백업</p></div></div>
+   <div class="actions"><button class="primary" data-goto="compare">직접 입력해서 비교</button><button data-goto="journal">이 기업 기록하기</button></div>
+  </article>
+  <aside class="side"><section class="panel"><div class="head"><h2>공개용 데이터 경계</h2><span class="tag">분리</span></div><ul class="checks"><li>연구용 시세·예측 파일 미사용</li><li>외부 시세 요청·차트 임베드 없음</li><li>개인 연구 원장·정답률 미포함</li><li>외부 폰트·뉴스 본문 미포함</li></ul><p class="fine">이 페이지의 분리는 기존 연구 사이트의 비공개 전환을 의미하지 않습니다.</p></section>
+   <section class="panel"><h2>원문 확인</h2><p class="muted">아래 링크는 새 탭에서 원본 사이트를 엽니다. 내용은 복제하지 않습니다.</p><div class="source-links"><a href="https://dart.fss.or.kr/" target="_blank" rel="noopener noreferrer">전자공시 DART ↗</a><a href="https://www.sec.gov/edgar/search/" target="_blank" rel="noopener noreferrer">미국 SEC 공시 ↗</a></div></section>
+   <section class="panel release-card"><h2>판매 준비 상태</h2><strong>판매 미개시</strong><p>상업용 호스팅 · 제공 데이터의 권한 · 서비스 방식의 규제 검토가 남아 있습니다.</p><button data-goto="release">출시 조건 보기</button></section>
+  </aside>
+ </div>
+</section>
+<section id="compare" class="view panel" hidden><div class="head"><div><h2>직접 입력 재무비율 계산</h2><p class="muted">같은 통화·주식 수 기준의 값으로 입력하세요. 계산 결과는 투자 추천이 아닙니다.</p></div><span class="tag">외부 조회 없음</span></div><form id="ratioForm"><div class="form-grid"><label>주가 (원)<input name="price" type="number" step="any" min="0" required value="10000"></label><label>주당순이익 EPS (원)<input name="eps" type="number" step="any" required value="500"></label><label>주당순자산 BPS (원)<input name="bps" type="number" step="any" required value="8000"></label><label>당기순이익 (원)<input name="net" type="number" step="any" required value="10000000"></label><label>평균 자기자본 (원)<input name="equity" type="number" step="any" required value="100000000"></label></div><button class="primary" type="submit">계산하기</button></form><div id="ratioOutput" class="metrics" aria-live="polite"></div><p class="fine">PER = 주가 ÷ EPS · PBR = 주가 ÷ BPS · ROE = 당기순이익 ÷ 평균 자기자본 × 100. EPS·BPS·평균 자기자본이 0 이하이면 해당 배수·비율은 ‘산출 안 함’으로 표시합니다.</p></section>
+<section id="journal" class="view panel" hidden><div class="head"><div><h2>투자 기록</h2><p class="muted">이 브라우저에만 저장됩니다. 로그인·서버 동기화·암호화 저장이 아닙니다.</p></div><button id="exportNotes">JSON 백업</button></div><p id="noteCompany" class="tag"></p><label for="notes">관찰한 사실 / 확인할 점 / 다음 점검</label><textarea id="notes" rows="9" maxlength="3000" placeholder="계좌번호·인증키·개인정보는 입력하지 마세요."></textarea><div class="actions"><button id="saveNote" class="primary">이 기기에 저장</button><span id="saveStatus" role="status"></span></div><p class="fine">공용 PC에서 다른 사람이 이 브라우저를 사용하면 기록을 볼 수 있습니다. 개인 연구용의 저장 키나 기록은 읽지 않습니다.</p></section>
+<section id="release" class="view panel" hidden><div class="head"><h2>공개·판매용 출시 점검</h2><span class="badge">현재는 시연판</span></div><div class="release-grid"><article><b>완료 · 공개용 코드 분리</b><p>독립 HTML·CSS·JavaScript, 가상 자료, 별도 저장 키를 사용합니다.</p></article><article><b>미완료 · 실제 시세 이용권</b><p>외부 표시·저장·분석·결과 제공 범위를 확인한 공급 계약이 필요합니다. 현재 미연결입니다.</p></article><article><b>미완료 · 상업용 운영 배포</b><p>현재 주소는 프로젝트 시연용입니다. 유료 서비스를 운영할 호스팅과 운영 계정은 아직 연결하지 않았습니다.</p></article><article><b>미완료 · 판매·규제 검토</b><p>서비스 내용에 따른 규제와 개인정보·약관·결제 처리를 별도로 점검해야 합니다. 결제는 제공하지 않습니다.</p></article></div><p class="fine">연구판을 공개판으로 복사해 판매하거나, 예측 성공률을 보장하지 않습니다. 사이트가 열린다는 것과 판매에 필요한 조건을 갖췄다는 것은 다릅니다.</p></section>
+</main>
+<footer>투자 레이더 · 공개·판매용 시연판 v1 <span>연구 데이터 미사용 / 실제 시세 미제공 / 주문 없음</span></footer>
+<noscript><p class="notice">JavaScript를 켜야 가상 예시 탐색과 계산 기능을 사용할 수 있습니다.</p></noscript>
+</div>
+</body>
+</html>
