@@ -40,7 +40,10 @@ def audit_digest(value):
         allow_nan=False).encode('utf-8')).hexdigest()
 
 def event_key(r):
-    return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])
+    # Equivalent ISO spellings describe the same absolute target. Normalize only
+    # the derived event key; never rewrite frozen targets, IDs or fingerprints.
+    return (r['symbol'], r['market'], r['mode'],
+            ts(r['target']['start']), ts(r['target']['end']))
 
 def validate(r):
     p = [finite(r['probabilities'][k]) for k in CLASSES]

@@ -1,0 +1,95 @@
+name: Research forecast post-audit final verification
+on:
+  push:
+    branches: [research/forecast-postaudit-20261110]
+    paths: [.github/workflows/research-forecast-postaudit-final-20261110.yml]
+permissions:
+  contents: write
+concurrency:
+  group: research-forecast-postaudit-20261110
+  cancel-in-progress: false
+jobs:
+  verify-and-preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install unchanged model test dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Record original negative controls and apply only tested derived-key repair
+        run: |
+          mkdir -p /tmp/postaudit-final
+          python - <<'PY'
+          import subprocess,json,hashlib
+          from pathlib import Path
+          out=Path('/tmp/postaudit-final')
+          tracked=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          (out/'all-tracked-hashes-before.json').write_text(json.dumps({p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in tracked}))
+          run=subprocess.run(['python','scripts/test_stock_timing_target_instants.py','-v'],capture_output=True,text=True)
+          (out/'RED.txt').write_text(run.stdout+run.stderr)
+          assert run.returncode==1 and 'FAILED (failures=4)' in run.stderr and 'Ran 8 tests' in run.stderr
+          subprocess.run(['python','scripts/audit_stock_forecast_independent.py','--cutoff','2026-11-10T04:15:50Z','--output',str(out/'baseline.json')],check=True)
+          p=Path('scripts/audit_stock_forecast_independent.py');s=p.read_text()
+          old="    return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])"
+          new="    # Equivalent ISO spellings describe the same absolute target. Normalize only\n    # the derived event key; never rewrite frozen targets, IDs or fingerprints.\n    return (r['symbol'], r['market'], r['mode'],\n            ts(r['target']['start']), ts(r['target']['end']))"
+          assert s.count(old)==1;p.write_text(s.replace(old,new))
+          assert '          python scripts/audit_stock_forecast_census.py' in Path('.github/workflows/stock-forecast-independent-audit.yml').read_text()
+          PY
+      - name: Preserve all original regression and acceptance thresholds
+        run: |
+          set -o pipefail
+          {
+            PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_timing*.py' -v
+            python scripts/audit_stock_forecast_independent.py --self-test
+            python scripts/audit_stock_learning_evidence.py --self-test
+            PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+            PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+            python -m unittest discover -s scripts -p 'test_stock_forecast_paper.py' -v
+            python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+            python scripts/stock_forecast_sources.py
+            node scripts/test_stock_forecast_ui.cjs
+            node scripts/stock_autopilot_recovery.cjs
+          } 2>&1 | tee /tmp/postaudit-final/regressions.txt
+      - name: Recompute genuine full census and freeze evidence without relabelling
+        run: |
+          python scripts/audit_stock_forecast_independent.py --cutoff '2026-11-10T04:15:50Z'
+          python scripts/audit_stock_forecast_census.py
+          python scripts/audit_stock_learning_evidence.py --cutoff '2026-11-10T04:15:50Z'
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          out=Path('/tmp/postaudit-final')
+          a=json.loads((out/'baseline.json').read_text());b=json.loads(Path('stock-forecast-independent-audit.json').read_text())
+          a.pop('generated_at');b.pop('generated_at');assert a==b
+          prior=json.loads((out/'all-tracked-hashes-before.json').read_text())
+          changed=[p for p,h in prior.items() if hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h]
+          assert changed==['scripts/audit_stock_forecast_independent.py'],changed
+          for name in ('stock-forecast-independent-audit.json','stock-forecast-postvalidation-census.json','stock-forecast-learning-evidence.json','stock-forecast-attempt-coverage-audit.json','stock-timing-acceptance-guard.json'):
+              (out/name).write_bytes(Path(name).read_bytes())
+          (out/'verification.json').write_text(json.dumps({'pin':'2c7aa170a70701740a1bdec7b50a51273c8ea50f','cutoff':b['audit_cutoff'],'protected_tracked_files':len(prior)-1,'only_changed_path':changed[0],'all_original_evidence_and_scores_unchanged':True,'prior_save_failure':'42756428296 runner workflow permission rejected; connector committed separately reviewed workflow; no new permission or secret created','new_learning':0,'timing_usefulness':'not_proven'},indent=2))
+          PY
+      - name: Save only the verified source repair to the existing research branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/audit_stock_forecast_independent.py
+          git commit -m 'audit: identify equal target instants without mutating frozen forecasts'
+          git push origin HEAD:refs/heads/research/forecast-postaudit-20261110
+          git rev-parse HEAD > /tmp/postaudit-final/verified-head.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-postaudit-final-evidence
+          path: /tmp/postaudit-final
+          retention-days: 14
