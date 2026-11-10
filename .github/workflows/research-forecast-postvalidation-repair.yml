@@ -1,0 +1,100 @@
+name: Research post-validation source-binding RED GREEN
+on:
+  push:
+    branches: [research/forecast-postvalidation-20261110]
+    paths: [.github/workflows/research-forecast-postvalidation-repair.yml]
+permissions:
+  contents: write
+jobs:
+  verify-repair:
+    if: github.ref == 'refs/heads/research/forecast-postvalidation-20261110'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      PYTHONPATH: scripts
+      AUDIT_CUTOFF: '2026-11-10T08:26:05Z'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze every original tracked byte and reproduce all three false-green controls
+        run: |
+          mkdir -p /tmp/postvalidation-repair
+          python - <<'PY'
+          from copy import deepcopy
+          from pathlib import Path
+          import hashlib,json,subprocess,os
+          from audit_stock_forecast_independent import audit,ts,read_lines
+          from audit_stock_forecast_census import census
+          from test_stock_timing_target_instants import fixture,proof,CUT
+          files=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          hashes={p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in files if Path(p).is_file()}
+          Path('/tmp/postvalidation-repair/before-hashes.json').write_text(json.dumps(hashes))
+          r,o=fixture();d=proof([r]);up=audit([r],[o],d,CUT);observed=[]
+          for mode in ('training_provenance','public_fingerprint','outcome_public_claim'):
+              rr,oo,dd=deepcopy([r]),deepcopy([o]),deepcopy(d)
+              if mode=='training_provenance':rr[0]['trained_through']='2035-01-01T00:00:00Z'
+              if mode=='public_fingerprint':dd[0]['verification_id']='0'*64
+              if mode=='outcome_public_claim':oo[0]['public_before_target_verified']=False
+              result=census(rr,oo,dd,up,{})
+              assert result['status']=='internal_arithmetic_and_accounting_consistent' and not result['errors']
+              observed.append({'case':mode,'before':'false_green_reproduced'})
+          original=audit(read_lines(Path('stock-forecast-ledger.jsonl')),read_lines(Path('stock-forecast-outcomes.jsonl')),read_lines(Path('stock-forecast-deliveries.jsonl')),ts(os.environ['AUDIT_CUTOFF']))
+          Path('/tmp/postvalidation-repair/original-audit.json').write_text(json.dumps(original))
+          Path('/tmp/postvalidation-repair/red-controls.json').write_text(json.dumps(observed))
+          print('THREE_SYNTHETIC_FALSE_GREEN_CASES_REPRODUCED')
+          PY
+      - name: Apply exactly the reviewed two-script patch
+        run: |
+          git apply --check docs/research/forecast-postvalidation-source-binding.patch
+          git apply docs/research/forecast-postvalidation-source-binding.patch
+      - name: Install original pinned regression dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Run all timing guards and original forecast learning paper regressions
+        run: |
+          python -m unittest discover -s scripts -p 'test_stock_timing_*.py' -v > /tmp/postvalidation-repair/timing-tests.log 2>&1
+          python scripts/audit_stock_forecast_independent.py --self-test > /tmp/postvalidation-repair/independent-tests.log 2>&1
+          python scripts/audit_stock_learning_evidence.py --self-test > /tmp/postvalidation-repair/learning-tests.log 2>&1
+          python -m unittest test_stock_forecasts test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot test_stock_forecast_paper test_stock_data_pipeline -v > /tmp/postvalidation-repair/forecast-regressions.log 2>&1
+          node scripts/test_stock_forecast_ui.cjs > /tmp/postvalidation-repair/ui-contract.log
+          node scripts/stock_autopilot_recovery.cjs > /tmp/postvalidation-repair/recovery-contract.log
+      - name: Independently recompute real evidence with the same frozen cutoff
+        run: |
+          python scripts/audit_stock_forecast_independent.py --cutoff "$AUDIT_CUTOFF" --output /tmp/postvalidation-repair/independent.json
+          python scripts/audit_stock_forecast_census.py --audit /tmp/postvalidation-repair/independent.json --output /tmp/postvalidation-repair/census.json
+          python scripts/audit_stock_learning_evidence.py --cutoff "$AUDIT_CUTOFF" --output /tmp/postvalidation-repair/learning.json
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+          cp stock-forecast-attempt-coverage-audit.json stock-timing-acceptance-guard.json /tmp/postvalidation-repair/
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          folder=Path('/tmp/postvalidation-repair')
+          old=json.loads((folder/'original-audit.json').read_text());new=json.loads((folder/'independent.json').read_text())
+          changed=[key for key in old if key!='generated_at' and old[key]!=new[key]]
+          assert not changed,changed
+          hashes=json.loads((folder/'before-hashes.json').read_text())
+          allowed={'scripts/audit_stock_forecast_independent.py','scripts/audit_stock_forecast_census.py'}
+          modified=[p for p,h in hashes.items() if hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h]
+          assert set(modified)==allowed,modified
+          census=json.loads((folder/'census.json').read_text())
+          assert census['source_binding_verified'] and not census['errors']
+          summary={'fixed_source':'41072669d14b89f4cdabea3147488b61673a362c','audit_cutoff':new['audit_cutoff'],'original_metric_changes':changed,'changed_original_paths':modified,'other_tracked_files_unchanged':len(hashes)-len(modified),'ledger_rows':census['ledger_rows'],'verified_outcomes':census['verified_outcome_ids'],'scored':new['scored'],'correct':new['correct'],'timing_utility':'not_proven','model_trials':0,'new_learning_updates':0}
+          (folder/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2))
+          print('POSTVALIDATION_REPAIR_VERIFIED',json.dumps(summary))
+          PY
+      - name: Commit only tested auditor source changes on this research branch
+        run: |
+          test "$GITHUB_REF" = refs/heads/research/forecast-postvalidation-20261110
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/audit_stock_forecast_independent.py scripts/audit_stock_forecast_census.py
+          git commit -m 'fix: bind post-validation to original input snapshot and protect evidence outputs'
+          git push origin HEAD:research/forecast-postvalidation-20261110
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-postvalidation-repair-proof
+          path: /tmp/postvalidation-repair
+          retention-days: 30
