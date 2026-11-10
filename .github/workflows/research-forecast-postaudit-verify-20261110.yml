@@ -1,0 +1,162 @@
+name: Research forecast post-audit RED GREEN
+on:
+  push:
+    branches: [research/forecast-postaudit-20261110]
+    paths: [.github/workflows/research-forecast-postaudit-verify-20261110.yml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: research-forecast-postaudit-20261110
+  cancel-in-progress: false
+jobs:
+  verify-postaudit:
+    if: github.ref == 'refs/heads/research/forecast-postaudit-20261110'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the existing pipeline dependency bounds
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Preserve evidence and reproduce original failures before repair
+        run: |
+          mkdir -p /tmp/postaudit-verified
+          python - <<'PY'
+          import subprocess,hashlib,json
+          from pathlib import Path
+          out=Path('/tmp/postaudit-verified')
+          paths=[Path(p) for p in subprocess.check_output(['git','ls-files'],text=True).splitlines() if (p.startswith(('stock-forecast','stock-direction','stock-timing')) and p.endswith(('.json','.jsonl'))) or p in ('docs/stock-timing-acceptance-20261029.md','docs/stock-direction-specialists.md','docs/stock-bounded-autopilot.md') or p.startswith('assets/stock-') or p=='stock-value-radar.html']
+          (out/'protected-hashes-before.json').write_text(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},indent=2))
+          run=subprocess.run(['python','scripts/test_stock_timing_target_instants.py','-v'],capture_output=True,text=True)
+          (out/'target-instants-RED.txt').write_text(run.stdout+run.stderr)
+          assert run.returncode==1 and 'FAILED (failures=4)' in run.stderr and 'Ran 8 tests' in run.stderr, 'Original negative control must fail for the four preregistered reasons only'
+          subprocess.run(['python','scripts/audit_stock_forecast_independent.py','--cutoff','2026-11-10T04:15:50Z','--output',str(out/'baseline-independent.json')],check=True)
+          print('RED_REPRODUCED_FOUR_ALIAS_CONTROLS')
+          PY
+      - name: Apply only the UTC derived-key repair and additive audit wiring
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/audit_stock_forecast_independent.py');s=p.read_text()
+          old="    return (r['symbol'], r['market'], r['mode'], r['target']['start'], r['target']['end'])"
+          new="    # Equivalent ISO spellings describe the same absolute target. Normalize only\n    # the derived event key; never rewrite frozen targets, IDs or fingerprints.\n    return (r['symbol'], r['market'], r['mode'],\n            ts(r['target']['start']), ts(r['target']['end']))"
+          assert s.count(old)==1;p.write_text(s.replace(old,new))
+          p=Path('.github/workflows/stock-forecast-independent-audit.yml');s=p.read_text()
+          anchor="      - 'scripts/audit_stock_forecast_independent.py'"
+          assert s.count(anchor)==2
+          s=s.replace(anchor,anchor+"\n      - 'scripts/audit_stock_forecast_census.py'\n      - 'scripts/test_stock_timing_target_instants.py'\n      - 'scripts/test_stock_timing_census.py'")
+          anchor='          python scripts/audit_stock_forecast_independent.py --self-test'
+          assert s.count(anchor)==1
+          s=s.replace(anchor,anchor+'\n          PYTHONPATH=scripts python -m unittest test_stock_timing_target_instants test_stock_timing_census -v')
+          anchor='        run: python scripts/audit_stock_forecast_independent.py'
+          assert s.count(anchor)==1
+          s=s.replace(anchor,'        run: |\n          python scripts/audit_stock_forecast_independent.py\n          python scripts/audit_stock_forecast_census.py')
+          anchor='            stock-forecast-independent-audit.json'
+          assert s.count(anchor)==1
+          s=s.replace(anchor,anchor+'\n            stock-forecast-postvalidation-census.json')
+          p.write_text(s)
+          PY
+      - name: New controls and all existing forecast audit regressions
+        run: |
+          set -o pipefail
+          {
+            PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_timing*.py' -v
+            python scripts/audit_stock_forecast_independent.py --self-test
+            python scripts/audit_stock_learning_evidence.py --self-test
+            PYTHONPATH=scripts python -m unittest discover -s scripts -p 'test_stock_forecasts.py' -v
+            PYTHONPATH=scripts python -m unittest test_stock_forecast_learning test_stock_forecast_learning_display test_stock_forecast_directions test_stock_autopilot -v
+            python -m unittest discover -s scripts -p 'test_stock_forecast_paper.py' -v
+            python -m unittest discover -s scripts -p 'test_stock_data_pipeline.py' -v
+            python scripts/stock_forecast_sources.py
+            node scripts/test_stock_forecast_ui.cjs
+            node scripts/stock_autopilot_recovery.cjs
+          } 2>&1 | tee /tmp/postaudit-verified/regressions.txt
+      - name: Recalculate all genuine evidence and prove unchanged scores and originals
+        run: |
+          python scripts/audit_stock_forecast_independent.py --cutoff '2026-11-10T04:15:50Z'
+          python scripts/audit_stock_forecast_census.py
+          python scripts/audit_stock_learning_evidence.py --cutoff '2026-11-10T04:15:50Z'
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+          python - <<'PY'
+          import json,hashlib,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          from stock_forecast_paper import compare_frozen
+          out=Path('/tmp/postaudit-verified')
+          original=json.loads((out/'baseline-independent.json').read_text());after=json.loads(Path('stock-forecast-independent-audit.json').read_text())
+          original.pop('generated_at');after.pop('generated_at');assert original==after, 'No genuine eligibility, score, error, or source flag may change unnoticed'
+          protected=json.loads((out/'protected-hashes-before.json').read_text())
+          assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest()==h for p,h in protected.items()), 'Original data, policy and UI hashes changed'
+          ledger=[json.loads(l) for l in Path('stock-forecast-ledger.jsonl').read_text().splitlines() if l.strip()]
+          from datetime import datetime
+          shadow=compare_frozen(ledger,after,datetime.fromisoformat(after['audit_cutoff']))
+          (out/'shadow-recomputed.json').write_text(json.dumps(shadow,ensure_ascii=False,indent=2))
+          for name in ('stock-forecast-independent-audit.json','stock-forecast-postvalidation-census.json','stock-forecast-learning-evidence.json','stock-forecast-attempt-coverage-audit.json','stock-timing-acceptance-guard.json'):
+              (out/name).write_bytes(Path(name).read_bytes())
+          (out/'verification.json').write_text(json.dumps({'source_pin':'2c7aa170a70701740a1bdec7b50a51273c8ea50f','protected_files':len(protected),'protected_hashes_unchanged':True,'genuine_scores_and_all_original_audit_fields_unchanged':True,'new_model_trials':0,'new_learning':0,'timing_utility':'not_proven','cutoff':after['audit_cutoff']},indent=2))
+          print('ALL_ORIGINALS_AND_GENUINE_SCORE_FIELDS_UNCHANGED',len(protected))
+          PY
+      - name: Record actual operational conclusions separately from prediction quality
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          wanted=('Stock Prospective Forecasts','Independent Forecast Evidence Audit','Stock Autopilot Bounded Recovery');found={k:[] for k in wanted};errors=[]
+          def api(path):
+              r=subprocess.run(['gh','api','repos/Ohoredingdong/Notion/'+path],capture_output=True,text=True)
+              if r.returncode:raise RuntimeError('read_failed')
+              return json.loads(r.stdout)
+          for page in range(1,4):
+              try:data=api('actions/runs?branch=main&per_page=100&page='+str(page))
+              except Exception as e:errors.append({'operation':'run_listing','error':type(e).__name__});break
+              for r in data['workflow_runs']:
+                  if r['name'] not in wanted or len(found[r['name']])>=3:continue
+                  row={k:r.get(k) for k in ('id','name','head_sha','event','status','conclusion','created_at','updated_at','run_attempt','html_url')}
+                  try:
+                      jobs=api('actions/runs/'+str(r['id'])+'/jobs?per_page=100')['jobs']
+                      row['jobs']=[{k:j.get(k) for k in ('id','name','status','conclusion','steps')} for j in jobs]
+                      if not found[r['name']] and r['status']=='completed':
+                          for j in jobs:
+                              if j['conclusion']=='skipped':continue
+                              log=subprocess.run(['gh','api','repos/Ohoredingdong/Notion/actions/jobs/'+str(j['id'])+'/logs'],capture_output=True,text=True)
+                              row.setdefault('log_reads',[]).append({'job_id':j['id'],'read_ok':log.returncode==0})
+                              if log.returncode==0:
+                                  safe=log.stdout.replace(os.environ['GH_TOKEN'],'[REDACTED]')
+                                  Path('/tmp/postaudit-verified/actions-'+str(j['id'])+'.txt').write_text(safe)
+                  except Exception as e:row['metadata_error']=type(e).__name__
+                  found[r['name']].append(row)
+              if all(len(v)>=3 for v in found.values()):break
+          Path('/tmp/postaudit-verified/operational-runs.json').write_text(json.dumps({'runs':found,'errors':errors,'scope':'Actual starts, conclusions and steps, not model skill'},indent=2))
+          print('OPERATIONAL_CONCLUSIONS',json.dumps({k:[{'id':r['id'],'status':r['status'],'conclusion':r['conclusion']} for r in v] for k,v in found.items()}))
+          PY
+      - name: Commit only tested audit code and wiring to the research branch
+        run: |
+          python - <<'PY'
+          import subprocess
+          paths=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert paths=={'scripts/audit_stock_forecast_independent.py','.github/workflows/stock-forecast-independent-audit.yml'},paths
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/audit_stock_forecast_independent.py .github/workflows/stock-forecast-independent-audit.yml
+          git commit -m 'audit: normalize absolute target identity and add exhaustive independent census'
+          git push origin HEAD:refs/heads/research/forecast-postaudit-20261110
+          git rev-parse HEAD > /tmp/postaudit-verified/verified-head.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forecast-postaudit-red-green-verified
+          path: /tmp/postaudit-verified
+          retention-days: 14
