@@ -1,84 +1,85 @@
 {
   "version": "canonical-radar-health-v2",
-  "checked_at": "2026-11-09T23:22:03.581715+00:00",
+  "checked_at": "2026-11-10T00:12:10.060498+00:00",
   "status": "error",
-  "consecutive_failures": 112,
+  "consecutive_failures": 113,
   "notification_required": true,
   "data_ages": {
     "opportunity": {
       "file": "stock-opportunity-data.json",
       "generated_at": "2026-11-09T23:14:40.243232+00:00",
-      "age_hours": 0.12
+      "age_hours": 0.96
     },
     "cases": {
       "file": "stock-investment-cases-summary.json",
       "generated_at": "2026-11-09T23:21:24.911692+00:00",
-      "age_hours": 0.01
+      "age_hours": 0.85
     },
     "entry": {
       "file": "stock-entry-plan-summary.json",
       "generated_at": "2026-11-09T19:05:14.768183+00:00",
-      "age_hours": 4.28
+      "age_hours": 5.12
     },
     "charts": {
       "file": "stock-radar-chart-data.json",
       "generated_at": "2026-11-09T23:14:52.757006+00:00",
-      "age_hours": 0.12
+      "age_hours": 0.95
     },
     "forecast": {
       "file": "stock-direction-forecast.json",
-      "generated_at": "2026-11-09T21:03:46.825311+00:00",
-      "age_hours": 2.3
+      "generated_at": "2026-11-10T00:09:35.478511+00:00",
+      "age_hours": 0.04,
+      "max_hours": 2
     },
     "learning": {
       "file": "stock-forecast-learning.json",
-      "generated_at": "2026-11-09T21:03:46.825311+00:00",
-      "age_hours": 2.3
+      "generated_at": "2026-11-10T00:09:35.478511+00:00",
+      "age_hours": 0.04
     },
     "accuracy": {
       "file": "stock-radar-accuracy-audit.json",
-      "generated_at": "2026-11-09T21:03:46.825311+00:00",
-      "age_hours": 2.3
+      "generated_at": "2026-11-10T00:09:35.478511+00:00",
+      "age_hours": 0.04
     },
     "market": {
       "file": "stock-market-context.json",
       "generated_at": "2026-11-09T23:21:32.631850+00:00",
-      "age_hours": 0.01
+      "age_hours": 0.84
     },
     "news": {
       "file": "news-link-data.json",
       "generated_at": "2026-11-09T21:02:04.023873+00:00",
-      "age_hours": 2.33,
+      "age_hours": 3.17,
       "max_hours": 6
     },
     "calendar": {
       "file": "market-events-data.json",
       "generated_at": "2026-11-09T20:10:12.754808+00:00",
-      "age_hours": 3.2,
+      "age_hours": 4.03,
       "max_hours": 18
     },
     "events": {
       "file": "stock-event-outlook.json",
       "generated_at": "2026-11-09T20:10:16.363320+00:00",
-      "age_hours": 3.2,
+      "age_hours": 4.03,
       "max_hours": 18
     },
     "catalog": {
       "file": "stock-universe-catalog.json",
       "generated_at": "2026-11-07T02:45:11.852825+00:00",
-      "age_hours": 68.61,
+      "age_hours": 69.45,
       "max_hours": 168
     },
     "financial": {
       "file": "stock-financial-coverage.json",
       "generated_at": "2026-11-07T02:45:14.993236+00:00",
-      "age_hours": 68.61,
+      "age_hours": 69.45,
       "max_hours": 48
     },
     "extended_forecast": {
       "file": "stock-extended-direction-forecast.json",
       "generated_at": "2026-11-09T17:35:49.963664+00:00",
-      "age_hours": 5.77,
+      "age_hours": 6.61,
       "freshness_policy": "weekday_0655_utc_plus_3h",
       "freshness_basis": "run.started_at",
       "next_due": "2026-11-10T06:55:00+00:00",
@@ -97,7 +98,7 @@
       "next_session": "2026-11-10",
       "next_open": "2026-11-10T00:00:00+00:00",
       "next_close": "2026-11-10T06:30:00+00:00",
-      "market_open": false,
+      "market_open": true,
       "calendar_note": "거래소 일정 라이브러리 기준; 임시휴장은 거래소 원문 확인 필요"
     },
     "US": {
@@ -1517,13 +1518,10 @@
     "extended_forecast": "stock-extended-direction-forecast.json"
   },
   "issues": [
-    "financial: 68.6시간 동안 갱신되지 않았습니다. (허용 48시간)",
+    "financial: 69.4시간 동안 갱신되지 않았습니다. (허용 48시간)",
     "opportunity: 1/104개 가격의 완료 세션·원자료 확인 실패 (stale_source_session)",
     "charts: 2/108개 가격의 완료 세션·원자료 확인 실패 (stale_source_session)",
-    "market: 2/4개 가격의 완료 세션·원자료 확인 실패 (stale_source_session)",
-    "accuracy: 현재 자료와 감사 시점 불일치 (opportunity_generated_at)",
-    "accuracy: 현재 자료와 감사 시점 불일치 (chart_generated_at)",
-    "accuracy: 현재 자료와 감사 시점 불일치 (market_generated_at)"
+    "market: 2/4개 가격의 완료 세션·원자료 확인 실패 (stale_source_session)"
   ],
   "warnings": [
     "market: 거시지표 수집 오류 2건; 누락값을 최신값으로 취급하지 않습니다.",
@@ -1537,7 +1535,7 @@
   "repair_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-opportunities.yml",
   "verification_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/monitor-stock-value-radar.yml",
   "source_snapshot": {
-    "commit": "d0e21f7052cdb53418feaee39fcccabfb609836e",
+    "commit": "74dadd9b3503f467922b5f0d8b2c17c762458914",
     "inputs": {
       "market-events-data.json": {
         "exists": true,
@@ -1565,7 +1563,7 @@
       },
       "stock-direction-forecast.json": {
         "exists": true,
-        "sha256": "5caf12f769c6d6b35cea436e73d7dbb1cc4dc945ebd6b810b8168e1fbb04cb1e"
+        "sha256": "187bdb8eed4781f8f5c3d22d9eb6369be27768b5b6ebcc82850065ed7e59a4a9"
       },
       "stock-entry-plan-summary.json": {
         "exists": true,
@@ -1585,7 +1583,7 @@
       },
       "stock-forecast-learning.json": {
         "exists": true,
-        "sha256": "2996cb4a8de37b32f602f374e977da6981f020eda9c9598846b9bbd7f63334ac"
+        "sha256": "8205267965fc154a71d1a0a55488de0e2b1e82474f11dfea8343583d776b6bca"
       },
       "stock-investment-cases-summary.json": {
         "exists": true,
@@ -1601,7 +1599,7 @@
       },
       "stock-radar-accuracy-audit.json": {
         "exists": true,
-        "sha256": "d0f6733101a2d02b59ae10582d44c30a72a6e0224aa2db143b3abdc772fc547c"
+        "sha256": "d50e42c55664079e289bcacceead7e7680858468ebc9f10238510375ef507bbe"
       },
       "stock-radar-chart-data.json": {
         "exists": true,
@@ -1616,6 +1614,6 @@
         "sha256": "d4ba68b06398f69d5805080b55611393ead243b1541f74efc39ace874f15e64b"
       }
     },
-    "previous_health_sha256": "f41f33d002d59b7ab358eb892a943457b1af92bbabda8d794e4431b0ef4ed170"
+    "previous_health_sha256": "e3847f35250537ac5d7c40dfa03c2c4c3ca8f951026c74ba07290131dab4b32d"
   }
 }
