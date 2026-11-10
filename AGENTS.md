@@ -39,3 +39,10 @@
 - Before reporting publication, confirm the workflow result, public manifest and runtime hashes, and public browser checks. Report an external blocker explicitly instead of claiming success.
 
 See `docs/auction-study.md` for commands and the release workflow.
+
+## Investment radar: always deliver both editions
+
+- For investment radar work, read `docs/stock-radar-editions.md` and `stock-radar-editions.json`. In every related release/update/link response, include BOTH canonical links with their actual readiness states: 개인 연구용 and 공개·판매용.
+- Preserve `stock-value-radar.html`, research ledgers, models, strict-green checks, collectors and existing monitoring unless the current request explicitly changes them. The research entry is `stock-radar-research.html`; its label is not privacy/authentication. Do not describe the existing public host as private.
+- Keep public-demo runtime under `radar-public/`. Do not bundle or request research prices, forecast histories, private records, external chart embeds, or unlicensed news/fonts. Use only the approved deployment allowlist; never deploy the repository root as the commercial app.
+- Public edition is a project demo, NOT a cleared paid service. Retain `commercial_ready=false` until the actual hosting, data rights and service obligations are verified. Do not launch payments, buy services, manufacture signals, or conceal unresolved source/privacy issues.
