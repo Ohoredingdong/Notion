@@ -1,0 +1,57 @@
+/* Meal cost is separate from recorded cash spending. Preserve the eight-card frame. */
+body[data-home=meals] #todayKitchen>.hub-heading>h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+body[data-home=meals] #recipeMonthBudget{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-content:center;gap:2px 8px;width:100%;min-width:0;min-height:44px;height:44px;padding:2px 7px!important;border:0;border-radius:9px;background:#f6eadf;color:#78533d;text-align:left;font-size:12px!important;line-height:1.2}
+#recipeMonthBudget .recipe-budget-label{font-size:11px;align-self:center}
+#recipeMonthBudget>strong{font-size:18px;line-height:1.15;color:#5e402d;font-weight:650;white-space:nowrap}
+#recipeMonthBudget>small{grid-column:1/-1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#876b57}
+#recipeMonthBudget .recipe-budget-short{display:none}
+body[data-home=meals] #homeRecommendation .recipe-grid-price{display:flex;align-items:center;margin:0;min-width:0}
+body[data-home=meals] #homeRecommendation [data-recipe-cost]{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;min-width:0;color:#7d5135}
+body[data-home=meals] #homeRecommendation [data-recipe-cost]>small{font-size:11px;line-height:1.2;font-weight:400;color:#98765c}
+body[data-home=meals] #homeRecommendation [data-recipe-cost]>b{font-size:17px;line-height:1.25;font-weight:650;letter-spacing:-.4px;white-space:nowrap}
+body[data-home=meals] #homeRecommendation [data-cost-kind=unknown]>b{font-size:13px;font-weight:500;color:#9a7259}
+body[data-home=meals] #homeRecommendation [data-cost-kind=partial]>b{color:#8e6c47}
+body[data-home=meals] #homeRecommendation .recipe-grid-facts{display:flex;flex-wrap:wrap;gap:3px 9px;justify-content:flex-start;font-size:12px;line-height:1.25;color:#8d705c}
+body[data-home=meals] #homeRecommendation [data-recipe-kcal][hidden]{display:none!important}
+body[data-home=meals] #homeRecommendation .recipe-grid-content{gap:5px}
+
+@container kitchen-widget (max-width:559px){
+ body[data-home=meals] .recipe-view-header{gap:2px!important}
+ body[data-home=meals] .recipe-view-actions{gap:2px!important;flex:none}
+ body[data-home=meals] .recipe-view-actions>button{min-width:44px!important;padding:2px 3px!important}
+ body[data-home=meals] .recipe-view-actions>[data-wf=recipeFilters]{min-width:48px!important;gap:2px}
+ body[data-home=meals] #recipeMonthBudget{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:56px;min-width:56px!important;max-width:56px;padding:2px!important;background:#f4e7da;border-radius:9px;text-align:center}
+ #recipeMonthBudget .recipe-budget-wide{display:none}
+ #recipeMonthBudget .recipe-budget-short{display:block;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #recipeMonthBudget .recipe-budget-label{font-size:10px}
+ #recipeMonthBudget>strong{font-size:12px;line-height:1.1}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card{grid-template-columns:clamp(48px,14cqw,58px) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto auto!important;gap:1px 5px;align-items:center;padding:3px 4px}
+ body[data-home=meals] #homeRecommendation .recipe-grid-content{display:contents}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-photo{grid-column:1;grid-row:1/3;min-height:0;align-self:stretch;height:100%}
+ body[data-home=meals] #homeRecommendation .recipe-comparison-card .recipe-grid-copy{grid-column:2;grid-row:1;align-self:end}
+ body[data-home=meals] #homeRecommendation .recipe-grid-price{grid-column:2!important;grid-row:2;min-width:0;align-self:center}
+ body[data-home=meals] #homeRecommendation [data-recipe-cost]{flex-wrap:nowrap;gap:2px;min-width:0;max-width:100%}
+ body[data-home=meals] #homeRecommendation [data-recipe-cost]>small{font-size:10px;line-height:1.1;white-space:nowrap}
+ body[data-home=meals] #homeRecommendation [data-recipe-cost]>b{font-size:12px;line-height:1.15;letter-spacing:-.4px}
+ body[data-home=meals] #homeRecommendation [data-cost-kind=unknown]>b{font-size:11px;white-space:normal}
+ body[data-home=meals] #homeRecommendation .recipe-grid-facts{grid-column:1/-1!important;grid-row:3;justify-content:space-between;flex-wrap:nowrap;gap:2px;font-size:11px;line-height:1.1;min-width:0}
+ body[data-home=meals] #homeRecommendation .recipe-grid-facts>*{font-size:inherit;white-space:nowrap;letter-spacing:-.35px}
+}
+
+/* Fast cost entry updates the existing cost field only. */
+body[data-design=refresh] #tray[data-workflow-route=recipeCost]{display:flex;flex-direction:column;overflow:hidden;padding:10px 12px 8px}
+body[data-design=refresh] #tray[data-workflow-route=recipeCost] #trayContent{flex:1;min-height:0;position:static;overflow:auto;padding-bottom:62px}
+.recipe-price-editor{max-width:540px;margin:0 auto;color:#614431}
+.recipe-price-editor-heading{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.recipe-price-editor-heading>svg{width:96px;height:72px;flex:none;border-radius:12px;overflow:hidden}
+.recipe-price-editor-heading h3{font-size:20px;line-height:1.3;margin:0 0 4px}
+.recipe-price-editor-heading p{font-size:12px;color:#9b7c66}
+.recipe-price-editor .recipe-price-input{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;font-size:14px;font-weight:550}
+.recipe-price-input input{grid-column:1;min-width:0;font-size:22px!important;font-weight:600}
+.recipe-price-input>span{grid-column:2;align-self:center;font-size:12px;font-weight:400;color:#98765d}
+.recipe-price-estimate{margin:14px 0;padding:12px;border-radius:12px;background:#f7eee4}
+.recipe-price-estimate>small{display:block;font-size:12px;color:#95745a}
+.recipe-price-estimate>strong{display:block;margin:4px 0;font-size:20px;line-height:1.3}
+.recipe-price-estimate>p{font-size:12px;line-height:1.6;color:#8f735d}
+body[data-design=refresh] #tray[data-workflow-route=recipeCost] .recipe-price-editor .workflow-footer{position:absolute;left:12px;right:12px;bottom:8px;min-height:44px;margin:0;padding:4px 0 0;background:#fffaf5;z-index:12}
+body[data-design=refresh] #tray[data-workflow-route=recipeCost] .recipe-price-editor .workflow-footer>button{width:100%;min-height:44px}

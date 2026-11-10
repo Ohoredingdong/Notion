@@ -19,6 +19,7 @@
   for(const [name,value]of Object.entries(rules)){const css=name.replace(/[A-Z]/g,c=>'-'+c.toLowerCase());if(shell.style.getPropertyValue(css)!==value)shell.style.setProperty(css,value,'important');}
   const shelf=document.getElementById('homeSupplementsShelf'),parent=document.getElementById(compact?'refreshBrand':'homeOverview');
   if(shelf&&parent&&shelf.parentElement!==parent)parent.appendChild(shelf);
+  const budget=document.getElementById('recipeMonthBudget'),budgetParent=document.querySelector(compact?'.recipe-view-actions':'#todayKitchen>.hub-heading');if(budget&&budgetParent&&budget.parentElement!==budgetParent)budgetParent.appendChild(budget);
   return {width,...d,compact};
  }
  window.KitchenRefreshLayout=Object.freeze({fit,dimensions});fit();window.addEventListener('resize',fit);

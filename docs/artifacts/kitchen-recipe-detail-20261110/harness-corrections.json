@@ -1,0 +1,69 @@
+{
+  "product_candidate": "after-v2, unchanged between all three runs",
+  "retained_failed_runs": [
+    "detail-qa-v1",
+    "detail-qa-v2",
+    "detail-qa-v3",
+    "independent-final-v3/manual-review.json"
+  ],
+  "harness_corrections": [
+    {
+      "run": "v1",
+      "issue": "Recipe-4 used ideal 1/3 rather than the established six-decimal quantity parser",
+      "fix": "Independently derive cost from 990 * round(1/3,6) + 9480/15; precision tolerance unchanged."
+    },
+    {
+      "run": "v1",
+      "issue": "Compact note and full date were required in the wrong visible element",
+      "fix": "Read actual visible summary+reference note; require full observation date in opened basis. No hidden text accepted as visible."
+    },
+    {
+      "run": "v1",
+      "issue": "Typography responsive boundary used outer modal width",
+      "fix": "Use actual query content width excluding padding, preserving 560px breakpoint."
+    },
+    {
+      "run": "v1",
+      "issue": "Playwright if-needed scroll ignored sticky tab overlap",
+      "fix": "Use actual scrollIntoView center, retaining nine-point elementFromPoint, clipping, required text and font-size assertions. No style/DOM modification."
+    },
+    {
+      "run": "v1",
+      "issue": "Purchase difference explanation was checked while disclosure was closed",
+      "fix": "Open actual basis disclosure before checking explanation."
+    },
+    {
+      "run": "v1",
+      "issue": "Future-price case expected one serving after intentionally viewing two",
+      "fix": "Reset to one through actual portion input before independent comparison."
+    },
+    {
+      "run": "v2",
+      "issue": "Additional yogurt assumption test opened recipe-4 zucchini rather than recipe-5 yogurt",
+      "fix": "Open correct recipe-5; keep required visible 15g assumption assertion."
+    }
+  ],
+  "additional_final_assertions": [
+    "Actual time displayed",
+    "Keyboard focus on serving input and all three tabs remains unclipped with real 44px hit target after basis disclosure",
+    "Yogurt arithmetic assumption visible and readonly"
+  ],
+  "final_candidate": "after-v3",
+  "actual_product_fixes": [
+    {
+      "finding": "Assumption prefix rendered twice",
+      "fix": "Strip existing prefix before rendering the single visible prefix",
+      "file": "recipe-detail-view.js",
+      "verified": "independent-final-v4 and detail-qa-v4"
+    },
+    {
+      "finding": "app390x844 keyboard-focused portion input obscured by sticky44px tabs after expanding cost basis",
+      "fix": "48px scroll padding on the actual detail scroll container",
+      "file": "recipe-detail.css",
+      "verified": "Same frozen app candidate, real focus and elementFromPoint; detail-qa-v4 and independent-final-v4"
+    }
+  ],
+  "final_recipe_cases": 18,
+  "final_recipe_assertions": 1638,
+  "final_passed": true
+}

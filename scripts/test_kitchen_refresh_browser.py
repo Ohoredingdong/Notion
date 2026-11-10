@@ -315,7 +315,7 @@ def recipe_geometry(ev, frame, m, populated):
         check(ev, card['kcal']['value']==('455' if known else '')
               and card['cost']['value']==('2100' if known else '')
               and ('455'in card['kcal']['text']if known else any(t in card['kcal']['text']for t in ['—','미입력']))
-              and (any(t in card['cost']['text']for t in ['2,100','2100'])if known else any(t in card['cost']['text']for t in ['—','미입력'])),
+              and (any(t in card['cost']['text']for t in ['2,100','2100'])if known else any(t in card['cost']['text']for t in ['—','미입력','정보 필요'])),
               rid+' shows entered nutrition/cost or preserves the unknown',
               {'kcal':card['kcal'],'cost':card['cost']})
         check(ev, 0 <= card['stock']['enough'] <= card['stock']['total'] and card['stock']['total'] > 0,

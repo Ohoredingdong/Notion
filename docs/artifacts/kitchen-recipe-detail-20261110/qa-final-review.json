@@ -1,0 +1,156 @@
+{
+  "candidate": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/after-v3",
+  "test_source": "/workspace/Notion/scripts/test_kitchen_recipe_detail_browser.py",
+  "test_source_sha256": "4a2598fa290865cc5ba8a8793f20acc03cf70529af87ec5a263b27d060ddb5ee",
+  "result_file": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/results.json",
+  "result_sha256": "54dfde6dbb4b6a1059e3f36b1b865b6f11001b0cec6ded0af66a3e54af8bad55",
+  "automated_result": {
+    "passed": true,
+    "cases": 18,
+    "assertions": 1638,
+    "baseline_same_clock_pairs": 10,
+    "baseline_initial_records_and_frame_equal": true,
+    "browser_javascript_errors": 0,
+    "blocked_or_provider_requests": 0,
+    "inputs_unchanged": true,
+    "verification_sources_unchanged": true,
+    "all_delivery_files_under_1MiB": true
+  },
+  "exact_inputs": {
+    "miniature-kitchen-widget.html": {
+      "bytes": 986391,
+      "sha256": "1c61be1f54ed1ce544c897b847fd4a13370305352cc54fa08696e5fc2bec54f7"
+    },
+    "miniature-kitchen-app.html": {
+      "bytes": 986388,
+      "sha256": "e8090e3ac2b5470433805f52c0e355b7e8178dc543994b87f2a83d4567e9e5dc"
+    },
+    "mobile/widget.html": {
+      "bytes": 987783,
+      "sha256": "6b05888ca4496f70860cc0536973543f92a351c1786679c9cede561e40bb76e9"
+    },
+    "mobile/app.html": {
+      "bytes": 987735,
+      "sha256": "6dec715decac47e4baad9412335ad4f188c4ee77d50508e1dcfe491dc11451b9"
+    }
+  },
+  "verification_sources": {
+    "test_kitchen_recipe_detail_browser.py": "4a2598fa290865cc5ba8a8793f20acc03cf70529af87ec5a263b27d060ddb5ee",
+    "test_kitchen_widget_browser.py": "5db34a263f77696823eb5b42e145582b76c022d233427ccccc9b3f8e33310c25",
+    "test_kitchen_living_browser.py": "2b83962221fcda8a83db2807b3d50a54051e25f53d1c7153d8f7229adb170e31",
+    "test_kitchen_closed_browser.py": "72e94ca10962d8d5a6f0fb3141e58678547f5505b8ec9499bd3491a2e93033c5"
+  },
+  "scope": "Frozen after-v3 local Chromium: native and opaque embeds at 320x360,390x480,720x800,800x600; native app at390x844 and720x900; disposable explicit QA fixtures only.",
+  "covered_behaviors": [
+    "Eight real recipe cards and independently computed main-ingredient reference prices; partial/unknown remain distinct",
+    "Actual monthly ledger total and current budget route; estimates do not add expenses",
+    "All ingredient rows reachable with actual scrolling, text size, clipping and nine-point paint hit checks",
+    "Actual photo/time/name, portion scaling and all three detail tabs; visible separate44px planning/meal actions",
+    "Invalid portions0/0.005/101/empty block actions and valid correction restores them without data writes",
+    "Quick cost3300/0/blank, invalid draft/cancel/stale replay preserve all source/nutrient/stock/expense/plan records except intended cost",
+    "Original full facts editor remains available",
+    "Explicit original purchase-pack costs and receipt paid total remain separate; future price excluded",
+    "Favorite and notes change only their intended existing fields",
+    "Onion/rice/yogurt assumptions and full observation date accessible; duplicate assumption prefix rejected",
+    "Actual keyboard focus after disclosure has an unobscured44px input and all three tabs"
+  ],
+  "manual_review": {
+    "type": "Agent visual inspection separate from numeric browser assertions",
+    "final_pngs_directly_opened": 8,
+    "other_baseline_or_failure_pngs_directly_opened": 3,
+    "total_run_pngs": 105,
+    "all_run_pngs_claimed_visually_reviewed": false,
+    "user_design_approval_claimed": false,
+    "finding": "No additional visible clipping, distorted photo or obstructed primary action was found in the listed final images. The focus failure was reproduced from after-v2 and verified fixed in actual after-v3 HTML."
+  },
+  "directly_inspected_screenshots": [
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/cost-detail-baseline-v1/screens/native-390x480-cards.png",
+      "sha256": "02621394b4778847881dc94dedd841ab560ffa09bbc185c03f3c70d2f216d6bc",
+      "scope": "before, same Nov10 default fixture",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Eight cards visible, but cost was an em dash and no monthly cash summary appeared."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/cost-detail-baseline-v1/screens/native-390x480-ingredients.png",
+      "sha256": "88b3b0d37b38d60fd62a131daacf910978069a092c8a4afb7e944053287643c0",
+      "scope": "before, same Nov10 default fixture",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Original detail lacked a usable cost summary and used short inline ingredient rows."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-320x360-cards.png",
+      "sha256": "5921b6c23baf21f52270bdf98584830d743e5c3f5763b2f01253638b0b26be27",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "All eight cards remain initially visible; titles can wrap, numerical cost states remain distinct, and navigation fits."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-320x360-ingredients.png",
+      "sha256": "e5b030a81fc02b29294ab868a070b91e3eac869178779d6aab6cf79ec03f86de",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Photo, name, dated main-ingredient estimate, portions, tabs and fixed main actions fit; further ingredients use the genuine scroll area."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-390x480-cards.png",
+      "sha256": "4256bff51a9f0ee72fa36f7291489abfbe3eb3083a0905535242c4a51de78038",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Eight photos and selectable cost states are visible; unknown chicken prices remain labeled and partial omelet price retains a plus sign."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-390x480-ingredients.png",
+      "sha256": "649cbf1571b31347301cd594e77bd607c154e64ccbdf2017acca50acef905940",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Readable primary cost, portions and two separate main actions; ingredient list is allowed to scroll within the unchanged frame."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-720x800-cards.png",
+      "sha256": "33fe8b7e125f962d5225d12210efbfd43387162180a977973c070d024eeb325e",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Two columns of eight cards, current-month actual cash, dated estimate explanation and recipe navigation are all visible."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-720x800-ingredients.png",
+      "sha256": "4bf850d268b5a865ddc3992f9564707ecb0050963bbb81e02bbb0d3d64c0ecfb",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Two-column detail places photo/cost beside readable ingredient rows, explicit exclusions and fixed actions."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/screens/native-800x600-ingredients.png",
+      "sha256": "43780fbf474011f9d1cd5ec945561be7e8b58ac503f7e6028b9fa40fd6c15dc3",
+      "scope": "final after-v3",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Existing fitted frame remains; compact detail is used at the actual content width and actions stay visible."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v3/app390-focused-portions-occlusion.png",
+      "sha256": "dd13deab09a6d19e6afd9e35ce9e0bbfaa77e3070fd7ccb646e17b0ae720618b",
+      "scope": "retained after-v2 failure",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Actual focused input was hidden beneath sticky tabs; this is a real product failure, not the earlier row-scroll harness mismatch."
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v4/app390-focused-portions-fixed.png",
+      "sha256": "ac5a4abc31ee4067fc6d55890d401281f608ba93fd34da199b129504284a4370",
+      "scope": "final after-v3, identical focus reproduction",
+      "inspection": "Opened directly using view_image and visually inspected by recipe_cost_qa",
+      "observation": "Focused portion input, its label, shopping action and footer are unobscured. No injected CSS or DOM changes were used."
+    }
+  ],
+  "failed_evidence_retained": [
+    "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v1",
+    "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v2",
+    "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/detail-qa-v3"
+  ],
+  "harness_corrections": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/qa-harness-corrections.json",
+  "limits": [
+    "No physical iOS/Android device or live Notion embed was tested.",
+    "Public HTMLPreview execution, current live prices, personal user storage, OCR/provider calls and production deployment were not exercised.",
+    "No production data or deployed site was changed by this QA task."
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "candidate": "after-v3",
+  "manualAccepted": true,
+  "scope": "Actual immutable HTML viewed in Chromium at native/opaque widget720x800,390x480,320x360 and app390x844. This is a technical visual review, not user approval or deployment approval.",
+  "clock": "2026-11-10T03:00:00+00:00",
+  "inputs": {
+    "miniature-kitchen-widget.html": {
+      "sha256": "1c61be1f54ed1ce544c897b847fd4a13370305352cc54fa08696e5fc2bec54f7",
+      "bytes": 986391
+    },
+    "miniature-kitchen-app.html": {
+      "sha256": "e8090e3ac2b5470433805f52c0e355b7e8178dc543994b87f2a83d4567e9e5dc",
+      "bytes": 986388
+    },
+    "mobile/widget.html": {
+      "sha256": "6b05888ca4496f70860cc0536973543f92a351c1786679c9cede561e40bb76e9",
+      "bytes": 987783
+    },
+    "mobile/app.html": {
+      "sha256": "6dec715decac47e4baad9412335ad4f188c4ee77d50508e1dcfe491dc11451b9",
+      "bytes": 987735
+    }
+  },
+  "inputsUnchanged": true,
+  "automated": {
+    "passed": true,
+    "widgetCases": 6,
+    "explicitChecks": 198,
+    "appEntries": 2,
+    "sameClockBaselinePairs": 6,
+    "sameInitialRawAndEnvelope": true
+  },
+  "directlyViewed": [
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-720x800-reference-initial.png",
+      "sha256": "4bf850d268b5a865ddc3992f9564707ecb0050963bbb81e02bbb0d3d64c0ecfb"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-720x800-actual-basis-assumption.png",
+      "sha256": "83e70af49211e7d01496e592cbd0d9a915f07480a748cb73be9edf7eed0799ef"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-320x360-partial-initial.png",
+      "sha256": "14d0296e897f808eda9d1368292722efa65f3bcad64afae28c3b0cbbaea8e707"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-390x480-entered-zero.png",
+      "sha256": "33b546843f80189cf6c40e9a26377d6ea2e8ad242c160ac5a618094c8bd255bf"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-320x360-entered-2100.png",
+      "sha256": "3084343df39becddfe2f432794555b52c80226e9892eaa6ebdc311156481f129"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-320x360-reference-steps.png",
+      "sha256": "9076d7bd40852f41eeaeb29ab907f400cf9ad060b904815bd6d645da53deeb30"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/app-native-expanded-basis-focused-portions.png",
+      "sha256": "ac5a4abc31ee4067fc6d55890d401281f608ba93fd34da199b129504284a4370"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/app-opaque-expanded-basis-focused-portions.png",
+      "sha256": "36539a3ec89837fc4ae902dbdb2563f51c78a3f9e3d81d0850854b36f768cd51"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/opaque-320x360-unknown-initial.png",
+      "sha256": "adbe55a539e49f671eb4d113038723fbec1b1dfdb18c70a8969399b9af47294c"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/opaque-720x800-cards.png",
+      "sha256": "3ef4217a393285114c8ee1f3ca1ad3807d97d0fb775c648480cfb9948b241ed2"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/native-720x800-BEFORE-detail-Nov10.png",
+      "sha256": "348334629e2195f61be3d1d887781810c40075d7b0393b91087c64f1ccea5433"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-recipe-detail-20261110/independent-final-v4/screens/opaque-320x360-actual-basis-source.png",
+      "sha256": "ed21b018a91b47e3228da7de972193496fca4772a8b981fdbc58c19c38c9edf2"
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "priorCandidate": "after-v2",
+      "finding": "Duplicate calculation-assumption prefix",
+      "fix": "Normalize only repeated leading calculation-assumption prefix in view helper. New actual price basis reads 계산 가정: 양파 1개를 200g으로 계산 once.",
+      "verified": "All6widget and2app text assertions; actual720 and320 basis PNG reviewed."
+    },
+    {
+      "priorCandidate": "after-v2",
+      "finding": "App390 portion focus could hide the44px input behind sticky tabs after cost basis expanded",
+      "fix": "Add scroll-padding-top48px to the actual recipe scroll container. No DOM, model or page scroll changes.",
+      "verified": "All6widget and2app actual focus hit assertions; native/opaque390 app focus PNG directly reviewed."
+    }
+  ],
+  "acceptedVisualScope": [
+    "8 recipe cards show readable prices for comparison; main ingredient estimates differ visibly from partial+ and unknown",
+    "At720 the actual4:3 food photo/summary and full5ingredient rows form two columns with readable title/price",
+    "At320 and390 actual first ingredient content remains initially visible and44px actions stay fixed outside the body scroller",
+    "Exactly one44px portion input remains and focused controls are not obscured",
+    "Entered0 and2100 remain exact explicit inputs and quick cost saves preserve nutrition/source/world",
+    "Unknown nutrition and missing prices remain honestly unknown",
+    "Reference price basis names its observed2026-10-23 date, approximate rounding, exclusions and onion/bowl assumptions; it is clearly separate from actual purchase spend",
+    "No browser errors or external provider requests; read-only viewing and scrolling preserve actual raw records/envelope; explicit QA price changes do not touch stock/world"
+  ],
+  "unverified": [
+    "Actual Notion app/embed behavior",
+    "Safari and physical mobile devices",
+    "Live/current provider prices or an actual real purchase receipt",
+    "Public preview delivery/production deployment",
+    "User approval of visual design"
+  ],
+  "remainingBlockers": [],
+  "minorObservation": "Existing catalog description can wrap its final syllable onto a new line on720; all text remains visible and this does not affect controls or flow.",
+  "immutableHistory": "Rejected after-v2 and its manualAcceptedfalse report are preserved. v2 harness false-negative (partial warning asserted in wrong text region) and corrected v3 are also preserved. This review evaluates newly frozen after-v3 only.",
+  "productEditsDuringFinalReview": false
+}
