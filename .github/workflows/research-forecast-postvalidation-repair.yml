@@ -65,8 +65,17 @@ jobs:
           python scripts/audit_stock_forecast_census.py --audit /tmp/postvalidation-repair/independent.json --output /tmp/postvalidation-repair/census.json
           python scripts/audit_stock_learning_evidence.py --cutoff "$AUDIT_CUTOFF" --output /tmp/postvalidation-repair/learning.json
           python scripts/audit_stock_forecast_attempt_coverage.py
-          python scripts/audit_stock_timing_acceptance_guard.py
-          cp stock-forecast-attempt-coverage-audit.json stock-timing-acceptance-guard.json /tmp/postvalidation-repair/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from audit_stock_timing_acceptance_guard import audit_acceptance,read_jsonl
+          root=Path('/tmp/postvalidation-repair')
+          result=audit_acceptance(json.loads((root/'independent.json').read_text()),read_jsonl('stock-forecast-ledger.jsonl'),json.loads(Path('stock-forecast-autopilot.json').read_text()))
+          (root/'stock-timing-acceptance-guard.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+          assert not result['integrity_errors'],result['integrity_errors']
+          print('UNCHANGED_ACCEPTANCE_GUARD',result['status'],result['groups_with_minimal_sample_gate'])
+          PY
+          cp stock-forecast-attempt-coverage-audit.json /tmp/postvalidation-repair/
           python - <<'PY'
           import json,hashlib
           from pathlib import Path
