@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-11T05:30:39.835170+09:00
+- 계산일: 2026-11-11T19:54:21.834892+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -11,15 +11,15 @@
 | 종목 | 매출 성장률 | 영업이익률 | FCF | 연간 PER | 검증 상태 |
 |---|---:|---:|---|---:|---|
 | Apple (AAPL) | 15.1% | 33.0% | 양수 | 38.8배 | warning |
-| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.8배 | warning |
-| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 34.1배 | warning |
+| Microsoft (MSFT) | 17.8% | 46.8% | 양수 | 29.7배 | warning |
+| NVIDIA (NVDA) | 65.5% | 60.4% | 양수 | 34.5배 | warning |
 | SK하이닉스 (000660) | 46.8% | 48.6% | 미확인 | 미확인배 | warning |
 | 삼성바이오로직스 (207940) | 30.3% | 45.4% | 미확인 | 미확인배 | warning |
 | Amazon (AMZN) | 12.4% | 11.2% | 양수 | 37.8배 | warning |
 | NAVER (035420) | 12.1% | 18.4% | 미확인 | 미확인배 | warning |
 | 삼성전자 (005930) | 10.9% | 13.1% | 미확인 | 미확인배 | warning |
 | 현대자동차 (005380) | 6.3% | 6.2% | 미확인 | 미확인배 | warning |
-| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 350.0배 | warning |
+| Tesla (TSLA) | -2.9% | 5.1% | 양수 | 351.6배 | warning |
 
 ## 데이터 이상·제약
 - AAPL: 비공식 보조 재무자료 — 공시와 교차검증 필요
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [미국 중간선거 경제 영향 / 선거 결과가 경제에 미치는 영향 - KB Think](https://news.google.com/rss/articles/CBMid0FVX3lxTE9NbUZXVW9DMVh6amxZMUtmS0dIY0RodnliVDVabFUwYTRyYnZKSjYyV2dKdlhXY2FDVkFrZWxhRnJxcGpsNFpDUEtJMm5Ec0dvMTREcEYyV3l2QnV4bGp2ZWlfOEVjRUZ6MW83WWxCRWxkLUhpUWw4?oc=5)
-- [추가 금리인상 열어둔 금통위원들…AI ‘증시 충격’ 경계 - 이데일리](https://news.google.com/rss/articles/CBMigAFBVV95cUxOWWMzeEY3TVVzeE5rWVBOMU4zVGcxOHRUUlBPRzBvU3JQUnVfMW9IZ3dBOWFoblFwaUZjbGpWR05Kd2daek1GbHR1cEdxU2hEZEd4VW5SV1RkMmo0S3ozXzU0WWM1aFBPamE4MVhDYnAtcXJ2bnZHcHdBVjhuNUdiZw?oc=5)
-- ["반도체 가상 실험 하루→1분"…삼성·SK하이닉스, 엔비디아와 AI 공동개발 성과 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTE1NXzJiT1RPS2c0TjFxNWhJUWZDWmVrZXNsUGlZQ2gzV1dhNXU3RVJJcVNyN0JuR2pGTl9WOHZJY3lKajVEeDhMemN2NmlrUmFwSzV5dFFmd3dCR3Va?oc=5)
-- [구글 새 AI칩으로 '탈 엔비디아' 가속, 삼성전자·SK하이닉스 HBM 최대 공급처 바뀌나 - 비즈니스포스트](https://news.google.com/rss/articles/CBMic0FVX3lxTE1HMERBS05tYlBaZ094MDVhb2dhNXVTaExMNXFnOUUtSEFGakZLUnNtSC1Gbjl0aGVjeWtsczJVUmxFT2FvaG5zMHJLNVZEbUtIa2s2aUJHb3A4cUgzNmVpM011Mzh0ZEhNLWV4UERBR0FhRXc?oc=5)
+- ["금리 인상 한번으론 안 끝난다?"…증시 덮친 새로운 공포 (박신영의 월가 아나토미) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE9WV2Z3WTVoeVpUdVFPVDN6Mnk1ZnhwU2h2SUdHS3dqM1RUeVh3dFp0ZlhrQUJrVHRiQ1RwazE4b29VS2ZDdFpORV9BOHJQR3J3ZnJ1LUVtUlZMUQ?oc=5)
+- [미 물가·금리 부담 속 국내 증시 오름세 - 한겨레](https://news.google.com/rss/articles/CBMickFVX3lxTE8xdUU2ZWtHRTgzTjlGSld2NFdNeUlKa2hLS1dZbVZ4UmVaZ1hSZm1PZERSUzFFaktoYXFuMi1SNzZJVHdIamtKRmJKWTUzQVJyZktKWmVHdTlkUU1oV1BVRG5BUm9OQXNTS1A0blVOUEN4dw?oc=5)
+- ['젠슨황 스캔들' 삼전닉스, HBM 공급 차질 없다…"공급망 다변화 기회" - 신아일보](https://news.google.com/rss/articles/CBMicEFVX3lxTE0zekFGY0c0MVI1cXdJR0JBM1FDbmtySHJrRGVua2hNY1Q2UVlBVHNfUG9EZG1uMVBRTkIxMFVDenN3dVY3Q3AwMk1GcFhlY2FfLUprNGZtenZKVlhHdVRtb3BfOWhvcnlyWG1ZWlFRekY?oc=5)
+- [젠슨 황 ‘中 스파이 연루 의혹’ 확산...엔비디아 변곡점에 한국 반도체도 촉각 - M이코노미뉴스](https://news.google.com/rss/articles/CBMiZ0FVX3lxTE5YM0Jaa21xdmt0UWx5RXUzdklUQ1NLeEVlLWw1X0N1OG1DY1c0bDJzdnJxQzNLRjUyUU1WNmZNZkh5TWdBcUNMUVFVeUh1TTJIU3UtOHExUFNUN2FQMVhFNUczRGRfWE0?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
