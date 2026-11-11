@@ -1,0 +1,75 @@
+{
+  "reviewed_at_utc": "2026-11-11T04:24:09.259594+00:00",
+  "candidate": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/after-v2",
+  "clock": "2026-11-11T03:00:00+00:00",
+  "scope": "Direct inspection of ten real Chromium PNGs listed below, frozen local delivery; no CSS injection. Same disposable packaged stock before/after. Named explicit-zero images use a QA fixture.",
+  "manualAccepted": true,
+  "automation": {
+    "passed": true,
+    "case_count": 12,
+    "assertions": 2426,
+    "inputs_unchanged": true,
+    "verification_sources_unchanged": true,
+    "screenshots_complete": true,
+    "screenshot_count": 8
+  },
+  "frozen_runtime_source_count": 60,
+  "changed_frozen_sources": [],
+  "directly_viewed": [
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/before-native-320x360.png",
+      "sha256": "5921b6c23baf21f52270bdf98584830d743e5c3f5763b2f01253638b0b26be27"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/after-native-320x360.png",
+      "sha256": "3f3a482cd0ce2431c22a99609f304b6c0e3e8aaa7134d70fb462e55e1a495050"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/before-native-720x800.png",
+      "sha256": "33fe8b7e125f962d5225d12210efbfd43387162180a977973c070d024eeb325e"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/after-native-720x800.png",
+      "sha256": "36029b665218e74e359423f5b5aed066cf2c6f79147766a7b5f81767ffd21d58"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/before-opaque-390x480.png",
+      "sha256": "ff1bf8d26c2539bdb61c869d60fe8a6d52100716a23f735d70f7961a8d303a85"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/after-opaque-390x480.png",
+      "sha256": "87ccf94683d4592325b5e595535485e3b4ea754285cd9b75904013b40962e550"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/qa-explicit-zero-native.png",
+      "sha256": "1cf8fa8f6adc10cc6b97bcee653cc1d3ab5d8dd72f9dcba1bcb5d7b342c1aac0"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/screens/qa-explicit-zero-opaque.png",
+      "sha256": "dd0c2a8d8f88b8d1bfa458e6ad7f6e96ceed630c0fef49a0836b02fa8bcd21ea"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/manual-extra/before-native-800x600.png",
+      "sha256": "9d5f78df090ffeb747c2f0b31cdd1fda880c66b24730ddcf411a831f8988d9e1"
+    },
+    {
+      "path": "/workspace/.notion-cloud/kitchen-nutrition-cards-20261111/cards-qa-v2/manual-extra/after-native-800x600.png",
+      "sha256": "8091080cf819b4c2317a38f5be229136d284a7f3014b67394880c0a208df41d3"
+    }
+  ],
+  "observations": [
+    "All eight card titles, available price context and four nutrition cells are visible in initial recipe view at 320x360, opaque 390x480, 720x800 and 800x600. No cropped or colliding labels or values in the inspected images.",
+    "The two-column, four-row comparison and cozy photo treatment remain. Existing food-cost summary and navigation remain visible.",
+    "Compact layouts prioritize nutrition and preserve time/ingredient counts in card aria and detail. At 720x800 those counts remain visibly present. Smallest 320 layout is dense but all four 11px-or-larger nutrition cells are individually readable.",
+    "The visible one-person legend includes estimate qualification. Incomplete ingredients display a lower-bound marker and unknown legend; they are not shown as complete totals.",
+    "The two explicit-zero fixture images show entered 0, 60, 0, 5 and do not replace confirmed zeros with reference estimates.",
+    "The preserved v1 failure is explained by CSS selector specificity leaving an implicit meta row and an insufficient compact estimate caption. V2 fixes those causes; the same 12-case suite passes without weakening assertions."
+  ],
+  "remaining_in_scope_issues": [],
+  "not_claimed": [
+    "Physical Notion client validation",
+    "Safari device validation",
+    "Public HTMLPreview execution",
+    "Production deployment or approval"
+  ]
+}
