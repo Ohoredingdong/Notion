@@ -74,6 +74,12 @@ def shell_and_calculator(page):
     page.locator('[data-finance="bid"]').fill("30000")
     expect(page.locator(".cash-number")).to_contain_text("15,778")
     assert active(notebook(page))["finance"]["bid"] == 30000
+    # The displayed settlement starts from the full price, so the deposit is
+    # deducted once. Independently: 30000 - 2450 - 16800 + 330 + 120 = 11200.
+    settlement = page.locator("#cashSchedule .timeline-item").nth(1)
+    expect(settlement.locator("strong")).to_contain_text("11,200")
+    expect(settlement.locator(".timeline-label")).to_contain_text("낙찰가 − 보증금 − 대출")
+    assert "잔금 − 보증금" not in settlement.inner_text()
     page.locator('[data-finance="bid"]').fill("")
     expect(page.locator('[data-results] [role="alert"]')).to_contain_text("예상 낙찰가")
     expect(page.locator(".cash-number")).to_have_count(0)
@@ -163,6 +169,42 @@ def imports_preserve_and_validate(page):
     assert notebook(page) == merged
     navigate(page, "area")
     expect(page.locator("#compSummary")).to_contain_text("2건")
+
+
+
+def mobile_backup_restore(page):
+    page.set_viewport_size({"width": 375, "height": 667})
+    page.locator('.topbar [data-action="new"]').click()
+    page.locator("#case-name").fill("모바일 원본 노트")
+    page.locator('#caseForm button[type="submit"]').click()
+    navigate(page, "notes")
+    page.locator("#thesis").fill("모바일에서 작성한 원본 근거")
+    with page.expect_download() as result:
+        page.locator('.page-content [data-action="export"]').click()
+    backup = Path(result.value.path()).read_bytes()
+    exported = json.loads(backup)
+    original = active(exported)
+    page.locator('.topbar [data-action="new"]').click()
+    page.locator("#case-name").fill("가져오기 전 추가 노트")
+    page.locator('#caseForm button[type="submit"]').click()
+    navigate(page, "notes")
+    before = notebook(page)
+    restore = page.locator('.page-content [data-action="import"]')
+    expect(restore).to_be_visible()
+    restore.scroll_into_view_if_needed()
+    with page.expect_file_chooser() as chosen:
+        restore.click()
+    chosen.value.set_files({"name": "mobile-notes.json", "mimeType": "application/json", "buffer": backup})
+    expect(page.locator("#toast")).to_contain_text("노트를 추가")
+    merged = notebook(page)
+    assert len(merged["cases"]) == len(before["cases"]) + len(exported["cases"])
+    assert len({item["id"] for item in merged["cases"]}) == len(merged["cases"])
+    for item in before["cases"]:
+        assert next(row for row in merged["cases"] if row["id"] == item["id"]) == item
+    copies = [item for item in merged["cases"] if item["name"] == original["name"] and item["id"] != original["id"]]
+    assert len(copies) == 1 and copies[0]["thesis"] == original["thesis"]
+    page.reload(wait_until="domcontentloaded")
+    assert notebook(page) == merged
 
 
 def deposit_liquidity_guard(page):
@@ -435,6 +477,7 @@ def main():
         ("imports_preserve_and_validate", imports_preserve_and_validate, 1440),
         ("deposit_liquidity_guard", deposit_liquidity_guard, 1440),
         ("mobile_navigation", mobile_navigation, 390),
+        ("mobile_backup_restore", mobile_backup_restore, 375),
         ("fixed_viewport_pages", fixed_viewport_pages, 1366),
         ("short_mobile_dialog", short_mobile_dialog, 390),
         ("embedded_overview", embedded_overview, 1100),

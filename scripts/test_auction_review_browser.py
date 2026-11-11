@@ -369,6 +369,134 @@ def corrupt_original(page, context, browser, args):
     assert active(json.loads(export_bytes(page)))["rights"][0]["evidence"] == "Working draft with corrupt original preserved"
 
 
+def empty_originals(page, context, browser, args):
+    for key, view in [(KEY, "rights"), ("auction-study-lessons-v1", "learn"), ("auction-simulation-v1", "simulation")]:
+        with browser.new_context(accept_downloads=True) as isolated:
+            target = isolated.new_page()
+            target.goto(view_url(args.url, "rights"))
+            target.evaluate("key => localStorage.setItem(key,'')", key)
+            target.goto(view_url(args.url, view))
+            if view == "rights":
+                expect(target.locator("#storageWarning")).to_be_visible()
+                target.locator('[data-evidence="0"]').fill("Draft after an empty stored notebook")
+                assert active(json.loads(export_bytes(target)))["rights"][0]["evidence"] == "Draft after an empty stored notebook"
+            elif view == "learn":
+                expect(target.locator(".study-storage-warning")).to_be_visible()
+                target.locator('input[name="studyAnswer"]').first.check()
+                target.locator('[data-study-action="check"]').click()
+                expect(target.locator(".study-progress")).to_contain_text("저장 안 됨")
+            else:
+                expect(target.locator(".sim-live")).to_contain_text("읽지 못")
+                target.locator('.sim-stages [data-sim-go-stage="2"]').click()
+                target.locator("#simulationNote").fill("Draft after an empty stored practice")
+                expect(target.locator("#simulationNote")).to_have_value("Draft after an empty stored practice")
+            assert target.evaluate("key => localStorage.getItem(key)", key) == "", key
+
+
+def malformed_simulation_records(page, context, browser, args):
+    scenario = page.evaluate("() => AuctionSimulationData.cases[0]")
+    case_id, question_id = scenario["id"], scenario["quiz"][0]["id"]
+    records = [None, [], "broken record", {"answers": None}, {"inputs": []},
+               {"reviewed": "broken documents"}, {"answers": {question_id: None}}, {"inputs": {"bid": None}}]
+    key = "auction-simulation-v1"
+    for record in records:
+        original = json.dumps({"version": 1, "caseId": case_id, "records": {case_id: record}})
+        with browser.new_context() as isolated:
+            target = isolated.new_page()
+            target.goto(view_url(args.url, "rights"))
+            target.evaluate("([key,value]) => localStorage.setItem(key,value)", [key, original])
+            target.goto(view_url(args.url, "simulation"))
+            expect(target.locator(".sim-live")).to_contain_text("읽지 못")
+            target.locator('.sim-stages [data-sim-go-stage="2"]').click()
+            target.locator("#simulation-bid").fill("28500")
+            target.locator("#simulationNote").fill("Draft with a malformed saved case")
+            expect(target.locator("#simulation-bid")).to_have_value("28500")
+            expect(target.locator('[data-sim-action="export-progress"]')).to_be_visible()
+            assert target.evaluate("key => localStorage.getItem(key)", key) == original, record
+
+
+def malformed_learning_records(page, context, browser, args):
+    lesson = page.evaluate("() => AuctionLessons.cases[0]")
+    lesson_id, step_id = lesson["id"], lesson["steps"][0]["id"]
+    records = [None, [], "broken lesson", {step_id: None}, {step_id: []}, {step_id: "broken answer"}]
+    key = "auction-study-lessons-v1"
+    for record in records:
+        original = json.dumps({"version": 1, "caseId": lesson_id, "answers": {lesson_id: record}})
+        with browser.new_context() as isolated:
+            target = isolated.new_page()
+            target.goto(view_url(args.url, "rights"))
+            target.evaluate("([key,value]) => localStorage.setItem(key,value)", [key, original])
+            target.goto(view_url(args.url, "learn"))
+            expect(target.locator(".study-storage-warning")).to_be_visible()
+            target.locator('input[name="studyAnswer"]').first.check()
+            target.locator('[data-study-action="check"]').click()
+            expect(target.locator('input[name="studyAnswer"]').first).to_be_checked()
+            expect(target.locator(".study-progress")).to_contain_text("저장 안 됨")
+            assert target.evaluate("key => localStorage.getItem(key)", key) == original, record
+
+
+def legacy_practice_compatibility(page, context, browser, args):
+    scenario = page.evaluate("() => AuctionSimulationData.cases[0]")
+    case_id, question = scenario["id"], scenario["quiz"][0]
+    future = {"keep": ["opaque", 1]}
+    simulation = {"version": 1, "caseId": case_id, "futureRoot": future, "records": {
+        case_id: {"futureRecord": future, "inputs": {"bid": "28500", "futureInput": future, "sale": "999999"},
+                  "answers": {question["id"]: {"choiceId": question["choices"][0]["id"], "futureAnswer": future},
+                              "future-question": {"checked": True, "opaque": future}}},
+        "future-case": {"opaque": future}}}
+    key = "auction-simulation-v1"
+    with browser.new_context() as isolated:
+        target = isolated.new_page()
+        target.goto(view_url(args.url, "rights"))
+        target.evaluate("([key,value]) => localStorage.setItem(key,JSON.stringify(value))", [key, simulation])
+        target.goto(view_url(args.url, "simulation"))
+        expect(target.locator('[data-sim-action="export-progress"]')).to_be_hidden()
+        target.locator('.sim-stages [data-sim-go-stage="1"]').click()
+        expect(target.locator(".sim-question-progress")).to_contain_text("해설 0개")
+        expect(target.locator('input[name="simulation-choice"]').first).to_be_checked()
+        target.locator('input[name="simulation-choice"]').nth(1).check()
+        target.locator('[data-sim-action="check-answer"]').click()
+        expect(target.locator(".sim-question-progress")).to_contain_text("해설 1개")
+        target.locator('.sim-stages [data-sim-go-stage="2"]').click()
+        expect(target.locator("#simulation-bid")).to_have_value("28500")
+        expected_profit = target.evaluate("values => AuctionFormat.money(AuctionModel.calculate({...values,bid:28500}).profit)", scenario["defaults"])
+        expect(target.locator('[data-sim-result="profit"]')).to_have_text(expected_profit)
+        target.locator("#simulationNote").fill("Optional version-one fields remain usable")
+        saved = target.evaluate("key => JSON.parse(localStorage.getItem(key))", key)
+        assert saved["futureRoot"] == future and saved["records"]["future-case"] == {"opaque": future}
+        record = saved["records"][case_id]
+        assert record["futureRecord"] == record["inputs"]["futureInput"] == record["answers"][question["id"]]["futureAnswer"] == future
+        assert record["inputs"]["sale"] == "999999", "An unsupported field stays stored without entering the current calculator"
+        assert record["answers"]["future-question"] == simulation["records"][case_id]["answers"]["future-question"]
+        target.locator('[data-sim-decision][value="hold"]').check()
+        target.locator('[data-sim-action="submit"]').click()
+        target.locator('[data-sim-action="copy"]').click()
+        assert active(notebook(target))["finance"]["sale"] == scenario["defaults"]["sale"], "Copy must use the displayed, validated model rather than hidden future inputs"
+
+    lesson = page.evaluate("() => AuctionLessons.cases[0]")
+    lesson_id, step = lesson["id"], lesson["steps"][0]
+    learning = {"version": 1, "caseId": lesson_id, "futureRoot": future, "answers": {
+        lesson_id: {step["id"]: {"choiceId": step["choices"][0]["id"], "futureAnswer": future},
+                    "future-step": {"checked": True, "opaque": future}},
+        "future-lesson": {"opaque": future}}}
+    key = "auction-study-lessons-v1"
+    with browser.new_context() as isolated:
+        target = isolated.new_page()
+        target.goto(view_url(args.url, "rights"))
+        target.evaluate("([key,value]) => localStorage.setItem(key,JSON.stringify(value))", [key, learning])
+        target.goto(view_url(args.url, "learn"))
+        expect(target.locator(".study-storage-warning")).to_have_count(0)
+        expect(target.locator(".study-progress")).to_have_text("학습 0 / 6")
+        expect(target.locator('input[name="studyAnswer"]').first).to_be_checked()
+        target.locator('input[name="studyAnswer"]').nth(1).check()
+        target.locator('[data-study-action="check"]').click()
+        expect(target.locator(".study-progress")).to_have_text("학습 1 / 6")
+        saved = target.evaluate("key => JSON.parse(localStorage.getItem(key))", key)
+        assert saved["futureRoot"] == saved["answers"][lesson_id][step["id"]]["futureAnswer"] == future
+        assert saved["answers"]["future-lesson"] == learning["answers"]["future-lesson"]
+        assert saved["answers"][lesson_id]["future-step"] == learning["answers"][lesson_id]["future-step"]
+
+
 def learning_tabs(page, context, browser, args):
     key = "auction-study-lessons-v1"
     go(page, "learn")
@@ -482,7 +610,8 @@ def main():
     report = {"started": datetime.now(timezone.utc).isoformat(), "url": args.url, "results": []}
     checks = [long_notes, full_backup, note_management, last_note_management, full_notebook_cleanup,
               deletion_conflict, deletion_write_failure, large_backup, edited_example_preserved, concurrent_tabs,
-              failed_storage, corrupt_original, learning_tabs, learning_write_failure,
+              failed_storage, corrupt_original, empty_originals, malformed_simulation_records,
+              malformed_learning_records, legacy_practice_compatibility, learning_tabs, learning_write_failure,
               simulation_tabs, navigation_history, fixed_loan_limit]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path=args.executable, headless=True, args=["--no-sandbox"])

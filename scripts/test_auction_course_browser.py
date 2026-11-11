@@ -361,6 +361,43 @@ def mobile_persistence(page, context, args, out):
     page.screenshot(path=str(out / "last-lesson-returned.png"))
 
 
+def text_resize(page, context, args, out):
+    # A text-only resize proxy, distinct from actual device/browser zoom. Fixed
+    # lesson headers must not squeeze the reading area down to its padding.
+    for width, height in ((375, 667), (320, 568)):
+        page.set_viewport_size({"width": width, "height": height})
+        go(page, args)
+        choose_lesson(page, data(page)[0])
+        tab(page, "basics")
+        page.evaluate("""() => {
+            const elements=[...document.querySelectorAll('body, body *')];
+            const sizes=elements.map(el=>parseFloat(getComputedStyle(el).fontSize));
+            elements.forEach((el,index)=>{
+                if(sizes[index]>0)el.style.fontSize=(sizes[index]*2)+'px';
+            });
+        }""")
+        body = page.locator("#course-panel")
+        geometry = body.evaluate("""el=>({height:el.getBoundingClientRect().height,
+            overflow:getComputedStyle(el).overflowY})""")
+        assert geometry["height"] >= 120, ("Enlarged text must retain a readable lesson body", geometry)
+        assert geometry["overflow"] == "visible", ("Use the page's single scroll region when enlarged text exhausts the header", geometry)
+        content = page.locator('.page-content')
+        expect(content).to_have_attribute("data-view", "course")
+        assert content.evaluate("el=>getComputedStyle(el).overflowY") == "auto"
+        # Scroll to an actual teaching paragraph and then to the continuation,
+        # so a positive intrinsic height cannot mask an unreachable ancestor.
+        paragraph = page.locator(".course-terms dd").first
+        paragraph.scroll_into_view_if_needed()
+        within_clip(paragraph, "Enlarged lesson paragraph")
+        page.screenshot(path=str(out / f"{width}-text-resize-reading.png"))
+        continuation = page.locator('[data-course-action="example"]')
+        continuation.scroll_into_view_if_needed()
+        within_clip(continuation, "Enlarged lesson continuation")
+        page.screenshot(path=str(out / f"{width}-text-resize-continuation.png"))
+        continuation.click()
+        expect(page.locator('.course-workspace')).to_have_attribute("data-course-pane", "example")
+
+
 def visual(page, context, args, out):
     go(page, args)
     visual_views(page, page, out)
@@ -381,7 +418,7 @@ def main():
     parser.add_argument("--artifacts", type=Path, default=Path("/tmp/auction-course-browser"))
     parser.add_argument("--only", nargs="+")
     args = parser.parse_args()
-    scenarios = [("course-flow", course_flow, 1440, 900), ("amount-validation", amount_validation, 1440, 900), ("storage-failure", storage_failure, 1440, 900), ("storage-conflict", storage_conflict, 1440, 900), ("corrupt-storage", corrupt_storage, 1440, 900), ("keyboard", keyboard, 1440, 900), ("mobile-persistence", mobile_persistence, 375, 667), ("1440x900", visual, 1440, 900), ("375x667", visual, 375, 667), ("320x568", visual, 320, 568), ("844x390", visual, 844, 390), ("900x650-iframe", iframe_visual, 1024, 768)]
+    scenarios = [("course-flow", course_flow, 1440, 900), ("amount-validation", amount_validation, 1440, 900), ("storage-failure", storage_failure, 1440, 900), ("storage-conflict", storage_conflict, 1440, 900), ("corrupt-storage", corrupt_storage, 1440, 900), ("keyboard", keyboard, 1440, 900), ("mobile-persistence", mobile_persistence, 375, 667), ("text-resize", text_resize, 375, 667), ("1440x900", visual, 1440, 900), ("375x667", visual, 375, 667), ("320x568", visual, 320, 568), ("844x390", visual, 844, 390), ("900x650-iframe", iframe_visual, 1024, 768)]
     if args.only:
         unknown = set(args.only) - {item[0] for item in scenarios}
         if unknown:

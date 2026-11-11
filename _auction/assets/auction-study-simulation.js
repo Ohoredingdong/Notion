@@ -3,6 +3,8 @@
   'use strict';
   const KEY = 'auction-simulation-v1';
   const STAGES = ['자료', '권리 확인', '입찰 계산', '결과'];
+  const owns = (value,key) => Object.prototype.hasOwnProperty.call(value,key);
+  const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   const moneyText = value => window.AuctionFormat.money(value);
   const money = value => {
@@ -32,14 +34,17 @@
     }
 
     scenario() { return this.cases.find(item => item.id === this.state.caseId) || this.cases[0]; }
+    freshRecord(scenario) {
+      return {
+        documentId:scenario.documents[0]?.id,reviewed:[],answers:{},quizIndex:0,
+        inputs:{bid:String(scenario.defaults.bid),loan:String(scenario.defaults.loan),available:String(scenario.defaults.available)},
+        note:'',decision:'',submitted:false
+      };
+    }
     record(scenario=this.scenario()) {
       if (!scenario) return null;
       if (!this.state.records[scenario.id]) {
-        this.state.records[scenario.id] = {
-          documentId:scenario.documents[0]?.id,reviewed:[],answers:{},quizIndex:0,
-          inputs:{bid:String(scenario.defaults.bid),loan:String(scenario.defaults.loan),available:String(scenario.defaults.available)},
-          note:'',decision:'',submitted:false
-        };
+        this.state.records[scenario.id] = this.freshRecord(scenario);
       }
       return this.state.records[scenario.id];
     }
@@ -47,35 +52,47 @@
       try {
         const raw = localStorage.getItem(KEY);
         this.storedSnapshot = raw;
-        if (!raw) return;
+        if (raw === null) return;
         const parsed = JSON.parse(raw);
-        if (!parsed || parsed.version !== 1 || !parsed.records || typeof parsed.records !== 'object' || Array.isArray(parsed.records)) throw Error('Invalid saved practice');
-        if (this.cases.some(item => item.id === parsed.caseId)) this.state.caseId = parsed.caseId;
-        if (Number.isInteger(parsed.stage) && parsed.stage >= 0 && parsed.stage < 4) this.state.stage = parsed.stage;
-        if (['document','analysis'].includes(parsed.pane)) this.state.pane = parsed.pane;
+        if (!isObject(parsed) || parsed.version !== 1 || !isObject(parsed.records)) throw Error('Invalid saved practice');
+        const restored = {...parsed,...this.state,records:{...parsed.records}};
+        if (this.cases.some(item => item.id === parsed.caseId)) restored.caseId = parsed.caseId;
+        if (Number.isInteger(parsed.stage) && parsed.stage >= 0 && parsed.stage < 4) restored.stage = parsed.stage;
+        if (['document','analysis'].includes(parsed.pane)) restored.pane = parsed.pane;
         for (const scenario of this.cases) {
+          if (!owns(parsed.records,scenario.id)) continue;
           const saved = parsed.records[scenario.id];
-          if (!saved || typeof saved !== 'object' || Array.isArray(saved)) continue;
-          const target = this.record(scenario);
+          if (!isObject(saved)) throw Error('Invalid practice record');
+          for (const key of ['answers','inputs']) {
+            if (owns(saved,key) && !isObject(saved[key])) throw Error('Invalid practice fields');
+          }
+          if (owns(saved,'reviewed') && !Array.isArray(saved.reviewed)) throw Error('Invalid reviewed documents');
+          const target = this.freshRecord(scenario);
           const ids = scenario.documents.map(item => item.id);
           if (ids.includes(saved.documentId)) target.documentId = saved.documentId;
           if (Array.isArray(saved.reviewed)) target.reviewed = [...new Set(saved.reviewed.filter(id => ids.includes(id)))];
           if (Number.isInteger(saved.quizIndex) && saved.quizIndex >= 0 && saved.quizIndex < scenario.quiz.length) target.quizIndex = saved.quizIndex;
           for (const question of scenario.quiz) {
             const answer = saved.answers?.[question.id];
-            if (answer && question.choices.some(choice => choice.id === answer.choiceId)) {
-              target.answers[question.id] = {choiceId:answer.choiceId,checked:answer.checked === true};
+            if (saved.answers && owns(saved.answers,question.id) && !isObject(answer)) throw Error('Invalid practice answer');
+            if (answer) {
+              if (!question.choices.some(choice => choice.id === answer.choiceId)) throw Error('Unknown practice answer');
+              target.answers[question.id] = {...answer,choiceId:answer.choiceId,checked:answer.checked === true};
             }
           }
           for (const key of Object.keys(labels)) {
+            if (!saved.inputs || !owns(saved.inputs,key)) continue;
             const value = saved.inputs?.[key];
             if (typeof value === 'string' && value.length < 96) target.inputs[key] = value;
             else if (typeof value === 'number' && Number.isFinite(value)) target.inputs[key] = String(value);
+            else throw Error('Invalid practice amount');
           }
           if (typeof saved.note === 'string') target.note = saved.note.slice(0,10000);
           if (['bid','hold'].includes(saved.decision)) target.decision = saved.decision;
           target.submitted = saved.submitted === true;
+          restored.records[scenario.id] = {...saved,...target,inputs:{...saved.inputs,...target.inputs},answers:{...saved.answers,...target.answers}};
         }
+        this.state = restored;
       } catch (_) {
         // Keep a corrupt or inaccessible original untouched; work remains usable in memory.
         this.storageFailed('연습 기록을 읽지 못했어요. 원본은 보존했어요. 이 화면의 초안은 새로고침 전에 보관하세요.');
@@ -124,7 +141,9 @@
     calculation() {
       const scenario = this.scenario(), record = this.record();
       if (!window.AuctionModel?.calculate || !scenario) return {valid:false,errors:['계산 모듈을 불러오지 못했어요. 새로고침 후 다시 확인해 주세요.']};
-      return AuctionModel.calculate({...scenario.defaults,...record.inputs});
+      // Preserve fields from newer saved versions without applying hidden inputs.
+      const inputs = Object.fromEntries(Object.keys(labels).map(key => [key,record.inputs[key]]));
+      return AuctionModel.calculate({...scenario.defaults,...inputs});
     }
     unresolved() {
       const answer = this.scenario().answer;
@@ -350,7 +369,7 @@
         try {
           const result = this.calculation();
           const copy = JSON.parse(JSON.stringify(scenario));
-          copy.defaults = {...copy.defaults,...record.inputs};
+          copy.defaults = {...copy.defaults,...result.input};
           copy.practiceNote = record.note;
           copy.practiceDecision = record.decision;
           copy.practiceCalculationValid = result.valid;
@@ -371,7 +390,7 @@
       } else if (input.dataset.simChoice) {
         const question = this.scenario().quiz.find(item => item.id === input.dataset.simChoice);
         if (!question || !question.choices.some(choice => choice.id===input.value)) return;
-        record.answers[question.id] = {choiceId:input.value,checked:false};
+        record.answers[question.id] = {...record.answers[question.id],choiceId:input.value,checked:false};
         this.hint = false; this.save(); this.paint(`[data-sim-choice="${question.id}"][value="${input.value}"]`);
       } else if (input.hasAttribute('data-sim-decision') && ['bid','hold'].includes(input.value)) {
         record.decision = input.value; record.submitted = false; this.save();

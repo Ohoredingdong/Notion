@@ -1,5 +1,5 @@
 /* Keep unit navigation visible and scroll the lesson body once. */
-.page-content:has(>.auction-course){overflow:hidden;scrollbar-gutter:auto}
+.page-content[data-view=course]{container:auction-course-area / size;overflow:auto;scrollbar-gutter:auto}
 .auction-course{display:flex;flex-direction:column;min-height:0;height:100%;min-width:0;padding:0 2px 2px;color:var(--ink);line-height:1.75;overflow:hidden}
 .auction-course p,.auction-course h2,.auction-course h3,.auction-course h4{margin:0}
 .course-overview{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-shrink:0;margin-bottom:12px}
@@ -140,6 +140,13 @@
   .course-footer{flex-direction:column;gap:12px;padding:0 2px}
   .course-storage{align-items:flex-start;text-align:left}
 }
+/* Enlarged text can exhaust a fixed header even on a tall viewport. Use the
+   available area relative to its font, so the lesson stays readable. */
+@container auction-course-area (max-height:24em){
+  .auction-course{height:auto;min-height:100%;overflow:visible}
+  .course-lesson{flex:none;height:auto;overflow:visible}
+  .course-panel{flex:none;min-height:120px;overflow:visible}
+}
 @media screen and (max-height:560px){
   .page-content:has(>.auction-course){overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
   .auction-course{height:auto;min-height:100%;overflow:visible}
@@ -154,6 +161,7 @@
   .course-tabs button{min-height:31px;padding-top:4px;padding-bottom:4px;font-size:12px}
 }
 @media print{
+  .page-content[data-view=course]{container-type:normal}
   .page-content:has(>.auction-course),.auction-course{height:auto!important;overflow:visible!important}
   .course-lessons,.course-tabs,.course-panel-navigation,.course-answer-actions,.course-footer{display:none!important}
   .course-lesson,.course-panel{height:auto;overflow:visible;display:block;padding:0;border:0}

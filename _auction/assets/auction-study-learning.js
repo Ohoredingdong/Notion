@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const KEY = 'auction-study-lessons-v1';
+  const owns = (value,key) => Object.prototype.hasOwnProperty.call(value,key);
+  const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
 
@@ -20,19 +22,26 @@
       try {
         const raw = localStorage.getItem(KEY);
         this.savedRaw = raw;
-        if (raw) {
+        if (raw !== null) {
           const data = JSON.parse(raw);
-          if (!data || data.version !== 1 || !data.answers || typeof data.answers !== 'object' || Array.isArray(data.answers)) throw Error('Invalid progress');
+          if (!isObject(data) || data.version !== 1 || !isObject(data.answers)) throw Error('Invalid progress');
+          const restored = {...data,...this.progress,answers:{...data.answers}};
           // Restore known lessons and real choice IDs only, never user HTML.
-          if (AuctionLessons.cases.some(item => item.id === data.caseId)) this.progress.caseId = data.caseId;
+          if (AuctionLessons.cases.some(item => item.id === data.caseId)) restored.caseId = data.caseId;
           for (const lesson of AuctionLessons.cases) {
+            if (!owns(data.answers,lesson.id)) continue;
+            const saved = data.answers[lesson.id];
+            if (!isObject(saved)) throw Error('Invalid lesson answers');
+            const answers = {...saved};
             for (const [index, step] of lesson.steps.entries()) {
-              const answer = data.answers[lesson.id]?.[step.id];
-              if (answer && AuctionLessons.validateAnswer(lesson.id,index,answer.choiceId).valid) {
-                this.answers(lesson.id)[step.id] = {choiceId:answer.choiceId,checked:answer.checked === true};
-              }
+              if (!owns(saved,step.id)) continue;
+              const answer = saved[step.id];
+              if (!isObject(answer) || !AuctionLessons.validateAnswer(lesson.id,index,answer.choiceId).valid) throw Error('Invalid lesson answer');
+              answers[step.id] = {...answer,choiceId:answer.choiceId,checked:answer.checked === true};
             }
+            restored.answers[lesson.id] = answers;
           }
+          this.progress = restored;
         }
       } catch (_) {
         this.persistent = false;
@@ -53,6 +62,7 @@
 
     answers(id=this.progress.caseId) { return this.progress.answers[id] ||= {}; }
     lesson() { return AuctionLessons.cases.find(item => item.id === this.progress.caseId); }
+    completed() { return this.lesson().steps.filter(step => this.answers()[step.id]?.checked === true).length; }
     source() {
       if (!this.sources.has(this.current.id)) this.sources.set(this.current.id,{url:'',name:'',draft:'',error:''});
       return this.sources.get(this.current.id);
@@ -87,7 +97,7 @@
       }
       warning.textContent = message;
       const progress = root.querySelector('.study-progress');
-      if (progress && this.mode === 'practice') progress.textContent = '학습 '+Object.values(this.answers()).filter(item=>item.checked).length+' / 6 · 저장 안 됨';
+      if (progress && this.mode === 'practice') progress.textContent = '학습 '+this.completed()+' / 6 · 저장 안 됨';
     }
     render(current) {
       this.current = current;
@@ -95,7 +105,7 @@
       const answer = this.answers()[step.id];
       const checked = answer?.checked === true;
       const grade = checked ? AuctionLessons.validateAnswer(lesson.id,this.step,answer.choiceId) : null;
-      const count = Object.values(this.answers()).filter(item => item.checked).length;
+      const count = this.completed();
       const practice = this.mode === 'practice';
       return `<div class="learning-workspace" data-mode="${this.mode}" data-pane="${this.pane}">
         ${this.persistenceNotice?`<div class="notice warning study-storage-warning" role="alert">${escapeHTML(this.persistenceNotice)}</div>`:''}
@@ -185,7 +195,7 @@
       } else if (input.name==='studyAnswer') {
         const step=this.lesson().steps[this.step];
         if (!AuctionLessons.validateAnswer(this.lesson().id,this.step,input.value).valid) return;
-        this.answers()[step.id]={choiceId:input.value,checked:false};this.hint=false;this.save();this.paint();
+        this.answers()[step.id]={...this.answers()[step.id],choiceId:input.value,checked:false};this.hint=false;this.save();this.paint();
         document.querySelector(`input[name="studyAnswer"][value="${input.value}"]`)?.focus({preventScroll:true});
       } else if (input.id==='studyDocument'&&input.files[0]) {
         const caseId=this.current.id,source=this.source(),file=input.files[0];
