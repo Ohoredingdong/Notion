@@ -32,3 +32,5 @@ python scripts/test_kitchen_recipe_card_nutrition_browser.py \
 [검증·해시](artifacts/kitchen-nutrition-cards-20261111/verification.json), [시각 검토](artifacts/kitchen-nutrition-cards-20261111/MANUAL_REVIEW.md), [720px 수정 전](artifacts/kitchen-nutrition-cards-20261111/before-cards-720.png) → [수정 후](artifacts/kitchen-nutrition-cards-20261111/after-cards-720.png), [320px](artifacts/kitchen-nutrition-cards-20261111/after-cards-320.png), [390px](artifacts/kitchen-nutrition-cards-20261111/after-cards-390.png), [낮고 넓은 화면](artifacts/kitchen-nutrition-cards-20261111/after-short-wide.png)을 보존한다. 첫 공통 검사는 기존 모의 시계 초기화 경합 때문에 기본 기한의 엄격한 비교가 실패했으며, 원본을 보존하고 최종 실행에서10쌍의 원문·기한이 모두 정확히 일치하는 것을 확인했다.
 
 실제 Notion·Safari·실물 기기·공개 HTMLPreview 실행은 별도 미검증이며 운영 배포·병합은 수행하지 않는다.
+
+공개4개 HTML·선별720px 화면은 HTTP200과 검사한 바이트 일치를 확인했다([기록](artifacts/kitchen-nutrition-cards-20261111/public-access.json)). GitHub API가 환경 정책으로 차단되어 PR 생성은 완료하지 못했고 [검토 설명 초안](artifacts/kitchen-nutrition-cards-20261111/PR_DRAFT.md)을 보존했다. 작업 브랜치만 게시했다.
