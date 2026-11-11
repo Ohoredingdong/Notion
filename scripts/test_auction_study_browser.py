@@ -9,6 +9,7 @@ import copy
 import json
 import os
 import re
+import traceback
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -174,6 +175,15 @@ def imports_preserve_and_validate(page):
 
 def mobile_backup_restore(page):
     page.set_viewport_size({"width": 375, "height": 667})
+    # Exercise the asynchronous file read: an older creation toast must not be
+    # mistaken for the import completion signal on slower filesystems.
+    page.evaluate("""() => {
+        const read=File.prototype.text;
+        File.prototype.text=async function(){
+            await new Promise(resolve=>setTimeout(resolve,350));
+            return read.call(this);
+        };
+    }""")
     page.locator('.topbar [data-action="new"]').click()
     page.locator("#case-name").fill("모바일 원본 노트")
     page.locator('#caseForm button[type="submit"]').click()
@@ -195,9 +205,9 @@ def mobile_backup_restore(page):
     with page.expect_file_chooser() as chosen:
         restore.click()
     chosen.value.set_files({"name": "mobile-notes.json", "mimeType": "application/json", "buffer": backup})
-    expect(page.locator("#toast")).to_contain_text("노트를 추가")
+    expect(page.locator("#toast")).to_contain_text(f'{len(exported["cases"])}개 노트를 추가했어요.')
     merged = notebook(page)
-    assert len(merged["cases"]) == len(before["cases"]) + len(exported["cases"])
+    assert len(merged["cases"]) == len(before["cases"]) + len(exported["cases"]), "Completed import must append every backed-up note"
     assert len({item["id"] for item in merged["cases"]}) == len(merged["cases"])
     for item in before["cases"]:
         assert next(row for row in merged["cases"] if row["id"] == item["id"]) == item
@@ -499,13 +509,17 @@ def main():
                 check(page)
                 assert not page_errors, page_errors
                 print("PASS", name, flush=True)
-            except Exception as error:
-                failures.append((name, str(error)))
-                page.screenshot(path=f"/tmp/auction-study-failed-{name}.png", full_page=True)
-                print("FAIL", name, str(error), flush=True)
+            except Exception:
+                failure = traceback.format_exc()
+                failures.append((name, failure))
+                print("FAIL", name, failure, flush=True)
                 if os.environ.get("GITHUB_ACTIONS") == "true":
-                    detail = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                    detail = failure.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
                     print(f"::error title=Auction browser {name}::{detail}", flush=True)
+                try:
+                    page.screenshot(path=f"/tmp/auction-study-failed-{name}.png", full_page=True)
+                except Exception as screenshot_error:
+                    print("SCREENSHOT_FAILED", name, str(screenshot_error), flush=True)
             finally:
                 context.close()
         browser.close()
