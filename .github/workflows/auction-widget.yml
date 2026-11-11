@@ -73,19 +73,20 @@ jobs:
             python -m playwright install --with-deps chromium
           fi
       - name: Test the development source in isolated browsers
+        id: source_browser
         shell: bash
         env:
           AUCTION_STUDY_URL: http://127.0.0.1:8765/_auction/auction-study.html
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
-          python -B scripts/test_auction_study_browser.py | tee /tmp/auction-functional.log
-          python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-layout.log
-          python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-learning.log
-          python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser | tee /tmp/auction-simulation.log
-          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser | tee /tmp/auction-review.log
-          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser | tee /tmp/auction-accessibility.log
-          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser | tee /tmp/auction-polish.log
-          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-course-browser | tee /tmp/auction-course.log
+          python -B scripts/test_auction_study_browser.py 2>&1 | tee /tmp/auction-functional.log
+          python -B scripts/test_auction_rights_layout.py 2>&1 | tee /tmp/auction-layout.log
+          python -B scripts/test_auction_learning_browser.py 2>&1 | tee /tmp/auction-learning.log
+          python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-simulation-browser 2>&1 | tee /tmp/auction-simulation.log
+          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-review-browser 2>&1 | tee /tmp/auction-review.log
+          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-accessibility-browser 2>&1 | tee /tmp/auction-accessibility.log
+          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-polish-browser 2>&1 | tee /tmp/auction-polish.log
+          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-course-browser 2>&1 | tee /tmp/auction-course.log
       - name: Package only the verified auction files
         run: python scripts/auction_release.py package --source _auction --output /tmp/auction-validated --source-sha '${{ github.sha }}'
       - uses: actions/upload-artifact@v4
@@ -95,14 +96,24 @@ jobs:
           if-no-files-found: error
       - name: Record browser results
         if: always()
+        env:
+          BROWSER_CHECK_OUTCOME: ${{ steps.source_browser.outcome }}
         run: |
           python - <<'REPORT'
           import os
           from pathlib import Path
+          last_log = None
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
               for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish', 'course']:
                   log = Path('/tmp/auction-' + name + '.log')
+                  if log.exists():
+                      last_log = (name, log)
                   summary.write('### Auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
+          if os.environ.get('BROWSER_CHECK_OUTCOME') == 'failure':
+              name, log = last_log or ('startup', None)
+              detail = log.read_text()[-6000:] if log else 'No browser output was captured.'
+              escaped = detail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error title=Auction ' + name + ' browser failure::' + escaped)
           REPORT
       - uses: actions/upload-artifact@v4
         if: always()
@@ -182,28 +193,39 @@ jobs:
       - name: Verify the public release and every runtime asset
         run: python scripts/auction_release.py verify-public --bundle /tmp/auction-validated --url https://ohoredingdong.github.io/Notion/ --attempts 72 --delay 10 --max-seconds 900
       - name: Test the actual public auction app
+        id: public_browser
         shell: bash
         env:
           AUCTION_STUDY_URL: https://ohoredingdong.github.io/Notion/auction-study.html?release=${{ github.sha }}
         run: |
-          python -B scripts/test_auction_study_browser.py | tee /tmp/auction-public-functional.log
-          python -B scripts/test_auction_rights_layout.py | tee /tmp/auction-public-layout.log
-          python -B scripts/test_auction_learning_browser.py | tee /tmp/auction-public-learning.log
-          python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-public-simulation | tee /tmp/auction-public-simulation.log
-          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-public-review | tee /tmp/auction-public-review.log
-          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-public-accessibility | tee /tmp/auction-public-accessibility.log
-          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-public-polish | tee /tmp/auction-public-polish.log
-          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-public-course | tee /tmp/auction-public-course.log
+          python -B scripts/test_auction_study_browser.py 2>&1 | tee /tmp/auction-public-functional.log
+          python -B scripts/test_auction_rights_layout.py 2>&1 | tee /tmp/auction-public-layout.log
+          python -B scripts/test_auction_learning_browser.py 2>&1 | tee /tmp/auction-public-learning.log
+          python -B scripts/test_auction_simulation_browser.py --artifacts /tmp/auction-public-simulation 2>&1 | tee /tmp/auction-public-simulation.log
+          python -B scripts/test_auction_review_browser.py --artifacts /tmp/auction-public-review 2>&1 | tee /tmp/auction-public-review.log
+          python -B scripts/test_auction_accessibility_browser.py --artifacts /tmp/auction-public-accessibility 2>&1 | tee /tmp/auction-public-accessibility.log
+          python -B scripts/test_auction_polish_browser.py --artifacts /tmp/auction-public-polish 2>&1 | tee /tmp/auction-public-polish.log
+          python -B scripts/test_auction_course_browser.py --artifacts /tmp/auction-public-course 2>&1 | tee /tmp/auction-public-course.log
       - name: Record public browser results
         if: always()
+        env:
+          BROWSER_CHECK_OUTCOME: ${{ steps.public_browser.outcome }}
         run: |
           python - <<'REPORT'
           import os
           from pathlib import Path
+          last_log = None
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
               for name in ['functional', 'layout', 'learning', 'simulation', 'review', 'accessibility', 'polish', 'course']:
                   log = Path('/tmp/auction-public-' + name + '.log')
+                  if log.exists():
+                      last_log = (name, log)
                   summary.write('### Public auction ' + name + '\n\n```text\n' + (log.read_text() if log.exists() else 'Not run\n') + '```\n\n')
+          if os.environ.get('BROWSER_CHECK_OUTCOME') == 'failure':
+              name, log = last_log or ('startup', None)
+              detail = log.read_text()[-6000:] if log else 'No browser output was captured.'
+              escaped = detail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error title=Auction ' + name + ' browser failure::' + escaped)
           REPORT
       - uses: actions/upload-artifact@v4
         if: always()
