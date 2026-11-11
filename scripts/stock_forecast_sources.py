@@ -4,6 +4,7 @@ Same unofficial provider, not an independent-source cross-check.
 from datetime import datetime, timezone
 import threading
 import time
+from stock_forecast_retry_context import outer_source_retry_owned
 import pandas as pd
 
 _CALENDAR_LOCK = threading.Lock()
@@ -47,13 +48,16 @@ def regular_grid(frame, mode):
 def read_history_serially(fetcher):
     """yfinance shares a SQLite cookie/timezone cache; serialize its I/O only."""
     with _HISTORY_LOCK:
-        for attempt in range(3):
+        # Each outer bounded attempt gets exactly one inner fetcher invocation.
+        # Without an outer owner, preserve the earlier three-attempt lock guard.
+        max_attempts = 1 if outer_source_retry_owned() else 3
+        for attempt in range(max_attempts):
             try:
                 return fetcher()
             except Exception as exc:
                 # Only retry this observed transient cache lock. Never retry a
                 # missing-data error by returning an old or synthetic snapshot.
-                if 'database is locked' not in str(exc).lower() or attempt == 2:
+                if 'database is locked' not in str(exc).lower() or attempt == max_attempts - 1:
                     raise
                 time.sleep(.25*(attempt+1))
 
