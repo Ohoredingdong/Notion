@@ -1,0 +1,47 @@
+name: Research Forecast Public Verification Diagnostics
+on:
+  push:
+    branches: [research/forecast-public-verification-diagnostics-20261111]
+    paths:
+      - 'scripts/verify_stock_forecast_public.py'
+      - 'scripts/test_stock_forecast_public_diagnostics.py'
+      - 'docs/experiments/forecast-public-failure-diagnostics-20261111.md'
+      - '.github/workflows/research-forecast-public-diagnostics-20261111.yml'
+permissions:
+  contents: read
+jobs:
+  public-diagnostics-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic public verification negative and redacted-failure controls
+        run: PYTHONPATH=scripts python -m unittest test_stock_forecast_public_diagnostics -v
+      - name: Original paper/publication and independent audit regression controls
+        run: |
+          PYTHONPATH=scripts python -m unittest test_stock_forecast_paper -v
+          python scripts/audit_stock_forecast_independent.py --self-test
+          python scripts/audit_stock_learning_evidence.py --self-test
+          PYTHONPATH=scripts python scripts/test_stock_timing_acceptance_guard.py -v
+      - name: Verify branch-only untouched forecast evidence and source code
+        run: |
+          python - <<'PY'
+          import subprocess
+          base='dd13dbb3c3c07be274c874f2363a2de75fcff5db'
+          changed=subprocess.check_output(['git','diff','--name-only',base,'HEAD'],text=True).splitlines()
+          allowed={
+              'scripts/verify_stock_forecast_public.py',
+              'scripts/test_stock_forecast_public_diagnostics.py',
+              'docs/experiments/forecast-public-failure-diagnostics-20261111.md',
+              '.github/workflows/research-forecast-public-diagnostics-20261111.yml'
+          }
+          assert set(changed)<=allowed,changed
+          assert 'scripts/verify_stock_forecast_public.py' in changed,changed
+          print('RESEARCH_ONLY_ASSET_DIAGNOSTICS',sorted(changed))
+          PY
