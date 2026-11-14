@@ -76,6 +76,35 @@ def stats(entries):
         confusion_matrix=cm, directions=directions)
 
 
+
+def missing_window_clusters(missing_ids, valid):
+    """Describe only already-unscored mature first issuances; never infer OHLC/labels.
+
+    Normalize absolute UTC target instants (the same distinction enforced for
+    event identity), and keep market/mode/explicit-or-unverified venue separate.
+    """
+    grouped=defaultdict(list)
+    for rid in missing_ids:
+        row, group, start, end, _, _ = valid[rid]
+        key=(group[1], group[2], group[3], start.isoformat(), end.isoformat())
+        grouped[key].append((rid, row))
+    return [
+        {
+            'market':market, 'mode':mode, 'venue':venue,
+            'target_start_utc':start, 'target_end_utc':end,
+            'count':len(entries),
+            'symbols':sorted(row['symbol'] for _,row in entries),
+            'forecast_ids':sorted(rid for rid,_ in entries),
+            'missing_context_counts':dict(sorted(Counter(
+                row.get('missing_context') or 'source_progress_unknown'
+                for _,row in entries).items())),
+            'root_cause':'unverified', 'exchange_raw_bars_verified':False,
+        }
+        for (market,mode,venue,start,end),entries in sorted(grouped.items())
+    ]
+
+
+
 def census(records, outcomes, deliveries, independent, controller):
     """Use the upstream cutoff, but independently account/select/recalculate rows."""
     cutoff = instant(independent['audit_cutoff']); errors = []
@@ -249,6 +278,7 @@ def census(records, outcomes, deliveries, independent, controller):
             'log_loss_gain':pb['log_loss']-pm['log_loss'] if paired else None},
         'repeated_public_checks_without_new_id':repeated_proofs,
         'missing_context_counts':dict(Counter(valid[rid][0]['missing_context'] for rid in missing)),
+        'missing_target_windows':missing_window_clusters(missing, valid),
         'errors':sorted(set(errors)),'external_exchange_prices_verified':False,
         'human_receipt_verified':False,'after_cost_usefulness_verified':False,'untouched_followup_verified':False,
         'timing_utility':'not_proven','orders_enabled':False,'new_learning_updates':0,'model_trials':0,
