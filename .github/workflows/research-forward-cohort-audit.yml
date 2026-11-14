@@ -1,0 +1,89 @@
+name: Research Forward Cohort Audit - Immutable US Nov 13
+on:
+  push:
+    branches: [research/forward-cohort-audit-20261114]
+    paths:
+      - '.github/workflows/research-forward-cohort-audit.yml'
+      - 'scripts/research_forward_cohort_audit.cjs'
+      - 'scripts/test_research_forward_cohort_audit.cjs'
+      - 'docs/experiments/forward-cohort-audit-20261114-plan.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: research-us-forward-cohort-nov13
+  cancel-in-progress: false
+jobs:
+  read-only-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Negative-control tests, no model or state changes
+        run: node --test scripts/test_research_forward_cohort_audit.cjs
+      - name: Confirm originally saved blobs and evaluate exact matured cohort
+        shell: bash
+        run: |
+          mkdir -p /tmp/research-forward-cohort
+          node scripts/research_forward_cohort_audit.cjs . > /tmp/research-forward-cohort/cohort.json
+      - name: Independently recompute original price labels and all paired frozen directions in Python
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,math
+          from pathlib import Path
+          p=Path('/tmp/research-forward-cohort/cohort.json')
+          r=json.loads(p.read_text())
+          def rows(name):
+              return [json.loads(s) for s in Path(name).read_text().splitlines() if s.strip()]
+          ledger=rows('stock-forecast-ledger.jsonl')
+          outcomes={x['id']:x for x in rows('stock-forecast-outcomes.jsonl')}
+          eligible={x['prediction_id']:x for x in rows('stock-forecast-learning-events.jsonl')}
+          keys=('down','flat','up')
+          pairs=[]
+          for f in ledger:
+              t=f.get('target') or {}
+              if (f.get('market'),f.get('mode'),t.get('start'),t.get('end'))!=('US','daily','2026-11-13T14:30:00+00:00','2026-11-13T21:00:00+00:00'):
+                  continue
+              o=outcomes[f['id']]
+              assert f['id'] in eligible and eligible[f['id']]['actual']==o['actual']
+              actual=('up' if (o['target_close']/o['target_open']-1)*100>f['neutral_band_pct'] else
+                      'down' if (o['target_close']/o['target_open']-1)*100< -f['neutral_band_pct'] else 'flat')
+              assert actual==o['actual']
+              pairs.append((f,o))
+          assert len(pairs)==12 and set(f['id'] for f,o in pairs)==set(r['cohort']['original_ids'])
+          def vector(f,method):
+              if method=='incumbent':return f['probabilities'],f['direction']
+              if method=='frequency':p=f['frozen_baseline_probabilities'];return p,max(keys,key=lambda k:p[k])
+              if method=='online_challenger':p=f['online_learning']['challenger_probabilities'];return p,max(keys,key=lambda k:p[k])
+              x=f['directional_specialists']['candidates'][method]
+              return x['probabilities'],x['direction']
+          for method,reported in r['methods'].items():
+              matrix=[[0]*3 for _ in range(3)];correct=0;brier=0.0;logloss=0.0
+              for f,o in pairs:
+                  prob,pred=vector(f,method);actual=o['actual']
+                  matrix[keys.index(actual)][keys.index(pred)]+=1
+                  correct+=int(actual==pred)
+                  brier+=sum((prob[k]-int(k==actual))**2 for k in keys)
+                  logloss-=math.log(max(prob[actual],1e-15))
+              assert correct==reported['correct'] and matrix==reported['confusion_matrix'],method
+              assert math.isclose(brier/len(pairs),reported['brier_loss'],abs_tol=1e-12),method
+              assert math.isclose(logloss/len(pairs),reported['log_loss'],abs_tol=1e-12),method
+          assert r['methods']['incumbent']['correct']==4
+          assert r['methods']['incumbent']['directions']['down']['hits']==2
+          assert r['methods']['incumbent']['directions']['up']['hits']==0
+          assert r['methods']['movement_then_direction']['collapse_to_flat']
+          assert r['minimum_group_gate_met'] is False
+          assert r['timing_utility']=='not_proven'
+          print('PYTHON_INDEPENDENT_FROZEN_COHORT_RECOMPUTATION_OK',len(pairs),'market_date_clusters',len(r['cohort']['market_days']))
+          PY
+      - name: Save research-only diagnostic artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examined-us-nov13-cohort-diagnostic
+          path: /tmp/research-forward-cohort/cohort.json
+          if-no-files-found: ignore
+          retention-days: 7
