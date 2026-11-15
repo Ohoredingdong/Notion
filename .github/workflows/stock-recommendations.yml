@@ -1,10 +1,7 @@
 name: Stock Recommendations
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Stock Three-Year Reading']
-    types: [completed]
-    branches: [main]
+  # Reading explicitly dispatches this after publishing to avoid the three-hop limit.
   push:
     branches: [main]
     paths:
