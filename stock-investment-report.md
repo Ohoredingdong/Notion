@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-15T19:50:37.921933+09:00
+- 계산일: 2026-11-16T04:25:15.548308+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -35,8 +35,8 @@
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
 - [(11월 둘째 주 세계경제동향 브리핑) 코스피 5,200선 회복…한미 증시 동반 반등 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTFBrMmFPX2F5bEN2cDNMMENjTklGeWVCc2VFbXBvRjhZUVh1U3cyX19kWkhZemhOMmV1TExuaGdya183VDZwaDBtS2dPUlNlWnExdFkzR3VSZlVhbFZKejRwSG5BR0hxUVJ5MjlmU0JCYw?oc=5)
-- [(주간증시전망) 코스피, 美금리·AI 전망에 좌우…엔비디아 실적·앤트로픽 상장 - 아주경제](https://news.google.com/rss/articles/CBMiWEFVX3lxTE1ma3VZdGREdVFhQ2cyZmpyd3BMUHkxRGQ2SkZiSU1xWlVCWXJaYTA0cmd2NzBMcHJYX0pRZ2ZwTzlHaWxoOFk3YU5sMk44aHFzcm9iTlhEaWPSAVhBVV95cUxNZmt1WXRkRHVRYUNnMmZqcndwTFB5MURkNkpGYklNcVpVQllyWmEwNHJndjcwTHByWF9KUWdmcE85R2lsaDhZN2FObDJOOGhxc3JvYk5YRGlj?oc=5)
-- [젠슨 황 퇴진에 AI 칩 지각변동 조짐…삼성·SK, 고객 확보 경쟁 본격화 - 매일일보](https://news.google.com/rss/articles/CBMiZEFVX3lxTE5xMVoxczhja2MxYkhHSlAwODJRQ2J2RlZiQjVKcW5aem5Obk5fcHVWQTNid2lhbDdZdEtoeU5GWWctQkVtUGFWbVktYjhBVVFFRmY0Mm1halRnb3BFRE9EV05YZkw?oc=5)
+- [미 증시는 사상 최고치…일본 금리는 17년 만의 최고 수준 - :: 위즈경제 ::](https://news.google.com/rss/articles/CBMiVEFVX3lxTFBKYTliSVFOcFFmd3F0S2hCbXRvUWVvQUFjZm12TTBJSWZVbF9vR1l0QkZYdnRCNGtNMDJSRGVlNTdaa2lZeTNkMXpYbkU1YldsbmQxbQ?oc=5)
+- [(글로벌 투자노트) 젠슨 황 퇴진이 삼성전자·SK하이닉스에 미칠 영향은 - 뉴스임팩트](https://news.google.com/rss/articles/CBMickFVX3lxTFBYWTZkbmJzNWNIRWxfR2ZTZDhNcFNiQjU3MDNHNk9YV2ZEV0xTMlBwZ3VxWWFvbVp0dTJjNUl3SjN4cnh5VzVFVGEwRktjc0NLend0NzNiU2Zad0pZSjBGV0VNWmltcDFuaEt2RDE0WmdFQQ?oc=5)
 - [젠슨 황 떠난 엔비디아…삼성전자 웃고, SK하이닉스 울게 될까 - 뉴스웍스](https://news.google.com/rss/articles/CBMib0FVX3lxTE15SVBXMWtsQ3JLMmVvMEVlcHdkODZNQ1FXQW05dl9wLWFhSlVocUdHZElqWElZSWNON0hOVEpJeW9aQWR3WGQtS3RPLVdsTFpUNnpneHUtbnBNSkNaUWpzUk9yRUdTZzY1ZEZJLWVRRdIBc0FVX3lxTE80THRLRXJZX3BDT3ZGSzZkVlVCN0dMVGZKRTlLZXRDN0F2VHkzWU1UbHBhcEhwck8yZXpNcUw5VElGRkdsVFd3eS1NX3FEdVFzMnJjbWpKUFR4UUdlSmtyeEhFYnJKR1hXQWctN1lkR3NhY0E?oc=5)
 
 ## 계산과 검증 한계
