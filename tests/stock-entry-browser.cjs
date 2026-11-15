@@ -1,10 +1,12 @@
 const {chromium}=require('@playwright/test');
 const assert=require('node:assert/strict');
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
  try{
   for(const width of [1280,390]){
    const page=await browser.newPage({viewport:{width,height:900}});
+   const externalSources=[];
+   await page.route('https://raw.githubusercontent.com/**',route=>{externalSources.push(route.request().url());return route.abort();});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:8765/stock-value-radar-advanced.html',{waitUntil:'domcontentloaded'});
    const neutral=page.locator('.nr-rail [data-nr-view="discover"]');
@@ -28,6 +30,7 @@ const assert=require('node:assert/strict');
     else await page.locator('#tab-discover').click({force:true});
     await page.locator('.entry-tabs').waitFor({state:'visible',timeout:15000});
     assert.deepEqual(errors,[],'Runtime page errors');
+    assert.ok(!externalSources.some(url=>/stock-opportunity-data\.json/.test(url)),'Base dashboard must use its own deployed snapshot');
    } catch(error) {
     console.error('BASE_DASHBOARD_DIAGNOSTICS',JSON.stringify({errors,status:await page.locator('#liveStatus').innerText()}));
     await page.screenshot({path:`entry-${width}-failure.png`,fullPage:true});throw error;
