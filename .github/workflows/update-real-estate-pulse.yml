@@ -36,6 +36,8 @@ jobs:
       - name: Install official-data parser dependencies
         run: pip install requests beautifulsoup4
 
+      - name: Test retry and last-good preservation
+        run: python -m unittest discover -s tests -p test_real_estate_refresh.py -v
       - name: Check official REB release safely
         id: refresh
         continue-on-error: true
