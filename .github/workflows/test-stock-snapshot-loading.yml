@@ -1,0 +1,32 @@
+name: Stock Snapshot Loading Regression
+on:
+  pull_request:
+    paths:
+      - 'assets/stock-radar-v8.js'
+      - 'tests/stock-entry-browser.cjs'
+      - '.github/workflows/test-stock-snapshot-loading.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/stock-radar-v8.js'
+      - 'tests/stock-entry-browser.cjs'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'exchange-calendars==4.13.1'
+      - run: PYTHONPATH=scripts python -m unittest scripts.test_stock_entry_plan scripts.test_stock_recommendations scripts.test_stock_refresh_handoffs -v
+      - run: node tests/stock-entry-ui.test.cjs
+      - run: npm install --no-save --package-lock=false @playwright/test@1.56.0
+      - run: npx playwright install --with-deps chromium
+      - name: Verify desktop and mobile with raw GitHub blocked
+        run: |
+          python -m http.server 8765 >/tmp/entry-http.log 2>&1 &
+          node tests/stock-entry-browser.cjs
