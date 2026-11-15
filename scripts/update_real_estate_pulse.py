@@ -8,6 +8,7 @@ openDocView viewer. No guessed Excel workbook or previous-week column is used.
 import hashlib
 import json
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
@@ -27,10 +28,27 @@ UA = {"User-Agent": "Mozilla/5.0 (compatible; NotionRealEstatePulse/2.0)"}
 KST = ZoneInfo("Asia/Seoul")
 
 
+def request(method, url, **kwargs):
+    """Retry transient official-source failures, never retry validation errors.
+
+    POST is used only for REB's read-only document lookup, not mutations.
+    Keep a bounded budget so the workflow can publish failure health.
+    """
+    for attempt in range(3):
+        try:
+            response = requests.request(method, url, headers=UA, timeout=(10, 25), **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.RequestException as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            retryable = isinstance(exc, (requests.ConnectionError, requests.Timeout)) or status in {429, 500, 502, 503, 504}
+            if not retryable or attempt == 2:
+                raise RuntimeError(f"Official source {method} {url} failed after {attempt + 1} attempt(s): {exc}") from exc
+            time.sleep(2 ** attempt)
+
+
 def get(url, **kwargs):
-    response = requests.get(url, headers=UA, timeout=35, **kwargs)
-    response.raise_for_status()
-    return response
+    return request("GET", url, **kwargs)
 
 
 def release_candidates(html):
@@ -53,12 +71,17 @@ def release_candidates(html):
 
 
 def latest_release():
-    candidates = release_candidates(get(LIST_URL).text)
-    if not candidates:
-        candidates = release_candidates(get(BASE + "/reb/main.do").text)
-    if not candidates:
-        raise RuntimeError("REB 게시판에서 날짜가 확인된 최신 주간 발표를 찾지 못했습니다.")
-    return max(candidates, key=lambda value: value[0])
+    errors = []
+    # REB's official homepage is an independent discovery path when its
+    # board list disconnects; both paths must expose a dated release link.
+    for url in (LIST_URL, BASE + "/reb/main.do"):
+        try:
+            candidates = release_candidates(get(url).text)
+            if candidates:
+                return max(candidates, key=lambda value: value[0])
+        except RuntimeError as exc:
+            errors.append(str(exc))
+    raise RuntimeError("REB 최신 주간 발표 확인 실패: " + ("; ".join(errors) or "날짜가 확인된 발표 링크 없음"))
 
 
 def published_date(html):
@@ -84,7 +107,7 @@ def appendix_text(detail_html):
     if len(keys) != 1 or not re.fullmatch(r"[a-zA-Z0-9_-]+", keys[0]):
         raise RuntimeError("최신 발표의 공식 PDF 첨부를 하나로 확인하지 못했습니다.")
     file_key = keys[0]
-    lookup = requests.post(BASE + "/reb/docView.do", data={"fileKey": file_key}, headers=UA, timeout=35)
+    lookup = request("POST", BASE + "/reb/docView.do", data={"fileKey": file_key})
     lookup.raise_for_status()
     result = lookup.json()
     document_id = result.get("docViewId", "")
@@ -163,8 +186,8 @@ def collect():
     sale_text, lease_text = split_sale_lease(appendix["text"])
     sale, sale_prev = parse_appendix_table(sale_text, asof_raw)
     lease, lease_prev = parse_appendix_table(lease_text, asof_raw)
-    from update_mortgage_rates import collect_bok
-    rate = collect_bok()
+    from update_mortgage_rates import collect_bok, BOK
+    rate = collect_bok(BeautifulSoup(get(BOK).content, "html.parser"))
     return {
         "source": "Korea Real Estate Board / Bank of Korea",
         "sourceMethod": "REB official PDF appendix",
