@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-16T04:25:15.548308+09:00
+- 계산일: 2026-11-16T20:07:35.027435+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [(11월 둘째 주 세계경제동향 브리핑) 코스피 5,200선 회복…한미 증시 동반 반등 - 기호일보](https://news.google.com/rss/articles/CBMib0FVX3lxTFBrMmFPX2F5bEN2cDNMMENjTklGeWVCc2VFbXBvRjhZUVh1U3cyX19kWkhZemhOMmV1TExuaGdya183VDZwaDBtS2dPUlNlWnExdFkzR3VSZlVhbFZKejRwSG5BR0hxUVJ5MjlmU0JCYw?oc=5)
-- [미 증시는 사상 최고치…일본 금리는 17년 만의 최고 수준 - :: 위즈경제 ::](https://news.google.com/rss/articles/CBMiVEFVX3lxTFBKYTliSVFOcFFmd3F0S2hCbXRvUWVvQUFjZm12TTBJSWZVbF9vR1l0QkZYdnRCNGtNMDJSRGVlNTdaa2lZeTNkMXpYbkU1YldsbmQxbQ?oc=5)
-- [(글로벌 투자노트) 젠슨 황 퇴진이 삼성전자·SK하이닉스에 미칠 영향은 - 뉴스임팩트](https://news.google.com/rss/articles/CBMickFVX3lxTFBYWTZkbmJzNWNIRWxfR2ZTZDhNcFNiQjU3MDNHNk9YV2ZEV0xTMlBwZ3VxWWFvbVp0dTJjNUl3SjN4cnh5VzVFVGEwRktjc0NLend0NzNiU2Zad0pZSjBGV0VNWmltcDFuaEt2RDE0WmdFQQ?oc=5)
-- [젠슨 황 떠난 엔비디아…삼성전자 웃고, SK하이닉스 울게 될까 - 뉴스웍스](https://news.google.com/rss/articles/CBMib0FVX3lxTE15SVBXMWtsQ3JLMmVvMEVlcHdkODZNQ1FXQW05dl9wLWFhSlVocUdHZElqWElZSWNON0hOVEpJeW9aQWR3WGQtS3RPLVdsTFpUNnpneHUtbnBNSkNaUWpzUk9yRUdTZzY1ZEZJLWVRRdIBc0FVX3lxTE80THRLRXJZX3BDT3ZGSzZkVlVCN0dMVGZKRTlLZXRDN0F2VHkzWU1UbHBhcEhwck8yZXpNcUw5VElGRkdsVFd3eS1NX3FEdVFzMnJjbWpKUFR4UUdlSmtyeEhFYnJKR1hXQWctN1lkR3NhY0E?oc=5)
+- [코스피 저평가라는데 왜 떨어지나…반등 가로막는 3대 악재 (이슈+) - 에너지경제신문](https://news.google.com/rss/articles/CBMiW0FVX3lxTE5RcDJVbmhENmtxa0xJQ0VTRUh4eGJCbFUzbVhfQk54cVUxOWU1UHFseGdNdzVfQ3hxbkpqWFd5cHFoX01NNjUzeVJZN0VzbnRILTJUc19BUUtaTWc?oc=5)
+- [(경제 포커스) 환율 1330원대에서 오르락내리락… 반도체 기업 vs 외국인·서학개미 ‘줄다리기’ - Chosunbiz](https://news.google.com/rss/articles/CBMihgFBVV95cUxPdnp1Z3FnamNpRC01RlFWbndoTXpDV0VYRkNfRWU1UjYxZTlTQnhIc3d0cUowZEVva0JNSHh5ZHlKV3kxNUJWSlg4ZmdyZE1ESHJrVi1fX2k1NERPa21qTmZhc1VXbWNNLV9aVm1ONktRdDJVc0VMdzEtbGhzVGdpcFd4M2doZ9IBmgFBVV95cUxNT2JGMTl3b0gybWhGRjUxTF8zYTlzZ0pVSzBXTGxnQ1Q4M0JKNm0teEdPbXpaaTh6czZpYWhRS1NKUjI4WjB6X3JjYjhkWjhqcFhmYlJYLWtPbFpvM0M4cFVBSkpuMmtpWG54ZXRsVEJEM0gxclBrZ01RY1dQT0JpZWdJNm1YUnVVakRNeGtCUS1SUHBrTkdHcWNB?oc=5)
+- [AI 반도체 큰손 흔들리나…‘매출 17조+a’ 삼성·SK, 기회와 위기의 갈림길 - 아시아투데이](https://news.google.com/rss/articles/CBMibkFVX3lxTE56R3dpQzFURGM0bFhoLXIwS1J2WkhrbUtzNGtQSkxBQ21lZ2FidDh6X0VUOXAwOThVNnpzNWl1YkxLUWJJNHc2V253MmRCS09UOG44MllfaHFUSkVmS0pkVnVpRkcwcEhZMmNfTEJR?oc=5)
+- [(The Numbers) KB證 “삼성전자, 脫엔비디아 시대 최대 수혜주", 왜?…삼성 HBM 고객 65%의 의미 - 뉴스스페이스](https://news.google.com/rss/articles/CBMiYEFVX3lxTE82REpFN3FNRFllUmNMVUVFdHp2b3dic3lsRG1oVHJaYlhQU1lQRVU0MC1nbG1xamdRam9nblJtQzctcXJJMWU2VmxmdHZmQ2UyQXlzNFJjRElrWlNnalJ4RQ?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
