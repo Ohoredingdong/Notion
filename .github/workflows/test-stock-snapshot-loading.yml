@@ -3,12 +3,14 @@ on:
   pull_request:
     paths:
       - 'assets/stock-radar-v8.js'
+      - 'scripts/refine_stock_radar_v8.py'
       - 'tests/stock-entry-browser.cjs'
       - '.github/workflows/test-stock-snapshot-loading.yml'
   push:
     branches: [main]
     paths:
       - 'assets/stock-radar-v8.js'
+      - 'scripts/refine_stock_radar_v8.py'
       - 'tests/stock-entry-browser.cjs'
 permissions:
   contents: read
@@ -26,6 +28,14 @@ jobs:
       - run: node tests/stock-entry-ui.test.cjs
       - run: npm install --no-save --package-lock=false @playwright/test@1.56.0
       - run: npx playwright install --with-deps chromium
+      - name: Reproduce the recurring classification publisher before browser checks
+        run: |
+          python scripts/install_stock_market_groups.py
+          python scripts/apply_stock_radar_v9.py
+          python scripts/refine_stock_radar_v8.py
+          python scripts/install_stock_radar_v8.py
+          python scripts/refine_stock_radar_v8.py
+          git diff --exit-code -- assets/stock-radar-v8.js
       - name: Verify desktop and mobile with raw GitHub blocked
         run: |
           python -m http.server 8765 >/tmp/entry-http.log 2>&1 &
