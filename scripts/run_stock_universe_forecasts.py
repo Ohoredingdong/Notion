@@ -759,6 +759,9 @@ def validate_record(record, target, completed):
                (validation.get("test_sessions"), contract["POLICY"]["minimum_test_sessions"]))
     if any(type(value) is not int or value < minimum for value, minimum in samples):
         raise ValueError("model_validation_sample_gate")
+    usable = record["training_samples"] + record["calibration_samples"] + validation["test_samples"]
+    if usable < contract["POLICY"]["minimum_daily_samples"]:
+        raise ValueError("fewer_than_500_usable_daily_samples_after_purge")
     if (validation.get("live_validated") is not False or validation.get("live_success_rate") is not None or
             not finite(record.get("origin_reference_price")) or record["origin_reference_price"] <= 0):
         raise ValueError("invalid_model_validation_or_origin_price")
