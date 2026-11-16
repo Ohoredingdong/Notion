@@ -11,8 +11,8 @@ if 'function priorityValue(r)' not in s:
     s=s.replace("const ceilingNote=!finite(pc.move_pct)?", "const ceilingNote=a.price_condition_usable===false?'기준기간 불일치: 아래 가격을 매수 행동 기준으로 사용하지 마세요.':!finite(pc.move_pct)?")
     s=s.replace("b.basis||'연결 범위·만기표 별도 확인'", "'기준일 '+(b.asof||'미상')+' · '+(b.basis||'연결 범위·만기표 별도 확인')")
     s=s.replace("fmt(f.analysts,0)+'명 추정 · 공식 확정 실적 아님'", "fmt(f.analysts,0)+'명 · 제공처 0y 결산일 '+(f.current_fy_end_provider||'미상')+' · 확정 실적 아님'")
-# Public repository's actual snapshot is the data origin. A failed fetch remains
-# an error: never fall back to an older Pages copy and call it current.
-s=s.replace("fetch('./'+name+'?v='+Date.now()", "fetch('https://raw.githubusercontent.com/Ohoredingdong/Notion/main/'+name+'?v='+Date.now()")
+# Bind the UI to its deployed snapshot. Freshness/health gates still reject stale
+# data; do not silently switch the origin back to raw main during collection.
+s=s.replace("fetch('https://raw.githubusercontent.com/Ohoredingdong/Notion/main/'+name+'?v='+Date.now()", "fetch('./'+name+'?v='+Date.now()")
 p.write_text(s,encoding='utf-8')
-print('Displayed period labels and filing proof; read current repository snapshots')
+print('Displayed period labels and filing proof; read deployment-bound snapshots')
