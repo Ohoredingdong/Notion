@@ -256,6 +256,10 @@ def fit_model(bars, mode, market=None):
     if mode == 'intraday' and data.session.nunique() < POLICY['minimum_sessions_intraday']:
         raise ValueError('fewer_than_30_intraday_sessions')
     train, cal, test = chronological_split(data)
+    # Purged boundary labels are not usable training/calibration/test evidence.
+    # Enforce the same 500-sample total checked by the independent display audit.
+    if mode == 'daily' and sum(map(len, (train, cal, test))) < POLICY['minimum_daily_samples']:
+        raise ValueError('fewer_than_500_usable_daily_samples_after_purge')
     model = make_pipeline(StandardScaler(), LogisticRegression(C=POLICY['logistic_C'], max_iter=1000, solver='lbfgs'))
     model.fit(train[FEATURES], train.y)
     cp = model.predict_proba(cal[FEATURES])
