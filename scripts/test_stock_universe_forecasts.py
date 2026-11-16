@@ -573,6 +573,8 @@ class WholeUniverseTests(unittest.TestCase):
             ("input_hash", lambda r: r.update(input_sha256="f"*64)),
             ("training_time", lambda r: r.update(trained_through=r["issued_at"])),
             ("samples", lambda r: r["validation"].update(test_samples=3)),
+            ("post_purge_498", lambda r: r.update(training_samples=418)),
+            ("post_purge_499", lambda r: r.update(training_samples=419)),
             ("green", lambda r: r.update(strict_green_override=True)),
             ("band", lambda r: r.update(neutral_band_pct=99)),
             ("prior_issuance", lambda r: r.update(issued_at=(x.instant(shard["started_at"])-timedelta(seconds=1)).isoformat())),

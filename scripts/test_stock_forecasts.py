@@ -127,12 +127,19 @@ class ForecastTests(unittest.TestCase):
 
     def test_daily_500_sample_floor_is_unchanged(self):
         below = fixture(520)
-        enough = fixture(521)
+        enough = fixture(523)
         self.assertEqual(len(samples(below, 'daily')[0]), 499)
-        self.assertEqual(len(samples(enough, 'daily')[0]), 500)
+        self.assertEqual(len(samples(enough, 'daily')[0]), 502)
         with self.assertRaisesRegex(ValueError, 'fewer_than_500_daily_training_samples'):
             fit_model(below, 'daily')
+        for n in (521, 522):
+            boundary = fixture(n)
+            parts = chronological_split(samples(boundary, 'daily')[0])
+            self.assertIn(sum(map(len, parts)), (498, 499))
+            with self.assertRaisesRegex(ValueError, 'fewer_than_500_usable_daily_samples_after_purge'):
+                fit_model(boundary, 'daily')
         fitted = fit_model(enough, 'daily')
+        self.assertEqual(fitted['training_samples'] + fitted['calibration_samples'] + fitted['metrics']['test_samples'], 500)
         self.assertGreaterEqual(fitted['metrics']['test_samples'], 40)
         self.assertGreaterEqual(fitted['metrics']['test_sessions'], POLICY['minimum_test_sessions'])
 
