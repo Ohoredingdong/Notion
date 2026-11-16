@@ -1,6 +1,6 @@
 {
   "version": "strict-green-1.0",
-  "generated_at": "2026-11-16T17:04:40.439202+00:00",
+  "generated_at": "2026-11-16T17:26:26.920872+00:00",
   "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
   "counts": {
     "attractive": 0,
@@ -23,7 +23,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 356.26998901,
       "input_price_session": "2026-11-13",
@@ -312,7 +312,7 @@
       "previous_state": "attractive",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 523.88000488,
       "input_price_session": "2026-11-13",
@@ -601,7 +601,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 162.8500061,
       "input_price_session": "2026-11-13",
@@ -890,7 +890,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 266.66000366,
       "input_price_session": "2026-11-13",
@@ -1179,7 +1179,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 390.22000122,
       "input_price_session": "2026-11-13",
@@ -1468,7 +1468,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 206000.0,
       "input_price_session": "2026-11-13",
@@ -1537,9 +1537,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "같은 연결범위의 3년 이익과 현금을 비교했어요.",
+          "values": {
+            "three_year_cfo": 202435196000000.0,
+            "three_year_total_profit": 95145256000000.0,
+            "cash_conversion": 2.1276436105232612,
+            "net_income_yoy_pct": 31.219251750098277,
+            "operating_income_yoy_pct": 33.23077357453308,
+            "cfo_yoy_pct": 16.897895459249135,
+            "fcf_yoy_pct": 72.35086545998534
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
@@ -1552,7 +1560,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 10.880093313642902,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 1.7041161251217574
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/005930.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90"
@@ -1656,7 +1668,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 2,
       "required": 12,
       "next_checks": [
         {
@@ -1674,16 +1686,6 @@
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%82%BC%EC%84%B1%EC%A0%84%EC%9E%90"
-          ]
-        },
-        {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
           ]
         },
         {
@@ -1767,7 +1769,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 1216000.0,
       "input_price_session": "2026-11-13",
@@ -1836,9 +1838,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "같은 연결범위의 3년 이익과 현금을 비교했어요.",
+          "values": {
+            "three_year_cfo": 87447202000000.0,
+            "three_year_total_profit": 53607257000000.0,
+            "cash_conversion": 1.6312567904752149,
+            "net_income_yoy_pct": 116.94253979738849,
+            "operating_income_yoy_pct": 101.15769935202228,
+            "cfo_yoy_pct": 79.12918512069704,
+            "fcf_yoy_pct": 88.78641950256771
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635",
@@ -1851,7 +1861,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 46.762850611303676,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 7.326555623629583
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/000660.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SK%ED%95%98%EC%9D%B4%EB%8B%89%EC%8A%A4"
@@ -1955,7 +1969,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 2,
       "required": 12,
       "next_checks": [
         {
@@ -1973,16 +1987,6 @@
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SK%ED%95%98%EC%9D%B4%EB%8B%89%EC%8A%A4"
-          ]
-        },
-        {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000635"
           ]
         },
         {
@@ -2066,7 +2070,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 172500.0,
       "input_price_session": "2026-11-13",
@@ -2135,9 +2139,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "같은 연결범위의 3년 이익과 현금을 비교했어요.",
+          "values": {
+            "three_year_cfo": 7687914215941.0,
+            "three_year_total_profit": 4735740445461.0,
+            "cash_conversion": 1.623381666389578,
+            "net_income_yoy_pct": -5.860840977311199,
+            "operating_income_yoy_pct": 11.563642585579291,
+            "cfo_yoy_pct": 19.535012164772404,
+            "fcf_yoy_pct": -11.610601884460682
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021",
@@ -2148,9 +2160,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 12.08159686758814,
+            "receivables_growth_pct": 2.0840659159901076,
+            "inventory_growth_pct": -6.937040665988203
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/035420.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=NAVER"
@@ -2254,7 +2270,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 3,
       "required": 12,
       "next_checks": [
         {
@@ -2271,25 +2287,6 @@
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=NAVER"
-          ]
-        },
-        {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260313001021"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/035420.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=NAVER"
           ]
         },
@@ -2365,7 +2362,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 1411000.0,
       "input_price_session": "2026-11-13",
@@ -2434,9 +2431,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "같은 연결범위의 3년 이익과 현금을 비교했어요.",
+          "values": {
+            "three_year_cfo": 5573291350656.0,
+            "three_year_total_profit": 3725359244963.0,
+            "cash_conversion": 1.4960413168720734,
+            "net_income_yoy_pct": 64.71207370590149,
+            "operating_income_yoy_pct": 56.59708745648646,
+            "cfo_yoy_pct": 35.470851741293785,
+            "fcf_yoy_pct": 174.28185543951096
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658",
@@ -2447,9 +2452,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 30.305458155128505,
+            "receivables_growth_pct": -41.95550119924252,
+            "inventory_growth_pct": -24.487015001434475
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/207940.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%81%EC%8A%A4"
@@ -2553,7 +2562,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 3,
       "required": 12,
       "next_checks": [
         {
@@ -2570,25 +2579,6 @@
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%81%EC%8A%A4"
-          ]
-        },
-        {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515001658"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/207940.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%82%BC%EC%84%B1%EB%B0%94%EC%9D%B4%EC%98%A4%EB%A1%9C%EC%A7%81%EC%8A%A4"
           ]
         },
@@ -2664,7 +2654,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 269500.0,
       "input_price_session": "2026-11-13",
@@ -2733,9 +2723,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 당기순이익이 전년 대비 -21.7%예요. 줄어든 원인을 확인해야 해요. / 영업이익이 전년 대비 -19.5%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": -14171671000000.0,
+            "three_year_total_profit": 35866984000000.0,
+            "cash_conversion": -0.3951174428270858,
+            "net_income_yoy_pct": -21.656484686061305,
+            "operating_income_yoy_pct": -19.465031020551717,
+            "cfo_yoy_pct": null,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001394",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001394",
@@ -2748,7 +2746,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 6.290730164858305,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 4.399700328538114
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/005380.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%ED%98%84%EB%8C%80%EC%9E%90%EB%8F%99%EC%B0%A8"
@@ -2875,7 +2877,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 당기순이익이 전년 대비 -21.7%예요. 줄어든 원인을 확인해야 해요. / 영업이익이 전년 대비 -19.5%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001394",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001394",
@@ -2963,7 +2965,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 71.05999756,
       "input_price_session": "2026-11-13",
@@ -3252,7 +3254,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 33.34000015,
       "input_price_session": "2026-11-13",
@@ -3541,7 +3543,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 163.72000122,
       "input_price_session": "2026-11-13",
@@ -3830,7 +3832,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 43.25,
       "input_price_session": "2026-11-13",
@@ -4119,7 +4121,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 327.98001099,
       "input_price_session": "2026-11-13",
@@ -4408,7 +4410,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 30.12999916,
       "input_price_session": "2026-11-13",
@@ -4697,7 +4699,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 653.94000244,
       "input_price_session": "2026-11-13",
@@ -4986,7 +4988,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 91.37999725,
       "input_price_session": "2026-11-13",
@@ -5275,7 +5277,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 51600.0,
       "input_price_session": "2026-11-13",
@@ -5344,9 +5346,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "같은 연결범위의 3년 이익과 현금을 비교했어요.",
+          "values": {
+            "three_year_cfo": 399966465467.0,
+            "three_year_total_profit": 376162732274.0,
+            "cash_conversion": 1.0632804133708311,
+            "net_income_yoy_pct": 34.14720126778785,
+            "operating_income_yoy_pct": 42.508271465573344,
+            "cfo_yoy_pct": 62.995543553174116,
+            "fcf_yoy_pct": 21.552851513796824
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000182",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000182",
@@ -5359,7 +5369,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 33.91537709881829,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 19.717371750032896
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/058470.KQ/balance-sheet/",
             "https://kind.krx.co.kr/external/2026/03/18/000195/20260318000896/11011.htm"
@@ -5463,7 +5477,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 3,
       "required": 12,
       "next_checks": [
         {
@@ -5472,16 +5486,6 @@
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
           "sources": [
             "https://kind.krx.co.kr/external/2026/03/18/000195/20260318000896/11011.htm"
-          ]
-        },
-        {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000182",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000182",
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000182"
           ]
         },
         {
@@ -5565,7 +5569,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 36850.0,
       "input_price_session": "2026-11-13",
@@ -5634,9 +5638,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "당기순이익이 전년 대비 -34.4%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -15.7%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 532804858856.0,
+            "three_year_total_profit": 361111146176.0,
+            "cash_conversion": 1.4754594658684923,
+            "net_income_yoy_pct": -34.423448758374974,
+            "operating_income_yoy_pct": -1.6896436063464915,
+            "cfo_yoy_pct": -15.694388566601102,
+            "fcf_yoy_pct": 113.73548500120462
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000264",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000264",
@@ -5647,9 +5659,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 7.30865184923184,
+            "receivables_growth_pct": -47.9705521637574,
+            "inventory_growth_pct": -15.829839189259875
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/005290.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EB%8F%99%EC%A7%84%EC%8E%84%EB%AF%B8%EC%BC%90"
@@ -5753,7 +5769,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 3,
       "required": 12,
       "next_checks": [
         {
@@ -5767,20 +5783,11 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "당기순이익이 전년 대비 -34.4%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -15.7%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000264",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000264",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000264"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/005290.KQ/balance-sheet/",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EB%8F%99%EC%A7%84%EC%8E%84%EB%AF%B8%EC%BC%90"
           ]
         },
         {
@@ -5855,7 +5862,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 212500.0,
       "input_price_session": "2026-11-13",
@@ -5924,9 +5931,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "당기순이익이 전년 대비 -19.5%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -29.5%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -585.2%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 90499114507.0,
+            "three_year_total_profit": 101841861781.0,
+            "cash_conversion": 0.8886239206978427,
+            "net_income_yoy_pct": -19.45612971948558,
+            "operating_income_yoy_pct": 9.502120489442367,
+            "cfo_yoy_pct": -29.486381065556987,
+            "fcf_yoy_pct": -585.1682902148888
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000022",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000022",
@@ -5937,9 +5952,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 17.453248449034486,
+            "receivables_growth_pct": 25.7080004176377,
+            "inventory_growth_pct": 20.999021142067686
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/140860.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%ED%8C%8C%ED%81%AC%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%8A%A4"
@@ -6043,7 +6062,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 2,
       "required": 12,
       "next_checks": [
         {
@@ -6066,20 +6085,11 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "당기순이익이 전년 대비 -19.5%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -29.5%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -585.2%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000022",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000022",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000022"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/140860.KQ/balance-sheet/",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%ED%8C%8C%ED%81%AC%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%8A%A4"
           ]
         },
         {
@@ -6154,7 +6164,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 77700.0,
       "input_price_session": "2026-11-13",
@@ -6223,9 +6233,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
+          "values": {
+            "three_year_cfo": 222572349770.0,
+            "three_year_total_profit": 91269202065.0,
+            "cash_conversion": 2.438635867677343,
+            "net_income_yoy_pct": 304.9891626527334,
+            "operating_income_yoy_pct": 593.6351561228063,
+            "cfo_yoy_pct": 100.05878788636169,
+            "fcf_yoy_pct": 167.82435727613637
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001453",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001453",
@@ -6236,9 +6254,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 21.60174855452346,
+            "receivables_growth_pct": -27.972108001293705,
+            "inventory_growth_pct": -19.239611913564815
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/240810.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%9B%90%EC%9D%B5IPS"
@@ -6342,7 +6364,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 3,
       "required": 12,
       "next_checks": [
         {
@@ -6356,20 +6378,11 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001453",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001453",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001453"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/240810.KQ/balance-sheet/",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%9B%90%EC%9D%B5IPS"
           ]
         },
         {
@@ -6444,7 +6457,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 113600.0,
       "input_price_session": "2026-11-13",
@@ -6513,9 +6526,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "당기순이익이 전년 대비 -26.7%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -17.5%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -26.0%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 1625878545006.0,
+            "three_year_total_profit": 1308809070845.0,
+            "cash_conversion": 1.2422580047953764,
+            "net_income_yoy_pct": -26.74870299295049,
+            "operating_income_yoy_pct": 2.698781970130293,
+            "cfo_yoy_pct": -17.535655212944658,
+            "fcf_yoy_pct": -26.00484061174847
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001320",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001320",
@@ -6528,7 +6549,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 7.347908568930572,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 1.523247852945775
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/271560.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%98%A4%EB%A6%AC%EC%98%A8"
@@ -6646,7 +6671,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "당기순이익이 전년 대비 -26.7%예요. 줄어든 원인을 확인해야 해요. / 영업현금흐름(CFO)이 전년 대비 -17.5%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -26.0%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001320",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001320",
@@ -6734,7 +6759,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 280500.0,
       "input_price_session": "2026-11-13",
@@ -6803,9 +6828,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 390691609750.0,
+            "three_year_total_profit": 257293567949.0,
+            "cash_conversion": 1.518466290721429,
+            "net_income_yoy_pct": 48.24701465266257,
+            "operating_income_yoy_pct": 11.628809294684462,
+            "cfo_yoy_pct": 18.82855068863978,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000694",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000694",
@@ -6818,7 +6851,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": 10.741399255109062,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 5.366592606951515
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/192820.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=%EC%BD%94%EC%8A%A4%EB%A7%A5%EC%8A%A4"
@@ -6945,7 +6982,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000694",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000694",
@@ -7033,7 +7070,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 114.58999634,
       "input_price_session": "2026-11-13",
@@ -7105,7 +7142,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/SMTC/financials/",
+            "https://finance.yahoo.com/quote/SMTC/financials/",
+            "https://finance.yahoo.com/quote/SMTC/financials/"
           ]
         },
         {
@@ -7234,7 +7273,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/SMTC/financials/",
+            "https://finance.yahoo.com/quote/SMTC/financials/",
+            "https://finance.yahoo.com/quote/SMTC/financials/"
           ]
         },
         {
@@ -7318,7 +7359,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 86.31999969,
       "input_price_session": "2026-11-13",
@@ -7390,7 +7431,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/DOCN/financials/",
+            "https://finance.yahoo.com/quote/DOCN/financials/",
+            "https://finance.yahoo.com/quote/DOCN/financials/"
           ]
         },
         {
@@ -7519,7 +7562,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/DOCN/financials/",
+            "https://finance.yahoo.com/quote/DOCN/financials/",
+            "https://finance.yahoo.com/quote/DOCN/financials/"
           ]
         },
         {
@@ -7603,7 +7648,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 115.38999939,
       "input_price_session": "2026-11-13",
@@ -7892,7 +7937,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 36.65000153,
       "input_price_session": "2026-11-13",
@@ -8181,7 +8226,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 203.61999512,
       "input_price_session": "2026-11-13",
@@ -8470,7 +8515,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 88.15000153,
       "input_price_session": "2026-11-13",
@@ -8759,7 +8804,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 31.04999924,
       "input_price_session": "2026-11-13",
@@ -9048,7 +9093,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 41.63000107,
       "input_price_session": "2026-11-13",
@@ -9337,7 +9382,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 543.88000488,
       "input_price_session": "2026-11-13",
@@ -9626,7 +9671,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 317.85998535,
       "input_price_session": "2026-11-13",
@@ -9698,7 +9743,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/NVMI/financials/",
+            "https://finance.yahoo.com/quote/NVMI/financials/",
+            "https://finance.yahoo.com/quote/NVMI/financials/"
           ]
         },
         {
@@ -9827,7 +9874,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/NVMI/financials/",
+            "https://finance.yahoo.com/quote/NVMI/financials/",
+            "https://finance.yahoo.com/quote/NVMI/financials/"
           ]
         },
         {
@@ -9911,7 +9960,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 50.88999939,
       "input_price_session": "2026-11-13",
@@ -9983,7 +10032,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/BWA/financials/",
+            "https://finance.yahoo.com/quote/BWA/financials/",
+            "https://finance.yahoo.com/quote/BWA/financials/"
           ]
         },
         {
@@ -10112,7 +10163,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/BWA/financials/",
+            "https://finance.yahoo.com/quote/BWA/financials/",
+            "https://finance.yahoo.com/quote/BWA/financials/"
           ]
         },
         {
@@ -10196,7 +10249,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 64.51000214,
       "input_price_session": "2026-11-13",
@@ -10485,7 +10538,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 178.22000122,
       "input_price_session": "2026-11-13",
@@ -10774,7 +10827,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 394.79000854,
       "input_price_session": "2026-11-13",
@@ -11071,7 +11124,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 70.5,
       "input_price_session": "2026-11-13",
@@ -11143,7 +11196,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ACM/financials/",
+            "https://finance.yahoo.com/quote/ACM/financials/",
+            "https://finance.yahoo.com/quote/ACM/financials/"
           ]
         },
         {
@@ -11272,7 +11327,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ACM/financials/",
+            "https://finance.yahoo.com/quote/ACM/financials/",
+            "https://finance.yahoo.com/quote/ACM/financials/"
           ]
         },
         {
@@ -11356,7 +11413,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 69.37000275,
       "input_price_session": "2026-11-13",
@@ -11428,7 +11485,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ADC/financials/",
+            "https://finance.yahoo.com/quote/ADC/financials/",
+            "https://finance.yahoo.com/quote/ADC/financials/"
           ]
         },
         {
@@ -11565,7 +11624,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ADC/financials/",
+            "https://finance.yahoo.com/quote/ADC/financials/",
+            "https://finance.yahoo.com/quote/ADC/financials/"
           ]
         },
         {
@@ -11649,7 +11710,7 @@
       "previous_state": "conditional",
       "state": "conditional",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 72.13999939,
       "input_price_session": "2026-11-13",
@@ -11938,7 +11999,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 142.83999634,
       "input_price_session": "2026-11-13",
@@ -12235,7 +12296,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 86.22000122,
       "input_price_session": "2026-11-13",
@@ -12524,7 +12585,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 102.0,
       "input_price_session": "2026-11-13",
@@ -12821,7 +12882,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 25.04999924,
       "input_price_session": "2026-11-13",
@@ -13118,7 +13179,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 27.72999954,
       "input_price_session": "2026-11-13",
@@ -13407,7 +13468,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 138.94999695,
       "input_price_session": "2026-11-13",
@@ -13704,7 +13765,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 38.06999969,
       "input_price_session": "2026-11-13",
@@ -14001,7 +14062,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 112.91999817,
       "input_price_session": "2026-11-13",
@@ -14298,7 +14359,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 330.52999878,
       "input_price_session": "2026-11-13",
@@ -14587,7 +14648,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 66.33999634,
       "input_price_session": "2026-11-13",
@@ -14884,7 +14945,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 192.8999939,
       "input_price_session": "2026-11-13",
@@ -15173,7 +15234,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 38.83000183,
       "input_price_session": "2026-11-13",
@@ -15462,7 +15523,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 366.35998535,
       "input_price_session": "2026-11-13",
@@ -15751,7 +15812,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 30.29999924,
       "input_price_session": "2026-11-13",
@@ -16048,7 +16109,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 387.64001465,
       "input_price_session": "2026-11-13",
@@ -16337,7 +16398,7 @@
       "previous_state": "avoid",
       "state": "avoid",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 17.31999969,
       "input_price_session": "2026-11-13",
@@ -16626,7 +16687,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 24.29000092,
       "input_price_session": "2026-11-13",
@@ -16915,7 +16976,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 157.88000488,
       "input_price_session": "2026-11-13",
@@ -17212,7 +17273,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 135.13000488,
       "input_price_session": "2026-11-13",
@@ -17509,7 +17570,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 246.25999451,
       "input_price_session": "2026-11-13",
@@ -17806,7 +17867,7 @@
       "previous_state": "price_wait",
       "state": "price_wait",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 143.08999634,
       "input_price_session": "2026-11-13",
@@ -17878,7 +17939,9 @@
           "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "values": {},
           "source_urls": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ATR/financials/",
+            "https://finance.yahoo.com/quote/ATR/financials/",
+            "https://finance.yahoo.com/quote/ATR/financials/"
           ]
         },
         {
@@ -18007,7 +18070,9 @@
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
           "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
           "sources": [
-            "https://www.sec.gov/edgar/search/"
+            "https://finance.yahoo.com/quote/ATR/financials/",
+            "https://finance.yahoo.com/quote/ATR/financials/",
+            "https://finance.yahoo.com/quote/ATR/financials/"
           ]
         },
         {
@@ -18091,7 +18156,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 39.68000031,
       "input_price_session": "2026-11-13",
@@ -18388,7 +18453,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 20.45999908,
       "input_price_session": "2026-11-13",
@@ -18677,7 +18742,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 172500.0,
       "input_price_session": "2026-11-13",
@@ -18976,7 +19041,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 13290.0,
       "input_price_session": "2026-11-13",
@@ -19045,9 +19110,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": -30208359507.0,
+            "three_year_total_profit": -113467639537.0,
+            "cash_conversion": null,
+            "net_income_yoy_pct": null,
+            "operating_income_yoy_pct": null,
+            "cfo_yoy_pct": null,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000854",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000854",
@@ -19058,9 +19131,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "재고자산 증가율이 매출 증가율보다 20.1%p 높아요.",
+          "values": {
+            "revenue_growth_pct": -8.689706669412434,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 11.386178313653584
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/010170.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Taihan%20Fiber%20Optics%20Co.%2C%20Ltd"
@@ -19187,7 +19264,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000854",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000854",
@@ -19197,7 +19274,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "재고자산 증가율이 매출 증가율보다 20.1%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/010170.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Taihan%20Fiber%20Optics%20Co.%2C%20Ltd"
@@ -19275,7 +19352,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 91300.0,
       "input_price_session": "2026-11-13",
@@ -19344,9 +19421,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "영업현금흐름(CFO)이 전년 대비 -26.9%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -87.6%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 350123281468.0,
+            "three_year_total_profit": 96745875561.0,
+            "cash_conversion": 3.61899956393739,
+            "net_income_yoy_pct": 100.33612912183827,
+            "operating_income_yoy_pct": 335.73454462455555,
+            "cfo_yoy_pct": -26.855518980310787,
+            "fcf_yoy_pct": -87.5769945944288
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001514",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001514",
@@ -19357,9 +19442,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "매출채권 증가율이 매출 증가율보다 32.4%p 높아요. / 재고자산 증가율이 매출 증가율보다 28.4%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 19.409448194020396,
+            "receivables_growth_pct": 51.815602190601176,
+            "inventory_growth_pct": 47.84393547682784
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/353200.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=DAEDUCK%20ELECTRONICS%20Co.%2C%20Ltd."
@@ -19486,7 +19575,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "영업현금흐름(CFO)이 전년 대비 -26.9%예요. 줄어든 원인을 확인해야 해요. / FCF이 전년 대비 -87.6%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001514",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001514",
@@ -19496,7 +19585,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "매출채권 증가율이 매출 증가율보다 32.4%p 높아요. / 재고자산 증가율이 매출 증가율보다 28.4%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/353200.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=DAEDUCK%20ELECTRONICS%20Co.%2C%20Ltd."
@@ -19574,7 +19663,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 124800.0,
       "input_price_session": "2026-11-13",
@@ -19643,9 +19732,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": -453270360972.0,
+            "three_year_total_profit": -310768933623.0,
+            "cash_conversion": null,
+            "net_income_yoy_pct": null,
+            "operating_income_yoy_pct": null,
+            "cfo_yoy_pct": null,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000641",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000641",
@@ -19656,9 +19753,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "매출채권 증가율이 매출 증가율보다 80.0%p 높아요. / 재고자산 증가율이 매출 증가율보다 41.3%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 14.547298035814826,
+            "receivables_growth_pct": 94.59203752665664,
+            "inventory_growth_pct": 55.84259184902829
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/222800.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SIMMTECH%20Co.%2C%20Ltd."
@@ -19785,7 +19886,7 @@
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000641",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260317000641",
@@ -19795,7 +19896,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "매출채권 증가율이 매출 증가율보다 80.0%p 높아요. / 재고자산 증가율이 매출 증가율보다 41.3%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/222800.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SIMMTECH%20Co.%2C%20Ltd."
@@ -19873,12 +19974,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 40700.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 2225.3894,
-      "fundamental_fingerprint": "2939cd92fed9a72d3bbc912b5baac0fc99e1ca8fed199219e9dfb2b9745cf743",
+      "fundamental_fingerprint": "c78abe872bc7c07ab2ee865b26abc994a142b5e43d3dcef971748712217884d3",
       "green_eligible": false,
       "checks": [
         {
@@ -19899,42 +20000,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 172964572180.0,
-              "official": 172964572189.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 89902342650.0,
-              "official": 89902342748.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 894.0,
-              "official": 894.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 100205138390.0,
-              "official": 100205138390.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 2429181000.0,
-              "official": 2429181005.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 97775957390.0,
-              "official": 97775957385.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000776",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HPSP%20Co.%2C%20Ltd."
           ]
         },
@@ -19942,9 +20042,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "당기순이익이 전년 대비 -15.8%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 250411479627.0,
+            "three_year_total_profit": 239374859095.0,
+            "cash_conversion": 1.0461060136963671,
+            "net_income_yoy_pct": -15.78345972000731,
+            "operating_income_yoy_pct": -4.303923750548721,
+            "cfo_yoy_pct": 19.534783557510593,
+            "fcf_yoy_pct": 142.88588162959672
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000776",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000776",
@@ -19957,7 +20065,11 @@
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
           "status": "missing",
           "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "values": {
+            "revenue_growth_pct": -4.651025831590072,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": -30.970838926771606
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/403870.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HPSP%20Co.%2C%20Ltd."
@@ -20061,7 +20173,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
@@ -20073,9 +20185,17 @@
           ]
         },
         {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HPSP%20Co.%2C%20Ltd."
+          ]
+        },
+        {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "당기순이익이 전년 대비 -15.8%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000776",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000776",
@@ -20163,12 +20283,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 23650.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 2524.9297,
-      "fundamental_fingerprint": "690a4fb819c5d52bed41bb8ac70df802fa9bda9a9b4584c0e6c8192d147a66a3",
+      "fundamental_fingerprint": "9e6ddc28884c9bf03da771d2edb0ee870672d57b04682aa7b62c816d560b9c17",
       "green_eligible": false,
       "checks": [
         {
@@ -20194,12 +20314,12 @@
           "values": {
             "revenue": {
               "input": 13333055000000.0,
-              "official": 13333055000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": -364585000000.0,
-              "official": -364759000000.0,
+              "official": null,
               "match": false
             },
             "eps": {
@@ -20209,22 +20329,21 @@
             },
             "cfo": {
               "input": -655006000000.0,
-              "official": -655006000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 2017506000000.0,
-              "official": 2017506000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -2672512000000.0,
-              "official": -2672512000000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Solutions%20Corporation"
           ]
         },
@@ -20232,9 +20351,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 영업현금흐름(CFO)이 전년 대비 -202.6%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 501434000000.0,
+            "three_year_total_profit": -2072485000000.0,
+            "cash_conversion": null,
+            "net_income_yoy_pct": null,
+            "operating_income_yoy_pct": null,
+            "cfo_yoy_pct": -202.58737074892795,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
@@ -20245,9 +20372,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "재고자산 증가율이 매출 증가율보다 25.8%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 7.5764820206899675,
+            "receivables_growth_pct": -7.801958227413497,
+            "inventory_growth_pct": 33.40868969651076
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/009830.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Solutions%20Corporation"
@@ -20367,14 +20498,13 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Solutions%20Corporation"
           ]
         },
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 영업현금흐름(CFO)이 전년 대비 -202.6%예요. 줄어든 원인을 확인해야 해요. / 최근 연간 FCF가 양수가 아니에요. 투자 목적과 자금조달을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261112000461",
@@ -20384,7 +20514,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "재고자산 증가율이 매출 증가율보다 25.8%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/009830.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Solutions%20Corporation"
@@ -20462,12 +20592,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 31350.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": null,
-      "fundamental_fingerprint": "5b892ba5734af7c0a0a177709c32530df9022f538883f49fa487eb26ab864589",
+      "fundamental_fingerprint": "28372750d30279f902fa8468509cebedca7fe70cc677599a23a48780b0b6e36c",
       "green_eligible": false,
       "checks": [
         {
@@ -20493,37 +20623,36 @@
           "values": {
             "revenue": {
               "input": 622991604240.0,
-              "official": 622991604240.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 81613030.0,
-              "official": -418124396.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 359.0,
-              "official": 359.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 118085965490.0,
-              "official": 118085965498.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 91459682100.0,
-              "official": 90807786775.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": 26626283390.0,
-              "official": 27278178723.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Wonik%20Holdings%20Co.%2CLtd."
           ]
         },
@@ -20531,9 +20660,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 영업이익이 전년 대비 -101.4%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 351876500080.0,
+            "three_year_total_profit": -28904249163.0,
+            "cash_conversion": null,
+            "net_income_yoy_pct": null,
+            "operating_income_yoy_pct": -101.36577465178948,
+            "cfo_yoy_pct": 16.258954206221055,
+            "fcf_yoy_pct": 109.19685579989502
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
@@ -20544,9 +20681,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": -3.482875319693768,
+            "receivables_growth_pct": 1.589667180065435,
+            "inventory_growth_pct": -21.59109722393959
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/030530.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Wonik%20Holdings%20Co.%2CLtd."
@@ -20650,7 +20791,7 @@
           ]
         }
       ],
-      "passed": 1,
+      "passed": 2,
       "required": 12,
       "next_checks": [
         {
@@ -20666,27 +20807,17 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Wonik%20Holdings%20Co.%2CLtd."
           ]
         },
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 영업이익이 전년 대비 -101.4%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260923000536"
-          ]
-        },
-        {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "sources": [
-            "https://finance.yahoo.com/quote/030530.KQ/balance-sheet/",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Wonik%20Holdings%20Co.%2CLtd."
           ]
         },
         {
@@ -20761,12 +20892,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 236000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 20783.793,
-      "fundamental_fingerprint": "6f7992e7781f78be603c83b24788141713816a77d85f02e16a2318a4eb6aee57",
+      "fundamental_fingerprint": "e86b8e54b79af4cb70cf81571e7eefd3bfa1bf39df13938ddf196aed5bddf564",
       "green_eligible": false,
       "checks": [
         {
@@ -20792,23 +20923,23 @@
           "values": {
             "revenue": {
               "input": 1527344973380.0,
-              "official": 1527344973381.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 365520628650.0,
-              "official": 365520628934.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 7765.0,
-              "official": 7718.0,
+              "official": null,
               "match": false
             },
             "cfo": {
               "input": 341046397290.0,
-              "official": 341046397295.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 17917776760.0,
@@ -20822,7 +20953,6 @@
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001257",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=APR%20Co.%2C%20Ltd."
           ]
         },
@@ -20965,7 +21095,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001257",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=APR%20Co.%2C%20Ltd."
           ]
         },
@@ -21060,12 +21189,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 11560.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 1290.7339,
-      "fundamental_fingerprint": "b7d4b8dc1625edcbf74d4a5f27d264a8e46baff77717fcac9de36180d522d224",
+      "fundamental_fingerprint": "e3374ff874b82fca508228b46fd7bc18846f691ca5b2af48e24ad04b3acaf8ac",
       "green_eligible": false,
       "checks": [
         {
@@ -21091,37 +21220,36 @@
           "values": {
             "revenue": {
               "input": 8054627137850.0,
-              "official": 8054627137857.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": -905445280170.0,
-              "official": -815431279791.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": -2220.0,
-              "official": -2220.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 462905032700.0,
-              "official": 462905032703.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 110981717710.0,
-              "official": 110981717721.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 351923314990.0,
-              "official": 351923314982.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Daewoo%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
           ]
         },
@@ -21129,9 +21257,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 당기순이익이 전년 대비 -477.2%예요. 줄어든 원인을 확인해야 해요. / 영업이익이 전년 대비 -302.3%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": -1653445826208.0,
+            "three_year_total_profit": -151750649172.0,
+            "cash_conversion": null,
+            "net_income_yoy_pct": -477.2207257865764,
+            "operating_income_yoy_pct": -302.2772187409828,
+            "cfo_yoy_pct": null,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
@@ -21142,9 +21278,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "재고자산 증가율이 매출 증가율보다 48.1%p 높아요.",
+          "values": {
+            "revenue_growth_pct": -23.315623497767636,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 24.795181783690403
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/047040.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Daewoo%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
@@ -21264,14 +21404,13 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Daewoo%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
           ]
         },
         {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요. / 당기순이익이 전년 대비 -477.2%예요. 줄어든 원인을 확인해야 해요. / 영업이익이 전년 대비 -302.3%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001029",
@@ -21281,7 +21420,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "재고자산 증가율이 매출 증가율보다 48.1%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/047040.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Daewoo%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
@@ -21359,12 +21498,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 465500.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 15723.154,
-      "fundamental_fingerprint": "e684f484b5aa0387cdbcd3019cf60493cfe37a088186b4c35ffd7b86689cb612",
+      "fundamental_fingerprint": "be424bf3075db5a1ee4ca09f45bd18bb5aa3f892f6199a612674063876655823",
       "green_eligible": false,
       "checks": [
         {
@@ -21385,42 +21524,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 1547531098760.0,
-              "official": 1547531098763.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 257799091330.0,
-              "official": 257799090185.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 13362.0,
-              "official": 13362.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 173072329950.0,
-              "official": 173072329954.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 76547028920.0,
-              "official": 76547028930.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 96525301030.0,
-              "official": 96525301024.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001130",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanmi%20Pharm.%20Co.%2C%20Ltd."
           ]
         },
@@ -21428,9 +21566,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "FCF이 전년 대비 -26.3%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 583096670280.0,
+            "three_year_total_profit": 492932773473.0,
+            "cash_conversion": 1.182913171245934,
+            "net_income_yoy_pct": 33.25793506216925,
+            "operating_income_yoy_pct": 19.248640518072826,
+            "cfo_yoy_pct": -10.550798771777947,
+            "fcf_yoy_pct": -26.278466537931333
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001130",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001130",
@@ -21441,9 +21587,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "매출채권 증가율이 매출 증가율보다 38.5%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 3.47906843061927,
+            "receivables_growth_pct": 41.992649154829145,
+            "inventory_growth_pct": 12.496949072785757
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/128940.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanmi%20Pharm.%20Co.%2C%20Ltd."
@@ -21547,7 +21697,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
@@ -21559,9 +21709,17 @@
           ]
         },
         {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanmi%20Pharm.%20Co.%2C%20Ltd."
+          ]
+        },
+        {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "FCF이 전년 대비 -26.3%예요. 줄어든 원인을 확인해야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001130",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001130",
@@ -21571,7 +21729,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "매출채권 증가율이 매출 증가율보다 38.5%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/128940.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanmi%20Pharm.%20Co.%2C%20Ltd."
@@ -21649,12 +21807,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 243000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 1724.0386,
-      "fundamental_fingerprint": "b46d5d5ae1b4aff2972dada687cdebf7e8869a99f756045dff3104e8d2a92884",
+      "fundamental_fingerprint": "a37cc8cc3ecbf7894471d8fffbfb6b9eab45a5d64679c019df72c374920eb7f0",
       "green_eligible": false,
       "checks": [
         {
@@ -21675,42 +21833,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 38942547000.0,
-              "official": 38942547006.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 3346038740.0,
-              "official": 3346038655.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 384.0,
-              "official": 384.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 7075291560.0,
-              "official": 7075291568.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 2440625080.0,
-              "official": 2440625096.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 4634666480.0,
-              "official": 4634666472.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260708000478",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ROBOTIS%20Co.%2C%20Ltd."
           ]
         },
@@ -21718,9 +21875,17 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
+          "values": {
+            "three_year_cfo": 7683769842.0,
+            "three_year_total_profit": 964841644.0,
+            "cash_conversion": 7.963762644142255,
+            "net_income_yoy_pct": null,
+            "operating_income_yoy_pct": null,
+            "cfo_yoy_pct": 32.09863432636568,
+            "fcf_yoy_pct": 362.1966145607742
+          },
           "source_urls": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260708000478",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260708000478",
@@ -21731,9 +21896,13 @@
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "매출채권 증가율이 매출 증가율보다 171.9%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 29.643276720553423,
+            "receivables_growth_pct": 201.52950887967177,
+            "inventory_growth_pct": 1.6916953657012623
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/108490.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ROBOTIS%20Co.%2C%20Ltd."
@@ -21837,7 +22006,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
@@ -21849,9 +22018,17 @@
           ]
         },
         {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ROBOTIS%20Co.%2C%20Ltd."
+          ]
+        },
+        {
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "reason": "최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
           "sources": [
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260708000478",
             "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260708000478",
@@ -21861,7 +22038,7 @@
         {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "매출채권 증가율이 매출 증가율보다 171.9%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/108490.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ROBOTIS%20Co.%2C%20Ltd."
@@ -21939,12 +22116,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 60100.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": null,
-      "fundamental_fingerprint": "5e6bed067aab4c1136a6db18fd53a4efe0020d21c9262fb66f9ea2651699110f",
+      "fundamental_fingerprint": "c2ca602e1ac133e10ed3eed51cbb655a204b5de110046cd4b8603c53d054c30e",
       "green_eligible": false,
       "checks": [
         {
@@ -21965,42 +22142,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 302230571180.0,
-              "official": 302230571186.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 35873972370.0,
-              "official": 35873972312.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 1173.0,
-              "official": 1173.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 25554903160.0,
-              "official": 25554903161.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 2724757610.0,
-              "official": 2724757610.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 22830145550.0,
-              "official": 22830145551.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Jeju%20Semiconductor%20Corp."
           ]
         },
@@ -22008,20 +22184,34 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
+          "values": {
+            "three_year_cfo": 18383675860.0,
+            "three_year_total_profit": 75824061627.0,
+            "cash_conversion": 0.24245174243546197,
+            "net_income_yoy_pct": 103.54891460561247,
+            "operating_income_yoy_pct": 274.41418844616135,
+            "cfo_yoy_pct": null,
+            "fcf_yoy_pct": null
+          },
           "source_urls": [
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Jeju%20Semiconductor%20Corp."
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029"
           ]
         },
         {
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "pass",
+          "explanation": "외상대금·재고가 매출보다 과도하게 늘었는지 비교했어요.",
+          "values": {
+            "revenue_growth_pct": 86.15994624388215,
+            "receivables_growth_pct": 67.65543152049551,
+            "inventory_growth_pct": -5.437302577365677
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/080220.KQ/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Jeju%20Semiconductor%20Corp."
@@ -22137,20 +22327,21 @@
           ]
         },
         {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Jeju%20Semiconductor%20Corp."
           ]
         },
         {
-          "term": "매출채권·재고 점검",
-          "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "term": "3년 이익의 현금화",
+          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
+          "reason": "3년 합계 영업현금흐름이 합계 순이익의 80%에 못 미치거나 비교할 수 없어요. / 최근 3년 중 영업현금흐름이 양수가 아닌 해가 있어요.",
           "sources": [
-            "https://finance.yahoo.com/quote/080220.KQ/balance-sheet/",
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Jeju%20Semiconductor%20Corp."
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001029"
           ]
         },
         {
@@ -22225,12 +22416,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 287000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 37631.71,
-      "fundamental_fingerprint": "10c5ddfc45578a249ff6ff3d960ec6a312174a8d94fa15f855768549becc7c1b",
+      "fundamental_fingerprint": "3fc9e0706c207bd00eeb06c034c10f3df8a262d1607dddc901899d8ed98d635e",
       "green_eligible": false,
       "checks": [
         {
@@ -22251,42 +22442,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 21896603000000.0,
-              "official": 21896603000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 665007000000.0,
-              "official": 665007000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 14421.0,
-              "official": 14421.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 1331402000000.0,
-              "official": 1331402000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 754528000000.0,
-              "official": 754528000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 576874000000.0,
-              "official": 576874000000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20Innotek%20Co.%2C%20Ltd."
           ]
         },
@@ -22294,20 +22484,34 @@
           "id": "cash_quality",
           "term": "3년 이익의 현금화",
           "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "status": "missing",
-          "explanation": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "당기순이익이 전년 대비 -24.0%예요. 줄어든 원인을 확인해야 해요.",
+          "values": {
+            "three_year_cfo": 4545524000000.0,
+            "three_year_total_profit": 1355737000000.0,
+            "cash_conversion": 3.3528066284242444,
+            "net_income_yoy_pct": -24.041453545052683,
+            "operating_income_yoy_pct": -5.812110593830688,
+            "cfo_yoy_pct": 19.939858998358638,
+            "fcf_yoy_pct": 257.1864648153308
+          },
           "source_urls": [
-            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20Innotek%20Co.%2C%20Ltd."
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270"
           ]
         },
         {
           "id": "working_capital",
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "status": "missing",
-          "explanation": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
-          "values": {},
+          "status": "review",
+          "explanation": "재고자산 증가율이 매출 증가율보다 10.3%p 높아요.",
+          "values": {
+            "revenue_growth_pct": 3.282184997656934,
+            "receivables_growth_pct": null,
+            "inventory_growth_pct": 13.555449610567516
+          },
           "source_urls": [
             "https://finance.yahoo.com/quote/011070.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20Innotek%20Co.%2C%20Ltd."
@@ -22411,7 +22615,7 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
@@ -22423,17 +22627,27 @@
           ]
         },
         {
-          "term": "3년 이익의 현금화",
-          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
-          "reason": "공식 출처의 같은 회계범위 3년 현금흐름이 더 필요해요.",
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20Innotek%20Co.%2C%20Ltd."
           ]
         },
         {
+          "term": "3년 이익의 현금화",
+          "meaning": "장부상 이익이 실제 현금으로 들어왔는지",
+          "reason": "당기순이익이 전년 대비 -24.0%예요. 줄어든 원인을 확인해야 해요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270",
+            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260312001270"
+          ]
+        },
+        {
           "term": "매출채권·재고 점검",
           "meaning": "외상대금과 안 팔린 재고가 쌓이는지",
-          "reason": "없는 금액을 0원으로 간주하지 않아요. 외상대금·재고 주석을 확인해야 해요.",
+          "reason": "재고자산 증가율이 매출 증가율보다 10.3%p 높아요.",
           "sources": [
             "https://finance.yahoo.com/quote/011070.KS/balance-sheet/",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20Innotek%20Co.%2C%20Ltd."
@@ -22511,12 +22725,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 88500.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 6220.6987,
-      "fundamental_fingerprint": "debc48ccfa27554ea0154f0769fee0504b846f393f2f2bedf77f89434c446435",
+      "fundamental_fingerprint": "2ad6b309c44fa5ca992f7d4cec2d094c5a78c8e7eda5f47aa5e05d58f89994df",
       "green_eligible": false,
       "checks": [
         {
@@ -22542,37 +22756,36 @@
           "values": {
             "revenue": {
               "input": 1088025119170.0,
-              "official": 1088025119176.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 205143929340.0,
-              "official": 204724531402.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 2278.0,
-              "official": 2278.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 168752524660.0,
-              "official": 168752524669.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 155107543060.0,
-              "official": 155107543067.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 13644981600.0,
-              "official": 13644981602.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000847",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ISU%20Petasys%20Co.%2C%20Ltd."
           ]
         },
@@ -22713,7 +22926,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000847",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=ISU%20Petasys%20Co.%2C%20Ltd."
           ]
         },
@@ -22806,12 +23018,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 23400.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 599.5,
-      "fundamental_fingerprint": "fdb40b3dd21c4b8c4a5e05cf23e81028c145162006ff135c49bb53b017e12c93",
+      "fundamental_fingerprint": "e7d3b476cf8e046b57bcaab4fde3c981e1149cf9f065fa093828854e20d8fa3c",
       "green_eligible": false,
       "checks": [
         {
@@ -22832,42 +23044,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 231577035770.0,
-              "official": 231577035770.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 7551422350.0,
-              "official": 7551422708.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -16.0,
-              "official": -16.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 20087039300.0,
-              "official": 20087039309.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 4734255160.0,
-              "official": 4734255162.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 15352784140.0,
-              "official": 15352784147.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001361",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Sungho%20Electronics%20Corp."
           ]
         },
@@ -22992,13 +23203,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Sungho%20Electronics%20Corp."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Sungho%20Electronics%20Corp."
           ]
@@ -23092,12 +23311,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 1210000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 89422.49,
-      "fundamental_fingerprint": "5d885cae3051aab2488a729c31da56e5e843c6f11d15b6450c40e58295887419",
+      "fundamental_fingerprint": "3db8b689bb82b13605fb7ee5092a1ef845671b553472c9a199a55ee5c50d0763",
       "green_eligible": false,
       "checks": [
         {
@@ -23123,37 +23342,36 @@
           "values": {
             "revenue": {
               "input": 2351785163780.0,
-              "official": 2351785163786.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 524188407480.0,
-              "official": 524188406060.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 52156.0,
-              "official": 52156.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 309287213620.0,
-              "official": 309287213625.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 464604249460.0,
-              "official": 461372365691.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": -155317035840.0,
-              "official": -152085152066.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001082",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Samyang%20Foods%20Co.%2C%20Ltd."
           ]
         },
@@ -23294,7 +23512,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001082",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Samyang%20Foods%20Co.%2C%20Ltd."
           ]
         },
@@ -23387,12 +23604,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 49850.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 5843.0,
-      "fundamental_fingerprint": "63de1c0336c4b3c521c49085cc49f865b36849dd54879c31e220d50350a7e758",
+      "fundamental_fingerprint": "0c3834b88001cab3829d536ee7483469abd367a01c8b0a87456d6fe90dc4d278",
       "green_eligible": false,
       "checks": [
         {
@@ -23418,37 +23635,36 @@
           "values": {
             "revenue": {
               "input": 32373603908000.0,
-              "official": 32373603908000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 1164722105000.0,
-              "official": 1165316105000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 3603.0,
-              "official": 3994.0,
+              "official": null,
               "match": false
             },
             "cfo": {
               "input": 1941539030000.0,
-              "official": 1941539030000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 1059044274000.0,
-              "official": 1059044274000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 882494756000.0,
-              "official": 882494756000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001494",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Posco%20International%20Corporation"
           ]
         },
@@ -23589,7 +23805,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001494",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Posco%20International%20Corporation"
           ]
         },
@@ -23682,12 +23897,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 90200.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 5603.75,
-      "fundamental_fingerprint": "bdddc75c177ce9d5f6997e9fe8ff5a56a17d1a0023d3257cab1f9548557127bd",
+      "fundamental_fingerprint": "a232063261f6081da06963e5c3ff648b0d1eb15e4ce8d399a77a30cc7c89b9eb",
       "green_eligible": false,
       "checks": [
         {
@@ -23713,12 +23928,12 @@
           "values": {
             "revenue": {
               "input": 1509725133070.0,
-              "official": 1509725133078.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 53816265770.0,
-              "official": 53816253084.0,
+              "official": null,
               "match": false
             },
             "eps": {
@@ -23728,22 +23943,21 @@
             },
             "cfo": {
               "input": 39137875540.0,
-              "official": 39137875548.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 77111402010.0,
-              "official": 77111402014.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -37973526470.0,
-              "official": -37973526466.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000865",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Korea%20Circuit%20Co.%2C%20Ltd."
           ]
         },
@@ -23884,7 +24098,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000865",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Korea%20Circuit%20Co.%2C%20Ltd."
           ]
         },
@@ -23977,7 +24190,7 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 20100.0,
       "input_price_session": "2026-11-13",
@@ -24278,12 +24491,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 610000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 49506.734,
-      "fundamental_fingerprint": "ca5ab6e36759e001f5eb4c44cf27aaa005bff64cdc85d2546218cf0ccd16b46a",
+      "fundamental_fingerprint": "24471d9d6dffaa11f22186ad41ed26235bb3ad037e80314eed0baa4c239a7a19",
       "green_eligible": false,
       "checks": [
         {
@@ -24309,37 +24522,36 @@
           "values": {
             "revenue": {
               "input": 19784138000000.0,
-              "official": 19784138000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 1062746000000.0,
-              "official": 1062715000000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 4194.0,
-              "official": 4194.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 981908000000.0,
-              "official": 981908000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 898363000000.0,
-              "official": 898363000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 83545000000.0,
-              "official": 83545000000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000945",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Doosan%20Corporation"
           ]
         },
@@ -24480,7 +24692,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000945",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Doosan%20Corporation"
           ]
         },
@@ -24573,12 +24784,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 83800.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 5770.1123,
-      "fundamental_fingerprint": "369aa69043229a7de38a5acb57f877d3b7e1fc214717fd3f79731b318110f375",
+      "fundamental_fingerprint": "69f12e756831c78d0ed748bb11587ac75c5066af9220f23a93020219f77657c2",
       "green_eligible": false,
       "checks": [
         {
@@ -24604,12 +24815,12 @@
           "values": {
             "revenue": {
               "input": 31062912000000.0,
-              "official": 31062912000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 658388000000.0,
-              "official": 653006000000.0,
+              "official": null,
               "match": false
             },
             "eps": {
@@ -24619,22 +24830,21 @@
             },
             "cfo": {
               "input": -748259000000.0,
-              "official": -748259000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 116666000000.0,
-              "official": 115862000000.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": -864925000000.0,
-              "official": -864121000000.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001395",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hyundai%20Engineering%20%26%20Construction%20Co.%2CLtd."
           ]
         },
@@ -24775,7 +24985,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001395",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hyundai%20Engineering%20%26%20Construction%20Co.%2CLtd."
           ]
         },
@@ -24868,12 +25077,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 78500.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 5486.968,
-      "fundamental_fingerprint": "912038713fcefa77ed9c1f4a3b4fccdc0d6f85dc465e51a93c14cdf3c68f5cf6",
+      "fundamental_fingerprint": "9ff4c61ede41ff284ed991891bc28f446fc7ae31698e813829a65bf65004ad6d",
       "green_eligible": false,
       "checks": [
         {
@@ -24899,37 +25108,36 @@
           "values": {
             "revenue": {
               "input": 6129542718000.0,
-              "official": 6129542718000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 552706291000.0,
-              "official": 551828295000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 4549.0,
-              "official": 4549.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 418168400000.0,
-              "official": 418168400000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 53172892000.0,
-              "official": 53172892000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 364995508000.0,
-              "official": 364995508000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000832",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20CNS%20Co.%2C%20Ltd."
           ]
         },
@@ -25070,7 +25278,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000832",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LG%20CNS%20Co.%2C%20Ltd."
           ]
         },
@@ -25163,12 +25370,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 72700.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": -179.27928,
-      "fundamental_fingerprint": "14308c83bb13c015ad50c3a738f12db65917389a20beb13ff344018d10d80607",
+      "fundamental_fingerprint": "8988f466955ea08b2d13c694769acece20f8c8d0cef32607e4215bae3a87ad5d",
       "green_eligible": false,
       "checks": [
         {
@@ -25189,42 +25396,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 3413021590100.0,
-              "official": 3413021590101.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 213763514810.0,
-              "official": 213763514884.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -1118.0,
-              "official": -1118.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 339076295160.0,
-              "official": 339076295162.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 812065411580.0,
-              "official": 812065411584.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -472989116420.0,
-              "official": -472989116422.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001612",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Ecopro%20Co.%2C%20Ltd."
           ]
         },
@@ -25349,13 +25555,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Ecopro%20Co.%2C%20Ltd."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Ecopro%20Co.%2C%20Ltd."
           ]
@@ -25449,12 +25663,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 195100.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 14414.833,
-      "fundamental_fingerprint": "1965d7e9436354acae7be450995149a32ece15ba17c9e18e91966536fbad07f5",
+      "fundamental_fingerprint": "008d8dee16d17f0fdd4508f8751bbbd1418f87e25f472b92886f4406d2404798",
       "green_eligible": false,
       "checks": [
         {
@@ -25480,37 +25694,36 @@
           "values": {
             "revenue": {
               "input": 2009429144000.0,
-              "official": 3380060390000.0,
+              "official": null,
               "match": false
             },
             "operating_income": {
               "input": 440425000.0,
-              "official": -57627064000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": -6994.0,
-              "official": -4809.0,
+              "official": null,
               "match": false
             },
             "cfo": {
               "input": 56057631000.0,
-              "official": 553878733000.0,
+              "official": null,
               "match": false
             },
             "capex": {
               "input": 83205230000.0,
-              "official": 372632970000.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": -27147599000.0,
-              "official": 181245763000.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000617",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=OCI%20Holdings%20Company%20Ltd."
           ]
         },
@@ -25651,7 +25864,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000617",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=OCI%20Holdings%20Company%20Ltd."
           ]
         },
@@ -25744,12 +25956,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 11210.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 1883.5,
-      "fundamental_fingerprint": "57095a51f820da453e7a6551bd086120c6a53efc34e39f03980e6b6d5204bd31",
+      "fundamental_fingerprint": "ecfcd51f64fce37e975c4d74bb049d58cf71dba2a8b5c8b4d25f1d9496dcdaf0",
       "green_eligible": false,
       "checks": [
         {
@@ -25775,37 +25987,36 @@
           "values": {
             "revenue": {
               "input": 2018488470870.0,
-              "official": 2018488470870.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 40160245750.0,
-              "official": 47084246190.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 1765.0,
-              "official": 1765.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 51027952180.0,
-              "official": 51027952185.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 604228970.0,
-              "official": 604228979.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 50423723210.0,
-              "official": 50423723206.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001135",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=KUMHO%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
           ]
         },
@@ -25946,7 +26157,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001135",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=KUMHO%20Engineering%20%26%20Construction%20Co.%2C%20Ltd."
           ]
         },
@@ -26039,12 +26249,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 86300.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 3789.0,
-      "fundamental_fingerprint": "57eb91fec5418bcae7a8a680b88d0cfb550ec234f2f900680f79fc2534b397a8",
+      "fundamental_fingerprint": "4671dc12a24db5bd3cfca64b465ff05a71448266688c9ad3f3c36dfbbdd9bd40",
       "green_eligible": false,
       "checks": [
         {
@@ -26070,13 +26280,13 @@
           "values": {
             "revenue": {
               "input": 294491998370.0,
-              "official": 294491998379.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 12866483430.0,
-              "official": 12866483343.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 1221.0,
@@ -26085,22 +26295,21 @@
             },
             "cfo": {
               "input": 25939329030.0,
-              "official": 25939329033.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 16813715730.0,
-              "official": 16813715735.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 9125613300.0,
-              "official": 9125613298.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319001054",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SAMWHA%20CAPACITOR%20Co.%2CLTD"
           ]
         },
@@ -26241,7 +26450,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319001054",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SAMWHA%20CAPACITOR%20Co.%2CLTD"
           ]
         },
@@ -26334,12 +26542,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 3560.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": null,
-      "fundamental_fingerprint": "fbffe66eb8a8b61bd05461e3a942ccfc522505ed205d52bd7782ef72209b583a",
+      "fundamental_fingerprint": "bde6187cb7f64946d2a86b6632c569b39028e86c2b13628f6033b4775f323a84",
       "green_eligible": false,
       "checks": [
         {
@@ -26365,13 +26573,13 @@
           "values": {
             "revenue": {
               "input": 31770167370.0,
-              "official": 31770167371.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": -16530899010.0,
-              "official": -16530898663.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -380.0,
@@ -26380,22 +26588,21 @@
             },
             "cfo": {
               "input": -3398283530.0,
-              "official": -3398283535.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 225495340.0,
-              "official": 225495346.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -3623778870.0,
-              "official": -3623778881.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001115",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Lightron%20Fiber-Optic%20Devices%20Inc."
           ]
         },
@@ -26536,7 +26743,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320001115",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Lightron%20Fiber-Optic%20Devices%20Inc."
           ]
         },
@@ -26629,12 +26835,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 219000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 6831.6665,
-      "fundamental_fingerprint": "83582d26cf5c4090021551828b1db3dac16d3c6d19aa89eeab83888b425b44e6",
+      "fundamental_fingerprint": "e672f5833afc61cfe77eb22013f7277395ea6789ea20470232f57a4da54c5a97",
       "green_eligible": false,
       "checks": [
         {
@@ -26660,37 +26866,36 @@
           "values": {
             "revenue": {
               "input": 2545698074000.0,
-              "official": 2545698074000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 79209392000.0,
-              "official": 79191591000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 1726.111111,
-              "official": 3107.0,
+              "official": null,
               "match": false
             },
             "cfo": {
               "input": 41739624000.0,
-              "official": 41739624000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 24639119000.0,
-              "official": 24639119000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 17100505000.0,
-              "official": 17100505000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000969",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=GAON%20CABLE%20Co.%2C%20Ltd."
           ]
         },
@@ -26831,7 +27036,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000969",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=GAON%20CABLE%20Co.%2C%20Ltd."
           ]
         },
@@ -26924,12 +27128,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 351000.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 21459.766,
-      "fundamental_fingerprint": "52fe0bc920b8451d69ebf0bb531d7a3692fcea3e50ffb661c679f0aace8b2f8b",
+      "fundamental_fingerprint": "5d42b35ca8f22fbeaca7a3038e840dfac5432c0f1b4f84ecb4f2ad427df927d0",
       "green_eligible": false,
       "checks": [
         {
@@ -26955,13 +27159,13 @@
           "values": {
             "revenue": {
               "input": 4306936127410.0,
-              "official": 4306936127418.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 319442306640.0,
-              "official": 319442306790.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 11604.0,
@@ -26970,22 +27174,21 @@
             },
             "cfo": {
               "input": -584305263670.0,
-              "official": -584305263675.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 245767709060.0,
-              "official": 245767709065.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -830072972730.0,
-              "official": -830072972740.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001211",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LIG%20Defense%26Aerospace%20Co.%2C%20Ltd."
           ]
         },
@@ -27126,7 +27329,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001211",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=LIG%20Defense%26Aerospace%20Co.%2C%20Ltd."
           ]
         },
@@ -27219,12 +27421,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 31250.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 4223.976,
-      "fundamental_fingerprint": "fb87ac3c4480b70835360cfb33dc565cfeff959e84de17589f9992ace5791327",
+      "fundamental_fingerprint": "63b08ecbf6e969594f3fb55ca4311bf1e0902d733f9647e89a49a77e878d7b26",
       "green_eligible": false,
       "checks": [
         {
@@ -27250,37 +27452,36 @@
           "values": {
             "revenue": {
               "input": 12450347000000.0,
-              "official": 12450347000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 459766000000.0,
-              "official": 437809000000.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 1073.0,
-              "official": 1073.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 591530000000.0,
-              "official": 591530000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 295014000000.0,
-              "official": 295014000000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 296516000000.0,
-              "official": 296516000000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000624",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=GS%20Engineering%20%26%20Construction%20Corporation"
           ]
         },
@@ -27421,7 +27622,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000624",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=GS%20Engineering%20%26%20Construction%20Corporation"
           ]
         },
@@ -27514,12 +27714,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 78900.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 1804.7281,
-      "fundamental_fingerprint": "4be4034c7a129bd02a5536caac03060d63dd539dbf38e96d8ee5977d2e8e9776",
+      "fundamental_fingerprint": "84e833bbda72b438b50d2549e824dc8a528c43cdcf65b82084b5d00e33644db5",
       "green_eligible": false,
       "checks": [
         {
@@ -27540,42 +27740,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 2154938965100.0,
-              "official": 2154938965103.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": -156849943340.0,
-              "official": -156849943423.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -15508.0,
-              "official": -15508.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": -29205374590.0,
-              "official": -29205374598.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 139393417270.0,
-              "official": 139393417282.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -168598791860.0,
-              "official": -168598791880.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814000818",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=L%26F%20Co.%2C%20Ltd."
           ]
         },
@@ -27700,13 +27899,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=L%26F%20Co.%2C%20Ltd."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=L%26F%20Co.%2C%20Ltd."
           ]
@@ -27800,12 +28007,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 28950.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 2750.0,
-      "fundamental_fingerprint": "8de057bb873933d665ac96192a9d8c7266fff8764372931257463ec5fac67510",
+      "fundamental_fingerprint": "527f7ad1a1909424841010b60f4210b13d6bb23173c8d11e3cb2939d2bad12ec",
       "green_eligible": false,
       "checks": [
         {
@@ -27826,42 +28033,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 1534418874070.0,
-              "official": 1534418874072.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 127689328140.0,
-              "official": 127689329155.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 637.0,
-              "official": 637.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 174918894570.0,
-              "official": 174918894576.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 150629249990.0,
-              "official": 150629250001.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 24289644580.0,
-              "official": 24289644575.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319000032",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HANA%20Micron%20Inc."
           ]
         },
@@ -27986,13 +28192,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HANA%20Micron%20Inc."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HANA%20Micron%20Inc."
           ]
@@ -28086,12 +28300,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 9090.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 536.0,
-      "fundamental_fingerprint": "8c90314a7dce788149b7d9cf74822dc9583545f9fd47cc186a6eda4cc34f90b3",
+      "fundamental_fingerprint": "deba9b2c5c42fede369c48d4cb45205fa232e62bca523a9d8e1896c5f3206911",
       "green_eligible": false,
       "checks": [
         {
@@ -28117,13 +28331,13 @@
           "values": {
             "revenue": {
               "input": 367389147990.0,
-              "official": 367389147993.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": -19626670480.0,
-              "official": -19626671175.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -116.0,
@@ -28132,22 +28346,21 @@
             },
             "cfo": {
               "input": 5456325210.0,
-              "official": 5456325212.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 22059925980.0,
-              "official": 22059925984.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -16603600770.0,
-              "official": -16603600772.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000826",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SFA%20Semicon%20Co.%2C%20Ltd."
           ]
         },
@@ -28288,7 +28501,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323000826",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SFA%20Semicon%20Co.%2C%20Ltd."
           ]
         },
@@ -28381,12 +28593,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 81600.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 9718.333,
-      "fundamental_fingerprint": "916d7cb0744df7ca1afbd8efd6096ec76c202f88d010724ceff31282b14ea3a3",
+      "fundamental_fingerprint": "8180924addb342ae86f1ce78b47007b9da1ca709edd8a00d79869bdf920682b8",
       "green_eligible": false,
       "checks": [
         {
@@ -28412,37 +28624,36 @@
           "values": {
             "revenue": {
               "input": 1397233307030.0,
-              "official": 1397233307039.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 277304561490.0,
-              "official": 277294561174.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": 6200.0,
-              "official": 6200.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 356967025480.0,
-              "official": 356967025481.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 154293743670.0,
-              "official": 154293743682.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 202673281810.0,
-              "official": 202673281799.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260601001661",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=DB%20HiTek%20CO.%2C%20LTD."
           ]
         },
@@ -28583,7 +28794,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260601001661",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=DB%20HiTek%20CO.%2C%20LTD."
           ]
         },
@@ -28676,12 +28886,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 90800.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 625.3086,
-      "fundamental_fingerprint": "809993811ded83762a3acb385d2a1b7fadbc58e302aac884de5d831ed51b02be",
+      "fundamental_fingerprint": "e13efbaeb817d94b23e407690c166349baafc4df6f49b2ede556c798928d2f79",
       "green_eligible": false,
       "checks": [
         {
@@ -28707,13 +28917,13 @@
           "values": {
             "revenue": {
               "input": 2531576384110.0,
-              "official": 2531576384113.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 143309899760.0,
-              "official": 143309899725.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 397.236778,
@@ -28722,22 +28932,21 @@
             },
             "cfo": {
               "input": 214707183990.0,
-              "official": 214707183992.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 438202492460.0,
-              "official": 438202492466.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -223495308470.0,
-              "official": -223495308474.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001622",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=EcoPro%20BM%20Co.%2C%20Ltd."
           ]
         },
@@ -28878,7 +29087,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318001622",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=EcoPro%20BM%20Co.%2C%20Ltd."
           ]
         },
@@ -28971,12 +29179,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 155700.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 8622.408,
-      "fundamental_fingerprint": "29ecec71a76f42aa1961a7429c4807626fd4274c9c5f3d7d2c1c70892ebb52d1",
+      "fundamental_fingerprint": "11ecbede774daf4655f74132f39038ba595d8ee123603b3542fbcbdb69442f18",
       "green_eligible": false,
       "checks": [
         {
@@ -28997,42 +29205,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 2649870246000.0,
-              "official": 2649870246000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 49318276000.0,
-              "official": 49318276000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": -5690.0,
-              "official": -5690.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": 107483561000.0,
-              "official": 107483561000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 61104979000.0,
-              "official": 61104979000.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 46378582000.0,
-              "official": 46378582000.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320000802",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HYBE%20Co.%2C%20Ltd."
           ]
         },
@@ -29157,13 +29364,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HYBE%20Co.%2C%20Ltd."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=HYBE%20Co.%2C%20Ltd."
           ]
@@ -29257,12 +29472,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 35450.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": null,
-      "fundamental_fingerprint": "708f825c7c5149b0e47559cd8617be99f3fee858a4e693016e14bfb52fa895cb",
+      "fundamental_fingerprint": "8cb55a6c910aaa2ec21fb08f0a4f5165283e29f42591c9a3e0b4cce71bf60bf7",
       "green_eligible": false,
       "checks": [
         {
@@ -29283,42 +29498,41 @@
           "id": "official",
           "term": "핵심 실적 공식 대조",
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
-          "status": "pass",
-          "explanation": "핵심 여섯 숫자와 FCF 산식을 같은 공식 재무표에서 대조했어요.",
+          "status": "missing",
+          "explanation": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "values": {
             "revenue": {
               "input": 385640769900.0,
-              "official": 385640769900.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 52998214390.0,
-              "official": 52998214327.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 903.0,
-              "official": 903.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": -25246577650.0,
-              "official": -25246577658.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 13836158830.0,
-              "official": 13836158836.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": -39082736480.0,
-              "official": -39082736494.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316001520",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SK%20eternix%20Co.%2C%20Ltd."
           ]
         },
@@ -29443,13 +29657,21 @@
           ]
         }
       ],
-      "passed": 2,
+      "passed": 1,
       "required": 12,
       "next_checks": [
         {
           "term": "기준일·단위·대상 확인",
           "meaning": "같은 회사의 같은 기준 숫자인지",
           "reason": "오래되거나 서로 다른 기준의 자료는 초록색에 쓰지 않아요.",
+          "sources": [
+            "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SK%20eternix%20Co.%2C%20Ltd."
+          ]
+        },
+        {
+          "term": "핵심 실적 공식 대조",
+          "meaning": "매출·이익·투자 후 현금을 원문과 비교",
+          "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=SK%20eternix%20Co.%2C%20Ltd."
           ]
@@ -29543,12 +29765,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 31700.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 3105.6667,
-      "fundamental_fingerprint": "c4522d2600c196b401b8acf199ad1cd9eab2e69da05712265aae0fe8e3528c4a",
+      "fundamental_fingerprint": "de763d47cd1966f4bbefdf57e8a7bae03571e0ab1d82eb7ae1e15efaa7679fc9",
       "green_eligible": false,
       "checks": [
         {
@@ -29574,37 +29796,36 @@
           "values": {
             "revenue": {
               "input": 1066330738950.0,
-              "official": 1066330738953.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 1145784130.0,
-              "official": 1145784823.0,
+              "official": null,
               "match": false
             },
             "eps": {
               "input": -1801.0,
-              "official": -1801.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "cfo": {
               "input": -39756707310.0,
-              "official": -39756707314.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 332022337410.0,
-              "official": 295817284198.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": -371779044720.0,
-              "official": -335573991512.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001543",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Seojin%20System%20Co.%2CLtd"
           ]
         },
@@ -29745,7 +29966,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001543",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Seojin%20System%20Co.%2CLtd"
           ]
         },
@@ -29838,12 +30058,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 53900.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 2300.375,
-      "fundamental_fingerprint": "c864eb9357729c7e521db903445d78bb4a00041d4836e0d483e949e11d737c05",
+      "fundamental_fingerprint": "53b5b2ff14b8a1fb0c275ced190582eaf740b693e38fc240bed8fa601bb48602",
       "green_eligible": false,
       "checks": [
         {
@@ -29869,13 +30089,13 @@
           "values": {
             "revenue": {
               "input": 3664150568020.0,
-              "official": 3664150568020.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 119898725690.0,
-              "official": 119898725355.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 1289.0,
@@ -29884,22 +30104,21 @@
             },
             "cfo": {
               "input": 78736816770.0,
-              "official": 78736816771.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 321158701470.0,
-              "official": 318313643690.0,
+              "official": null,
               "match": false
             },
             "fcf": {
               "input": -242421884700.0,
-              "official": -239576826919.0,
+              "official": null,
               "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260513000644",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Systems%20Co.%2C%20Ltd."
           ]
         },
@@ -30040,7 +30259,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260513000644",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=Hanwha%20Systems%20Co.%2C%20Ltd."
           ]
         },
@@ -30133,12 +30351,12 @@
       "previous_state": "insufficient",
       "state": "insufficient",
       "version": "strict-green-1.0",
-      "reviewed_at": "2026-11-16T17:04:40.439202+00:00",
+      "reviewed_at": "2026-11-16T17:26:26.920872+00:00",
       "source_generated_at": "2026-11-16T17:01:12.999552+00:00",
       "input_price": 357500.0,
       "input_price_session": "2026-11-13",
       "input_forecast_eps": 13994.473,
-      "fundamental_fingerprint": "8081f05a2e9366d3593455ff4fabf1c96c88fd562f8778ff19e9a6c24e22a7a1",
+      "fundamental_fingerprint": "ed35994a512666fd577c2cb08cab4acc7c793ac02c3da15e11662f8293c8065d",
       "green_eligible": false,
       "checks": [
         {
@@ -30164,13 +30382,13 @@
           "values": {
             "revenue": {
               "input": 380890608570.0,
-              "official": 380890608578.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "operating_income": {
               "input": 80753275130.0,
-              "official": 80753274993.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "eps": {
               "input": 4689.0,
@@ -30179,22 +30397,21 @@
             },
             "cfo": {
               "input": 100287776580.0,
-              "official": 100287776582.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "capex": {
               "input": 4080135150.0,
-              "official": 4080135163.0,
-              "match": true
+              "official": null,
+              "match": false
             },
             "fcf": {
               "input": 96207641430.0,
-              "official": 96207641419.0,
-              "match": true
+              "official": null,
+              "match": false
             }
           },
           "source_urls": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001573",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=EO%20Technics%20Co.%2C%20Ltd."
           ]
         },
@@ -30335,7 +30552,6 @@
           "meaning": "매출·이익·투자 후 현금을 원문과 비교",
           "reason": "매출·영업이익·희석 EPS·CFO·CAPEX·FCF 전체가 같은 기준으로 확인되어야 해요.",
           "sources": [
-            "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001573",
             "https://dart.fss.or.kr/dsab001/main.do?autoSearch=true&textCrpNm=EO%20Technics%20Co.%2C%20Ltd."
           ]
         },
@@ -30424,9 +30640,9 @@
     }
   ],
   "missing_counts": {
-    "핵심 실적 공식 대조": 89,
-    "3년 이익의 현금화": 104,
-    "매출채권·재고 점검": 104,
+    "핵심 실적 공식 대조": 100,
+    "3년 이익의 현금화": 82,
+    "매출채권·재고 점검": 89,
     "이익 지속성·일회성 손익": 104,
     "차입금 만기·상환 여력": 104,
     "성장 원인·고객·경쟁력": 104,
