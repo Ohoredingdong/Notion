@@ -261,7 +261,10 @@ def sec_items(payload):
 def collect_sec(cik, user_agent, request=fetch_json, max_files=100):
     if not re.fullmatch(r'\d{1,10}',str(cik)):raise ValueError('invalid_cik')
     # SEC asks automated clients to identify themselves with a contact.
-    if '@' not in user_agent:raise ValueError('SEC_USER_AGENT_contact_required')
+    contact = re.search(r'[A-Za-z0-9_.+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})', user_agent or '')
+    if (not contact or contact.group(1).lower() in {'example.com','example.org','example.net'} or
+            len(user_agent.replace(contact.group(0), '').strip(' ()<>/')) < 3):
+        raise ValueError('SEC_USER_AGENT_contact_required')
     cik=str(cik).zfill(10);headers={'User-Agent':user_agent};items=[];error=None
     try:
         payload=request('https://data.sec.gov/submissions/CIK'+cik+'.json',headers)
