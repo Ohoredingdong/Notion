@@ -807,7 +807,7 @@ function fxInvestmentDecision(c,ctx,review,signal){
 function fxDetail(ctx){
  const c=fxSelected(ctx);
  if(!c)return '<div class="fx-empty-state">기업을 먼저 선택해 주세요.</div>';
- if(c.catalog_only)return `<div class="fx-catalog-detail"><div class="fx-intro"><div><h2>${fxEscape(c.name)} · 종목 분석</h2><p>선택한 기업의 공식 명부와 확보된 공시 재무입니다.</p></div><button type="button" class="fx-action-secondary" data-nr-screen="stocks">종목 목록으로</button></div>${window.StockCatalogUI.profile(c,ctx)}${fxSteps(ctx)}</div>`;
+ if(c.catalog_only)return `<div class="fx-catalog-detail"><div class="fx-intro"><div><h2>${fxEscape(c.name)} · 종목 분석</h2><p>선택한 기업의 공식 명부와 확보된 공시 재무입니다.</p></div><button type="button" class="fx-action-secondary" data-nr-screen="stocks">종목 목록으로</button></div>${window.StockCatalogUI.profile(c,ctx)}${window.StockTechnicalEvidence?.render(c,ctx)||""}${fxSteps(ctx)}</div>`;
  const f=c.forecasts||{},h=c.history||{},balance=c.balance||{},tech=c.technical||{},a=c.assessment||{},short=c.short||{};
  const helper=fxHelpers(),periods=[["1W","1주"],["1M","1개월"],["3M","3개월"],["6M","6개월"]];
  const review=fxInvestmentEvidence(c,ctx),state=review.status;
@@ -835,6 +835,7 @@ function fxDetail(ctx){
    <div class="fx-d-quote"><strong>${fxMoney(c.price,c.currency)}</strong><span class="${helper.tone?.(delta)||"nr-neutral"}">${fxPct(delta)}</span><small>${fxEscape(c.price_session||"기준일 미확인")} 저장 종가</small></div>
    <div class="fx-d-security-actions"><button type="button" class="fx-d-star" data-nr-star="${fxEscape(fxId(c))}" title="관심종목 저장" aria-label="관심종목 저장">${ctx.favorites?.includes(fxId(c))?"★":"☆"}</button><button type="button" data-nr-screen="stocks" class="fx-d-back" title="종목 목록으로" aria-label="종목 목록으로">‹</button></div>
   </section>
+  ${window.StockTechnicalEvidence?.render(c,ctx)||""}
   <div class="fx-detail-content">
    <div class="fx-detail-upper">
     <section class="fx-panel fx-detail-primary fx-d-hero fx-d-chart-panel">
