@@ -36,6 +36,11 @@ DATA_FILES = (
     "stock-investment-cases.json",
     "stock-market-groups.json",
 )
+DISPLAY_NAMES = {
+    "062040": "산일전기", "353200": "대덕전자", "207940": "삼성바이오로직스",
+    "271560": "오리온", "319660": "피에스케이", "403870": "HPSP",
+}
+
 STATE_LABELS = {
     "ready": "명시 조건 충족 · 매수 후보",
     "verify": "가격·실적 후보 · 공식 대조 전",
@@ -146,7 +151,7 @@ class RadarChecks:
         def intercept(route):
             parsed = urllib.parse.urlparse(route.request.url)
             name = Path(parsed.path).name
-            if parsed.netloc == "raw.githubusercontent.com" and name in DATA_FILES:
+            if parsed.netloc in {"raw.githubusercontent.com", local_host} and name in DATA_FILES:
                 requests.append(name)
                 if name == "stock-opportunity-data.json":
                     if state["decision"] == "failure":
@@ -214,8 +219,9 @@ class RadarChecks:
         page.locator("#companySelect").select_option(symbol)
         expect(page.locator("#view-detail")).to_be_visible()
         expect(page.locator("#detailBody .company-heading h2")).to_have_text(
-            self.companies[symbol]["name"]
+            DISPLAY_NAMES.get(symbol, self.companies[symbol]["name"])
         )
+        expect(page.locator("#detailBody .company-heading p")).to_contain_text(symbol)
 
     def company_detail(self, page, symbol, label):
         row = self.companies[symbol]
@@ -398,7 +404,7 @@ class RadarChecks:
                 first = shown[0]
                 page.locator('#todayBrief [data-brief="'+first+'"]').first.click()
                 expect(page.locator("#detailBody .company-heading h2")).to_have_text(
-                    self.companies[first]["name"]
+                    DISPLAY_NAMES.get(first, self.companies[first]["name"])
                 )
                 self.record(label + " first-choice button opens the matching collected company")
 
@@ -464,7 +470,7 @@ class RadarChecks:
             )
             deep_row.get_by_role("button", name="정밀분석 보기 ›").click()
             expect(page.locator("#detailBody .company-heading h2")).to_have_text(
-                self.companies[deep["symbol"]]["name"]
+                DISPLAY_NAMES.get(deep["symbol"], self.companies[deep["symbol"]]["name"])
             )
             self.record(label + " directory deep-analysis link opens the correct company")
             page.locator('.nr-rail [data-nr-screen="settings"]').click()
