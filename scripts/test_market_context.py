@@ -39,6 +39,61 @@ class MarketContextTests(unittest.TestCase):
         self.assertEqual(result['expected_session'], '2026-11-05')
         self.assertEqual(result['date'], '2026-11-04')
 
+    def test_index_window_matches_canonical_chart_without_promoting_stale_reply(self):
+        import pandas as pd
+        for symbol,exchange in [('^KS11','KSC'),('^KQ11','KOE')]:
+            for current in (True,False):
+                with self.subTest(symbol=symbol,current=current):
+                    calls=[]
+                    def history(**kwargs):
+                        calls.append(kwargs)
+                        days=['2026-11-16','2026-11-17'] if current and kwargs.get('period')=='6mo' else ['2026-11-16']
+                        return pd.DataFrame({'Close':[100.0+i for i in range(len(days))]},index=pd.to_datetime(days))
+                    meta={'symbol':symbol,'instrumentType':'INDEX','exchangeName':exchange,'exchangeTimezoneName':'Asia/Seoul','currency':'KRW'}
+                    provider=SimpleNamespace(Ticker=lambda symbol:SimpleNamespace(history=history,_price_history=SimpleNamespace(_history_metadata=meta)))
+                    with patch.dict(sys.modules,{'yfinance':provider}):
+                        result=m.market_series(symbol,symbol,datetime(2026,11,17,15,tzinfo=timezone.utc))
+                    self.assertEqual(calls[0]['period'],'6mo')
+                    self.assertEqual(result['date'],'2026-11-17' if current else '2026-11-16')
+                    self.assertEqual(result['status'],'ok' if current else 'stale')
+                    self.assertEqual(result['price_source']['collection_attempts'],1 if current else 2)
+                    if not current:
+                        self.assertEqual(calls[1]['end'],'2026-11-18')
+                        self.assertEqual(result['expected_session'],'2026-11-17')
+                        self.assertEqual(result['price_source']['latest_completed_session'],'2026-11-16')
+
+    def test_us_index_window_keeps_completed_session_and_identity(self):
+        import pandas as pd
+        for symbol, exchange in [('^GSPC','SNP'),('^IXIC','NIM')]:
+            calls=[]
+            def history(**kwargs):
+                calls.append(kwargs)
+                return pd.DataFrame({'Close':[100.,101.]},index=pd.to_datetime(['2026-11-13','2026-11-16']))
+            meta={'symbol':symbol,'instrumentType':'INDEX','exchangeName':exchange,'exchangeTimezoneName':'America/New_York','currency':'USD'}
+            provider=SimpleNamespace(Ticker=lambda _:SimpleNamespace(history=history,_price_history=SimpleNamespace(_history_metadata=meta)))
+            with patch.dict(sys.modules,{'yfinance':provider}):
+                result=m.market_series(symbol,symbol,datetime(2026,11,17,15,tzinfo=timezone.utc))
+            self.assertEqual(calls[0]['period'],'6mo')
+            self.assertEqual(result['date'],'2026-11-16')
+            self.assertEqual(result['expected_session'],'2026-11-16')
+            self.assertEqual(result['status'],'ok')
+            self.assertTrue(result['price_source']['source_identity_verified'])
+            self.assertIsNone(result['change_20_sessions_pct'])
+            for flag in ('auto_adjust','repair','prepost'):self.assertIs(calls[0][flag],False)
+
+    def test_fx_keeps_existing_three_month_request(self):
+        import pandas as pd
+        calls=[]
+        def history(**kwargs):
+            calls.append(kwargs)
+            return pd.DataFrame({'Close':[1400.]},index=pd.to_datetime(['2026-11-16']))
+        meta={'symbol':'KRW=X','instrumentType':'CURRENCY','exchangeName':'CCY','exchangeTimezoneName':'Europe/London','currency':'KRW'}
+        provider=SimpleNamespace(Ticker=lambda symbol:SimpleNamespace(history=history,_price_history=SimpleNamespace(_history_metadata=meta)))
+        with patch.dict(sys.modules,{'yfinance':provider}):
+            result=m.market_series('KRW=X','usdkrw',datetime(2026,11,17,15,tzinfo=timezone.utc))
+        self.assertEqual(calls[0]['period'],'3mo')
+        self.assertEqual(result['price_basis'],'elapsed_UTC_daily_bar')
+
     def test_fed(self):
         html='''<h4>2026</h4><table><tr><th>Date</th><th>Increase</th><th>Decrease</th><th>Level (%)</th></tr><tr><td>September 17</td><td>25</td><td>0</td><td>3.75-4.00</td></tr></table>'''
         x=runner.parse_fed_funds(html)

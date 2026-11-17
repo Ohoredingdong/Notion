@@ -1,0 +1,21 @@
+name: Test Market Index Window
+on:
+  pull_request:
+    branches: [main]
+    paths: ['scripts/update_market_context.py', 'scripts/test_market_context.py', 'scripts/stock_price_evidence.py', '.github/workflows/test-market-index-window.yml']
+permissions:
+  contents: read
+jobs:
+  offline-source-safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'exchange-calendars==4.13.1' beautifulsoup4 requests
+      - name: Test identity, sessions, stale retry and unchanged FX semantics
+        run: PYTHONPATH=scripts python -m unittest test_stock_universe_catalog test_stock_universe_public test_stock_price_evidence test_market_context -v
