@@ -1,8 +1,8 @@
 {
   "version": "entry-plan-1.1",
-  "generated_at": "2026-11-17T17:58:58.267800+00:00",
-  "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-  "source_sha256": "5bd9b5cae39cff062636e3c36362b4a61ef4ba381672ae936a56058615441260",
+  "generated_at": "2026-11-17T18:14:27.376551+00:00",
+  "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+  "source_sha256": "7f6267e09cdba4647f98c5bd0e8051110af5b25bff1fda2a5961105ece993823",
   "rules": {
     "max_source_hours": 18,
     "max_review_days": 30,
@@ -51,8 +51,8 @@
       "forecast_fiscal_end": "2028-03-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.33344193,
-      "collected_at": "2026-11-17T16:52:31.625567+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:53.458884+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -150,8 +150,8 @@
       "forecast_fiscal_end": "2028-08-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.1031876,
-      "collected_at": "2026-11-17T16:52:51.712303+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:06.619022+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -225,6 +225,105 @@
       "research_score": 63.1
     },
     {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "AAPL",
+      "state": "diligence_wait",
+      "price": 352.77999878,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 10.59799,
+      "forecast_fiscal_end": "2028-09-26",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -2.25050936,
+      "collected_at": "2026-11-17T17:57:26.548857+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [],
+        "ma20": 346.64250183,
+        "ma60": 336.1286677,
+        "atr14": 9.48643058,
+        "distance_sma20": 1.7705552312826223,
+        "volume_ratio": 0.97327046,
+        "relative20_pp": 6.33057897,
+        "support10": 325.32998657,
+        "prior_high20": 360.82998657,
+        "setup": "pullback_confirmed",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 360.82998657,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 346.64250183,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 336.1286677,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 16532614916.689606
+      },
+      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/AAPL/history/",
+        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
+      },
+      "research_score": 61.0
+    },
+    {
       "symbol": "AMZN",
       "name": "Amazon",
       "market": "US",
@@ -249,8 +348,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.02289627,
-      "collected_at": "2026-11-17T16:50:58.812808+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:32.362453+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -348,8 +447,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.14345737,
-      "collected_at": "2026-11-17T16:52:09.465320+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:35.138856+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -423,105 +522,6 @@
       "research_score": 40.5
     },
     {
-      "symbol": "AAPL",
-      "name": "Apple",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "AAPL",
-      "state": "diligence_wait",
-      "price": 352.77999878,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 10.59799,
-      "forecast_fiscal_end": "2028-09-26",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -2.25050936,
-      "collected_at": "2026-11-17T16:50:51.471074+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [],
-        "ma20": 346.64250183,
-        "ma60": 336.1286677,
-        "atr14": 9.48643058,
-        "distance_sma20": 1.7705552312826223,
-        "volume_ratio": 0.97327046,
-        "relative20_pp": 6.33057897,
-        "support10": 325.32998657,
-        "prior_high20": 360.82998657,
-        "setup": "pullback_confirmed",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 360.82998657,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 346.64250183,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 336.1286677,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 16532614916.689606
-      },
-      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/AAPL/history/",
-        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
-      },
-      "research_score": 27.2
-    },
-    {
       "symbol": "NVDA",
       "name": "NVIDIA",
       "market": "US",
@@ -546,8 +546,8 @@
       "forecast_fiscal_end": "2028-01-25",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.44977568,
-      "collected_at": "2026-11-17T16:50:56.190178+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:30.473694+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -657,8 +657,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.5934613,
-      "collected_at": "2026-11-17T16:52:11.952192+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:37.127184+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -764,8 +764,8 @@
       "forecast_fiscal_end": "2028-06-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.14759241,
-      "collected_at": "2026-11-17T16:50:53.909517+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:28.513517+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -871,8 +871,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 10.27837544,
-      "collected_at": "2026-11-17T16:51:34.414137+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:03.040040+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -976,8 +976,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.98521948,
-      "collected_at": "2026-11-17T16:53:16.937965+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:25.993290+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1083,8 +1083,8 @@
       "forecast_fiscal_end": "2028-01-03",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 9.97460866,
-      "collected_at": "2026-11-17T16:51:59.512002+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:27.338526+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1190,8 +1190,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.02204572,
-      "collected_at": "2026-11-17T16:52:44.168468+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:01.061302+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1295,8 +1295,8 @@
       "forecast_fiscal_end": "2028-03-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.42901916,
-      "collected_at": "2026-11-17T16:51:19.516794+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:51.601894+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1402,8 +1402,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.37478494,
-      "collected_at": "2026-11-17T16:51:24.493803+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:55.469610+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1505,8 +1505,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 4.56655185,
-      "collected_at": "2026-11-17T16:51:16.395314+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:49.915816+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1612,8 +1612,8 @@
       "forecast_fiscal_end": "2028-03-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -3.08356078,
-      "collected_at": "2026-11-17T16:53:11.843101+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:22.383307+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1720,8 +1720,8 @@
       "forecast_fiscal_end": "2028-01-25",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.0,
-      "collected_at": "2026-11-17T16:51:52.099247+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:21.895847+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1827,8 +1827,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 13.49759193,
-      "collected_at": "2026-11-17T16:53:04.597774+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:16.431927+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -1930,8 +1930,8 @@
       "forecast_fiscal_end": "2028-06-26",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 10.66325435,
-      "collected_at": "2026-11-17T16:51:26.933449+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:57.586108+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2037,8 +2037,8 @@
       "forecast_fiscal_end": "2028-06-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 3.96322173,
-      "collected_at": "2026-11-17T16:52:19.428884+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:45.922848+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2142,8 +2142,8 @@
       "forecast_fiscal_end": "2028-03-27",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.99618232,
-      "collected_at": "2026-11-17T16:51:29.562520+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:59.357436+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2249,8 +2249,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.13352809,
-      "collected_at": "2026-11-17T16:52:29.213421+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:51.545057+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2356,8 +2356,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.81955491,
-      "collected_at": "2026-11-17T16:51:31.985307+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:01.234134+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2463,8 +2463,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.14348811,
-      "collected_at": "2026-11-17T16:52:36.314232+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:57.198786+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2542,6 +2542,111 @@
       "research_score": 65.2
     },
     {
+      "symbol": "MORN",
+      "name": "Morningstar, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "MORN",
+      "state": "diligence_wait",
+      "price": 247.83999634,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 14.95613,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 7.30486053,
+      "collected_at": "2026-11-17T17:59:37.134536+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 233.54449768,
+        "ma60": 212.85466588,
+        "atr14": 6.89785767,
+        "distance_sma20": 6.121102745733498,
+        "volume_ratio": 0.83826646,
+        "relative20_pp": 23.97084847,
+        "support10": 226.22999573,
+        "prior_high20": 251.03999329,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 251.03999329,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 233.54449768,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 212.85466588,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 65284402.59475708
+      },
+      "fundamental_fingerprint": "e4c60ad06c7a3a6a76ed706625845e8cd2a2bbfc3129ed65acf7ae1ea665159b",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/MORN/history/",
+        "estimates": "https://finance.yahoo.com/quote/MORN/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/MORN/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/MORN/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/MORN/profile/"
+      },
+      "research_score": 65.1
+    },
+    {
       "symbol": "LFUS",
       "name": "Littelfuse, Inc.",
       "market": "US",
@@ -2566,8 +2671,8 @@
       "forecast_fiscal_end": "2027-12-27",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 11.78978681,
-      "collected_at": "2026-11-17T16:53:14.450774+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:24.272543+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2673,8 +2778,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.48149282,
-      "collected_at": "2026-11-17T16:52:16.939646+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:42.203548+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2780,8 +2885,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.81031872,
-      "collected_at": "2026-11-17T16:52:14.472156+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:40.258193+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2887,8 +2992,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -5.71159527,
-      "collected_at": "2026-11-17T16:52:21.828400+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:44.208649+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -2993,8 +3098,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.84566596,
-      "collected_at": "2026-11-17T16:53:27.882650+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:31.422089+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3096,8 +3201,8 @@
       "forecast_fiscal_end": "2027-11-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.51678796,
-      "collected_at": "2026-11-17T16:53:02.203242+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:14.603671+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3181,6 +3286,113 @@
       "research_score": 58.8
     },
     {
+      "symbol": "BPOP",
+      "name": "Popular, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "BPOP",
+      "state": "diligence_wait",
+      "price": 156.80999756,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 17.56714,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": 2.11755487,
+      "collected_at": "2026-11-17T17:59:33.350853+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "extension20_wait",
+        "setup_confirmation_wait",
+        "trend_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "trend_confirmation_wait",
+          "extension20_wait",
+          "setup_confirmation_wait"
+        ],
+        "ma20": 158.49250259,
+        "ma60": 160.91583455,
+        "atr14": 3.38000161,
+        "distance_sma20": -1.0615675836430083,
+        "volume_ratio": 0.77510865,
+        "relative20_pp": 2.44498726,
+        "support10": 154.32000732,
+        "prior_high20": 162.94999695,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 162.94999695,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 158.49250259,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 160.91583455,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 84043531.1694336
+      },
+      "fundamental_fingerprint": "9ff0310b19db36839d4fc3bdadb53d29cb163f595ae516243caa5b4a50de3786",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/BPOP/history/",
+        "estimates": "https://finance.yahoo.com/quote/BPOP/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/BPOP/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/BPOP/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/BPOP/profile/"
+      },
+      "research_score": 58.4
+    },
+    {
       "symbol": "DOCN",
       "name": "DigitalOcean Holdings, Inc.",
       "market": "US",
@@ -3205,8 +3417,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 6.94656364,
-      "collected_at": "2026-11-17T16:51:54.684621+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:23.739287+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3288,13 +3500,13 @@
       "research_score": 58.2
     },
     {
-      "symbol": "BPOP",
-      "name": "Popular, Inc.",
+      "symbol": "ONB",
+      "name": "Old National Bancorp",
       "market": "US",
       "currency": "USD",
-      "provider_symbol": "BPOP",
+      "provider_symbol": "ONB",
       "state": "diligence_wait",
-      "price": 156.80999756,
+      "price": 24.79000092,
       "price_session": "2026-11-16",
       "source_expected_session": "2026-11-16",
       "expected_session": "2026-11-16",
@@ -3308,12 +3520,12 @@
         "buffer_minutes": 30,
         "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
       },
-      "forecast_eps": 17.56714,
+      "forecast_eps": 2.79661,
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 2.11755487,
-      "collected_at": "2026-11-17T16:53:30.351626+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "revision30_pct": -3.11750849,
+      "collected_at": "2026-11-17T17:58:59.114665+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3322,6 +3534,7 @@
         "strict_not_approved"
       ],
       "timing_blocks": [
+        "eps_revision_wait",
         "extension20_wait",
         "setup_confirmation_wait",
         "trend_confirmation_wait"
@@ -3351,48 +3564,48 @@
           "extension20_wait",
           "setup_confirmation_wait"
         ],
-        "ma20": 158.49250259,
-        "ma60": 160.91583455,
-        "atr14": 3.38000161,
-        "distance_sma20": -1.0615675836430083,
-        "volume_ratio": 0.77510865,
-        "relative20_pp": 2.44498726,
-        "support10": 154.32000732,
-        "prior_high20": 162.94999695,
+        "ma20": 25.15800009,
+        "ma60": 25.21316671,
+        "atr14": 0.61214311,
+        "distance_sma20": -1.4627520815785222,
+        "volume_ratio": 0.57207657,
+        "relative20_pp": 3.50162952,
+        "support10": 24.75,
+        "prior_high20": 26.56999969,
         "setup": "conditions_wait",
         "technical_only_not_investment_approval": true,
         "near_earnings_dates": [],
         "watch_conditions": [
           {
             "id": "breakout",
-            "price_reference": 162.94999695,
+            "price_reference": 26.56999969,
             "volume_ratio_required": 1.5,
             "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
           },
           {
             "id": "pullback",
-            "price_reference": 158.49250259,
+            "price_reference": 25.15800009,
             "max_extension_pct": 2,
             "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
           },
           {
             "id": "rebound",
-            "price_reference": 160.91583455,
+            "price_reference": 25.21316671,
             "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
           }
         ],
-        "turnover20": 84043531.1694336
+        "turnover20": 105887134.74897385
       },
-      "fundamental_fingerprint": "9ff0310b19db36839d4fc3bdadb53d29cb163f595ae516243caa5b4a50de3786",
+      "fundamental_fingerprint": "1341073860ecbbaddee43c6bf6213217cc0afa2ce9062d44029e0b35bbfed320",
       "sources": {
-        "history": "https://finance.yahoo.com/quote/BPOP/history/",
-        "estimates": "https://finance.yahoo.com/quote/BPOP/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/BPOP/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/BPOP/balance-sheet/",
+        "history": "https://finance.yahoo.com/quote/ONB/history/",
+        "estimates": "https://finance.yahoo.com/quote/ONB/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/ONB/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/ONB/balance-sheet/",
         "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/BPOP/profile/"
+        "profile": "https://finance.yahoo.com/quote/ONB/profile/"
       },
-      "research_score": 56.4
+      "research_score": 54.0
     },
     {
       "symbol": "ADC",
@@ -3419,8 +3632,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 4.90695243,
-      "collected_at": "2026-11-17T16:52:24.110726+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:49.685047+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3522,8 +3735,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 6.48936483,
-      "collected_at": "2026-11-17T16:51:57.110093+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:25.481627+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3625,8 +3838,8 @@
       "forecast_fiscal_end": "2027-12-27",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.0874069,
-      "collected_at": "2026-11-17T16:52:34.027845+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:55.418029+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3732,8 +3945,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -8.95353085,
-      "collected_at": "2026-11-17T16:52:02.067166+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:29.383505+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -3816,217 +4029,6 @@
       "research_score": 52.4
     },
     {
-      "symbol": "ONB",
-      "name": "Old National Bancorp",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "ONB",
-      "state": "diligence_wait",
-      "price": 24.79000092,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 2.79661,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -3.11750849,
-      "collected_at": "2026-11-17T16:52:41.534818+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "eps_revision_wait",
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 25.15800009,
-        "ma60": 25.21316671,
-        "atr14": 0.61214311,
-        "distance_sma20": -1.4627520815785222,
-        "volume_ratio": 0.57207657,
-        "relative20_pp": 3.50162952,
-        "support10": 24.75,
-        "prior_high20": 26.56999969,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 26.56999969,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 25.15800009,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 25.21316671,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 105887134.74897385
-      },
-      "fundamental_fingerprint": "1341073860ecbbaddee43c6bf6213217cc0afa2ce9062d44029e0b35bbfed320",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/ONB/history/",
-        "estimates": "https://finance.yahoo.com/quote/ONB/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/ONB/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/ONB/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/ONB/profile/"
-      },
-      "research_score": 52.0
-    },
-    {
-      "symbol": "CUBE",
-      "name": "CubeSmart",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "CUBE",
-      "state": "diligence_wait",
-      "price": 44.84999847,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 1.62286,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 2.06538283,
-      "collected_at": "2026-11-17T16:52:38.892794+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "setup_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "setup_confirmation_wait"
-        ],
-        "ma20": 42.9125,
-        "ma60": 40.19466667,
-        "atr14": 0.99928556,
-        "distance_sma20": 4.514997891057382,
-        "volume_ratio": 0.53723631,
-        "relative20_pp": 19.71320802,
-        "support10": 42.56000137,
-        "prior_high20": 46.40999985,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 46.40999985,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 42.9125,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 40.19466667,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 89858848.79293442
-      },
-      "fundamental_fingerprint": "e34db8ee40106bccdcd3598a3ffb504d0f31dacac284ce1db5bbe0c5096f0eda",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/CUBE/history/",
-        "estimates": "https://finance.yahoo.com/quote/CUBE/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/CUBE/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/CUBE/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/CUBE/profile/"
-      },
-      "research_score": 51.3
-    },
-    {
       "symbol": "TTEK",
       "name": "Tetra Tech, Inc.",
       "market": "US",
@@ -4051,8 +4053,8 @@
       "forecast_fiscal_end": "2028-09-27",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.20425532,
-      "collected_at": "2026-11-17T16:52:59.631801+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:12.521536+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4154,8 +4156,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -3.38215712,
-      "collected_at": "2026-11-17T16:52:46.703851+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:02.880676+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4260,8 +4262,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 5.17383911,
-      "collected_at": "2026-11-17T16:52:26.803976+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:47.796093+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4363,8 +4365,8 @@
       "forecast_fiscal_end": "2027-10-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.67114094,
-      "collected_at": "2026-11-17T16:53:25.332836+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:29.456499+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4446,113 +4448,6 @@
       "research_score": 50.4
     },
     {
-      "symbol": "UMBF",
-      "name": "UMB Financial Corporation",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "UMBF",
-      "state": "diligence_wait",
-      "price": 134.3999939,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 14.14108,
-      "forecast_fiscal_end": "2027-12-31",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": 1.5282642,
-      "collected_at": "2026-11-17T16:53:22.025432+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [
-        "extension20_wait",
-        "setup_confirmation_wait",
-        "trend_confirmation_wait"
-      ],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [
-          "trend_confirmation_wait",
-          "extension20_wait",
-          "setup_confirmation_wait"
-        ],
-        "ma20": 134.90599899,
-        "ma60": 135.50150045,
-        "atr14": 4.7071446,
-        "distance_sma20": -0.3750797546353102,
-        "volume_ratio": 1.01131224,
-        "relative20_pp": 7.12498364,
-        "support10": 129.88999939,
-        "prior_high20": 142.32000732,
-        "setup": "conditions_wait",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 142.32000732,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 134.90599899,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 135.50150045,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 83751420.81199646
-      },
-      "fundamental_fingerprint": "368161bfbb4faff3a5232b4030155b16c88330c0569fefb4480d20ede00848a7",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/UMBF/history/",
-        "estimates": "https://finance.yahoo.com/quote/UMBF/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/UMBF/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/UMBF/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/UMBF/profile/"
-      },
-      "research_score": 50.2
-    },
-    {
       "symbol": "ARW",
       "name": "Arrow Electronics, Inc.",
       "market": "US",
@@ -4577,8 +4472,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 12.68547544,
-      "collected_at": "2026-11-17T16:52:56.811738+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:10.574463+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4684,8 +4579,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.62795024,
-      "collected_at": "2026-11-17T16:52:54.128882+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:08.543220+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4791,8 +4686,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -5.10966869,
-      "collected_at": "2026-11-17T16:51:01.173696+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:34.293359+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -4899,8 +4794,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -4.21664385,
-      "collected_at": "2026-11-17T16:52:49.091071+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:04.880024+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5003,8 +4898,8 @@
       "forecast_fiscal_end": "2027-11-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.11014649,
-      "collected_at": "2026-11-17T16:53:19.457566+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:27.766967+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5084,6 +4979,109 @@
       "research_score": 44.9
     },
     {
+      "symbol": "ATR",
+      "name": "AptarGroup, Inc.",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "ATR",
+      "state": "diligence_wait",
+      "price": 143.16999817,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 6.20162,
+      "forecast_fiscal_end": "2027-12-31",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -1.60625494,
+      "collected_at": "2026-11-17T17:59:35.337328+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [
+        "setup_confirmation_wait"
+      ],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [
+          "setup_confirmation_wait"
+        ],
+        "ma20": 136.67599945,
+        "ma60": 128.95133324,
+        "atr14": 4.3171414,
+        "distance_sma20": 4.751381914990649,
+        "volume_ratio": 1.28877243,
+        "relative20_pp": 18.3373076,
+        "support10": 136.38999939,
+        "prior_high20": 148.63000488,
+        "setup": "conditions_wait",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 148.63000488,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 136.67599945,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 128.95133324,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 75666594.55543518
+      },
+      "fundamental_fingerprint": "9ef2e2aed57f816ab577f56b34d6d40cb1f735876a3e1e400b02e0fcdd53b5e2",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/ATR/history/",
+        "estimates": "https://finance.yahoo.com/quote/ATR/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/ATR/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/ATR/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/ATR/profile/"
+      },
+      "research_score": 44.7
+    },
+    {
       "symbol": "KNSL",
       "name": "Kinsale Capital Group, Inc.",
       "market": "US",
@@ -5108,8 +5106,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.82179712,
-      "collected_at": "2026-11-17T16:53:09.395454+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:20.519432+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5213,8 +5211,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -12.47482272,
-      "collected_at": "2026-11-17T16:52:06.894072+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:33.395265+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5321,8 +5319,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 7.12021961,
-      "collected_at": "2026-11-17T16:51:21.904488+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:53.515479+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5426,8 +5424,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.1008403,
-      "collected_at": "2026-11-17T16:53:06.980910+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:18.322760+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5533,8 +5531,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 13.16133382,
-      "collected_at": "2026-11-17T16:52:04.500802+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:31.193916+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -5640,8 +5638,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 15.24955457,
-      "collected_at": "2026-11-17T16:51:06.202942+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:39.985493+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -5749,8 +5747,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.92085372,
-      "collected_at": "2026-11-17T16:53:50.869692+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:58.883280+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -5858,8 +5856,8 @@
       "forecast_fiscal_end": "2019-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -3.3322339,
-      "collected_at": "2026-11-17T16:51:36.974967+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:05.682540+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -5968,8 +5966,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 3.43692568,
-      "collected_at": "2026-11-17T16:55:06.071440+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:22.578098+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6077,8 +6075,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 8.23504035,
-      "collected_at": "2026-11-17T16:51:03.851968+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:37.171050+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6186,8 +6184,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.36364413,
-      "collected_at": "2026-11-17T16:53:58.208471+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:07.373860+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6295,8 +6293,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.43299386,
-      "collected_at": "2026-11-17T16:53:42.660386+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:50.874369+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6404,8 +6402,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -4.94588224,
-      "collected_at": "2026-11-17T16:54:55.004109+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:11.165784+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6516,8 +6514,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.41382047,
-      "collected_at": "2026-11-17T16:51:44.287265+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:14.350607+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6625,8 +6623,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -5.86616273,
-      "collected_at": "2026-11-17T16:51:11.310969+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:45.321394+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6735,8 +6733,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.73839736,
-      "collected_at": "2026-11-17T16:54:05.714549+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:15.994590+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6842,8 +6840,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 7.47120102,
-      "collected_at": "2026-11-17T16:53:37.828004+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:45.259177+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -6951,8 +6949,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -6.80401383,
-      "collected_at": "2026-11-17T16:51:08.765515+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:42.524168+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7061,8 +7059,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 7.1416456,
-      "collected_at": "2026-11-17T16:51:49.541328+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:20.083226+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7168,8 +7166,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -6.10616162,
-      "collected_at": "2026-11-17T16:51:41.865517+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:11.479246+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7280,8 +7278,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.13852601,
-      "collected_at": "2026-11-17T16:51:46.901462+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:17.093750+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7387,8 +7385,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 12.10116717,
-      "collected_at": "2026-11-17T16:54:23.897176+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:36.200709+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7496,8 +7494,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -16.78235818,
-      "collected_at": "2026-11-17T16:54:10.787082+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:21.658474+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7606,8 +7604,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.36010037,
-      "collected_at": "2026-11-17T16:54:15.999616+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:27.582296+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7711,8 +7709,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -7.33859307,
-      "collected_at": "2026-11-17T16:55:03.343252+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:19.630753+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7821,8 +7819,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -8.56977382,
-      "collected_at": "2026-11-17T16:54:42.070466+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:56.351454+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -7931,8 +7929,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.70413771,
-      "collected_at": "2026-11-17T16:54:47.238460+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:02.477761+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8040,8 +8038,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 0.30012005,
-      "collected_at": "2026-11-17T16:55:11.346757+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:28.144665+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8147,8 +8145,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 18.82604549,
-      "collected_at": "2026-11-17T16:53:40.238472+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:48.213247+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8256,8 +8254,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 40.98604651,
-      "collected_at": "2026-11-17T16:54:39.487162+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:53.311668+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8365,8 +8363,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -11.50026218,
-      "collected_at": "2026-11-17T16:54:44.611794+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:59.235479+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8475,8 +8473,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.05306447,
-      "collected_at": "2026-11-17T16:54:31.472292+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:44.703965+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8584,8 +8582,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -9.15066452,
-      "collected_at": "2026-11-17T16:54:26.504135+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:39.281067+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8694,8 +8692,8 @@
       "forecast_fiscal_end": null,
       "forecast_period_basis": "missing",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:54:57.471595+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:13.968661+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -8805,8 +8803,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -8.39055092,
-      "collected_at": "2026-11-17T16:54:13.604614+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:24.661201+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -8913,8 +8911,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -17.81188443,
-      "collected_at": "2026-11-17T16:53:47.790968+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:56.173972+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9023,8 +9021,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -10.04652351,
-      "collected_at": "2026-11-17T16:51:13.981348+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:47.976247+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9133,8 +9131,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 5.19019929,
-      "collected_at": "2026-11-17T16:54:18.698142+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:30.605359+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9242,8 +9240,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -29.27057813,
-      "collected_at": "2026-11-17T16:54:36.753163+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:50.288916+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9352,8 +9350,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -9.93385017,
-      "collected_at": "2026-11-17T16:53:55.803315+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:04.707822+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9462,8 +9460,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -21.09694885,
-      "collected_at": "2026-11-17T16:54:03.184861+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:13.042203+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -9572,8 +9570,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:51:39.542549+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:08.398788+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -9684,8 +9682,8 @@
       "forecast_fiscal_end": null,
       "forecast_period_basis": "missing",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:54:08.156903+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:18.841049+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -9796,8 +9794,8 @@
       "forecast_fiscal_end": null,
       "forecast_period_basis": "missing",
       "revision30_pct": 6.8627451,
-      "collected_at": "2026-11-17T16:54:00.616568+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:10.292505+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -9906,8 +9904,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:53:45.209911+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:53.350536+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -10016,8 +10014,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.24511932,
-      "collected_at": "2026-11-17T16:53:53.284584+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:01.960255+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -10125,8 +10123,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -13.90590512,
-      "collected_at": "2026-11-17T16:55:00.323379+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:16.780018+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -10235,8 +10233,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:54:34.112254+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:47.419333+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -10347,8 +10345,8 @@
       "forecast_fiscal_end": null,
       "forecast_period_basis": "missing",
       "revision30_pct": -109.91117773,
-      "collected_at": "2026-11-17T16:54:28.924420+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:41.969494+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -10458,8 +10456,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:55:13.889071+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:31.080850+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -10572,8 +10570,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -17.66967711,
-      "collected_at": "2026-11-17T16:54:52.505715+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:08.246626+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -10682,8 +10680,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:54:21.283946+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:00:33.399896+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch",
@@ -10798,8 +10796,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 27.61904762,
-      "collected_at": "2026-11-17T16:54:49.936928+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:05.370489+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -10905,8 +10903,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.03974137,
-      "collected_at": "2026-11-17T16:55:08.821327+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T18:01:25.471592+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "price_session_mismatch"
       ],
@@ -11012,8 +11010,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:53:35.457254+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:42.791994+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -11124,8 +11122,8 @@
       "forecast_fiscal_end": null,
       "forecast_period_basis": "missing",
       "revision30_pct": null,
-      "collected_at": "2026-11-17T16:53:33.058001+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:40.082515+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [
         "forecast_basis_missing",
         "price_session_mismatch"
@@ -11238,8 +11236,8 @@
       "forecast_fiscal_end": "2028-03-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.33344193,
-      "collected_at": "2026-11-17T16:52:31.625567+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:53.458884+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11337,8 +11335,8 @@
       "forecast_fiscal_end": "2028-08-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.1031876,
-      "collected_at": "2026-11-17T16:52:51.712303+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:06.619022+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11412,6 +11410,105 @@
       "research_score": 63.1
     },
     {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "AAPL",
+      "state": "diligence_wait",
+      "price": 352.77999878,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 10.59799,
+      "forecast_fiscal_end": "2028-09-26",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -2.25050936,
+      "collected_at": "2026-11-17T17:57:26.548857+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [],
+        "ma20": 346.64250183,
+        "ma60": 336.1286677,
+        "atr14": 9.48643058,
+        "distance_sma20": 1.7705552312826223,
+        "volume_ratio": 0.97327046,
+        "relative20_pp": 6.33057897,
+        "support10": 325.32998657,
+        "prior_high20": 360.82998657,
+        "setup": "pullback_confirmed",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 360.82998657,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 346.64250183,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 336.1286677,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 16532614916.689606
+      },
+      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/AAPL/history/",
+        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
+      },
+      "research_score": 61.0
+    },
+    {
       "symbol": "AMZN",
       "name": "Amazon",
       "market": "US",
@@ -11436,8 +11533,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.02289627,
-      "collected_at": "2026-11-17T16:50:58.812808+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:32.362453+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11535,8 +11632,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.14345737,
-      "collected_at": "2026-11-17T16:52:09.465320+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:35.138856+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11610,105 +11707,6 @@
       "research_score": 40.5
     },
     {
-      "symbol": "AAPL",
-      "name": "Apple",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "AAPL",
-      "state": "diligence_wait",
-      "price": 352.77999878,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 10.59799,
-      "forecast_fiscal_end": "2028-09-26",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -2.25050936,
-      "collected_at": "2026-11-17T16:50:51.471074+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [],
-        "ma20": 346.64250183,
-        "ma60": 336.1286677,
-        "atr14": 9.48643058,
-        "distance_sma20": 1.7705552312826223,
-        "volume_ratio": 0.97327046,
-        "relative20_pp": 6.33057897,
-        "support10": 325.32998657,
-        "prior_high20": 360.82998657,
-        "setup": "pullback_confirmed",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 360.82998657,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 346.64250183,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 336.1286677,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 16532614916.689606
-      },
-      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/AAPL/history/",
-        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
-      },
-      "research_score": 27.2
-    },
-    {
       "symbol": "NVDA",
       "name": "NVIDIA",
       "market": "US",
@@ -11733,8 +11731,8 @@
       "forecast_fiscal_end": "2028-01-25",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.44977568,
-      "collected_at": "2026-11-17T16:50:56.190178+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:30.473694+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11844,8 +11842,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.5934613,
-      "collected_at": "2026-11-17T16:52:11.952192+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:37.127184+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -11951,8 +11949,8 @@
       "forecast_fiscal_end": "2028-06-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.14759241,
-      "collected_at": "2026-11-17T16:50:53.909517+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:28.513517+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -12035,8 +12033,8 @@
     }
   ],
   "market": {
-    "written_at": "2026-11-17T17:58:58.267800+00:00",
-    "macro_generated_at": "2026-11-17T17:03:16.593941+00:00",
+    "written_at": "2026-11-17T18:14:27.376551+00:00",
+    "macro_generated_at": "2026-11-17T18:06:24.859126+00:00",
     "indices": [
       {
         "index": "kospi",

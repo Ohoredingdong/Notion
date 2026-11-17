@@ -1,8 +1,8 @@
 {
   "version": "entry-plan-1.1",
-  "generated_at": "2026-11-17T17:58:58.267800+00:00",
-  "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-  "source_sha256": "5bd9b5cae39cff062636e3c36362b4a61ef4ba381672ae936a56058615441260",
+  "generated_at": "2026-11-17T18:14:27.376551+00:00",
+  "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+  "source_sha256": "7f6267e09cdba4647f98c5bd0e8051110af5b25bff1fda2a5961105ece993823",
   "rules": {
     "max_source_hours": 18,
     "max_review_days": 30,
@@ -51,8 +51,8 @@
       "forecast_fiscal_end": "2028-03-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.33344193,
-      "collected_at": "2026-11-17T16:52:31.625567+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:53.458884+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -150,8 +150,8 @@
       "forecast_fiscal_end": "2028-08-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -2.1031876,
-      "collected_at": "2026-11-17T16:52:51.712303+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:59:06.619022+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -225,6 +225,105 @@
       "research_score": 63.1
     },
     {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "market": "US",
+      "currency": "USD",
+      "provider_symbol": "AAPL",
+      "state": "diligence_wait",
+      "price": 352.77999878,
+      "price_session": "2026-11-16",
+      "source_expected_session": "2026-11-16",
+      "expected_session": "2026-11-16",
+      "session_clock": {
+        "date": "2026-11-16",
+        "closed_at": "2026-11-16T21:00:00+00:00",
+        "next_session": "2026-11-17",
+        "next_open": "2026-11-17T14:30:00+00:00",
+        "recheck_at": "2026-11-17T21:30:00+00:00",
+        "calendar": "XNYS",
+        "buffer_minutes": 30,
+        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
+      },
+      "forecast_eps": 10.59799,
+      "forecast_fiscal_end": "2028-09-26",
+      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
+      "revision30_pct": -2.25050936,
+      "collected_at": "2026-11-17T17:57:26.548857+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
+      "data_blocks": [],
+      "diligence_blocks": [
+        "independent_value_missing",
+        "source_documents_or_fingerprint_unverified",
+        "strict_checks_incomplete",
+        "strict_not_approved"
+      ],
+      "timing_blocks": [],
+      "entry_conditions_met": false,
+      "live_recommendation": false,
+      "execution_mode": "paper_only",
+      "strict_passed": false,
+      "document_revalidated": false,
+      "plan": {
+        "valid_until": "2026-11-17T21:30:00+00:00",
+        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
+        "entry_ceiling": null,
+        "trend_invalidation_close": null,
+        "next_session_max_gap_pct": 2,
+        "execution_conditions": [
+          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
+          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
+          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
+        ],
+        "not_an_order": true,
+        "invalidation_is_not_guaranteed_loss_limit": true
+      },
+      "tech": {
+        "blocks": [],
+        "ma20": 346.64250183,
+        "ma60": 336.1286677,
+        "atr14": 9.48643058,
+        "distance_sma20": 1.7705552312826223,
+        "volume_ratio": 0.97327046,
+        "relative20_pp": 6.33057897,
+        "support10": 325.32998657,
+        "prior_high20": 360.82998657,
+        "setup": "pullback_confirmed",
+        "technical_only_not_investment_approval": true,
+        "near_earnings_dates": [],
+        "watch_conditions": [
+          {
+            "id": "breakout",
+            "price_reference": 360.82998657,
+            "volume_ratio_required": 1.5,
+            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
+          },
+          {
+            "id": "pullback",
+            "price_reference": 346.64250183,
+            "max_extension_pct": 2,
+            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
+          },
+          {
+            "id": "rebound",
+            "price_reference": 336.1286677,
+            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
+          }
+        ],
+        "turnover20": 16532614916.689606
+      },
+      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
+      "sources": {
+        "history": "https://finance.yahoo.com/quote/AAPL/history/",
+        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
+        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
+        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
+        "official": "https://www.sec.gov/edgar/search/",
+        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
+      },
+      "research_score": 61.0
+    },
+    {
       "symbol": "AMZN",
       "name": "Amazon",
       "market": "US",
@@ -249,8 +348,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.02289627,
-      "collected_at": "2026-11-17T16:50:58.812808+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:32.362453+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -348,8 +447,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -1.14345737,
-      "collected_at": "2026-11-17T16:52:09.465320+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:35.138856+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -423,105 +522,6 @@
       "research_score": 40.5
     },
     {
-      "symbol": "AAPL",
-      "name": "Apple",
-      "market": "US",
-      "currency": "USD",
-      "provider_symbol": "AAPL",
-      "state": "diligence_wait",
-      "price": 352.77999878,
-      "price_session": "2026-11-16",
-      "source_expected_session": "2026-11-16",
-      "expected_session": "2026-11-16",
-      "session_clock": {
-        "date": "2026-11-16",
-        "closed_at": "2026-11-16T21:00:00+00:00",
-        "next_session": "2026-11-17",
-        "next_open": "2026-11-17T14:30:00+00:00",
-        "recheck_at": "2026-11-17T21:30:00+00:00",
-        "calendar": "XNYS",
-        "buffer_minutes": 30,
-        "note": "커뮤니티 거래소 달력. 임시휴장 변경은 거래소 원문 확인."
-      },
-      "forecast_eps": 10.59799,
-      "forecast_fiscal_end": "2028-09-26",
-      "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
-      "revision30_pct": -2.25050936,
-      "collected_at": "2026-11-17T16:50:51.471074+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
-      "data_blocks": [],
-      "diligence_blocks": [
-        "independent_value_missing",
-        "source_documents_or_fingerprint_unverified",
-        "strict_checks_incomplete",
-        "strict_not_approved"
-      ],
-      "timing_blocks": [],
-      "entry_conditions_met": false,
-      "live_recommendation": false,
-      "execution_mode": "paper_only",
-      "strict_passed": false,
-      "document_revalidated": false,
-      "plan": {
-        "valid_until": "2026-11-17T21:30:00+00:00",
-        "horizon": "다음 실제 정규 거래일의 재확인용; 장중 매수 신호 아님",
-        "entry_ceiling": null,
-        "trend_invalidation_close": null,
-        "next_session_max_gap_pct": 2,
-        "execution_conditions": [
-          "장 시작 후 새 호가·공시·EPS·검토 유효기간을 재확인",
-          "기준가 대비 2% 초과 갭 또는 진입 상한 초과 시 추격하지 않음",
-          "새 공시·정정·전망 변경 또는 만료 시 계획 취소"
-        ],
-        "not_an_order": true,
-        "invalidation_is_not_guaranteed_loss_limit": true
-      },
-      "tech": {
-        "blocks": [],
-        "ma20": 346.64250183,
-        "ma60": 336.1286677,
-        "atr14": 9.48643058,
-        "distance_sma20": 1.7705552312826223,
-        "volume_ratio": 0.97327046,
-        "relative20_pp": 6.33057897,
-        "support10": 325.32998657,
-        "prior_high20": 360.82998657,
-        "setup": "pullback_confirmed",
-        "technical_only_not_investment_approval": true,
-        "near_earnings_dates": [],
-        "watch_conditions": [
-          {
-            "id": "breakout",
-            "price_reference": 360.82998657,
-            "volume_ratio_required": 1.5,
-            "meaning": "직전 20일 고점 이상 확정 종가 + 거래량 확대 + 시장 대비 강세"
-          },
-          {
-            "id": "pullback",
-            "price_reference": 346.64250183,
-            "max_extension_pct": 2,
-            "meaning": "20일·60일 추세 유지, 20일 평균 근처에서 확정 종가 확인"
-          },
-          {
-            "id": "rebound",
-            "price_reference": 336.1286677,
-            "meaning": "20일 평균을 회복해도 60일 평균 아래면 초기 반등 관찰로 분리; 매수 승인 아님"
-          }
-        ],
-        "turnover20": 16532614916.689606
-      },
-      "fundamental_fingerprint": "ab924273aded3a6534bffaea64f7ccf3ae96d373f4e8464b262d5081f54b7c03",
-      "sources": {
-        "history": "https://finance.yahoo.com/quote/AAPL/history/",
-        "estimates": "https://finance.yahoo.com/quote/AAPL/analysis/",
-        "cashflow": "https://finance.yahoo.com/quote/AAPL/cash-flow/",
-        "balance": "https://finance.yahoo.com/quote/AAPL/balance-sheet/",
-        "official": "https://www.sec.gov/edgar/search/",
-        "profile": "https://finance.yahoo.com/quote/AAPL/profile/"
-      },
-      "research_score": 27.2
-    },
-    {
       "symbol": "NVDA",
       "name": "NVIDIA",
       "market": "US",
@@ -546,8 +546,8 @@
       "forecast_fiscal_end": "2028-01-25",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": -0.44977568,
-      "collected_at": "2026-11-17T16:50:56.190178+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:30.473694+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -657,8 +657,8 @@
       "forecast_fiscal_end": "2027-12-31",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 1.5934613,
-      "collected_at": "2026-11-17T16:52:11.952192+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:58:37.127184+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -764,8 +764,8 @@
       "forecast_fiscal_end": "2028-06-30",
       "forecast_period_basis": "inferred_next_fy_not_exact_close_date",
       "revision30_pct": 2.14759241,
-      "collected_at": "2026-11-17T16:50:53.909517+00:00",
-      "source_generated_at": "2026-11-17T16:55:14.013425+00:00",
+      "collected_at": "2026-11-17T17:57:28.513517+00:00",
+      "source_generated_at": "2026-11-17T18:01:31.315590+00:00",
       "data_blocks": [],
       "diligence_blocks": [
         "independent_value_missing",
@@ -848,8 +848,8 @@
     }
   ],
   "market": {
-    "written_at": "2026-11-17T17:58:58.267800+00:00",
-    "macro_generated_at": "2026-11-17T17:03:16.593941+00:00",
+    "written_at": "2026-11-17T18:14:27.376551+00:00",
+    "macro_generated_at": "2026-11-17T18:06:24.859126+00:00",
     "indices": [
       {
         "index": "kospi",
