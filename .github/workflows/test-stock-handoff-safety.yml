@@ -1,0 +1,43 @@
+name: Test Stock Handoff Safety (Read Only)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/dispatch_stock_handoff.sh'
+      - 'scripts/test_stock_dispatch_handoff.py'
+      - 'scripts/test_stock_refresh_handoffs.py'
+      - 'scripts/build_stock_entry_plan.py'
+      - 'scripts/stock_entry_inputs.py'
+      - 'scripts/test_stock_entry_plan.py'
+      - 'scripts/test_stock_audit_publication.py'
+      - '.github/workflows/*.yml'
+  push:
+    branches: [main, qa/durable-handoff-20261118]
+    paths:
+      - 'scripts/dispatch_stock_handoff.sh'
+      - 'scripts/test_stock_dispatch_handoff.py'
+      - 'scripts/test_stock_refresh_handoffs.py'
+      - 'scripts/build_stock_entry_plan.py'
+      - 'scripts/stock_entry_inputs.py'
+      - 'scripts/test_stock_entry_plan.py'
+      - 'scripts/test_stock_audit_publication.py'
+      - '.github/workflows/*.yml'
+permissions:
+  contents: read
+jobs:
+  offline-handoff-safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install calendar test dependency
+        run: pip install 'exchange-calendars==4.13.1'
+      - name: Shell syntax and offline delivery failure cases
+        run: |
+          bash -n scripts/dispatch_stock_handoff.sh
+          PYTHONPATH=scripts python -m unittest test_stock_dispatch_handoff test_stock_refresh_handoffs test_stock_entry_plan test_stock_audit_publication -v

@@ -34,7 +34,9 @@ def workflow_graph(texts):
             for parent in ast.literal_eval(parent_list):
                 if parent in edges:
                     edges[parent].add((names[file], 'workflow_run'))
-        for target in re.findall(r'/actions/workflows/([^/\s\"]+)/dispatches', text):
+        targets = re.findall(r'/actions/workflows/([^/\s\"]+)/dispatches', text)
+        targets += re.findall(r'bash scripts/dispatch_stock_handoff.sh ([a-z-]+\.yml)', text)
+        for target in targets:
             if target in names:
                 edges[names[file]].add((names[target], 'workflow_dispatch'))
     return edges
@@ -95,6 +97,25 @@ class RefreshHandoffTests(unittest.TestCase):
                           ('Audit Stock Radar Accuracy', 'workflow_run'),
                           ('Monitor Stock Radar Health', 'workflow_run')})
         self.assertIn(('Strict Green Review', 'workflow_run'), self.graph['Stock Three-Year Reading'])
+
+    def test_recommendation_publication_dispatches_entry_once_before_final_audit(self):
+        text = self.texts['stock-recommendations.yml']
+        target = 'bash scripts/dispatch_stock_handoff.sh stock-entry-plan.yml'
+        self.assertEqual(text.count(target), 1)
+        self.assertLess(text.index('python scripts/publish_widget_data.py'), text.index(target))
+        self.assertLess(text.index('node --check assets/stock-recommendations.js'), text.index(target))
+        step = text[text.rfind('      - name:', 0, text.index(target)):text.index(target)]
+        self.assertIn("if: success() && github.ref == 'refs/heads/main'", step)
+        self.assertIn('GH_TOKEN: ${{ github.token }}', step)
+        self.assertIn('  actions: write', text)
+        self.assertEqual(self.graph['Stock Recommendations'],
+                         {('Stock Entry Plan', 'workflow_dispatch')})
+        self.assertNotIn(('Stock Entry Plan', 'workflow_run'),
+                         self.graph['Stock Three-Year Reading'])
+        self.assertIn(('Stock Entry Plan', 'workflow_run'),
+                      self.graph['Strict Green Review'])
+        self.assertIn(('Audit Stock Radar Accuracy', 'workflow_dispatch'),
+                      self.graph['Stock Entry Plan'])
 
     def test_public_proof_starts_after_the_successful_audit_publication(self):
         audit = self.texts['audit-stock-radar-accuracy.yml']
