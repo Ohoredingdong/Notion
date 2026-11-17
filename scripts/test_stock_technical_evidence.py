@@ -202,6 +202,31 @@ class TechnicalEvidenceTests(unittest.TestCase):
             row=row_for(*inputs()); mutate_block(row['technical']['evidence']['stock'],mutate)
             self.assertEqual(proof.validate_technical_evidence(row,NOW)['status'],'failed')
 
+    def test_invalid_final_ohlcv_cannot_borrow_a_later_close_endpoint(self):
+        bars,bench = inputs()
+        original_source=copy.deepcopy(bars.source_evidence)
+        template=pd.DataFrame([{'Open':r['open'],'High':r['high'],'Low':r['low'],'Close':r['close'],
+                                'Volume':r['volume'],'Stock Splits':r['split']} for r in bars],
+                              index=pd.to_datetime([r['date'] for r in bars]))
+        for field,value in [('Open',float('nan')),('Volume',float('nan')),('Volume',-1),
+                            ('High',1),('Low',999)]:
+            with self.subTest(field=field,value=value):
+                frame=template.copy();frame.iloc[-1,frame.columns.get_loc(field)]=value
+                retained=producer.bars_from(frame,{'date':'2026-11-05'},source_evidence=original_source)
+                self.assertEqual(len(retained),0)
+                self.assertEqual(retained.source_evidence,original_source)
+                row=row_for(retained,bench)
+                self.assertIsNone(row['price']);self.assertIsNone(row['price_session'])
+                self.assertEqual(row['technical']['status'],'missing')
+                self.assertEqual(proof.validate_technical_evidence(row,NOW)['status'],'verified_withheld')
+        self.assertEqual(bars.source_evidence,original_source)
+
+    def test_old_filtered_snapshot_still_fails_endpoint_audit(self):
+        bars,bench=inputs()
+        old=proof.ObservedBars(bars[:-1],bars.source_evidence)
+        issues={e['issue'] for e in proof.validate_technical_evidence(row_for(old,bench),NOW)['errors']}
+        self.assertIn('technical_source_endpoint_mismatch',issues)
+
     def test_turnover_uses_actual_prices_and_volumes_when_published(self):
         bars,bench = inputs(); row=row_for(bars,bench)
         row['liquidity']={'avg_turnover20':round(mean(r['close']*r['volume'] for r in bars[-20:]),8)}
