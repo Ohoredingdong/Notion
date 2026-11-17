@@ -1,0 +1,31 @@
+name: Corporate Actions Bounded Probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/corporate-actions-evidence-20261117]
+    paths: ['.github/corporate-probe-request.json']
+permissions:
+  contents: read
+concurrency:
+  group: corporate-actions-bounded-probe
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/feature/corporate-actions-evidence-20261117'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test deterministic analysis contracts
+        run: python scripts/test_stock_corporate_actions.py
+      - name: Probe one official issuer index without storing response
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python scripts/probe_stock_corporate_actions.py
+      # Intentionally no upload-artifact, summary data, publication or git writes.
+      # Public-repository run status/logs are NOT private. Only pass/fail is logged.
