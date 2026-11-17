@@ -42,3 +42,6 @@ DART_API_KEY, SEC_USER_AGENT는 실행 환경의 비공개 환경변수로만 �
 - https://www.sec.gov/search-filings/edgar-application-programming-interfaces
 - https://www.sec.gov/about/developer-resources
 - https://www.fsc.go.kr/no010101/83400
+
+## 기존 실행 경로 재확인
+GitHub Actions의 기존 `stock-investment-cases.yml`와 `stock-reading-depth.yml`는 `secrets.DART_API_KEY`를 사용한다. 2026-11-17 04:46 UTC 결과 요약은 인증 성공·성공 응답 100건을 기록한다. 같은 날 05:03 실행 44021386843은 한국 240개 중 238개 계정을 수집했지만 미국은 실제 SEC 연락처 미설정으로 60개 모두 요청 전 차단했다. 기존 `vars.SEC_USER_AGENT` 주입 경로는 있으며 실제 값은 공백이었다. 따라서 로컬 환경에 키가 없다는 사실을 저장소 미설정으로 확대하면 안 된다. 새 공시 모듈은 검토된 Actions 작업에서 동일 secret을 주입하여 테스트 가능하며 키를 추출/복사할 필요가 없다. 이번에는 기존 워크플로 실행·환경변수·비밀을 변경하지 않았다. SEC 연락처는 사용자가 허용한 실제 연락처여야 하며 메모의 이메일이나 예제/가짜 연락처를 임의 설정하지 않는다.
