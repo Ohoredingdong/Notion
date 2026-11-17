@@ -174,7 +174,10 @@ def market_series(symbol,label,now=None):
     market={'^KS11':'KR','^KQ11':'KR','^GSPC':'US','^IXIC':'US','KRW=X':'FX'}[symbol]
     cutoff=(collected_at.date()-timedelta(days=1)).isoformat() if market=='FX' else market_session_clock(market,collected_at)['expected_session']
     currency='KRW' if market in ('KR','FX') else 'USD'
-    frame,price_source=fetch_daily_history(yf.Ticker(symbol),symbol,market,cutoff,currency=currency,period='3mo')
+    # Use the same bounded daily-history window as the canonical index chart.
+    # Provider responses can differ by window; stale replies still fail closed.
+    period='6mo' if market in ('KR','US') else '3mo'
+    frame,price_source=fetch_daily_history(yf.Ticker(symbol),symbol,market,cutoff,currency=currency,period=period)
     if frame is None or frame.empty:raise ValueError(label+'_empty')
     values,clock=completed_daily_points([(str(i.date()),num(v)) for i,v in frame['Close'].items()],market,collected_at)
     if not values:raise ValueError(label+'_no_close')
