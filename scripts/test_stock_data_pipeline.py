@@ -275,7 +275,7 @@ class CanonicalAndAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)
             write(root,'stock-opportunity-data.json',{'generated_at':NOW.isoformat(),'companies':[]})
-            with patch.dict(sys.modules,{'yfinance':yf,'exchange_calendars':xc}), patch.object(chart_builder.time,'sleep'):
+            with patch.dict(sys.modules,{'yfinance':yf,'stock_exchange_calendar':xc,'scripts.stock_exchange_calendar':xc}), patch.object(chart_builder.time,'sleep'):
                 data=chart_builder.build(root,NOW)
             self.assertEqual(data['counts'],{'ok':4,'stale':0,'unavailable':0})
             self.assertEqual(data['series']['^KQ11']['price_session'],'2026-11-05')
@@ -293,7 +293,7 @@ class CanonicalAndAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)
             write(root,'stock-opportunity-data.json',{'generated_at':NOW.isoformat(),'companies':[]})
-            with patch.dict(sys.modules,{'yfinance':yf,'exchange_calendars':xc}), patch.object(chart_builder.time,'sleep'):
+            with patch.dict(sys.modules,{'yfinance':yf,'stock_exchange_calendar':xc,'scripts.stock_exchange_calendar':xc}), patch.object(chart_builder.time,'sleep'):
                 data=chart_builder.build(root,NOW)
             self.assertEqual(data['counts'],{'ok':0,'stale':0,'unavailable':4})
             self.assertTrue(all(row['bars']==[] and row['collection_attempts']==2 for row in data['series'].values()))
