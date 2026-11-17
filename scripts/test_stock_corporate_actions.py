@@ -100,10 +100,11 @@ class CollectorTests(unittest.TestCase):
         with self.assertRaises(ValueError):sec_items({'accessionNumber':['a'],'filingDate':[],'form':[],'primaryDocument':[]})
     def test_sec_complete_history(self):
         cols={'accessionNumber':['0000000001-26-000001'],'filingDate':['2026-11-17'],'form':['8-K/A'],'primaryDocument':['a.htm']}
-        r=collect_sec('1','Research contact@example.org',lambda *a:{'cik':1,'filings':{'recent':cols,'files':[]}})
+        r=collect_sec('1','Research fixture@synthetic.test',lambda *a:{'cik':1,'filings':{'recent':cols,'files':[]}})
         self.assertTrue(r['coverage']['complete']);self.assertFalse(r['coverage']['semantic_complete']);self.assertTrue(r['items'][0]['amendment'])
     def test_sec_no_unidentified_client(self):
-        with self.assertRaises(ValueError):collect_sec('1','bot')
+        for ua in ('bot','Research contact@example.org','x@y.com'):
+            with self.assertRaises(ValueError):collect_sec('1',ua)
     def test_sec_issuer_mismatch(self):
-        r=collect_sec('1','Research contact@example.org',lambda *a:{'cik':2});self.assertFalse(r['coverage']['complete'])
+        r=collect_sec('1','Research fixture@synthetic.test',lambda *a:{'cik':2});self.assertFalse(r['coverage']['complete'])
 if __name__=='__main__':unittest.main()
