@@ -78,7 +78,14 @@ def bars_from(df,session,source_evidence=None):
         if any(values[k] is None for k in values) or values['close']<=0 or values['volume']<0:continue
         if values['high']<max(values['open'],values['close']) or values['low']>min(values['open'],values['close']):continue
         rows.append({'date':date,**values,'split':num(r.get('Stock Splits')) or 0})
-    return ObservedBars(sorted(rows,key=lambda r:r['date']),source_evidence)
+    rows=sorted(rows,key=lambda r:r['date'])
+    endpoint=(source_evidence or {}).get('latest_completed_session')
+    # The provider close proof can include a last row rejected by OHLCV checks.
+    # Never attach that later endpoint to an older quote/technical window.
+    # Preserve the proof unchanged and withhold numeric output until recollected.
+    if endpoint and (not rows or rows[-1]['date']!=endpoint):
+        return ObservedBars([],source_evidence)
+    return ObservedBars(rows,source_evidence)
 
 def technical(bars,benchmark,market=None):
     evidence=seal_technical_inputs(bars,benchmark,market)
