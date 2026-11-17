@@ -22,3 +22,17 @@
 |매매 조건|차단 조건/설명 구현|조정주가 등 검증 미완료|중지 사유 표시|주문/매매신호 없음|
 
 공개·판매용 radar-public/에는 연구 자료를 복사하지 않는다. main 병합이나 운영 배포는 기존 정합성 감사·화면 검증 전 금지.
+
+## 후속 OHLC 패턴 연구 엔진
+`stock-pattern-evidence.js`: 검증된 OHLCV 입력 계약, 확정 피벗 기반 대칭삼각형·상승/하락 쐐기·이중바닥 연구용 규칙을 구현했다. 형성중/돌파(거래량확인/미확인)/이중바닥 무효를 구분한다. 3개 고점/저점 피벗, 2% 이내 선 적합오차, 수렴비율 80% 미만 등은 명시적 휴리스틱이지 검증된 승률 기준이 아니다. 지지·저항은 관찰 기준선이며 매수·손절 지시가 아니다. 확정된 피벗만 이용하고 확정시점 이전 신호로 소급하지 않는다.
+
+입력 게이트: 종목 매핑, 거래소 거래일, 조정가격, 기업행동, 이용권 검증을 모두 요구하며 관측시각·완료세션·OHLC 범위·거래량도 검사한다. 허용 여부 필드는 검증 어댑터가 제공해야 하며 엔진이 임의로 true로 만들지 않는다.
+
+새 엔진은 실제 시세 수집기/UI에 연결하지 않았다. 기존 캐시는 OHLC 부족 및 조정·권리 검증 미완료라 보류를 유지한다. 합성 OHLCV fixture 시험은 실제 시장의 수익성 검증이 아니다. 새로운 가격 데이터를 자동 공개하지 않았고 기존 매수/진입 기준을 완화하지 않았다.
+
+출처 확인:
+- 기존 yfinance는 `auto_adjust=False`, actions=True 경로이며 README는 개인 이용 용도를 명시: https://github.com/ranaroussi/yfinance/blob/main/README.md
+- Massive는 OHLC aggregates와 split adjustment를 문서화하나 해당 사용자의 이용계약·데이터 외부표시 권리는 확인하지 않음: https://massive.com/docs/rest/stocks/aggregates/daily-market-summary
+- split adjustment와 dividend adjustment는 다름: https://massive.com/knowledge-base/article/is-massives-stock-data-adjusted-for-splits-or-dividends
+
+상용 공급처 계정 생성·구독·구매를 하지 않았다. 공개 연구 호스트에 Yahoo OHLC를 새로 배포하는 권한을 가정하지 않았다.
