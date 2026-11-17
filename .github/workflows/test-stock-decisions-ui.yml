@@ -1,6 +1,11 @@
 name: Test Stock Decision UI
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/test_stock_decision_browser.py
+      - .github/workflows/test-stock-decisions-ui.yml
   push:
     branches: [main]
     paths:
@@ -19,11 +24,12 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: stock-decision-ui-qa
+  group: stock-decision-ui-qa-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   browser:
-    runs-on: ubuntu-latest
+    # Playwright 1.56 supports Ubuntu 24.04; ubuntu-latest can move to 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
