@@ -130,6 +130,10 @@ def source_url(spec: Indicator, year: int) -> str:
 @lru_cache(maxsize=32)
 def calendar(name: str, year: int):
     import exchange_calendars as xc
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
     if xc.__version__ != CALENDAR_VERSION:
         raise ValueError('unverified_calendar_version:' + xc.__version__)
     # XSHG 4.13.1 has authoritative precomputed holidays only through 2026.
@@ -137,7 +141,7 @@ def calendar(name: str, year: int):
     end_year = min(year + 1, 2026) if name == 'XSHG' else year + 1
     if end_year < year:
         raise ValueError('calendar_coverage_expired:XSHG')
-    return xc.get_calendar(name, start=f'{year-1}-01-01', end=f'{end_year}-12-31')
+    return get_calendar(name, start=f'{year-1}-01-01', end=f'{end_year}-12-31')
 
 
 def valid_treasury_day(day: date) -> bool:

@@ -10,12 +10,15 @@ from stock_price_evidence import fetch_daily_history, daily_change
 UTC=dt.timezone.utc
 INDEX=[('^KS11','코스피','KR','KRW'),('^KQ11','코스닥','KR','KRW'),('^IXIC','나스닥','US','USD'),('^GSPC','S&P 500','US','USD')]
 def build(root=Path('.'), now=None):
-    import exchange_calendars as xc
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
     import yfinance as yf
     now=now or dt.datetime.now(UTC)
     raw=json.loads((root/'stock-opportunity-data.json').read_text())
     yf.set_tz_cache_location(tempfile.mkdtemp(prefix='radar-display-'))
-    calendars={m:xc.get_calendar(n,start=f'{now.year-1}-01-01',end=f'{now.year+1}-12-31') for m,n in [('KR','XKRX'),('US','XNYS')]}
+    calendars={m:get_calendar(n,start=f'{now.year-1}-01-01',end=f'{now.year+1}-12-31') for m,n in [('KR','XKRX'),('US','XNYS')]}
     cutoff={}
     for market,cal in calendars.items():
         cutoff[market]=market_session_clock(market,now,calendar=cal)['expected_session']

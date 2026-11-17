@@ -40,9 +40,12 @@ def session_date(value):
 @lru_cache(maxsize=8)
 def exchange_calendar(market, year):
     """A missing calendar is an explicit failure, never a weekday-only fallback."""
-    import exchange_calendars as xc
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
     name, _ = MARKETS[market]
-    return xc.get_calendar(name, start=f'{year - 1}-01-01', end=f'{year + 1}-12-31')
+    return get_calendar(name, start=f'{year - 1}-01-01', end=f'{year + 1}-12-31')
 
 
 def market_session_clock(market, now=None, delay_minutes=30, calendar=None):

@@ -57,8 +57,11 @@ def frame_rows(df):
 
 def latest_session(market,now):
     import pandas as pd
-    import exchange_calendars as xc
-    cal=xc.get_calendar('XKRX' if market=='KR' else 'XNYS')
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
+    cal=get_calendar('XKRX' if market=='KR' else 'XNYS',start=f'{now.year-1}-01-01',end=f'{now.year+1}-12-31')
     schedule=cal.schedule.loc[(now-timedelta(days=40)).date().isoformat():(now+timedelta(days=5)).date().isoformat()]
     eligible=schedule[schedule['close']+pd.Timedelta(minutes=30)<=pd.Timestamp(now)]
     if eligible.empty:raise ValueError('거래소 완료 세션을 결정할 수 없음')
