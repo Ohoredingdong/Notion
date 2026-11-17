@@ -19,9 +19,12 @@ def timestamp(x):
 
 @functools.lru_cache(maxsize=16)
 def calendar(market,year):
-    import exchange_calendars as xc
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
     name={'KR':'XKRX','US':'XNYS'}[market]
-    return xc.get_calendar(name,start=f'{year-1}-01-01',end=f'{year+1}-12-31')
+    return get_calendar(name,start=f'{year-1}-01-01',end=f'{year+1}-12-31')
 
 def clock(market,now):
     try:

@@ -48,8 +48,11 @@ def digest(value):
 
 @lru_cache(maxsize=20)
 def calendar(market, year):
-    import exchange_calendars as xc
-    return xc.get_calendar({'KR': 'XKRX', 'US': 'XNYS'}[market],
+    try:
+        from .stock_exchange_calendar import get_calendar
+    except ImportError:
+        from stock_exchange_calendar import get_calendar
+    return get_calendar({'KR': 'XKRX', 'US': 'XNYS'}[market],
                            start=f'{year-8}-01-01', end=f'{year+2}-12-31')
 
 
