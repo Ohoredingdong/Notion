@@ -1,0 +1,42 @@
+name: Complete analysis design QA
+on:
+  pull_request:
+    paths:
+      - 'assets/stock-complete-analysis.*'
+      - 'assets/stock-radar-flow-v2.js'
+      - 'stock-value-radar.html'
+      - 'stock-radar-research.html'
+      - 'scripts/test_stock_complete_analysis*'
+      - '.github/workflows/stock-complete-analysis-ui.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/stock-radar-flow-v2.js'
+      - 'stock-value-radar.html'
+      - 'stock-radar-research.html'
+      - 'assets/stock-complete-analysis.*'
+      - 'scripts/test_stock_complete_analysis*'
+      - '.github/workflows/stock-complete-analysis-ui.yml'
+permissions:
+  contents: read
+jobs:
+  design-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test scripts/test_stock_complete_analysis.cjs
+      - run: pip install playwright==1.56.0
+      - run: python -m playwright install --with-deps chromium
+      - name: Read-only desktop and mobile browser checks
+        run: |
+          python -m http.server 8765 >/tmp/radar-design-http.log 2>&1 &
+          python scripts/test_stock_complete_analysis_browser.py

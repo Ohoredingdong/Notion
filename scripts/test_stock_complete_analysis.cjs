@@ -1,0 +1,11 @@
+const test=require('node:test'); const assert=require('node:assert/strict');
+const fs=require('node:fs'); const path=require('node:path');
+const base=path.resolve(__dirname,'..'); const api=require('../assets/stock-complete-analysis.js');
+const html=api.markup({name:'삼성전자',symbol:'005930'});
+test('seven ordered analysis stages',()=>assert.deepEqual(api.sections.map(s=>s.id),['macro','industry','qualitative','financial','disclosures','technical','decision']));
+test('selected company escaped',()=>{assert.match(html,/삼성전자/);assert.ok(!api.markup({name:'<img onerror="x">',symbol:'&'}).includes('<img'));});
+test('financial reading order unchanged',()=>{const s=html.slice(html.indexOf('class="section-flow"'));let last=-1;for(const x of ['매출','영업이익','영업이익률','영업현금흐름','매출채권 / 재고','부채 / 현금','PER · PBR · ROE']){const i=s.indexOf('<b>'+x+'</b>');assert.ok(i>last,x);last=i;}});
+test('all requested indicator and event coverage',()=>{for(const x of ['EPS','BPS','DPS','부채비율','현금흐름표','노사문제','협력업체','리픽싱','CB · BW','M&A · 분할','자사주 소각','RSI','MACD','다이버전스','볼린저밴드','삼각형','쐐기형','바닥형','무효화'])assert.ok(html.includes(x),x);});
+test('no connected-data or candidate claim',()=>{for(const x of ['아직 미연결','매수후보 판단에 사용되지 않습니다','매수후보 판단 보류','전체 수집 여부 미검증','0 / 6 검증'])assert.ok(html.includes(x),x);});
+test('no collection storage or execution in design module',()=>{const src=fs.readFileSync(base+'/assets/stock-complete-analysis.js','utf8');assert.doesNotMatch(src,/fetch\(|XMLHttpRequest|localStorage|sessionStorage|\.score\s*=|eval\(/);});
+test('existing wrapper and native navigation preserved',()=>{assert.match(fs.readFileSync(base+'/stock-radar-research.html','utf8'),/stock-value-radar.html/);assert.match(fs.readFileSync(base+'/assets/stock-radar-flow-v2.js','utf8'),/data-rnd-open/);});
