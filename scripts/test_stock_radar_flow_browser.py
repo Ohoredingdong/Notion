@@ -97,7 +97,7 @@ with sync_playwright() as play:
             "(nodes) => nodes.map(n => n.getAttribute('src'))")
         expected_modules=("stock-radar-clean-bridge.js","stock-radar-flow-v2.js",
                           "stock-catalog-ui.js","stock-world-brief.js","stock-world-flow.js",
-                          "stock-quote-context.js",
+                          "stock-quote-context.js","stock-complete-analysis.js",
                           "stock-forecast.js","stock-forecast-learning.js",
                           "stock-forecast-directions.js","stock-forecast-autopilot.js")
         check("Approved V5 runtime modules and independent forecast screens only",
