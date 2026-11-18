@@ -35,6 +35,7 @@ const ctx=window.StockRadarV2Bridge?.snapshot?.();const company=window.StockCata
 if(typeof document!=='undefined')document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-rnd-open')){open();return}if(b.hasAttribute('data-rnd-close')){close();return}const dialog=b.closest('#radar-complete-analysis');if(!dialog)return;
 if(b.dataset.rndSection){dialog.querySelectorAll('[data-rnd-panel]').forEach(p=>p.hidden=p.dataset.rndPanel!==b.dataset.rndSection);dialog.querySelectorAll('[data-rnd-section]').forEach(t=>t.setAttribute('aria-pressed',String(t===b)));dialog.querySelector('.rnd-body').scrollTop=0;}
 if(b.dataset.tab!==undefined){dialog.querySelectorAll('[data-tab]').forEach(t=>t.setAttribute('aria-selected',String(t===b)));dialog.querySelectorAll('.tab-panel').forEach((p,i)=>p.hidden=i!==Number(b.dataset.tab));}});
+if(typeof document!=='undefined')document.addEventListener('keydown',e=>{const b=e.target.closest('#radar-complete-analysis [role=tab]');if(!b||!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;const tabs=[...b.parentElement.querySelectorAll('[role=tab]')];let i=tabs.indexOf(b);i=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;e.preventDefault();tabs[i].focus();tabs[i].click();});
 const api={markup,sections:sections.map(s=>({id:s.id,name:s.name})),version:'design-only-20261118'};
 if(typeof window!=='undefined')window.StockCompleteAnalysis=api;if(typeof module!=='undefined')module.exports=api;
 })();
