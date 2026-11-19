@@ -1,13 +1,16 @@
 """Read-only UI regression; local static server, no collection or dispatch."""
 import os
+import runpy
+from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 URL=os.environ.get('RADAR_TEST_URL','http://127.0.0.1:8765/stock-radar-research.html')
+LEGACY=URL.replace('stock-radar-research.html','stock-value-radar.html')
 with sync_playwright() as p:
     browser=p.chromium.launch()
     for width,height in [(1440,1000),(390,844)]:
         page=browser.new_page(viewport={'width':width,'height':height})
-        page.goto(URL)
-        frame=page.frame_locator('iframe')
+        page.goto(LEGACY)
+        frame=page
         opener=frame.get_by_role('button',name='선택 기업 전체 분석')
         opener.click()
         dialog=frame.get_by_role('dialog',name='선택 기업 전체 분석')
@@ -40,3 +43,8 @@ with sync_playwright() as p:
         print(f'PASS native wrapper, seven sections, five tabs, mobile bounds, close/Escape: {width}x{height}')
         page.close()
     browser.close()
+
+# The original modal remains tested at its unchanged canonical legacy entry.
+# Exercise the new research front door as well using the same read-only server.
+os.environ['RADAR_URL']=URL
+runpy.run_path(str(Path(__file__).with_name('test_stock_cohesive_browser.py')),run_name='__main__')
