@@ -15,6 +15,17 @@ with sync_playwright() as pw:
  assert page.locator('[data-rc-country]').count()==10
  assert page.locator('.rc-index').count()==4
  assert page.locator('.rc-candidate').inner_text().find('오늘의 매수후보 검토')>=0
+ assert page.locator('.rc-industry-list article').count()>0
+ assert '전체 업종 지수 아님' in page.locator('.rc-industry-list').locator('..').inner_text()
+ assert page.locator('.rc-headline-list article').count()<=10
+ more=page.locator('[data-rc-news-more]')
+ if more.count():
+  more.click()
+  assert more.get_attribute('aria-expanded')=='true'
+  assert page.locator('.rc-headline-list article').count()>10
+  assert page.evaluate('document.documentElement.scrollHeight <= innerHeight+2')
+  more.click()
+  assert page.locator('.rc-headline-list article').count()==10
  first=page.locator('.rc-candidate h3').inner_text()
  page.locator('[data-rc-choice="1"]').click()
  assert page.locator('.rc-candidate h3').inner_text()!=first

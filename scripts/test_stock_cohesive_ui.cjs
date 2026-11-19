@@ -37,3 +37,20 @@ const candidate=main.innerHTML.match(/rc-candidate-info"><div><h3>(.*?)</)?.[1];
 if(candidate==='삼성전자'&&Number.isFinite(actual))assert(main.innerHTML.includes(actual.toLocaleString('ko-KR',{maximumFractionDigits:2})+'%'));
 click({rcStar:'005930'});assert.deepEqual(JSON.parse(store.get('radar-v8-stars')),[]);
 console.log('PASS: stored feed integration, seven screens, 4 indices / 10 countries, candidate rotation, Korea ticker search, favorites, selection carryover, sector filter and history');
+
+const H=window.RadarCohesive, now=Date.parse('2026-11-19T16:20:00+09:00');
+const mk=(title,url,t='2026-11-19T15:00:00+09:00',extra={})=>({region:'kr',topic_class:'market',published_at:t,title,url,...extra});
+const headlines=H.homeHeadlines({country:'KR',data:{newsLink:{items:[
+ mk('실제 관련 뉴스 1','https://a.example/read?id=1&utm_source=x'), mk('실제 관련 뉴스 1','https://b.example/story'),
+ mk('실제 관련 뉴스 2','https://a.example/read?id=2'), mk('수능 부정행위','https://a.example/unrelated'),
+ mk('미래','https://a.example/future','2026-11-20T09:00:00+09:00'),
+ mk('미연결','javascript:alert(1)'), mk('전일 지수','https://a.example/yesterday','2026-11-18T15:00:00+09:00'),
+ mk('별도 국가','https://a.example/us','2026-11-19T15:00:00+09:00',{region:'us'})
+]}}},now);
+assert.deepEqual(Array.from(headlines,x=>x.title),['실제 관련 뉴스 1','실제 관련 뉴스 2','전일 지수']);
+assert.deepEqual(Array.from(headlines,x=>x.day),['2026-11-19','2026-11-19','2026-11-18']);
+const qday='2026-11-19', c=(symbol,sector,ret,price_session=qday)=>({market:'KR',symbol,sector,ret,price_session});
+const board=H.industryWatch({country:'KR',helpers:{change:x=>x.ret},data:{raw:{companies:[c('A','전자',1),c('B','전자',4),c('C','전자',-1),c('D','전자',999,'2026-11-18'),c('B','전자',999),c('E','금융',null),c('F','분류 미확인',100)]}}});
+assert.equal(board.day,qday);
+assert.deepEqual(Array.from(board.rows,x=>[x.s,x.total,x.prices.length]),[['전자',3,3],['금융',1,0]]);
+console.log('PASS: home news topical, safe, deduplicated and KST dates; industry same-session verified sample only');
