@@ -44,8 +44,15 @@ jobs:
       - name: Install browser test library and CI-only Korean system fonts
         run: |
           pip install 'playwright==1.56.0'
-          sudo apt-get update -qq
-          sudo apt-get install -y fonts-noto-cjk
+          # A single pinned Korean font, only on the runner. Avoid downloading
+          # the 61 MB distro-wide collection from a sometimes stalled apt mirror.
+          dest="$HOME/.local/share/fonts/NotoSansCJKkr-Regular.otf"
+          mkdir -p "$(dirname "$dest")"
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 35 --retry 2 --retry-max-time 85 \
+            https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/Sans/OTF/Korean/NotoSansCJKkr-Regular.otf -o "$dest"
+          echo "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a  $dest" | sha256sum --check
+          fc-cache -f "$(dirname "$dest")"
+          test -n "$(fc-list :lang=ko)"
       - name: Desktop, mobile, arithmetic, journal conflict and network tests
         run: python scripts/test_radar_editions_browser.py
       - name: Package only approved public demo files
@@ -83,8 +90,15 @@ jobs:
       - name: Install verifier and CI-only Korean system fonts
         run: |
           pip install 'playwright==1.56.0'
-          sudo apt-get update -qq
-          sudo apt-get install -y fonts-noto-cjk
+          # A single pinned Korean font, only on the runner. Avoid downloading
+          # the 61 MB distro-wide collection from a sometimes stalled apt mirror.
+          dest="$HOME/.local/share/fonts/NotoSansCJKkr-Regular.otf"
+          mkdir -p "$(dirname "$dest")"
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 35 --retry 2 --retry-max-time 85 \
+            https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/Sans/OTF/Korean/NotoSansCJKkr-Regular.otf -o "$dest"
+          echo "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a  $dest" | sha256sum --check
+          fc-cache -f "$(dirname "$dest")"
+          test -n "$(fc-list :lang=ko)"
       - name: Check exact public bytes and both actually served entry screens
         run: python scripts/verify_radar_editions_public.py
       - uses: actions/upload-artifact@v4
