@@ -1,4 +1,4 @@
-import os
+import os,re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 base=os.environ.get('RADAR_URL','http://127.0.0.1:4187/stock-radar-research.html')
@@ -45,8 +45,10 @@ with sync_playwright() as pw:
  page.wait_for_function("document.querySelector('.rc-selection')?.textContent.includes('삼성전자')")
  page.locator('.rc-primary [data-rc-tab="market"]').click()
  panel=page.locator('.rcm-industry-scroll')
- panel.get_by_role('button',name='반도체',exact=True).click()
- assert '선택 산업: 반도체' in page.locator('main').inner_text()
+ sector=panel.get_by_role('button',name=re.compile('반도체')).first
+ sector_label=sector.inner_text()
+ sector.click()
+ assert '선택 산업: '+sector_label in page.locator('main').inner_text()
  assert page.locator('main .rcm-card').count()>=1
  page.locator('[data-rc-country="US"]').click()
  assert page.locator('[data-rc-country="US"]').get_attribute('aria-pressed')=='true'

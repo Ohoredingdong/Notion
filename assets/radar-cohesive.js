@@ -98,7 +98,8 @@ function macroPanel(ctx,kr){
  const generated=ctx.data.macro?.generated_at;
  return '<section class="rc-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div><h2>'+(kr?'한국 경제':'세계 경제')+'</h2><small>'+(kr?'국내 지표와 기업에 주는 영향':'미국 주요 지표를 중심으로 보는 글로벌 흐름')+'</small></div></div><table class="rc-table rc-macro-table"><thead><tr><th>변화</th><th>저장값 · 기준일</th><th>관련 영향</th></tr></thead><tbody>'+spec.map(([a,k,b])=>{
  const x=source[k], isPercent=['bok_policy','fed_policy','us_10y','us_cpi'].includes(k), v=n(x?.value);
- const shown=v===null?'미확인':fmt(v)+(isPercent?'%':'')+' · '+date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
+ const datum=k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
+ const shown=datum===null?'미확인':datum+' · '+date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
  return '<tr><th scope="row">'+(x?.source_url?link(x.source_url,a):a)+'</th><td>'+esc(shown)+'</td><td>'+esc(b)+'</td></tr>';
  }).join('')+'</tbody></table><small class="rc-count">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
 }
@@ -132,7 +133,7 @@ function candidatePanel(ctx){
  const per=valuation.trailing_pe??valuation.pe, pbr=valuation.price_to_book??valuation.pbr;
  const pct=v=>n(v)===null?'—':fmt(v)+'%';
  const money=(v,currency)=>currency?amount(v,currency):'—';
- const vals=[money(fin.revenue,cur),money(fin.operating_income,cur),pct(fin.operating_margin_pct??(n(fin.operating_margin)!==null?fin.operating_margin*100:null)),money(fin.cfo??fin.operating_cash_flow,cur),[money(fin.accounts_receivable??balance.accounts_receivable,cur),money(fin.inventory??balance.inventory,cur)].join(' / '),[money(balance.total_debt??balance.debt,bcur),money(balance.cash,bcur)].join(' / '),[fmt(per),fmt(pbr),pct(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct)].join(' / ')];
+ const vals=[money(fin.revenue,cur),money(fin.operating_income,cur),pct(fin.operating_margin_pct??fin.operating_margin),money(fin.cfo??fin.operating_cash_flow,cur),[money(fin.accounts_receivable??balance.accounts_receivable,cur),money(fin.inventory??balance.inventory,cur)].join(' / '),[money(balance.total_debt??balance.debt,bcur),money(balance.cash,bcur)].join(' / '),[fmt(per),fmt(pbr),pct(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct)].join(' / ')];
  return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table"><thead><tr><th>지표</th><th>저장값</th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+esc(vals[i])+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></div><button type="button" data-rc-stock="'+esc(id(c))+'" style="margin-top:7px">이 기업 분석 ›</button></section>';
 }
 function home(ctx){

@@ -32,5 +32,8 @@ click({rcTab:'market'});assert.match(main.innerHTML,/산업 비교/);assert.matc
 const s=data.raw.companies.find(c=>c.symbol==='005930').sector;click({rcmSector:s});assert.match(main.innerHTML,new RegExp('선택 산업: '+s));
 click({rcCountry:'JP'});assert(!main.innerHTML.includes('삼성전자'));assert.match(main.innerHTML,/이 시장|일치하는 산업|기업 미선택/);
 click({rcCountry:'KR'});click({rcTab:'home'});assert.match(main.innerHTML,/관심기업 해제/);
+const actual=data.raw.companies.find(c=>c.symbol==='005930').history.operating_margin;
+const candidate=main.innerHTML.match(/rc-candidate-info"><div><h3>(.*?)</)?.[1];
+if(candidate==='삼성전자'&&Number.isFinite(actual))assert(main.innerHTML.includes(actual.toLocaleString('ko-KR',{maximumFractionDigits:2})+'%'));
 click({rcStar:'005930'});assert.deepEqual(JSON.parse(store.get('radar-v8-stars')),[]);
 console.log('PASS: stored feed integration, seven screens, 4 indices / 10 countries, candidate rotation, Korea ticker search, favorites, selection carryover, sector filter and history');
