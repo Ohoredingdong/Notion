@@ -263,3 +263,13 @@
  .rc-view .rcc-metric th,.rc-view .rcc-metric td{padding:2px 3px}
  .rc-view .rcc-metric .rcc-assessment{margin:3px 0}
 }
+
+/* An unconstrained implicit grid row can inherit the full stock-list height.
+   Keep the dashboard's one grid row anchored to the actual viewport stage. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view{display:grid;grid-template-rows:minmax(0,1fr);align-items:stretch}
+ .rc-view>*{min-height:0;min-width:0}
+ .rc-home{min-height:0;grid-template-rows:minmax(0,1fr)}
+ .rc-home-body,.rc-home-side{min-height:0;max-height:100%}
+ .rc-home-bottom{grid-template-rows:minmax(0,1fr)}
+}
