@@ -1,6 +1,6 @@
 import os,re
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 base=os.environ.get('RADAR_URL','http://127.0.0.1:4187/stock-radar-research.html')
 with sync_playwright() as pw:
  exe=os.environ.get('BROWSER_EXECUTABLE')
@@ -14,6 +14,18 @@ with sync_playwright() as pw:
  page.locator('#rc-home-rows [data-rc-stock]').first.wait_for()
  assert page.locator('[data-rc-country]').count()==10
  assert page.locator('.rc-index').count()==4
+ def check_home_heading():
+  assert page.locator('main .rc-title').count()==0
+  assert page.get_by_role('heading',name='홈',exact=True).count()==1
+  date=page.locator('.rc-primaryline .rc-nav-date')
+  expect(date).to_have_text(re.compile(r'^저장 연구 자료 · \d{4}-\d{2}-\d{2}$'),timeout=15000)
+  nav=page.locator('.rc-primary').bounding_box()
+  badge=date.bounding_box()
+  assert badge['x']>=nav['x']+nav['width']-1
+  assert abs(badge['y']+badge['height']/2-nav['y']-nav['height']/2)<=1
+  assert badge['x']+badge['width']<=page.viewport_size['width']
+  assert page.locator('.rc-home').bounding_box()['y']-page.locator('#rc-header').bounding_box()['height']<=14
+ check_home_heading()
  assert page.locator('.rc-candidate').inner_text().find('오늘의 매수후보 검토')>=0
  assert page.locator('.rc-industry-list article').count()>0
  assert '전체 업종 지수 아님' in page.locator('.rc-industry-list').locator('..').inner_text()
@@ -76,6 +88,7 @@ with sync_playwright() as pw:
    page.wait_for_function("document.querySelector('#rc-engine').contentWindow.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length>0",timeout=35000)
    page.wait_for_selector('main .rcm-card' if key=='market' else 'main .rc-card')
    assert not page.evaluate('document.documentElement.scrollWidth > innerWidth+2'),(width,key,page.evaluate('document.documentElement.scrollWidth'))
+   if key=='home': check_home_heading()
  # A fixed outer page alone is not enough: every dashboard card must still
  # fit in the view, including the bottom row at short Windows notebook sizes.
  keys=['home','market','quality','finance','value','filings','chart']
