@@ -79,7 +79,7 @@ with sync_playwright() as pw:
  # A fixed outer page alone is not enough: every dashboard card must still
  # fit in the view, including the bottom row at short Windows notebook sizes.
  keys=['home','market','quality','finance','value','filings','chart']
- for width,height in [(1600,900),(1366,650),(1024,600)]:
+ for width,height in [(1600,900),(1331,894),(1366,650),(1024,600)]:
   page.set_viewport_size({'width':width,'height':height})
   page.goto(base+'?tab=home&country=KR&stock=005930',wait_until='domcontentloaded')
   page.locator('#rc-home-rows [data-rc-stock]').first.wait_for(timeout=35000)
@@ -105,6 +105,14 @@ with sync_playwright() as pw:
    count={'home':7,'market':5,'quality':5,'finance':9,'value':9,'filings':4,'chart':7}[key]
    assert len(metrics['cards'])>=count,(width,height,key,'missing cards',metrics)
    assert all(x['top']>=-2 and x['bottom']<=2 and x['height']>=25 for x in metrics['cards']),(width,height,key,'a card is clipped',metrics)
+   if key=='home' and height>=850:
+    for selector in ('.rc-headline-list','.rc-industry-list'):
+     count=page.locator(selector).evaluate("""list=>{
+       const box=list.getBoundingClientRect(), rows=[...list.querySelectorAll('article')];
+       return {count:rows.length, visible:rows.filter(r=>{const b=r.getBoundingClientRect();return b.top>=box.top-1&&b.bottom<=box.bottom+1}).length};
+     }""")
+     assert count['visible']>=min(5,count['count']),(width,height,selector,'not enough rows visible on arrival',count)
+
    if key=='chart':
     assert all(s.bounding_box()['height']>=40 for s in page.locator('.rcc-main svg').all())
     details=page.locator('.rcc details').first

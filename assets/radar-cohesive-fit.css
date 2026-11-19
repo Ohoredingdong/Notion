@@ -281,3 +281,26 @@
  .rc-home .rc-minilist:is(.rc-headline-list,.rc-industry-list){max-height:none}
  .rc-home .rc-home-detail{flex:none;margin-bottom:3px}
 }
+
+/* More of each list should be visible on arrival, not just present below it. */
+.rc-home .rc-minilist .rc-brief-row{padding:5px 0;margin:0;font-size:12px;line-height:1.3}
+.rc-home .rc-brief-title,.rc-home .rc-brief-meta,.rc-home .rc-brief-example{display:block}
+.rc-home .rc-brief-title a{display:block;line-height:1.3;overflow-wrap:anywhere;text-decoration:none}
+.rc-home .rc-brief-title a:hover,.rc-home .rc-brief-title a:focus-visible{text-decoration:underline}
+.rc-home .rc-brief-meta,.rc-home .rc-brief-example{margin-top:2px;font-size:11px;line-height:1.25;color:var(--rc-muted)}
+.rc-home .rc-brief-example{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-home .rc-industry-line{display:flex;gap:6px;align-items:baseline;justify-content:space-between;min-width:0}
+.rc-home .rc-industry-line>b{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-home .rc-industry-median{font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (min-width:1000px) and (min-height:560px){
+ .rc-home-bottom{grid-template-columns:minmax(0,1.65fr) minmax(0,1.05fr) minmax(0,1.3fr)}
+ .rc-home-top .rc-table :is(th,td){padding-block:2px}
+ .rc-home-top .rc-macro-head .rc-macro-icon{font-size:23px}
+ .rc-home-bottom .rc-headline-list:not(:has(+p+button[aria-expanded=true])) .rc-brief-title a{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+ }
+}
+@media (min-width:1000px) and (min-height:560px) and (max-height:740px){
+ .rc-home .rc-minilist .rc-brief-row{padding:3px 0}
+ .rc-home .rc-brief-example{display:none}
+}
