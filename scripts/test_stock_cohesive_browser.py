@@ -25,7 +25,18 @@ with sync_playwright() as pw:
   assert abs(badge['y']+badge['height']/2-nav['y']-nav['height']/2)<=1
   assert badge['x']+badge['width']<=page.viewport_size['width']
   assert page.locator('.rc-home').bounding_box()['y']-page.locator('#rc-header').bounding_box()['height']<=14
+ def check_macro_cards():
+  cards=page.locator('.rc-home-top .rc-macro-card')
+  assert cards.count()==2
+  assert cards.locator('thead th').all_text_contents()==['경제 지표','산업에 미치는 영향']*2
+  assert cards.locator('h2').all_text_contents()==['세계 경제','한국 경제']
+  assert cards.locator('tbody tr').count()==6
+  assert cards.locator('.rc-macro-row-icon').count()==6
+  assert cards.locator('.rc-macro-impact > span[aria-hidden]').all_text_contents()==['→']*6
+  assert all(x for x in cards.locator('.rc-macro-value strong').all_text_contents())
+  assert cards.evaluate_all("""els=>els.every(el=>el.scrollWidth<=el.clientWidth+1)""")
  check_home_heading()
+ check_macro_cards()
  assert page.locator('.rc-candidate').inner_text().find('오늘의 매수후보 검토')>=0
  assert page.locator('.rc-industry-list article').count()>0
  assert '전체 업종 지수 아님' in page.locator('.rc-industry-list').locator('..').inner_text()
@@ -88,7 +99,9 @@ with sync_playwright() as pw:
    page.wait_for_function("document.querySelector('#rc-engine').contentWindow.StockRadarV2Bridge?.snapshot()?.data?.raw?.companies?.length>0",timeout=35000)
    page.wait_for_selector('main .rcm-card' if key=='market' else 'main .rc-card')
    assert not page.evaluate('document.documentElement.scrollWidth > innerWidth+2'),(width,key,page.evaluate('document.documentElement.scrollWidth'))
-   if key=='home': check_home_heading()
+   if key=='home':
+    check_home_heading()
+    check_macro_cards()
  # A fixed outer page alone is not enough: every dashboard card must still
  # fit in the view, including the bottom row at short Windows notebook sizes.
  keys=['home','market','quality','finance','value','filings','chart']
@@ -118,6 +131,7 @@ with sync_playwright() as pw:
    count={'home':7,'market':5,'quality':5,'finance':9,'value':9,'filings':4,'chart':7}[key]
    assert len(metrics['cards'])>=count,(width,height,key,'missing cards',metrics)
    assert all(x['top']>=-2 and x['bottom']<=2 and x['height']>=25 for x in metrics['cards']),(width,height,key,'a card is clipped',metrics)
+   if key=='home': check_macro_cards()
    if key=='home' and height>=850:
     for selector in ('.rc-headline-list','.rc-industry-list'):
      count=page.locator(selector).evaluate("""list=>{
