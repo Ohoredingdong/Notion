@@ -159,7 +159,7 @@ function render({scroll=false}={}){
  const key=JSON.stringify([p,country,ctx.data.raw?.generated_at,ctx.data.macro?.generated_at,ctx.data.worldFlow?.generated_at,ctx.data.charts?.generated_at]);if(render.lastHeader!==key){drawHeader(ctx);render.lastHeader=key}
  const body=p==='home'?home(ctx):pane(p,ctx.company,ctx);
  const status=notice||(!ctx.data.raw&&Date.now()-starting>10000?'저장 종목 자료를 불러오지 못했습니다. 기존 화면에서 연결 상태를 확인해 주세요.':'');
- main.innerHTML=drawTitle(ctx)+body+(status?'<p class="rc-status-line rc-error" role="status">'+esc(status)+'</p>':'');
+ main.innerHTML=drawTitle(ctx)+'<div class="rc-view" data-rc-page="'+p+'">'+body+'</div>'+(status?'<p class="rc-status-line rc-error" role="status">'+esc(status)+'</p>':'');
  if((focus||marketSearch)&&active!==main){const el=focus?document.getElementById(focus):main.querySelector('[data-rcm-search='+marketSearch+']');el?.focus({preventScroll:true});if(Number.isInteger(start)&&typeof el?.setSelectionRange==='function')try{el.setSelectionRange(start,finish)}catch{}}
  if(scroll){window.scrollTo(0,0);main.focus({preventScroll:true})}
  render.snapshot=ctx.data;
