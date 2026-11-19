@@ -1,6 +1,6 @@
 import os,re
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 base=os.environ.get('RADAR_URL','http://127.0.0.1:4187/stock-radar-research.html')
 with sync_playwright() as pw:
  exe=os.environ.get('BROWSER_EXECUTABLE')
@@ -18,7 +18,7 @@ with sync_playwright() as pw:
   assert page.locator('main .rc-title').count()==0
   assert page.get_by_role('heading',name='홈',exact=True).count()==1
   date=page.locator('.rc-primaryline .rc-nav-date')
-  assert re.fullmatch(r'저장 연구 자료 · \d{4}-\d{2}-\d{2}',date.inner_text())
+  expect(date).to_have_text(re.compile(r'^저장 연구 자료 · \d{4}-\d{2}-\d{2}$'),timeout=15000)
   nav=page.locator('.rc-primary').bounding_box()
   badge=date.bounding_box()
   assert badge['x']>=nav['x']+nav['width']-1
