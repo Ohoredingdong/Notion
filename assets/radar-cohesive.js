@@ -163,9 +163,9 @@ function homeHeadlines(ctx,now=Date.now()){
 function headlinePanel(ctx){
  const now=Date.now(),day=kstDay(now),all=homeHeadlines(ctx,now),count=all.filter(x=>x.day===day).length;
  const shown=newsExpanded?all:all.slice(0,10);
- const rows=shown.map(x=>'<article><b>'+link(x.url,x.title)+'</b><p>'+esc([x.day.slice(5),x.source||'출처 미확인',x.topic_class==='policy'?'정책':x.topic_class==='invest'?'투자':'경제·시장'].join(' · '))+'</p></article>').join('');
+ const rows=shown.map(x=>'<article class="rc-brief-row"><b class="rc-brief-title">'+link(x.url,x.title)+'</b><span class="rc-brief-meta">'+esc([x.day.slice(5),x.source||'출처 미확인',x.topic_class==='policy'?'정책':x.topic_class==='invest'?'투자':'경제·시장'].join(' · '))+'</span></article>').join('');
  const scope=ctx.country==='KR'?'한국·세계':ctx.country==='US'?'미국·세계':'국가 자료 미연결';
- return card('오늘의 뉴스','<small class="rc-home-detail">'+esc(scope)+' · 오늘 '+fmt(count,0)+'건'+(all.length>count?' · 이전 기사 포함':'')+'</small><div class="rc-minilist rc-headline-list" tabindex="0" aria-label="경제시장 기사 목록">'+(rows||empty('아직 표시할 경제·시장 기사가 없습니다.'))+'</div><p class="rc-source-mini">'+(ctx.data.newsLink?.stale?'수집 지연 · ':'')+'최신 '+fmt(shown.length,0)+'건 · RSS 제목, 원문 확인</p>'+(all.length>10?'<button type="button" data-rc-news-more aria-expanded="'+newsExpanded+'">'+(newsExpanded?'최근 10건만 보기':'관련 기사 '+fmt(all.length,0)+'건 보기')+'</button>':''),'sky');
+ return card('오늘의 뉴스','<small class="rc-home-detail">'+esc(scope)+' · 오늘 '+fmt(count,0)+'건'+(all.length>count?' · 이전 기사 포함':'')+'</small><div class="rc-minilist rc-headline-list" tabindex="0" aria-label="경제시장 기사 목록">'+(rows||empty('아직 표시할 경제·시장 기사가 없습니다.'))+'</div><p class="rc-source-mini">'+(ctx.data.newsLink?.stale?'수집 지연 · ':'')+fmt(shown.length,0)+' / '+fmt(all.length,0)+'건 · RSS 제목, 원문 확인</p>'+(all.length>10?'<button type="button" data-rc-news-more aria-expanded="'+newsExpanded+'">'+(newsExpanded?'최근 10건만 보기':'관련 기사 '+fmt(all.length,0)+'건 보기')+'</button>':''),'sky');
 }
 function industryWatch(ctx){
  const arr=Array.isArray(ctx.data?.raw?.companies)?ctx.data.raw.companies:[];
@@ -194,10 +194,14 @@ function industryPanel(ctx){
   const nums=prices.map(x=>x.value).sort((a,b)=>a-b),mid=nums.length? (nums[Math.floor((nums.length-1)/2)]+nums[Math.floor(nums.length/2)])/2:null;
   const positive=nums.filter(x=>x>0).length,negative=nums.filter(x=>x<0).length,flat=nums.length-positive-negative;
   const leader=prices.slice().sort((a,b)=>Math.abs(b.value)-Math.abs(a.value))[0];
-  return '<article><b>'+esc(s)+'</b><p>'+esc(nums.length>=3?'표본 '+nums.length+'개 · 중앙값 '+pct(mid)+' · 상승 '+positive+' / 하락 '+negative+(flat?' / 보합 '+flat:''):nums.length?'표본 '+nums.length+'개 · 업종 등락 판단 보류':'종목 '+total+'개 · 등락 비교 미확인')+'</p>'+
-    (leader?'<p>'+esc((nums.length>=3?'표본 내 변동: ':'개별 종목: ')+leader.name+' '+pct(leader.value))+'</p>':'')+'</article>';
+  const enough=nums.length>=3;
+  const breadth=enough?nums.length+'종목 · 상승 '+positive+' / 하락 '+negative+(flat?' / 보합 '+flat:''):nums.length?nums.length+'종목 · 업종 판단 보류':total+'종목 · 등락 미확인';
+  return '<article class="rc-brief-row"><div class="rc-industry-line"><b title="'+esc(s)+'">'+esc(s)+'</b>'+
+    (enough?'<span class="rc-industry-median" aria-label="'+esc('등락률 중앙값 '+pct(mid))+'" title="표본 등락률 중앙값">'+esc(pct(mid))+'</span>':'')+
+    '</div><span class="rc-brief-meta">'+esc(breadth)+'</span>'+
+    (leader?'<span class="rc-brief-example" title="'+esc(leader.name+' '+pct(leader.value))+'">'+esc(leader.name+' '+pct(leader.value))+'</span>':'')+'</article>';
  }).join('');
- return card('산업 핵심','<small class="rc-home-detail">'+esc(snap.day?snap.day+' 종가 · '+(stale?'새 세션 갱신 대기':'추적 종목 표본'):'기준일 미확인')+'</small><div class="rc-minilist rc-industry-list" tabindex="0" aria-label="산업별 종가 흐름">'+(rows||empty('이 시장의 종가·업종 자료가 연결되지 않았습니다.'))+'</div><p class="rc-source-mini">전체 업종 지수 아님 · 상승 원인 미확정</p><button type="button" data-rc-tab="market">산업 비교 ›</button>');
+ return card('산업 핵심','<small class="rc-home-detail">'+esc(snap.day?snap.day+' 종가 · '+(stale?'새 세션 갱신 대기':'추적 종목 표본'):'기준일 미확인')+'</small><div class="rc-minilist rc-industry-list" tabindex="0" aria-label="산업별 종가 흐름">'+(rows||empty('이 시장의 종가·업종 자료가 연결되지 않았습니다.'))+'</div><p class="rc-source-mini">등락률 중앙값 · 전체 업종 지수 아님</p><button type="button" data-rc-tab="market">산업 비교 ›</button>');
 }
 window.RadarCohesive.homeHeadlines=homeHeadlines;
 window.RadarCohesive.industryWatch=industryWatch;
