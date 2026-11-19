@@ -1,0 +1,275 @@
+/* PC: the seven analysis screens share a viewport-sized stage. On a phone
+   or exceptionally short window, keep normal document flow and readable text. */
+@media (min-width:1000px) and (min-height:560px){
+ html{height:100%}
+ body{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+ #rc-header,.rc-footer,.rc-main{min-width:0;width:100%}
+ .rc-main{height:100%;min-height:0;display:flex;flex-direction:column;padding-block:clamp(5px,1.05dvh,10px)}
+ .rc-selection,.rc-title,.rc-status-line{flex:none}
+ .rc-selection{margin-bottom:clamp(4px,.9dvh,12px);min-height:36px}
+ .rc-title{margin-bottom:clamp(5px,1dvh,12px)}
+ .rc-title h1{font-size:clamp(23px,3.4dvh,33px)}
+ .rc-title p{margin-top:2px}
+ .rc-view{flex:1 1 0;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ .rc-footer{padding-block:5px 6px}
+ .rc-card{padding:clamp(7px,1.15dvh,14px) clamp(8px,1.05vw,16px)}
+ .rc-card-head{margin-bottom:clamp(4px,.85dvh,9px)}
+ .rc-home{height:100%;grid-template-columns:minmax(0,3.32fr) minmax(224px,1fr);gap:10px}
+ .rc-home-body{height:100%;grid-template-rows:auto minmax(0,1fr);align-content:stretch;gap:8px}
+ .rc-home-side{height:100%;grid-template-rows:minmax(0,1fr) minmax(0,2.5fr);align-content:stretch;gap:8px}
+ .rc-home-side>.rc-card,.rc-home-bottom>.rc-card{min-height:0;display:flex;flex-direction:column}
+ .rc-home-side>.rc-card>:not(.rc-scrolllist){flex:none}
+ .rc-home-side .rc-scrolllist{flex:1;min-height:0;max-height:none!important}
+ .rc-home-bottom{grid-template-columns:minmax(0,2.05fr) minmax(0,1fr) minmax(0,1fr);gap:8px;min-height:0}
+ .rc-home-bottom .rc-candidate{grid-column:auto;overflow:auto;scrollbar-width:thin}
+ .rc-home-bottom .rc-minilist{flex:1;min-height:0;overflow:auto;scrollbar-width:thin}
+ .rc-home-bottom .rc-minilist article{padding-block:clamp(3px,1.05dvh,10px)}
+ .rc-home-top .rc-card{min-width:0}
+ .rc-home-top .rc-table :is(th,td){padding-block:clamp(2px,.45dvh,5px)}
+ .rc-home-top .rc-macro-head{margin-bottom:clamp(3px,.65dvh,7px)}
+ .rc-home .rc-source-mini{margin-top:4px}
+ .rc-home .rc-candidate-info{margin-bottom:4px}
+ .rc-home .rc-candidate-grids{margin-block:4px;flex:none}
+ .rc-home .rc-candidate-grids :is(td,th){padding-block:clamp(1px,.45dvh,5px)}
+ .rc-home .rc-candidate-factors .rc-toned{padding-block:3px}
+ .rc-home .rc-candidate>.rc-card-head{flex:none}
+ .rc-home [data-rc-more]{margin-top:4px;align-self:flex-start;padding-block:1px}
+ .rc-home .rc-stockrow{min-height:33px}
+}
+@media (min-width:1000px) and (min-height:560px) and (max-height:740px){
+ .rc-indices{padding-block:3px}
+ .rc-brandline{min-height:46px;padding-block:5px}
+ .rc-primary button{padding-block:4px 5px}
+ .rc-selection{min-height:31px;padding-block:2px}
+ .rc-footer{padding-block:3px 4px}
+ .rc-card-head{min-height:20px}
+ .rc-title p,.rc-home .rc-table{font-size:12px}
+ .rc-home-top .rc-macro-head h2{font-size:16px}
+ .rc-home .rc-macro-icon{font-size:22px}
+ .rc-home .rc-card-head h2{font-size:15px}
+ .rc-home .rc-candidate-info h3{font-size:17px}
+ .rc-home .rc-candidate-info svg{height:29px}
+ .rc-home .rc-candidate-info small{font-size:10px}
+ .rc-home .rc-candidate>.rc-toned{padding-block:3px}
+ .rc-home .rc-candidate>[data-rc-stock]{margin-top:3px!important;padding-block:1px}
+ .rc-home .rc-candidate-factors{gap:2px}
+ .rc-home .rc-formrow{margin-block:3px}
+ .rc-home .rc-formrow :is(input,select){padding-block:3px}
+ .rc-home .rc-card .rc-count{margin-top:2px}
+}
+
+/* Desktop fit for market tab. Load AFTER radar-cohesive-market.css.
+   .rc-view is assigned the remaining viewport height by the shell.
+   Every overflowing content area remains accessible via internal scrolling. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view .rcm-layout{height:100%;min-height:0;max-height:100%;grid-template-columns:minmax(0,1fr) clamp(250px,23vw,350px);gap:12px;overflow:hidden}
+ .rc-view .rcm-main{height:100%;min-height:0;grid-template-rows:minmax(0,1.1fr) minmax(0,1fr) 100px;gap:12px;overflow:hidden}
+ .rc-view .rcm-top{min-height:0;grid-template-columns:43% minmax(0,1fr);gap:12px}
+ .rc-view .rcm-card{min-height:0;box-sizing:border-box;padding:12px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+ .rc-view .rcm-card header{margin-bottom:8px;gap:6px;flex-wrap:wrap}
+ .rc-view .rcm-card h2{font-size:16px;line-height:1.4}
+ .rc-view .rcm-card p{margin-top:8px;margin-bottom:4px}
+ .rc-view .rcm-top>.rcm-card{height:100%}
+ .rc-view .rcm-main>.rcm-card:nth-child(2){display:flex;flex-direction:column}
+ .rc-view .rcm-main>.rcm-card:nth-child(2)>header,
+ .rc-view .rcm-main>.rcm-card:nth-child(2)>.rcm-toolbar,
+ .rc-view .rcm-main>.rcm-card:nth-child(2)>.rcm-muted{flex:none}
+ .rc-view .rcm-industry-scroll{flex:1 1 0;min-height:52px;max-height:none;overflow:auto;overscroll-behavior:contain}
+ .rc-view .rcm-industry-scroll thead{position:sticky;top:0;z-index:1;background:#edf3ed}
+ .rc-view .rcm-toolbar{gap:8px;margin-bottom:7px}
+ .rc-view .rcm-toolbar input{max-width:180px;padding:6px 9px}
+ .rc-view .rcm-toolbar span{font-size:11px}
+ .rc-view .rcm-card td,.rc-view .rcm-card th{padding:5px 7px}
+ .rc-view .rcm-detail{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+ .rc-view .rcm-detail>div{padding:7px 9px}
+ .rc-view .rcm-detail p{line-height:1.45;margin:3px 0 0;font-size:11px}
+ .rc-view .rcm-layout aside{height:100%;min-height:0;overflow:hidden}
+ .rc-view .rcm-layout aside>.rcm-card{display:flex;flex-direction:column;height:100%;min-height:0}
+ .rc-view .rcm-layout aside>.rcm-card>header,
+ .rc-view .rcm-layout aside>.rcm-card>input,
+ .rc-view .rcm-layout aside>.rcm-card>h3,
+ .rc-view .rcm-layout aside>.rcm-card>p{flex:none}
+ .rc-view .rcm-layout aside h3{font-size:14px;margin:12px 0 7px}
+ .rc-view .rcm-companies{flex:1 1 0;min-height:70px;max-height:none;overflow:auto;overscroll-behavior:contain}
+ .rc-view .rcm-news{padding:7px 0;gap:8px}
+ .rc-view .rcm-news strong{font-size:12px;line-height:1.5}
+ .rc-view .rcm-note{padding:7px 9px;line-height:1.5}
+}
+@media (min-width:1000px) and (min-height:560px) and (max-height:700px){
+ .rc-view .rcm-main{grid-template-rows:minmax(0,1fr) minmax(0,1fr) 86px;gap:8px}
+ .rc-view .rcm-layout,.rc-view .rcm-top{gap:8px}
+ .rc-view .rcm-card{padding:9px}
+ .rc-view .rcm-card header{margin-bottom:5px}
+ .rc-view .rcm-card h2{font-size:14px}
+ .rc-view .rcm-toolbar{gap:6px}
+ .rc-view .rcm-toolbar input{max-width:140px}
+ .rc-view .rcm-layout aside h3{margin:8px 0 5px}
+ .rc-view .rcm-detail>div{padding:5px 7px}
+}
+
+/* Desktop viewport fit for company views only.
+   Append after radar-cohesive-company.css. No content is removed.
+   The outer .rc-view must receive a definite available height from the shell.
+   Dense source/profile/metric cards retain their own visible scrollbars. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view .rcc-company{
+  height:100%;min-height:0;min-width:0;overflow:hidden;
+  display:grid;gap:8px;align-content:stretch;
+  grid-template-rows:auto minmax(0,.9fr) minmax(0,1.65fr) minmax(0,.8fr) auto;
+ }
+ .rc-view .rcc-company>*{min-height:0;min-width:0;max-width:100%}
+ .rc-view .rcc-company>.rc-grid{gap:8px;align-items:stretch;overflow:hidden}
+ .rc-view .rcc-company .rc-card{
+  min-height:0;min-width:0;padding:10px 12px;
+  overflow:auto;scrollbar-gutter:stable;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#94aa9b #f0f4f0;
+ }
+ .rc-view .rcc-company h3{font-size:15px;line-height:1.3;margin:0 0 7px}
+ .rc-view .rcc-company h4{font-size:13px;line-height:1.35;margin:0 0 4px}
+ .rc-view .rcc-company p{font-size:12px;line-height:1.45;margin:4px 0}
+ .rc-view .rcc-company small,.rc-view .rcc-provenance{font-size:11px;line-height:1.4}
+ .rc-view .rcc-provenance{max-height:32px;overflow:auto;overscroll-behavior:contain}
+ .rc-view .rcc-chain{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .rc-view .rcc-chain-item{padding:9px 11px;min-width:0}
+ .rc-view .rcc-quality-row{grid-template-columns:120px minmax(0,1fr);gap:10px;padding:8px 0}
+ .rc-view .rcc-company .rcc-profile{margin:0}
+ .rc-view .rcc-company .rcc-profile p{max-height:110px;overflow:auto;scrollbar-gutter:stable}
+ .rc-view .rcc-list{font-size:12px;line-height:1.45;margin:4px 0;padding-left:17px}
+ .rc-view .rcc-company:has(>.rcc-fin-context){
+  grid-template-rows:auto minmax(0,.42fr) minmax(0,1fr) minmax(0,1.12fr) minmax(0,.43fr) minmax(0,.58fr);
+ }
+ .rc-view .rcc-fin-top{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .rc-view .rcc-fin-bottom{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .rc-view .rcc-fin-context{font-size:12px;line-height:1.4}
+ .rc-view .rcc-metric .rcc-table-scroll{overflow:visible}
+ .rc-view .rcc-metric table{font-size:12px;width:100%;table-layout:auto}
+ .rc-view .rcc-metric th,.rc-view .rcc-metric td{padding:5px 3px;overflow-wrap:anywhere}
+ .rc-view .rcc-metric tbody th{min-width:48px}
+ .rc-view .rcc-assessment{margin:6px 0;font-size:12px}
+ .rc-view .rcc-assessment p{font-size:12px;line-height:1.4}
+ .rc-view .rcc-badge{font-size:11px;padding:2px 7px}
+ .rc-view .rcc-company details{font-size:12px;margin:5px 0}
+ .rc-view .rcc-company summary{line-height:1.4}
+ .rc-view .rcc-six{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px}
+ .rc-view .rcc-six>div{font-size:12px;gap:4px;align-content:start}
+ .rc-view .rcc-source-row{margin-top:5px;font-size:12px;line-height:1.5}
+ .rc-view .rcc-company a{font-size:12px}
+ .rc-view .rcc-tooltip{font-size:12px;line-height:1.5;padding:9px;max-width:230px}
+}
+@media(min-width:1000px) and (min-height:560px) and (max-width:1200px){
+ .rc-view .rcc-quality-row{grid-template-columns:1fr;gap:3px}
+ .rc-view .rcc-company .rc-card{padding:9px}
+}
+
+/* Load after radar-cohesive-evidence.css and the shared desktop viewport fit.
+   Never hide data or scale the page. Long source evidence stays accessible. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view>.rce-value,.rc-view>.rce-filings,
+ .rc-view .rce-value,.rc-view .rce-filings{
+  height:100%;min-height:0;max-height:100%;box-sizing:border-box;
+  font-size:13px;line-height:1.4;
+ }
+ .rc-view :is(.rce-value,.rce-filings) *{box-sizing:border-box}
+ .rc-view :is(.rce-value,.rce-filings) .rce-card{min-height:0;min-width:0;padding:10px}
+ .rc-view :is(.rce-value,.rce-filings) .rce-card h3{font-size:15px;line-height:1.3;margin:0 0 8px;padding:7px 9px}
+ .rc-view :is(.rce-value,.rce-filings) .rce-card p{margin:6px 0}
+ .rc-view :is(.rce-value,.rce-filings) small{font-size:12px;line-height:1.4}
+ .rc-view .rce-scroll table{font-size:13px}
+ .rc-view .rce-scroll :is(td,th){padding:5px 7px}
+ .rc-view .rce-value{display:grid;grid-template-rows:minmax(0,1fr) minmax(96px,.32fr) minmax(142px,.49fr) auto;gap:9px;overflow:hidden}
+ .rc-view .rce-value-top{min-height:0;grid-template-columns:minmax(0,36fr) minmax(0,64fr);gap:10px}
+ /* Fixed-visible cards; only their long source/evidence content can scroll. */
+ .rc-view .rce-value-top>.rce-card{overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+ .rc-view .rce-value-top>.rce-card>h3{position:sticky;top:0;z-index:1}
+ .rc-view .rce-four,.rc-view .rce-three{min-height:0;margin:0;gap:10px}
+ .rc-view .rce-four{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .rc-view .rce-three{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .rc-view .rce-four>.rce-card,.rc-view .rce-three>.rce-card{overflow:auto;overscroll-behavior:contain}
+ .rc-view .rce-value .rce-status{margin:0;padding:7px 10px;font-size:12px;line-height:1.35}
+ /* Right rail retains 610/1512 content-width share at desktop. */
+ .rc-view .rce-filings{grid-template-columns:minmax(0,300fr) minmax(0,602fr) minmax(0,610fr);grid-template-rows:minmax(0,1fr);gap:12px;align-items:stretch;overflow:hidden}
+ .rc-view .rce-filings>aside{min-height:0;display:grid;grid-template-rows:minmax(0,1.2fr) minmax(0,1fr);gap:10px}
+ .rc-view .rce-filings>aside>.rce-card{overflow:auto;overscroll-behavior:contain}
+ .rc-view .rce-filings>section:nth-child(2){display:grid;grid-template-rows:auto repeat(4,minmax(0,1fr));gap:8px;overflow:hidden}
+ .rc-view .rce-filings .rce-focus{min-height:0;padding:9px 11px;margin:0;overflow:auto;overscroll-behavior:contain}
+ .rc-view .rce-filings>section:last-child{grid-column:auto;display:flex;flex-direction:column;overflow:hidden}
+ .rc-view .rce-filings>section:last-child> :not(.rce-filing-list){flex:0 0 auto}
+ .rc-view .rce-filing-list{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+ .rc-view .rce-filing{padding:10px 0}
+ .rc-view .rce-filing summary{gap:8px;align-items:start}
+ .rc-view .rce-filing summary small{flex-shrink:1;min-width:75px;text-align:right}
+ .rc-view .rce-filters{gap:7px}
+ .rc-view .rce-filters :is(input,select),.rc-view .rce-search input{font:inherit;padding:6px 8px;min-height:32px}
+ .rc-view .rce-search{margin:7px 0}
+ .rc-view .rce-empty{padding:9px}
+}
+@media (min-width:1000px) and (min-height:560px) and (max-height:800px){
+ .rc-view .rce-value{grid-template-rows:minmax(0,1fr) 90px 122px auto;gap:7px}
+ .rc-view :is(.rce-value,.rce-filings) .rce-card{padding:8px}
+ .rc-view :is(.rce-value,.rce-filings) .rce-card h3{padding:5px 7px;margin-bottom:6px;font-size:14px}
+ .rc-view .rce-scroll :is(td,th){padding:4px 6px}
+ .rc-view .rce-filings .rce-focus{padding:7px 9px}
+}
+
+/* Desktop only. The shared shell owns .rc-view's exact available height.
+   Long card text scrolls inside its named card; no clipping, font scaling or
+   document scrolling. Calculation details open as a bounded panel in-view. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view:has(> .rcc){min-height:0;overflow:hidden;}
+ .rc-view > .rcc:not(section){height:100%;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(110px,1fr) minmax(50px,.21fr) minmax(85px,.36fr) minmax(110px,.43fr);gap:7px;position:relative;}
+ .rc-view > .rcc > *{min-width:0;min-height:0;box-sizing:border-box;}
+ .rc-view > .rcc .rc-card{padding:9px 12px;border-radius:11px;box-sizing:border-box;}
+ .rc-view > .rcc h3{font-size:15px;line-height:1.25;margin:0 0 5px;}
+ .rc-view > .rcc h4{font-size:13px;line-height:1.3;margin:0 0 4px;}
+ .rc-view > .rcc p{font-size:12px;line-height:1.45;margin:4px 0;}
+ .rc-view > .rcc strong{font-size:12px;line-height:1.4;}
+ .rc-view > .rcc .rcc-note{font-size:11px;line-height:1.4;}
+ .rc-view > .rcc > .rcc-note{margin:0;max-height:31px;overflow:auto;}
+ .rc-view > .rcc .rcc-toolbar{gap:6px;flex-wrap:nowrap;font-size:12px;}
+ .rc-view > .rcc .rcc-toolbar>div{white-space:nowrap;}
+ .rc-view > .rcc .rcc-toolbar button{font-size:12px;margin:0 0 0 4px;padding:5px 9px;}
+ .rc-view > .rcc .rcc-main{min-height:0;grid-template-columns:1fr 1fr;gap:9px;}
+ .rc-view > .rcc .rcc-main>.rc-card{display:flex;flex-direction:column;min-height:0;overflow:auto;}
+ .rc-view > .rcc .rcc-main svg{width:100%;flex:1 1 0;height:0;min-height:64px;margin:2px 0;}
+ .rc-view > .rcc .rcc-main h3,.rc-view > .rcc .rcc-main strong,.rc-view > .rcc .rcc-main p{flex:0 0 auto;}
+ .rc-view > .rcc .rcc-conditions{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0;min-height:0;}
+ .rc-view > .rcc .rcc-conditions>.rc-card{overflow:auto;}
+ .rc-view > .rcc > section.rc-card{overflow:auto;scrollbar-gutter:stable;}
+ .rc-view > .rcc .rcc-indicators{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
+ .rc-view > .rcc .rcc-indicators>div{min-width:0;overflow-wrap:anywhere;}
+ .rc-view > .rcc > section.rc-card:last-child{padding-bottom:31px;}
+ .rc-view > .rcc details{margin:3px 0 0;padding:4px 0 0;}
+ .rc-view > .rcc details:not([open]){position:absolute;bottom:5px;right:24px;left:16px;background:#fff;border-top:1px solid #e5ebe7;z-index:1;}
+ .rc-view > .rcc details summary{font-size:12px;font-weight:600;line-height:1.55;}
+ .rc-view > .rcc details[open]{position:absolute;z-index:6;bottom:6px;left:12px;right:12px;max-height:min(380px,80%);overflow:auto;padding:13px 16px;background:#fff;border:1px solid #cad9ce;border-radius:10px;box-shadow:0 4px 26px #172c252e;}
+ .rc-view > .rcc details[open] summary{position:sticky;top:-13px;background:#fff;padding:5px 0;}
+ .rc-view > .rcc details[open] summary::after{content:' · 다시 눌러 접기';font-weight:400;color:#53626a;}
+ .rc-view > .rcc details p{overflow-wrap:anywhere;}
+ .rc-view > .rcc section::-webkit-scrollbar,.rc-view > .rcc details::-webkit-scrollbar{width:6px;height:6px;}
+ .rc-view > .rcc section::-webkit-scrollbar-thumb,.rc-view > .rcc details::-webkit-scrollbar-thumb{background:#c8d7cc;border-radius:6px;}
+}
+
+@media (min-width:1000px) and (min-height:560px) and (max-height:740px){
+ .rc-view > .rcc:not(section){grid-template-rows:auto auto minmax(0,1.84fr) minmax(0,.52fr) minmax(0,.87fr) minmax(0,1.03fr);gap:5px}
+ .rc-view > .rcc .rc-card{padding:6px 8px}
+ .rc-view > .rcc .rcc-main svg{min-height:42px}
+ .rc-view > .rcc .rcc-main :is(h3,p){margin-block:1px}
+ .rc-view > .rcc .rcc-toolbar button{padding:2px 5px}
+ .rc-view > .rcc > section.rc-card:last-child{padding-bottom:27px}
+ .rc-view .rce-value{grid-template-rows:minmax(0,1.3fr) minmax(0,.56fr) minmax(0,.89fr) auto}
+ .rc-view .rcc-company,.rc-view .rcc-company>.rc-grid{gap:5px}
+ .rc-view .rcc-company .rc-card{padding:5px 7px}
+ .rc-view .rcc-company h3{margin-bottom:3px}
+ .rc-view .rcc-metric th,.rc-view .rcc-metric td{padding:2px 3px}
+ .rc-view .rcc-metric .rcc-assessment{margin:3px 0}
+}
+
+/* An unconstrained implicit grid row can inherit the full stock-list height.
+   Keep the dashboard's one grid row anchored to the actual viewport stage. */
+@media (min-width:1000px) and (min-height:560px){
+ .rc-view{display:grid;grid-template-rows:minmax(0,1fr);align-items:stretch}
+ .rc-view>*{min-height:0;min-width:0}
+ .rc-home{min-height:0;grid-template-rows:minmax(0,1fr)}
+ .rc-home-body,.rc-home-side{min-height:0;max-height:100%}
+ .rc-home-bottom{grid-template-rows:minmax(0,1fr)}
+}

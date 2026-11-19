@@ -15,6 +15,7 @@ OUT=Path(os.environ.get('RADAR_EDITIONS_EVIDENCE',str(ROOT/'evidence')))
 OUT.mkdir(parents=True,exist_ok=True)
 BASE='https://ohoredingdong.github.io/Notion/'
 NAMES=['stock-radar-research.html','stock-radar-editions.json','radar-public/index.html','radar-public/styles.css','radar-public/app.js']
+NAMES += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'assets').glob('radar-cohesive*')) if p.suffix in ('.js','.css')]
 expected={name:(ROOT/name).read_bytes() for name in NAMES}
 proof={'commit':os.environ.get('GITHUB_SHA'),'files':{},'commercial_ready':False,'research_private_access_configured':False}
 last='not_checked'
@@ -61,11 +62,15 @@ with sync_playwright() as p:
         ctx.close()
     ctx=browser.new_context(viewport={'width':1440,'height':950});page=ctx.new_page()
     page.goto(BASE+'stock-radar-research.html',wait_until='domcontentloaded',timeout=60000)
-    assert '웹 접근제어 없음' in page.locator('header').inner_text()
-    assert page.locator('iframe').get_attribute('src')=='./stock-value-radar.html'
-    page.frame_locator('iframe').locator('.fx-root').first.wait_for(state='visible',timeout=60000)
+    assert '웹 접근제어 없음' in page.locator('.rc-footer').inner_text()
+    assert page.locator('#rc-engine').get_attribute('src')=='./stock-value-radar.html'
+    assert page.locator('.rc-footer a[href="./stock-value-radar.html"]').is_visible()
+    page.locator('#rc-home-rows .rc-stockrow').first.wait_for(state='visible',timeout=60000)
+    assert page.locator('.rc-primary button').count()==5
+    assert page.locator('.rc-view[data-rc-page="home"]').is_visible()
+    assert page.evaluate('document.documentElement.scrollHeight <= innerHeight+2')
     page.locator('header').screenshot(path=str(OUT/'research-live-entry-header.png'))
-    proof['research_entry']={'original_iframe_visible':True,'no_access_control_disclaimer_visible':True,'underlying_forecast_quality_retested':False}
+    proof['research_entry']={'cohesive_research_visible':True,'legacy_entry_link_visible':True,'no_access_control_disclaimer_visible':True,'underlying_forecast_quality_retested':False}
     ctx.close();browser.close()
 (OUT/'public-proof.json').write_text(json.dumps(proof,ensure_ascii=False,indent=2))
 print('RADAR_EDITION_PUBLIC_BYTES_AND_BROWSERS_VERIFIED',json.dumps(proof,ensure_ascii=False))
