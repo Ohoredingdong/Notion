@@ -93,16 +93,23 @@ function drawTitle(ctx){
  const row='<div class="rc-selection"><div><small>선택 기업</small><strong>'+label+'</strong>'+(company?' <small>'+esc(company.symbol)+'</small>':'')+'</div>'+(p==='market'?'<small>산업·기업을 고르면 분석 탭에 연동됩니다</small>':'<nav class="rc-subnav" aria-label="기업 분석 탭">'+subs.map(k=>navBtn(k,k===p)).join('')+'</nav>')+'</div>';
  return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+pages[p][1]+'</p></div>'+pill(researchDate(ctx),'neutral')+'</div>';
 }
+const macroIcons={
+ rates:'<path d="M3 13V9m4 4V6m4 7V3"/>',
+ yield:'<path d="m2 11 4-4 3 2 4-6m-4 0h4v4"/>',
+ prices:'<path d="M2.5 3h6l5 5-5 5-6-6z"/><circle cx="5.5" cy="5.5" r=".7"/>',
+ fx:'<path d="M2 5h11l-3-3M14 11H3l3 3"/>',
+ stocks:'<path d="M3 13h10M5 10V5m3 5V2m3 8V7"/>'
+};
 function macroPanel(ctx,kr){
- const source=ctx.data.macro?.indicators||{};
- const spec=kr?[['한국 기준금리','bok_policy','차입 비용 · 내수'],['원/달러','usdkrw','수입 원가 · 수출'],['코스피','kospi','국내 주식 흐름']]:[['미국 기준금리','fed_policy','조달 비용 · 달러'],['미국 10년물','us_10y','할인율 · 장기 조달'],['미국 물가','us_cpi','소비 · 가격 부담']];
+ const source=ctx.data.macro?.indicators||{},title=kr?'한국 경제':'세계 경제';
+ const spec=kr?[['한국 기준금리','bok_policy','차입 비용 · 내수','rates'],['원/달러','usdkrw','수입 원가 · 수출','fx'],['코스피','kospi','국내 주식 흐름','stocks']]:[['미국 기준금리','fed_policy','조달 비용 · 달러','rates'],['미국 10년물','us_10y','할인율 · 장기 조달','yield'],['미국 물가','us_cpi','소비 · 가격 부담','prices']];
  const generated=ctx.data.macro?.generated_at;
- return '<section class="rc-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div><h2>'+(kr?'한국 경제':'세계 경제')+'</h2><small>'+(kr?'국내 지표와 기업에 주는 영향':'미국 주요 지표를 중심으로 보는 글로벌 흐름')+'</small></div></div><table class="rc-table rc-macro-table"><thead><tr><th>변화</th><th>저장값 · 기준일</th><th>관련 영향</th></tr></thead><tbody>'+spec.map(([a,k,b])=>{
+ return '<section class="rc-card rc-macro-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div class="rc-macro-identity"><div class="rc-macro-title"><h2>'+title+'</h2>'+pill('요약','mint')+'</div><small>'+(kr?'국내 경제 지표와 산업에 미치는 영향':'미국 주요 지표로 보는 세계 경제 흐름')+'</small></div></div><table class="rc-table rc-macro-table" aria-label="'+title+' 지표와 산업 영향"><thead><tr><th scope="col">경제 지표</th><th scope="col">산업에 미치는 영향</th></tr></thead><tbody>'+spec.map(([label,k,impact,icon])=>{
  const x=source[k], isPercent=['bok_policy','fed_policy','us_10y','us_cpi'].includes(k), v=n(x?.value);
  const datum=k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
- const shown=datum===null?'미확인':datum+' · '+date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
- return '<tr><th scope="row">'+(x?.source_url?link(x.source_url,a):a)+'</th><td>'+esc(shown)+'</td><td>'+esc(b)+'</td></tr>';
- }).join('')+'</tbody></table><small class="rc-count">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
+ const basis=datum===null?'':date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
+ return '<tr><th scope="row"><div class="rc-macro-reading"><svg class="rc-macro-row-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+macroIcons[icon]+'</svg><div class="rc-macro-text"><span class="rc-macro-label">'+(x?.source_url?link(x.source_url,label):esc(label))+'</span><small class="rc-macro-value"><strong>'+esc(datum??'미확인')+'</strong>'+(basis?' <span>· '+esc(basis)+'</span>':'')+'</small></div></div></th><td><div class="rc-macro-impact"><span aria-hidden="true">→</span><span>'+esc(impact)+'</span></div></td></tr>';
+ }).join('')+'</tbody></table><small class="rc-count rc-macro-source">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
 }
 function spark(c,ctx){
  const saved=ctx.data.charts?.series?.[c?.symbol],s=Array.isArray(saved?.bars)?saved.bars.slice(-63).filter(v=>n(v?.close)!==null):[];
