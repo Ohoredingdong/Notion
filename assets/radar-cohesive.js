@@ -53,7 +53,7 @@ function context(){
  const companies=pool.filter(c=>countryOf(c)===country);
  const found=companies.find(c=>id(c)===selected||String(c.symbol)===selected||c.source_symbol===selected);
  const c=found||(!selected?companies.find(c=>!c.catalog_only)||companies[0]:null);
- return {...state,selected:c?id(c):selected,market:country,country,companies,favorites:normalized,helpers:frameWindow?.StockRadarV2Bridge?.helpers,company:c||null,allCompanies:pool};
+ return {...state,data,selected:c?id(c):selected,market:country,country,companies,favorites:normalized,helpers:frameWindow?.StockRadarV2Bridge?.helpers,company:c||null,allCompanies:pool};
 }
 function stockRows(arr,{max=50,showPrice=true,ctx=context()}={}){
  if(!arr.length)return empty('이 조건에 맞는 종목이 없습니다.');
