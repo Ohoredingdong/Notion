@@ -1,0 +1,232 @@
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),main=$('#rc-main'),header=$('#rc-header'),engine=$('#rc-engine');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n=v=>typeof v==='number'&&Number.isFinite(v)?v:null;
+const fmt=(v,d=2)=>n(v)===null?'—':v.toLocaleString('ko-KR',{maximumFractionDigits:d});
+const amount=(v,c)=>n(v)===null?'—':c==='KRW'?(Math.abs(v)>=1e12?fmt(v/1e12)+'조원':Math.abs(v)>=1e8?fmt(v/1e8)+'억원':fmt(v,0)+'원'):c?fmt(v)+' '+String(c):fmt(v);
+const date=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}/.test(v)?v.slice(0,10):'기준일 미확인';
+const tones=new Set(['mint','yellow','lilac','rose','sky','neutral']);
+const tone=t=>tones.has(t)?t:'neutral';
+const pill=(s,t='mint')=>'<span class="rc-pill rc-tone-'+tone(t)+'">'+esc(s)+'</span>';
+const card=(title,body='',t='mint',right='')=>'<section class="rc-card"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-'+tone(t)+'"></i>'+esc(title)+'</h2>'+right+'</div>'+body+'</section>';
+const empty=(s='확인된 자료가 없습니다.')=>'<p class="rc-empty">'+esc(s)+'</p>';
+function link(href,label){try{const u=new URL(href);if(u.protocol!=='https:'||u.username||u.password)return esc(label);return '<a href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>'}catch{return esc(label)}}
+function load(key,fallback=null){try{return JSON.parse(localStorage.getItem(key)??'null')??fallback}catch{return fallback}}
+function store(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch{return false}}
+const countries={KR:'한국',US:'미국',JP:'일본',CN:'중국',HK:'홍콩',TW:'대만',GB:'영국',DE:'독일',VN:'베트남',SG:'싱가포르'};
+const pages={home:['홈','세계·한국 경제부터 오늘의 종목까지 한눈에'],market:['시장·산업','세계·한국 경제 변화 → 산업 비교 → 선택 기업 분석'],quality:['질적 분석','무엇을 팔고, 어떻게 돈을 벌고, 앞으로 무엇을 확인해야 할까요?'],finance:['재무','매출에서 현금과 가격까지, 같은 순서로 숫자의 흐름을 확인합니다.'],value:['가치·전망','지금 가격이 적정한지, 미래 성장에는 어떤 전제가 필요한지 비교합니다.'],filings:['공시','수집한 전체 공시는 종류별로, 중요한 변화는 먼저 확인합니다.'],chart:['차트','같은 가격 차트를 나란히 보고, 기술적 근거와 다음 확인 조건을 찾습니다.']};
+const primary=['home','market','quality','filings','chart'],subs=['quality','finance','value','filings','chart'];
+const valid=(obj,key)=>Object.hasOwn(obj,key);
+const countryOf=c=>String(c?.country||c?.market||'').toUpperCase();
+let p='home',country='KR',selected='',q='',sort='name',homeLimit=80,candidateNo=0,showcaseCount=0,notice='',greendata=null,state={},frameWindow=null,pool=[],poolData=null,starting=Date.now(),lastPaint='';
+function parse(initial=false){
+ const u=new URL(location.href),page=u.searchParams.get('tab'),region=u.searchParams.get('country'),stock=u.searchParams.get('stock');
+ p=valid(pages,page)?page:'home';
+ country=valid(countries,region)?region:(initial && valid(countries,load('radar-cohesive-country-v1'))?load('radar-cohesive-country-v1'):'KR');
+ selected=stock && /^[A-Za-z0-9:._^-]{1,72}$/.test(stock)?stock:(initial?String(load('radar-last-symbol-v5','')):'');
+}
+parse(true);
+function push(){
+ const u=new URL(location.href);u.searchParams.set('tab',p);u.searchParams.set('country',country);
+ if(selected)u.searchParams.set('stock',selected);else u.searchParams.delete('stock');
+ if(u.href!==location.href)history.pushState(null,'',u);
+}
+function id(c){return frameWindow?.StockCatalogUI?.selectionId?.(c)||String(c?.symbol||'')}
+function searchTerm(c){return frameWindow?.StockCatalogUI?.searchText?.(c)||[c?.name,c?.symbol,c?.sector,c?.industry].filter(Boolean).join(' ')}
+function rowsFor(data){
+ const raw=Array.isArray(data?.raw?.companies)?data.raw.companies:[];
+ try{return frameWindow?.StockCatalogUI?.universe?.({data})||raw}catch{return raw}
+}
+function sync(){
+ try{const w=engine.contentWindow,bridge=w.StockRadarV2Bridge,snap=bridge?.snapshot?.();if(!snap)return false;
+  frameWindow=w;state=snap;
+  if(snap.data!==poolData){poolData=snap.data;pool=rowsFor(poolData)}
+  return true;
+ }catch{return false}
+}
+function context(){
+ const {data={},favorites=[]}=state;
+ const local=load('radar-v8-stars',favorites),rawStars=Array.isArray(local)?local.filter(v=>typeof v==='string'):[];
+ const ids=new Set(rawStars);
+ const normalized=pool.filter(c=>ids.has(id(c))||(ids.has(c.symbol)&&countryOf(c)==='KR')).map(id);
+ const companies=pool.filter(c=>countryOf(c)===country);
+ const found=companies.find(c=>id(c)===selected||String(c.symbol)===selected||c.source_symbol===selected);
+ const c=found||(!selected?companies.find(c=>!c.catalog_only)||companies[0]:null);
+ return {...state,data,selected:c?id(c):selected,market:country,country,companies,favorites:normalized,helpers:frameWindow?.StockRadarV2Bridge?.helpers,company:c||null,allCompanies:pool};
+}
+function stockRows(arr,{max=50,showPrice=true,ctx=context()}={}){
+ if(!arr.length)return empty('이 조건에 맞는 종목이 없습니다.');
+ const favorites=new Set(ctx.favorites);
+ return arr.slice(0,max).map(c=>{
+  const code=id(c), star=favorites.has(code), title=c.name||c.symbol;
+  return '<div class="rc-stockrow"><button type="button" class="rc-star" data-rc-star="'+esc(code)+'" aria-pressed="'+star+'" aria-label="'+esc(title)+(star?' 관심기업 해제':' 관심기업 추가')+'">'+(star?'★':'☆')+'</button><button type="button" class="rc-stock-open" data-rc-stock="'+esc(code)+'" aria-pressed="'+(ctx.selected===code)+'"><span><b>'+esc(title)+'</b><small>'+esc(c.symbol)+' · '+esc(c.exchange||c.catalog_entry?.exchange||c.sector||countries[countryOf(c)]||'시장 미확인')+'</small></span><span>'+(showPrice&&n(c.price)!==null?amount(c.price,c.currency)+'<small>'+esc(date(c.price_session))+'</small>':'›')+'</span></button></div>';
+ }).join('');
+}
+window.RadarCohesive={esc,card,fmt,amount,pill,link,empty,id,stockRows,date,n};
+const searchHTML=()=>'<div class="rc-formrow"><input type="search" id="rc-home-search" aria-label="종목명·코드 검색" placeholder="종목 검색" value="'+esc(q)+'"><select id="rc-home-sort" aria-label="정렬"><option value="name" '+(sort==='name'?'selected':'')+'>이름순</option><option value="price" '+(sort==='price'?'selected':'')+'>저장가순</option><option value="star" '+(sort==='star'?'selected':'')+'>관심기업</option></select></div>';
+function homeStocks(ctx){
+ const term=q.trim().toLocaleLowerCase(),fav=new Set(ctx.favorites);
+ const a=ctx.companies.filter(c=>(sort!=='star'||fav.has(id(c)))&&(!term||searchTerm(c).toLocaleLowerCase().includes(term))).sort((a,b)=>sort==='price'?(n(b.price)??-1)-(n(a.price)??-1):String(a.name||a.symbol).localeCompare(String(b.name||b.symbol),'ko'));
+ return [a.length,stockRows(a,{max:homeLimit,ctx})];
+}
+function navBtn(name,active,caption){return '<button type="button" data-rc-tab="'+name+'" '+(active?'aria-current="page"':'')+'>'+esc(caption||pages[name][0])+'</button>'}
+function indexRecord(data,key,sym){
+ const world=data.worldFlow?.indicators?.find(m=>m.id===key),macro=data.macro?.indicators?.[key],chart=data.charts?.series?.[sym];
+ const last=chart?.bars?.at(-1), opts=[];
+ if(n(world?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(world.session||''))opts.push({value:world.value,day:world.session,src:world.source_url,status:world.status,caution:world.status!=='current'});
+ if(n(macro?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(macro.date||''))opts.push({value:macro.value,day:macro.date,src:macro.source_url,status:macro.status,caution:macro.status==='stale'});
+ if(n(last?.close)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(last.date||''))opts.push({value:last.close,day:last.date,src:chart.source_url,status:'historical',caution:false});
+ return opts.sort((a,b)=>b.day.localeCompare(a.day))[0];
+}
+function drawHeader(ctx){
+ const idx=[['코스피','kospi','^KS11'],['코스닥','kosdaq','^KQ11'],['나스닥','nasdaq','^IXIC'],['다우','dow','^DJI']];
+ const index=idx.map(([label,key,sym])=>{const x=indexRecord(ctx.data,key,sym);return '<div class="rc-index"><b>'+label+'</b><strong>'+fmt(x?.value)+'</strong><small>'+((x&&esc(x.day)+(x.caution?' · 갱신 대기':''))||'미연결')+'</small></div>'}).join('');
+ const ctr=Object.entries(countries).map(([k,label])=>'<button type="button" data-rc-country="'+k+'" aria-pressed="'+(k===country)+'" title="'+(['KR','US'].includes(k)?'저장 종목 연결':'현재 종목·시세 미연결')+'">'+label+'</button>').join('');
+ const active=['finance','value'].includes(p)?'quality':p;
+ header.innerHTML='<div class="rc-shell"><div class="rc-indices" aria-label="4대 지수 · 저장값">'+index+'</div><div class="rc-brandline"><a class="rc-brand" href="?tab=home&country='+country+'" data-rc-tab="home"><span class="rc-mark" aria-hidden="true"><i></i><i></i><i></i></span>투자레이더</a><nav class="rc-country" aria-label="국가 선택">'+ctr+'</nav><span class="rc-edition rc-pill rc-tone-neutral">개인 연구용 · 저장 자료</span></div><nav class="rc-primary" aria-label="주 메뉴">'+primary.map(k=>navBtn(k,k===active,k==='quality'?'기업분석':null)).join('')+'</nav></div>';
+}
+function drawTitle(ctx){
+ const company=ctx.company,label=company?esc(company.name||company.symbol):'기업 미선택';
+ const row=p!=='home'?'<div class="rc-selection"><div><small>선택 기업</small><strong>'+label+'</strong>'+(company?' <small>'+esc(company.symbol)+'</small>':'')+'</div>'+(p==='market'?'<small>산업·기업을 고르면 분석 탭에 연동됩니다</small>':'<nav class="rc-subnav" aria-label="기업 분석 탭">'+subs.map(k=>navBtn(k,k===p)).join('')+'</nav>')+'</div>':'';
+ const status=ctx.data.raw?.generated_at?'저장 연구 자료 · '+date(ctx.data.raw.generated_at):'자료 확인 중';
+ return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+pages[p][1]+'</p></div>'+pill(status,'neutral')+'</div>';
+}
+function macroPanel(ctx,kr){
+ const source=ctx.data.macro?.indicators||{};
+ const spec=kr?[['한국 기준금리','bok_policy','차입 비용 · 내수'],['원/달러','usdkrw','수입 원가 · 수출'],['코스피','kospi','국내 주식 흐름']]:[['미국 기준금리','fed_policy','조달 비용 · 달러'],['미국 10년물','us_10y','할인율 · 장기 조달'],['미국 물가','us_cpi','소비 · 가격 부담']];
+ const generated=ctx.data.macro?.generated_at;
+ return '<section class="rc-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div><h2>'+(kr?'한국 경제':'세계 경제')+'</h2><small>'+(kr?'국내 지표와 기업에 주는 영향':'미국 주요 지표를 중심으로 보는 글로벌 흐름')+'</small></div></div><table class="rc-table rc-macro-table"><thead><tr><th>변화</th><th>저장값 · 기준일</th><th>관련 영향</th></tr></thead><tbody>'+spec.map(([a,k,b])=>{
+ const x=source[k], isPercent=['bok_policy','fed_policy','us_10y','us_cpi'].includes(k), v=n(x?.value);
+ const datum=k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
+ const shown=datum===null?'미확인':datum+' · '+date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
+ return '<tr><th scope="row">'+(x?.source_url?link(x.source_url,a):a)+'</th><td>'+esc(shown)+'</td><td>'+esc(b)+'</td></tr>';
+ }).join('')+'</tbody></table><small class="rc-count">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
+}
+function spark(c,ctx){
+ const saved=ctx.data.charts?.series?.[c?.symbol],s=Array.isArray(saved?.bars)?saved.bars.slice(-63).filter(v=>n(v?.close)!==null):[];
+ if(s.length<2)return '<small>3개월 차트 미확인</small>';
+ const prices=s.map(v=>v.close),lo=Math.min(...prices),hi=Math.max(...prices),pts=prices.map((v,i)=>[4+i*142/(prices.length-1),42-(v-lo)*34/(hi-lo||1)].join(',')).join(' ');
+ return '<div><small>3개월 · '+esc(date(s.at(-1).date))+'</small><svg viewBox="0 0 150 48" role="img" aria-label="최근 저장 종가 추이"><polyline points="'+pts+'" stroke="#4b9878" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>';
+}
+function strictCandidate(c,ctx,r){
+ const raw=ctx.data?.raw;
+ const t=Date.parse(raw?.generated_at||''),review=Date.parse(r?.reviewed_at||'');
+ if(!Number.isFinite(t)||t>Date.now()+300000||Date.now()-t>18*3600000||!Number.isFinite(review)||review>Date.now()+300000||review<t)return false;
+ const rawMatch=raw.companies?.filter(v=>v.symbol===c.symbol)||[];
+ return rawMatch.length===1&&countryOf(rawMatch[0])===countryOf(c)&&r?.green_eligible===true&&r.state==='attractive'&&r.source_generated_at===raw.generated_at&&n(r.input_price)!==null&&r.input_price===c.price&&r.input_price_session===c.price_session&&r.input_forecast_eps===c.forecasts?.next_fy?.avg&&Array.isArray(r.checks)&&r.checks.length>0&&r.checks.every(x=>x.status==='pass');
+}
+function candidatePanel(ctx){
+ const tracked=ctx.companies.filter(c=>!c.catalog_only);
+ const reviews=new Map((greendata?.companies||[]).map(r=>[r.symbol,r]));
+ const verified=tracked.filter(c=>strictCandidate(c,ctx,reviews.get(c.symbol)));
+ const showcase=verified.length?verified.slice(0,3):[ctx.company,...tracked].filter((c,i,a)=>c&&!c.catalog_only&&a.findIndex(x=>x&&id(x)===id(c))===i).slice(0,3);
+ const count=showcaseCount=showcase.length,c=count?showcase[candidateNo%count]:null,good=!!c&&verified.some(x=>id(x)===id(c));
+ const right=count>1?'<div class="rc-prevnext"><button type="button" data-rc-choice="-1" aria-label="이전 종목">‹</button><small>'+((candidateNo%count)+1)+' / '+count+'</small><button type="button" data-rc-choice="1" aria-label="다음 종목">›</button></div>':'';
+ if(!c)return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2></div>'+empty('해당 시장의 검토 종목과 근거 자료가 연결되지 않았습니다.')+'</section>';
+ const record=reviews.get(c.symbol), qualified=record?.source_generated_at===ctx.data.raw?.generated_at;
+ const notes=ctx.helpers?.flowReasonLines?.(c)||[];
+ const factors=[['전망','실적 가정','mint'],['산업',c.sector||'확인 전','sky'],['핵심 성장','제품·매출 원인','yellow'],['협력업체','공시 근거 확인','lilac']];
+ const metrics=['매출','영업이익','영업이익률','영업현금흐름','매출채권 / 재고','부채 / 현금','PER / PBR / ROE'];
+ const fin=c.history||{}, balance=c.balance||{}, valuation=c.valuation||{};
+ const cur=typeof fin.currency==='string'?fin.currency:null, bcur=typeof balance.currency==='string'?balance.currency:cur;
+ const per=valuation.trailing_pe??valuation.pe, pbr=valuation.price_to_book??valuation.pbr;
+ const pct=v=>n(v)===null?'—':fmt(v)+'%';
+ const money=(v,currency)=>currency?amount(v,currency):'—';
+ const vals=[money(fin.revenue,cur),money(fin.operating_income,cur),pct(fin.operating_margin_pct??fin.operating_margin),money(fin.cfo??fin.operating_cash_flow,cur),[money(fin.accounts_receivable??balance.accounts_receivable,cur),money(fin.inventory??balance.inventory,cur)].join(' / '),[money(balance.total_debt??balance.debt,bcur),money(balance.cash,bcur)].join(' / '),[fmt(per),fmt(pbr),pct(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct)].join(' / ')];
+ return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table"><thead><tr><th>지표</th><th>저장값</th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+esc(vals[i])+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></div><button type="button" data-rc-stock="'+esc(id(c))+'" style="margin-top:7px">이 기업 분석 ›</button></section>';
+}
+function home(ctx){
+ const [count,list]=homeStocks(ctx),stars=new Set(ctx.favorites),starRows=ctx.companies.filter(c=>stars.has(id(c)));
+ const names=[...new Set(ctx.companies.map(c=>c.sector||c.industry).filter(Boolean))].slice(0,3);
+ const news=(Array.isArray(ctx.data.newsLink?.items)?ctx.data.newsLink.items:[]).filter(x=>Number.isFinite(Date.parse(x?.published_at))&&Date.parse(x.published_at)<=Date.now()&&(['KR','US'].includes(country))&&[country.toLowerCase(),'global','world'].includes(x.region)).slice(0,3);
+ const titles=card('산업 핵심','<div class="rc-minilist">'+(names.length?names.map((s,i)=>'<article>'+pill(['산업','비교','확인'][i],['mint','yellow','lilac'][i])+'<p><b>'+esc(s)+'</b></p><p>수요·공급과 수익성 근거 확인</p></article>').join(''):empty('기업 분류 미연결'))+'</div><button type="button" data-rc-tab="market">산업 비교 ›</button>');
+ const headlines=card('오늘의 뉴스','<div class="rc-minilist">'+(news.length?news.map(x=>'<article><b>'+link(x.url,x.title||'뉴스 원문')+'</b><p>'+esc(x.source||'출처 미확인')+' · '+esc(date(x.published_at))+'</p></article>').join(''):empty('이 시장의 뉴스가 연결되지 않았습니다.'))+'</div><p class="rc-source-mini">'+(ctx.data.newsLink?.stale?'수집 지연 · ':'')+'저장 RSS · 사실 확인은 원문 기준</p>','sky');
+ return '<div class="rc-home"><div class="rc-home-body"><div class="rc-grid rc-home-top">'+macroPanel(ctx,false)+macroPanel(ctx,true)+'</div><div class="rc-grid rc-home-bottom">'+candidatePanel(ctx)+titles+headlines+'</div></div><aside class="rc-home-side" aria-label="종목 목록">'+card('관심기업','<div class="rc-scrolllist" style="max-height:135px">'+(starRows.length?stockRows(starRows,{showPrice:false,ctx}):empty('목록에서 ☆을 눌러 관심기업으로 추가하세요.'))+'</div><button type="button" data-rc-search-focus style="width:100%;margin-top:8px">＋ 관심기업 추가</button>','yellow','<small>'+starRows.length+'개</small>')+card('전체 주식목록',searchHTML()+'<div class="rc-scrolllist" id="rc-home-rows">'+list+'</div><small class="rc-count" id="rc-home-count">검색 '+fmt(count,0)+'개 중 '+fmt(Math.min(homeLimit,count),0)+'개 표시</small><button type="button" data-rc-more '+(count<=homeLimit?'hidden':'')+'>더 보기</button>','neutral','<small>'+esc(countries[country])+'</small>')+'</aside></div>';
+}
+const pane=(name,c,ctx)=>{
+ if(name==='market')return window.RadarCohesiveMarket?.render(c,ctx)||empty('산업 탭 연결을 확인해 주세요.');
+ if(!c)return empty(selected?'이 국가 목록에서 선택 종목을 확인할 수 없어요. 시장·산업에서 다시 선택해 주세요.':'시장·산업에서 기업을 선택하면 이 탭에 자료가 표시됩니다.');
+ if(name==='quality')return window.RadarCohesiveCompany?.quality(c,ctx)||empty();
+ if(name==='finance')return window.RadarCohesiveCompany?.finance(c,ctx)||empty();
+ if(name==='value')return window.RadarCohesiveEvidence?.value(c,ctx)||empty();
+ if(name==='filings')return window.RadarCohesiveEvidence?.filings(c,ctx)||empty();
+ if(name==='chart')return window.RadarCohesiveChart?.render(c,ctx)||empty();
+ return home(ctx);
+};
+function render({scroll=false}={}){
+ sync();const ctx=context(),active=document.activeElement,focus=active?.id||'',marketSearch=active?.dataset?.rcmSearch,start=active?.selectionStart,finish=active?.selectionEnd;
+ const key=JSON.stringify([p,country,ctx.data.raw?.generated_at,ctx.data.macro?.generated_at,ctx.data.worldFlow?.generated_at,ctx.data.charts?.generated_at]);if(render.lastHeader!==key){drawHeader(ctx);render.lastHeader=key}
+ const body=p==='home'?home(ctx):pane(p,ctx.company,ctx);
+ const status=notice||(!ctx.data.raw&&Date.now()-starting>10000?'저장 종목 자료를 불러오지 못했습니다. 기존 화면에서 연결 상태를 확인해 주세요.':'');
+ main.innerHTML=drawTitle(ctx)+body+(status?'<p class="rc-status-line rc-error" role="status">'+esc(status)+'</p>':'');
+ if((focus||marketSearch)&&active!==main){const el=focus?document.getElementById(focus):main.querySelector('[data-rcm-search='+marketSearch+']');el?.focus({preventScroll:true});if(Number.isInteger(start)&&typeof el?.setSelectionRange==='function')try{el.setSelectionRange(start,finish)}catch{}}
+ if(scroll){window.scrollTo(0,0);main.focus({preventScroll:true})}
+ render.snapshot=ctx.data;
+}
+function selectStock(code){
+ const c=context().companies.find(r=>id(r)===code);if(!c)return;
+ selected=id(c);
+ if(!store('radar-last-symbol-v5',selected))notice='선택 기업을 브라우저에 저장하지 못했습니다.';
+ frameWindow?.StockRadarV2Bridge?.setSelectedSilently?.(selected);
+ if(p==='home')p='quality';
+ push();render({scroll:p==='quality'});
+}
+function onClick(e){
+ const b=e.target.closest?.('button,[data-rc-tab]');
+ if(b){
+  const d=b.dataset;
+  if(valid(pages,d.rcTab)){e.preventDefault();p=d.rcTab;notice='';const c=context().company;if(c)selected=id(c);push();render({scroll:true});return}
+  if(valid(countries,d.rcCountry)){country=d.rcCountry;selected='';q='';sort='name';homeLimit=80;candidateNo=0;notice='';store('radar-cohesive-country-v1',country);push();render({scroll:true});return}
+  if(d.rcStock){selectStock(d.rcStock);return}
+  if(d.rcStar){
+   const ctx=context(),c=ctx.companies.find(r=>id(r)===d.rcStar);if(!c)return;
+   const old=load('radar-v8-stars',[]),items=new Set(Array.isArray(old)?old:[]);
+   const key=id(c);
+   if(items.has(key)||ctx.favorites.includes(key)){items.delete(key);if(countryOf(c)==='KR')items.delete(c.symbol)}else items.add(key);
+   notice=store('radar-v8-stars',[...items])?'':'관심기업 목록을 저장하지 못했습니다.';
+   render();[...main.querySelectorAll('[data-rc-star]')].find(el=>el.dataset.rcStar===key)?.focus({preventScroll:true});return;
+  }
+  if(d.rcChoice){const size=showcaseCount||1;candidateNo=(candidateNo+Number(d.rcChoice)+size)%size;render();main.querySelector('[data-rc-choice="'+d.rcChoice+'"]')?.focus({preventScroll:true});return}
+  if('rcMore' in d){homeLimit+=80;updateHomeRows();return}
+  if('rcSearchFocus' in d){$('#rc-home-search')?.focus();return}
+ }
+ const ctx=context();
+ const panel=({market:window.RadarCohesiveMarket,value:window.RadarCohesiveEvidence,filings:window.RadarCohesiveEvidence,chart:window.RadarCohesiveChart,finance:window.RadarCohesiveCompany,quality:window.RadarCohesiveCompany})[p];
+ if(panel?.handle?.(e,ctx))render();
+}
+function updateHomeRows(){
+ const [total,html]=homeStocks(context());
+ $('#rc-home-rows').innerHTML=html;
+ $('#rc-home-count').textContent='검색 '+fmt(total,0)+'개 중 '+fmt(Math.min(homeLimit,total),0)+'개 표시';
+ main.querySelector('[data-rc-more]').hidden=homeLimit>=total;
+}
+function homeInput(e){
+ const target=e.target;
+ if(target?.id==='rc-home-search'||target?.id==='rc-home-sort'){
+  if(target.id==='rc-home-search')q=target.value;else sort=target.value;
+  homeLimit=80;updateHomeRows();
+  return;
+ }
+ if(p==='market'&&window.RadarCohesiveMarket?.handle?.(e,context()))render();
+
+}
+document.addEventListener('click',onClick);
+document.addEventListener('input',homeInput);
+document.addEventListener('change',e=>{if(e.target?.id!=='rc-home-sort'&&['market','filings','value','finance'].includes(p))homeInput(e)});
+window.addEventListener('popstate',()=>{parse();q='';sort='name';homeLimit=80;render({scroll:true})});
+window.addEventListener('storage',e=>{if(e.key==='radar-v8-stars')render()});
+engine.addEventListener('load',()=>{sync();render()});
+function observe(){
+ if(document.visibilityState==='hidden')return;
+ const old=render.snapshot;sync();
+ if(state.data!==old&&state.data)render();
+ if(!state.data?.raw&&Date.now()-starting>10000&&!lastPaint){lastPaint='slow';render()}
+}
+function green(){
+ fetch('./stock-green-review.json',{cache:'no-cache',credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(d=>{
+ if(d?.version==='strict-green-1.0'&&Array.isArray(d.companies)){greendata=d;if(p==='home')render()}
+ }).catch(()=>{});
+}
+setInterval(observe,1000);setInterval(green,300000);render();green();
+})();

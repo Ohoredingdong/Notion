@@ -6,7 +6,7 @@
 
 | 버전 | 고정 주소 | 실제 상태 |
 |---|---|---|
-| 개인 연구용 | https://ohoredingdong.github.io/Notion/stock-radar-research.html | 기존 stock-value-radar.html을 그대로 불러오는 연구용 진입 화면. 접근제어가 없어 비공개 웹사이트가 아님. |
+| 개인 연구용 | https://ohoredingdong.github.io/Notion/stock-radar-research.html | 홈·시장·산업과 선택기업 분석을 제공하는 새 연구용 화면. 원래 연구 화면은 별도 링크에서 계속 열립니다. 접근제어가 없어 비공개 웹사이트가 아님. |
 | 공개·판매용 | https://ohoredingdong.github.io/Notion/radar-public/ | 가상 자료와 직접 입력 도구의 프로젝트 시연판. 실시간 시세·AI 매매신호·결제·유료 판매는 미개시. |
 
 기계 판독 계약은 `stock-radar-editions.json`이다.
@@ -35,3 +35,9 @@
 ## 점검
 
 `python scripts/test_radar_editions.py`로 허용 파일, 연구 데이터 비혼입, 출처 링크, CSP와 버전 계약을 검사한다. `python scripts/test_radar_editions_browser.py`는 로컬 서버에서 화면·계산·저장·충돌·네트워크 경계를 확인한다. 연구판 변경은 별도 기존 회귀검사를 유지한다. 공개 배포 완료는 실제 HTTP 파일 해시와 두 진입 화면을 확인한 뒤에만 보고한다.
+
+## 연구 화면 구성
+
+연구용 진입 화면은 홈, 시장·산업, 질적 분석, 재무, 가치·전망, 공시, 차트로 구성합니다. 기존 동일 출처 연구 모듈의 저장 데이터와 관심기업 키를 활용하며 원래 화면과 저장 자료의 경로는 그대로 둡니다. 한국·미국 외 시장 중 자료가 없는 곳은 미연결로 표시합니다. 공시 목록은 수집·원문 연결된 범위만 뜻하며 전수 수집을 의미하지 않습니다. 차트는 원시 일봉의 근거가 확인되지 않으면 저장 종가선만 표시합니다.
+
+로컬 정적 서버에서 `node scripts/test_stock_cohesive_ui.cjs`, `node scripts/test_stock_cohesive_company.cjs`, `python scripts/test_stock_complete_analysis_browser.py`를 실행합니다. 브라우저 검사에는 기존 연구 화면 동작과 새 진입 화면 동작이 모두 포함됩니다.
