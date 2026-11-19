@@ -15,7 +15,7 @@ function link(href,label){try{const u=new URL(href);if(u.protocol!=='https:'||u.
 function load(key,fallback=null){try{return JSON.parse(localStorage.getItem(key)??'null')??fallback}catch{return fallback}}
 function store(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch{return false}}
 const countries={KR:'한국',US:'미국',JP:'일본',CN:'중국',HK:'홍콩',TW:'대만',GB:'영국',DE:'독일',VN:'베트남',SG:'싱가포르'};
-const pages={home:['홈','세계·한국 경제부터 오늘의 종목까지 한눈에'],market:['시장·산업','세계·한국 경제 변화 → 산업 비교 → 선택 기업 분석'],quality:['질적 분석','무엇을 팔고, 어떻게 돈을 벌고, 앞으로 무엇을 확인해야 할까요?'],finance:['재무','매출에서 현금과 가격까지, 같은 순서로 숫자의 흐름을 확인합니다.'],value:['가치·전망','지금 가격이 적정한지, 미래 성장에는 어떤 전제가 필요한지 비교합니다.'],filings:['공시','수집한 전체 공시는 종류별로, 중요한 변화는 먼저 확인합니다.'],chart:['차트','같은 가격 차트를 나란히 보고, 기술적 근거와 다음 확인 조건을 찾습니다.']};
+const pages={home:['홈'],market:['시장·산업','세계·한국 경제 변화 → 산업 비교 → 선택 기업 분석'],quality:['질적 분석','무엇을 팔고, 어떻게 돈을 벌고, 앞으로 무엇을 확인해야 할까요?'],finance:['재무','매출에서 현금과 가격까지, 같은 순서로 숫자의 흐름을 확인합니다.'],value:['가치·전망','지금 가격이 적정한지, 미래 성장에는 어떤 전제가 필요한지 비교합니다.'],filings:['공시','수집한 전체 공시는 종류별로, 중요한 변화는 먼저 확인합니다.'],chart:['차트','같은 가격 차트를 나란히 보고, 기술적 근거와 다음 확인 조건을 찾습니다.']};
 const primary=['home','market','quality','filings','chart'],subs=['quality','finance','value','filings','chart'];
 const valid=(obj,key)=>Object.hasOwn(obj,key);
 const countryOf=c=>String(c?.country||c?.market||'').toUpperCase();
@@ -79,18 +79,19 @@ function indexRecord(data,key,sym){
  if(n(last?.close)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(last.date||''))opts.push({value:last.close,day:last.date,src:chart.source_url,status:'historical',caution:false});
  return opts.sort((a,b)=>b.day.localeCompare(a.day))[0];
 }
+const researchDate=ctx=>ctx.data.raw?.generated_at?'저장 연구 자료 · '+date(ctx.data.raw.generated_at):'자료 확인 중';
 function drawHeader(ctx){
  const idx=[['코스피','kospi','^KS11'],['코스닥','kosdaq','^KQ11'],['나스닥','nasdaq','^IXIC'],['다우','dow','^DJI']];
  const index=idx.map(([label,key,sym])=>{const x=indexRecord(ctx.data,key,sym);return '<div class="rc-index"><b>'+label+'</b><strong>'+fmt(x?.value)+'</strong><small>'+((x&&esc(x.day)+(x.caution?' · 갱신 대기':''))||'미연결')+'</small></div>'}).join('');
  const ctr=Object.entries(countries).map(([k,label])=>'<button type="button" data-rc-country="'+k+'" aria-pressed="'+(k===country)+'" title="'+(['KR','US'].includes(k)?'저장 종목 연결':'현재 종목·시세 미연결')+'">'+label+'</button>').join('');
  const active=['finance','value'].includes(p)?'quality':p;
- header.innerHTML='<div class="rc-shell"><div class="rc-indices" aria-label="4대 지수 · 저장값">'+index+'</div><div class="rc-brandline"><a class="rc-brand" href="?tab=home&country='+country+'" data-rc-tab="home"><span class="rc-mark" aria-hidden="true"><i></i><i></i><i></i></span>투자레이더</a><nav class="rc-country" aria-label="국가 선택">'+ctr+'</nav><span class="rc-edition rc-pill rc-tone-neutral">개인 연구용 · 저장 자료</span></div><nav class="rc-primary" aria-label="주 메뉴">'+primary.map(k=>navBtn(k,k===active,k==='quality'?'기업분석':null)).join('')+'</nav></div>';
+ header.innerHTML='<div class="rc-shell"><div class="rc-indices" aria-label="4대 지수 · 저장값">'+index+'</div><div class="rc-brandline"><a class="rc-brand" href="?tab=home&country='+country+'" data-rc-tab="home"><span class="rc-mark" aria-hidden="true"><i></i><i></i><i></i></span>투자레이더</a><nav class="rc-country" aria-label="국가 선택">'+ctr+'</nav><span class="rc-edition rc-pill rc-tone-neutral">개인 연구용 · 저장 자료</span></div><div class="rc-primaryline"><nav class="rc-primary" aria-label="주 메뉴">'+primary.map(k=>navBtn(k,k===active,k==='quality'?'기업분석':null)).join('')+'</nav>'+(p==='home'?'<small class="rc-nav-date">'+esc(researchDate(ctx))+'</small>':'')+'</div></div>';
 }
 function drawTitle(ctx){
+ if(p==='home')return '<h1 class="rc-visually-hidden">홈</h1>';
  const company=ctx.company,label=company?esc(company.name||company.symbol):'기업 미선택';
- const row=p!=='home'?'<div class="rc-selection"><div><small>선택 기업</small><strong>'+label+'</strong>'+(company?' <small>'+esc(company.symbol)+'</small>':'')+'</div>'+(p==='market'?'<small>산업·기업을 고르면 분석 탭에 연동됩니다</small>':'<nav class="rc-subnav" aria-label="기업 분석 탭">'+subs.map(k=>navBtn(k,k===p)).join('')+'</nav>')+'</div>':'';
- const status=ctx.data.raw?.generated_at?'저장 연구 자료 · '+date(ctx.data.raw.generated_at):'자료 확인 중';
- return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+pages[p][1]+'</p></div>'+pill(status,'neutral')+'</div>';
+ const row='<div class="rc-selection"><div><small>선택 기업</small><strong>'+label+'</strong>'+(company?' <small>'+esc(company.symbol)+'</small>':'')+'</div>'+(p==='market'?'<small>산업·기업을 고르면 분석 탭에 연동됩니다</small>':'<nav class="rc-subnav" aria-label="기업 분석 탭">'+subs.map(k=>navBtn(k,k===p)).join('')+'</nav>')+'</div>';
+ return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+pages[p][1]+'</p></div>'+pill(researchDate(ctx),'neutral')+'</div>';
 }
 function macroPanel(ctx,kr){
  const source=ctx.data.macro?.indicators||{};

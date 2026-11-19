@@ -304,3 +304,15 @@
  .rc-home .rc-minilist .rc-brief-row{padding:3px 0}
  .rc-home .rc-brief-example{display:none}
 }
+
+/* Keep the home date beside the existing tabs, not in a duplicate heading. */
+.rc-primaryline{display:flex;align-items:center;gap:8px}
+.rc-primaryline>.rc-primary{min-width:0;flex:1}
+.rc-nav-date{flex:none;color:var(--rc-muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rc-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (max-width:600px){
+ .rc-primaryline:has(.rc-nav-date){gap:5px}
+ .rc-primaryline:has(.rc-nav-date) .rc-primary{gap:1px}
+ .rc-primaryline:has(.rc-nav-date) .rc-primary button{min-width:0;padding-inline:6px;font-size:12px}
+ .rc-nav-date{font-size:10px}
+}
