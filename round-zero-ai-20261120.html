@@ -1,0 +1,505 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ROUND ZERO — AI 두뇌 서바이벌</title>
+<meta name="theme-color" content="#0a090c">
+<meta name="description" content="ROUND ZERO - 혼자서 AI와 대결하는 비공식 두뇌게임 아케이드"><style>
+:root{
+  --bg:#070b12;
+  --bg2:#0e1624;
+  --panel:#121b2b;
+  --panel2:#0f1725;
+  --line:#2a3a54;
+  --line2:#3b4f70;
+  --text:#eef3ff;
+  --muted:#9fb0c8;
+  --lime:#d9ff63;
+  --lime2:#9ef061;
+  --gold:#f4c86b;
+  --rose:#f0a7be;
+  --cyan:#8cd2ff;
+  font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 620px at 15% -10%,#23365380,transparent 58%),
+    radial-gradient(900px 520px at 100% 0%,#3e294260,transparent 45%),
+    linear-gradient(180deg,#060911 0%,#090e17 18%,#0b111c 100%);
+  position:relative;
+}
+body:before{
+  content:'';
+  position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background:
+   repeating-linear-gradient(90deg,transparent 0 74px,rgba(255,255,255,.025) 74px 75px),
+   repeating-linear-gradient(0deg,transparent 0 74px,rgba(255,255,255,.02) 74px 75px);
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent 85%);
+}
+button,input,select{font:inherit}
+button{cursor:pointer;transition:.18s ease}
+button:disabled{opacity:.42;cursor:not-allowed}
+a{color:#d8eeff}
+.shell{max-width:1440px;margin:auto;padding:28px clamp(16px,3vw,46px) 72px;position:relative}
+.nav{
+  display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:36px;
+  padding:14px 18px;border:1px solid rgba(217,255,99,.18);border-radius:18px;
+  background:linear-gradient(180deg,rgba(18,28,44,.9),rgba(11,17,29,.88));
+  box-shadow:0 12px 36px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(10px);
+}
+.brand{font-size:23px;letter-spacing:2.6px;font-weight:900;display:flex;gap:12px;align-items:center;text-transform:uppercase}
+.emblem{
+  width:40px;height:40px;border-radius:12px;display:grid;place-items:center;letter-spacing:0;
+  background:linear-gradient(135deg,var(--lime),#fff3a0);color:#17210f;
+  box-shadow:0 0 0 1px rgba(255,255,255,.16),0 10px 22px rgba(217,255,99,.18);
+}
+.hint{color:#96a9c7;font-size:12px;letter-spacing:.2px}
+.intro{
+  display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:24px;
+  padding:24px;border:1px solid rgba(255,255,255,.05);border-radius:24px;
+  background:linear-gradient(135deg,rgba(20,31,49,.86),rgba(12,18,29,.92));
+  box-shadow:0 20px 50px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.intro h1{font-size:clamp(26px,3.8vw,46px);letter-spacing:-1.4px;margin:0 0 12px;line-height:1.03}
+.intro p{color:#b7c3d8;font-size:14px;line-height:1.85;margin:0;max-width:760px}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi div{
+  border:1px solid rgba(217,255,99,.18);background:linear-gradient(180deg,#111d2d,#0d1522);
+  border-radius:16px;padding:16px 15px;min-width:92px;text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.kpi strong{display:block;font-size:25px;color:var(--lime);text-shadow:0 0 14px rgba(217,255,99,.18)}
+.kpi small{color:#b2bfd4}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0}
+.filter,.search{
+  border:1px solid #314562;border-radius:12px;background:linear-gradient(180deg,#182436,#121b2b);
+  color:#c1cee1;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.filter{padding:10px 15px;font-weight:700}
+.filter.active{background:linear-gradient(135deg,var(--lime),#f5e790);color:#14210d;border-color:#f3efbc;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 8px 24px rgba(217,255,99,.14)}
+.search{padding:10px 12px;min-width:200px;flex:1}
+.search::placeholder{color:#8396b4}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{
+  position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(180deg,rgba(19,29,45,.96),rgba(12,19,31,.98));
+  border-radius:18px;padding:18px;display:flex;min-height:214px;flex-direction:column;gap:10px;
+  box-shadow:0 14px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.card:before{
+  content:'';position:absolute;inset:0 0 auto 0;height:4px;
+  background:linear-gradient(90deg,var(--lime),var(--gold),#9ee8ff);opacity:.9;
+}
+.card:after{
+  content:'';position:absolute;right:-25px;top:-25px;width:86px;height:86px;border-radius:50%;
+  background:radial-gradient(circle,rgba(217,255,99,.14),transparent 68%);
+}
+.card:not(.todo):hover{border-color:#8ca769;transform:translateY(-2px);box-shadow:0 20px 42px rgba(0,0,0,.28),0 0 0 1px rgba(217,255,99,.08) inset}
+.card.todo{background:linear-gradient(180deg,#101828,#0c1220)}
+.card small{font-size:11px;color:#a4b5cd;letter-spacing:.22px}
+.card h3{font-size:18px;margin:0;line-height:1.3}
+.card p{font-size:12px;line-height:1.65;color:#b3c0d4;flex:1;margin:2px 0}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.status{font-size:11px;color:#16210f;background:linear-gradient(135deg,var(--lime),#f0ef9d);border-radius:999px;padding:7px 10px;font-weight:900}
+.status.wait{color:#b7c4d7;background:#283547}
+.go,.btn{
+  border:1px solid transparent;border-radius:11px;padding:10px 14px;
+  background:linear-gradient(135deg,var(--lime),#f0e68c);color:#12200c;font-weight:900;
+  box-shadow:0 8px 20px rgba(217,255,99,.16);
+}
+.go:hover,.btn:hover{transform:translateY(-1px)}
+.go:disabled{background:#2c3847;color:#adb8ca;border-color:#33445b;box-shadow:none}
+.btn.alt{background:linear-gradient(180deg,#25354d,#1d2b3e);color:#edf3ff;border-color:#36516f;box-shadow:none}
+.btn.red{background:linear-gradient(180deg,#62404a,#4e3138);color:#ffdce4;border-color:#86606c;box-shadow:none}
+.btn.blue{background:linear-gradient(180deg,#91caff,#648fce);color:#112338;border-color:#b8dfff;box-shadow:0 8px 24px rgba(140,210,255,.15)}
+.subnote{color:#96a9c5;font-size:12px;line-height:1.8;margin:22px 0}
+.stage-title{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+.stage-title h1{font-size:31px;letter-spacing:-1.1px;margin:0}
+.stage-title p{color:#aebbd0;font-size:13px;margin:4px 0 0}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px}
+.panel{
+  background:linear-gradient(180deg,rgba(18,28,43,.95),rgba(11,18,30,.98));
+  border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:clamp(17px,2vw,28px);
+  box-shadow:0 18px 42px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.mainpanel{min-height:500px}
+.aside h3{font-size:15px;margin:0 0 12px;color:#f4f7fd}
+.rule{
+  background:linear-gradient(180deg,#0e1624,#101a2b);border:1px solid rgba(217,255,99,.12);
+  border-left:4px solid var(--lime);border-radius:14px;padding:14px;font-size:13px;color:#c8d5e8;
+  line-height:1.8;margin:15px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:15px 0}
+.counter{
+  display:inline-flex;border-radius:999px;background:linear-gradient(180deg,#22344c,#182536);
+  padding:10px 14px;color:#dce8f7;font-weight:800;font-size:12px;border:1px solid #36506f;
+}
+.tile{
+  min-width:60px;height:66px;border:1px solid #5b7291;background:linear-gradient(180deg,#324965,#25364d);
+  color:#f2f7ff;border-radius:13px;font-size:23px;font-weight:900;padding:5px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 16px rgba(0,0,0,.15)
+}
+.tile.selected{outline:3px solid var(--lime);box-shadow:0 0 0 1px rgba(217,255,99,.4),0 0 24px rgba(217,255,99,.16)}
+.tile.black{color:#fff;background:linear-gradient(180deg,#151d2a,#0c111a);border-color:#6a7b91}
+.tile.white{background:linear-gradient(180deg,#f1f4f8,#d7dfe8);color:#0b1524}
+.tile:focus-visible,.btn:focus-visible{outline:3px solid #a6d3ff}
+.tile.matched{border-color:#9cf6b2;color:#d7ff8e}
+.row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.grid9{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:420px}
+.shape{
+  min-height:114px;border:2px solid #52637a;border-radius:15px;display:grid;place-items:center;position:relative;font-size:43px;
+  box-shadow:inset 0 0 0 4px #ffffff10,0 10px 20px rgba(0,0,0,.08);background:linear-gradient(180deg,#182436,#111a2a)
+}
+.shape i{position:absolute;left:9px;top:8px;font-size:12px;color:#f5f6f8;font-style:normal;mix-blend-mode:difference}
+.shape.selected{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime),0 0 24px rgba(217,255,99,.12)}
+.shape .sym{line-height:1;filter:drop-shadow(0 2px 2px #0004)}
+.log{font-size:12px;line-height:1.72;color:#aebed1;max-height:330px;overflow:auto;padding-right:4px}
+.log div{border-bottom:1px solid #2f415a;padding:8px 0}
+.info{border:1px solid #405979;background:linear-gradient(180deg,#1e2f45,#1a293c);padding:13px;border-radius:12px;line-height:1.7;font-size:13px;color:#e0ebfb;margin:12px 0}
+.result{background:linear-gradient(180deg,#274133,#1e3227);border:1px solid #7baf86;color:#e0ffe6;padding:18px;border-radius:14px;font-size:16px;font-weight:900;margin:18px 0}
+.scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.score{background:linear-gradient(180deg,#223248,#1b293b);padding:12px;border-radius:12px;font-size:12px;border:1px solid rgba(255,255,255,.05)}
+.score b{display:block;color:var(--lime);margin-top:6px;font-size:19px;text-shadow:0 0 10px rgba(217,255,99,.15)}
+.number{font-size:31px;font-weight:900}
+.muted{color:#a7b8cf;font-size:13px;line-height:1.75}
+.inp{padding:10px 12px;background:#101927;color:#f3f6fc;border:1px solid #435674;border-radius:11px;max-width:135px}
+.gamebottom{margin-top:24px;border-top:1px solid #354257;padding-top:15px}
+.mm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;aspect-ratio:1/1;max-width:490px;position:relative;margin:8px auto}
+.mm-line{position:absolute;inset:0;pointer-events:none}
+.mm-point{position:absolute;width:10.5%;height:10.5%;border:2px solid #9aa8bc;background:#1e2939;border-radius:99px;transform:translate(-50%,-50%);padding:0;z-index:2;box-shadow:0 8px 14px rgba(0,0,0,.18)}
+.mm-point.p1{background:linear-gradient(180deg,var(--lime),#b9eb5c);color:#1b2b11;border-color:#ebffb8}
+.mm-point.p2{background:linear-gradient(180deg,#f2bed0,#dc86a7);color:#3f1829;border-color:#ffd8e5}
+.mm-point.ok{outline:3px solid #91bd8d}.mm-point.selected{outline:4px solid #ffe599}
+.mm-point label{pointer-events:none;font-size:11px}
+.auction-head{font-size:76px;font-weight:900;color:#ffcad0;text-align:center;text-shadow:0 0 20px rgba(240,167,190,.16)}
+.small{font-size:11px;color:#9fb0c7}
+.label{font-size:12px;color:#c2d0e2;margin:10px 0}
+.pills{display:flex;flex-wrap:wrap;gap:8px}.pill{background:#203449;border:1px solid #38506b;border-radius:999px;padding:7px 10px;font-size:12px}
+.copyright{font-size:11px;color:#7d90a6;margin-top:35px;line-height:1.85}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:750px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.stage{grid-template-columns:1fr}.intro{align-items:start;flex-direction:column}.kpi{width:100%}.kpi div{flex:1}.nav{margin-bottom:25px}.stage-title h1{font-size:24px}}
+@media(max-width:440px){.cards{grid-template-columns:1fr}.card{min-height:160px}.shape{min-height:90px}.tile{min-width:46px;height:53px;font-size:18px}.stage-title{align-items:start;flex-direction:column}.stage-title .btn{width:100%}}
+
+/* ROUND ZERO — bespoke season-3-inspired visual direction, not official show assets */
+:root{
+  --bg:#08080b;--bg2:#101015;--panel:#141317;--panel2:#111014;
+  --line:#352c32;--line2:#5d4650;--text:#f3ebdc;--muted:#aa9ba0;
+  --lime:#e3bd7f;--lime2:#f4deb8;--gold:#d7a665;--rose:#c04b53;--cyan:#9dbbc9;
+  color:var(--text);background:#08080b;
+}
+html{scroll-behavior:smooth}
+body{
+ background:
+ radial-gradient(900px 560px at 50% -130px,#4d18203b,transparent 70%),
+ radial-gradient(1100px 580px at 100% 400px,#30233228,transparent 70%),
+ linear-gradient(180deg,#0b090d 0%,#100d10 46%,#0a090c 100%);
+ font-feature-settings:"tnum" 1;
+}
+body:before{
+ opacity:.42;
+ background:
+ repeating-linear-gradient(90deg,transparent 0 124px,rgba(222,188,133,.028) 124px 125px),
+ repeating-linear-gradient(0deg,transparent 0 124px,rgba(222,188,133,.017) 124px 125px);
+ mask-image:linear-gradient(180deg,#000,transparent 78%);
+}
+body:after{content:'';position:fixed;top:0;bottom:0;left:0;right:0;pointer-events:none;
+ background:linear-gradient(90deg,transparent 0%,rgba(126,54,60,.018) 48%,transparent 100%);z-index:0}
+.shell{max-width:1420px;padding:22px clamp(15px,3vw,44px) 70px}
+.nav.rz-nav{
+ margin:0 0 20px;background:#100e13ed;border:1px solid #433038;border-radius:2px;padding:14px 22px;
+ box-shadow:0 15px 30px #0005;min-height:74px;
+}
+.rz-nav .brand{gap:14px;letter-spacing:0}
+.rz-brand-name{font-weight:950;font-size:20px;letter-spacing:3.5px;line-height:1.1;color:#f5e8d5}
+.rz-brand-kicker{font-size:9px;letter-spacing:2.8px;color:#b99b84;font-weight:600;margin-top:7px}
+.emblem.rz-emblem{width:42px;height:42px;border-radius:0;transform:rotate(45deg);border:1px solid #ac7f69;
+ box-shadow:0 0 0 4px #21151a,0 0 0 5px #4a3439,0 8px 20px #0006;
+ background:linear-gradient(135deg,#4b2630,#170e15);color:#efcca0}
+.rz-emblem>span{transform:rotate(-45deg);font:800 22px Georgia,serif;letter-spacing:0}
+.rz-nav-meta{font-size:10px;letter-spacing:1.8px;color:#a9989c;display:flex;align-items:center;gap:12px}
+.rz-online{width:6px;height:6px;border-radius:50%;display:inline-block;background:#cdac71;box-shadow:0 0 12px #cdac7199}
+.rz-slash{color:#4d3a41}
+.intro.rz-hero{
+ display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);
+ align-items:stretch;min-height:385px;margin:0;
+ border:1px solid #564049;border-radius:2px;padding:0;
+ background:linear-gradient(105deg,#140f14 0%,#1a1117 54%,#130f14 100%);
+ box-shadow:0 34px 70px #0008;position:relative;overflow:hidden;
+}
+.rz-hero:after{content:'';height:3px;position:absolute;left:0;right:0;bottom:0;background:linear-gradient(90deg,#8d353d,#d1ab77 65%,#442b36)}
+.rz-hero:before{content:'';width:95%;height:80%;position:absolute;left:-15%;top:-20%;background:radial-gradient(circle,#76343c29,transparent 60%);pointer-events:none}
+.rz-hero-copy{position:relative;z-index:1;padding:47px 5% 42px 8%;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.rz-overline{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:800;letter-spacing:3px;color:#ddb887}
+.rz-overline:before{content:'';width:24px;height:1px;background:#e0b27e}
+.rz-hero h1{font-size:clamp(37px,4vw,62px);line-height:1.2;letter-spacing:-2px;color:#f5e9d9;font-weight:850;margin:18px 0 16px}
+.rz-hero h1 em{font-style:normal;color:#e3b47d;display:inline-block}
+.rz-hero p{font-size:13px;color:#b8a8ac;line-height:1.95;max-width:520px}
+.rz-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.rz-primary,.rz-secondary{padding:13px 20px;border:1px solid #d5aa72;background:#dfb57b;color:#1a1112;border-radius:1px;font-size:12px;font-weight:900;letter-spacing:.2px;min-width:153px;box-shadow:none}
+.rz-primary:hover{background:#f5d19a;transform:translateY(-2px)}
+.rz-secondary{background:#21171d;border-color:#584048;color:#e5d7cb;min-width:120px}
+.rz-secondary:hover{background:#34242b}
+.rz-hero-art{height:100%;position:relative;min-height:370px;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(ellipse at 50% 65%,#9c383e32,transparent 57%),repeating-linear-gradient(90deg,transparent 0 30px,#e5aa6706 30px 31px),linear-gradient(90deg,#23151b,#0e0d11 70%)}
+.rz-hero-art:before{content:'';height:100%;width:1px;position:absolute;left:0;background:linear-gradient(transparent,#916a65aa,transparent)}
+.rz-pillars{position:absolute;inset:0;display:flex;justify-content:space-around;opacity:.33;pointer-events:none}
+.rz-pillars span{width:4px;background:linear-gradient(90deg,#45282d,#ae7770,#28191e);box-shadow:11px 0 28px #3e2227}
+.rz-door{width:min(220px,52%);height:300px;position:relative;border:7px solid #33252a;border-radius:110px 110px 3px 3px;
+ background:radial-gradient(ellipse at 50% 56%,#762e353a,transparent 61%),linear-gradient(180deg,#22141a,#0a090e);
+ box-shadow:0 0 0 1px #a171663d,0 0 0 17px #100d12,0 0 0 18px #6c43413b,0 0 65px #ba424326,inset 0 0 36px #000;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px}
+.rz-door:before{content:'';position:absolute;inset:9px;border:1px solid #7e55504a;border-radius:98px 98px 1px 1px}
+.rz-door:after{content:'';position:absolute;width:50px;height:90px;bottom:0;background:radial-gradient(ellipse at bottom,#c44e5d3c,transparent 73%);pointer-events:none}
+.rz-door-symbol{width:97px;height:97px;display:grid;place-items:center;position:relative;
+ color:#e5bf84;font-family:Georgia,serif;font-weight:400;font-size:69px;line-height:1;border:1px solid #8a6558;border-radius:50%;box-shadow:0 0 0 5px #21161d,0 0 0 6px #5a3b42,0 0 35px #ac4a4433;z-index:1}
+.rz-door-symbol:after{content:'';position:absolute;width:70px;height:70px;border:1px dotted #bc927f8c;border-radius:50%}
+.rz-art-label{font-size:9px;letter-spacing:4px;color:#c3a18d;font-weight:800}
+.rz-art-foot{position:absolute;bottom:15px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;color:#886d73;font-size:9px;letter-spacing:2px}
+.rz-divider-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:31px;margin-bottom:16px;padding:0 1px}
+.rz-divider-title h2{margin:0;color:#f0e4d5;font-weight:820;font-size:21px;letter-spacing:-.7px}
+.rz-divider-title p{margin:5px 0 0;color:#9b858e;font-size:12px}
+.rz-index{color:#95737a;font-size:10px;font-weight:700;letter-spacing:2px}
+.rz-status-row{display:flex;align-items:stretch;gap:0;margin:18px 0 0;border:1px solid #413039;background:#130f13}
+.rz-status-cell{padding:15px 19px;flex:1;border-right:1px solid #413039;display:flex;gap:11px;align-items:center}
+.rz-status-cell:last-child{border-right:0}
+.rz-status-n{font-family:Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-1px;color:#e3c396}
+.rz-status-t{display:flex;flex-direction:column;gap:4px}.rz-status-t strong{font-size:11px;color:#f0ded0}.rz-status-t small{font-size:10px;color:#957f8b}
+.filters{gap:7px;margin:14px 0 19px}
+.filter,.search{background:#171117;border:1px solid #45333e;border-radius:2px;color:#bfaeb0;font-size:12px;box-shadow:none;min-height:40px}
+.filter{padding:9px 14px}
+.filter:hover{color:#f1d5af;border-color:#98715e}
+.filter.active{background:#dfb77d;color:#1d1415;border-color:#f2d49c;box-shadow:none}
+.search{background:#100e12;border-color:#513a44;color:#f4e2d2;flex:1;padding:11px 14px}
+.search:focus{outline:1px solid #be926e}
+.cards{gap:13px}
+.card,.card.todo{min-height:234px;background:linear-gradient(170deg,#20171c,#151015);border:1px solid #44323b;border-radius:2px;padding:20px;
+ box-shadow:0 14px 33px #0004;transition:transform .2s, border-color .2s;gap:11px}
+.card:before{height:1px;background:linear-gradient(90deg,#9b4f55,#d6ae79,transparent)}
+.card:after{width:120px;height:120px;right:-70px;top:-85px;background:radial-gradient(circle,#d6a77612,transparent 70%)}
+.card:not(.todo):hover{border-color:#aa8478;transform:translateY(-3px);box-shadow:0 20px 45px #0008}
+.card.todo{background:linear-gradient(170deg,#141115,#100e12);border-color:#30272c}
+.rz-card-top{display:flex;align-items:flex-start;justify-content:space-between;min-height:47px}
+.rz-card-over{font-size:10px;color:#9c8186;font-weight:800;letter-spacing:1.3px}
+.rz-game-sigil{color:#bda17b;font-size:29px;line-height:1;font-family:Georgia,serif;font-weight:500}
+.card.todo .rz-game-sigil{color:#5b4a54}
+.card small{font-size:10px;color:#a68c95}
+.card h3{font-size:18px;color:#f5e7d8;letter-spacing:-.5px;line-height:1.3}
+.card p{color:#a898a1;line-height:1.7;font-size:12px}
+.status,.status.wait{background:#35202b;border:1px solid #68414e;border-radius:2px;color:#e5b5aa;font-size:10px;letter-spacing:.3px;padding:7px 9px}
+.status.wait{background:#211c22;border-color:#40323c;color:#8b7984}
+.go,.btn{background:#ddb47c;border:1px solid #e0ba82;color:#1c1216;border-radius:2px;box-shadow:none;font-size:12px;font-weight:900}
+.go:disabled{background:#211b23;color:#77707b;border:1px solid #3b313b}
+.btn.alt{background:#19131b;color:#e0cfbf;border:1px solid #5b4149;box-shadow:none}
+.btn.red{background:#54212e;color:#f8d4ce;border:1px solid #843847}
+.btn.blue{background:#9aaebb;color:#141d25;border:1px solid #c0d4df;box-shadow:none}
+.go:hover,.btn:hover{filter:brightness(1.08)}
+.stage-title{margin:20px 0 20px;padding:15px 0;border-bottom:1px solid #45333c;align-items:center}
+.stage-title h1{font-size:30px;color:#eedeca}
+.stage-title p{font-size:12px;color:#b49e9d}
+.stage{grid-template-columns:minmax(0,1fr) 300px;gap:15px}
+.panel{background:linear-gradient(180deg,#1b151b,#100e12);border:1px solid #4e3844;border-radius:2px;box-shadow:0 24px 45px #0007}
+.mainpanel{border-top:2px solid #a56861;min-height:470px}
+.aside{border-top:2px solid #b89167}
+.aside h3{color:#e6c9a4}
+.rule{background:#1b151a;border:1px solid #553943;border-left:3px solid #bc8a63;border-radius:2px;color:#d4c4bb}
+.info{border-color:#5c434d;background:#281d26;border-radius:2px;color:#eee1d4}
+.result{background:#2d2821;border-color:#a58c64;color:#f8e0a4;border-radius:2px}
+.counter{background:#281d26;border-color:#5e4049;color:#e5c9af;border-radius:2px}
+.tile{background:linear-gradient(170deg,#3c3441,#27222b);border-color:#685764;color:#eee6e1;border-radius:3px}
+.tile.selected{outline-color:#e7c08b;box-shadow:0 0 0 1px #f3dca9,0 0 17px #d9a66944}
+.tile.black{background:linear-gradient(180deg,#24232b,#111014);border-color:#695763}
+.tile.white{background:#e8ddd4;color:#27171c;border-color:#fff0df}
+.score{background:#271c26;border:1px solid #47323c;border-radius:2px;color:#d5c2ba}
+.score b{color:#f0c790}
+.shape{border-radius:3px}
+.shape.selected{border-color:#e1b87c;box-shadow:0 0 0 2px #e1b87c}
+.pill{background:#2b202a;border-color:#61434f;border-radius:2px;color:#ecd7cb}
+.inp{background:#1a141a;border:1px solid #765260;border-radius:2px}
+.mm-point{box-shadow:0 4px 10px #0008}
+.mm-point.p1{background:#e4bb7e;border-color:#f6dbab;color:#21151b}
+.mm-point.p2{background:#a54557;border-color:#d16d76;color:#fff}
+.mm-point.selected{outline-color:#f7cf89}
+.copyright{margin:35px auto 0;border-top:1px solid #342932;padding-top:17px;color:#89767c;max-width:100%;font-size:11px}
+.rz-section-id{font:700 10px Georgia,serif;letter-spacing:2px;color:#9b6b72}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:800px){.rz-hero-art{min-height:330px}.rz-hero-copy{padding:33px 6%}.rz-hero h1{font-size:clamp(33px,6vw,46px)}.rz-status-cell{padding:12px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.stage{grid-template-columns:1fr}}
+@media(max-width:610px){.intro.rz-hero{grid-template-columns:1fr;min-height:0}.rz-hero-art{min-height:260px}.rz-door{height:215px;width:135px}.rz-door-symbol{width:72px;height:72px;font-size:51px}.rz-door-symbol:after{width:54px;height:54px}.rz-hero h1{font-size:39px}.rz-status-row{flex-wrap:wrap}.rz-status-cell{min-width:33%;padding:13px 9px;gap:7px}.rz-status-n{font-size:23px}.rz-status-t strong{font-size:10px}.rz-status-t small{font-size:9px}.rz-nav-meta{font-size:0;gap:5px}.rz-nav-meta .rz-slash{display:none}.rz-nav-meta:after{content:'LOCAL';font-size:10px;letter-spacing:1px}.nav.rz-nav{padding:12px}.rz-brand-name{font-size:17px;letter-spacing:2px}.rz-brand-kicker{font-size:8px;letter-spacing:1px}.cards{grid-template-columns:1fr}.card{min-height:190px}.stage-title h1{font-size:23px}.shell{padding:12px 12px 50px}.rz-hero-copy{padding:30px 25px}.rz-divider-title{margin-top:25px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,.card{transition:none}}
+
+</style></head><body><div id="app" class="shell"></div><script>
+'use strict';
+const groups={
+ '지니어스 1':{main:['1·2·3 게임','대선게임','풍요와 기근','좀비게임','사기경마','도둑잡기','오픈, 패스','콩의 딜레마','수식 경매','감금! 사기경마','5 대 5'],duel:['연승게임','전략 윷놀이','인디언 포커','이미지 게임','같은 그림 찾기','결! 합!']},
+ '지니어스 2':{main:['먹이사슬','자리바꾸기','왕 게임','암전게임','7계명','독점게임','신의 판결','마이너스 경매','정리해고','빅딜게임','엘리베이터'],duel:['콰트로','해 달 별','결! 합!','레이저 장기','인디언 홀덤','같은 그림 찾기','흑과 백','진실 탐지기']},
+ '지니어스 3':{main:['과일가게','배심원','중간 달리기','검과 방패','광부게임','폭풍의 증권시장','별자리 게임','투자와 기부','체인 옥션','의심 윷놀이'],duel:['흑과 백 Ⅱ','베팅! 가위바위보','양면포커','십이장기','기억의 미로','모노레일','베팅! 흑과 백','같은 숫자 찾기','블랙미션']},
+ '지니어스 4':{main:['신분교환','호러 레이스','오늘의 메뉴','생선가게','충신과 역적','가넷도둑','시드포커','마이너스 경매 Ⅱ','호러 레이스 Ⅱ','협동홀덤','하우머치'],duel:['숫자장기','미스터리 사인','흑과 백','전략 윷놀이','베팅! 가위바위보','같은 숫자 찾기','인디언 포커','모노레일','같은 그림 찾기','결! 합!','콰트로','양면포커','십이장기']},
+ '데블스 1':{main:['바이러스 게임','협동 퍼즐','규칙 레이스','기억의 조각','시크릿 넘버','워드 타워','동물원','양팔 저울','땅따먹기','몽타주','수식 하이로우','4인 3목'],duel:['블라인드 오목','나인 멘스 모리스','헥사곤']},
+ '데블스 2':{main:['부패 경찰','언노운','핼러윈 몬스터','보물섬','균형의 만칼라','의심 베팅'],duel:['하나 빼기','시간 경매','저격 홀덤','트리플 다이스','벽바둑','수식 피라미드','기사의 여행','빅 스몰','바그찰','질문과 진실']},
+ '데블스 3':{main:['양자택일','미스터리 거래소','보석 암시장','경매 빙고'],duel:['무거운 13','러시안 룰렛','돼지 저금통','벽바둑 2','큐브 세기','네모 세기','잔디 깔기','기억 포커','피스 퍼즐','달라진 그림 찾기','암호 풀이','비밀 코드','울타리 치기','신의 시험','대칭 퍼즐']}
+};
+const supported={
+ '흑과 백':'0~8의 숫자 타일을 짝수는 검정, 홀수는 흰색으로 나눠 9회 맞붙습니다. 후공은 선공 카드의 색을 먼저 봅니다.',
+ '결! 합!':'도형·색상·배경의 조합 중 세 속성 각각이 모두 같거나 전부 다른 세 장을 찾아 승점을 얻습니다.',
+ '연승게임':'데스매치 도전자가 나머지 플레이어들과 가위바위보를 하며 최장 연승을 겨룹니다.',
+ '1·2·3 게임':'13명에게 숫자 1·2·3 카드 각 세 장씩. 모든 카드를 사용해야만 승점을 인정합니다.',
+ '인디언 포커':'1~10 카드 각 두 장, 본인 카드는 숨기고 상대 카드만 보며 칩을 베팅합니다.',
+ '마이너스 경매':'-3부터 -35의 큐브를 낙찰받거나 칩을 내고 거부합니다. 연속된 숫자들은 하나의 묶음으로 계산합니다.',
+ '나인 멘스 모리스':'두 명이 말 아홉 개씩을 놓고 움직이며 세 개를 일렬로 만들어 상대 말을 제거합니다.',
+ '콰트로':'숫자·색깔이 모두 다른 카드 네 장으로 합계를 겨루며 관전자와 카드를 교환합니다.',
+ '십이장기':'3×4 보드에서 왕·장·상·자 말을 움직이고, 잡은 말은 내 편으로 재투하하는 장기입니다.',
+ '헥사곤':'19개 숫자를 30초간 암기하고, 일렬의 세 칸을 더해 타깃 숫자를 만듭니다.',
+ '같은 숫자 찾기':'16개 패널의 숫자 1~12와 연산기호 네 개를 5초 동안 암기하고, 목표값과 같은 식을 먼저 찾아 10점을 얻는 게임입니다.',
+ '같은 그림 찾기':'16개 그림을 기억하고 개인 컨베이어 벨트의 다음 그림과 일치하는 패널을 맞혀 결승점까지 이동합니다.'
+};
+const ruleStatus={'흑과 백':'방송 핵심 규칙','결! 합!':'방송 핵심 규칙','연승게임':'방송 핵심 규칙','1·2·3 게임':'일부 협상 단순화','인디언 포커':'아이템 제외','마이너스 경매':'방송 핵심 규칙','나인 멘스 모리스':'전통 표준 규칙','콰트로':'교환 절차 구현','십이장기':'포로 투하 및 왕 규칙','헥사곤':'원작 10라운드·시간 제한','같은 숫자 찾기':'블랙가넷 결승 원작 규칙','같은 그림 찾기':'시즌 1·2 / 4 모드 지원'};
+let entries=[];Object.entries(groups).forEach(([group, types])=>{Object.entries(types).forEach(([type,names])=>names.forEach((name,i)=>entries.push({group,type,name,index:i+1, playable:!!supported[name],id:group+'/'+type+'/'+i})))})
+const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)];
+const randint=n=>Math.floor(Math.random()*n), rand=(a,b)=>a+randint(b-a+1),pick=a=>a[randint(a.length)],shuffle=a=>{let b=[...a];for(let i=b.length-1;i>0;i--){let j=randint(i+1);[b[i],b[j]]=[b[j],b[i]]}return b},txt=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let view='all',search='',current=null,st={},finishText='',log=[],stat={games:0,wins:0};try{stat=JSON.parse(localStorage.getItem('mindroom_original_stats'))||stat}catch(e){}
+function save(){try{localStorage.setItem('mindroom_original_stats',JSON.stringify(stat))}catch(e){}}
+function logit(s){log.unshift(s);log=log.slice(0,35)}
+function finish(win,message){if(finishText)return;finishText=`<div class="result">${win===null?'결과':win?'🏆 승리':'패배'} — ${txt(message)}</div>`;stat.games++;if(win)stat.wins++;save()}
+function action(label,call,disable=false,klass=''){return `<button class="btn ${klass}" onclick="${call}" ${disable||!!finishText?'disabled':''}>${label}</button>`}
+function header(){return `<div class="nav rz-nav"><div class="brand"><span class="emblem rz-emblem"><span>0</span></span><div><div class="rz-brand-name">ROUND ZERO</div><div class="rz-brand-kicker">PRIVATE GAME FACILITY</div></div></div><div class="rz-nav-meta"><i class="rz-online"></i><span>LOCAL AI ONLINE</span><span class="rz-slash">/</span><span>SOLO GAME ARCHIVE</span></div></div>`}
+function home(){if(typeof hexClock!=='undefined')clearInterval(hexClock);if(typeof memoryClock!=='undefined')clearInterval(memoryClock);current=null;showHome()}
+function setView(v){view=v;showHome()}
+function searchGames(x){search=x;showHome(true)}
+const rzMarks={'흑과 백':'◐','결! 합!':'◇','연승게임':'✧','1·2·3 게임':'123','인디언 포커':'♠','마이너스 경매':'−','나인 멘스 모리스':'⋈','콰트로':'4','십이장기':'♜','헥사곤':'⬡','같은 숫자 찾기':'∑','같은 그림 찾기':'▦'};
+function showHome(keepFocus=false){
+ let num=Object.keys(supported).length,total=new Set(entries.map(x=>x.name)).size;
+ let list=entries.filter(x=>(view==='all'||view===x.group||view==='playable'&&x.playable)&&(x.name.includes(search)||x.group.includes(search)));
+ $('#app').innerHTML=header()+`<section class="intro rz-hero"><div class="rz-hero-copy"><div class="rz-overline">THE GAME IS NEVER OVER</div><h1>마지막 한 수까지,<br><em>살아남아라.</em></h1><p>방송의 전략과 심리전을 개인용 AI 대전으로.<br>규칙을 익히고, 상대를 읽고, 마지막 선택을 완성하세요.</p><div class="rz-hero-actions"><button class="rz-primary" onclick="setView('playable');document.getElementById('game-library')?.scrollIntoView({behavior:'smooth'})">게임 입장하기 &nbsp;↗</button><button class="rz-secondary" onclick="document.getElementById('game-library')?.scrollIntoView({behavior:'smooth'})">전체 아카이브</button></div></div><div class="rz-hero-art" aria-hidden="true"><div class="rz-pillars"><span></span><span></span><span></span><span></span><span></span></div><div class="rz-door"><div class="rz-door-symbol">0</div><div class="rz-art-label">ROUND ZERO</div></div><div class="rz-art-foot"><span>SECTOR / 03</span><span>ACCESS GRANTED</span></div></div></section>
+ <section class="rz-status-row" aria-label="게임 정보"><div class="rz-status-cell"><span class="rz-status-n">${num.toString().padStart(2,'0')}</span><span class="rz-status-t"><strong>플레이 가능</strong><small>AI 대전 구현 게임</small></span></div><div class="rz-status-cell"><span class="rz-status-n">${total}</span><span class="rz-status-t"><strong>전체 게임 목록</strong><small>중복 제외 · 미구현 포함</small></span></div><div class="rz-status-cell"><span class="rz-status-n">${stat.games}</span><span class="rz-status-t"><strong>내 플레이 기록</strong><small>이 브라우저에서 진행</small></span></div></section>
+ <div class="rz-divider-title" id="game-library"><div><div class="rz-section-id">[ SELECT YOUR MATCH ]</div><h2>게임 아카이브</h2><p>더 지니어스 1~4 · 데블스 플랜 1~3 — 현재 구현 게임은 12종입니다.</p></div><span class="rz-index">FILE / 001—${String(total).padStart(3,'0')}</span></div>
+ <div class="filters"><button class="filter ${view==='all'?'active':''}" onclick="setView('all')">전체</button><button class="filter ${view==='playable'?'active':''}" onclick="setView('playable')">플레이 가능</button>${Object.keys(groups).map(x=>`<button class="filter ${view===x?'active':''}" onclick="setView('${x}')">${x}</button>`).join('')}<input id="query" class="search" placeholder="게임 이름 검색" value="${txt(search)}" oninput="searchGames(this.value)"></div>
+ <div class="cards">${list.map((x,i)=>`<div class="card ${x.playable?'':'todo'}"><div class="rz-card-top"><span class="rz-card-over">${x.type==='main'?'MAIN MATCH':'FINAL / DUEL'} · ${String(x.index).padStart(2,'0')}</span><span class="rz-game-sigil">${rzMarks[x.name]||'◈'}</span></div><small>${x.group}</small><h3>${txt(x.name)}</h3><p>${txt(supported[x.name]||'방송 등장 게임으로 등록되어 있습니다. 현재 AI 대전 규칙은 미구현 상태입니다.')}</p><div class="foot"><span class="status ${x.playable?'':'wait'}">${x.playable?'OPEN':'LOCKED'}</span>${x.playable?`<button class="go" onclick="start('${x.name}')">입장 ↗</button>`:'<button class="go" disabled>잠김</button>'}</div></div>`).join('')}</div>${list.length?'':'<div class="info">검색 결과가 없습니다.</div>'}
+ <div class="copyright">ROUND ZERO는 방송사 및 넷플릭스와 무관한 비공식 개인용 프로젝트입니다. 방송 로고·음원·영상·시각 자료를 복제하지 않았습니다. 12종 게임은 방송에서 확인된 주요 규칙을 참고했으며 세부 규칙 중 일부가 생략됐을 수 있습니다. 미구현 게임은 플레이할 수 없습니다.</div>`;
+ if(keepFocus){let inp=$('#query');inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length)}
+}
+function start(name){if(typeof hexClock!=='undefined')clearInterval(hexClock);if(typeof memoryClock!=='undefined')clearInterval(memoryClock);current=name;st={};finishText='';log=[];switch(name){case '흑과 백':initBW();break;case '결! 합!':initGH();break;case '연승게임':initStreak();break;case '1·2·3 게임':init123();break;case '인디언 포커':initPoker();break;case '마이너스 경매':initAuction();break;case '나인 멘스 모리스':initMorris();break;case '콰트로':initQuattro();break;case '십이장기':initJang();break;case '헥사곤':initHex();break;case '같은 숫자 찾기':initMemory();break;case '같은 그림 찾기':initPicture();break;}render();window.scrollTo({top:0,left:0,behavior:"instant"})}
+function stage(inner,aside=''){let group=entries.find(x=>x.name===current)?.group||'';$('#app').innerHTML=header()+`<div class="stage-title"><button class="btn alt" onclick="home()">← 아카이브</button><div><div class="rz-section-id">[ ROUND ZERO / SOLO MATCH ]</div><h1>${txt(current)}</h1><p>${group} · AI 상대 · ${ruleStatus[current]||'규칙 구현'}</p></div></div><div class="stage"><main class="panel mainpanel">${inner}${finishText}<div class="gamebottom"><button class="btn alt" onclick="start(current)">↻ 처음부터 다시</button></div></main><aside class="panel aside"><h3>게임 규칙</h3><div class="rule">${txt(supported[current]||'')}</div>${aside}<h3 style="margin-top:22px">진행 기록</h3><div class="log">${log.length?log.map(x=>`<div>${txt(x)}</div>`).join(''):'<div>게임이 시작됐습니다.</div>'}</div></aside></div>`}
+function scores(names,values){return `<div class="scoreboard">${names.map((n,i)=>`<div class="score">${txt(n)}<b>${values[i]}</b></div>`).join('')}</div>`}
+function render(){if(!current)return showHome();switch(current){case '흑과 백':return drawBW();case '결! 합!':return drawGH();case '연승게임':return drawStreak();case '1·2·3 게임':return draw123();case '인디언 포커':return drawPoker();case '마이너스 경매':return drawAuction();case '나인 멘스 모리스':return drawMorris();case '콰트로':return drawQuattro();case '십이장기':return drawJang();case '헥사곤':return drawHex();case '같은 숫자 찾기':return drawMemory();case '같은 그림 찾기':return drawPicture()}}
+// ───────────────────── 흑과 백 (0~8, 9라운드, 선후공 색 공개)
+function initBW(){st={my:[0,1,2,3,4,5,6,7,8],ai:[0,1,2,3,4,5,6,7,8],round:1,score:[0,0],first:randint(2),aiPick:null};if(st.first===1) st.aiPick=bwChoose(null)}
+function bwChoose(seenColor){let pool=st.ai;if(seenColor===null)return pool[Math.floor(pool.length*.52)]??pool[0];let enemyAvailable=[0,1,2,3,4,5,6,7,8].filter(v=>(v%2?'흰':'검')===seenColor);let candidate=pool.map(v=>({v,score:enemyAvailable.filter(e=>v>e).length/enemyAvailable.length+(v<4?.12:0)+Math.random()*.5})).sort((a,b)=>b.score-a.score)[0];return candidate.v}
+function drawBW(){let c=st.aiPick===null?'선공은 당신입니다. 원하는 타일을 내세요.':`AI가 먼저 냈습니다. 타일 색: ${st.aiPick%2?'흰색':'검은색'} (숫자는 비공개)`;stage(`<div class="toolbar"><span class="counter">${st.round} / 9 라운드</span><span class="counter">${st.first===0?'내가 선공':'AI 선공'}</span></div>${scores(['나','AI 제로'],st.score)}<div class="info">${finishText?'게임 종료':c}</div><div class="label">내 타일 — 한 번 사용한 타일은 버립니다.</div><div class="row">${st.my.map(x=>`<button class="tile ${x%2?'white':'black'}" onclick="bwMove(${x})" ${finishText?'disabled':''}>${x}</button>`).join('')}</div><div class="small" style="margin-top:17px">짝수: 검은색 · 홀수: 흰색 · 큰 숫자가 이기며 승점 1점입니다.</div>`,`${scores(['나','AI'],st.score)}<p class="muted">직전 승리자가 다음 라운드 선공입니다. 무승부라면 선공 유지.</p>`)}
+function bwMove(v){if(finishText||!st.my.includes(v))return;let a=st.aiPick===null?bwChoose(v%2?'흰':'검'):st.aiPick;st.my.splice(st.my.indexOf(v),1);st.ai.splice(st.ai.indexOf(a),1);let winner=v>a?0:a>v?1:-1;if(winner!==-1){st.score[winner]++;st.first=winner}logit(`라운드 ${st.round}: 나 ${v} / AI ${a} — ${winner===0?'내 승':winner===1?'AI 승':'무승부'}`);if(st.round++>=9)finish(st.score[0]>st.score[1],`최종 ${st.score.join(' : ')}`);else st.aiPick=st.first===1?bwChoose(null):null;render()}
+// ───────────────────── 결! 합! (9장 카드, 27장 풀, 10라운드)
+const shapes=['●','▲','■'],colorPalette=['#ffae85','#a7e0ff','#d1abff'],backPalette=['#181a29','#4d5664','#e3e6ed'];
+function tripleAttrs(n){return [Math.floor(n/9),Math.floor(n/3)%3,n%3]}
+function ghValid(a,b,c){return [0,1,2].every(i=>{let x=[a,b,c].map(v=>tripleAttrs(v)[i]);return new Set(x).size===1||new Set(x).size===3})}
+function ghTriples(){let r=[];for(let a=0;a<9;a++)for(let b=a+1;b<9;b++)for(let c=b+1;c<9;c++)if(ghValid(st.cards[a],st.cards[b],st.cards[c])){let k=[a,b,c].map(x=>x+1).join('-');if(!st.found.includes(k))r.push({a:[a,b,c],k})}return r}
+function ghNew(){st.cards=shuffle(Array.from({length:27},(_,i)=>i)).slice(0,9);st.found=[];st.selected=[];st.pass=0;logit(`${st.round}라운드: 새로운 9장 공개`)}
+function initGH(){st={round:1,score:[0,0],cards:[],found:[],selected:[],pass:0};ghNew()}
+function drawGH(){stage(`<div class="toolbar"><span class="counter">${st.round} / 10 라운드</span></div>${scores(['나','AI'],st.score)}<div class="grid9" style="margin:20px 0">${st.cards.map((n,i)=>{let [shape,c,b]=tripleAttrs(n);return `<button class="shape ${st.selected.includes(i)?'selected':''}" style="background:${backPalette[b]};color:${colorPalette[c]}" onclick="ghSelect(${i})" ${finishText?'disabled':''}><i>${i+1}</i><span class="sym">${shapes[shape]}</span></button>`}).join('')}</div><div class="toolbar">${action('합! (3장 제출)','ghSubmit()',st.selected.length!==3)}${action('결! (남은 합 없음)','ghEnd()',false,'blue')}${action('패스','ghPass()',false,'alt')}</div><div class="info">선택 ${st.selected.map(i=>i+1).join(', ')||'없음'} · 이미 인정된 합 ${st.found.length}개 · 한 번 맞힌 조합은 재사용 불가</div>`,`${scores(['나','AI'],st.score)}<p class="muted">3가지 속성(모양, 모양색, 배경색)이 각각 모두 같거나 서로 달라야 합입니다.<br>합 정답 +1, 오답 -1 · 결 정답 +3, 오답 -1 · 10판 합산.</p><p class="small">원작의 10초 발언 제한은 단독 브라우저 사용을 위해 적용하지 않았습니다.</p>`)}
+function ghSelect(i){if(finishText)return;st.selected.includes(i)?st.selected.splice(st.selected.indexOf(i),1):st.selected.length<3&&st.selected.push(i);render()}
+function ghAi(){if(finishText)return;let t=ghTriples();if(!t.length){st.score[1]+=3;logit(`AI가 결 성공 (+3)`);ghNext();return}let answer=Math.random()<.8?pick(t):null;if(answer){st.found.push(answer.k);st.score[1]++;st.pass=0;logit(`AI가 ${answer.a.map(i=>i+1).join('·')} 합 성공 (+1)`)}else{st.pass++;logit('AI가 패스했습니다.')};if(st.pass>=6)ghNext()}
+function ghNext(){if(st.round>=10){finish(st.score[0]>st.score[1],`나 ${st.score[0]} : AI ${st.score[1]}`);return}st.round++;ghNew()}
+function ghSubmit(){if(finishText||st.selected.length!==3)return;let ids=[...st.selected].sort((a,b)=>a-b),k=ids.map(i=>i+1).join('-');let good=ghValid(...ids.map(i=>st.cards[i]))&&!st.found.includes(k);st.score[0]+=good?1:-1;if(good){st.found.push(k);st.pass=0}else st.pass++;logit(`${ids.map(i=>i+1).join('·')} 합 ${good?'성공 +1':'오답 -1'}`);st.selected=[];ghAi();render()}
+function ghEnd(){if(finishText)return;let remaining=ghTriples();if(!remaining.length){st.score[0]+=3;logit('결 정답 +3');ghNext()}else{st.score[0]--;logit(`결 오답 -1 (아직 ${remaining.length}개 조합)`);ghAi()}render()}
+function ghPass(){if(finishText)return;st.selected=[];st.pass++;logit('내가 패스했습니다.');if(st.pass>=6)ghNext();else ghAi();render()}
+// ───────────────────── 연승게임 (11명의 관전자와 두 도전자)
+const rpsNames=['가위','바위','보'];function rpsWin(a,b){return a===b?0:(a-b+3)%3===1?1:-1}
+function initStreak(){st={round:0,max:[0,0],now:[0,0],score:[0,0],guest:shuffle(Array.from({length:11},(_,i)=>'관전자 '+(i+1))),last:''}}
+function drawStreak(){stage(`<div class="toolbar"><span class="counter">${st.round+1>11?11:st.round+1} / 11명</span></div>${scores(['내 최장 연승','AI 최장 연승'],st.max)}<div class="info">${finishText?'11번의 대결이 종료됐습니다.':`${st.guest[st.round]}와 대결합니다. AI 데스매치 상대 역시 같은 관전자들과 독립적으로 가위바위보를 합니다.`}</div><div class="row">${rpsNames.map((x,i)=>action(x,`streakMove(${i})`)).join('')}</div><p class="muted">연승이 끊기더라도 11명 모두와 대결하며, 최대 연속 승리 횟수가 높은 사람이 승리합니다.</p>`,`${scores(['현재 내 연승','현재 AI 연승'],st.now)}`)}
+function streakMove(n){if(finishText)return;let opp=randint(3),bot=randint(3),brival=randint(3);let a=rpsWin(n,opp),b=rpsWin(bot,brival);st.now[0]=a===1?st.now[0]+1:0;st.now[1]=b===1?st.now[1]+1:0;st.max[0]=Math.max(st.max[0],st.now[0]);st.max[1]=Math.max(st.max[1],st.now[1]);logit(`${st.guest[st.round]}: 나 ${rpsNames[n]} vs ${rpsNames[opp]} → ${a===1?'승':a===0?'무':'패'} / AI ${b===1?'승':'비승'}`);if(++st.round===11)finish(st.max[0]>st.max[1],`최장 연승 나 ${st.max[0]} : AI ${st.max[1]}${st.max[0]===st.max[1]?' (동률)':''}`);render()}
+// ───────────────────── 1·2·3 게임 (13명·9장·카드 잔여 0점)
+function init123(){let people=['나',...Array.from({length:12},(_,i)=>'AI '+(i+1))];st={people,hands:people.map(()=>Array(3).fill(0).flatMap((_,i)=>Array(3).fill(i+1))),points:Array(13).fill(0),round:1,opp:1,card:1,offers:0}}
+function draw123(){let opts=st.people.map((p,i)=>({p,i,n:st.hands[i].length})).filter(x=>x.i&&x.n);stage(`<div class="toolbar"><span class="counter">내 카드 ${st.hands[0].length}장 남음</span><span class="counter">전체 참가자 13명</span></div>${scores(['내 승점','현재 최고 AI 승점'],[st.points[0],Math.max(...st.points.slice(1))])}<div class="info">다른 12명의 AI 중 대전 상대를 선택하고 숫자 카드를 1장 내세요. 종료 시 미사용 카드가 단 1장이라도 있으면 <b>0점</b>입니다.</div><div class="label">내 카드 선택</div><div class="row">${[1,2,3].map(n=>`<button class="tile ${st.card===n?'selected':''}" ${!st.hands[0].includes(n)||!!finishText?'disabled':''} onclick="st.card=${n};render()">${n} <span style="font-size:11px">×${st.hands[0].filter(x=>x===n).length}</span></button>`).join('')}</div><div class="toolbar"><select id="op123" class="inp" onchange="st.opp=Number(this.value)">${opts.map(x=>`<option value="${x.i}" ${st.opp===x.i?'selected':''}>${x.p} · ${x.n}장</option>`).join('')}</select>${action('1:1 대결','move123()',!st.hands[0].length||!opts.length)}${action('카드 맞교환 제안','trade123()',!opts.length,'alt')}</div><div class="small">※ 방송의 실시간 대화·협상·자유 양도는 AI의 카드 교환 수락 판정으로 제한되어 있습니다.</div>`,`<h3>참가자 순위</h3><div class="log" style="max-height:450px">${st.people.map((p,i)=>`<div>${p}: 승점 ${st.points[i]}, 남은 카드 ${st.hands[i].length}</div>`).join('')}</div>`)}
+function move123(){if(finishText||!st.hands[0].includes(st.card))return;let op=st.opp;if(!st.hands[op]?.length)op=st.hands.findIndex((h,i)=>i&&h.length);if(op<1)return;let theirs=pick(st.hands[op]),my=st.card;st.hands[0].splice(st.hands[0].indexOf(my),1);st.hands[op].splice(st.hands[op].indexOf(theirs),1);if(my>theirs)st.points[0]++;if(my<theirs)st.points[op]++;logit(`나(${my}) vs AI ${op}(${theirs}) → ${my>theirs?'승':my===theirs?'무':'패'}`);let bots=shuffle(Array.from({length:12},(_,i)=>i+1).filter(i=>i!==op&&st.hands[i].length));for(let j=0;j+1<bots.length;j+=2){let a=bots[j],b=bots[j+1],v=pick(st.hands[a]),w=pick(st.hands[b]);st.hands[a].splice(st.hands[a].indexOf(v),1);st.hands[b].splice(st.hands[b].indexOf(w),1);if(v>w)st.points[a]++;else if(w>v)st.points[b]++}st.round++;if(!st.hands[0].includes(st.card))st.card=st.hands[0][0]||1;if(!st.hands[0].length||st.round>=35||st.hands.slice(1).every(x=>!x.length)){let ranking=st.points.map((n,i)=>st.hands[i].length?0:n);let max=Math.max(...ranking);finish(ranking[0]===max&&ranking.filter(x=>x===max).length===1,`내 최종 ${ranking[0]}점 · 1위 ${st.people[ranking.indexOf(max)]}(${max}점)`)}render()}
+function trade123(){if(finishText||!st.hands[0].includes(st.card)||!st.hands[st.opp]?.length)return;let op=st.opp,accept=Math.random()<.72;if(accept){let them=pick(st.hands[op]);st.hands[0].splice(st.hands[0].indexOf(st.card),1);st.hands[op].splice(st.hands[op].indexOf(them),1);st.hands[0].push(them);st.hands[op].push(st.card);logit(`AI ${op}가 교환 수락: 내 ${st.card} ↔ AI ${them}`)}else logit(`AI ${op}가 카드 교환 거절`);render()}
+// ───────────────────── 인디언 포커 (1~10 × 2, 이마 카드 비공개, 칩 베팅)
+function initPoker(){st={chips:[25,25],deck:[],pot:0,carry:0,round:0,cards:[],contrib:[0,0],turn:0,checks:0,raises:0,last:''};pokerDeal()}
+function pokerDeal(){if(st.chips.some(x=>x<1)){finish(st.chips[0]>st.chips[1],`보유 칩: 나 ${st.chips[0]} / AI ${st.chips[1]}`);return}if(st.deck.length<2)st.deck=shuffle(Array.from({length:10},(_,i)=>[i+1,i+1]).flat());st.round++;st.cards=[st.deck.pop(),st.deck.pop()];st.chips[0]--;st.chips[1]--;st.contrib=[1,1];st.pot=st.carry+2;st.carry=0;st.checks=0;st.raises=0;st.turn=(st.round+1)%2;logit(`${st.round}번째 판 시작, 기본 칩 1씩 제출`);if(st.turn===1)pokerAI()}
+function drawPoker(){let deficit=st.contrib[1]-st.contrib[0],maxBet=st.chips[0];stage(`<div class="toolbar"><span class="counter">${st.round}번째 판</span><span class="counter">팟 ${st.pot}칩</span><span class="counter">남은 덱 ${st.deck.length}장</span></div>${scores(['내 칩','AI 칩'],st.chips)}<div class="label">AI의 이마에 붙은 카드 (내 카드만 비공개)</div><div class="row"><div class="tile white" style="display:grid;place-items:center;font-size:35px">${st.cards[1]}</div><div class="tile black" style="display:grid;place-items:center;font-size:28px">?</div></div><div class="info">${finishText?'게임 종료':`당신이 ${deficit?deficit+'칩을 맞추거나 포기해야 합니다.':'현재 같은 금액을 냈습니다. 체크·레이즈·다이를 선택하세요.'}`}</div><div class="toolbar">${action(deficit?`콜 (${deficit}칩)`:'체크',"pokerAct('call')",deficit>maxBet)}${action('레이즈 +1',"pokerAct('raise',1)",deficit+1>maxBet||st.raises>=4,'blue')}${action('레이즈 +3',"pokerAct('raise',3)",deficit+3>maxBet||st.raises>=4,'blue')}${action('다이 (포기)',"pokerAct('fold')",false,'red')}</div><p class="small">숫자 10을 가진 채 다이하면 10칩 페널티가 발생합니다. 같은 숫자면 팟이 다음 판으로 이월됩니다.</p>`,`${scores(['내 이번 판 베팅','AI 이번 판 베팅'],st.contrib)}<p class="muted">매 판 1칩 기본 베팅. 더 높은 숫자가 팟을 가져갑니다. 사용한 두 장은 덱에서 제거하며 덱 20장이 소진되면 다시 섞습니다.</p>`)}
+function pokerAct(type,amt=0){if(finishText||st.turn!==0)return;let deficit=st.contrib[1]-st.contrib[0];if(type==='fold'){pokerFold(0);render();return}if(type==='call'){if(deficit>st.chips[0])return;st.chips[0]-=deficit;st.contrib[0]+=deficit;st.pot+=deficit;if(deficit>0||++st.checks>=2){pokerShowdown();render();return}st.turn=1;pokerAI()}else{let pay=deficit+amt;if(st.chips[0]<pay)return;st.chips[0]-=pay;st.contrib[0]+=pay;st.pot+=pay;st.checks=0;st.raises++;st.turn=1;logit(`내가 ${pay}칩 추가 베팅`);pokerAI()}render()}
+function pokerFold(who){let other=1-who;st.chips[other]+=st.pot;let penalty=st.cards[who]===10?Math.min(10,st.chips[who]):0;st.chips[who]-=penalty;st.chips[other]+=penalty;logit(`${who===0?'내가':'AI가'} 다이 — 숨긴 카드 ${st.cards[who]}, 페널티 ${penalty}칩`);st.pot=0;pokerDeal()}
+function pokerShowdown(){let a=st.cards[0],b=st.cards[1];if(a>b)st.chips[0]+=st.pot;else if(b>a)st.chips[1]+=st.pot;else st.carry+=st.pot;logit(`공개: 나 ${a} / AI ${b} → ${a>b?'내 승':a<b?'AI 승':'무승부(이월)'}, 팟 ${st.pot}`);st.pot=0;pokerDeal()}
+function pokerAI(){if(finishText)return;let deficit=st.contrib[0]-st.contrib[1],myVisible=st.cards[0];let confidence=(10-myVisible)/9,draw=Math.random();let canPay=st.chips[1]>=deficit;if(!canPay){pokerFold(1);return}if(deficit>0){if(draw>.72+confidence*.22&&st.chips[1]>3){pokerFold(1);return}if(draw<.14&&st.raises<3&&st.chips[1]>=deficit+2){st.chips[1]-=deficit+2;st.contrib[1]+=deficit+2;st.pot+=deficit+2;st.turn=0;st.raises++;logit('AI가 2칩 더 레이즈');return}st.chips[1]-=deficit;st.contrib[1]+=deficit;st.pot+=deficit;pokerShowdown();return}if(draw<confidence*.25&&st.chips[1]>=2&&st.raises<3){st.chips[1]-=2;st.contrib[1]+=2;st.pot+=2;st.turn=0;st.raises++;logit('AI가 2칩 레이즈');return}if(++st.checks>=2){pokerShowdown();return}st.turn=0;logit('AI 체크')}
+// ───────────────────── 마이너스 경매 (6인, 9개 칩, -3~-35, 히든 1개)
+function initAuction(){let cubes=shuffle(Array.from({length:33},(_,i)=>i+3));st={players:Array.from({length:6},(_,i)=>i===0?'나':'AI '+i),chips:Array(6).fill(9),owned:Array.from({length:6},()=>[]),remaining:cubes.slice(1),hidden:cubes[0],cube:cubes[1],pool:0,turn:randint(6),step:1};st.remaining.splice(0,1);auctionAuto()}
+function auctionScore(i){let cubes=st.owned[i].slice().sort((a,b)=>a-b),loss=0;for(let j=0;j<cubes.length;j++)if(j===0||cubes[j]!==cubes[j-1]+1)loss+=cubes[j];return st.chips[i]-loss}
+function auctionTake(i){st.owned[i].push(st.cube);st.chips[i]+=st.pool;logit(`${st.players[i]} 낙찰: -${st.cube}, 누적 칩 ${st.pool}개 수령`);st.pool=0;if(!st.remaining.length){let a=st.players.map((_,j)=>auctionScore(j)),high=Math.max(...a);finish(a[0]===high&&a.indexOf(high)===0&&a.filter(x=>x===high).length===1,`나 ${a[0]}점 · 1위 ${st.players[a.indexOf(high)]} ${high}점 · 숨겨진 큐브 -${st.hidden}`);return}st.cube=st.remaining.shift();st.step++;st.turn=i}
+function auctionPass(i){st.chips[i]--;st.pool++;st.turn=(i+1)%6}
+function auctionAuto(){let guard=0;while(!finishText&&st.turn!==0&&guard++<1000){let i=st.turn,now=auctionScore(i),newOwn=[...st.owned[i],st.cube].sort((a,b)=>a-b);let scoreIfTake=st.chips[i]+st.pool-newOwn.reduce((sum,v,j)=>sum+(j===0||v!==newOwn[j-1]+1?-v:0),0);let marginal=scoreIfTake-now;let take=st.chips[i]<=0||marginal>-.5||Math.random()<.018;if(take)auctionTake(i);else auctionPass(i)}if(guard>=1000&&!finishText)finish(null,'비정상적인 경매 반복으로 중단됨')}
+function drawAuction(){let remaining=st.remaining.length+ (finishText?0:1);stage(`<div class="toolbar"><span class="counter">${st.step} / 32 경매</span><span class="counter">남은 물품 ${remaining}개</span></div><div class="auction-head">-${st.cube}</div><div class="info">현재 큐브를 거부하면 칩 1개를 내고 다음 사람으로 넘어갑니다. 낙찰받으면 큐브와 쌓인 칩 ${st.pool}개를 받습니다.</div><div class="toolbar"><span class="counter">현재 쌓인 칩 ${st.pool}</span>${action('낙찰받기','auctionMove(true)')}${action('거부 · 칩 1개','auctionMove(false)',st.chips[0]===0,'alt')}</div><div class="pills">${st.owned[0].slice().sort((a,b)=>a-b).map(x=>`<span class="pill">-${x}</span>`).join('')||'<span class="muted">내 낙찰 물품 없음</span>'}</div><p class="muted">연속된 숫자는 첫 숫자(절댓값이 작은 숫자)만 감점됩니다. 최종 점수 = 남은 칩 − 보유 숫자큐브 점수 합.</p>`,`<h3>현재 순위 (중간 점수)</h3>${scores(st.players,st.players.map((_,i)=>auctionScore(i)))}<p class="small">방송에 있는 가넷을 대신 사용하는 선택지는 제공하지 않습니다.</p>`)}
+function auctionMove(take){if(finishText||st.turn!==0)return;if(take)auctionTake(0);else{if(!st.chips[0])return;auctionPass(0)}auctionAuto();render()}
+// ───────────────────── 나인 멘스 모리스: 24곳, 각 9개, 3줄 완성시 제거, 이동 및 날기
+const mmCoords=[[0,0],[3,0],[6,0],[6,3],[6,6],[3,6],[0,6],[0,3],[1,1],[3,1],[5,1],[5,3],[5,5],[3,5],[1,5],[1,3],[2,2],[3,2],[4,2],[4,3],[4,4],[3,4],[2,4],[2,3]];
+const mmEdges=[];for(let ring=0;ring<3;ring++)for(let i=0;i<8;i++)mmEdges.push([ring*8+i,ring*8+(i+1)%8]);for(let p of [1,3,5,7]){mmEdges.push([p,8+p],[8+p,16+p])}
+const mmMills=[];for(let r=0;r<3;r++)for(let p of [0,2,4,6])mmMills.push([r*8+p,r*8+(p+1)%8,r*8+(p+2)%8]);for(let p of [1,3,5,7])mmMills.push([p,8+p,16+p]);
+function initMorris(){st={board:Array(24).fill(0),placed:[0,0],turn:1,selected:-1,removing:0,moveCount:0};}
+function mmMill(b,i,owner){return mmMills.some(row=>row.includes(i)&&row.every(x=>b[x]===owner))}
+function mmCanRemove(owner){let occupied=st.board.map((v,i)=>v===owner?i:-1).filter(x=>x>=0),free=occupied.filter(i=>!mmMill(st.board,i,owner));return free.length?free:occupied}
+function mmMoves(owner){let phase=st.placed[owner-1]<9?'place':'move';if(phase==='place')return st.board.map((v,i)=>!v?[-1,i]:null).filter(Boolean);let count=st.board.filter(x=>x===owner).length,fly=count<=3;let moves=[];for(let i=0;i<24;i++)if(st.board[i]===owner)for(let j=0;j<24;j++)if(!st.board[j]&&(fly||mmEdges.some(([a,b])=>a===i&&b===j||a===j&&b===i)))moves.push([i,j]);return moves}
+function mmTerminal(){if(st.placed[0]<9||st.placed[1]<9)return;let me=st.board.filter(x=>x===1).length,ai=st.board.filter(x=>x===2).length;if(ai<3){finish(true,'AI의 말이 두 개 이하입니다.');return}if(me<3){finish(false,'내 말이 두 개 이하입니다.');return}if(!mmMoves(1).length){finish(false,'움직일 수 있는 내 말이 없습니다.');return}if(!mmMoves(2).length){finish(true,'AI가 움직일 수 있는 말이 없습니다.');return}if(st.moveCount>=250)finish(null,'250수 무승부 판정 (무한 대국 방지용)')}
+function mmDoMove(owner,move){let [from,to]=move;if(from===-1)st.placed[owner-1]++;else st.board[from]=0;st.board[to]=owner;st.moveCount++;return mmMill(st.board,to,owner)}
+function mmAIMove(){mmTerminal();if(finishText)return;let moves=mmMoves(2);if(!moves.length){finish(true,'AI는 더 이상 이동할 수 없습니다.');return}let oppMills=new Set(mmMoves(1).filter(([f,t])=>{let b=st.board.slice();if(f!==-1)b[f]=0;b[t]=1;return mmMill(b,t,1)}).map(x=>x[1]));let options=moves.map(m=>{let b=st.board.slice();if(m[0]!==-1)b[m[0]]=0;b[m[1]]=2;let win=mmMill(b,m[1],2)?100:0;let block=oppMills.has(m[1])?45:0;let align=mmMills.filter(line=>line.includes(m[1])).reduce((n,row)=>n+row.filter(x=>b[x]===2).length,0);return {m,score:win+block+align*4+Math.random()*10}});options.sort((a,b)=>b.score-a.score);let best=options[0].m,mill=mmDoMove(2,best);logit(`AI ${best[0]===-1?'배치':'이동'} → ${best[1]+1}번 위치`);if(mill){let victims=mmCanRemove(1);if(victims.length){let k=pick(victims);st.board[k]=0;logit(`AI가 3개 연결 후 내 ${k+1}번 말을 제거`)}}st.turn=1;mmTerminal()}
+function mmClick(i){if(finishText||st.turn!==1)return;if(st.removing){let targets=mmCanRemove(2);if(!targets.includes(i))return;st.board[i]=0;st.removing=0;st.selected=-1;st.turn=2;logit(`내가 AI의 ${i+1}번 말을 제거`);mmTerminal();if(!finishText)mmAIMove();render();return}let options=mmMoves(1);if(st.placed[0]<9){if(st.board[i])return;let mill=mmDoMove(1,[-1,i]);logit(`내 말 배치 → ${i+1}번`);if(mill&&mmCanRemove(2).length)st.removing=1;else{st.turn=2;mmAIMove()}}else{if(st.board[i]===1){st.selected=i;render();return}if(st.selected<0||!options.some(([a,b])=>a===st.selected&&b===i))return;let from=st.selected;st.selected=-1;let mill=mmDoMove(1,[from,i]);logit(`내 말 이동: ${from+1} → ${i+1}`);if(mill&&mmCanRemove(2).length)st.removing=1;else{st.turn=2;mmAIMove()}}mmTerminal();render()}
+function drawMorris(){let b=st.board;let allowed=st.removing?mmCanRemove(2):st.placed[0]<9?mmMoves(1).map(x=>x[1]):st.selected>=0?mmMoves(1).filter(x=>x[0]===st.selected).map(x=>x[1]):b.map((v,i)=>v===1?i:-1).filter(x=>x>=0);const svg=`<svg viewBox="0 0 100 100" class="mm-line" aria-hidden="true"><g stroke="#8193ac" stroke-width=".45" fill="none">${mmEdges.map(([a,z])=>{let [x,y]=mmCoords[a],[xx,yy]=mmCoords[z];return `<line x1="${8+x*14}" y1="${8+y*14}" x2="${8+xx*14}" y2="${8+yy*14}" />`}).join('')}</g></svg>`;stage(`<div class="toolbar"><span class="counter">나 ${st.placed[0]}/9개 배치</span><span class="counter">AI ${st.placed[1]}/9개 배치</span><span class="counter">내 말 ${b.filter(x=>x===1).length}개</span><span class="counter">AI 말 ${b.filter(x=>x===2).length}개</span></div><div class="info">${finishText?'대국 종료':st.removing?'세 개를 연결했습니다! AI 말 하나를 선택해 제거하세요.':st.placed[0]<9?'빈 교차점에 내 말을 하나 놓으세요.':st.selected<0?'움직일 내 말을 선택하세요.':'이동할 빈 인접 교차점을 누르세요.'}</div><div class="mm">${svg}${mmCoords.map(([x,y],i)=>`<button aria-label="위치 ${i+1}" title="${i+1}번" class="mm-point ${b[i]?'p'+b[i]:''} ${st.selected===i?'selected':''} ${allowed.includes(i)?'ok':''}" style="left:${8+x*14}%;top:${8+y*14}%" onclick="mmClick(${i})" ${finishText?'disabled':''}><label>${b[i]===1?'●':b[i]===2?'◆':''}</label></button>`).join('')}</div><div class="muted">초록색 ●: 나 · 분홍색 ◆: AI · 강조 테두리: 선택 가능한 칸</div>`,`<p class="muted">배치가 끝나면 선을 따라 인접 점으로 이동합니다. 자신의 말이 3개만 남으면 빈 점 어디든 이동할 수 있습니다. 세 말을 한 줄로 만들면 상대의 말을 하나 제거합니다.</p><p class="small">방송 결승 대결인 나인 멘스 모리스의 전통 표준 규칙입니다. 결승 아이템은 포함하지 않았습니다.</p>`)}
+// ───────────────────── 콰트로 (41장, 11명 관전, 11번 교환)
+function qCard(v){return v.zero?{n:0,color:-1}:v}const qColors=['#ef9290','#a0c7ef','#92d7b4','#ffd98b'];
+function qHTML(card,open=false){if(!card)return '?';return `<div style="display:inline-grid;place-items:center;width:46px;height:60px;border:2px solid ${card.zero?'#fff':qColors[card.color]};border-radius:9px;color:${card.zero?'white':qColors[card.color]};font-size:22px;font-weight:900;background:#0e1826">${open?'▧':card.zero?'0':card.n}</div>`}
+function initQuattro(){let deck=shuffle([...Array.from({length:4},(_,color)=>Array.from({length:10},(_,i)=>({n:i+1,color}))).flat(),{n:0,color:-1,zero:true}]);st={my:deck.splice(0,4),ai:deck.splice(0,4),spec:Array.from({length:11},()=>deck.splice(0,3)),opened:0,mask:[[],[]],used:[],aiUsed:[],chosen:0,swap:0,last:''}}
+function qScore(hand){if(hand.some(x=>x.zero)||new Set(hand.map(x=>x.color)).size!==4||new Set(hand.map(x=>x.n)).size!==4)return -1;return hand.reduce((a,b)=>a+b.n,0)}
+function drawQuattro(){let unopened=[0,1,2,3].filter(x=>!st.mask[0].includes(x));stage(`<div class="toolbar"><span class="counter">공개 ${st.opened}/4장</span><span class="counter">관전자 교환 ${st.swap}/11회</span></div><div class="label">내 카드 (선택한 카드는 다음 공개 또는 교환 대상)</div><div class="row">${st.my.map((c,i)=>`<button style="border:0;background:none;opacity:${st.mask[0].includes(i)?.55:1};outline:${st.chosen===i?'2px solid #d7ff8e':'none'};border-radius:10px;padding:5px" onclick="qChoose(${i})">${qHTML(c)}</button>`).join('')}</div><div class="label" style="margin-top:15px">AI 공개 카드</div><div class="row">${st.ai.map((c,i)=>qHTML(st.mask[1].includes(i)?c:null,!st.mask[1].includes(i))).join('')}</div><div class="info">4장 숫자와 색이 모두 달라야 합니다. 0카드는 데스매치 버전에서 무조건 실패입니다. 4장 공개 전에 관전자 11명 각각과 1회씩 교환해야 합니다.</div><div class="toolbar"><select class="inp" id="qSpec">${st.spec.map((_,i)=>`<option value="${i}" ${st.used.includes(i)?'disabled':''}>관전자 ${i+1}${st.used.includes(i)?' (교환함)':''}</option>`).join('')}</select>${action('선택 카드 교환','qSwap()',st.used.length===11||st.mask[0].includes(st.chosen))}${action('선택 카드 공개','qReveal()',st.opened===3&&st.swap<11||st.mask[0].includes(st.chosen),'blue')}</div><p class="small">관전자 AI가 돌려주는 카드 역시 비공개 제안이며, 교환 후 내 손에 들어오면 값을 확인할 수 있습니다.</p>`,`<p class="muted">총 41장: 1~10 숫자에 4가지 색, 0 카드 1장. 두 결승 후보가 각각 4장, 관전자 11명이 각 3장을 받습니다. 공개한 카드는 교환 불가.</p>${scores(['내 교환 횟수','AI 교환 횟수'],[st.swap,st.aiUsed.length])}`)}
+function qChoose(i){if(finishText||st.mask[0].includes(i))return;st.chosen=i;render()}
+function qSwap(){if(finishText||st.used.length===11||st.mask[0].includes(st.chosen))return;let sel=$('#qSpec');if(!sel)return;let s=Number(sel.value);if(st.used.includes(s)||!st.spec[s].length)return;st.used.push(s);st.swap++;let pickcard=randint(st.spec[s].length),old=st.my[st.chosen],newcard=st.spec[s][pickcard];st.my[st.chosen]=newcard;st.spec[s][pickcard]=old;logit(`관전자 ${s+1}와 카드 교환 (${old.n} → ${newcard.n})`);render()}
+function qAiDo(){let need=[4,4,3,0][st.opened];for(let j=0;j<need;j++){let candidates=Array.from({length:11},(_,i)=>i).filter(x=>!st.aiUsed.includes(x)),s=pick(candidates);if(s===undefined)break;st.aiUsed.push(s);let hidden=[0,1,2,3].filter(x=>!st.mask[1].includes(x)),i=pick(hidden),p=randint(st.spec[s].length),old=st.ai[i];st.ai[i]=st.spec[s][p];st.spec[s][p]=old}}
+function qReveal(){if(finishText||st.mask[0].includes(st.chosen)||st.opened===3&&st.swap<11)return;qAiDo();let my=st.chosen,ai=pick([0,1,2,3].filter(x=>!st.mask[1].includes(x)));st.mask[0].push(my);st.mask[1].push(ai);st.opened++;logit(`${st.opened}장 공개: 나 ${st.my[my].n} / AI ${st.ai[ai].n}`);if(st.opened===4){let a=qScore(st.my),b=qScore(st.ai),winner=a>b?true:a<b?false:a<0?null:Math.max(...st.my.map(x=>x.n))>Math.max(...st.ai.map(x=>x.n))?true:Math.max(...st.my.map(x=>x.n))<Math.max(...st.ai.map(x=>x.n))?false:null;finish(winner,`나 ${a>=0?a+'점':'콰트로 실패'} / AI ${b>=0?b+'점':'콰트로 실패'}`)}else st.chosen=[0,1,2,3].find(x=>!st.mask[0].includes(x));render()}
+// ───────────────────── 십이장기 / 3열 × 4행, 포로 재투하 및 1칸 이동
+const jangSymbols={K:'왕',G:'장',M:'상',P:'자',F:'후'};
+function initJang(){let b=Array(12).fill(null);[[0,2,'G'],[1,2,'K'],[2,2,'M'],[4,2,'P'],[9,1,'M'],[10,1,'K'],[11,1,'G'],[7,1,'P']].forEach(([at,side,kind])=>b[at]={side,kind});st={board:b,hand:[[],[]],selection:null,turn:1,goal:0,moves:0};}
+function jangDeltas(side,kind){let dirs={K:[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],G:[[-1,0],[1,0],[0,-1],[0,1]],M:[[-1,-1],[-1,1],[1,-1],[1,1]],P:[[side===1?-1:1,0]],F:[[-1,0],[1,0],[0,-1],[0,1],[side===1?-1:1,-1],[side===1?-1:1,1]]};return dirs[kind]}
+function jangMoves(side){let b=st.board, all=[];for(let i=0;i<12;i++)if(b[i]?.side===side){let row=Math.floor(i/3),col=i%3;for(let [dy,dx] of jangDeltas(side,b[i].kind)){let y=row+dy,x=col+dx,j=y*3+x;if(x>=0&&x<3&&y>=0&&y<4&&b[j]?.side!==side)all.push({from:i,to:j})}}let reserve=[...new Set(st.hand[side-1])];for(let kind of reserve)for(let i=0;i<12;i++)if(!b[i]&&(side===1?Math.floor(i/3)!==0:Math.floor(i/3)!==3))all.push({from:-1,to:i,kind});return all}
+function jangPlay(side,m){let b=st.board;if(m.from===-1){let idx=st.hand[side-1].indexOf(m.kind);if(idx<0)return false;st.hand[side-1].splice(idx,1);b[m.to]={side,kind:m.kind};logit(`${side===1?'나':'AI'} ${jangSymbols[m.kind]} 말 투하 → ${m.to+1}번`)}else{let piece=b[m.from],taken=b[m.to];if(!piece||piece.side!==side)return false;if(taken){if(taken.kind==='K'){b[m.to]={...piece};b[m.from]=null;finish(side===1,`상대 왕을 잡았습니다. ${side===1?'나':'AI'} 승리`);return true}st.hand[side-1].push(taken.kind==='F'?'P':taken.kind);logit(`${side===1?'나':'AI'} ${jangSymbols[taken.kind]} 포획`)}b[m.to]=piece;b[m.from]=null;if(piece.kind==='P'&&(side===1?Math.floor(m.to/3)===0:Math.floor(m.to/3)===3))piece.kind='F';logit(`${side===1?'나':'AI'} 이동 ${m.from+1}→${m.to+1}`)}st.moves++;if(st.goal&&st.goal!==side){let king=b.findIndex(p=>p&&p.side===st.goal&&p.kind==='K');let dangerRow=st.goal===1?0:3;if(king>=0&&Math.floor(king/3)===dangerRow){finish(st.goal===1,`${st.goal===1?'내':'AI'} 왕이 상대 진영에서 한 턴 생존했습니다.`);return true}st.goal=0}let kingPos=b.findIndex(p=>p&&p.side===side&&p.kind==='K');if(kingPos>=0&&Math.floor(kingPos/3)===(side===1?0:3))st.goal=side;if(st.moves>=220&&!finishText)finish(null,'220수 무승부 (반복 방지)');return true}
+function jangAI(){if(finishText)return;let moves=jangMoves(2);if(!moves.length){finish(true,'AI가 움직일 수 있는 수가 없습니다.');return}let threats=new Set(jangMoves(1).map(m=>m.to));let evaluated=moves.map(m=>{let v=Math.random()*10;if(m.from!==-1){let captured=st.board[m.to];if(captured)v+={K:10000,G:40,M:40,P:15,F:60}[captured.kind];if(st.board[m.from].kind==='P'&&Math.floor(m.to/3)===3)v+=40;if(st.board[m.from].kind==='K'&&Math.floor(m.to/3)===3)v+=300;if(threats.has(m.to)&&st.board[m.from].kind==='K')v-=60}else v+=12;return {m,v}}).sort((a,b)=>b.v-a.v);jangPlay(2,evaluated[0].m);st.turn=1;st.selection=null;}
+function jangSelect(pos){if(finishText||st.turn!==1)return;let b=st.board;if(typeof pos==='string'){let kind=pos.slice(2);if(st.hand[0].includes(kind))st.selection={from:-1,kind};render();return}let moves=jangMoves(1),sel=st.selection;if(sel&&moves.some(m=>m.to===pos&&m.from===sel.from&&(m.from!==-1||m.kind===sel.kind))){let move=moves.find(m=>m.to===pos&&m.from===sel.from&&(m.from!==-1||m.kind===sel.kind));st.selection=null;jangPlay(1,move);if(!finishText){st.turn=2;jangAI()}}else if(b[pos]?.side===1)st.selection={from:pos};render()}
+function drawJang(){let moves=jangMoves(1),sel=st.selection,target=sel?moves.filter(m=>m.from===sel.from&&(sel.from!==-1||m.kind===sel.kind)).map(m=>m.to):[],b=st.board;stage(`<div class="toolbar"><span class="counter">차례 ${st.moves+1}</span><span class="counter">내 포로 ${st.hand[0].length}개</span><span class="counter">AI 포로 ${st.hand[1].length}개</span></div><div class="info">${finishText?'대국 종료':sel?'밝은 테두리의 목적지에 이동하거나 투하하세요.':'내 말을 먼저 선택하거나 아래 포로 말을 선택하세요.'}</div><div class="grid9" style="grid-template-columns:repeat(3,1fr);max-width:400px">${b.map((x,i)=>`<button onclick="jangSelect(${i})" class="tile ${x?.side===1?'white':x?.side===2?'black':''} ${target.includes(i)?'selected':''}" style="height:86px" ${finishText?'disabled':''}>${x?jangSymbols[x.kind]:target.includes(i)?'·':''}${x?`<div style="font-size:10px">${x.side===1?'나':'AI'}</div>`:''}</button>`).join('')}</div><div class="label">내 포로 말 (클릭 후 빈칸에 재투하)</div><div class="row">${st.hand[0].map((x,i)=>`<button class="btn alt" onclick="jangSelect('P:${x}')">${jangSymbols[x]}</button>`).join('')||'<span class="muted">없음</span>'}</div><p class="muted">왕(8방향), 장(상하좌우), 상(대각선), 자(전진), 후(전진·좌우·후진 직선·전진 대각). 상대 말을 잡으면 포로로 가져와 다시 배치할 수 있습니다.</p>`,`<p class="muted">상대 왕을 잡거나 내 왕을 적 진영으로 진입시킨 뒤 한 턴 살아남으면 승리합니다.</p><p class="small">방송의 90초 턴 제한·특수 아이템은 현재 미적용. 이동 및 포획 핵심 규칙과 포로 재투하를 구현했습니다.</p>`)}
+// ───────────────────── 헥사곤: 19칸 정육각 보드·세 칸 일직선 합
+const hexCells=(()=>{let a=[];for(let r=-2;r<=2;r++)for(let q=-2;q<=2;q++)if(Math.abs(q+r)<=2)a.push({q,r,letter:String.fromCharCode(65+a.length)});return a})();
+const hexLines=(()=>{let out=[];for(let i=0;i<19;i++)for(let [dq,dr] of [[1,0],[0,1],[1,-1]]){let a=hexCells[i],ids=[[a.q,a.r],[a.q+dq,a.r+dr],[a.q+2*dq,a.r+2*dr]].map(([q,r])=>hexCells.findIndex(x=>x.q===q&&x.r===r));if(ids.every(x=>x!==-1))out.push(ids)}return out})();
+let hexClock=null;
+function initHex(){st={round:1,score:[0,0],selected:[],numbers:[],target:0,found:[],phase:'reveal',remaining:30};hexNew()}
+function hexNew(){st.numbers=Array.from({length:19},()=>rand(1,9));st.found=[];st.selected=[];st.phase='reveal';st.remaining=30;let sums=hexLines.map(line=>line.reduce((s,i)=>s+st.numbers[i],0));st.target=pick(sums);hexStartClock();logit(`${st.round}라운드: 숫자 19개 암기 시작`)}
+function hexStartClock(){clearInterval(hexClock);hexClock=setInterval(()=>{if(current!=='헥사곤'||finishText){clearInterval(hexClock);return}if(--st.remaining<=0){clearInterval(hexClock);if(st.phase==='reveal'){st.phase='answer';st.remaining=90;hexStartClock()}else{hexNext();return}}render()},1000)}
+function hexNext(){clearInterval(hexClock);if(st.round>=10){finish(st.score[0]>st.score[1],`10라운드 누적: 나 ${st.score[0]} / AI ${st.score[1]}`);render();return}st.round++;hexNew();render()}
+function hexValid(ids){let key=[...ids].sort((a,b)=>a-b).join('-');return hexLines.some(line=>[...line].sort((a,b)=>a-b).join('-')===key)&&ids.reduce((s,i)=>s+st.numbers[i],0)===st.target&&!st.found.includes(key)}
+function hexSelect(i){if(finishText||st.phase!=='answer')return;let p=st.selected.indexOf(i);if(p>=0)st.selected.splice(p,1);else if(st.selected.length<3)st.selected.push(i);render()}
+function hexAnswer(){if(finishText||st.phase!=='answer'||st.selected.length!==3)return;let ids=[...st.selected],key=ids.slice().sort((a,b)=>a-b).join('-'),okay=hexValid(ids);st.score[0]+=okay?1:-1;if(okay)st.found.push(key);logit(`내 답 ${ids.map(i=>hexCells[i].letter).join('')} → ${okay?'정답 +1':'오답 -1'}`);st.selected=[];hexAI();render()}
+function hexAI(){let available=hexLines.filter(line=>line.reduce((s,i)=>s+st.numbers[i],0)===st.target&&!st.found.includes([...line].sort((a,b)=>a-b).join('-')));if(available.length&&Math.random()<.57){let l=pick(available),key=[...l].sort((a,b)=>a-b).join('-');st.found.push(key);st.score[1]++;logit(`AI 답 ${l.map(i=>hexCells[i].letter).join('')} → 정답 +1`)}if(st.found.length===hexLines.filter(line=>line.reduce((s,i)=>s+st.numbers[i],0)===st.target).length)hexNext()}
+function drawHex(){let rows=[[],[],[],[],[]];hexCells.forEach((x,i)=>rows[x.r+2].push({x,i}));stage(`<div class="toolbar"><span class="counter">${st.round}/10 라운드</span><span class="counter">${st.phase==='reveal'?'기억 시간':'정답 시간'} ${st.remaining}초</span></div>${scores(['나','AI'],st.score)}<div class="info">${st.phase==='reveal'?'19개 숫자를 30초 동안 암기하세요. 시간이 끝나면 숫자가 알파벳으로 바뀝니다.':`타깃 넘버 ${st.target} · 가로 또는 대각선으로 연속된 세 칸의 합이 이 숫자가 되는 조합을 찾으세요.`}</div><div style="margin:18px auto;max-width:550px">${rows.map(row=>`<div class="row" style="justify-content:center;gap:5px;margin:5px 0">${row.map(({x,i})=>`<button onclick="hexSelect(${i})" ${st.phase==='reveal'||!!finishText?'disabled':''} style="height:63px;width:68px;border:2px solid ${st.selected.includes(i)?'#d7ff8e':'#7797ba'};background:#293d56;color:white;clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);font-size:17px;font-weight:900">${st.phase==='reveal'?st.numbers[i]:x.letter}</button>`).join('')}</div>`).join('')}</div>${st.phase==='answer'?`<div class="toolbar">${action('세 칸 제출', 'hexAnswer()',st.selected.length!==3)}</div>`:''}<p class="small">10라운드의 숫자 암기/정답 제출. 같은 답 중복 제출·직선이 아닌 조합은 오답 처리합니다. 90초간 정답을 내지 않으면 다음 라운드로 넘어갑니다.</p>`,`<div class="info">현재 상태: ${st.phase==='reveal'?'암기':'답 입력'}</div><p class="muted">타깃은 암기가 끝난 뒤 공개됩니다. 맞힌 조합은 게임판에서 제거하거나 표시하지 않습니다.</p>`)}
+
+
+// ───────────────────── 같은 숫자 찾기 (블랙가넷 결승전)
+// Official tvN rules: https://tvn.cjenm.com/ko/thegenius3/contents3/
+let memoryClock=null;
+function memoryCalc(a,op,b){if(op==='+')return a+b;if(op==='-')return a-b;if(op==='×')return a*b;if(op==='÷')return a/b;return NaN}
+function memoryOptions(){let opts=[];for(let a=0;a<16;a++)for(let b=0;b<16;b++){if(a===b||typeof st.deck[a]!=='number'||typeof st.deck[b]!=='number')continue;for(let op=0;op<16;op++){if(typeof st.deck[op]!=='string')continue;let v=memoryCalc(st.deck[a],st.deck[op],st.deck[b]);if(Number.isInteger(v)&&v>0)opts.push({target:v,indices:[a,op,b]})}}return opts}
+function initMemory(){let order=shuffle([...Array.from({length:12},(_,i)=>i+1),'+','-','×','÷']);st={deck:order,score:[0,0],phase:'reveal',seconds:5,selected:[],round:0,target:0,usedTargets:[],tries:0,opponentDelay:3};memoryClockStart()}
+function memoryClockStart(){clearInterval(memoryClock);memoryClock=setInterval(()=>{if(current!=='같은 숫자 찾기'||finishText){clearInterval(memoryClock);return}if(st.phase==='reveal'){if(--st.seconds<=0)memoryNext()}else if(st.phase==='buzz'){if(--st.seconds<=0){st.phase='ai';st.seconds=2}}else if(st.phase==='answer'){if(--st.seconds<=0){st.selected=[];st.phase='ai';st.seconds=2;logit('5초가 경과해 AI에게 기회가 넘어갑니다.')}}else if(st.phase==='ai'){if(--st.seconds<=0)memoryAIMove()}render()},1000)}
+function memoryNext(){if(finishText)return;st.round++;st.selected=[];st.tries=0;let valid=memoryOptions(),unused=[...new Set(valid.map(x=>x.target))].filter(x=>!st.usedTargets.includes(x));if(!unused.length)st.usedTargets=[];let targets=unused.length?unused:[...new Set(valid.map(x=>x.target))];st.target=pick(targets);st.usedTargets.push(st.target);st.phase='buzz';st.seconds=rand(4,7);logit(`${st.round}라운드 목표 숫자: ${st.target}`)}
+function memoryBuzz(){if(finishText||st.phase!=='buzz')return;st.phase='answer';st.seconds=5;st.selected=[];render()}
+function memorySelect(i){if(finishText||st.phase!=='answer'&&st.phase!=='free')return;if(st.selected.includes(i))st.selected.splice(st.selected.indexOf(i),1);else if(st.selected.length<3)st.selected.push(i);render()}
+function memorySubmit(){if(finishText||(st.phase!=='answer'&&st.phase!=='free')||st.selected.length!==3)return;let [a,op,b]=st.selected;let v=st.deck[a],o=st.deck[op],w=st.deck[b],valid=typeof v==='number'&&typeof w==='number'&&typeof o==='string'&&memoryCalc(v,o,w)===st.target;logit(`내가 ${'ABCDEFGHIJKLMNOP'[a]}·${'ABCDEFGHIJKLMNOP'[op]}·${'ABCDEFGHIJKLMNOP'[b]} 선택 → ${v} ${o} ${w} = ${memoryCalc(v,o,w)} (${valid?'정답':'오답'})`);st.selected=[];if(valid){st.score[0]++;memoryPoint()}else{st.phase='ai';st.seconds=2}render()}
+function memoryAIMove(){let correct=Math.random()<.73,opts=memoryOptions().filter(x=>x.target===st.target),sol=pick(opts);if(correct&&sol){st.score[1]++;logit(`AI가 ${sol.indices.map(i=>st.deck[i]).join(' / ')} 정답 (+1)`);memoryPoint()}else{st.tries++;logit('AI가 오답을 선택했습니다. 내게 다시 답변 기회가 주어집니다.');st.phase='free';st.seconds=0}}
+function memoryPoint(){if(st.score[0]>=10||st.score[1]>=10){finish(st.score[0]>=10,`최종 나 ${st.score[0]}점, AI ${st.score[1]}점`);clearInterval(memoryClock)}else memoryNext()}
+function drawMemory(){let labels='ABCDEFGHIJKLMNOP',revealed=st.phase==='reveal';let turnMessage=st.phase==='reveal'?`${st.seconds}초 동안 숫자와 연산기호의 위치를 외우세요.`:st.phase==='buzz'?`목표 숫자 ${st.target} · 버저를 누르세요. AI도 버저를 노리고 있습니다.`:st.phase==='answer'?`목표 ${st.target} · 남은 ${st.seconds}초. 숫자 → 기호 → 숫자 순서로 선택하세요.`:st.phase==='ai'?`AI가 목표 숫자 ${st.target}의 수식을 찾는 중입니다.`:`목표 ${st.target} · AI 오답! 시간 제한 없이 수식을 제출할 수 있습니다.`;stage(`<div class="toolbar"><span class="counter">라운드 ${st.round||'준비'}</span><span class="counter">${st.phase==='reveal'?'암기':st.phase==='buzz'?'버저 경쟁':st.phase==='answer'?'수식 제출':st.phase==='ai'?'AI 차례':'내 차례'}</span></div>${scores(['나','AI'],st.score)}<div class="info">${finishText?'게임 종료':turnMessage}</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:450px;margin:20px 0">${st.deck.map((v,i)=>`<button class="tile ${st.selected.includes(i)?'selected':''}" style="height:68px" onclick="memorySelect(${i})" ${st.phase!=='answer'&&st.phase!=='free'||!!finishText?'disabled':''}><small style="display:block;font-size:11px;color:#9eb4d2">${labels[i]}</small>${revealed?v:st.selected.includes(i)?'✓':'?'}</button>`).join('')}</div><div class="toolbar">${st.phase==='buzz'?action('버저 누르기','memoryBuzz()'):''}${st.phase==='answer'||st.phase==='free'?action('수식 제출','memorySubmit()',st.selected.length!==3):''}</div><div class="pills">${st.selected.map(i=>`<span class="pill">${labels[i]} 선택</span>`).join('')}</div><p class="small">두 숫자는 서로 다른 패널이어야 합니다. 타깃은 사용 가능한 식의 자연수 중에서 중복 없이 등장합니다.</p>`,`<p class="muted">패널 16개: 숫자 1~12와 ＋,－,×,÷. 처음 5초간만 모두 공개합니다. 먼저 10점에 도달하면 승리합니다.</p><p class="small">결승전 아이템(우선권·더블찬스·엿보기)은 구현하지 않았습니다. AI 반응속도와 계산 실력은 로컬 시뮬레이션입니다.</p>`)}
+
+
+// ───────────────────── 같은 그림 찾기: tvN 룰브레이커/그랜드파이널 rules
+const pictureEmojis=['🍎','🐈','🐸','🐙','🌵','🎲','🌞','🎸','🚗','🍇','🎂','⚽','🦊','🦋','🚀','💎'];
+function initPicture(mode='early'){let symbols=shuffle(pictureEmojis);let belts=Array.from({length:2},()=>shuffle([...symbols,...symbols,...symbols]).slice(0,20));let pos=mode==='final'?[12,12]:[8,10];st={symbols,belts,pos,mode,turn:randint(2),seenAI:new Set(),last:'',tries:0};if(st.turn===1)pictureAI()}
+function pictureSwitch(mode){if(mode!==st.mode){finishText='';log=[];initPicture(mode);render()}}
+function pictureTarget(owner){return st.belts[owner][Math.max(0,Math.min(19,st.pos[owner]))]}
+function pictureMove(owner,cardIdx){if(finishText)return false;let icon=st.symbols[cardIdx],need=pictureTarget(owner),match=icon===need;if(owner===0)st.last=`${String.fromCharCode(65+cardIdx)}는 ${icon} · 요구 그림 ${need} → ${match?'정답':'오답'}`;else st.seenAI.add(cardIdx);if(match){st.pos[owner]++;logit(`${owner===0?'나':'AI'}가 ${icon}를 찾아 전진 (${st.pos[owner]}/20)`);if(st.pos[owner]>=20)finish(owner===0,`${owner===0?'나':'AI'}가 결승점에 도착했습니다.`)}else{st.pos[owner]--;st.belts[owner].unshift(pick(st.symbols));st.belts[owner].pop();logit(`${owner===0?'나':'AI'} 오답 → 벨트 후진, 앞쪽 새 그림 추가 (위치 ${st.pos[owner]})`);if(st.pos[owner]<=0)finish(owner!==0,`${owner===0?'내':'AI'} 말이 컨베이어 벨트에서 떨어졌습니다.`)}return match}
+function pictureChoose(i){if(finishText||st.turn!==0)return;let correct=pictureMove(0,i);if(!correct&&!finishText){st.turn=1;pictureAI()}render()}
+function pictureAI(){let safety=0;while(!finishText&&st.turn===1&&safety++<60){let target=pictureTarget(1),idx=st.symbols.indexOf(target),recall=.15+Math.min(.62,st.seenAI.size*.045),guess=Math.random()<recall?idx:randint(16),correct=pictureMove(1,guess);st.seenAI.add(guess);if(!correct)st.turn=0}if(safety>=60&&!finishText)st.turn=0}
+function drawPicture(){let names=['나','AI'];let symbols=st.symbols;let belt=st.belts[0],currentPos=st.pos[0],runway=belt.map((x,i)=>`<span title="${i+1}칸" style="border:${i===currentPos?'2px solid #d7ff8e':'1px solid #465d77'};background:${i===currentPos?'#42634d':'#23354b'};border-radius:6px;min-width:39px;padding:6px;display:grid;text-align:center;gap:2px"><small style="color:#bdcbe1;font-size:9px">${i+1}</small>${x}</span>`).join('');stage(`<div class="toolbar"><span class="counter">내 위치 ${currentPos}/20</span><span class="counter">AI 위치 ${st.pos[1]}/20</span><span class="counter">${st.mode==='final'?'시즌 4 (12번째 출발)':'시즌 1·2 (8·10번째 출발)'}</span></div><div class="toolbar">${action('시즌 1·2 규칙','pictureSwitch(\'early\')',false,st.mode==='early'?'blue':'alt')}${action('시즌 4 규칙','pictureSwitch(\'final\')',false,st.mode==='final'?'blue':'alt')}</div><div class="info">${finishText?'게임 종료':st.turn===0?'내 컨베이어의 초록색 칸에 그려진 그림을 아래 알파벳 패널에서 찾으세요. 정답이면 연속 도전합니다.':'AI 차례입니다.'}</div><div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:10px;margin:13px 0">${runway}</div><div class="label">기억 패널 — 그림은 선택한 뒤에만 확인됩니다.</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;max-width:450px">${symbols.map((x,i)=>`<button class="tile" onclick="pictureChoose(${i})" ${st.turn!==0||!!finishText?'disabled':''} title="${String.fromCharCode(65+i)} 패널">${String.fromCharCode(65+i)}</button>`).join('')}</div>${st.last?`<div class="info" style="margin-top:16px">직전 공개: ${txt(st.last)}</div>`:''}<p class="small">벨트에서 20칸까지 도착하면 승리, 뒤로 밀려 0 이하로 떨어지면 패배입니다.</p>`,`<p class="muted">그림판에 숨은 16가지 그림을 기억합니다. 맞히면 한 칸 전진해 즉시 재도전하고, 틀리면 벨트가 뒤로 밀리고 새 그림카드가 들어옵니다.</p><p class="small">원작의 '가넷이 많은 참가자 10번째/적은 참가자 8번째' 시작 조건을 시즌 1·2 모드에 적용하되, 가넷 보유량은 고정 가정합니다. 방송의 실제 그림 이미지는 사용하지 않았습니다.</p>${scores(names,st.pos)}`)}
+
+showHome();
+</script></body></html>
