@@ -1,0 +1,53 @@
+name: Research-only direct intraday scorer continuity
+on:
+  push:
+    branches: [research/timing-intraday-scorer-continuity-20261104]
+    paths:
+      - 'scripts/test_stock_timing_score_window_continuity.py'
+      - 'scripts/stock_forecast_model.py'
+      - 'docs/experiments/timing-intraday-scorer-continuity-20261104.md'
+      - '.github/workflows/research-timing-score-window-continuity.yml'
+permissions:
+  contents: read
+concurrency:
+  group: timing-intraday-scorer-research-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  synthetic-and-independent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: scripts
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned research dependencies
+        run: pip install 'yfinance==0.2.66' 'exchange-calendars==4.13.1' 'scikit-learn==1.8.0' 'numpy>=2,<3' 'pandas>=2.2,<3' 'scipy>=1.11,<2'
+      - name: Synthetic direct-scoring continuity negative control
+        run: python -m unittest -v test_stock_timing_score_window_continuity
+      - name: Existing forecast, learning, direction and bounded-controller regression
+        run: python -m unittest -v test_stock_forecasts test_stock_forecast_learning test_stock_forecast_directions test_stock_autopilot
+      - name: Independent archived evidence and non-promotion checks
+        run: |
+          python scripts/audit_stock_forecast_independent.py
+          python scripts/audit_stock_learning_evidence.py
+          python scripts/audit_stock_forecast_attempt_coverage.py
+          python scripts/audit_stock_timing_acceptance_guard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-only-scorer-continuity
+          retention-days: 7
+          path: |
+            stock-forecast-independent-audit.json
+            stock-forecast-learning-audit.json
+            stock-forecast-attempt-coverage-audit.json
+            stock-timing-acceptance-guard.json
