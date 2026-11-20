@@ -4,11 +4,12 @@ from pathlib import Path
 from datetime import datetime,timezone
 import hashlib,subprocess,sys,tempfile,time,json
 from verify_stock_canonical_pipeline import verify_canonical
+from stock_close_regression_guard import guard_completed_closes,stable_universe_keys
 ROOT=Path.cwd()
 OUTPUTS=['stock-opportunity-data.json','stock-opportunity-summary.json','stock-opportunity-tests.json','stock-opportunity-filing-tests.json','stock-opportunity-date-tests.json','stock-opportunity-extension-audit.json','stock-opportunity-discovery.json','stock-opportunity-discovery-tests.json','stock-radar-chart-data.json']
 UI=['assets/stock-radar-v8.js','assets/stock-radar-v8.css','assets/stock-radar-v8.html','scripts/install_stock_decision_ui.py','scripts/install_stock_audit_ui.py']
 ENGINE=['stock-opportunity-universe.json','scripts/update_stock_opportunities.py','scripts/update_stock_decisions.py','scripts/finalize_stock_opportunities.py','scripts/validate_stock_opportunity_dates.py','scripts/discover_stock_candidates_v9.py','scripts/run_stock_research_v9.py','scripts/curate_stock_decisions_v9.py']
-ENGINE += ['scripts/build_stock_radar_chart_cache.py','scripts/market_data_utils.py']
+ENGINE += ['scripts/build_stock_radar_chart_cache.py','scripts/market_data_utils.py','scripts/stock_close_regression_guard.py']
 def git(*args,cwd=ROOT,check=True):return subprocess.run(['git',*args],cwd=cwd,check=check,text=True,capture_output=True)
 def date(path):
  try:return datetime.fromisoformat(json.loads(path.read_text())['generated_at'].replace('Z','+00:00'))
@@ -28,6 +29,11 @@ for attempt in range(4):
   if any(digest(path/p)!=v for p,v in engine.items()):raise RuntimeError('Collector source changed during collection; previous data preserved. A new run is required.')
   if date(path/'stock-opportunity-data.json')>date(ROOT/'stock-opportunity-data.json'):
    print('Newer snapshot exists; not replacing.');raise SystemExit(0)
+  existing=path/'stock-opportunity-data.json'
+  previous=json.loads(existing.read_bytes()) if existing.exists() else None
+  stable=stable_universe_keys(json.loads((path/'stock-opportunity-universe.json').read_bytes()))
+  guarded=guard_completed_closes(previous,json.loads(payload['stock-opportunity-data.json']),stable_keys=stable)
+  print(f"Protected completed closes: {guarded['protected']}; discovery exits: {guarded['discovery_exits']}")
   for name,body in payload.items():(path/name).write_bytes(body)
   canonical=verify_canonical(path)
   if not canonical:

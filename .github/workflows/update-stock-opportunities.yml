@@ -25,6 +25,8 @@ on:
       - 'scripts/test_stock_opportunity_dates.py'
       - 'scripts/refine_stock_radar_v8.py'
       - 'scripts/publish_stock_opportunities.py'
+      - 'scripts/stock_close_regression_guard.py'
+      - 'scripts/test_stock_close_regression_guard.py'
       - 'scripts/build_stock_radar_chart_cache.py'
       - 'scripts/market_data_utils.py'
       - 'scripts/stock_price_evidence.py'
@@ -62,6 +64,7 @@ jobs:
       - name: Test risk, filing, date and discovery gates
         run: |
           python scripts/test_stock_opportunities.py
+          python scripts/test_stock_close_regression_guard.py
           python scripts/test_stock_opportunity_filings.py
           python scripts/test_stock_opportunity_dates.py
           python scripts/test_stock_discovery_v9.py
