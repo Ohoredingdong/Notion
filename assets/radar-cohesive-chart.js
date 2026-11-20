@@ -16,6 +16,10 @@ function digest(s){
 }
 const eq=(a,b)=>{if(a===b)return true;if(!a||!b||typeof a!=='object'||typeof b!=='object')return false;const k=Object.keys(a);return k.length===Object.keys(b).length&&k.every(x=>eq(a[x],b[x]));};
 const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString().slice(0,10)===x;
+const exchangeMatches=(market,symbol,exchange)=>{
+ const exchanges=market==='KR'?(String(symbol).endsWith('.KQ')?['KOE','KOSDAQ']:['KSC','KOSPI']):['NMS','NGM','NCM','NAS','NASDAQ','NASDAQGS','NASDAQGM','NASDAQCM','NYQ','NYSE','ASE','AMEX','NYSEAMERICAN','PCX','NYSEARCA','BTS','BATS','CBOE'];
+ return ['KR','US'].includes(market)&&exchanges.includes(String(exchange).toUpperCase());
+};
 function observed(c){
  const ev=c?.technical?.evidence;if(!ev?.stock)return {reason:'원시 OHLCV 증거 없음'};
  try{
@@ -25,8 +29,7 @@ function observed(c){
  require(eq(block.columns,['date','open','high','low','close','volume','split']),'열 정의 불일치');
  require(s.source_identity_verified===true&&s.provider_symbol===symbol&&norm(symbol)===norm(c.symbol)&&s.market===market&&s.currency===c.currency&&eq(s,c.price_source),'기업·가격 출처 결합 불일치');
  require(['US','KR'].includes(market)&&meta.symbol===symbol&&meta.currency===c.currency&&meta.instrumentType==='EQUITY'&&meta.exchangeTimezoneName===(market==='KR'?'Asia/Seoul':'America/New_York'),'응답 종목·통화·시간대 불일치');
- const exchanges=market==='KR'?(symbol.endsWith('.KQ')?['KOE','KOSDAQ']:['KSC','KOSPI']):['NMS','NGM','NCM','NAS','NASDAQ','NASDAQGS','NASDAQGM','NASDAQCM','NYQ','NYSE','ASE','AMEX','NYSEAMERICAN','PCX','NYSEARCA','BTS','BATS','CBOE'];
- require(exchanges.includes(String(meta.exchangeName).toUpperCase()),'거래소 불일치');
+ require(exchangeMatches(market,symbol,meta.exchangeName),'거래소 불일치');
  require(s.basis==='provider_close_auto_adjust_false'&&validDate(expected)&&s.expected_session===expected,'세션·가격 조정 기준 불일치');
  const attempt=s.attempts?.[s.selected_attempt-1],stamp=Date.parse(attempt?.received_at),closed=Date.parse(c.expected_session?.closed_at),buffer=c.expected_session?.buffer_minutes;
  require(Number.isInteger(s.selected_attempt)&&s.selected_attempt>0&&attempt?.status==='verified_response'&&Number.isFinite(stamp)&&stamp<=Date.now()&&Number.isFinite(closed)&&closed<=stamp&&num(buffer)!==null&&buffer>=0&&closed+buffer*60000<=stamp,'완료 세션·수집 시점 불일치');
@@ -39,6 +42,41 @@ function observed(c){
  }catch(e){return {reason:'원시 OHLCV 검증 제외: '+e.message};}
 }
 
+const closeBasis='provider_close_auto_adjust_false';
+const near=(a,b)=>num(a)!==null&&num(b)!==null&&Math.abs(a-b)<=Math.max(1e-7,Math.abs(b)*1e-9);
+function dailyPair(c,d,ctx){
+ const bars=d.bars,last=bars.at(-1),prev=bars.at(-2),src=d.proof?c:d.src,proof=src?.daily_change,source=src?.price_source,meta=source?.source_metadata,
+ symbol=c?.source_symbol||src?.provider||c?.symbol,market=c?.market,currency=c?.currency;
+ const expected=d.proof?c.expected_session?.date:src.expected_session;
+ const world=ctx?.data?.worldFlow?.indicators;
+ const expectedWorld=Array.isArray(world)?world.find(x=>x?.id===(market==='KR'?'kospi':'sp500')&&x.region===market&&x.freshness?.basis==='completed_exchange_session'&&x.freshness?.calendar===(market==='KR'?'XKRX':'XNYS'))?.freshness?.expected_session:null;
+ const attempt=source?.attempts?.[source.selected_attempt-1],received=Date.parse(attempt?.received_at);
+ if(!proof||!source||!meta||!last||!prev||!currency||!['KR','US'].includes(market))return null;
+ if(d.src.status!=='ok'||!validDate(expected)||last.date!==expected||src.price_session!==last.date||(validDate(expectedWorld)&&last.date<expectedWorld))return null;
+ if(source.source_identity_verified!==true||source.provider_symbol!==symbol||source.market!==market||source.currency!==currency||source.basis!==closeBasis||
+    source.expected_session!==last.date||source.latest_completed_session!==last.date||meta.symbol!==symbol||meta.currency!==currency||
+    meta.instrumentType!=='EQUITY'||meta.exchangeTimezoneName!==(market==='KR'?'Asia/Seoul':'America/New_York')||!exchangeMatches(market,symbol,meta.exchangeName)||
+    !Number.isInteger(source.selected_attempt)||source.selected_attempt<1||attempt?.status!=='verified_response'||attempt.latest_completed_session!==last.date||
+    !Number.isFinite(received)||received<Date.parse(last.date)||received>Date.now())return null;
+ if(proof.version!=='completed-session-change-v1'||proof.status!=='verified'||proof.reason!=null||proof.source_identity_verified!==true||
+    proof.consecutive_sessions!==true||proof.market!==market||proof.provider_symbol!==symbol||proof.currency!==currency||proof.basis!==closeBasis||
+    proof.price_session!==last.date||proof.previous_session!==prev.date||proof.expected_previous_session!==prev.date||
+    !near(proof.close,last.close)||!near(proof.previous_close,prev.close)||!near(proof.change_1d_pct,(last.close/prev.close-1)*100)||
+    (d.proof&&last.split!==0)||(!d.proof&&(!Array.isArray(src.corporate_actions)||src.corporate_actions.some(e=>e?.date===last.date&&e.split!==0))))return null;
+ return {last,prev};
+}
+function volumeRatio(b,end){
+ const prior=b.slice(Math.max(0,end-20),end).map(x=>x.volume),vol=b[end]?.volume;
+ if(prior.length!==20||!prior.every(v=>num(v)!==null&&v>=0)||num(vol)===null||vol<0)return null;
+ const avg=prior.reduce((a,v)=>a+v,0)/20;
+ return avg>0?vol/avg:null;
+}
+function hasRecentSplit(d){
+ if(d.bars.length<22)return true;
+ const start=d.bars.at(-22).date;
+ return d.proof?d.bars.slice(-22).some(x=>x.split!==0):
+  !Array.isArray(d.src.corporate_actions)||d.src.corporate_actions.some(e=>validDate(e?.date)&&e.date>=start&&num(e.split)!==null&&e.split!==0);
+}
 function dataset(c,ctx){
  const evidence=observed(c);if(evidence.proof){const sources=ctx?.data?.charts?.series||{},matched=Object.keys(sources).find(k=>norm(k)===norm(c?.symbol));evidence.src.source_url=sources[matched]?.source_url||'';return evidence;}
  const series=ctx?.data?.charts?.series||{};const key=Object.keys(series).find(k=>norm(k)===norm(c?.symbol));const src=series[key];
@@ -82,13 +120,14 @@ function svg(b,ohlc,overlay,piv,scale){
 function render(c,ctx){const d=dataset(c,ctx);if(d.error)return `<section class="rc-card rcc"><h3>차트 자료 확인</h3><p>${E(d.error)}</p><p>없는 봉·거래량·지표를 만들어 채우지 않습니다.</p></section>`;
  const b=d.bars.slice(-span),p=pivots(b),up=lineFor(p.hi,b),low=lineFor(p.lo,b),end=b.length-1,price=b.at(-1).close,u=up?.value(end),l=low?.value(end),valid=num(u)!==null&&num(l)!==null&&u>l&&l>0;
  const levels=b.flatMap(v=>d.ohlc?[v.low,v.high]:[v.close]);if(valid)levels.push(u,l);let min=Math.min(...levels),max=Math.max(...levels),pad=(max-min||max*.02)*.08;const scale={min:min-pad,max:max+pad};
- const pos=!valid?'판단선 확인 대기':price>u?'종가가 윗선 위':price<l?'종가가 아랫선 아래':'두 판단선 사이';const ind=indicators(d.bars);const prev=b.slice(-21,-1).map(v=>v.volume),vol=b.at(-1).volume,vm=prev.length===20&&prev.every(v=>num(v)!==null&&v>=0)?prev.reduce((s,v)=>s+v,0)/20:null;const ratio=vm>0&&num(vol)!==null?vol/vm:null;
+ const pos=!valid?'판단선 확인 대기':price>u?'종가가 윗선 위':price<l?'종가가 아랫선 아래':'두 판단선 사이';const ind=indicators(d.bars),pair=dailyPair(c,d,ctx),prior=pair?indicators(d.bars.slice(0,-1)):{},ratio=volumeRatio(d.bars,d.bars.length-1),priorRatio=pair&&!hasRecentSplit(d)?volumeRatio(d.bars,d.bars.length-2):null;
+ const mv=(v,w,label,unit='')=>f(v)+(num(v)!==null?unit:'')+(window.RadarCohesive?.compare?.(v,w,{verified:Boolean(pair)&&num(v)!==null&&num(w)!==null,label:label+(pair?' · '+pair.last.date+' / 직전 거래일 '+pair.prev.date:'')})||'');
  const safeURL=(()=>{try{const u=new URL(d.src.source_url);return u.protocol==='https:'&&!u.username&&!u.password;}catch(_){return false;}})();const source=safeURL?`<a href="${E(d.src.source_url)}" target="_blank" rel="noopener noreferrer">가격 출처</a>`:'출처 링크 미확인';
  const pivotText=ids=>ids.length===2?ids.map(i=>`${b[i].date} · ${f(b[i].close)}`).join(' / '):'확인된 피벗 두 점 부족';
  return `<div class="rcc"><div class="rcc-toolbar"><span>${E(c?.name||c?.symbol)} · ${E(d.src.currency||c?.currency||'통화 미확인')} · ${E(b.at(-1).date)} 저장 종가</span><div>${[[21,'최근 21봉'],[63,'최근 63봉'],[126,'최근 126봉']].map(([n,label])=>`<button type="button" data-rcc-span="${n}" aria-pressed="${n===span}">${label}</button>`).join('')}</div></div><p class="rcc-note">${d.ohlc?'출처·해시·종가 결합을 확인한 원시 일봉 캔들':'시가·고가·저가가 없어 종가선으로 표시합니다. 캔들을 추정하지 않습니다.'} ${d.reason?E(d.reason)+' · 종가선 대체':''} · 두 화면은 같은 기간·가격축입니다. ${d.src.status==='stale'?'저장 데이터 지연 표시됨 · ':''}${source}</p>
- <div class="rc-grid rcc-main"><section class="rc-card"><h3>가격 흐름 그대로 보기</h3>${svg(b,d.ohlc,false,p,scale)}<p class="rcc-note">아래 막대: 저장 거래량. 누락 거래량은 빈칸. ${d.bars.length}개 저장봉 중 ${b.length}개 표시.</p></section><section class="rc-card"><h3>같은 차트에 판단선 더하기</h3><strong>${pos}</strong>${svg(b,d.ohlc,true,valid?p:{hi:[],lo:[]},scale)}<p>윗선 ${valid?f(u):'미확인'} · 종가 ${f(price)} · 아랫선 ${valid?f(l):'미확인'}</p><p class="rcc-note">당일 거래량 / 직전 20봉 평균: ${ratio===null?'미확인':f(ratio)+'배'}. 돌파·반전·수익을 보장하는 신호가 아닙니다.</p></section></div>
+ <div class="rc-grid rcc-main"><section class="rc-card"><h3>가격 흐름 그대로 보기</h3>${svg(b,d.ohlc,false,p,scale)}<p class="rcc-note">아래 막대: 저장 거래량. 누락 거래량은 빈칸. ${d.bars.length}개 저장봉 중 ${b.length}개 표시.</p></section><section class="rc-card"><h3>같은 차트에 판단선 더하기</h3><strong>${pos}</strong>${svg(b,d.ohlc,true,valid?p:{hi:[],lo:[]},scale)}<p>윗선 ${valid?f(u):'미확인'} · 종가 ${mv(price,pair?.prev.close,'저장 종가')} · 아랫선 ${valid?f(l):'미확인'}</p><p class="rcc-note">마지막 저장봉 거래량 / 직전 20봉 평균: ${mv(ratio,priorRatio,'거래량 배율','배')}. 돌파·반전·수익을 보장하는 신호가 아닙니다.</p></section></div>
  <div class="rcc-conditions"><section class="rc-card"><h4>윗선 위</h4><p>종가 유지와 거래량 동반 여부를 확인합니다. 장중 돌파만으로 확정하지 않습니다.</p></section><section class="rc-card"><h4>구간 안</h4><p>방향 확인 대기. 수렴 모양만으로 삼각형·쐐기형의 성공을 판단하지 않습니다.</p></section><section class="rc-card"><h4>아랫선 아래</h4><p>기존 지지 가정을 재검토합니다. 실제 손절 가격이나 주문 지시가 아닙니다.</p></section></div>
- ${comparisons(b,p,d.bars)}<section class="rc-card"><h3>보조지표 · 패턴 함께 읽기</h3><div class="rcc-indicators"><div><h4>RSI(14) ${f(ind.rsi)}</h4><p>Wilder 방식. 30·70은 과매도·과매수 참고선이며 매매 확정 기준이 아닙니다.</p></div><div><h4>MACD(12,26,9)</h4><p>MACD ${f(ind.macd)} / 시그널 ${f(ind.signal)}<br>히스토그램 ${f(ind.hist)}. 교차만으로 추세 전환을 확정하지 않습니다.</p></div><div><h4>볼린저(20, 2σ)</h4><p>${ind.bb?`상단 ${f(ind.bb.up)} / 중앙 ${f(ind.bb.mid)} / 하단 ${f(ind.bb.low)}`:'저장 종가 20개 미만'}<br>종가의 모집단 표준편차. 밴드 이탈은 매수 확정이 아닙니다.</p></div><div><h4>패턴 · 다이버전스</h4><p>위 비교는 종가 피벗 규칙으로 찾은 관찰 후보입니다. 거래량·추세 맥락과 이후 봉 확인 없이 진입 신호로 사용하지 않습니다.</p></div></div><details><summary>판단선과 계산 기준 보기</summary><p>표시 구간의 종가가 앞뒤 2개 봉보다 모두 높은/낮은 점을 확인 피벗으로 사용합니다. 마지막 2개 봉은 미확정으로 제외합니다. 최근 두 고점/두 저점을 직선 연장했으며, 이후 봉에 따라 바뀝니다. 정식 패턴 감지나 미래 예측이 아닙니다.</p><p>고점: ${pivotText(p.hi)}<br>저점: ${pivotText(p.lo)}</p><p>지표는 확보된 전체 ${d.bars.length}개 저장 종가로 계산하며 표시기간 변경과 독립적입니다. EMA는 최초 기간 단순평균으로 초기화. 조정·분할·배당 처리: ${E(d.src.basis||ctx?.data?.charts?.basis||'원천 확인 필요')}. 검증 범위: SHA-256·응답 종목/시장/통화/거래소·저장 세션 종료시간과 수집시간·정렬/중복·OHLCV 범위·마지막 종가 결합. 거래소 휴장 달력을 독립 재검증하거나 기존 14개 기술지표를 재감사하는 것은 아닙니다. 분봉 자료는 없어 최근 21봉도 일봉입니다. ${d.digest?'증거 SHA-256: '+E(d.digest):'원시 OHLCV 증거 사용 안 함'}. 수집: ${E(d.src.collected_at||ctx?.data?.charts?.generated_at||'미확인')}.</p></details></section></div>`;
+ ${comparisons(b,p,d.bars)}<section class="rc-card"><h3>보조지표 · 패턴 함께 읽기</h3><p class="rcc-note">화살표는 같은 기준으로 확인한 직전 거래일과 비교합니다. 기준선·판단선에는 표시하지 않습니다.</p><div class="rcc-indicators"><div><h4>RSI(14) ${mv(ind.rsi,prior.rsi,'RSI')}</h4><p>Wilder 방식. 30·70은 과매도·과매수 참고선이며 매매 확정 기준이 아닙니다.</p></div><div><h4>MACD(12,26,9)</h4><p>MACD ${mv(ind.macd,prior.macd,'MACD')} / 시그널 ${mv(ind.signal,prior.signal,'MACD 시그널')}<br>히스토그램 ${mv(ind.hist,prior.hist,'MACD 히스토그램')}. 교차만으로 추세 전환을 확정하지 않습니다.</p></div><div><h4>볼린저(20, 2σ)</h4><p>${ind.bb?`상단 ${mv(ind.bb.up,prior.bb?.up,'볼린저 상단')} / 중앙 ${mv(ind.bb.mid,prior.bb?.mid,'볼린저 20봉 평균')} / 하단 ${mv(ind.bb.low,prior.bb?.low,'볼린저 하단')}`:'저장 종가 20개 미만'}<br>종가의 모집단 표준편차. 밴드 이탈은 매수 확정이 아닙니다.</p></div><div><h4>패턴 · 다이버전스</h4><p>위 비교는 종가 피벗 규칙으로 찾은 관찰 후보입니다. 거래량·추세 맥락과 이후 봉 확인 없이 진입 신호로 사용하지 않습니다.</p></div></div><details><summary>판단선과 계산 기준 보기</summary><p>표시 구간의 종가가 앞뒤 2개 봉보다 모두 높은/낮은 점을 확인 피벗으로 사용합니다. 마지막 2개 봉은 미확정으로 제외합니다. 최근 두 고점/두 저점을 직선 연장했으며, 이후 봉에 따라 바뀝니다. 정식 패턴 감지나 미래 예측이 아닙니다.</p><p>고점: ${pivotText(p.hi)}<br>저점: ${pivotText(p.lo)}</p><p>지표는 확보된 전체 ${d.bars.length}개 저장 종가로 계산하며 표시기간 변경과 독립적입니다. EMA는 최초 기간 단순평균으로 초기화. 조정·분할·배당 처리: ${E(d.src.basis||ctx?.data?.charts?.basis||'원천 확인 필요')}. 검증 범위: SHA-256·응답 종목/시장/통화/거래소·저장 세션 종료시간과 수집시간·정렬/중복·OHLCV 범위·마지막 종가 결합. 거래소 휴장 달력을 독립 재검증하거나 기존 14개 기술지표를 재감사하는 것은 아닙니다. 분봉 자료는 없어 최근 21봉도 일봉입니다. ${d.digest?'증거 SHA-256: '+E(d.digest):'원시 OHLCV 증거 사용 안 함'}. 수집: ${E(d.src.collected_at||ctx?.data?.charts?.generated_at||'미확인')}.</p></details></section></div>`;
 }
 function handle(event){const el=event.target?.closest?.('[data-rcc-span]');if(!el)return false;const v=Number(el.dataset.rccSpan);if(![21,63,126].includes(v))return false;span=v;return true;}
 window.RadarCohesiveChart={render,handle};

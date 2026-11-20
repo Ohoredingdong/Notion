@@ -55,15 +55,31 @@ function context(){
  const c=found||(!selected?companies.find(c=>!c.catalog_only)||companies[0]:null);
  return {...state,data,selected:c?id(c):selected,market:country,country,companies,favorites:normalized,helpers:frameWindow?.StockRadarV2Bridge?.helpers,company:c||null,allCompanies:pool};
 }
+// Direction is relative movement only, never an investment-quality judgment.
+function compare(value,previous,{verified=false,label='동일 기준 이전 값'}={}){
+ const valid=verified===true&&n(value)!==null&&n(previous)!==null;
+ const state=!valid?'missing':value>previous?'up':value<previous?'down':'flat';
+ const word={up:'상승',down:'하락',flat:'동일',missing:'비교 없음'}[state];
+ const title=valid?label+' 대비 '+word+' (이전 '+fmt(previous)+') · 좋고 나쁨의 판단 아님':label+' · 비교 가능한 이전 자료 미확인';
+ return '<span class="rc-compare rc-compare-'+state+'" title="'+esc(title)+'" aria-label="'+esc(title)+'">'+({up:'↑',down:'↓',flat:'=',missing:'비교 없음'}[state])+'</span>';
+}
+function verifiedDaily(c){
+ const d=c?.daily_change;
+ return !!(d?.status==='verified'&&d.source_identity_verified===true&&d.consecutive_sessions===true&&d.previous_session===d.expected_previous_session&&d.previous_session<d.price_session&&d.price_session===c.price_session&&d.close===c.price&&d.provider_symbol===(c.yahoo_symbol||c.symbol)&&d.currency===c.currency);
+}
+function annualComparison(h){
+ const e=h.revenue_growth_evidence,r=e?.source_rows;
+ return !!(/연간|annual/i.test(h.basis||'')&&h.currency&&e?.status==='verified'&&e.source?.identity_verified===true&&e.source.currency===h.currency&&e.source.period_kind==='annual'&&r?.current?.value===h.revenue&&r?.prior?.value===h.revenue_previous&&r.current.period===h.filing_period&&r.prior.period===h.revenue_previous_period&&r.prior.period<r.current.period);
+}
 function stockRows(arr,{max=50,showPrice=true,ctx=context()}={}){
  if(!arr.length)return empty('이 조건에 맞는 종목이 없습니다.');
  const favorites=new Set(ctx.favorites);
  return arr.slice(0,max).map(c=>{
   const code=id(c), star=favorites.has(code), title=c.name||c.symbol;
-  return '<div class="rc-stockrow"><button type="button" class="rc-star" data-rc-star="'+esc(code)+'" aria-pressed="'+star+'" aria-label="'+esc(title)+(star?' 관심기업 해제':' 관심기업 추가')+'">'+(star?'★':'☆')+'</button><button type="button" class="rc-stock-open" data-rc-stock="'+esc(code)+'" aria-pressed="'+(ctx.selected===code)+'"><span><b>'+esc(title)+'</b><small>'+esc(c.symbol)+' · '+esc(c.exchange||c.catalog_entry?.exchange||c.sector||countries[countryOf(c)]||'시장 미확인')+'</small></span><span>'+(showPrice&&n(c.price)!==null?amount(c.price,c.currency)+'<small>'+esc(date(c.price_session))+'</small>':'›')+'</span></button></div>';
+  return '<div class="rc-stockrow"><button type="button" class="rc-star" data-rc-star="'+esc(code)+'" aria-pressed="'+star+'" aria-label="'+esc(title)+(star?' 관심기업 해제':' 관심기업 추가')+'">'+(star?'★':'☆')+'</button><button type="button" class="rc-stock-open" data-rc-stock="'+esc(code)+'" aria-pressed="'+(ctx.selected===code)+'"><span><b>'+esc(title)+'</b><small>'+esc(c.symbol)+' · '+esc(c.exchange||c.catalog_entry?.exchange||c.sector||countries[countryOf(c)]||'시장 미확인')+'</small></span><span>'+(showPrice&&n(c.price)!==null?amount(c.price,c.currency)+compare(c.price,c.daily_change?.previous_close,{verified:verifiedDaily(c),label:'직전 거래일 '+(c.daily_change?.previous_session||'미확인')})+'<small>'+esc(date(c.price_session))+'</small>':'›')+'</span></button></div>';
  }).join('');
 }
-window.RadarCohesive={esc,card,fmt,amount,pill,link,empty,id,stockRows,date,n};
+window.RadarCohesive={esc,card,fmt,amount,pill,link,empty,id,stockRows,date,n,compare};
 const searchHTML=()=>'<div class="rc-formrow"><input type="search" id="rc-home-search" aria-label="종목명·코드 검색" placeholder="종목 검색" value="'+esc(q)+'"><select id="rc-home-sort" aria-label="정렬"><option value="name" '+(sort==='name'?'selected':'')+'>이름순</option><option value="price" '+(sort==='price'?'selected':'')+'>저장가순</option><option value="star" '+(sort==='star'?'selected':'')+'>관심기업</option></select></div>';
 function homeStocks(ctx){
  const term=q.trim().toLocaleLowerCase(),fav=new Set(ctx.favorites);
@@ -74,15 +90,15 @@ function navBtn(name,active,caption){return '<button type="button" data-rc-tab="
 function indexRecord(data,key,sym){
  const world=data.worldFlow?.indicators?.find(m=>m.id===key),macro=data.macro?.indicators?.[key],chart=data.charts?.series?.[sym];
  const last=chart?.bars?.at(-1), opts=[];
- if(n(world?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(world.session||''))opts.push({value:world.value,day:world.session,src:world.source_url,status:world.status,caution:world.status!=='current'});
- if(n(macro?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(macro.date||''))opts.push({value:macro.value,day:macro.date,src:macro.source_url,status:macro.status,caution:macro.status==='stale'});
+ if(n(world?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(world.session||''))opts.push({value:world.value,day:world.session,src:world.source?.url||world.source_url,status:world.status,caution:world.status!=='current',previous:world.previous_value,verified:world.comparison_verified===true&&world.comparison_basis==='previous_exchange_session'&&world.source?.identity_verified===true&&world.source.provider_symbol===sym&&world.source.response_symbol===sym&&world.previous_session<world.session,label:'직전 거래일 '+world.previous_session});
+ if(n(macro?.value)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(macro.date||''))opts.push({value:macro.value,day:macro.date,src:macro.source_url,status:macro.status,caution:macro.status==='stale',previous:macro.daily_change?.previous_close,verified:verifiedDaily({...macro,price:macro.value,price_session:macro.date,symbol:sym}),label:'직전 거래일 '+(macro.daily_change?.previous_session||'미확인')});
  if(n(last?.close)!==null&&/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(last.date||''))opts.push({value:last.close,day:last.date,src:chart.source_url,status:'historical',caution:false});
  return opts.sort((a,b)=>b.day.localeCompare(a.day))[0];
 }
 const researchDate=ctx=>ctx.data.raw?.generated_at?'저장 연구 자료 · '+date(ctx.data.raw.generated_at):'자료 확인 중';
 function drawHeader(ctx){
  const idx=[['코스피','kospi','^KS11'],['코스닥','kosdaq','^KQ11'],['나스닥','nasdaq','^IXIC'],['다우','dow','^DJI']];
- const index=idx.map(([label,key,sym])=>{const x=indexRecord(ctx.data,key,sym);return '<div class="rc-index"><b>'+label+'</b><strong>'+fmt(x?.value)+'</strong><small>'+((x&&esc(x.day)+(x.caution?' · 갱신 대기':''))||'미연결')+'</small></div>'}).join('');
+ const index=idx.map(([label,key,sym])=>{const x=indexRecord(ctx.data,key,sym);return '<div class="rc-index"><b>'+label+'</b><strong>'+fmt(x?.value)+compare(x?.value,x?.previous,{verified:x?.verified,label:x?.label||'직전 거래일'})+'</strong><small>'+((x&&esc(x.day)+(x.caution?' · 갱신 대기':''))||'미연결')+'</small></div>'}).join('');
  const ctr=Object.entries(countries).map(([k,label])=>'<button type="button" data-rc-country="'+k+'" aria-pressed="'+(k===country)+'" title="'+(['KR','US'].includes(k)?'저장 종목 연결':'현재 종목·시세 미연결')+'">'+label+'</button>').join('');
  const active=['finance','value'].includes(p)?'quality':p;
  header.innerHTML='<div class="rc-shell"><div class="rc-indices" aria-label="4대 지수 · 저장값">'+index+'</div><div class="rc-brandline"><a class="rc-brand" href="?tab=home&country='+country+'" data-rc-tab="home"><span class="rc-mark" aria-hidden="true"><i></i><i></i><i></i></span>투자레이더</a><nav class="rc-country" aria-label="국가 선택">'+ctr+'</nav><span class="rc-edition rc-pill rc-tone-neutral">개인 연구용 · 저장 자료</span></div><div class="rc-primaryline"><nav class="rc-primary" aria-label="주 메뉴">'+primary.map(k=>navBtn(k,k===active,k==='quality'?'기업분석':null)).join('')+'</nav>'+(p==='home'?'<small class="rc-nav-date">'+esc(researchDate(ctx))+'</small>':'')+'</div></div>';
@@ -105,10 +121,18 @@ function macroPanel(ctx,kr){
  const spec=kr?[['한국 기준금리','bok_policy','차입 비용 · 내수','rates'],['원/달러','usdkrw','수입 원가 · 수출','fx'],['코스피','kospi','국내 주식 흐름','stocks']]:[['미국 기준금리','fed_policy','조달 비용 · 달러','rates'],['미국 10년물','us_10y','할인율 · 장기 조달','yield'],['미국 물가','us_cpi','소비 · 가격 부담','prices']];
  const generated=ctx.data.macro?.generated_at;
  return '<section class="rc-card rc-macro-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div class="rc-macro-identity"><div class="rc-macro-title"><h2>'+title+'</h2>'+pill('요약','mint')+'</div><small>'+(kr?'국내 경제 지표와 산업에 미치는 영향':'미국 주요 지표로 보는 세계 경제 흐름')+'</small></div></div><table class="rc-table rc-macro-table" aria-label="'+title+' 지표와 산업 영향"><thead><tr><th scope="col">경제 지표</th><th scope="col">산업에 미치는 영향</th></tr></thead><tbody>'+spec.map(([label,k,impact,icon])=>{
+ const ix=k==='kospi'?indexRecord(ctx.data,'kospi','^KS11'):null;
  const x=source[k], isPercent=['bok_policy','fed_policy','us_10y','us_cpi'].includes(k), v=n(x?.value);
- const datum=k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
- const basis=datum===null?'':date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
- return '<tr><th scope="row"><div class="rc-macro-reading"><svg class="rc-macro-row-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+macroIcons[icon]+'</svg><div class="rc-macro-text"><span class="rc-macro-label">'+(x?.source_url?link(x.source_url,label):esc(label))+'</span><small class="rc-macro-value"><strong>'+esc(datum??'미확인')+'</strong>'+(basis?' <span>· '+esc(basis)+'</span>':'')+'</small></div></div></th><td><div class="rc-macro-impact"><span aria-hidden="true">→</span><span>'+esc(impact)+'</span></div></td></tr>';
+ const datum=ix?fmt(ix.value):k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
+ const basis=datum===null?'':ix?ix.day+(ix.caution?' · 갱신 대기':''):date(x.date)+(x.status==='stale'?' · 갱신 대기':'');
+ const d=x?.daily_change;
+ let current=v,previous=null,verified=false,comparisonLabel='동일 기준 이전 관측';
+ if(ix){current=ix.value;previous=ix.previous;verified=ix.verified;comparisonLabel=ix.label;}
+ else if(k==='usdkrw'){previous=d?.previous_close;verified=d?.source_identity_verified===true&&d.provider_symbol==='KRW=X'&&d.close===v&&d.price_session===x.date&&d.previous_session===x.previous_observation_date&&d.previous_session<d.price_session;comparisonLabel='직전 제공처 관측 '+(d?.previous_session||'미확인')+' (거래소 종가 아님)';}
+ else if(k==='us_cpi'){current=x?.yoy_pct;previous=x?.previous_yoy_pct;verified=!!x?.source_url;comparisonLabel='직전 월 전년동월비';}
+ else if(k==='bok_policy'){previous=x?.previous;verified=!!x?.source_url;comparisonLabel='직전 정책 결정';}
+ const direction=compare(current,previous,{verified,label:comparisonLabel});
+ return '<tr><th scope="row"><div class="rc-macro-reading"><svg class="rc-macro-row-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+macroIcons[icon]+'</svg><div class="rc-macro-text"><span class="rc-macro-label">'+(x?.source_url?link(x.source_url,label):esc(label))+'</span><small class="rc-macro-value"><strong>'+esc(datum??'미확인')+direction+'</strong>'+(basis?' <span>· '+esc(basis)+'</span>':'')+'</small></div></div></th><td><div class="rc-macro-impact"><span aria-hidden="true">→</span><span>'+esc(impact)+'</span></div></td></tr>';
  }).join('')+'</tbody></table><small class="rc-count rc-macro-source">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
 }
 function spark(c,ctx){
@@ -141,8 +165,16 @@ function candidatePanel(ctx){
  const per=valuation.trailing_pe??valuation.pe, pbr=valuation.price_to_book??valuation.pbr;
  const pct=v=>n(v)===null?'—':fmt(v)+'%';
  const money=(v,currency)=>currency?amount(v,currency):'—';
- const vals=[money(fin.revenue,cur),money(fin.operating_income,cur),pct(fin.operating_margin_pct??fin.operating_margin),money(fin.cfo??fin.operating_cash_flow,cur),[money(fin.accounts_receivable??balance.accounts_receivable,cur),money(fin.inventory??balance.inventory,cur)].join(' / '),[money(balance.total_debt??balance.debt,bcur),money(balance.cash,bcur)].join(' / '),[fmt(per),fmt(pbr),pct(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct)].join(' / ')];
- return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table"><thead><tr><th>지표</th><th>저장값</th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+esc(vals[i])+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></div><button type="button" data-rc-stock="'+esc(id(c))+'" style="margin-top:7px">이 기업 분석 ›</button></section>';
+ const annual=annualComparison(fin),supp=annual&&fin.supplemental_period_status==='same_period';
+ const excluded=new Set((fin.supplemental_excluded_fields||[]).map(x=>x.field));
+ const previous=k=>excluded.has(k+'_previous')?null:fin[k+'_previous'];
+ const basis=(fin.revenue_previous_period||'이전 기간 미확인')+' → '+(fin.filing_period||'기간 미확인')+' 동일 연간 기준';
+ const num=(v,prior,verified,format)=>'<span class="rc-number-comparison">'+esc(format(v))+compare(v,prior,{verified,label:basis})+'</span>';
+ const cash=v=>money(v,cur), snap=v=>money(v,bcur);
+ const margin=fin.operating_margin_pct??fin.operating_margin;
+ const priorMargin=fin.revenue_previous>0&&n(fin.operating_income_previous)!==null?fin.operating_income_previous/fin.revenue_previous*100:null;
+ const vals=[num(fin.revenue,fin.revenue_previous,annual,cash),num(fin.operating_income,previous('operating_income'),supp,cash),num(margin,priorMargin,supp&&!excluded.has('operating_income_previous')&&n(fin.operating_income)!==null&&fin.revenue>0&&Math.abs(margin-fin.operating_income/fin.revenue*100)<0.011,pct),num(fin.cfo??fin.operating_cash_flow,previous('cfo'),supp&&n(fin.cfo)!==null,cash),[num(fin.accounts_receivable??balance.accounts_receivable,previous('accounts_receivable'),supp&&n(fin.accounts_receivable)!==null,cash),num(fin.inventory??balance.inventory,previous('inventory'),supp&&n(fin.inventory)!==null,cash)].join(' / '),[num(balance.total_debt??balance.debt,null,false,snap),num(balance.cash,null,false,snap)].join(' / '),[num(per,null,false,fmt),num(pbr,null,false,fmt),num(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct,null,false,pct)].join(' / ')];
+ return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table"><thead><tr><th>지표</th><th>저장값</th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+vals[i]+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></div><button type="button" data-rc-stock="'+esc(id(c))+'" style="margin-top:7px">이 기업 분석 ›</button></section>';
 }
 function kstDay(ms){
  return new Date(ms+9*3600000).toISOString().slice(0,10);

@@ -13,17 +13,22 @@ function render(c,ctx){
  const section=(title,body,sub='')=>`<section class="rcm-card"><header><h2>${E(title)}</h2><span>${E(sub)}</span></header>${body}</section>`;
  const link=(url,label)=>safe(url)?`<a href="${E(safe(url))}" target="_blank" rel="noopener noreferrer">${E(label)}</a>`:E(label);
  const m=D.macro||{},ind=m.indicators||{},f=n=>typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('ko-KR',{maximumFractionDigits:2}):'—';
- const datum=(v,keys,unit='%')=>{
+ const datum=(v,keys,unit='%',prevs=[],comparison='동일 지표의 전기 자료 미확인')=>{
   if(!v)return '<span class="rcm-muted">원자료 미연결</span>';
   const nums=keys.map(k=>v[k]);if(nums.some(n=>typeof n!=='number'||!Number.isFinite(n)))return '<span class="rcm-muted">수치 미확인</span>';
-  return `<b>${nums.map(f).join(' ~ ')}${E(unit)}</b><small>${E(v.date||'기준일 미확인')} · ${link(v.source_url,'출처')}</small>`;
+  const direction=(n,i)=>H.compare?.(n,prevs[i],{verified:Number.isFinite(prevs[i]),label:comparison})||'';
+  return `<b>${nums.map((n,i)=>f(n)+E(unit)+direction(n,i)).join(' ~ ')}</b><small>${E(v.date||'기준일 미확인')} · ${link(v.source_url,'출처')}</small>`;
  };
+ const fed=ind.fed_policy, bok=ind.bok_policy, cpi=ind.us_cpi, unemployment=ind.us_unemployment;
+ const fedDelta=Number.isFinite(fed?.increase_bp)&&Number.isFinite(fed?.decrease_bp)?(fed.increase_bp-fed.decrease_bp)/100:null;
+ const fedPrior=fedDelta===null?[]:[fed.low-fedDelta,fed.high-fedDelta];
+ const unemploymentPrior=Number.isFinite(unemployment?.value_pct)&&Number.isFinite(unemployment?.change_3m_pp)?[unemployment.value_pct-unemployment.change_3m_pp]:[];
  const age=Date.parse(m.generated_at||''),stale=!Number.isFinite(age)||Date.now()-age>(Number(m.max_age_hours)||18)*3600000;
  const macro=section('세계·한국 지표 비교',`<div class="rcm-tablewrap"><table><thead><tr><th>항목</th><th>미국 참고</th><th>한국</th><th>점검할 영향</th></tr></thead><tbody>
  <tr><th>경제성장</th><td>원자료 미연결</td><td>원자료 미연결</td><td>수출·내수</td></tr>
- <tr><th>정책금리</th><td>${datum(ind.fed_policy,['low','high'])}</td><td>${datum(ind.bok_policy,['value'])}</td><td>차입비용</td></tr>
- <tr><th>물가</th><td>${datum(ind.us_cpi,['yoy_pct'])}</td><td>원자료 미연결</td><td>마진·소비</td></tr>
- <tr><th>실업률</th><td>${datum(ind.us_unemployment,['value_pct'])}</td><td>원자료 미연결</td><td>고용·소비</td></tr>
+ <tr><th>정책금리</th><td>${datum(fed,['low','high'],'%',fedPrior,'직전 미국 기준금리 목표 범위 대비')}</td><td>${datum(bok,['value'],'%',[bok?.previous],'직전 한국은행 금리 결정 대비')}</td><td>차입비용</td></tr>
+ <tr><th>물가</th><td>${datum(cpi,['yoy_pct'],'%',[cpi?.previous_yoy_pct],'직전월 발표의 전년 동월 대비 물가상승률과 비교')}</td><td>원자료 미연결</td><td>마진·소비</td></tr>
+ <tr><th>실업률</th><td>${datum(unemployment,['value_pct'],'%',unemploymentPrior,'동일 실업률 3개월 전 대비')}</td><td>원자료 미연결</td><td>고용·소비</td></tr>
  <tr><th>정치·정책</th><td colspan="2">정책별 원문 검증 필요</td><td>산업별 수혜·부담</td></tr></tbody></table></div><p class="rcm-note">미국 자료는 세계 전체를 대표하지 않습니다. 영향은 점검 항목이며 현재 수혜 판정이 아닙니다.</p><p class="rcm-muted">수집: ${E(m.generated_at||'미확인')} · ${stale?'갱신 확인 필요':'저장 자료 기준'}</p>`,stale?'갱신 확인 필요':'저장된 지표');
  const newsRows=arr(D.newsLink?.items).filter(n=>n&&typeof n.title==='string'&&Number.isFinite(Date.parse(n.published_at))&&Date.parse(n.published_at)<=Date.now()&&(state.news==='all'||n.region===state.news)).sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,5);
  const news=section('경제·정책 뉴스',`<div class="rcm-tabs">${[['all','전체'],['us','미국'],['kr','한국']].map(([v,l])=>`<button data-rcm-news="${v}" aria-pressed="${state.news===v}">${l}</button>`).join('')}</div>${newsRows.length?newsRows.map(n=>`<article class="rcm-news"><span class="rcm-badge">${E(n.region==='kr'?'한국':n.region==='us'?'미국':n.region||'기타')}</span><div><strong>${link(n.url,n.title)}</strong><small>${E(n.source||'출처 미확인')} · ${E(n.published_at)} · RSS 제목 / 원문 검증 전</small></div></article>`).join(''):'<p class="rcm-muted">조건에 맞는 저장 뉴스가 없습니다.</p>'}<p class="rcm-note">뉴스 제목만으로 수혜 산업을 자동 확정하지 않습니다. 산업 영향 원문 분석은 미연결입니다.</p>`, '저장된 뉴스 · 실시간 아님');
