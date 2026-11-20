@@ -28,15 +28,48 @@ with sync_playwright() as pw:
  def check_macro_cards():
   cards=page.locator('.rc-home-top .rc-macro-card')
   assert cards.count()==2
-  assert cards.locator('thead th').all_text_contents()==['경제 지표','산업에 미치는 영향']*2
+  assert cards.locator('thead th').all_text_contents()==['경제 지표 변화','연결','산업 영향']*2
   assert cards.locator('h2').all_text_contents()==['세계 경제','한국 경제']
   assert cards.locator('tbody tr').count()==6
   assert cards.locator('.rc-macro-row-icon').count()==6
-  assert cards.locator('.rc-macro-impact > span[aria-hidden]').all_text_contents()==['→']*6
+  assert cards.locator('tbody .rc-macro-arrow').all_text_contents()==['→']*6
+  assert cards.evaluate_all("""els=>els.every(card=>{
+    const arr=[...card.querySelectorAll('.rc-macro-arrow')].map(x=>x.getBoundingClientRect());
+    const impacts=[...card.querySelectorAll('.rc-macro-impact')].map(x=>x.getBoundingClientRect());
+    return arr.length===3&&arr.every((a,i)=>a.width>=12&&Math.abs(a.left-arr[0].left)<=1&&a.right<=impacts[i].left+1);
+  })""")
   assert all(x for x in cards.locator('.rc-macro-value strong').all_text_contents())
   assert cards.evaluate_all("""els=>els.every(el=>el.scrollWidth<=el.clientWidth+1)""")
+  for i,labels in enumerate((('미국 기준금리','미국 10년물','미국 물가'),('한국 기준금리','원/달러','코스피'))):
+   rows=cards.nth(i).locator('tbody tr')
+   for j,label in enumerate(labels):
+    expect(rows.nth(j)).to_contain_text(label)
+    expect(rows.nth(j).locator('.rc-macro-value')).to_contain_text(re.compile(r'\d{4}-\d{2}-\d{2}'))
+    assert rows.nth(j).locator('a[href^="https://"]').count()>=1,(label,'source link missing')
+    assert rows.nth(j).locator('.rc-compare').count()>=1,(label,'numeric direction status missing')
+ def check_candidate_width():
+  card=page.locator('.rc-home .rc-candidate')
+  table=card.locator('table')
+  assert table.locator('tbody tr').count()==7
+  assert table.locator('td .rc-compare').count()==11
+  for label in ['매출','영업이익','영업이익률','영업현금흐름','매출채권 / 재고','부채 / 현금','PER / PBR / ROE']:
+   expect(table).to_contain_text(label)
+  rects=card.evaluate("""el=>{
+    const table=el.querySelector('table'), factors=el.querySelector('.rc-candidate-factors');
+    const data=table.getBoundingClientRect(), wrap=el.getBoundingClientRect(), supplementary=factors.getBoundingClientRect();
+    const labels=[...table.querySelectorAll('tbody th')].map(x=>x.getBoundingClientRect().width);
+    return {fill:data.width/wrap.width, bottom:data.bottom, factorsTop:supplementary.top, labels};
+  }""")
+  assert rects['fill']>=.87 and rects['factorsTop']>=rects['bottom']-1,rects
+  assert all(x>=85 for x in rects['labels']),rects
+  for label in ['전망','산업','핵심 성장','협력업체']:
+   expect(card.locator('.rc-candidate-factors')).to_contain_text(label)
+  if page.viewport_size['height']>=850:
+   button=card.locator(':scope > [data-rc-stock]')
+   assert button.bounding_box()['y']+button.bounding_box()['height']<=card.bounding_box()['y']+card.bounding_box()['height']+1
  check_home_heading()
  check_macro_cards()
+ check_candidate_width()
  assert page.locator('.rc-candidate').inner_text().find('오늘의 매수후보 검토')>=0
  assert page.locator('.rc-industry-list article').count()>0
  assert '전체 업종 지수 아님' in page.locator('.rc-industry-list').locator('..').inner_text()
@@ -132,6 +165,7 @@ with sync_playwright() as pw:
    assert len(metrics['cards'])>=count,(width,height,key,'missing cards',metrics)
    assert all(x['top']>=-2 and x['bottom']<=2 and x['height']>=25 for x in metrics['cards']),(width,height,key,'a card is clipped',metrics)
    if key=='home': check_macro_cards()
+   if key=='home' and width>=1280: check_candidate_width()
    if key=='home' and height>=850:
     for selector in ('.rc-headline-list','.rc-industry-list'):
      count=page.locator(selector).evaluate("""list=>{
