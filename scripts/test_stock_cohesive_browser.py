@@ -28,11 +28,22 @@ with sync_playwright() as pw:
  def check_macro_cards():
   cards=page.locator('.rc-home-top .rc-macro-card')
   assert cards.count()==2
-  assert cards.locator('thead th').all_text_contents()==['경제 지표 변화','연결','산업 영향']*2
+  assert cards.locator('thead th').all_text_contents()==['경제 지표 변화','연결','산업 영향 예시']*2
   assert cards.locator('h2').all_text_contents()==['세계 경제','한국 경제']
   assert cards.locator('tbody tr').count()==6
   assert cards.locator('.rc-macro-row-icon').count()==6
   assert cards.locator('tbody .rc-macro-arrow').all_text_contents()==['→']*6
+  assert cards.locator('tbody .rc-macro-impact').all_text_contents()==[
+   '금리가 오르면 달러 대출이 비싸져 주택·기업 투자가 줄 수 있어요.',
+   '국채 금리가 오르면 기업이 장기로 돈을 빌릴 때 이자가 늘 수 있어요.',
+   '물가가 소득보다 빨리 오르면 소비가 줄어 유통·외식에 부담이 될 수 있어요.',
+   '금리가 오르면 대출 이자가 늘어 국내 소비가 줄 수 있어요.',
+   '환율이 오르면 수입 원가는 늘고, 같은 달러 매출도 원화로는 커져요.',
+   '코스피가 내려도 업종별 등락은 달라요. 아래 산업 핵심에서 비교해요.',
+  ]
+  assert cards.locator('tbody .rc-macro-impact').evaluate_all(
+   'els=>els.every(x=>x.scrollWidth<=x.clientWidth+1 && x.scrollHeight<=x.clientHeight+1)')
+
   assert cards.evaluate_all("""els=>els.every(card=>{
     const arr=[...card.querySelectorAll('.rc-macro-arrow')].map(x=>x.getBoundingClientRect());
     const impacts=[...card.querySelectorAll('.rc-macro-impact')].map(x=>x.getBoundingClientRect());
