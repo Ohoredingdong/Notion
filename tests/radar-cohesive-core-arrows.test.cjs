@@ -15,7 +15,7 @@ const html=context.candidatePanel({companies:[c],company:c,data:{raw:{}},helpers
 console.log('Home Samsung rendered arrows verified: annual 6 up; snapshot debt/cash and valuation 5 unavailable');
 vm.runInContext(`const date=x=>x||'—',link=(href,label)=>'<a href="'+esc(href)+'">'+esc(label)+'</a>';`+extract('const macroIcons=','function spark('),context);
 const kr=context.macroPanel({data},true),world=context.macroPanel({data},false);
-for(const [card,labels] of [[kr,['한국 경제','한국 기준금리','원/달러','코스피','차입 비용 · 내수','수입 원가 · 수출','국내 주식 흐름']],[world,['세계 경제','미국 기준금리','미국 10년물','미국 물가','조달 비용 · 달러','할인율 · 장기 조달','소비 · 가격 부담']]]){
+for(const [card,labels] of [[kr,['한국 경제','한국 기준금리','원/달러','코스피','금리가 오르면 대출 이자가 늘어 국내 소비가 줄 수 있어요.','환율이 오르면 수입 원가는 늘고, 같은 달러 매출도 원화로는 커져요.','코스피가 내려도 업종별 등락은 달라요. 아래 산업 핵심에서 비교해요.']],[world,['세계 경제','미국 기준금리','미국 10년물','미국 물가','금리가 오르면 달러 대출이 비싸져 주택·기업 투자가 줄 수 있어요.','국채 금리가 오르면 기업이 장기로 돈을 빌릴 때 이자가 늘 수 있어요.','물가가 소득보다 빨리 오르면 소비가 줄어 유통·외식에 부담이 될 수 있어요.']]]){
  for(const label of labels)assert(card.includes(label),label);
  assert.equal((card.match(/<td class="rc-macro-arrow" aria-hidden="true">→<\/td>/g)||[]).length,3);
  assert.equal((card.match(/<td class="rc-macro-impact">/g)||[]).length,3);
