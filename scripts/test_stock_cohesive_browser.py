@@ -65,8 +65,9 @@ with sync_playwright() as pw:
   for label in ['전망','산업','핵심 성장','협력업체']:
    expect(card.locator('.rc-candidate-factors')).to_contain_text(label)
   if page.viewport_size['height']>=850:
-   button=card.locator(':scope > [data-rc-stock]')
-   assert button.bounding_box()['y']+button.bounding_box()['height']<=card.bounding_box()['y']+card.bounding_box()['height']+1
+   button=card.locator('.rc-candidate-footer > [data-rc-stock]')
+   br,cr=button.bounding_box(),card.bounding_box()
+   assert br['y']+br['height']<=cr['y']+cr['height']+1,(br,cr)
  check_home_heading()
  check_macro_cards()
  check_candidate_width()
