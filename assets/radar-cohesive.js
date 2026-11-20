@@ -56,12 +56,12 @@ function context(){
  return {...state,data,selected:c?id(c):selected,market:country,country,companies,favorites:normalized,helpers:frameWindow?.StockRadarV2Bridge?.helpers,company:c||null,allCompanies:pool};
 }
 // Direction is relative movement only, never an investment-quality judgment.
-function compare(value,previous,{verified=false,label='동일 기준 이전 값'}={}){
+function compare(value,previous,{verified=false,label='동일 기준 이전 값',compactMissing=false}={}){
  const valid=verified===true&&n(value)!==null&&n(previous)!==null;
  const state=!valid?'missing':value>previous?'up':value<previous?'down':'flat';
  const word={up:'상승',down:'하락',flat:'동일',missing:'비교 없음'}[state];
  const title=valid?label+' 대비 '+word+' (이전 '+fmt(previous)+') · 좋고 나쁨의 판단 아님':label+' · 비교 가능한 이전 자료 미확인';
- return '<span class="rc-compare rc-compare-'+state+'" title="'+esc(title)+'" aria-label="'+esc(title)+'">'+({up:'↑',down:'↓',flat:'=',missing:'비교 없음'}[state])+'</span>';
+ return '<span class="rc-compare rc-compare-'+state+'" role="img" title="'+esc(title)+'" aria-label="'+esc(title)+'">'+({up:'↑',down:'↓',flat:'=',missing:compactMissing?'◦':'비교 없음'}[state])+'</span>';
 }
 function verifiedDaily(c){
  const d=c?.daily_change;
@@ -116,11 +116,13 @@ const macroIcons={
  fx:'<path d="M2 5h11l-3-3M14 11H3l3 3"/>',
  stocks:'<path d="M3 13h10M5 10V5m3 5V2m3 8V7"/>'
 };
+// Inline flag fallback: Windows can render regional-indicator emoji as letters.
+const homeKoreaFlag='<svg viewBox="0 0 44 44" focusable="false"><g transform="rotate(32 22 22)"><path fill="#cc303e" d="M12 22a10 10 0 0 1 20 0Z"/><path fill="#194f9c" d="M12 22a10 10 0 0 0 20 0Z"/><circle fill="#cc303e" cx="17" cy="22" r="5"/><circle fill="#194f9c" cx="27" cy="22" r="5"/></g><g fill="none" stroke="#263039" stroke-width="1.35"><path transform="rotate(-56 10 11)" d="M5 9h10M5 11.5h10M5 14h10"/><path transform="rotate(56 34 11)" d="M29 9h4m2 0h4m-10 2.5h10m-10 2.5h4m2 0h4"/><path transform="rotate(56 10 33)" d="M5 30h10M5 32.5h4m2 0h4m-10 2.5h10"/><path transform="rotate(-56 34 33)" d="M29 30h4m2 0h4m-10 2.5h4m2 0h4m-10 2.5h4m2 0h4"/></g></svg>';
 function macroPanel(ctx,kr){
  const source=ctx.data.macro?.indicators||{},title=kr?'한국 경제':'세계 경제';
  const spec=kr?[['한국 기준금리','bok_policy','차입 비용 · 내수','rates'],['원/달러','usdkrw','수입 원가 · 수출','fx'],['코스피','kospi','국내 주식 흐름','stocks']]:[['미국 기준금리','fed_policy','조달 비용 · 달러','rates'],['미국 10년물','us_10y','할인율 · 장기 조달','yield'],['미국 물가','us_cpi','소비 · 가격 부담','prices']];
  const generated=ctx.data.macro?.generated_at;
- return '<section class="rc-card rc-macro-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?'🇰🇷':'🌍')+'</div><div class="rc-macro-identity"><div class="rc-macro-title"><h2>'+title+'</h2>'+pill('요약','mint')+'</div><small>'+(kr?'국내 경제 지표와 산업에 미치는 영향':'미국 주요 지표로 보는 세계 경제 흐름')+'</small></div></div><table class="rc-table rc-macro-table" aria-label="'+title+' 지표와 산업 영향"><thead><tr><th scope="col">경제 지표</th><th scope="col">산업에 미치는 영향</th></tr></thead><tbody>'+spec.map(([label,k,impact,icon])=>{
+ return '<section class="rc-card rc-macro-card"><div class="rc-macro-head"><div class="rc-macro-icon" aria-hidden="true">'+(kr?homeKoreaFlag:'🌍')+'</div><div class="rc-macro-identity"><div class="rc-macro-title"><h2>'+title+'</h2>'+pill('요약','mint')+'</div><small>'+(kr?'국내 경제 지표와 산업에 미치는 영향':'미국 주요 지표로 보는 세계 경제 흐름')+'</small></div></div><table class="rc-table rc-macro-table" aria-label="'+title+' 지표와 산업 영향"><colgroup><col class="rc-macro-col-reading"><col class="rc-macro-col-arrow"><col></colgroup><thead><tr><th scope="col">경제 지표 변화</th><th scope="col" class="rc-macro-arrow-head"><span class="rc-visually-hidden">연결</span></th><th scope="col">산업 영향</th></tr></thead><tbody>'+spec.map(([label,k,impact,icon])=>{
  const ix=k==='kospi'?indexRecord(ctx.data,'kospi','^KS11'):null;
  const x=source[k], isPercent=['bok_policy','fed_policy','us_10y','us_cpi'].includes(k), v=n(x?.value);
  const datum=ix?fmt(ix.value):k==='fed_policy'&&n(x?.low)!==null&&n(x?.high)!==null?fmt(x.low)+'–'+fmt(x.high)+'%':k==='us_cpi'&&n(x?.yoy_pct)!==null?fmt(x.yoy_pct)+'%':v===null?null:fmt(v)+(isPercent?'%':'');
@@ -132,7 +134,8 @@ function macroPanel(ctx,kr){
  else if(k==='us_cpi'){current=x?.yoy_pct;previous=x?.previous_yoy_pct;verified=!!x?.source_url;comparisonLabel='직전 월 전년동월비';}
  else if(k==='bok_policy'){previous=x?.previous;verified=!!x?.source_url;comparisonLabel='직전 정책 결정';}
  const direction=compare(current,previous,{verified,label:comparisonLabel});
- return '<tr><th scope="row"><div class="rc-macro-reading"><svg class="rc-macro-row-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+macroIcons[icon]+'</svg><div class="rc-macro-text"><span class="rc-macro-label">'+(x?.source_url?link(x.source_url,label):esc(label))+'</span><small class="rc-macro-value"><strong>'+esc(datum??'미확인')+direction+'</strong>'+(basis?' <span>· '+esc(basis)+'</span>':'')+'</small></div></div></th><td><div class="rc-macro-impact"><span aria-hidden="true">→</span><span>'+esc(impact)+'</span></div></td></tr>';
+ const sourceURL=ix?ix.src:x?.source_url;
+ return '<tr><th scope="row"><div class="rc-macro-reading"><svg class="rc-macro-row-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+macroIcons[icon]+'</svg><div class="rc-macro-text"><span class="rc-macro-label">'+ (sourceURL?link(sourceURL,label):esc(label))+'</span><small class="rc-macro-value"><strong>'+esc(datum??'미확인')+direction+'</strong>'+(basis?' <span>· '+esc(basis)+'</span>':'')+'</small></div></div></th><td class="rc-macro-arrow" aria-hidden="true">→</td><td class="rc-macro-impact">'+esc(impact)+'</td></tr>';
  }).join('')+'</tbody></table><small class="rc-count rc-macro-source">시장 자료 '+esc(date(generated))+' · 원본 발표 시점과 다를 수 있음</small></section>';
 }
 function spark(c,ctx){
@@ -169,12 +172,12 @@ function candidatePanel(ctx){
  const excluded=new Set((fin.supplemental_excluded_fields||[]).map(x=>x.field));
  const previous=k=>excluded.has(k+'_previous')?null:fin[k+'_previous'];
  const basis=(fin.revenue_previous_period||'이전 기간 미확인')+' → '+(fin.filing_period||'기간 미확인')+' 동일 연간 기준';
- const num=(v,prior,verified,format)=>'<span class="rc-number-comparison">'+esc(format(v))+compare(v,prior,{verified,label:basis})+'</span>';
+ const num=(v,prior,verified,format,label=basis)=>'<span class="rc-number-comparison">'+esc(format(v))+compare(v,prior,{verified,label,compactMissing:true})+'</span>';
  const cash=v=>money(v,cur), snap=v=>money(v,bcur);
  const margin=fin.operating_margin_pct??fin.operating_margin;
  const priorMargin=fin.revenue_previous>0&&n(fin.operating_income_previous)!==null?fin.operating_income_previous/fin.revenue_previous*100:null;
- const vals=[num(fin.revenue,fin.revenue_previous,annual,cash),num(fin.operating_income,previous('operating_income'),supp,cash),num(margin,priorMargin,supp&&!excluded.has('operating_income_previous')&&n(fin.operating_income)!==null&&fin.revenue>0&&Math.abs(margin-fin.operating_income/fin.revenue*100)<0.011,pct),num(fin.cfo??fin.operating_cash_flow,previous('cfo'),supp&&n(fin.cfo)!==null,cash),[num(fin.accounts_receivable??balance.accounts_receivable,previous('accounts_receivable'),supp&&n(fin.accounts_receivable)!==null,cash),num(fin.inventory??balance.inventory,previous('inventory'),supp&&n(fin.inventory)!==null,cash)].join(' / '),[num(balance.total_debt??balance.debt,null,false,snap),num(balance.cash,null,false,snap)].join(' / '),[num(per,null,false,fmt),num(pbr,null,false,fmt),num(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct,null,false,pct)].join(' / ')];
- return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table"><thead><tr><th>지표</th><th>저장값</th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+vals[i]+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></div><button type="button" data-rc-stock="'+esc(id(c))+'" style="margin-top:7px">이 기업 분석 ›</button></section>';
+ const vals=[num(fin.revenue,fin.revenue_previous,annual,cash),num(fin.operating_income,previous('operating_income'),supp,cash),num(margin,priorMargin,supp&&!excluded.has('operating_income_previous')&&n(fin.operating_income)!==null&&fin.revenue>0&&Math.abs(margin-fin.operating_income/fin.revenue*100)<0.011,pct),num(fin.cfo??fin.operating_cash_flow,previous('cfo'),supp&&n(fin.cfo)!==null,cash),[num(fin.accounts_receivable??balance.accounts_receivable,previous('accounts_receivable'),supp&&n(fin.accounts_receivable)!==null,cash),num(fin.inventory??balance.inventory,previous('inventory'),supp&&n(fin.inventory)!==null,cash)].join(' / '),[num(balance.total_debt??balance.debt,null,false,snap,'동일 집계 기준의 부채'),num(balance.cash,null,false,snap,'동일 집계 기준의 현금')].join(' / '),[num(per,null,false,fmt,'동일 기준의 PER'),num(pbr,null,false,fmt,'동일 기준의 PBR'),num(valuation.return_on_equity_pct??valuation.roe_pct??fin.roe_pct,null,false,pct,'동일 기준의 ROE')].join(' / ')];
+ return '<section class="rc-card rc-candidate"><div class="rc-card-head"><h2><i class="rc-bar rc-tone-yellow"></i>오늘의 매수후보 검토</h2>'+right+'</div><div class="rc-candidate-info"><div><h3>'+esc(c.name||c.symbol)+'</h3>'+pill(good?'매수후보':'검토용 · 후보 미충족',good?'mint':'yellow')+'</div>'+spark(c,ctx)+'</div><small>검토 근거: '+esc(notes[0]||'성장·현금·가격·향후 성장 및 출처 확인 필요')+'</small><div class="rc-grid rc-candidate-grids"><table class="rc-table rc-candidate-metrics"><thead><tr><th scope="col">지표</th><th scope="col">저장값 <small>◦ 비교 없음</small></th></tr></thead><tbody>'+metrics.map((x,i)=>'<tr><th scope="row">'+x+'</th><td>'+vals[i]+'</td></tr>').join('')+'</tbody></table><div class="rc-candidate-factors">'+factors.map(([a,b,t])=>'<div class="rc-toned rc-tone-'+t+'"><b>'+a+'</b>'+esc(b)+'</div>').join('')+'</div></div><div class="rc-candidate-footer"><p class="rc-toned rc-tone-mint"><small>'+esc(good?'모든 엄격 검증 조건 충족 · 자동매매 신호 아님':qualified?'매수후보 기준 미충족 · 개별 근거 확인':'최신 자료와 일치하는 검증 미확인 · 후보 표시 안 함')+'</small></p><button type="button" data-rc-stock="'+esc(id(c))+'">이 기업 분석 ›</button></div></section>';
 }
 function kstDay(ms){
  return new Date(ms+9*3600000).toISOString().slice(0,10);
