@@ -111,4 +111,51 @@ class CensusTests(unittest.TestCase):
         self.assertAlmostEqual(r['directions']['flat']['precision'],.5)
         self.assertAlmostEqual(r['brier_loss'],(1.04+.24+.24)/3)
 
+    def test_missing_windows_are_grouped_by_true_utc_instant_without_scoring(self):
+        first,_ = fixture()
+        second = deepcopy(first)
+        second['id']='synthetic-same-window-second'
+        second['symbol']='TEST2'
+        second['target']={'start':'2026-10-29T23:00:00+09:00','end':'2026-10-29T23:30:00+09:00'}
+        delivered=proof([first,second])
+        before=json.dumps([first,second,delivered],sort_keys=True)
+        latest={'source_attempts':[
+            {'symbol':name,'mode':'intraday','observed_until':'2026-10-29T15:30:00Z'}
+            for name in ('TEST','TEST2')]}
+        result=examine([first,second],[],delivered,latest)
+        self.assertEqual(result['row_accounting'],{'outcome_missing_at_snapshot':2})
+        clusters=result['missing_target_windows']
+        self.assertEqual(len(clusters),1)
+        group=clusters[0]
+        self.assertEqual(group['target_start_utc'],'2026-10-29T14:00:00+00:00')
+        self.assertEqual(group['target_end_utc'],'2026-10-29T14:30:00+00:00')
+        self.assertEqual(group['symbols'],['TEST','TEST2'])
+        self.assertEqual(group['forecast_ids'],sorted([first['id'],second['id']]))
+        self.assertEqual(group['count'],2)
+        self.assertEqual(group['missing_context_counts'],{'missing_despite_later_source_snapshot':2})
+        self.assertEqual(group['root_cause'],'unverified')
+        self.assertFalse(group['exchange_raw_bars_verified'])
+        self.assertEqual(result['observed_metrics']['samples'],0)
+        self.assertEqual(json.dumps([first,second,delivered],sort_keys=True),before)
+
+    def test_missing_window_clusters_respect_explicit_venue_and_ignore_pending(self):
+        r,_=fixture();r['venue']='KRX';second=deepcopy(r)
+        second['id']='synthetic-other-venue';second['symbol']='TEST2';second['venue']='NXT'
+        result=examine([r,second],[],proof([r,second]))
+        self.assertEqual(len(result['missing_target_windows']),2)
+        self.assertEqual([x['venue'] for x in result['missing_target_windows']],['KRX','NXT'])
+        self.assertEqual([x['count'] for x in result['missing_target_windows']],[1,1])
+        later,_=fixture()
+        pending=examine([later],[],proof([later]),cutoff=ts('2026-10-29T14:15:00Z'))
+        self.assertEqual(pending['missing_target_windows'],[])
+        self.assertEqual(pending['row_accounting'],{'pending_target':1})
+
+    def test_missing_window_clusters_do_not_count_later_reissues(self):
+        original,_=fixture();later=deepcopy(original)
+        later['id']='synthetic-later-reissue';later['issued_at']='2026-10-29T13:36:10Z'
+        result=examine([original,later],[],proof([original,later]))
+        self.assertEqual(result['row_accounting'],{'outcome_missing_at_snapshot':1,'later_reissue':1})
+        self.assertEqual(result['missing_target_windows'][0]['count'],1)
+        self.assertEqual(result['missing_target_windows'][0]['forecast_ids'],[original['id']])
+
 if __name__=='__main__':unittest.main()
