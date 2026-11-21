@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-21T19:59:07.049200+09:00
+- 계산일: 2026-11-22T05:08:17.890826+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,8 +34,8 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
+- [4,900선 무너진 코스피...다음 주 미국 물가·금통위 주목 - YTN](https://news.google.com/rss/articles/CBMidkFVX3lxTE4xeGVFMFoyMlU1TWZnZ1QzZlRWejFrZkZWQ0RGVE1HTkhGc3FLUjVsYWVQLTJsM3dkS0VNWVhsd2JaNmtaME9QSlNUdTg2RG53OE11X0VHT2NRTDBYMjVxYnpQT0FTRFJfUUJuMi1hWkdWMzJtRHc?oc=5)
 - [(11월4주 글로벌 증시 캘린더) 한은 금통위·미국 PCE·GDP…추수감사절 휴장 변수 - https://www.theconnectmoney.com/](https://news.google.com/rss/articles/CBMiYEFVX3lxTE96eU9NbVpYcWstenFWQ1g0cmxad1owbUh6Q0JHQ2xyaUlMNDBwUUgzUTBUc1ZNUEpQRlotbG9jck9LRlVadG1pbS1CYm9sQWZjaHlOcm1XeTZMb3hmRUU2SA?oc=5)
-- [11월 23~27일 한국·미국 증시 주요 일정｜미국 PCE·한국 금통위·델 AI 서버 실적까지 - 네이버 프리미엄콘텐츠](https://news.google.com/rss/articles/CBMifkFVX3lxTE9YVmxmakRDNGxHVmYzY21rVEJtaFRaREc5bnZHT3NPQ0dndHExUzlmME5ZX0lQQ2g1ZmV0UDY1V3Y0NHY2VHY5NVVSSHp2SkVXT0JacHRVN29TMkNiY1NBcG9XODMzbHNWZWJCb3BTZUt0TU1Ray0teGJqRl91QQ?oc=5)
 - [이재용의 원픽…"될 사람이 됐다" 엔비디아 뚫은 30년 삼성맨 (강경주의 테크X) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFBiUFdleVN3by1tamhUajFQczRqMHA2djFDNHJfMmhLMzNBNXNpQl9kYWgyYXdGVUtJRDFoM19MUFQ5TUNveF9OQnJoVFRVLXctNFVBbWpjcU1OUQ?oc=5)
 - [(글로벌 이슈K) 구형 GPU 몸값도 2배…삼성·SK, HBM 호황 더 길어진다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTFB5M09xMXpjcFVBZ0V0bTNLcVlPV3JPQXIxaWZKUE1IX1Q1WHdmbU9LN1NUa0w3Y3FJbk1Ub21naFVZRGZwejBlVHJqMXgzTVlncEdNd3lGX09rYnJr?oc=5)
 
