@@ -31,6 +31,22 @@
 .hist-rank-cards>span{padding:8px 11px;background:#f3f7f5;border-radius:9px;font-size:12px;color:#385c4f}
 @media(max-width:720px){.history-metrics{grid-template-columns:1fr}.hist-settings{grid-template-columns:1fr}.hist-metric strong{font-size:19px}.hist-table-wrap{overflow-x:auto}}
 </style>
+<style>
+.lotto-lab-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:17px 0 12px}
+.lotto-lab-header h3{font-size:16px;margin:0 0 2px}
+.lotto-lab-header .footnote{margin:0}
+.lotto-lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.lotto-model{background:#fbfdfc;border:1px solid #e1eae5;border-radius:12px;padding:13px 14px;min-width:0}
+.lotto-model-head{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:11px}
+.lotto-model-head strong{font-size:12px}
+.lotto-model-head small{font-size:10px;color:#7b8c82}
+.lotto-model .balls{display:flex;gap:6px;flex-wrap:wrap}
+.lotto-model .ball{width:35px;height:35px;font-size:13px}
+.lotto-lab-footer .notice{line-height:1.5}
+.lotto-audit-links{display:flex;flex-wrap:wrap;gap:13px;margin-top:13px;font-size:11px}
+.lotto-audit-links a{color:#286a4b;text-decoration:underline}
+@media(max-width:760px){.lotto-lab-grid{grid-template-columns:1fr}.lotto-lab-header{align-items:flex-start}.lotto-model .ball{width:34px;height:34px}}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -50,6 +66,38 @@
 </div><div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <section id="page-history" class="page hidden">
+
+  <div class="panel" id="lottoLiveAudit" style="margin-bottom:18px">
+    <div class="panel-header">
+      <div><h2>실전 적중 검증 · 추첨 전 기록</h2>
+      <p class="panel-sub">예측번호는 실제 추첨 전에 확정하고, 독립적인 두 데이터 출처의 당첨 결과로 검증합니다.</p></div>
+      <span class="small-tag" id="lottoAuditBadge">검증 데이터 연결 중</span>
+    </div>
+    <div class="history-metrics">
+      <div class="hist-metric"><small>검증된 최신 회차</small><strong id="lottoAuditDraw">—</strong><span id="lottoAuditDate">독립 데이터 확인 중</span></div>
+      <div class="hist-metric"><small>실전 예측 판정 완료</small><strong id="lottoAuditN">—</strong><span>추첨 전 봉인된 번호만 인정</span></div>
+      <div class="hist-metric"><small>예측 우위 입증</small><strong id="lottoAuditProof">확인 중</strong><span>엄격한 사전등록 증거 기준</span></div>
+    </div>
+    <div class="lotto-lab-header"><div>
+      <h3 id="lottoNextTitle">다음 회차 예측 기록 확인 중</h3>
+      <p class="footnote" id="lottoNextMeta">실험용 번호를 가져오고 있습니다.</p>
+      </div><button type="button" class="btn" id="lottoAuditRefresh">새로고침</button></div>
+    <div class="lotto-lab-grid" id="lottoAuditTickets"></div>
+    <p class="footnote" style="margin-top:10px"><strong>표시된 번호는 연구 기록이며 추천 정확도나 1등 당첨 가능성이 더 높다는 뜻이 아닙니다.</strong> 모든 6개 조합의 1등 확률은 1/8,145,060입니다.</p>
+    <div class="subtle-rule"></div>
+    <h3 style="font-size:15px;margin:4px 0 10px">실전 채점표 · 미래 데이터만 인정</h3>
+    <div id="lottoAuditTable" class="hist-table-wrap"><p class="footnote">아직 발표된 실전 검증 데이터가 없습니다.</p></div>
+    <div class="lotto-lab-footer">
+      <div class="notice" id="lottoAuditStatus" style="margin:0">검증 데이터 접속을 확인하고 있습니다.</div>
+      <p class="footnote" style="margin:8px 0 0">자동 점검: 일~수 오전 11:17(KST) 예약, 실행 시각은 GitHub Actions 사정에 따라 지연될 수 있습니다. 새 회차 결과가 두 출처에서 모두 일치할 때만 갱신합니다. 실전 적중은 기록 당시 회차의 추첨 전에 고정한 번호만 인정하며, 학습된 모델이 다음 모든 회차를 100% 맞힌다는 주장은 하지 않습니다.</p>
+    </div>
+    <div class="lotto-audit-links">
+      <a href="./lotto-research-state.json" target="_blank" rel="noopener noreferrer">최신 결과·검증 상태</a>
+      <a href="./lotto-prediction-ledger.json" target="_blank" rel="noopener noreferrer">예측 원본·해시 기록</a>
+      <a href="https://github.com/Ohoredingdong/Notion/actions/workflows/lotto-research.yml" target="_blank" rel="noopener noreferrer">자동 검증 실행 기록</a>
+    </div>
+  </div>
+
   <div class="panel" style="margin-bottom:18px">
     <div class="panel-header"><div><h2>역대 당첨번호 · 전수 검증</h2><p class="panel-sub">제1회~제1251회(2026.11.21) 실측 데이터 / 두 독립 데이터셋 1,251회 일치 검증</p></div><span class="small-tag">과거 기록 분석</span></div>
     <div class="history-metrics">
@@ -315,5 +363,77 @@ const historyTab=document.querySelector('.tab[data-tab="history"]');if(historyTa
 <script>
 (function(){const weights=[-1.8763584534,0.0059990594,-0.0244965902,-0.0065296167,0.0122635246,-0.008924629,0.0011226058,0.0090274232,0.0187813367,-0.0024536606,-0.0093469273,-0.0147713984];const full=JSON.parse(document.getElementById('history-data').textContent).split(';').map(x=>x.split(',').map(Number).slice(0,6));const N=full.length,counts=Array.from({length:N+1},()=>new Uint16Array(46)),last=Array.from({length:N+1},()=>new Uint16Array(46));for(let t=0;t<N;t++){counts[t+1].set(counts[t]);last[t+1].set(last[t]);for(const n of full[t]){counts[t+1][n]++;last[t+1][n]=t+1;}}const f=(t,n)=>{function z(span){const s=Math.min(t,span),freq=counts[t][n]-counts[t-s][n],ev=s*6/45,sd=Math.sqrt(s*(6/45)*(39/45));return Math.max(-2,Math.min(2,(freq-ev)/Math.max(sd,.01)))/2;}const tz=Math.max(1,t),ev=tz*6/45,sd=Math.sqrt(tz*(6/45)*(39/45));return [1,(n-23)/23,Math.max(-2,Math.min(2,(counts[t][n]-ev)/Math.max(sd,.01)))/2,z(10),z(30),z(100),Math.min(100,t-last[t][n])/50-1,t>0?Number(full[t-1].includes(n)):0,t>1?Number(full[t-2].includes(n)):0,n%2-.5,Math.sin(2*Math.PI*n/10),Math.cos(2*Math.PI*n/10)];};const scores=Array.from({length:45},(_,i)=>i+1).map(n=>{const x=f(N,n);let z=0;for(let j=0;j<x.length;j++)z+=x[j]*weights[j];return{n,p:1/(1+Math.exp(-z))};}).sort((a,b)=>b.p-a.p||a.n-b.n);const balls=document.getElementById('mlSuggestBalls');for(const n of scores.slice(0,6).map(x=>x.n).sort((a,b)=>a-b)){const node=document.createElement('span');node.className='ball b'+(Math.floor((n-1)/10)+1);node.textContent=n;balls.append(node);}const expected=[5,23,25,28,36,44];const actual=scores.slice(0,6).map(x=>x.n).sort((a,b)=>a-b);if(expected.join(',')!==actual.join(',')){balls.textContent='학습 결과 검증에 실패했습니다. 번호를 표시하지 않습니다.';}}
 )();
+</script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n).toLocaleString('ko-KR');
+const tags=[['logit','로지스틱 회귀 AI'],['ridge','릿지 회귀 AI'],['stump','결정나무 AI'],['hot30','최근 30회 빈도'],['hotall','전체 누적 빈도'],['random','무작위 기준선']];
+function ball(n){
+ const e=document.createElement('span');e.className='ball b'+(Math.floor((n-1)/10)+1);e.textContent=String(n);return e;
+}
+function validTicket(nums){return Array.isArray(nums)&&nums.length===6&&new Set(nums).size===6&&nums.every(n=>Number.isInteger(n)&&n>=1&&n<=45);}
+function renderTable(state){
+ const el=$('lottoAuditTable');el.replaceChildren();
+ const tbl=document.createElement('table');tbl.className='hist-result-table';
+ const hd=document.createElement('thead'),hr=document.createElement('tr');
+ for(const t of ['사전등록 방식','검증 회차','맞힌 번호 합계','1등','증거 지수']){const cell=document.createElement('th');cell.textContent=t;hr.append(cell);}hd.append(hr);tbl.append(hd);
+ const tb=document.createElement('tbody');
+ for(const [id,name] of tags){
+  const m=state.prospective.models[id];if(!m)continue;
+  const tr=document.createElement('tr');
+  const values=[name,fmt(m.settled_predictions),fmt(m.number_matches),fmt(m.exact_first_prizes),id==='random'?'기준선':Number(m.e_value).toFixed(3)+' / '+fmt(m.evidence_threshold)];
+  for(const v of values){const td=document.createElement('td');td.textContent=v;tr.append(td);}tb.append(tr);
+ }
+ tbl.append(tb);el.append(tbl);
+}
+async function refresh(){
+ const set=$('lottoAuditStatus');set.textContent='독립 출처 검증 데이터를 불러오는 중입니다.';
+ $('lottoAuditRefresh').disabled=true;
+ try{
+  const res=await fetch('./lotto-research-state.json?lotto_t='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw new Error('검증 JSON HTTP '+res.status);
+  const d=await res.json();
+  if(d.schema_version!==1||d.source_validation?.status!=='two_independent_sources_agree'||
+     !d.prospective?.models||!d.latest_verified_draw)throw new Error('독립 검증 실패 또는 상태 형식이 올바르지 않습니다.');
+  $('lottoAuditDraw').textContent=fmt(d.latest_verified_draw)+'회';
+  $('lottoAuditDate').textContent=d.latest_verified_date+' 당첨번호 기준';
+  $('lottoAuditN').textContent=fmt(d.prospective.verified_rounds)+'회';
+  $('lottoAuditProof').textContent=d.prospective.any_model_with_verified_advantage?'통계적 개선 신호':'미입증';
+  $('lottoAuditBadge').textContent='2개 출처 일치 · 검증';
+  $('lottoNextTitle').textContent=d.next_target_draw+'회 · 추첨 전 봉인 예측번호';
+  const ticket=d.latest_forecast;
+  const target=$('lottoAuditTickets');target.replaceChildren();
+  if(ticket&&ticket.target_draw===d.next_target_draw){
+   const created=new Date(ticket.created_at_utc);
+   $('lottoNextMeta').textContent='기록 시각: '+created.toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+' · 학습정보: '+fmt(ticket.known_through_draw)+'회까지 · 해시 '+ticket.digest.slice(0,12)+'…';
+   for(const [id,name] of tags){
+    const nums=ticket.tickets[id];if(!validTicket(nums))continue;
+    const card=document.createElement('div');card.className='lotto-model';
+    const head=document.createElement('div');head.className='lotto-model-head';
+    const title=document.createElement('strong');title.textContent=name;
+    const hint=document.createElement('small');hint.textContent=id==='random'?'대조용':'연구용';
+    head.append(title,hint);
+    const balls=document.createElement('div');balls.className='balls';
+    for(const n of nums)balls.append(ball(n));
+    card.append(head,balls);target.append(card);
+   }
+  }else{$('lottoNextMeta').textContent='추첨 전에 검증·봉인된 예측이 아직 없습니다.';target.textContent='인증된 예측 기록이 없거나 데이터 출처 확인이 지연되었습니다.';}
+  renderTable(d);
+  const proof=d.prospective.any_model_with_verified_advantage;
+  const checks=d.prospective.verified_rounds;
+  set.textContent=proof?
+   '독립적인 미래 회차에서 일부 모델의 번호 일치 성적이 사전 고정된 통계 기준에 도달했습니다. 1등 적중 또는 100% 미래 예측을 보장한다는 뜻은 아닙니다.':
+   checks===0?'아직 실제 추첨까지 검증된 예측 0회입니다. 과거 성적을 실전 적중률로 표시하지 않습니다. 다음 추첨 결과가 두 출처에서 일치하면 자동 채점합니다.':
+   '실전 예측 '+fmt(checks)+'회 채점 완료. 통계적으로 입증된 예측 우위는 아직 없습니다. 결과를 보고 과거 예측번호를 교체하지 않습니다.';
+ }catch(err){
+  $('lottoAuditBadge').textContent='확인 실패';
+  set.textContent='검증 데이터 로딩에 실패했습니다. 최신 번호나 성공률을 임의로 표시하지 않습니다. '+String(err.message||err);
+ }finally{$('lottoAuditRefresh').disabled=false;}
+}
+$('lottoAuditRefresh').addEventListener('click',refresh);
+refresh();
+})();
 </script>
 </body></html>
