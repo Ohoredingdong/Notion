@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-22T05:08:17.890826+09:00
+- 계산일: 2026-11-22T20:18:20.369044+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- [4,900선 무너진 코스피...다음 주 미국 물가·금통위 주목 - YTN](https://news.google.com/rss/articles/CBMidkFVX3lxTE4xeGVFMFoyMlU1TWZnZ1QzZlRWejFrZkZWQ0RGVE1HTkhGc3FLUjVsYWVQLTJsM3dkS0VNWVhsd2JaNmtaME9QSlNUdTg2RG53OE11X0VHT2NRTDBYMjVxYnpQT0FTRFJfUUJuMi1hWkdWMzJtRHc?oc=5)
-- [(11월4주 글로벌 증시 캘린더) 한은 금통위·미국 PCE·GDP…추수감사절 휴장 변수 - https://www.theconnectmoney.com/](https://news.google.com/rss/articles/CBMiYEFVX3lxTE96eU9NbVpYcWstenFWQ1g0cmxad1owbUh6Q0JHQ2xyaUlMNDBwUUgzUTBUc1ZNUEpQRlotbG9jck9LRlVadG1pbS1CYm9sQWZjaHlOcm1XeTZMb3hmRUU2SA?oc=5)
-- [이재용의 원픽…"될 사람이 됐다" 엔비디아 뚫은 30년 삼성맨 (강경주의 테크X) - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFBiUFdleVN3by1tamhUajFQczRqMHA2djFDNHJfMmhLMzNBNXNpQl9kYWgyYXdGVUtJRDFoM19MUFQ5TUNveF9OQnJoVFRVLXctNFVBbWpjcU1OUQ?oc=5)
-- [(글로벌 이슈K) 구형 GPU 몸값도 2배…삼성·SK, HBM 호황 더 길어진다 - 뉴스핌](https://news.google.com/rss/articles/CBMiXEFVX3lxTFB5M09xMXpjcFVBZ0V0bTNLcVlPV3JPQXIxaWZKUE1IX1Q1WHdmbU9LN1NUa0w3Y3FJbk1Ub21naFVZRGZwejBlVHJqMXgzTVlncEdNd3lGX09rYnJr?oc=5)
+- ['블랙 먼데이' 공포…韓 금리·美 물가가 증시 향방 가른다 - 머니투데이 - 머니투데이](https://news.google.com/rss/articles/CBMiaEFVX3lxTE5NeEFwOFZRdTJaNmVBdE11MUtKeWJaekw5TktWYTdIQVF3cDl4VlFzY2laWUFaUE1BcndIbmlaU1JSaklCVklmQ0FQUGYycm5YMDhidlJndDREY1h5MEhwSER0dFQ0MTd40gFuQVVfeXFMUHlual9LSEpuejYwNnNFMTAxTFVEcTFma2JvZjVjRzl0SV9ndDN1ai1kX0d3ak05RTM5czZ2eVB4b2RhU2ptZ29jS2Z4bXAtbXFzZm9UclpIRDNJdzFsSnoyNm5iZnNSZnk1MjA2dnc?oc=5)
+- [(채권-주간) 기술주 투매가 밀어붙인 강세…금통위가 브레이크 걸까 / - 연합인포맥스](https://news.google.com/rss/articles/CBMidEFVX3lxTE5Qc0N6WHF0UFRKa1FLdExuX3MwRkJKbU1fYTFNd2lxQ2FHM3E0dm9tcUtDUEJDb2I3RnpzMDNWdnVIRDRZZlFOYnRfemdITU90WUE1b04xLUlNcVBYYzRWQWNpVjMyeVFmVEE5SnY4MzA1NFBX?oc=5)
+- [“호황 끝” 공포에 주가 반토막…삼전닉스 3대 불안의 진실 - 중앙일보](https://news.google.com/rss/articles/CBMiVkFVX3lxTFBRZ3VnSnBrM3ZrN3RRS2xVR3hUTzcySmJYZDdEVHdlTklkaF9WejRGZ0VFMDYyLUk3ZS1ZR20ySnRKbXdoVXdyYW9fLUpFeF9xVFh1ZlRB?oc=5)
+- [삼성 vs SK하이닉스: 어떤 AI 메모리 주식이 더 나은가? 어떻게 투자할 것인가? - TradingKey](https://news.google.com/rss/articles/CBMiqwFBVV95cUxNU2ZoTUFwMldMdlN0RWNCdkdJbERneXdhaXFFSHdxaDNtbjV5VVJKeUFaUXJIdm14Qm1JSzFLcjdYbEdfczZvWjZ4OWRlU2RFRkdTa2dwWmRncmhEa3VFSC1iNEJ2UkswQ1pDZElGQzczVWtOa3Z4QjFQZXByMlpHZUU4X0pPQlROLUFsaVk0SjhheUpZNFkwbE5SdDFJTEhRUDc0c2lXWWhucEk?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
