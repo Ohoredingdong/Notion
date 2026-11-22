@@ -1,0 +1,46 @@
+name: Lotto Research & Pre-draw Verification
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Sun-Wed 11:17 KST, allowing independent public datasets to synchronize.
+    - cron: "17 2 * * 0,1,2,3"
+  push:
+    paths:
+      - "scripts/lotto-research.mjs"
+      - ".github/workflows/lotto-research.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lotto-research-verified
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Self-test reproducibility and future embargo
+        run: node scripts/lotto-research.mjs --self-test
+      - name: Cross-check independent data, score sealed picks, freeze next draw
+        run: node scripts/lotto-research.mjs
+      - name: Commit verified append-only research
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lotto-research-history.json lotto-research-state.json lotto-prediction-ledger.json
+          if git diff --cached --quiet; then
+            echo "No changes in verified forecasts"
+          else
+            git commit -m "data(lotto): independently verified draw, sealed forecast, research scores [skip ci]"
+            git push
+          fi
