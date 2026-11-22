@@ -535,6 +535,144 @@ body:after{display:none}
 @media(max-width:510px){.vault-trio{grid-template-columns:1fr;grid-template-rows:repeat(3,97px)}.vault-sidepick{min-height:97px}.vault-sidepick:before{background:linear-gradient(90deg,#170e15a6 0%,#160d15ec 48%,#160d15fa 100%)}.vault-sidepick img{width:64%;height:100%}.vault-sidepick-text{margin:0 0 0 42%;gap:4px}.vault-sidepick-text small{font-size:9px}.vault-sidepick-text strong{font-size:17px}.vault-sidepick-text em{display:block;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.vault-game,.vault-game-art img,.vault-spotlight img{transition:none}}
 
+
+/* 2026 one-screen cinema lobby */
+html:has(.os-screen),body:has(.os-screen){height:100%;overflow:hidden}
+body:has(.os-screen) .shell{height:100dvh;max-width:none;display:flex;flex-direction:column;padding:10px clamp(9px,1.6vw,28px);overflow:hidden}
+body:has(.os-screen) .archive-sitebar{flex:0 0 49px;min-height:49px;margin-bottom:9px;padding:0 9px 5px;background:#0c080e}
+body:has(.os-screen) .archive-wordmark{font-size:16px}
+body:has(.os-screen) .os-screen{flex:1;min-height:0;aspect-ratio:auto;margin:0;overflow:hidden;position:relative;border:1px solid #765259;background-position:center 53%;background-size:cover}
+.os-wall-shade{position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,#09070de0,#0b060d96 24%,#0c060e77 54%,#08060ab8),linear-gradient(180deg,#0a0711fc 0%,#0a0711fd 23%,#0b0711f9 34%,#0b0711de 51%,#09060edb 75%,#08060ae9)}
+.os-side-rail{position:absolute;top:5%;bottom:5%;left:1.5%;z-index:5;width:52px;border:1px solid #775455;background:#120c16e9;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:10px;clip-path:polygon(0 4%,50% 0,100% 4%,100% 96%,50% 100%,0 96%)}
+.os-side-rail button{color:#d8b58d;border:0;border-bottom:1px solid #674a4b;background:none;width:39px;height:45px;font:24px Georgia,serif;box-shadow:none}
+.os-main-area{position:relative;z-index:2;width:calc(100% - 92px);height:100%;margin-left:81px;display:grid;grid-template-rows:minmax(95px,21%) minmax(0,1fr) 38px;gap:clamp(6px,1.3vh,13px);padding:clamp(8px,1.4vh,17px) clamp(12px,2.3vw,34px) 12px 0}
+.os-brand-head{align-self:center;text-align:center;width:100%;color:#ecd1ae;text-shadow:0 5px 25px #000}
+.os-overline,.os-brand-head p{font:500 clamp(8px,.73vw,11px) Georgia,serif;letter-spacing:clamp(1px,.34vw,4px);color:#b99989}
+.os-brand-head h1{font:normal clamp(31px,4.15vw,65px) Georgia,serif;letter-spacing:.035em;line-height:1.13;margin:7px 0 5px;color:#f4d6a6;white-space:nowrap}
+.os-brand-head h1 em{font-style:normal;color:#d1a16d}
+.os-title-rule{font:14px Georgia,serif;color:#d7b183;letter-spacing:4px}
+.os-brand-head p{margin:4px 0 0}
+.os-showroom{min-height:0;display:grid;grid-template-columns:minmax(0,1.07fr) minmax(0,1fr);gap:clamp(10px,1.2vw,22px)}
+.os-hero-game{position:relative;min-height:0;overflow:hidden;border:1px solid #b4896c;background:#150d14;box-shadow:0 18px 38px #000b,inset 0 0 0 5px #1b1219}
+.os-hero-game:before{content:'';position:absolute;z-index:3;pointer-events:none;inset:8px;border:1px solid #71534c}
+.os-hero-game img{height:100%;width:100%;object-fit:cover;position:absolute;inset:0;filter:brightness(.87) saturate(.8)}
+.os-game-vignette{position:absolute;inset:0;background:linear-gradient(90deg,#0d080fe6,#140b13a0 49%,#140b1369),linear-gradient(0deg,#100911cc,transparent 70%)}
+.os-hero-details{position:absolute;left:clamp(18px,3vw,49px);bottom:clamp(20px,5vh,54px);right:20px;z-index:4}
+.os-caption{color:#e9c393;font:11px Georgia,serif;letter-spacing:2px}
+.os-caption small{font-size:10px;color:#a68b84}
+.os-hero-details h2{font:normal clamp(32px,3.6vw,62px) 'Noto Serif KR',Georgia,serif;color:#f7dfbd;margin:8px 0 9px;text-shadow:0 4px 24px #000}
+.os-hero-details p{font-size:clamp(12px,1.05vw,15px);line-height:1.75;color:#d8c4bb;margin:0 0 17px}
+.os-main-play{padding:13px 21px;min-width:166px;border:1px solid #f3ca99;background:linear-gradient(180deg,#f9dbb1,#c99864);box-shadow:0 6px 26px #0007;color:#321b20;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:28px}
+.os-main-play span{font-size:17px}
+.os-library-box{min-height:0;min-width:0;border:1px solid #735058;background:linear-gradient(160deg,#120b15ef,#120b13ef);padding:clamp(11px,1.3vw,20px);display:flex;flex-direction:column;box-shadow:0 17px 35px #0009}
+.os-library-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex:0 0 auto;margin-bottom:clamp(8px,1.4vh,13px)}
+.os-mini-kicker{font:10px Georgia,serif;color:#bf957c;letter-spacing:2px}
+.os-library-title h2{font:normal clamp(19px,1.6vw,25px) 'Noto Serif KR',Georgia,serif;color:#edd5b4;margin:5px 0 0}
+.os-library-title h2 small{color:#a78f86;font:11px Georgia,serif;margin-left:10px}
+.os-pagination{display:flex;gap:6px}.os-pagination button{height:34px;width:34px;border:1px solid #6f5051;background:#291923;color:#efd5b1;font:26px Georgia,serif;line-height:20px}
+.os-small-games{min-height:0;flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(6px,.75vw,11px)}
+.os-small-game{position:relative;min-height:0;overflow:hidden;background:#1c111b;border:1px solid #684b4a;padding:0;isolation:isolate;color:#f2dfc5;text-align:left;box-shadow:inset 0 0 0 3px #1c111a}
+.os-small-game:hover{border-color:#d6ad77}
+.os-small-game img{position:absolute;width:100%;height:100%;inset:0;object-fit:cover;opacity:.9;filter:saturate(.8)}
+.os-option-shade{position:absolute;inset:0;background:linear-gradient(180deg,#100b114d,transparent 38%,#0c0812f2)}
+.os-option-number{position:absolute;top:9px;left:10px;font:10px Georgia,serif;color:#f0c58e}
+.os-option-name{position:absolute;left:9px;right:18px;bottom:10px;font-size:clamp(11px,1.08vw,15px);font-weight:800;color:#ffebcf;text-shadow:0 1px 8px #000}
+.os-option-play{position:absolute;right:8px;bottom:8px;color:#e5b887;font-size:16px}
+.os-library-foot{display:flex;justify-content:space-between;align-items:center;flex:0 0 34px;margin-top:8px;border-top:1px solid #65454d;padding-top:7px}
+.os-page-dots{color:#edc895;letter-spacing:2px;font-size:12px}
+.os-library-foot button{font-size:12px;background:none;color:#dfbfab;border:0;padding:6px 0;box-shadow:none}
+.os-footer-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#aa8d87;font:clamp(8px,.7vw,10px) Georgia,serif;letter-spacing:1.2px;border-top:1px solid #684447a1;padding-top:8px}
+.os-footer-bar b{font:700 15px Georgia,serif;color:#efd1a7}
+.os-modal-backdrop{position:absolute;inset:0;z-index:18;background:#070509e3;backdrop-filter:blur(5px)}
+.os-modal{position:absolute;inset:clamp(11px,3%,30px) clamp(10px,5%,65px);max-width:1030px;margin:auto;z-index:20;display:flex;flex-direction:column;min-height:0;border:1px solid #a7816d;background:linear-gradient(145deg,#24141e,#0e0b13 65%);box-shadow:0 30px 110px #000d;padding:clamp(12px,2.2vw,26px)}
+.os-modal-heading{display:flex;justify-content:space-between;align-items:start;gap:10px;border-bottom:1px solid #654b4d;padding-bottom:12px}
+.os-modal-heading small{color:#bc927f;font:10px Georgia,serif;letter-spacing:2px}
+.os-modal-heading h2{color:#f5d9b5;font:normal clamp(24px,2.6vw,37px) Georgia,serif;margin:5px 0 0}
+.os-modal-heading h2 span{color:#aa7f70;font:14px Georgia,serif;margin-left:10px}
+.os-close{background:#2d1d26;border:1px solid #835f5d;color:#f5d9b5;font-size:22px;width:38px;height:38px}
+.os-modal-tools{display:flex;gap:11px;margin:15px 0 8px;flex-wrap:wrap}
+.os-season-tabs{flex:1;min-width:0;display:flex;gap:4px;flex-wrap:wrap}
+.os-season-tabs button{background:#221620;border:1px solid #63494f;color:#cbb4ac;padding:8px 10px;font-size:11px}
+.os-season-tabs button.on{color:#291922;background:#dfb88d;border-color:#f2d4a5;font-weight:800}
+.os-search-wrapper{border:1px solid #735453;background:#110d13;display:flex;align-items:center;min-width:195px;padding:0 9px;gap:6px;color:#edc594}
+.os-search-wrapper span{font-size:23px}.os-search-wrapper input{background:none;color:#f9e2c8;border:0;outline:none;min-width:0;width:180px;font-size:12px;padding:9px 0}
+.os-results-count{font:11px system-ui,sans-serif;color:#ddbba4;margin:6px 0 10px}
+.os-results-count span{color:#967b77}.os-results{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid #49343a}
+.os-result{display:flex;align-items:center;gap:12px;padding:10px 13px;border-bottom:1px solid #3f3036;min-height:57px}
+.os-result-symbol{display:grid;place-items:center;flex:0 0 37px;height:37px;color:#e4bd91;background:#281923;border:1px solid #664c4a;font:17px Georgia,serif}
+.os-result-info{min-width:0;flex:1;display:flex;align-items:baseline;gap:13px}
+.os-result-info strong{color:#edddca;font-size:13px}.os-result-info small{color:#a38987;font-size:11px}
+.os-result button{border:1px solid #c89865;background:#34212a;color:#f8dab2;font-size:11px;padding:7px 12px}
+.os-locked{color:#846f70;font-size:11px}.os-no-results{padding:30px;text-align:center;color:#bfa6a1}
+.os-modal-footer{font-size:10px;color:#937d7e;padding-top:12px}
+body:has(.arena-stage){overflow:hidden;height:100dvh}
+body:has(.arena-stage) .shell{height:100dvh;max-width:none;padding:10px clamp(10px,2vw,26px);display:flex;flex-direction:column;overflow:hidden}
+body:has(.arena-stage) .archive-sitebar{flex-shrink:0;margin-bottom:8px;min-height:46px}
+body:has(.arena-stage) .arena-heading{flex:0 0 auto;min-height:0;padding:0}
+body:has(.arena-stage) .arena-heading-front{padding:12px clamp(16px,2vw,28px) 14px}
+body:has(.arena-stage) .arena-kicker{margin:6px 0;font-size:9px}
+body:has(.arena-stage) .arena-heading h1{font-size:clamp(25px,3.2vw,40px)}
+body:has(.arena-stage) .arena-meta{margin-top:8px}
+body:has(.arena-stage) .arena-stage{flex:1;min-height:0;overflow:hidden;margin-top:8px}
+body:has(.arena-stage) .arena-stage .panel{min-height:0;overflow:auto;overscroll-behavior:contain}
+@media(max-height:770px) and (min-width:751px){
+ .os-main-area{grid-template-rows:minmax(77px,18%) minmax(0,1fr) 30px;padding-top:6px;gap:7px}
+ .os-brand-head h1{font-size:clamp(28px,3.55vw,51px);margin:2px 0 1px}
+ .os-brand-head p,.os-overline{font-size:9px}
+ .os-library-foot{flex-basis:25px;margin-top:5px}
+ .os-hero-details{bottom:24px}.os-hero-details h2{font-size:clamp(30px,3vw,44px)}
+}
+@media(max-width:750px){
+ body:has(.os-screen) .shell{padding:7px 8px 8px}
+ body:has(.os-screen) .archive-sitebar{flex-basis:42px;min-height:42px;margin-bottom:6px;padding:0 5px 4px}
+ body:has(.os-screen) .archive-wordmark{font-size:13px;gap:5px}
+ body:has(.os-screen) .archive-sitebar-right>span{display:none}
+ body:has(.os-screen) .archive-tiny{font-size:10px;padding:7px 9px}
+ .os-side-rail{display:none}
+ .os-main-area{margin:0;width:100%;padding:8px 9px 9px;grid-template-rows:minmax(65px,14%) minmax(0,1fr) 29px;gap:8px}
+ .os-brand-head h1{font-size:clamp(26px,7.2vw,38px);margin:2px 0}
+ .os-overline,.os-brand-head p{font-size:7px;letter-spacing:1px}
+ .os-title-rule{font-size:10px;letter-spacing:1px}
+ .os-showroom{grid-template-columns:1fr;grid-template-rows:minmax(0,.47fr) minmax(0,.53fr);gap:8px}
+ .os-hero-details{left:20px;bottom:14px}
+ .os-hero-details h2{font-size:26px;margin:4px 0}
+ .os-hero-details p{font-size:11px;margin:0 0 8px}
+ .os-caption{font-size:8px}
+ .os-main-play{min-width:118px;padding:8px 10px;font-size:11px}
+ .os-library-box{padding:9px}
+ .os-mini-kicker{font-size:8px}.os-library-title{margin-bottom:6px}
+ .os-library-title h2{font-size:17px;margin:2px 0}
+ .os-library-title h2 small{font-size:9px}
+ .os-pagination button{width:27px;height:26px;font-size:20px}
+ .os-small-games{gap:5px}
+ .os-option-name{font-size:11px;left:6px;bottom:5px;right:7px}
+ .os-option-number{font-size:9px;top:5px;left:6px}
+ .os-option-play{display:none}
+ .os-library-foot{flex-basis:22px;margin-top:4px;padding-top:4px}
+ .os-library-foot button{font-size:10px}
+ .os-footer-bar{font-size:8px;padding-top:5px}
+ .os-footer-bar>span:first-child,.os-footer-bar>span:last-child{display:none}
+ .os-footer-bar>span{margin:auto}
+ .os-modal{inset:8px;padding:12px}
+ .os-modal-heading h2{font-size:25px}
+ .os-modal-tools{margin:9px 0 4px}.os-search-wrapper{width:100%;min-width:0}
+ .os-search-wrapper input{width:100%}
+ .os-result-info{display:block}
+ .os-result-info small{display:block;margin-top:3px}
+ body:has(.arena-stage) .arena-stage{grid-template-columns:1fr;overflow:auto;display:block}
+ body:has(.arena-stage) .arena-stage .panel{overflow:visible;margin-bottom:10px}
+}
+@media(max-width:750px) and (max-height:720px){
+ .os-main-area{grid-template-rows:58px minmax(0,1fr) 22px;gap:5px;padding:6px}
+ .os-showroom{grid-template-rows:minmax(0,.41fr) minmax(0,.59fr);gap:5px}
+ .os-hero-details h2{font-size:23px}
+ .os-hero-details p{display:none}
+ .os-main-play{padding:6px 9px;margin-top:6px}
+ .os-library-title h2{font-size:15px}
+ .os-library-foot{margin-top:3px;flex-basis:18px}
+ .os-option-name{font-size:10px}
+}
+
 </style></head><body><div id="app" class="shell"></div><script>
 'use strict';
 const groups={
@@ -575,31 +713,34 @@ const gameProfiles={"흑과 백": {"genre": "숫자 · 심리전", "desc": "보�
 let archiveOpen=false, shelfGenre='all';
 const genreCategories={all:'전체',mind:'심리·카드',strategy:'전략·보드',memory:'기억·퍼즐'};
 const genreLookup={'흑과 백':'mind','인디언 포커':'mind','결! 합!':'memory','십이장기':'strategy','1·2·3 게임':'mind','마이너스 경매':'mind','나인 멘스 모리스':'strategy','콰트로':'mind','헥사곤':'memory','같은 숫자 찾기':'memory','같은 그림 찾기':'memory','연승게임':'mind'};
-function openLibrary(){archiveOpen=true;showHome();requestAnimationFrame(()=>$('#game-library')?.scrollIntoView({behavior:'smooth',block:'start'}))}
-function closeLibrary(){archiveOpen=false;showHome();requestAnimationFrame(()=>$('#game-collection')?.scrollIntoView({behavior:'smooth',block:'start'}))}
-function selectShelfGenre(g){shelfGenre=g;showHome();requestAnimationFrame(()=>$('#game-collection')?.scrollIntoView({behavior:'smooth',block:'start'}))}
-function home(){if(typeof hexClock!=='undefined')clearInterval(hexClock);if(typeof memoryClock!=='undefined')clearInterval(memoryClock);current=null;showHome();window.scrollTo({top:0,behavior:'instant'})}
-function setView(v){view=v;archiveOpen=true;showHome();requestAnimationFrame(()=>$('#game-library')?.scrollIntoView({behavior:'smooth',block:'start'}))}
-function searchGames(x){let y=window.scrollY;search=x;archiveOpen=true;showHome(true);window.scrollTo(0,y)}
+
+let osPage=0;
+const osGames=Object.keys(gameProfiles);
+function openLibrary(){archiveOpen=true;showHome();requestAnimationFrame(()=>$('#query')?.focus())}
+function closeLibrary(){archiveOpen=false;showHome()}
+function selectShelfGenre(g){shelfGenre=g;osPage=0;showHome()}
+function changeOsPage(n){osPage=(n+2)%2;showHome()}
+function home(){if(typeof hexClock!=='undefined')clearInterval(hexClock);if(typeof memoryClock!=='undefined')clearInterval(memoryClock);current=null;archiveOpen=false;showHome();window.scrollTo(0,0)}
+function setView(v){view=v;archiveOpen=true;showHome()}
+function searchGames(x){search=x;archiveOpen=true;showHome(true)}
 const rzMarks={'흑과 백':'◐','결! 합!':'◇','연승게임':'✧','1·2·3 게임':'123','인디언 포커':'♠','마이너스 경매':'−','나인 멘스 모리스':'⋈','콰트로':'4','십이장기':'♜','헥사곤':'⬡','같은 숫자 찾기':'∑','같은 그림 찾기':'▦'};
-const featured=[['흑과 백','01','숫자의 이면을 읽다','◐'],['인디언 포커','02','보이지 않는 패를 걸다','♠'],['결! 합!','03','규칙 속에 숨은 패턴','◇'],['십이장기','04','마지막 한 수를 두다','♜']];
 function showHome(keepFocus=false){
-  const num=Object.keys(supported).length;
-  const total=new Set(entries.map(x=>x.name)).size;
-  const catalog=entries.filter(x=>(view==='all'||view===x.group||view==='playable'&&x.playable)&&(x.name.includes(search)||x.group.includes(search)));
-  // One compact row per appearance, retaining original season / match order.
-  const selectedGames=Object.keys(gameProfiles).filter(x=>shelfGenre==='all'||genreLookup[x]===shelfGenre);
-  $('#app').innerHTML=header()+`<section class="archive-hero" aria-label="THE PLAY ARCHIVE 메인 로비"><div class="archive-hero-shade"></div><nav class="archive-rail" aria-label="빠른 메뉴"><button class="rail-active" onclick="home()" title="홈" aria-label="홈">⌂</button><button onclick="openLibrary()" title="전체 아카이브" aria-label="전체 아카이브">▦</button><button onclick="selectShelfGenre('all');document.getElementById('game-collection')?.scrollIntoView({behavior:'smooth'})" title="게임 선택" aria-label="게임 선택">♟</button><button onclick="document.getElementById('game-collection')?.scrollIntoView({behavior:'smooth'})" title="게임 기록" aria-label="게임 기록">♜</button></nav><div class="archive-logo-plaque"><div class="archive-eyebrow">A PRIVATE STRATEGY COLLECTION</div><h1>THE PLAY <span>ARCHIVE</span></h1><div class="archive-logo-rule"><i></i><b>✧</b><i></i></div><div class="archive-logo-sub">STRATEGY <span>·</span> PSYCHOLOGY <span>·</span> SURVIVAL</div></div><div class="archive-feature-grid">${featured.map(([name,n,desc,icon])=>`<button class="archive-feature" onclick="start('${name}')" title="${name} 바로 플레이"><span class="archive-feature-num">ARCHIVE ${n}</span><span class="archive-feature-glyph">${icon}</span><span class="archive-feature-name">${name}</span><span class="archive-feature-desc">${desc}</span><span class="archive-feature-enter">PLAY NOW ↗</span></button>`).join('')}</div><div class="archive-scene-footer"><span>THE GAME BEGINS WITH A CHOICE</span><button onclick="document.getElementById('game-collection')?.scrollIntoView({behavior:'smooth'})">게임 선택하기 <b>↓</b></button><span>AI MATCH / OFFLINE SINGLE PLAYER</span></div></section>
-  <section class="vault-collection" id="game-collection"><div class="vault-intro"><div><div class="vault-eyebrow"><i></i> ENTER THE GAME ROOM <span>/</span> SOLO CHALLENGE</div><h2>당신의 다음 승부는?</h2><p>방송 속 전략 게임을 골라 AI 플레이어와 대결하세요.</p></div><div class="vault-record"><strong>${num}<small> / ${total}</small></strong><span>게임 플레이 가능<small>${stat.games}회 플레이 · ${stat.wins}회 승리</small></span></div></div>
-   <div class="vault-featured"><button class="vault-spotlight" onclick="start('흑과 백')" aria-label="흑과 백 게임 시작"><img src="${gamePosters['흑과 백']}" alt="검정과 아이보리 숫자 타일 게임 도구"><div class="vault-spotlight-shade"></div><div class="vault-spotlight-content"><div class="vault-smallcap">FEATURED GAME <span>01 / 12</span></div><h3>흑과 백</h3><p>상대의 숫자는 보이지 않습니다.<br>승부를 가르는 것은 단 하나의 선택.</p><span class="vault-enter">AI와 대결 시작 <b>↗</b></span></div></button><div class="vault-trio">${['인디언 포커','결! 합!','십이장기'].map((name,i)=>`<button class="vault-sidepick" onclick="start('${name}')"><img src="${gamePosters[name]}" alt="${name} 게임 도구"><span class="vault-sidepick-text"><small>0${i+2} / SELECT GAME</small><strong>${name}</strong><em>${gameProfiles[name].genre}</em></span><b aria-hidden="true">↗</b></button>`).join('')}</div></div>
-   <div class="vault-shelf-top"><div><span class="vault-eyebrow">THE PLAYABLE COLLECTION</span><h3>게임 컬렉션 <em>${num} GAMES</em></h3></div><div class="vault-filterbar" role="group" aria-label="게임 종류">${Object.entries(genreCategories).map(([key,label])=>`<button class="vault-genre ${shelfGenre===key?'is-active':''}" onclick="selectShelfGenre('${key}')" aria-pressed="${shelfGenre===key}">${label}</button>`).join('')}</div></div>
-   <div class="vault-grid">${selectedGames.map((name,i)=>`<button class="vault-game" onclick="start('${name}')" aria-label="${name} 시작"><span class="vault-game-art"><img src="${gamePosters[name]}" alt=""><small class="vault-game-number">${String(Object.keys(gameProfiles).indexOf(name)+1).padStart(2,'0')}</small><span class="vault-game-hover">플레이하기 ↗</span></span><span class="vault-game-data"><small>${gameProfiles[name].genre}</small><strong>${name}</strong><span>${gameProfiles[name].desc}</span></span></button>`).join('')}</div>
-  </section>
-  <section class="vault-index" id="game-library"><div class="vault-index-head"><div class="vault-index-label"><span class="vault-eyebrow">THE COMPLETE ARCHIVE</span><h2>전체 게임 기록</h2><p>더 지니어스 1~4 · 데블스 플랜 1~3 · 방송 게임 등장 목록</p></div><button class="vault-index-toggle" onclick="${archiveOpen?'closeLibrary()':'openLibrary()'}" aria-expanded="${archiveOpen}" aria-controls="vault-index-content"><span>전체 목록 ${total}종 ${archiveOpen?'접기':'펼치기'}</span><b>${archiveOpen?'−':'+'}</b></button></div>
-  ${archiveOpen?`<div id="vault-index-content" class="vault-index-content"><div class="vault-index-tools"><div class="vault-pills"><button class="vault-pill ${view==='all'?'is-current':''}" onclick="setView('all')">모든 시즌</button><button class="vault-pill ${view==='playable'?'is-current':''}" onclick="setView('playable')">플레이 가능</button>${Object.keys(groups).map(x=>`<button class="vault-pill ${view===x?'is-current':''}" onclick="setView('${x}')">${x}</button>`).join('')}</div><input id="query" class="vault-search" type="search" placeholder="게임 이름 검색" value="${txt(search)}" oninput="searchGames(this.value)" aria-label="게임 검색"></div><div class="vault-index-summary">${catalog.length}개 검색 결과 <span>· 플레이 가능한 게임은 시작 버튼이 표시됩니다</span></div><div class="vault-index-list">${catalog.map((x,i)=>`<div class="vault-entry ${x.playable?'is-playable':''}"><span class="vault-entry-id">${String(i+1).padStart(3,'0')}</span><span class="vault-entry-name">${txt(x.name)}<small>${x.type==='main'?'메인매치':'데스·결승전'}</small></span><span class="vault-entry-season">${x.group}</span><span class="vault-entry-state ${x.playable?'ready':''}">${x.playable?'플레이 가능':'제작 예정'}</span>${x.playable?`<button class="vault-entry-action" onclick="start('${x.name}')">시작 ↗</button>`:'<span class="vault-entry-empty">—</span>'}</div>`).join('')}</div>${!catalog.length?'<div class="vault-no-results">검색 결과가 없습니다.</div>':''}</div>`:''}</section>
-  <p class="archive-disclaimer">THE PLAY ARCHIVE는 방송사·넷플릭스와 무관한 비공식 개인용 프로젝트입니다. 현재 AI 대전 12종은 주요 규칙을 참고했으나 일부 세부 규칙과 아이템은 제외되어 있습니다. 나머지 게임은 제작 예정 목록입니다.</p>`;
- if(keepFocus){const inp=$('#query');if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length)}}
+ const total=new Set(entries.map(x=>x.name)).size, catalog=entries.filter(x=>(view==='all'||view===x.group||view==='playable'&&x.playable)&&(x.name.includes(search)||x.group.includes(search)));
+ const pageGames=osGames.slice(osPage*6,osPage*6+6), lead=pageGames[0];
+ const modal=archiveOpen?`<div class="os-modal-backdrop" onclick="closeLibrary()"></div><section class="os-modal" role="dialog" aria-modal="true" aria-label="전체 게임 아카이브"><header class="os-modal-heading"><div><small>THE COMPLETE COLLECTION</small><h2>게임 아카이브 <span>${total}종</span></h2></div><button class="os-close" onclick="closeLibrary()" aria-label="닫기">✕</button></header>
+ <div class="os-modal-tools"><div class="os-season-tabs">${[['all','전체'],['playable','플레이 가능'],...Object.keys(groups).map(x=>[x,x])].map(([key,label])=>`<button class="${view===key?'on':''}" onclick="setView('${key}')">${label}</button>`).join('')}</div><label class="os-search-wrapper"><span>⌕</span><input id="query" type="search" placeholder="게임 이름 검색" aria-label="게임 검색" oninput="searchGames(this.value)" value="${txt(search)}"></label></div>
+ <div class="os-results-count">검색 결과 ${catalog.length}개 <span>· 플레이 가능한 게임에 시작 버튼 표시</span></div><div class="os-results">${catalog.map(x=>`<div class="os-result"><span class="os-result-symbol">${x.playable?(rzMarks[x.name]||'✦'):'◇'}</span><div class="os-result-info"><strong>${txt(x.name)}</strong><small>${x.group} · ${x.type==='main'?'메인매치':'데스·결승전'}</small></div>${x.playable?`<button onclick="start('${x.name}')">플레이 ↗</button>`:'<span class="os-locked">준비 중</span>'}</div>`).join('')||'<div class="os-no-results">검색 결과가 없습니다.</div>'}</div><footer class="os-modal-footer">비공식 개인용 프로젝트 · 방송 게임의 일부 세부 규칙과 아이템은 미구현입니다.</footer></section>`:'';
+ $('#app').innerHTML=header()+`<main class="archive-hero os-screen" aria-label="THE PLAY ARCHIVE 로비"><div class="os-wall-shade"></div><nav class="os-side-rail" aria-label="로비 메뉴"><button onclick="home()" title="홈" aria-label="홈">⌂</button><button onclick="openLibrary()" title="전체 게임" aria-label="전체 게임">▦</button><button onclick="changeOsPage(1)" title="다음 게임" aria-label="다음 게임">♟</button><button onclick="openLibrary()" title="게임 검색" aria-label="게임 검색">⌕</button></nav>
+ <div class="os-main-area"><div class="os-brand-head"><div class="os-overline">✧　A PRIVATE STRATEGY COLLECTION　✧</div><h1>THE PLAY <em>ARCHIVE</em></h1><div class="os-title-rule">─────　✧　─────</div><p>CHOOSE YOUR GAME · CHALLENGE THE MIND</p></div>
+ <div class="os-showroom"><article class="os-hero-game"><img src="${gamePosters[lead]}" alt="${lead} 게임 도구"><div class="os-game-vignette"></div><div class="os-hero-details"><div class="os-caption">FEATURED MATCH　<small>0${osPage+1} / 02</small></div><h2>${lead}</h2><p>${txt(gameProfiles[lead].desc)}</p><button class="os-main-play" onclick="start('${lead}')">게임 시작 <span>↗</span></button></div></article>
+ <section class="os-library-box"><header class="os-library-title"><div><span class="os-mini-kicker">CHOOSE YOUR CHALLENGE</span><h2>게임 선택 <small>${osPage+1} / 2</small></h2></div><div class="os-pagination"><button onclick="changeOsPage(${osPage-1})" aria-label="이전 게임 여섯 개">‹</button><button onclick="changeOsPage(${osPage+1})" aria-label="다음 게임 여섯 개">›</button></div></header>
+ <div class="os-small-games">${pageGames.map((name,i)=>`<button class="os-small-game" onclick="start('${name}')" aria-label="${name} 시작"><img src="${gamePosters[name]}" alt=""><span class="os-option-shade"></span><span class="os-option-number">${String(osPage*6+i+1).padStart(2,'0')}</span><span class="os-option-name">${name}</span><span class="os-option-play">↗</span></button>`).join('')}</div>
+ <div class="os-library-foot"><span class="os-page-dots">${osPage===0?'━━ ──':'── ━━'}</span><button onclick="openLibrary()">전체 ${total}종 아카이브 ↗</button></div></section></div>
+ <div class="os-footer-bar"><span>PRIVATE AI MATCH · 12 GAMES READY</span><span><b>12</b> 플레이 가능　│　<b>${stat.games}</b> 플레이　│　<b>${stat.wins}</b> 승리</span><span>THINK. CHOOSE. PLAY.</span></div></div>${modal}</main>`;
+ if(keepFocus){let input=$('#query');if(input){input.focus();try{input.setSelectionRange(input.value.length,input.value.length)}catch(e){}}}
 }
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&archiveOpen){closeLibrary();e.preventDefault()}});
+
 function start(name){if(typeof hexClock!=='undefined')clearInterval(hexClock);if(typeof memoryClock!=='undefined')clearInterval(memoryClock);current=name;st={};finishText='';log=[];switch(name){case '흑과 백':initBW();break;case '결! 합!':initGH();break;case '연승게임':initStreak();break;case '1·2·3 게임':init123();break;case '인디언 포커':initPoker();break;case '마이너스 경매':initAuction();break;case '나인 멘스 모리스':initMorris();break;case '콰트로':initQuattro();break;case '십이장기':initJang();break;case '헥사곤':initHex();break;case '같은 숫자 찾기':initMemory();break;case '같은 그림 찾기':initPicture();break;}render();window.scrollTo({top:0,left:0,behavior:"instant"})}
 function stage(inner,aside=''){let group=entries.find(x=>x.name===current)?.group||'';$('#app').innerHTML=header()+`<section class="arena-heading"><div class="arena-heading-art"></div><div class="arena-heading-front"><button class="arena-back" onclick="home()">← 아카이브로 돌아가기</button><div class="arena-kicker">THE PLAY ARCHIVE <span>/</span> SOLO AI MATCH</div><h1>${txt(current)}</h1><div class="arena-meta"><span>${group}</span><span>AI OPPONENT</span><span>${ruleStatus[current]||'규칙 구현'}</span></div></div><div class="arena-medallion">✦</div></section><div class="stage arena-stage"><main class="panel mainpanel"><div class="arena-panel-label"><span>THE GAME TABLE</span><span>YOUR TURN / AI MATCH</span></div>${inner}${finishText}<div class="gamebottom"><button class="btn alt" onclick="start(current)">↻ 처음부터 다시</button></div></main><aside class="panel aside"><div class="arena-aside-tag">ARCHIVE FILE / GAME RULES</div><h3>게임 규칙</h3><div class="rule">${txt(supported[current]||'')}</div>${aside}<h3 style="margin-top:22px">진행 기록</h3><div class="log">${log.length?log.map(x=>`<div>${txt(x)}</div>`).join(''):'<div>게임이 시작됐습니다.</div>'}</div></aside></div>`}
 function scores(names,values){return `<div class="scoreboard">${names.map((n,i)=>`<div class="score">${txt(n)}<b>${values[i]}</b></div>`).join('')}</div>`}
