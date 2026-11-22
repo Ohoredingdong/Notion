@@ -112,6 +112,138 @@ body.in-session .main{padding-top:20px}.in-session .siteheader .header-identity{
 @media(max-width:760px){.app{display:block;padding-bottom:59px}.sidebar{display:none}.siteheader{position:sticky;top:0;z-index:9;width:100%;height:auto;min-height:84px;padding:13px 15px;background:#faf7f4eb;backdrop-filter:blur(15px);display:flex;flex-wrap:wrap;gap:10px;border-bottom:1px solid #eee8e4}.header-identity{flex:1 0 100%}.header-greeting{font-size:17px;white-space:normal}.header-identity p{font-size:11px;white-space:normal}.siteheader nav{flex:1;justify-content:space-between;gap:5px;order:2;width:100%;overflow:visible;padding:0}.siteheader .navbtn{flex:1;width:auto;min-height:48px;max-width:none;font-size:10px;border-radius:10px;gap:2px}.siteheader .navbtn .st-icon{width:17px;height:17px}.header-actions{position:absolute;right:12px;top:14px}.date-pill{display:none}.header-round{display:none}.main{padding:14px 12px 12px;min-height:auto}.footer{font-size:9px;margin:18px 2px}.study-dashboard{gap:11px}.dash-top,.dash-bottom{grid-template-columns:1fr;gap:11px}.dash-top>.st-card{height:auto}.dash-middle{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dash-middle>.st-calendar{grid-column:1/-1}.dash-middle>.course-tile{height:164px}.course-tile{padding:12px 4px;gap:7px;border-radius:15px}.course-tile-icon .st-icon{height:33px;width:33px}.course-tile strong{font-size:13px;letter-spacing:-.5px}.tile-sub{font-size:9px}.tile-progress{width:85%;margin-top:0}.tile-progress .st-progress{height:7px}.st-card{padding:15px;border-radius:16px}.st-card-header h2{font-size:16px}.st-calendar{height:auto!important;min-height:250px}.cal-dates{grid-template-rows:repeat(6,27px)}.cal-day{height:27px;width:27px}.weekly-content-grid{grid-template-columns:130px 1fr;gap:7px}.donut{width:127px}.weekly-heading strong{font-size:11px}.weekly-heading small{font-size:9px}.daily-flex{justify-content:flex-start}.lower-card{height:auto!important;min-height:192px}.planner-two{grid-template-columns:1fr}.training-landing{grid-template-columns:repeat(3,1fr)}.training-landing .course-tile{height:185px;min-height:unset}.featured-games,.collection-grid{grid-template-columns:repeat(2,1fr)}.metric-summary{grid-template-columns:repeat(2,1fr)}.inner-card{padding:15px}}
 @media(max-width:400px){.routine-row{grid-template-columns:19px 20px 98px minmax(32px,1fr) 25px 13px;gap:4px}.routine-name{font-size:11px}.routine-panel .st-card-header{flex-wrap:wrap}.weekly-content-grid{grid-template-columns:112px 1fr}.donut{width:110px}.course-tile strong{font-size:12px}.tile-sub{font-size:8px}.siteheader .navbtn{font-size:9px}.featured-games{grid-template-columns:1fr}}
 
+/* Study Training / visual refinement v2 — same IA, improved hierarchy and balance */
+:root{--bg:#faf8f5;--panel:#fffefd;--ink:#292623;--muted:#6f6864;--line:#ebe5e0;--accent:#d99284;--accentlight:#fff0e9;--good:#619176;--bad:#ca5c62;--side:#fffcfa;--shadow:0 10px 26px rgba(71,57,50,.065)}
+body{background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+.app{grid-template-columns:176px minmax(0,1fr);grid-template-rows:94px minmax(0,1fr)}
+.sidebar{padding:22px 13px 16px;background:#fffcfa;border-right-color:#eae5df}
+.study-logo{font-size:16px;letter-spacing:-.7px;padding:8px 7px 27px;font-weight:800;gap:9px}
+.study-logo-mark{width:24px;height:24px;font-size:15px;background:#282728}
+.side-list{gap:6px}.sidebtn{font-size:14px;min-height:46px;padding:11px 11px;gap:11px;font-weight:650;color:#605852}
+.sidebtn .st-icon{width:19px;height:19px;stroke-width:1.8}
+.sidebtn.active{background:#f3e9e3;color:#2d2522}
+.sidebtn:focus-visible,.course-tile:focus-visible,.trend-start:focus-visible{outline:3px solid #8ba6d4;outline-offset:2px}
+.siteheader{height:94px;padding:15px 24px 11px 25px;gap:20px}
+.header-greeting{font-size:22px;line-height:1.25;letter-spacing:-.85px;margin-bottom:7px;color:#292523;font-weight:800}
+.header-identity p{font-size:12.5px;color:#726c69;line-height:1.35}
+.siteheader nav{gap:9px}
+.siteheader .navbtn{width:81px;min-height:64px;font-size:12px;font-weight:680;gap:5px;border-radius:14px;border:1px solid #eee8e3;background:#fffdfa;box-shadow:0 5px 13px #4d3b3210;color:#4d4642}
+.siteheader .navbtn .st-icon{width:23px;height:23px}
+.siteheader .navbtn.active,.siteheader .navbtn:hover{background:#f6eae4;border-color:#efdbd2;color:#8f5e50}
+.header-actions{gap:5px}.header-round{width:39px;height:39px}
+.main{padding:13px 24px 12px 25px}
+.study-dashboard{gap:17px}
+.dash-top{grid-template-columns:1.04fr .96fr;gap:17px}
+.dash-middle{grid-template-columns:1.05fr repeat(3,1fr);gap:16px}
+.dash-bottom{grid-template-columns:1fr 1fr 1fr;gap:16px}
+.dash-top>.st-card{height:236px;min-height:236px}
+.dash-middle>.st-card,.dash-middle>.course-tile{height:229px}
+.dash-bottom>.st-card{height:213px}
+.st-card{background:#fffefd;border:1px solid #ebe4df;border-radius:19px;box-shadow:0 9px 26px rgba(82,62,52,.066);padding:18px 20px}
+.st-card-header{margin-bottom:12px;gap:9px}
+.st-card-header h2{font-size:20px;letter-spacing:-.65px;font-weight:800;color:#2c2725}
+.st-card-header h2 .st-icon{color:#c7836e;width:24px;height:24px}
+.muted-small{font-size:12px;color:#756c67}.muted-small strong{font-size:14px;color:#312a28}
+.st-inline-button{font-size:12px;color:#71635e;padding:6px 4px;font-weight:650}
+.routine-panel{padding:19px 21px}
+.routine-panel .st-card-header{margin-bottom:10px}
+.routine-pill{background:#f8eee9;color:#6c5a54;font-size:12px;padding:6px 12px}
+.routine-pill strong{color:#bb7462}
+.routine-panel .st-card-header>.st-progress{width:91px;margin-right:0}
+.st-progress{height:10px;background:#eee9e6;min-width:28px}
+.st-progress>span{background:#dc9685}.st-progress.st-brain>span{background:#93a9e5}.st-progress.st-reading>span{background:#88b6a1}.st-progress.st-review>span{background:#c5afcf}
+.routine-row{grid-template-columns:23px 27px minmax(94px,1fr) minmax(72px,1.1fr) 40px 20px;gap:8px;min-height:43px;padding:5px 5px;border-bottom:1px solid #f1ebe7;border-radius:8px}
+.routine-row:hover{background:#fbf6f2}
+.routine-checkbox{width:20px;height:20px;border-radius:6px;border-color:#cdbfba}
+.routine-row.done .routine-checkbox{background:#517f69;border-color:#517f69}
+.routine-subject-icon .st-icon{height:23px;width:23px}
+.routine-name{font-size:13px;font-weight:740;letter-spacing:-.3px;color:#34302d}
+.routine-min{font-size:12px;color:#584e4a}
+.routine-status{height:18px;width:18px;background:#df9e8e}
+.routine-row .st-progress{height:9px}
+.st-math{color:#bd7563}.st-brain{color:#6186d1}.st-reading{color:#4e8f6f}.st-review{color:#aa85b9}
+.weekly-panel{padding:19px 20px}.weekly-panel .st-card-header{margin-bottom:8px}
+.weekly-content-grid{grid-template-columns:163px minmax(0,1fr);gap:16px;height:165px}
+.donut{width:155px;height:155px}
+.weekly-rows{gap:13px}.goal-row{gap:10px}
+.weekly-icon{width:35px;height:35px;border-radius:11px;background:#fff0e9}
+.weekly-icon.st-brain{background:#edf1ff}.weekly-icon.st-reading{background:#edf6ed}
+.weekly-heading strong{font-size:13px;font-weight:730;color:#332d29}.weekly-heading small{font-size:11px;color:#645d59}
+.weekly-content .st-progress{height:9px}
+.st-calendar{padding:18px 20px}.st-calendar .st-card-header{margin-bottom:9px}
+.st-calendar .st-card-header h2{font-size:17px;font-weight:780}
+.icon-control{width:29px;height:29px;font-size:25px;color:#574f4b}
+.cal-weekdays{height:22px;font-size:11px;color:#837972;margin-bottom:6px}
+.cal-dates{grid-template-rows:repeat(6,minmax(22px,1fr))}
+.cal-day{width:26px;height:26px;font-size:12px;color:#49423e}
+.cal-day.is-today{background:#edb2a4;color:#392823}
+.cal-foot{font-size:10px;color:#857b75;margin-top:4px}
+.course-tile{position:relative;border-radius:19px;gap:8px;padding:18px 11px;border:1px solid transparent;box-shadow:0 9px 26px #523c3513;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.course-tile.st-math{background:#fff0e9;border-color:#f3dad0}
+.course-tile.st-brain{background:#edf1fd;border-color:#dce4f5}
+.course-tile.st-reading{background:#edf5ed;border-color:#dbeadf}
+.course-tile:hover{transform:translateY(-4px);box-shadow:0 16px 32px #51403820}
+.course-tile-icon{margin:0}.course-tile-icon .st-icon{height:48px;width:48px;stroke-width:1.65}
+.course-tile.st-math .course-tile-icon{color:#c77f65}
+.course-tile.st-brain .course-tile-icon{color:#5f85cd}
+.course-tile.st-reading .course-tile-icon{color:#578d6c}
+.course-tile strong{font-size:21px;letter-spacing:-.75px;font-weight:800;color:#2f2927}
+.tile-sub{font-size:11.5px;color:#6b625f;line-height:1.4}
+.tile-action{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:999px;background:#fffdfb;border:1px solid #ece4dd;box-shadow:0 3px 10px #44362b0d;color:#4a3932;font-size:12px;font-weight:780;min-height:29px;padding:4px 13px;transition:background .2s}
+.course-tile:hover .tile-action{background:#fff}
+.course-tile.st-brain .tile-action{color:#476bac}
+.course-tile.st-reading .tile-action{color:#386b50}
+.tile-progress{width:78%;margin-top:1px}.tile-progress .st-progress{height:8px;background:#fffefbc0}
+.lower-card{padding:19px 20px}.lower-card .st-card-header{margin-bottom:11px}.lower-card .st-card-header h2{font-size:18px}
+.daily-flex{gap:19px;min-height:135px;justify-content:center}
+.progress-donut{width:128px;height:128px;background:conic-gradient(#e6ab9b calc(var(--pct)*1%),#f2eae6 0)}
+.progress-donut>div{width:103px;height:103px}
+.progress-donut strong{font-size:30px;color:#2d2927}
+.progress-donut small{font-size:11.5px;color:#716965}
+.daily-checklist{font-size:12.5px;gap:8px;color:#453f3b}
+.daily-dot{height:19px;width:19px;border-color:#d3c6bd}
+.daily-dot.yes{background:#db9787;border-color:#db9787}
+.metric-row{gap:9px}.metric-box{background:#f9f6f3;border:1px solid #f3ece7;padding:13px 4px 11px;min-height:121px}
+.metric-box>span .st-icon{width:24px;height:24px}.metric-box small{font-size:11.5px;color:#756b65}
+.metric-box strong{font-size:22px;font-weight:790;color:#332d29}.tiny-helper{font-size:11px;color:#827973;margin-top:9px}
+.trend-rows{gap:9px}.trend-row{height:38px;grid-template-columns:23px minmax(90px,1fr) 50px 93px}
+.trend-row strong{font-size:12px;font-weight:700;color:#423b38}
+.trend-row>span:nth-child(3){font-size:11px;color:#746a65}
+.trend-ticks{height:25px;gap:3px}.trend-ticks i{min-width:3px;border-radius:3px 3px 0 0}
+.trend-empty{height:140px;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:7px;text-align:center}
+.trend-empty-icon{display:none}.trend-empty strong{font-size:13px;color:#38312f}
+.trend-empty p{margin:5px 0 4px;font-size:11px;color:#766e69;line-height:1.35}
+.trend-start{border:1px solid #e8c6bb;background:#f6e7df;border-radius:99px;min-height:31px;padding:5px 15px;color:#8b5548;font-size:11px;font-weight:760;display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.trend-start:hover{background:#f2d9ce}
+.footer{color:#918680;font-size:10px;margin:14px 2px 10px}
+/* Workable responsive layout without duplicating navigation and empty charts */
+@media(max-width:1240px){.app{grid-template-columns:160px minmax(0,1fr)}.sidebar{padding:18px 9px}.study-logo{font-size:14px}.sidebtn{font-size:12px;gap:7px;padding:10px 7px}.siteheader{padding:12px 17px}.siteheader .navbtn{width:65px}.header-greeting{font-size:18px}.main{padding:12px 16px}.study-dashboard{gap:13px}.dash-top,.dash-middle,.dash-bottom{gap:12px}.routine-row{gap:5px;grid-template-columns:20px 23px minmax(75px,1fr) minmax(46px,1fr) 34px 15px}.routine-name{font-size:12px}.weekly-content-grid{grid-template-columns:125px 1fr;gap:7px}.donut{width:125px;height:125px}.course-tile strong{font-size:18px}.tile-sub{font-size:10px}.trend-row{grid-template-columns:21px minmax(68px,1fr) 34px 70px;gap:3px}}
+@media(max-width:980px){.dash-top{grid-template-columns:1fr}.dash-top>.st-card{height:auto;min-height:225px}.dash-middle{grid-template-columns:repeat(3,minmax(0,1fr))}.dash-middle>.st-calendar{grid-column:1/-1;height:auto;min-height:230px}.dash-bottom{grid-template-columns:repeat(2,1fr)}.dash-bottom>.st-card{height:auto;min-height:210px}.dash-bottom>.st-card:last-child{grid-column:1/-1}.cal-dates{grid-template-rows:repeat(6,28px)}.weekly-content-grid{grid-template-columns:150px minmax(0,1fr)}.donut{width:150px}}
+@media(max-width:760px){.app{display:block;padding-bottom:64px}.siteheader{position:sticky;top:0;height:auto;min-height:72px;padding:15px 17px 13px;background:#faf8f5f2;border-bottom:1px solid #ebe4de;backdrop-filter:blur(15px)}.siteheader nav{display:none}.header-identity{flex:1 1 100%;padding-right:18px}.header-greeting{font-size:18px;letter-spacing:-.6px;line-height:1.36}.header-identity p{font-size:12px;color:#726b66}.header-actions{top:15px;right:9px}.main{padding:15px 14px}.study-dashboard{gap:12px}.dash-top,.dash-bottom{gap:12px}.dash-middle{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.dash-middle>.st-calendar{grid-column:1/-1}.dash-middle>.course-tile{height:178px}.st-card{padding:17px;border-radius:17px}.dash-top>.st-card{min-height:225px}.st-card-header h2{font-size:18px}.routine-panel{padding:16px}.routine-row{min-height:43px;grid-template-columns:20px 23px minmax(84px,1fr) minmax(40px,.9fr) 31px 16px;gap:5px}.routine-name,.routine-min{font-size:11.5px}.routine-pill{font-size:11px}.routine-panel .st-card-header>.st-progress{width:62px}.weekly-content-grid{grid-template-columns:116px 1fr;height:155px}.donut{width:115px;height:115px}.weekly-heading strong{font-size:12px}.weekly-heading small{font-size:10.5px}.course-tile{padding:12px 4px;gap:7px;border-radius:15px}.course-tile-icon .st-icon{width:35px;height:35px}.course-tile strong{font-size:13px;letter-spacing:-.45px}.tile-sub{font-size:9px}.tile-action{font-size:9px;min-height:27px;padding:4px 8px}.tile-progress{width:81%}.dash-bottom>.st-card{min-height:210px}.trend-empty{min-height:140px}.mobile-nav button{font-size:11px}.mobile-nav button .st-icon{width:21px;height:21px}}
+@media(max-width:390px){.header-greeting{font-size:16px}.main{padding:12px 10px}.st-card-header h2{font-size:16px}.routine-row{grid-template-columns:18px 20px minmax(76px,1fr) minmax(28px,.7fr) 27px 13px;gap:4px}.routine-name,.routine-min{font-size:10.5px}.weekly-content-grid{grid-template-columns:106px 1fr}.donut{width:104px}.course-tile strong{font-size:12px}.tile-sub{font-size:8px}.tile-action{font-size:9px;padding:4px 7px}.course-tile-icon .st-icon{width:31px;height:31px}}
+
+/* Fit compact laptop viewports while keeping the approved three-row dashboard */
+@media (min-width:981px) and (max-height:850px){
+.app{grid-template-rows:78px minmax(0,1fr)}.siteheader{height:78px;padding-top:8px;padding-bottom:6px}.siteheader .navbtn{min-height:55px}.header-greeting{font-size:19px}.header-identity p{font-size:11px}
+.main{padding-top:9px}.study-dashboard{gap:12px}.dash-top,.dash-middle,.dash-bottom{gap:13px}
+.dash-top>.st-card{height:clamp(184px,26vh,220px);min-height:0}.dash-middle>.st-card,.dash-middle>.course-tile{height:clamp(160px,24vh,208px)}.dash-bottom>.st-card{height:clamp(146px,21.5vh,190px)}
+.st-card{padding:13px 16px}.routine-panel,.weekly-panel{padding:13px 16px}.st-card-header{margin-bottom:6px}.st-card-header h2{font-size:17px}.st-card-header h2 .st-icon{height:21px;width:21px}
+.routine-panel .st-card-header{margin-bottom:4px}.routine-row{min-height:34px;padding:3px 4px}.routine-name{font-size:12px}.routine-checkbox{width:18px;height:18px}
+.weekly-content-grid{height:auto;min-height:120px;grid-template-columns:125px 1fr;gap:5px}.donut{width:124px;height:124px}.weekly-rows{gap:7px}.weekly-icon{width:28px;height:28px}.weekly-heading strong{font-size:12px}.weekly-heading small{font-size:10px}
+.st-calendar{padding:12px 15px}.cal-weekdays{height:18px}.cal-dates{grid-template-rows:repeat(6,minmax(19px,1fr))}.cal-day{height:22px;width:22px;font-size:11px}.cal-foot{font-size:9px;margin-top:1px}
+.course-tile{gap:5px;padding:11px 8px}.course-tile-icon .st-icon{width:41px;height:41px}.course-tile strong{font-size:18px}.tile-sub{font-size:10px}.tile-action{min-height:25px;font-size:11px;padding:3px 10px}.tile-progress .st-progress{height:7px}
+.lower-card{padding:13px 15px}.lower-card .st-card-header h2{font-size:16px}.lower-card .st-card-header{margin-bottom:8px}.daily-flex{min-height:0}.progress-donut{height:106px;width:106px}.progress-donut>div{height:85px;width:85px}.progress-donut strong{font-size:24px}.daily-checklist{font-size:11px;gap:5px}.daily-dot{width:16px;height:16px}
+.metric-box{padding:8px 3px;min-height:95px;gap:3px}.metric-box strong{font-size:19px}.metric-box small{font-size:10px}.tiny-helper{font-size:9px;margin-top:5px}.trend-row{height:32px}.trend-empty{height:105px}.trend-empty p{font-size:10px}.footer{margin:9px 2px}
+}
+@media (min-width:981px) and (max-height:700px){
+.app{grid-template-rows:70px minmax(0,1fr)}.siteheader{height:70px}.siteheader .navbtn{min-height:48px}.main{padding-top:7px}
+.dash-top>.st-card{height:184px}.dash-middle>.st-card,.dash-middle>.course-tile{height:160px}.dash-bottom>.st-card{height:146px}
+.study-dashboard{gap:10px}.dash-top,.dash-middle,.dash-bottom{gap:10px}.routine-row{min-height:30px}.weekly-content-grid{min-height:116px}.donut{height:110px;width:110px}.routine-pill{padding:3px 7px}.routine-panel .st-card-header>.st-progress{display:none}
+.course-tile-icon .st-icon{height:32px;width:32px}.course-tile{gap:4px}.tile-action{min-height:23px}.tile-progress{display:none}
+.lower-card .st-card-header{margin-bottom:5px}.progress-donut{height:88px;width:88px}.progress-donut>div{height:70px;width:70px}.daily-flex{gap:10px}.daily-checklist{font-size:10px}.metric-box{min-height:78px;padding:5px 3px}.metric-box strong{font-size:16px}.trend-row{height:26px}.trend-empty{height:89px}
+.footer{display:none}
+}
+@media (max-width:760px){.dash-bottom{grid-template-columns:minmax(0,1fr)}.dash-bottom>.st-card{grid-column:auto!important;width:100%}.dash-bottom>.st-card:last-child{grid-column:auto}.lower-card{min-height:185px}.daily-flex{justify-content:flex-start;gap:25px}.metric-box{min-height:112px}.trend-empty{height:122px}}
 </style>
 </head>
 <body><div class="app">
@@ -272,15 +404,15 @@ function stProgress(p,cls='math'){return `<span class="st-progress st-${cls}"><s
 let visibleMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 function renderCalendar(){let y=visibleMonth.getFullYear(),m=visibleMonth.getMonth(),offset=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells=[];for(let i=0;i<offset;i++)cells.push('<span class="cal-empty"></span>');for(let d=1;d<=days;d++){let dt=dateKey(new Date(y,m,d)),isToday=dt===currentDay(),played=data.sessions.some(s=>s.date===dt);cells.push(`<button type="button" data-calendar-day="${dt}" class="cal-day ${isToday?'is-today':''} ${played?'has-training':''}" aria-label="${m+1}월 ${d}일${played?', 학습 기록 있음':''}">${d}${played?'<i></i>':''}</button>`)}return `<section class="st-card st-calendar" aria-label="학습 달력"><div class="st-card-header"><button type="button" data-cal-shift="-1" class="icon-control" aria-label="이전 달">‹</button><h2>${y}년 ${m+1}월</h2><button type="button" data-cal-shift="1" class="icon-control" aria-label="다음 달">›</button></div><div class="cal-grid cal-weekdays">${'일 월 화 수 목 금 토'.split(' ').map(d=>`<span>${d}</span>`).join('')}</div><div class="cal-grid cal-dates">${cells.join('')}</div><div class="cal-foot"><span class="cal-foot-dot"></span> 기록된 훈련일 ${daysTraining()}일</div></section>`}
 function renderRoutine(){let n=doneCount();let rows=routineList().map((x)=>{let done=routineIsDone(x.id),secs=x.id==='review'?0:secsOfGroup(x.id,data.sessions.filter(s=>s.date===currentDay())),p=x.id==='review'?(done?100:0):safePct(secs,x.minutes*60);return `<button type="button" class="routine-row ${done?'done':''}" data-routine="${x.id}" aria-pressed="${done}"><span class="routine-checkbox">${done?stIcon('check',14):''}</span><span class="routine-subject-icon st-${x.cls}">${stIcon(x.icon,20)}</span><span class="routine-name">${x.title}</span>${stProgress(done?Math.max(p,100):p,x.cls)}<span class="routine-min">${x.minutes}분</span><span class="routine-status">${done?stIcon('check',13):''}</span></button>`}).join('');return `<section class="st-card routine-panel"><div class="st-card-header"><h2>${stIcon('clipboard',23)} 오늘의 루틴</h2><span class="routine-pill">오늘의 계획 <strong>${n}/4</strong> 완료</span><span class="st-card-spacer"></span><span class="muted-small">전체 <strong>${Math.round(n/4*100)}%</strong></span>${stProgress(n/4*100,'math')}</div><div class="routine-rows">${rows}</div></section>`}
-function renderWeekly(){let w=weekRecords();let count=doneCount();let p=Math.round(count/4*100);let circumference=2*Math.PI*39;let svg=`<svg viewBox="0 0 110 110" class="donut"><circle cx="55" cy="55" r="39" fill="none" stroke="#f2eae7" stroke-width="10"/><circle cx="55" cy="55" r="39" fill="none" stroke="#eab0a7" stroke-width="10" stroke-linecap="round" stroke-dasharray="${p/100*circumference} ${circumference}" transform="rotate(-90 55 55)"/><text x="55" y="53" text-anchor="middle" font-size="25" font-weight="800" fill="#242424">${p}%</text><text x="55" y="69" text-anchor="middle" font-size="11" fill="#777">${count}/4 완료</text></svg>`;let rows=[['math','계산 훈련','calc'],['brain','두뇌 트레이닝','brain'],['reading','국어 독해','book']].map(([id,title,icon])=>{let minutes=Math.round(secsOfGroup(id,w)/60),goal=getWeeklyGoal(id);return `<div class="goal-row"><span class="weekly-icon st-${id}">${stIcon(icon,20)}</span><div class="weekly-content"><div class="weekly-heading"><strong>${title}</strong><small>${minutes} / ${goal}분</small></div>${stProgress(safePct(minutes,goal),id)}</div></div>`}).join('');return `<section class="st-card weekly-panel"><div class="st-card-header"><h2>${stIcon('target',24)} 주간 목표</h2><button class="st-inline-button" data-go="goals">목표 설정 ${stIcon('chevron',13)}</button></div><div class="weekly-content-grid">${svg}<div class="weekly-rows">${rows}</div></div></section>`}
+function renderWeekly(){let w=weekRecords();let groups=['math','brain','reading'];let achieved=groups.reduce((n,id)=>n+Math.min(getWeeklyGoal(id),Math.round(secsOfGroup(id,w)/60)),0);let total=groups.reduce((n,id)=>n+getWeeklyGoal(id),0);let p=safePct(achieved,total);let circumference=2*Math.PI*39;let svg=`<svg viewBox="0 0 110 110" class="donut" role="img" aria-label="이번 주 목표 ${p}% 달성"><circle cx="55" cy="55" r="39" fill="none" stroke="#f0e9e6" stroke-width="10"/><circle cx="55" cy="55" r="39" fill="none" stroke="#e3a695" stroke-width="10" stroke-linecap="round" stroke-dasharray="${p/100*circumference} ${circumference}" transform="rotate(-90 55 55)"/><text x="55" y="53" text-anchor="middle" font-size="25" font-weight="800" fill="#292522">${p}%</text><text x="55" y="69" text-anchor="middle" font-size="9.5" fill="#726965">${achieved}/${total}분</text></svg>`;let rows=[['math','계산 훈련','calc'],['brain','두뇌 트레이닝','brain'],['reading','국어 독해','book']].map(([id,title,icon])=>{let minutes=Math.round(secsOfGroup(id,w)/60),goal=getWeeklyGoal(id);return `<div class="goal-row"><span class="weekly-icon st-${id}">${stIcon(icon,21)}</span><div class="weekly-content"><div class="weekly-heading"><strong>${title}</strong><small>${minutes} / ${goal}분</small></div>${stProgress(safePct(minutes,goal),id)}</div></div>`}).join('');return `<section class="st-card weekly-panel"><div class="st-card-header"><h2>${stIcon('target',25)} 주간 목표</h2><button class="st-inline-button" data-go="goals">목표 설정 ${stIcon('chevron',14)}</button></div><div class="weekly-content-grid">${svg}<div class="weekly-rows">${rows}</div></div></section>`}
 function renderCourseTiles(){return [
  ['math','계산 훈련','calc',games.filter(g=>g.group==='math').length],
  ['brain','두뇌 트레이닝','brain',games.filter(g=>!['math','read'].includes(g.group)).length],
  ['reading','국어 독해','book',games.filter(g=>g.group==='read').length]
- ].map(([id,title,icon,n])=>{let seconds=secsOfGroup(id,data.sessions.filter(s=>s.date===currentDay())),target=routineList().find(g=>g.id===id).minutes*60;return `<button type="button" class="course-tile st-${id}" data-go="${id}"><span class="course-tile-icon">${stIcon(icon,42)}</span><strong>${title}</strong><span class="tile-sub">${n}개 훈련 · ${displayMinutes(seconds)} 학습</span><span class="tile-progress">${stProgress(safePct(seconds,target),id)}</span></button>`}).join('')}
+ ].map(([id,title,icon,n])=>{let seconds=secsOfGroup(id,data.sessions.filter(s=>s.date===currentDay())),target=routineList().find(g=>g.id===id).minutes*60;return `<button type="button" class="course-tile st-${id}" data-go="${id}"><span class="course-tile-icon">${stIcon(icon,42)}</span><strong>${title}</strong><span class="tile-sub">${n}개 훈련 · 오늘 ${displayMinutes(seconds)} 학습</span><span class="tile-action">훈련 시작 ${stIcon('chevron',15)}</span><span class="tile-progress">${stProgress(safePct(seconds,target),id)}</span></button>`}).join('')}
 function renderDailyProgress(){let n=doneCount(),pct=Math.round(n/4*100);return `<section class="st-card lower-card daily-panel"><div class="st-card-header"><h2>오늘의 진행도</h2></div><div class="daily-flex"><div class="progress-donut" style="--pct:${pct}"><div><strong>${pct}%</strong><small>${n}/4 완료</small></div></div><div class="daily-checklist">${routineList().map(r=>`<div class="daily-check"><span class="daily-dot ${routineIsDone(r.id)?'yes':''}">${routineIsDone(r.id)?'✓':''}</span>${r.title}</div>`).join('')}</div></div></section>`}
-function renderMonthStats(){let m=monthRecords(),seconds=sumSecs(m),accuracy=avgAccuracy(m);return `<section class="st-card lower-card"><div class="st-card-header"><h2>이번 달 훈련 현황</h2><span class="muted-small">${visibleMonth.getMonth()+1}월</span></div><div class="metric-row"><div class="metric-box"><span>${stIcon('target',21)}</span><small>훈련일수</small><strong>${daysTraining()}일</strong></div><div class="metric-box"><span>${stIcon('clock',21)}</span><small>총 훈련시간</small><strong>${Math.round(seconds/60)}분</strong></div><div class="metric-box"><span>${stIcon('trending',21)}</span><small>평균 정답률</small><strong>${accuracy===null?'—':accuracy+'%'}</strong></div></div><p class="tiny-helper">실제 완료한 훈련 기록 기준</p></section>`}
-function renderTrend(){let data14=[...Array(14)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-13+i);return {date:dateKey(d),n:data.sessions.filter(s=>s.date===dateKey(d)).reduce((a,s)=>a+(s.total||0),0)}}),max=Math.max(1,...data14.map(x=>x.n));return `<section class="st-card lower-card trend-panel"><div class="st-card-header"><h2>학습 흐름 요약</h2><button class="st-inline-button" data-go="analytics">상세 분석 ${stIcon('chevron',13)}</button></div><div class="trend-rows">${[['math','계산 훈련','calc'],['brain','두뇌 트레이닝','brain'],['reading','국어 독해','book']].map(([id,label,icon])=>{let arr=data.sessions.filter(s=>sessionHasGroup(s,id));let all=arr.flatMap(s=>s.answers?.filter(x=>id==='brain'?byId[x.id]?.group!=='read'&&byId[x.id]?.group!=='math':byId[x.id]?.group===courseKind(id))||[]);let a=all.length?Math.round(100*all.filter(x=>x.correct).length/all.length):null;return `<div class="trend-row"><span class="st-${id}">${stIcon(icon,19)}</span><strong>${label}</strong><span>${a===null?'기록 없음':a+'%'}</span><div class="trend-ticks st-${id}">${data14.map((d,i)=>{let num=data.sessions.filter(s=>s.date===d.date&&sessionHasGroup(s,id)).length;return `<i style="height:${Math.max(3,Math.round(num/Math.max(1,...data14.map(x=>data.sessions.filter(s=>s.date===x.date&&sessionHasGroup(s,id)).length))*21))}px"></i>`}).join('')}</div></div>`}).join('')}</div></section>`}
+function renderMonthStats(){let m=monthRecords(),seconds=sumSecs(m),accuracy=avgAccuracy(m);return `<section class="st-card lower-card"><div class="st-card-header"><h2>이번 달 훈련 현황</h2><span class="muted-small">${visibleMonth.getMonth()+1}월</span></div><div class="metric-row"><div class="metric-box"><span>${stIcon('target',21)}</span><small>훈련일수</small><strong>${daysTraining()}일</strong></div><div class="metric-box"><span>${stIcon('clock',21)}</span><small>총 훈련시간</small><strong>${Math.round(seconds/60)}분</strong></div><div class="metric-box"><span>${stIcon('trending',21)}</span><small>평균 정답률</small><strong>${accuracy===null?'—':accuracy+'%'}</strong></div></div><p class="tiny-helper">${m.length?"실제 완료한 훈련 기록 기준":"첫 훈련을 완료하면 실제 성과가 표시됩니다."}</p></section>`}
+function renderTrend(){let data14=[...Array(14)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-13+i);return {date:dateKey(d),n:data.sessions.filter(s=>s.date===dateKey(d)).reduce((a,s)=>a+(s.total||0),0)}});if(!data.sessions.length)return `<section class="st-card lower-card trend-panel"><div class="st-card-header"><h2>학습 흐름 요약</h2></div><div class="trend-empty"><span class="trend-empty-icon">${stIcon('chart',30)}</span><div><strong>첫 훈련부터 성장 기록이 시작돼요</strong><p>문제를 풀면 과목별 정답률과 학습 흐름을 확인할 수 있어요.</p></div><button type="button" class="trend-start" data-go="training">첫 훈련 시작 ${stIcon('chevron',15)}</button></div></section>`;return `<section class="st-card lower-card trend-panel"><div class="st-card-header"><h2>학습 흐름 요약</h2><button class="st-inline-button" data-go="analytics">상세 분석 ${stIcon('chevron',14)}</button></div><div class="trend-rows">${[['math','계산 훈련','calc'],['brain','두뇌 트레이닝','brain'],['reading','국어 독해','book']].map(([id,label,icon])=>{let arr=data.sessions.filter(s=>sessionHasGroup(s,id));let all=arr.flatMap(s=>s.answers?.filter(x=>id==='brain'?byId[x.id]?.group!=='read'&&byId[x.id]?.group!=='math':byId[x.id]?.group===courseKind(id))||[]);let a=all.length?Math.round(100*all.filter(x=>x.correct).length/all.length):null;let counts=data14.map(x=>data.sessions.filter(s=>s.date===x.date&&sessionHasGroup(s,id)).length);let m=Math.max(1,...counts);return `<div class="trend-row"><span class="st-${id}">${stIcon(icon,20)}</span><strong>${label}</strong><span>${a===null?'훈련 전':a+'%'}</span><div class="trend-ticks st-${id}">${counts.map(num=>`<i style="height:${Math.max(3,Math.round(num/m*23))}px;opacity:${num?'.72':'.16'}"></i>`).join('')}</div></div>`}).join('')}</div></section>`}
 function renderHome(){return `<div class="study-dashboard"><div class="dash-top">${renderRoutine()}${renderWeekly()}</div><div class="dash-middle">${renderCalendar()}${renderCourseTiles()}</div><div class="dash-bottom">${renderDailyProgress()}${renderMonthStats()}${renderTrend()}</div></div>`}
 function renderTrainingLanding(){return `<div class="inner-page"><div class="page-intro">계산·두뇌·국어를 분리해 집중해서 훈련하세요. 원하는 영역을 선택하면 개별 게임을 시작할 수 있습니다.</div><div class="dash-middle training-landing">${renderCourseTiles()}</div><section class="st-card inner-card"><div class="st-card-header"><h2>바로 시작하기</h2></div><div class="featured-games">${[byId.calc25,byId.cards,byId.semantic,byId.sudoku,byId.verbal,byId.connection].map(g=>`<button type="button" class="featured-game" data-id="${g.id}"><span class="featured-glyph">${stIcon(g.group==='math'?'calc':g.group==='read'?'book':'brain',23)}</span><strong>${g.title}</strong><span>${g.desc}</span>${stIcon('chevron',17)}</button>`).join('')}</div></section></div>`}
 function renderPlanner(){return `<div class="inner-page planner-page"><div class="planner-two">${renderCalendar()}${renderRoutine()}</div><section class="st-card inner-card">${renderWeekly()}</section></div>`}
