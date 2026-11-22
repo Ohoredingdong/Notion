@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-22T05:47:52.323Z",
+  "source_validation": {
+    "status": "two_independent_sources_agree",
+    "source_a": "https://raw.githubusercontent.com/youngeun9100/project-l-data/main/data/winning_numbers.json",
+    "source_b": "https://raw.githubusercontent.com/papaya5rhw1984/lotto-data/main/all.json",
+    "total_draws": 1251,
+    "mismatch_count": 0,
+    "history_sha256": "40c68d737d93398a1261349a9773e745ed4ec25319019cb19e4267fd7272a8fb"
+  },
+  "latest_verified_draw": 1251,
+  "latest_verified_date": "2026-11-21",
+  "latest_result": {
+    "draw": 1251,
+    "date": "2026-11-21",
+    "numbers": [
+      14,
+      18,
+      19,
+      29,
+      40,
+      45
+    ],
+    "bonus": 1
+  },
+  "next_target_draw": 1252,
+  "latest_forecast": {
+    "target_draw": 1252,
+    "target_draw_date": "2026-11-28",
+    "known_through_draw": 1251,
+    "last_known_result_hash": "f8cd02fb0eb72e4357047251bd872b7eea4cca0d5b66e3e45dfcbf8430b70069",
+    "created_at_utc": "2026-11-22T05:47:52.295Z",
+    "model_version": "prospective-v1.0.0",
+    "method_spec": "frozen logistic/ridge SGD, fixed stump30, simple frequency, seeded random",
+    "previous_hash": "GENESIS",
+    "tickets": {
+      "logit": [
+        5,
+        23,
+        25,
+        28,
+        36,
+        44
+      ],
+      "ridge": [
+        6,
+        17,
+        26,
+        30,
+        36,
+        39
+      ],
+      "stump": [
+        1,
+        2,
+        4,
+        9,
+        11,
+        13
+      ],
+      "hot30": [
+        13,
+        16,
+        18,
+        22,
+        34,
+        42
+      ],
+      "hotall": [
+        12,
+        13,
+        18,
+        27,
+        34,
+        45
+      ],
+      "random": [
+        12,
+        13,
+        31,
+        33,
+        39,
+        44
+      ]
+    },
+    "digest": "4ec933cad844787320ffc3c17dffbb1ea167dae35adc8d095f9977970d54f7ae"
+  },
+  "retrospective": {
+    "status": "retrospective_exploratory_not_prospective",
+    "start_draw": 1001,
+    "end_draw": 1251,
+    "test_used_for_previous_model_development": true,
+    "validation_801_1000_brier": {
+      "logit": 0.115588592,
+      "ridge": 0.115798291,
+      "stump": 0.115580486
+    },
+    "final_1001_onward_brier": {
+      "logit": 0.115567317,
+      "ridge": 0.115944754,
+      "stump": 0.11556003
+    },
+    "equal_probability_brier": 0.115555556,
+    "models": {
+      "logit": {
+        "name": "로지스틱 회귀 AI",
+        "tickets": 251,
+        "hits": 193,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          5
+        ],
+        "meanHits": 0.768924
+      },
+      "ridge": {
+        "name": "릿지 회귀 AI",
+        "tickets": 251,
+        "hits": 184,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          5
+        ],
+        "meanHits": 0.733068
+      },
+      "stump": {
+        "name": "결정나무(단일분기) AI",
+        "tickets": 251,
+        "hits": 190,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          4
+        ],
+        "meanHits": 0.756972
+      },
+      "hot30": {
+        "name": "최근 30회 빈도",
+        "tickets": 251,
+        "hits": 194,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2
+        ],
+        "meanHits": 0.772908
+      },
+      "hotall": {
+        "name": "전체 누적 빈도",
+        "tickets": 251,
+        "hits": 207,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          10
+        ],
+        "meanHits": 0.824701
+      },
+      "random": {
+        "name": "무작위 기준선",
+        "tickets": 251,
+        "hits": 203,
+        "grades": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          5
+        ],
+        "meanHits": 0.808765
+      }
+    }
+  },
+  "prospective": {
+    "status": "prospective_precommitted_only",
+    "first_eligible_draw": 1252,
+    "verified_rounds": 0,
+    "model_version": "prospective-v1.0.0",
+    "statistical_threshold": {
+      "familywise_alpha": 0.01,
+      "test": "anytime-valid mixture e-process; five candidate methods, Bonferroni threshold 500",
+      "min_draws": 100,
+      "exact_first_prize_is_not_100_percent_prediction": true
+    },
+    "models": {
+      "logit": {
+        "name": "로지스틱 회귀 AI",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": 1,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      },
+      "ridge": {
+        "name": "릿지 회귀 AI",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": 1,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      },
+      "stump": {
+        "name": "결정나무(단일분기) AI",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": 1,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      },
+      "hot30": {
+        "name": "최근 30회 빈도",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": 1,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      },
+      "hotall": {
+        "name": "전체 누적 빈도",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": 1,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      },
+      "random": {
+        "name": "무작위 기준선",
+        "settled_predictions": 0,
+        "number_matches": 0,
+        "average_matches": null,
+        "exact_first_prizes": 0,
+        "prizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "excluded_late_rounds": [],
+        "e_value": null,
+        "evidence_threshold": 500,
+        "fair_draw_advantage_evidence": false
+      }
+    },
+    "any_model_with_verified_advantage": false,
+    "future_100_percent_accuracy_claimed": false
+  },
+  "claim_status": "no_verified_advantage",
+  "guarantee_100_percent": false,
+  "policy": "Only pre-draw, hash-chained, independently verified predictions count. Historical tuning is exploratory. A 100% future prediction claim is not supported."
+}
