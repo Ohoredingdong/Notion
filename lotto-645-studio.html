@@ -71,6 +71,27 @@
         <p class="footnote" style="margin:10px 0 0">모든 알고리즘을 같은 조건으로 비교합니다. 무작위 기준선은 재현 가능한 고정 시드로 생성됩니다. 과거 결과에 맞춰 사후 조정한 숫자는 사용하지 않습니다.</p>
         <div id="histResults" style="margin-top:20px"><div class="empty">검증 실행 버튼을 누르면 알고리즘별 실제 당첨 성적이 표시됩니다.</div></div>
       </div>
+
+      <div class="panel" id="mlModelCard">
+        <div class="panel-header"><div><h2>AI 머신러닝 · 별도 검증</h2><p class="panel-sub">번호별 로지스틱 회귀 · 이전 회차까지만 입력 · 미래 데이터 누수 방지</p></div><span class="small-tag">연구 모델 · 효과 미확인</span></div>
+        <div class="history-metrics">
+          <div class="hist-metric"><small>학습·선택</small><strong>1~1000회</strong><span>801~1000회로 학습률 선택</span></div>
+          <div class="hist-metric"><small>최종 시험</small><strong>251회</strong><span>1001~1251회 · 미사용 데이터</span></div>
+          <div class="hist-metric"><small>검증 판정</small><strong>개선 미확인</strong><span>무작위보다 우수하다고 판단 불가</span></div>
+        </div>
+        <div class="hist-table-wrap"><table class="hist-result-table">
+        <thead><tr><th>예측법</th><th>총 일치 번호</th><th>회차당 일치</th><th>1등</th></tr></thead>
+        <tbody><tr><td>AI 로지스틱 회귀</td><td>193개</td><td>0.769개</td><td>0</td></tr>
+        <tr><td>완전 무작위</td><td>178개</td><td>0.709개</td><td>0</td></tr>
+        <tr><td>최근 30회 빈도</td><td>194개</td><td>0.773개</td><td>0</td></tr>
+        <tr><td>전체 누적 빈도</td><td>207개</td><td>0.825개</td><td>0</td></tr></tbody></table></div>
+        <p class="footnote">번호별 확률 오차(Brier, 낮을수록 좋음): AI 0.115567 / 무작위 가정 0.115556. 회차당 일치번호 차이(AI-고정 시드 무작위) +0.060개, 95% 근사 신뢰구간 −0.073~+0.193개로 0을 포함합니다. 여기서 사용한 무작위 성적은 하나의 시드 실험값이며 무작위의 기대 일치 수는 0.8개입니다. <strong>현재 머신러닝 모델이 더 정확하다는 증거가 없습니다.</strong></p>
+        <div class="subtle-rule"></div>
+        <h3 style="margin:0 0 9px;font-size:15px">1252회 AI 연구용 실험 번호</h3>
+        <div class="balls" id="mlSuggestBalls" style="min-height:41px"></div>
+        <p class="footnote">1~1251회까지 다시 학습한 동일 구조 모델의 상위 6개입니다. 학습에 사용한 입력: 누적·최근 10/30/100회 빈도, 마지막 출현 간격, 직전 2회, 번호의 기초 특성. 숫자는 연구용으로만 표시하며 <strong>이 조합의 당첨 확률 역시 1/8,145,060</strong>입니다. 위젯의 기본 추천 모델을 이 방식으로 교체하지 않았습니다.</p>
+        <p class="footnote"><a href="https://github.com/Ohoredingdong/Notion/blob/main/lotto-ml-validation.md" target="_blank" rel="noopener noreferrer">실험 설계 및 성적 기록 확인</a></p>
+      </div>
       <div class="panel">
         <div class="panel-header"><div><h2>1252회 실험용 번호</h2><p class="panel-sub">현재까지 나온 1~1251회만 입력으로 사용하는 예시입니다.</p></div><span class="small-tag">당첨 예측 보장 없음</span></div>
         <button type="button" id="histSuggest" class="btn">선택한 방식으로 6개 생성</button>
@@ -290,5 +311,9 @@ $('histMine').addEventListener('click',mine);
 frequencies();
 const historyTab=document.querySelector('.tab[data-tab="history"]');if(historyTab)historyTab.addEventListener('click',()=>{if(!lastReport)renderBacktest();});
 })();
+</script>
+<script>
+(function(){const weights=[-1.8763584534,0.0059990594,-0.0244965902,-0.0065296167,0.0122635246,-0.008924629,0.0011226058,0.0090274232,0.0187813367,-0.0024536606,-0.0093469273,-0.0147713984];const full=JSON.parse(document.getElementById('history-data').textContent).split(';').map(x=>x.split(',').map(Number).slice(0,6));const N=full.length,counts=Array.from({length:N+1},()=>new Uint16Array(46)),last=Array.from({length:N+1},()=>new Uint16Array(46));for(let t=0;t<N;t++){counts[t+1].set(counts[t]);last[t+1].set(last[t]);for(const n of full[t]){counts[t+1][n]++;last[t+1][n]=t+1;}}const f=(t,n)=>{function z(span){const s=Math.min(t,span),freq=counts[t][n]-counts[t-s][n],ev=s*6/45,sd=Math.sqrt(s*(6/45)*(39/45));return Math.max(-2,Math.min(2,(freq-ev)/Math.max(sd,.01)))/2;}const tz=Math.max(1,t),ev=tz*6/45,sd=Math.sqrt(tz*(6/45)*(39/45));return [1,(n-23)/23,Math.max(-2,Math.min(2,(counts[t][n]-ev)/Math.max(sd,.01)))/2,z(10),z(30),z(100),Math.min(100,t-last[t][n])/50-1,t>0?Number(full[t-1].includes(n)):0,t>1?Number(full[t-2].includes(n)):0,n%2-.5,Math.sin(2*Math.PI*n/10),Math.cos(2*Math.PI*n/10)];};const scores=Array.from({length:45},(_,i)=>i+1).map(n=>{const x=f(N,n);let z=0;for(let j=0;j<x.length;j++)z+=x[j]*weights[j];return{n,p:1/(1+Math.exp(-z))};}).sort((a,b)=>b.p-a.p||a.n-b.n);const balls=document.getElementById('mlSuggestBalls');for(const n of scores.slice(0,6).map(x=>x.n).sort((a,b)=>a-b)){const node=document.createElement('span');node.className='ball b'+(Math.floor((n-1)/10)+1);node.textContent=n;balls.append(node);}const expected=[5,23,25,28,36,44];const actual=scores.slice(0,6).map(x=>x.n).sort((a,b)=>a-b);if(expected.join(',')!==actual.join(',')){balls.textContent='학습 결과 검증에 실패했습니다. 번호를 표시하지 않습니다.';}}
+)();
 </script>
 </body></html>
