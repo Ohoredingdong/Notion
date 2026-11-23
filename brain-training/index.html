@@ -664,6 +664,76 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 }
 @media(prefers-reduced-motion:reduce){.gh-card,.gh-game-card,.gh-start,.gh-game-start{transition:none!important}}
 
+/* v10 visible refinement: still the selected restrained Study Training design. */
+:root { --st-soft-outline:#e4e1d7; --st-shade:#f8f6f0; }
+.gh-root,.gh-inner-root {background:#faf8f4}
+.gh-bar {background:#fffdf9; border-bottom:1px solid #e6e4da;box-shadow:0 3px 13px rgba(44,58,44,.035)}
+.gh-brand>strong {font-weight:800;letter-spacing:-.6px}
+.gh-heading h1 {font-weight:820;letter-spacing:-1.7px}
+.gh-heading p {color:#526e60;font-size:clamp(14px,1.25vw,18px)}
+.gh-title-rule {height:3px;width:60px;border-radius:10px;background:#85a17d}
+.gh-card {
+  background:linear-gradient(156deg,rgba(255,255,255,.61),rgba(255,255,255,.03) 53%),var(--card);
+  border:1px solid color-mix(in srgb,var(--border) 78%,#c6c5b8);
+  border-radius:27px;
+  box-shadow:0 4px 0 color-mix(in srgb,var(--border) 55%,transparent),0 19px 36px rgba(55,67,52,.095),inset 0 1px rgba(255,255,255,.95);
+}
+.gh-math {--card:#f8e7de;--border:#f0cbbb;--accent:#dd927b;--deep:#b96e56}
+.gh-brain {--card:#e8f0e5;--border:#cbdcc6;--accent:#789b72;--deep:#557650}
+.gh-reading {--card:#eee8f6;--border:#ded0eb;--accent:#9e86bb;--deep:#786194}
+.gh-card-glyph {
+  width:94px;height:90px;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb,var(--border) 63%,white);
+  background:linear-gradient(152deg,rgba(255,255,255,.96),rgba(255,255,255,.35));
+  border-radius:22px;margin-bottom:15px;
+  box-shadow:0 4px 8px rgba(63,67,53,.06),inset 0 1px rgba(255,255,255,.9);
+}
+.gh-card-glyph svg {width:59px;height:59px;filter:drop-shadow(0 1px 0 rgba(255,255,255,.9))}
+.gh-card-title {font-size:clamp(25px,2.25vw,32px);letter-spacing:-1.1px;font-weight:820}
+.gh-card-desc {color:#4c6558;letter-spacing:-.2px;font-weight:540;margin-top:7px}
+.gh-start {
+  margin-top:17px;width:94%;height:48px;font-weight:790;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 84%,white),var(--accent));
+  box-shadow:0 4px 0 color-mix(in srgb,var(--deep) 86%,#29352a),0 10px 17px rgba(40,55,37,.14),inset 0 1px rgba(255,255,255,.45);
+}
+.gh-card:hover {transform:translateY(-5px);box-shadow:0 6px 0 color-mix(in srgb,var(--border) 56%,transparent),0 25px 42px rgba(55,67,52,.13),inset 0 1px #fff}
+.gh-card:active {transform:translateY(2px)}
+.gh-card:active .gh-start {box-shadow:0 1px 0 var(--deep),0 3px 7px rgba(40,55,37,.09),inset 0 2px 4px #00000013}
+.gh-rail {
+  border:1px solid #e4e0d5;border-radius:25px;background:linear-gradient(180deg,#fffefa,#faf9f4);
+  box-shadow:0 4px 0 #e7e7dd75,0 16px 27px rgba(51,60,49,.085),inset 0 1px #fff;
+}
+.gh-rail-item {gap:10px}
+.gh-rail-item>.gh-rail-icon {width:39px;height:39px;border-radius:12px;background:#edf2e9;display:grid;place-items:center}
+.gh-rail-item .trophy-icon {background:#fff2dd;color:#c49b55}
+.gh-rail-title,.gh-navbutton strong {font-weight:790}
+.gh-skills-title{color:#4e6b59}
+.gh-skill-glyph {width:41px;height:38px;box-shadow:inset 0 1px #ffffffaa;border:1px solid #ffffff93;border-radius:12px}
+.gh-skill:hover .gh-skill-glyph {transform:translateY(-2px)}
+/* Apply the same tactile, restrained identity to all course and practice screens. */
+.gh-catalog-title {padding-top:15px;margin-bottom:24px}
+.gh-catalog-icon {width:77px;height:77px;border-radius:23px;background:linear-gradient(145deg,#fff9,transparent 65%),var(--c-tint);box-shadow:0 4px 0 #4650400b,0 13px 23px rgba(48,65,52,.09)}
+.gh-game-card {
+  border-radius:24px;
+  background:linear-gradient(158deg,#fffefbd9,transparent 58%),var(--c-tint);
+  box-shadow:0 4px 0 color-mix(in srgb,var(--c-line) 68%,transparent),0 14px 25px rgba(53,64,48,.09),inset 0 1px #fff;
+}
+.gh-game-card:hover {transform:translateY(-3px);box-shadow:0 6px 0 color-mix(in srgb,var(--c-line) 70%,transparent),0 22px 32px rgba(53,64,48,.13)}
+.gh-game-symbol {width:61px;height:58px;border-radius:18px;background:#fffdf8;box-shadow:0 3px 7px #23372913,inset 0 1px #fff}
+.gh-game-card strong {font-weight:820;letter-spacing:-.5px}
+.gh-game-start {border-radius:999px;box-shadow:0 4px 0 var(--c-dark),0 8px 14px rgba(42,53,37,.115),inset 0 1px #ffffff68}
+.gh-play-shell .gamebar,.gh-play-shell .playarea,.gh-game-modal {box-shadow:0 4px 0 #e6e7de8a,0 16px 30px rgba(45,60,47,.08),inset 0 1px #fff}
+.gh-play-shell .playarea {border-radius:27px}
+@media(max-width:750px){
+  .gh-card-glyph {width:68px;height:68px;border-radius:17px;margin:0}
+  .gh-card-glyph svg {width:51px;height:51px}
+  .gh-card {border-radius:22px}
+  .gh-start{margin-top:10px;height:37px}
+  .gh-rail {box-shadow:0 3px 0 #e7e7dd75,0 11px 20px rgba(51,60,49,.07)}
+  .gh-rail-item>.gh-rail-icon{width:32px;height:32px}
+  .gh-game-card{border-radius:19px}
+}
+@media(prefers-reduced-motion:reduce){.gh-card,.gh-game-card,.gh-start{transition:none!important}}
 </style>
 </head>
 <body><div class="app">
