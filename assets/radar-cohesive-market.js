@@ -4,6 +4,7 @@ const arr=x=>Array.isArray(x)?x:[];
 const sector=c=>String(c.sector||c.industry||c.catalog_entry?.sector||'업종 미분류');
 const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null}catch{return null}};
 function render(c,ctx){
+ const local=window.RadarCohesiveRegions?.render(ctx);
  const H=window.RadarCohesive,E=H.esc,companies=arr(ctx.companies),D=ctx.data||{},groups=new Map();
  companies.forEach(x=>{const k=sector(x);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(x)});
  if(state.sector&&!groups.has(state.sector))state.sector='';
@@ -36,7 +37,7 @@ function render(c,ctx){
  const detail=section('선택 산업: '+(selected||'전체 업종'),`<div class="rcm-detail">${[['수요','생산·수출·수주 원자료 미연결'],['공급','증설·가동률·재고 원자료 미연결'],['수익성','산업 이익률 시계열 미연결'],['주요 위험','정책·경쟁·노사 원문 분석 대기']].map(([t,b])=>`<div><strong>${t}</strong><p>${b}</p></div>`).join('')}</div>`, '확인되지 않은 수혜·주도산업 판정 없음');
  const fav=companies.filter(x=>arr(ctx.favorites).includes(H.id(x)));
  const side=section('기업 선택',`<input data-rcm-search="company" aria-label="기업명 종목 검색" placeholder="기업명·종목 검색" value="${E(state.companyQuery)}"><h3>관심종목</h3>${fav.length?H.stockRows(fav,{max:3,showPrice:false}):'<p class="rcm-muted">별을 눌러 관심종목을 추가하세요.</p>'}<h3>${E(selected||'전체 업종')} 기업 <small>${filtered.length.toLocaleString()}개</small></h3><div class="rcm-companies">${filtered.length?H.stockRows(filtered,{max:100,showPrice:false}):'<p>선택 조건에 맞는 기업이 없습니다.</p>'}</div>${filtered.length>100?'<p class="rcm-muted">상위 100개 표시 · 검색으로 범위를 좁혀주세요.</p>':''}<p class="rcm-note">산업을 바꾸면 기업 목록도 바뀝니다. 기업 선택은 공통 기업분석·공시·차트에 적용됩니다.</p>`, '선택 국가 기업');
- return `<div class="rcm-layout"><div class="rcm-main"><div class="rcm-top">${macro}${news}</div>${industry}${detail}</div><aside>${side}</aside></div>`;
+ return `<div class="rcm-layout"><div class="rcm-main"><div class="rcm-top">${local||macro+news}</div>${industry}${detail}</div><aside>${side}</aside></div>`;
 }
 function handle(event,ctx){
  const target=event.target?.closest?.('[data-rcm-sector],[data-rcm-news],[data-rcm-search]');if(!target)return false;
