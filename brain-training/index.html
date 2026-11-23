@@ -633,6 +633,37 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
  .gh-play-shell .sudoku-nums button{width:47px;height:44px}
 }
 
+
+/* v9: restrained visual polish -- preserve layout, sizing, and the pastel game identity. */
+.gh-bar{background:rgba(255,254,251,.96);border-bottom-color:#e9e5dd;box-shadow:0 2px 13px rgba(34,52,39,.025)}
+.gh-brand>strong{letter-spacing:-.75px}
+.gh-heading h1{letter-spacing:-1.55px}
+.gh-heading p{color:#587467}
+.gh-title-rule{background:#8fa987;height:2px}
+.gh-card{border-color:color-mix(in srgb,var(--border) 89%,#adada2);background:linear-gradient(150deg,rgba(255,255,255,.45),rgba(255,255,255,.02) 60%),var(--card);box-shadow:0 3px 0 rgba(49,62,45,.036),0 15px 29px rgba(53,65,50,.061),inset 0 1px rgba(255,255,255,.8)}
+.gh-card:hover{box-shadow:0 4px 0 rgba(49,62,45,.034),0 19px 31px rgba(53,65,50,.092),inset 0 1px rgba(255,255,255,.86)}
+.gh-card-glyph{color:var(--deep)}
+.gh-start{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 82%,white),var(--accent));box-shadow:0 3px 0 color-mix(in srgb,var(--deep) 88%,black),0 7px 13px rgba(41,51,40,.105),inset 0 1px rgba(255,255,255,.33);text-shadow:0 1px 1px rgba(37,41,30,.07)}
+.gh-rail{border-color:#e9e4dc;background:rgba(255,254,251,.89);box-shadow:0 3px 0 rgba(44,50,39,.025),0 12px 23px rgba(43,53,40,.067),inset 0 1px rgba(255,255,255,.9)}
+.gh-rail-item:hover,.gh-skill:hover{background:rgba(227,239,222,.45)}
+.trophy-icon{color:#baa46c;display:inline-flex;align-items:center;justify-content:center}
+.trophy-icon svg{stroke-width:1.85}
+.gh-game-card{box-shadow:0 3px 0 rgba(43,57,43,.04),0 12px 22px rgba(43,57,43,.058),inset 0 1px rgba(255,255,255,.88);border-color:color-mix(in srgb,var(--c-line) 88%,#b6bbb0)}
+.gh-game-card:hover{box-shadow:0 4px 0 rgba(43,57,43,.045),0 17px 28px rgba(43,57,43,.09)}
+.gh-game-symbol{background:rgba(255,254,251,.87);box-shadow:0 2px 5px rgba(46,52,42,.035)}
+.gh-game-card strong{font-weight:780;letter-spacing:-.4px}
+.gh-game-description{font-size:13px;line-height:1.5;color:#587064}
+.gh-game-best{color:#718875}
+.gh-game-start{background:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 78%,white),var(--c-accent));box-shadow:0 3px 0 var(--c-dark),0 6px 10px rgba(47,52,41,.07),inset 0 1px rgba(255,255,255,.42)}
+.gh-catalog-icon{box-shadow:0 3px 0 rgba(38,54,43,.04),0 12px 21px rgba(32,59,49,.075),inset 0 1px rgba(255,255,255,.7)}
+.gh-play-shell .gamebar{border-color:#e9e5dd;box-shadow:0 3px 0 rgba(36,52,40,.025),0 11px 22px rgba(42,60,47,.046)}
+.gh-game-modal,.gh-setup-card,.gh-setup-panel{border-color:#e8e2d8}
+@media(max-width:750px){
+ .gh-game-description{font-size:12px}
+ .gh-rail{box-shadow:0 2px 0 rgba(44,50,39,.025),0 8px 20px rgba(43,53,40,.055)}
+}
+@media(prefers-reduced-motion:reduce){.gh-card,.gh-game-card,.gh-start,.gh-game-start{transition:none!important}}
+
 </style>
 </head>
 <body><div class="app">
@@ -816,6 +847,7 @@ function streak(){let days=new Set(data.sessions.map(a=>a.date));let st=0,d=new 
 const average=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
 
 const ST_ICONS={
+ trophy:'<path d="M7 4h10v6c0 3-2.2 5-5 5s-5-2-5-5V4Z"/><path d="M7 6H4v2c0 3 2 4.5 4.5 4.5M17 6h3v2c0 3-2 4.5-4.5 4.5M12 15v4m-4 2h8m-8-2h8"/>',
  home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
  play:'<path d="m7 4 13 8-13 8z"/>',book:'<path d="M12 7C9 5 6 4 3 5v14c3-1 6 0 9 2 3-2 6-3 9-2V5c-3-1-6 0-9 2ZM12 7v14"/>',
  chart:'<path d="M4 20V11M10 20V4M16 20v-9M22 20V7"/>',flag:'<path d="M5 21V4m0 1c5-3 7 3 15 0v11c-8 3-10-3-15 0"/>',layers:'<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5M3 18l9 5 9-5"/>',
@@ -895,7 +927,7 @@ function renderHome(){
   <main class="gh-body"><div class="gh-center-group"><div class="gh-heading"><h1>오늘은 어떤 훈련을 할까요?</h1><p>게임처럼 즐기면서 두뇌와 독해력을 키워보세요.</p><span class="gh-title-rule"></span></div>
    <section class="gh-cards" aria-label="훈련 선택">${cards}</section>
    <nav class="gh-rail" aria-label="도전 및 기록"><button type="button" class="gh-rail-item gh-challenge" data-go="planner"><span class="gh-rail-icon">${stIcon('target',31)}</span><span class="gh-rail-title">오늘의 도전</span><span class="gh-completion">${complete} / 3 완료</span><span class="gh-steps">${core.map(id=>`<i class="${routineIsDone(id)?'is-done':''}"></i>`).join('')}</span></button>
-   <button class="gh-rail-item gh-navbutton" type="button" data-test="academy"><span class="gh-rail-icon trophy-icon" aria-hidden="true">🏆</span><strong>종합 테스트</strong>${stIcon('chevron',21)}</button>
+   <button class="gh-rail-item gh-navbutton" type="button" data-test="academy"><span class="gh-rail-icon trophy-icon" aria-hidden="true">${stIcon('trophy',28)}</span><strong>종합 테스트</strong>${stIcon('chevron',21)}</button>
    <button class="gh-rail-item gh-navbutton" type="button" data-go="record"><span class="gh-rail-icon">${stIcon('chart',30)}</span><strong>내 기록</strong>${stIcon('chevron',21)}</button>
    <div class="gh-rail-skills"><span class="gh-skills-title">훈련 영역</span><div class="gh-skills">${skillTiles}</div></div></nav></div>
   </main></div>`;
