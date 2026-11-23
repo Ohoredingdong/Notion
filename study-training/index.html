@@ -943,9 +943,14 @@ case 'sudoku':return makeSudoku();
 case 'chunks':{let cases=[['도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.','도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.'],['정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.','정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.'],['분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.','분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.']];let [v,a]=pick(cases);return qchoice('문장을 의미 단위로 자연스럽게 끊은 것은?',a,[v.replaceAll(' / ','').replace(/ /g,' / '),v.replace(' / ','/').replace(/ /g,'  '),v.replaceAll(' / ',' // ')],{note:'읽을 때 서로 밀접한 의미의 단어들을 묶어보세요.'})}
 case 'verbal':{
  const pool=['나무','비','강','책','연필','노트','하늘','별','구름','바다','파도','모래','기억','서랍','시계','창문','도시','나침반','초록','정원'];
- seq=shuffle(pool).slice(0,d*2+1);const position=d===3?3:Math.floor(seq.length/2);ans=seq[position];
- const wrong=shuffle(pool.filter(w=>w!==ans)).slice(0,3);
- return qchoice(`방금 본 ${seq.length}개 단어 중 ${position+1}번째 단어는?`,ans,wrong,{preview:seq.join(' · '),previewTime:d===3?2000:d===2?2500:3200,note:'순서와 단어를 함께 기억하는 언어 작업기억 문제'});
+ const wordCount=d===1?5:d===2?6:7;
+ seq=shuffle(pool).slice(0,wordCount);
+ const position=r(0,seq.length-1);ans=seq[position];
+ const wrong=shuffle(seq.filter(w=>w!==ans)).slice(0,3);
+ return qchoice(`방금 본 ${seq.length}개 단어 중 ${position+1}번째 단어는?`,ans,wrong,{
+  preview:seq.join(' · '),previewHeading:'단어의 순서를 기억하세요.',previewNote:'단어를 순서대로 기억한 뒤 질문에 답하세요.',
+  previewTime:d===3?2000:d===2?2500:3200,note:'제시된 단어의 위치를 기억하고 정답을 선택하세요.'
+ });
 }
 case 'semantic':return qchoice('지문에서 확인할 수 있는 사실과 가장 가까운 것은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
 case 'connection':return qchoice('글의 문장들이 주로 어떤 관계로 연결되나요?','현상 설명 → 원인·의미 설명 → 대응 또는 결론',['주장 제시 → 무관한 이야기 나열','결과만 나열하며 근거를 생략','처음 주장과 완전히 모순되는 결론'],{passage:p.text});
@@ -1159,13 +1164,13 @@ let h=`<div class="gamewrap sd-game sd-theme-${theme} sd-kind-${q.type}">
   <div class="sd-progress-row"><strong>문제 ${s.current+1}<span> / ${s.total}</span></strong><div class="sd-progress-bar" role="progressbar" aria-label="문제 진행률" aria-valuenow="${s.current+1}" aria-valuemin="0" aria-valuemax="${s.total}"><i style="width:${(s.current+1)/s.total*100}%"></i></div></div>
   <div class="sd-stage ${q.passage?'sd-has-passage':''}">
     ${q.passage?`<div class="sd-passage"><div class="sd-passage-label">${stIcon('book',20)} 독해 지문</div><div class="sd-passage-text">${esc(q.passage)}</div></div>`:''}
-    <div class="sd-task"><div class="sd-task-title"><h2 class="qtitle">${esc(q.prompt).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</h2><p class="qsub">${esc(q.note||phrase)}</p></div><div id="challenge" class="sd-interaction"></div><div id="feedback" class="feedback sd-feedback" aria-live="polite"></div></div>
+    <div class="sd-task"><div class="sd-task-title"><h2 class="qtitle">${esc(previewing&&q.previewHeading?q.previewHeading:q.prompt).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</h2><p class="qsub">${esc(previewing&&q.previewNote?q.previewNote:(q.note||phrase))}</p></div><div id="challenge" class="sd-interaction"></div><div id="feedback" class="feedback sd-feedback" aria-live="polite"></div></div>
   </div>
 </section>
 <footer class="sd-game-footer"><div class="sd-footer-challenge">${stIcon('target',22)} <strong>오늘의 도전</strong> <span>${['math','brain','reading'].filter(k=>routineIsDone(k)).length}/3 완료</span><span class="sd-three-dots">${['math','brain','reading'].map(k=>`<i class="${routineIsDone(k)?'done':''}"></i>`).join('')}</span></div><div class="sd-footer-difficulty">${stIcon('chart',20)} <span>훈련 난이도</span><strong>${['','가볍게','집중','도전'][s.diff]}</strong></div><button class="sd-quit" type="button" id="quit">${stIcon('play',18)} 훈련 종료</button></footer>
 </div>`;
 $('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=()=>{if(confirm('지금 훈련을 종료할까요? 완료한 기록은 저장되지 않습니다.')){session=null;clearTimers();render()}};if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;previewTick=setTimeout(()=>{previewing=false;if(session&&session.q===q)showChallenge(q)},q.previewTime||2500)}else showChallenge(q)}
-function showChallenge(q){if(!session||session.q!==q)return;let el=$('#challenge');if(!el)return;let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
+function showChallenge(q){if(!session||session.q!==q)return;let el=$('#challenge');if(!el)return;if(q.previewHeading){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
 if(q.type==='choice')h+=`<div class="choices">${q.options.map((v,i)=>`<button class="choice" data-answer="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
 if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn">확인</button></form>`;
 if(q.type==='sequence')h+=`<div class="tiny">나의 입력</div><div id="seq-display" class="memoryline seq-display" style="min-height:54px"></div><div class="tilelist">${shuffle(q.keys).map((n,i)=>`<button class="tile" data-key="${esc(n)}" data-tile="${i}">${esc(n)}</button>`).join('')}</div><button id="undo" class="btn sm ghost" style="margin-top:15px">한 칸 지우기</button>`;
