@@ -834,6 +834,7 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 @media(max-width:700px){.shell-instruction{min-height:110px}.shell-board{--shell-box-size:clamp(72px,25vw,104px);height:160px}.shell-case-body{height:65%}.shell-answers{gap:7px}.shell-choice{min-height:52px;font-size:14px}.shell-disclaimer{font-size:10px}.shell-game{padding:0 3px}}
 @media(prefers-reduced-motion:reduce){.shell-piece{transition:left .18s linear}.shell-travel-up .shell-case,.shell-travel-down .shell-case{animation:none}}
 
+.st-retain-cue{padding:34px 20px;color:#66836c;text-align:center;font-size:17px;font-weight:750;background:#f2f6ee;border-radius:16px;width:min(440px,100%)}
 </style>
 </head>
 <body><div class="app">
@@ -1184,6 +1185,7 @@ function makeSudoku(difficulty=2){
 let data;try{data=JSON.parse(localStorage.getItem('mindroom_v1')||'null')}catch(e){}if(!data||!Array.isArray(data.sessions))data={sessions:[],settings:{difficulty:0,questions:8}};
 data.settings ||= {difficulty:0,questions:8};
 data.routineLog ||= {};
+data.questionHistory ||= {};
 data.progress ||= {xp:data.sessions.reduce((n,record)=>n+(Number(record.earnedXP)||Number(record.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,record)=>n+Number(record.correct||0),0),completed:data.sessions.length};
 data.progress && (data.progress.badges ||= {});
 function lifetimeXP(){return Math.max(0,Math.round(Number(data.progress?.xp)||0))}
@@ -1196,6 +1198,44 @@ function getAdaptiveDifficulty(id){
  const avg=recent.reduce((n,x)=>n+(Number(x.seconds)||0),0)/recent.length;
  return accuracy>=.88&&avg<=25?3:accuracy<.58?1:2;
 }
+
+/* Question diversity: bounded recent stimulus/answer/choice-position history. */
+function scenarioStamp(id,q){
+ const key=JSON.stringify([id,q.signature||q.passage||q.preview||q.visual||q.prompt||'',q.type==='sudoku'?[q.grid,q.fixed]:q.type==='pairs'?q.deck:q.type==='grid'?q.selected:q.shellGame?q.moves:q.type==='sequence'?q.keys:q.answer]);
+ let h=2166136261;for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619)}
+ return (h>>>0).toString(36);
+}
+function uniqueQuestion(id,diff){
+ const history=Array.isArray(data.questionHistory?.[id])?data.questionHistory[id]:[];
+ const last=history.slice(-18),recent=last.at(-1);
+ let best=null,lowest=Infinity;
+ for(let tryNum=0;tryNum<50;tryNum++){
+  const q=makeQ(id,diff),stamp=scenarioStamp(id,q),answer=String(q.answer);
+  let penalty=0;
+  for(let j=0;j<last.length;j++){
+   const entry=last[j],age=last.length-j;
+   if(entry.stamp===stamp)penalty+=age<=3?1200:age<=8?500:150;
+   if(entry.answer===answer)penalty+=age===1?500:age<=3?90:age<=6?20:0;
+  }
+  if(penalty<lowest){best={q,stamp,answer};lowest=penalty}
+  if(penalty===0)break;
+ }
+ if(!best)return makeQ(id,diff);
+ const q=best.q;
+ if(q.type==='choice'&&Array.isArray(q.options)&&q.options.length>1){
+  const opts=q.options.slice(),oldIndex=Number(recent?.optionIndex);
+  let index=opts.findIndex(v=>String(v)===best.answer);
+  if(Number.isInteger(oldIndex)&&oldIndex>=0&&oldIndex<opts.length&&index===oldIndex){
+   const nextIndex=(oldIndex+1+r(0,opts.length-2))%opts.length;
+   [opts[index],opts[nextIndex]]=[opts[nextIndex],opts[index]];index=nextIndex;
+  }
+  q.options=opts;best.optionIndex=index;
+ }
+ data.questionHistory||={};
+ data.questionHistory[id]=[...history.slice(-39),{stamp:best.stamp,answer:best.answer,optionIndex:best.optionIndex??-1}];
+ save();return q;
+}
+
 function balancedTestGames(count){
  let buckets={math:shuffle(games.filter(g=>g.group==='math')),brain:shuffle(games.filter(g=>!['math','read'].includes(g.group))),read:shuffle(games.filter(g=>g.group==='read'))};
  const chosen=[],order=shuffle(['math','brain','read']);
@@ -1328,7 +1368,7 @@ function onExtraPageEvents(){
    const next=JSON.parse(await file.text());
    if(!next||!Array.isArray(next.sessions)||next.sessions.some(x=>!x||typeof x.date!=='string'||!Array.isArray(x.items)||!Number.isFinite(Number(x.correct))||!Number.isFinite(Number(x.total))||Number(x.total)<=0||Number(x.correct)<0||Number(x.correct)>Number(x.total)))throw Error('올바른 스터디트레이닝 백업 형식이 아닙니다.');
    if(!confirm('현재 기록을 백업 파일로 교체할까요? 기존 기록은 덮어써집니다.'))return;
-   data={sessions:next.sessions.slice(-1500),settings:next.settings||{difficulty:0,questions:8},routineLog:next.routineLog||{},weeklyGoals:next.weeklyGoals||{}};
+   data={sessions:next.sessions.slice(-1500),settings:next.settings||{difficulty:0,questions:8},routineLog:next.routineLog||{},weeklyGoals:next.weeklyGoals||{},questionHistory:next.questionHistory&&typeof next.questionHistory==='object'?next.questionHistory:{}};
    data.progress=(next.progress&&Number.isFinite(Number(next.progress.xp)))?{xp:Number(next.progress.xp),lifetimeCorrect:Number(next.progress.lifetimeCorrect)||0,completed:Number(next.progress.completed)||data.sessions.length,badges:(next.progress.badges&&typeof next.progress.badges==='object')?next.progress.badges:{},bestByGame:(next.progress.bestByGame&&typeof next.progress.bestByGame==='object')?next.progress.bestByGame:{}}:{xp:data.sessions.reduce((n,x)=>n+(Number(x.earnedXP)||Number(x.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,x)=>n+Number(x.correct||0),0),completed:data.sessions.length,badges:{},bestByGame:{}};
    save();render();showInfoModal('기록 복원 완료',`${data.sessions.length}개 세션을 복원했습니다.`);
   }catch(error){showInfoModal('복원 실패',error.message||'백업 파일을 확인해 주세요.')}
@@ -1437,14 +1477,14 @@ function showQuitConfirm(){
   if(session!==current)return;
   const pauseDuration=Date.now()-pausedAt;session.start+=pauseDuration;session.questionStart+=pauseDuration;
   tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000);
-  if(previewWasVisible){if(question.shellGame){startShellRound(question)}else{session.previewDue=Date.now()+previewRemaining;previewTick=setTimeout(()=>{if(session===current&&session.q===question){previewing=false;showChallenge(question)}},previewRemaining);}}
+  if(previewWasVisible){if(question.shellGame){startShellRound(question)}else{session.previewDue=Date.now()+previewRemaining;previewTick=setTimeout(()=>{if(session===current&&session.q===question){$('#challenge').innerHTML='<div class="st-retain-cue">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session===current&&session.q===question){previewing=false;showChallenge(question)}},400)}},previewRemaining);}}
   else if(lockedWasPending&&!$('#sd-next-question'))nextTick=setTimeout(()=>{if(session!==current)return;session.current++;if(session.current>=session.total)finishSession();else renderQuestion()},500);
  };
  $('#quit-exit').onclick=()=>{$('#modal-root').innerHTML='';session=null;clearTimers();previewing=false;render()};
  $('#quit-dialog').onclick=e=>{if(e.target.id==='quit-dialog')$('#quit-resume').click()};
  $('#quit-resume').focus({preventScroll:true});
 }
-function renderQuestion(){if(!session)return;clearTimeout(previewTick);clearTimeout(nextTick);let s=session,g=s.items[s.current],questionDifficulty=s.auto?getAdaptiveDifficulty(g.id):s.diff,q=makeQ(g.id,questionDifficulty);s.currentDifficulty=questionDifficulty;document.body.classList.add('in-session');document.body.dataset.track=g.group==='read'?'reading':g.group==='math'?'math':'brain';s.q=q;s.input='';s.locked=false;s.selectedGrid=[];s.sudokuInput=q.type==='sudoku'?q.grid.map((row,i)=>row.map((v,j)=>q.fixed[i][j]?v:0)):[];s.pairState=q.type==='pairs'?{open:[],found:[],tries:0}:null;s.questionStart=Date.now();s.previewDue=0;previewing=Boolean(q.shellGame||q.preview||q.type==='grid'||q.type==='pairs');ongoingChoice=false;let theme=g.group==='math'?'math':g.group==='read'?'reading':'brain';
+function renderQuestion(){if(!session)return;clearTimeout(previewTick);clearTimeout(nextTick);let s=session,g=s.items[s.current],questionDifficulty=s.auto?getAdaptiveDifficulty(g.id):s.diff,q=uniqueQuestion(g.id,questionDifficulty);s.currentDifficulty=questionDifficulty;document.body.classList.add('in-session');document.body.dataset.track=g.group==='read'?'reading':g.group==='math'?'math':'brain';s.q=q;s.input='';s.locked=false;s.selectedGrid=[];s.sudokuInput=q.type==='sudoku'?q.grid.map((row,i)=>row.map((v,j)=>q.fixed[i][j]?v:0)):[];s.pairState=q.type==='pairs'?{open:[],found:[],tries:0}:null;s.questionStart=Date.now();s.previewDue=0;previewing=Boolean(q.shellGame||q.preview||q.type==='grid'||q.type==='pairs');ongoingChoice=false;let theme=g.group==='math'?'math':g.group==='read'?'reading':'brain';
 let gameGlyph=theme==='math'?'calc':theme==='reading'?'book':'brain';
 let lastRun=0;for(let i=s.answers.length-1;i>=0&&s.answers[i].correct;i--)lastRun++;
 let phrase=q.passage?'지문을 읽고 알맞은 답을 골라보세요.':q.type==='number'?'정답을 직접 입력하세요.':q.type==='grid'?'기억한 위치를 선택하세요.':q.type==='pairs'?'카드의 위치를 기억해 짝을 맞히세요.':q.type==='sequence'?'올바른 순서대로 선택하세요.':q.type==='sudoku'?'빈칸을 채워 완성하세요.':'정답을 선택하세요.';
@@ -1455,13 +1495,13 @@ let h=`<div class="gamewrap sd-game sd-theme-${theme} sd-kind-${q.type}">
   <div class="sd-progress-row"><strong>문제 ${s.current+1}<span> / ${s.total}</span></strong><div class="sd-progress-bar" role="progressbar" aria-label="문제 진행률" aria-valuenow="${s.current+1}" aria-valuemin="0" aria-valuemax="${s.total}"><i style="width:${(s.current+1)/s.total*100}%"></i></div></div>
   <div class="sd-stage ${q.passage?'sd-has-passage':''}">
     ${q.passage?`<div class="sd-passage"><div class="sd-passage-label">${stIcon('book',20)} 독해 지문</div><div class="sd-passage-text">${esc(q.passage)}</div></div>`:''}
-    <div class="sd-task"><div class="sd-task-title"><h2 class="qtitle">${esc(previewing&&q.previewHeading?q.previewHeading:q.prompt).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</h2><p class="qsub">${esc(previewing&&q.previewNote?q.previewNote:(q.note||phrase))}</p></div><div id="challenge" class="sd-interaction"></div><div id="feedback" class="feedback sd-feedback" aria-live="polite"></div></div>
+    <div class="sd-task"><div class="sd-task-title"><h2 class="qtitle">${esc(previewing&&!q.shellGame?(q.previewHeading||'먼저 화면을 기억하세요.'):q.prompt).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</h2><p class="qsub">${esc(previewing&&!q.shellGame?(q.previewNote||'잠시 후 질문이 나타납니다.'):q.note||phrase)}</p></div><div id="challenge" class="sd-interaction"></div><div id="feedback" class="feedback sd-feedback" aria-live="polite"></div></div>
   </div>
 </section>
 <footer class="sd-game-footer"><div class="sd-footer-challenge">${stIcon('target',22)} <strong>오늘의 도전</strong> <span>${['math','brain','reading'].filter(k=>routineIsDone(k)).length}/3 완료</span><span class="sd-three-dots">${['math','brain','reading'].map(k=>`<i class="${routineIsDone(k)?'done':''}"></i>`).join('')}</span></div><div class="sd-footer-difficulty">${stIcon('chart',20)} <span>훈련 난이도</span><strong>${s.auto?'자동':(['','가볍게','집중','도전'][s.diff])}</strong></div><button class="sd-quit" type="button" id="quit">${stIcon('play',18)} 훈련 종료</button></footer>
 </div>`;
-$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=showQuitConfirm;if(q.shellGame){startShellRound(q);return}if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;s.previewDue=Date.now()+(q.previewTime||2500);previewTick=setTimeout(()=>{if(session&&session.q===q){previewing=false;showChallenge(q)}},q.previewTime||2500)}else showChallenge(q)}
-function showChallenge(q){if(!session||session.q!==q)return;session.previewDue=0;session.questionStart=Date.now();let el=$('#challenge');if(!el)return;if(q.previewHeading){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
+$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=showQuitConfirm;if(q.shellGame){startShellRound(q);return}if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;s.previewDue=Date.now()+(q.previewTime||2500);previewTick=setTimeout(()=>{if(session&&session.q===q){$('#challenge').innerHTML='<div class="st-retain-cue" aria-live="polite">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session&&session.q===q){previewing=false;showChallenge(q)}},400)}},q.previewTime||2500)}else showChallenge(q)}
+function showChallenge(q){if(!session||session.q!==q)return;session.previewDue=0;session.questionStart=Date.now();let el=$('#challenge');if(!el)return;if(q.preview||q.type==='grid'||q.type==='pairs'){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
 if(q.type==='choice')h+=`<div class="choices">${q.options.map((v,i)=>`<button class="choice" data-answer="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
 if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn">확인</button></form>`;
 if(q.type==='sequence')h+=`<div class="tiny">나의 입력</div><div id="seq-display" class="memoryline seq-display" style="min-height:54px"></div><div class="tilelist">${shuffle(q.keys).map((n,i)=>`<button class="tile" data-key="${esc(n)}" data-tile="${i}">${esc(n)}</button>`).join('')}</div><button id="undo" class="btn sm ghost" style="margin-top:15px">한 칸 지우기</button>`;
