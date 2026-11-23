@@ -5,6 +5,7 @@ const sector=c=>String(c.sector||c.industry||c.catalog_entry?.sector||'업종 �
 const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null}catch{return null}};
 function render(c,ctx){
  const local=window.RadarCohesiveRegions?.render(ctx);
+ if(window.RadarCohesiveForeign?.has(ctx.country))return window.RadarCohesiveForeign.renderMarket(ctx,local||'');
  const H=window.RadarCohesive,E=H.esc,companies=arr(ctx.companies),D=ctx.data||{},groups=new Map();
  companies.forEach(x=>{const k=sector(x);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(x)});
  if(state.sector&&!groups.has(state.sector))state.sector='';
@@ -40,6 +41,7 @@ function render(c,ctx){
  return `<div class="rcm-layout"><div class="rcm-main"><div class="rcm-top">${local||macro+news}</div>${industry}${detail}</div><aside>${side}</aside></div>`;
 }
 function handle(event,ctx){
+ if(window.RadarCohesiveForeign?.has(ctx.country))return window.RadarCohesiveForeign.handle(event,ctx);
  const target=event.target?.closest?.('[data-rcm-sector],[data-rcm-news],[data-rcm-search]');if(!target)return false;
  if(target.hasAttribute('data-rcm-search')){if(event.type!=='input'&&event.type!=='change')return false;state[target.dataset.rcmSearch==='sector'?'query':'companyQuery']=target.value;return true;}
  if(event.type!=='click')return false;

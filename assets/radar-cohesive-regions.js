@@ -39,7 +39,7 @@ function render(ctx){
  const {esc:E,fmt,link,compare}=window.RadarCohesive;
  const entries=Array.isArray(ctx.companies)?ctx.companies:[];
  const count=entries.length, priced=entries.filter(x=>number(x.price)).length;
- const coverage=count?(fmt(count,0)+'종목 명부 · '+fmt(priced,0)+'종목 저장 시세 · 국가 전체 커버 아님'):'레이더 종목 명부·개별 시세·기업 분석 미연결';
+ const coverage=window.RadarCohesiveForeign?.has(c)?window.RadarCohesiveForeign.summary(c,entries):count?(fmt(count,0)+'종목 명부 · '+fmt(priced,0)+'종목 저장 시세 · 국가 전체 커버 아님'):'레이더 종목 명부·개별 시세·기업 분석 미연결';
  const reading=b?'<strong class="rc-region-value">'+fmt(b.value)+compare(b.value,b.previous_value,{verified:b.verified,label:b.comparison})+'</strong><small>'+E(b.session)+' 종가'+(b.expected_session?' · '+E(b.expected_session)+' 갱신 대기':'')+'</small>':'<strong class="rc-region-value">—</strong>';
  const source=(b?.source_url?link(b.source_url,b.source_name||'저장 수치 출처')+' · ':'')+link(spec.official,'지수 공식 원문');
  const macro=m&&number(m.value)&&m.period&&day(m.released)&&Date.parse(m.released)<=Date.now()?'<div class="rc-region-economy"><b>'+E(m.label)+'</b><strong>'+fmt(m.value)+E(m.unit)+compare(m.value,m.previous_value,{verified:number(m.previous_value)&&m.previous_period==='2026-09',label:m.previous_period+' 동일 CPI 전년동월비'})+'</strong><small>'+E(m.period)+' 기준 · '+E(m.released)+' 발표'+(m.updated?' · '+E(m.updated)+' 수정':'')+'</small><small>'+link(m.source_url,m.source_name)+(m.previous_source_url?' · '+link(m.previous_source_url,'비교 원문'):'')+(m.license_url?' · '+link(m.license_url,'이용 조건'):'')+'</small></div>':'';
