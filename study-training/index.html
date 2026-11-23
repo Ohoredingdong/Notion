@@ -791,6 +791,10 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 @media(max-width:750px){.gh-game-symbol{width:57px;min-width:57px;height:55px;border-radius:15px;margin-bottom:8px}.gh-game-symbol .game-line-icon{width:33px;height:33px}}
 
 .sd-xp-progress{max-width:680px;margin:12px auto 4px;padding:0 18px;text-align:center;color:#547565;font-size:13px;font-weight:720}.sd-xp-track{margin:8px 0 0;height:9px;border-radius:99px;background:#e6e9dd;overflow:hidden}.sd-xp-track i{height:100%;display:block;background:#7b9f76;border-radius:99px;transition:width .3s}
+
+.sd-explain-answer{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:830px;margin:4px auto 0}.sd-explain-answer strong{font-size:17px;color:#9b4d38}.sd-explain-answer p{font-size:14px;line-height:1.65;color:#516356;margin:2px 0 8px;white-space:pre-wrap}.sd-explain-answer button{border:1px solid #bfd1bd;border-radius:999px;background:#dfeada;color:#28503b;font-weight:800;padding:13px 30px;box-shadow:0 3px 0 #9eb99b}
+.sd-review-box{max-width:930px;margin:12px auto 5px}.sd-review-box details{border:1px solid #dfe6d9;border-radius:18px;background:#fffcf7;overflow:hidden}.sd-review-box summary{cursor:pointer;list-style:none;padding:14px 22px;display:flex;align-items:center;gap:8px;color:#355943;font-weight:790}.sd-review-box summary::-webkit-details-marker{display:none}.sd-review-box summary svg{margin-left:auto}.sd-review-items{padding:8px 18px 18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.sd-review-items article{border-radius:14px;border:1px solid #e7e5db;background:#faf8f1;padding:13px 15px}.sd-review-items small{display:block;color:#819080;font-size:11px;margin-bottom:6px}.sd-review-items strong{display:block;color:#254735;white-space:pre-wrap;font-size:13px}.sd-review-items p{font-size:12px;color:#526556;margin:7px 0 0}.sd-review-items .sd-review-help{color:#447b55}.sd-all-correct{margin:8px;color:#59745f}
+@media(max-width:650px){.sd-review-items{grid-template-columns:1fr}.sd-explain-answer p{font-size:12px}.sd-review-box summary{font-size:13px}}
 </style>
 </head>
 <body><div class="app">
@@ -852,7 +856,13 @@ passages.push(...[{"level":2,"topic":"전력 사용과 최대 수요","text":"�
 const joinOptions=(right,wrong)=>shuffle([right,...shuffle(uniq(wrong.filter(x=>x!==undefined).filter(x=>String(x)!==String(right)))).slice(0,3)]);
 const qchoice=(prompt,answer,wrong,extra={})=>({type:'choice',prompt,answer,options:joinOptions(answer,wrong),...extra});
 const qnum=(prompt,answer,extra={})=>({type:'number',prompt,answer,...extra});
-const readingDistractors=(p,field='fact')=>shuffle(passages.filter(x=>x.topic!==p.topic).map(x=>x[field]||x.fact)).slice(0,3);
+const readingDistractors=(p,field='fact')=>{
+ const related=shuffle(passages.filter(x=>x.topic!==p.topic&&x.category===p.category).map(x=>x[field]||x.fact));
+ const elsewhere=shuffle(passages.filter(x=>x.topic!==p.topic&&x.category!==p.category).map(x=>x[field]||x.fact));
+ const wrong=(['fact','main','cause','example'].includes(field)?[p.wrong]:[]);
+ return uniq([...wrong,...related,...elsewhere].filter(x=>x&&x!==p[field])).slice(0,3);
+};
+const readingQ=(prompt,answer,wrong,p,reason)=>qchoice(prompt,answer,wrong,{passage:p.text,explanation:reason||`지문의 핵심 근거: ${p.fact}`});
 const qseq=(prompt,seq,extra={})=>({type:'sequence',prompt,answer:seq.join(''),keys:uniq([...seq,...'1234567890'.split('')]).sort(),...extra});
 const numOpts=(a,count=4)=>{let s=new Set([a]);while(s.size<count){let v=a+r(-9,9);if(v>=0)s.add(v)}return shuffle([...s])};
 function makeQ(id,diff=2){const big=diff===3, p=pick(passages.filter(x=>(x.level||1)===diff)), d=diff;let x,y,z,seq,ans,choices;
@@ -957,21 +967,21 @@ case 'verbal':{
   previewTime:d===3?2000:d===2?2500:3200,note:'제시된 단어의 위치를 기억하고 정답을 선택하세요.'
  });
 }
-case 'semantic':return qchoice('지문에서 확인할 수 있는 사실과 가장 가까운 것은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'connection':return qchoice('글의 문장들이 주로 어떤 관계로 연결되나요?','현상 설명 → 원인·의미 설명 → 대응 또는 결론',['주장 제시 → 무관한 이야기 나열','결과만 나열하며 근거를 생략','처음 주장과 완전히 모순되는 결론'],{passage:p.text});
-case 'proposition':return qchoice('글에 명시적으로 나타난 명제는?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'gist':return qchoice('이 문단의 중심 내용을 고르세요.',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'theme':return qchoice('글의 주제로 가장 적절한 것은?',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'context':return qchoice('글 뒤에 가장 자연스럽게 이어질 내용은?',`${p.topic}에 관한 구체적인 적용 방안과 사례`,readingDistractors(p,'topic').map(topic=>`${topic}에 관한 구체적인 적용 방안과 사례`),{passage:p.text});
-case 'inference':return qchoice('본문을 토대로 논리적으로 추론할 수 있는 것은?',p.example,readingDistractors(p,'example'),{passage:p.text});
-case 'cause':return qchoice('본문에서 설명한 이유로 적절한 것은?',p.cause,readingDistractors(p,'cause'),{passage:p.text});
-case 'argument':return qchoice('글의 결론을 가장 잘 뒷받침하는 내용은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'perspective':return qchoice('본문의 사실을 바탕으로 작성한, 검증 가능한 진술은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'structure':return qchoice('본문의 전개 구조는?', '현상·개념 소개 → 이유·작용 설명 → 시사점', ['무관한 사건의 시간순 나열','인물 대화만으로 전개','결론과 상반된 무근거 주장'],{passage:p.text});
-case 'vocab':return qchoice(`본문에서 “${p.keyword}”의 의미는?`,p.definition,['근거 없이 상대방을 설득하는 행위','수량과 무관하게 결과를 단정하는 태도','주제와 상관없는 문장을 반복하는 일'],{passage:p.text});
-case 'categorize':return qchoice(`“${p.topic}”이 주로 속하는 학습 분야는?`,p.category,['역사','환경','정보','경제','생명','학습','과학'].filter(a=>a!==p.category).slice(0,3),{passage:p.text});
-case 'summary':return qchoice('다음 글을 한 문장으로 요약하면?',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'application':return qchoice('이 글의 원리를 가장 적절하게 적용한 사례는?',p.example,readingDistractors(p,'example'),{passage:p.text});
+case 'semantic':return readingQ('지문에서 직접 확인할 수 있는 사실은?',p.fact,readingDistractors(p,'fact'),p,`글에서 사실로 진술한 내용은 “${p.fact}”입니다.`);
+case 'connection':return readingQ('글의 결론을 뒷받침하는 이유는?',p.cause,readingDistractors(p,'cause'),p,`핵심 이유는 “${p.cause}”입니다. 이 설명이 글의 결론으로 이어집니다.`);
+case 'proposition':return readingQ('글에 명시된 명제로 적절한 것은?',p.fact,readingDistractors(p,'fact'),p,`본문에 명시된 내용: ${p.fact}`);
+case 'gist':return readingQ('이 문단의 중심 내용은?',p.main,readingDistractors(p,'main'),p,`글 전체의 결론과 근거를 함께 담은 문장은 “${p.main}”입니다.`);
+case 'theme':return readingQ('이 글의 핵심 주제는?',p.topic,readingDistractors(p,'topic'),p,`이 글은 “${p.topic}”의 원리와 의미를 설명합니다.`);
+case 'context':return readingQ('이 글 다음에 이어질 구체적인 사례로 가장 적절한 것은?',p.example,readingDistractors(p,'example'),p,`글의 원리를 적용하면 “${p.example}”와 같은 사례가 자연스럽게 이어집니다.`);
+case 'inference':return readingQ('글의 원리를 바탕으로 실행할 수 있는 판단은?',p.example,readingDistractors(p,'example'),p,`적용 사례로는 “${p.example}”가 가장 타당합니다.`);
+case 'cause':return readingQ('글에서 설명한 원인은?',p.cause,readingDistractors(p,'cause'),p,`원인에 해당하는 내용: ${p.cause}`);
+case 'argument':return readingQ('글의 주장을 뒷받침하는 근거로 가장 적절한 것은?',p.fact,readingDistractors(p,'fact'),p,`지문의 결론을 뒷받침하는 명시적 근거는 “${p.fact}”입니다.`);
+case 'perspective':return readingQ('본문의 내용으로 확인할 수 있는 객관적 진술은?',p.fact,readingDistractors(p,'fact'),p,`본문에서 확인 가능한 정보는 “${p.fact}”입니다.`);
+case 'structure':{const answer=p.level===3?'문제 제기 → 관련 요인 검토 → 판단 기준 제시':'현상·개념 소개 → 이유 설명 → 실천 방안 제시';return readingQ('글의 전개 방식을 가장 잘 설명한 것은?',answer,['무관한 사건을 시간순으로 나열','인물 간 대화만 이어서 전개','주장과 무관한 결론으로 마무리'].filter(x=>x!==answer),p,'글의 앞부분에서 현상이나 문제를 제시하고, 이유를 설명한 뒤 판단 기준 또는 대응 방안을 제안합니다.');}
+case 'vocab':return readingQ(`본문에서 “${p.keyword}”의 뜻은?`,p.definition,readingDistractors(p,'definition'),p,`“${p.keyword}”의 뜻은 “${p.definition}”입니다.`);
+case 'categorize':return readingQ(`“${p.topic}”은 주로 어떤 분야와 관련되나요?`,p.category,shuffle(uniq(passages.map(x=>x.category).filter(x=>x!==p.category))).slice(0,3),p,`글에서 다룬 내용은 “${p.category}” 분야의 문제입니다.`);
+case 'summary':return readingQ('글 전체를 가장 정확히 요약한 문장은?',p.main,readingDistractors(p,'main'),p,`핵심 정보를 종합한 요약은 “${p.main}”입니다.`);
+case 'application':return readingQ('본문의 원리를 새로운 상황에 적용한 사례는?',p.example,readingDistractors(p,'example'),p,`지문에서 설명한 원리의 구체적인 적용 사례는 “${p.example}”입니다.`);
 default:return qchoice('다음 중 같은 도형은?','●',['■','▲','◆']);
 }}
 function clockSVG(hour,min){let ha=(hour%12*30+min*.5),ma=min*6;return `<svg class="svgclock" viewBox="0 0 200 200" aria-label="아날로그 시계"><circle cx="100" cy="100" r="88" fill="#f8faff" stroke="#d5ddeb" stroke-width="6"/>${Array.from({length:12},(_,i)=>{let a=(i*30-90)*Math.PI/180;return `<line x1="${100+72*Math.cos(a)}" y1="${100+72*Math.sin(a)}" x2="${100+81*Math.cos(a)}" y2="${100+81*Math.sin(a)}" stroke="#7786a4" stroke-width="3"/>`}).join('')}<line x1="100" y1="100" x2="${100+49*Math.cos((ha-90)*Math.PI/180)}" y2="${100+49*Math.sin((ha-90)*Math.PI/180)}" stroke="#283e70" stroke-width="7" stroke-linecap="round"/><line x1="100" y1="100" x2="${100+69*Math.cos((ma-90)*Math.PI/180)}" y2="${100+69*Math.sin((ma-90)*Math.PI/180)}" stroke="#5776d7" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="100" r="5" fill="#283e70"/></svg>`}
@@ -1213,7 +1223,13 @@ function flipCard(i){let s=session,ps=s.pairState,q=s.q;if(!s||s.locked||ps.foun
 function validSudoku(grid,q){const valid=(a)=>a.length===4&&new Set(a).size===4&&a.every(n=>n>=1&&n<=4);for(let i=0;i<4;i++){if(!valid(grid[i])||!valid(grid.map(row=>row[i])))return false;for(let j=0;j<4;j++){if(q.fixed[i][j]&&grid[i][j]!==q.grid[i][j])return false}}for(let a=0;a<4;a+=2)for(let b=0;b<4;b+=2){if(!valid([grid[a][b],grid[a][b+1],grid[a+1][b],grid[a+1][b+1]]))return false}return true}
 function evaluate(value,clicked){if(!session||session.locked||previewing)return;let s=session,q=s.q,correct=q.type==='pairs'?'complete'===value:q.type==='sudoku'?validSudoku(s.sudokuInput,q):String(value).replace(/\s/g,'')===String(q.answer).replace(/\s/g,'');s.locked=true;let dt=(Date.now()-s.questionStart)/1000;s.correct+=correct?1:0;s.score+=correct?Math.max(20,Math.round(100-Math.min(70,dt*2))):0;const selectedDifficulty=s.currentDifficulty||s.diff;
 s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1)),difficulty:selectedDifficulty,
- ...(correct?{}:{prompt:String(q.prompt).slice(0,260),selected:String(value).slice(0,150),expected:String(q.answer).slice(0,200),explanation:String(q.explanation||q.note||'정답과 지문 또는 문제 조건을 다시 비교해 보세요.').slice(0,360)})});if(clicked){clicked.classList.add(correct?'correct':'wrong')}let msg=correct?'✓ 정답입니다.':`정답: ${q.type==='sudoku'?'규칙을 만족하는 격자':q.type==='pairs'?'모든 짝':esc(String(q.answer).slice(0,75))}`;$('#feedback').innerHTML=msg;$('#feedback').classList.toggle('bad',!correct);$$('#challenge button').forEach(b=>b.disabled=true);if(!correct&&q.type==='choice')$$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});nextTick=setTimeout(()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()},correct?750:1250)}
+ ...(correct?{}:{prompt:String(q.prompt).slice(0,260),selected:String(value).slice(0,150),expected:String(q.answer).slice(0,200),explanation:String(q.explanation||q.note||'정답과 지문 또는 문제 조건을 다시 비교해 보세요.').slice(0,360)})});if(clicked){clicked.classList.add(correct?'correct':'wrong')}let msg=correct?'✓ 정답입니다.':`정답: ${q.type==='sudoku'?'규칙을 만족하는 격자':q.type==='pairs'?'모든 짝':esc(String(q.answer).slice(0,95))}`;
+$('#feedback').classList.toggle('bad',!correct);
+$('#challenge button').forEach(b=>b.disabled=true);
+if(!correct&&q.type==='choice')$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});
+const advance=()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()};
+if(correct){$('#feedback').textContent=msg;nextTick=setTimeout(advance,780)}
+else{$('#feedback').innerHTML=`<div class="sd-explain-answer"><strong>${msg}</strong><p>${esc(String(q.explanation||q.note||'문제의 조건과 정답을 다시 비교해 보세요.'))}</p><button id="sd-next-question" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}}
 function finishSession(){let s=session;if(!s)return;clearTimers();let seconds=Math.max(1,Math.round((Date.now()-s.start)/1000));let earnedXP=s.answers.reduce((sum,answer)=>sum+xpForAnswer(answer.correct,answer.difficulty||s.diff),0)+(s.correct/s.total>=.8?20:0);
 let previousLevel=levelFromXP();
 let record={date:currentDay(),stamp:new Date().toISOString(),label:s.label,items:s.items.map(g=>({id:g.id,group:g.group})),correct:s.correct,total:s.total,seconds,difficulty:s.auto?'auto':s.diff,answers:s.answers,earnedXP,score:s.score};
@@ -1226,6 +1242,7 @@ let theme=record.items.every(x=>x.group==='math')?'math':record.items.every(x=>x
 $('#content').innerHTML=`<div class="gh-inner-root gh-results-shell sd-result-shell">${sharedGameBar()}<div class="gh-inner-content"><section class="sd-results-panel sd-theme-${theme}"><div class="sd-result-icon">${stIcon('trophy',40)}</div><h1>훈련 완료</h1><p class="sd-result-sub">${esc(record.label)} · ${record.total}문제 도전</p><div class="sd-total-score"><b>${a}</b><span>점</span></div>
 <div class="sd-result-stats"><div><span>${stIcon('target',24)}</span><small>정답률</small><strong>${a}%</strong></div><div><span>${stIcon('clock',24)}</span><small>평균 반응</small><strong>${avgResponse.toFixed(1)}초</strong></div><div><span>${stIcon('fire',24)}</span><small>연속 정답</small><strong>${bestRun}회</strong></div><div><span>${stIcon('spark',24)}</span><small>획득 포인트</small><strong>+${earned}</strong></div></div>
 <div class="sd-result-chart"><div class="sd-result-chart-title">문제별 정답 기록 <span>${record.correct}/${record.total} 정답</span></div><div class="sd-result-bars">${record.answers.map((answer,i)=>`<div class="sd-result-bar ${answer.correct?'is-correct':'is-wrong'}" title="${i+1}번: ${answer.correct?'정답':'오답'}"><i></i><small>${i+1}</small></div>`).join('')}</div></div>
+<div class="sd-review-box"><details><summary>오답 복습 · ${record.total-record.correct}문제 ${stIcon('chevron',18)}</summary><div class="sd-review-items">${record.answers.filter(x=>!x.correct).slice(0,15).map((x,i)=>`<article><small>${esc(x.id)} · 오답 ${i+1}</small><strong>${esc(x.prompt||'문제') }</strong><p>내 답: ${esc(x.selected||'미입력')}</p><p>정답: ${esc(x.expected||'문제의 정답')}</p><p class="sd-review-help">${esc(x.explanation||'다시 살펴보세요.')}</p></article>`).join('')||'<p class="sd-all-correct">모든 문제를 맞혔습니다!</p>'}</div></details></div>
 <div class="sd-result-note">${record.levelUp?`레벨 업! Lv. ${levelFromXP()} · `:''}${a>=90?'매우 정확하게 해결했어요. 다음 훈련에도 도전해 보세요.':a>=70?'좋은 흐름이에요. 어려웠던 문제를 다시 연습해 보세요.':'속도보다 정확도에 집중해 다시 도전해 보세요.'}</div>
 <div class="sd-xp-progress"><span>Lv. ${levelFromXP()} · 다음 레벨까지 ${500-lifetimeXP()%500}XP</span><div class="sd-xp-track"><i style="width:${lifetimeXP()%500/5}%"></i></div></div><div class="sd-result-actions"><button class="sd-retry" id="again">${stIcon('target',19)} 다시 도전</button><button class="sd-next" id="back-home">홈으로 ${stIcon('chevron',19)}</button></div></section></div></div>`;attachCards();window.scrollTo(0,0);$('#back-home').onclick=()=>setPage('home');$('#again').onclick=()=>openStart(record.items.every(x=>x.id===record.items[0].id)?record.items[0].id:null,record.label==='국어 독해 랜덤 연습'?'literacy':record.label==='계산 랜덤 연습'?'math':'brain')}
 $('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));setupShellIcons();document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal'))closeModal()});render();
