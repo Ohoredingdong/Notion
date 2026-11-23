@@ -24,6 +24,8 @@ await page.locator('#begin').click();
 for(let i=0;i<5;i++){
  await page.waitForFunction(number=>document.querySelector('.sd-progress-row strong')?.textContent?.includes('문제 '+number),i+1,{timeout:5500});
  await page.locator('#challenge [data-answer]').first().click();
+ await page.waitForTimeout(900);
+ console.log('QA click',i+1,JSON.stringify(await page.evaluate(()=>({progress:document.querySelector('.sd-progress-row strong')?.textContent,feedback:document.querySelector('#feedback')?.textContent?.slice(0,200),next:!!document.querySelector('#sd-next-question'),result:!!document.querySelector('.sd-results-panel')}))),errors.slice(-3));
  await page.waitForFunction(number=>{
   const text=document.querySelector('.sd-progress-row strong')?.textContent||'';
   return !!document.querySelector('#sd-next-question')||!!document.querySelector('.sd-results-panel')||text.includes('문제 '+number);
