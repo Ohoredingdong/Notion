@@ -69,6 +69,24 @@ checks.push('pause / quit / resume');
 await page.locator('.gh-crumb [data-go="home"]').click();
 await page.waitForSelector('.gh-card[data-go="brain"]');
 await page.locator('.gh-card[data-go="brain"]').click();
+await page.waitForSelector('.gh-game-card[data-id="bird"]');
+for(const memoryId of ['bird','flash','nback','reverse','detective','flags','cards','gridmemory']){
+ await page.locator('.gh-game-card[data-id="'+memoryId+'"]').click();
+ await page.waitForSelector('#modal');await page.locator('#begin').click();
+ await page.waitForSelector('.sd-task-title .qtitle');
+ const during=await page.locator('.sd-task-title .qtitle').innerText();
+ assert.match(during,/기억|화면|순서/,'generic stimulus instruction for '+memoryId);
+ if(memoryId==='bird')assert.equal(await page.locator('.st-flash-count .lit').count()>0,true,'dots presented before question');
+ await page.waitForFunction(previous=>document.querySelector('.sd-task-title .qtitle')?.textContent?.trim()!==previous,during,{timeout:8500});
+ const after=await page.locator('.sd-task-title .qtitle').innerText();
+ assert.notEqual(during,after,'actual question revealed after stimulus for '+memoryId);
+ await page.locator('#quit').click();await page.waitForSelector('#quit-dialog');await page.locator('#quit-exit').click();
+ await page.waitForSelector('.gh-game-card[data-id="'+memoryId+'"]');
+}
+checks.push('memory stimuli hidden before question in eight minigames');
+await page.locator('.gh-crumb [data-go="home"]').click();
+await page.waitForSelector('.gh-card[data-go="brain"]');
+await page.locator('.gh-card[data-go="brain"]').click();
 await page.waitForSelector('.gh-game-card[data-id="gridmemory"]');
 await page.locator('.gh-game-card[data-id="gridmemory"]').click();
 await page.locator('#begin').click();
