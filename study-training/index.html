@@ -1214,7 +1214,7 @@ function onExtraPageEvents(){
    if(!next||!Array.isArray(next.sessions)||next.sessions.some(x=>!x||typeof x.date!=='string'||!Array.isArray(x.items)||!Number.isFinite(Number(x.correct))||!Number.isFinite(Number(x.total))))throw Error('올바른 스터디트레이닝 백업 형식이 아닙니다.');
    if(!confirm('현재 기록을 백업 파일로 교체할까요? 기존 기록은 덮어써집니다.'))return;
    data={sessions:next.sessions.slice(-1500),settings:next.settings||{difficulty:0,questions:8},routineLog:next.routineLog||{},weeklyGoals:next.weeklyGoals||{}};
-   data.progress=(next.progress&&Number.isFinite(Number(next.progress.xp)))?{xp:Number(next.progress.xp),lifetimeCorrect:Number(next.progress.lifetimeCorrect)||0,completed:Number(next.progress.completed)||data.sessions.length}:{xp:data.sessions.reduce((n,x)=>n+(Number(x.earnedXP)||Number(x.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,x)=>n+Number(x.correct||0),0),completed:data.sessions.length};
+   data.progress=(next.progress&&Number.isFinite(Number(next.progress.xp)))?{xp:Number(next.progress.xp),lifetimeCorrect:Number(next.progress.lifetimeCorrect)||0,completed:Number(next.progress.completed)||data.sessions.length,badges:(next.progress.badges&&typeof next.progress.badges==='object')?next.progress.badges:{}}:{xp:data.sessions.reduce((n,x)=>n+(Number(x.earnedXP)||Number(x.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,x)=>n+Number(x.correct||0),0),completed:data.sessions.length,badges:{}};
    save();render();showInfoModal('기록 복원 완료',`${data.sessions.length}개 세션을 복원했습니다.`);
   }catch(error){showInfoModal('복원 실패',error.message||'백업 파일을 확인해 주세요.')}
  });
