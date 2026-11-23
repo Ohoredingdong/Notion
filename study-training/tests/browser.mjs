@@ -77,7 +77,9 @@ assert.ok(await page.locator('#grid-done').isDisabled(),'grid submit initially d
 const gridNeeded=Number((await page.locator('#grid-selection-status').innerText()).match(/\/ (\d+)/)?.[1]);
 assert.ok(gridNeeded>=2&&gridNeeded<=5,'grid cells to recall');
 for(let i=0;i<gridNeeded;i++)await page.locator('#challenge [data-gridcell="'+i+'"]').click();
-assert.ok(await page.locator('#grid-done').isEnabled(),'grid submit enabled at required count');
+const gridState=await page.evaluate(()=>({status:document.querySelector('#grid-selection-status')?.textContent,selected:[...document.querySelectorAll('#challenge .sq.selected')].map(el=>el.dataset.gridcell),disabled:document.querySelector('#grid-done')?.disabled}));
+console.log('GRID QA state:',JSON.stringify({gridNeeded,gridState}));
+assert.ok(await page.locator('#grid-done').isEnabled(),'grid submit enabled at required count: '+JSON.stringify(gridState));
 checks.push('grid selection count and submit guard');
 await page.locator('#quit').click();
 await page.locator('#quit-exit').click();
