@@ -547,6 +547,35 @@ body:not([data-page="home"]) #content{width:100%!important;max-width:none!import
 }
 @media(max-width:380px){.gh-game-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gh-game-symbol{height:40px}.gh-game-card{height:207px}}
 
+
+/* Unified game setup: same cream/green/peach palette and tactile buttons as game hub. */
+.gh-setup-overlay{background:rgba(21,49,37,.32);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:1000;padding:18px}
+.gh-game-modal{--setup:#779b72;--setup-dark:#557950;--setup-tint:#e8efe3;max-width:510px;width:min(100%,510px);border-radius:29px;padding:27px 29px 25px;background:#fffcf7;border:1px solid #e5e4d8;box-shadow:0 5px 0 #28422c11,0 25px 74px #15312544,inset 0 1px 0 #fff;color:#163a2e;position:relative;text-align:center}
+.gh-game-modal.gh-theme-math{--setup:#dc927b;--setup-dark:#bb775d;--setup-tint:#f8e8e0}
+.gh-game-modal.gh-theme-reading{--setup:#a18bbb;--setup-dark:#806a9b;--setup-tint:#efe6f4}
+.gh-game-modal .gh-setup-close{position:absolute;top:16px;right:18px;background:#f3f2eb;border:1px solid #e7e5dc;border-radius:50%;height:34px;width:34px;color:#546e5d;font-size:22px;cursor:pointer;line-height:1}
+.gh-game-modal .gh-setup-symbol{height:64px;width:64px;margin:2px auto 10px;border-radius:22px;background:var(--setup-tint);color:var(--setup-dark);display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--setup) 24%,white);box-shadow:0 4px 0 #263a3120,inset 0 1px 0 white}
+.gh-game-modal .gh-setup-eyebrow{display:block;color:var(--setup-dark);font-size:10px;letter-spacing:2px;font-weight:800;margin-bottom:7px}
+.gh-game-modal h2{color:#193b31;font-size:27px;line-height:1.25;letter-spacing:-.7px;margin:0 0 7px;font-weight:840}
+.gh-game-modal p{color:#708375;font-size:13px;margin:0 0 22px;line-height:1.6}
+.gh-setup-section{text-align:left;margin-top:17px}
+.gh-setup-section h3{font-size:14px;font-weight:800;color:#244b39;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+.gh-setup-section h3 small{font-size:10px;color:#9da69a;letter-spacing:1px}
+.gh-option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gh-option-grid.gh-setup-count{grid-template-columns:repeat(4,minmax(0,1fr))}
+.gh-option{min-width:0;min-height:47px;border:1px solid #e2e4d9;background:#f6f7f0;color:#486457;font-size:14px;font-weight:750;border-radius:13px;box-shadow:0 3px 0 #2f443c12;cursor:pointer;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+.gh-option:hover{border-color:var(--setup);background:var(--setup-tint)}
+.gh-option.selected{background:var(--setup-tint);border:2px solid var(--setup);color:#244b39;box-shadow:0 2px 0 color-mix(in srgb,var(--setup) 45%,transparent),inset 0 1px 0 white}
+.gh-option:active{transform:translateY(2px);box-shadow:0 1px 0 #2f443c12}
+.gh-setup-actions{display:grid;grid-template-columns:1fr 2fr;gap:11px;margin-top:26px}
+.gh-setup-actions button{height:50px;border-radius:15px;font-size:15px;font-weight:800;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.gh-setup-cancel{border:1px solid #dce2d9;background:#fffefa;color:#56705e;box-shadow:0 3px 0 #24412d16}
+.gh-setup-begin{border:1px solid var(--setup-dark);background:linear-gradient(180deg,color-mix(in srgb,var(--setup) 87%,white),var(--setup));color:white;box-shadow:0 4px 0 var(--setup-dark),0 9px 14px #1b3d2b22;display:flex;align-items:center;justify-content:center;gap:8px}
+.gh-setup-begin:active{transform:translateY(3px);box-shadow:0 1px 0 var(--setup-dark)}
+.gh-game-modal button:focus-visible{outline:3px solid #355943;outline-offset:3px}
+@media(max-width:520px){.gh-game-modal{padding:22px 18px 20px;border-radius:24px}.gh-option-grid.gh-setup-count{grid-template-columns:repeat(4,minmax(0,1fr))}.gh-option{font-size:12px;min-height:43px}.gh-game-modal h2{font-size:24px}.gh-setup-actions button{height:46px}}
+@media(prefers-reduced-motion:reduce){.gh-game-modal button{transition:none}}
+
 </style>
 </head>
 <body><div class="app">
@@ -588,7 +617,7 @@ const games=[
 ['match','같은 기호 찾기','insight','같은 그림을 빠르게 구별합니다','◉','말랑'],['shadow','가려진 모양','insight','모양 일부를 보고 정답을 찾습니다','◧','말랑'],['pieces','조각 맞히기','insight','도형 관계를 완성합니다','⬡','말랑'],['detective','관찰 탐정','insight','짧게 본 정보를 기억합니다','⌕','말랑'],
 ['flash','순간 숫자 기억','memory','잠깐 나타난 숫자를 재현합니다','▦','말랑'],['cards','짝 카드 기억','memory','카드의 짝을 찾아냅니다','▣','말랑'],['reverse','거꾸로 기억','memory','본 순서를 역순으로 입력합니다','↩','말랑'],['shuffle','위치 추적','memory','이동한 대상의 마지막 위치를 찾습니다','⠿','말랑'],
 ['blocks','블록 세기','logic','보이는 블록의 합을 계산합니다','▥','말랑'],['scale','무게 비교','logic','조건을 비교하여 순위를 판단합니다','⚖','말랑'],['pattern','도형 패턴','logic','도형의 변화 규칙을 찾습니다','⌑','말랑'],['mission','조건 추론','logic','두 조건을 빠르게 동시에 따집니다','◇','말랑'],
-['twosum','두 수 계산','math','두 수의 합과 차를 계산합니다','+','말랑'],['targetsum','목표 숫자','math','목표 결과를 만드는 식을 고릅니다','⊕','말랑'],['clock','시계 읽기','math','아날로그 시계 시각을 판단합니다','◷','말랑'],['order','숫자 정렬','math','숫자를 작은 순서로 빠르게 누릅니다','↕','말랑'],
+['twosum','두 수 계산','math','두 수의 합과 차를 계산합니다','+','말랑'],['targetsum','목표 숫자','math','목표 결과를 만드는 식을 고릅니다','⊕','말랑'],['clock','시간 추론','math','시간 간격·일정 역산·자정 넘김을 계산합니다','◷','창작'],['order','숫자 정렬','math','숫자를 작은 순서로 빠르게 누릅니다','↕','말랑'],
 ['shape','빠진 도형','insight','도형의 빠진 자리를 채웁니다','◪','말랑'],['rotate','회전 추리','insight','회전 방향을 머릿속에 그립니다','⟳','말랑'],['rail','길 이어보기','logic','이동 경로를 계산합니다','⌁','말랑'],['view','시점 바꾸기','insight','다른 방향에서 본 순서를 찾습니다','◫','말랑'],
 ['calc25','빠른 계산 25','math','기초 산술을 연속 풉니다','25','닌텐도'],['calc100','빠른 계산 100','math','긴 계산 세션에 도전합니다','100','닌텐도'],['rps','반대 가위바위보','logic','이기거나 지는 손을 고릅니다','✊','닌텐도'],['nback','N-Back','memory','이전 항목과 현재 항목을 비교합니다','N','닌텐도'],['bird','순간 개수','insight','짧게 나타난 표식을 셉니다','●','닌텐도'],['entry','입장·퇴장','math','들어오고 나간 인원을 계산합니다','↔','닌텐도'],['flags','색 순서 기억','memory','본 색의 순서를 맞힙니다','▥','닌텐도'],['sudoku','미니 스도쿠','logic','4×4 규칙 기반 숫자 퍼즐','⊞','닌텐도'],['alternating','교차 순서','logic','문자와 숫자를 번갈아 연결합니다','A1','닌텐도'],['gridmemory','위치 기억','memory','격자에서 짧게 본 위치를 찾습니다','⊞','닌텐도'],['dual','이중 과제','logic','연산과 색상 규칙을 함께 처리합니다','⇄','닌텐도'],['subtract','연속 뺄셈','math','기준 수에서 단계별로 뺍니다','−','닌텐도'],
 ['chunks','의미 단위 읽기','read','문장을 의미 단위로 나누어 읽습니다','▤','독해'],['verbal','언어 작업기억','read','문장 정보를 유지하고 답합니다','▥','독해'],['semantic','의미 인지','read','문장의 뜻을 정확히 이해합니다','▢','독해'],['connection','의미 연결','read','두 문장 사이의 관계를 봅니다','↝','독해'],['proposition','명제 분석','read','문장에 포함된 조건과 결론을 구별합니다','∴','독해'],['gist','중심 내용','read','문단의 핵심 내용을 찾습니다','◎','독해'],['theme','주제 찾기','read','글 전체의 주요 논지를 정리합니다','◌','독해'],['context','맥락 이어가기','read','이어질 내용을 예측합니다','⇢','독해'],['inference','전제와 결론','read','논리적으로 가능한 추론을 고릅니다','∵','독해'],['cause','인과 관계','read','원인과 결과를 구분합니다','↳','독해'],['argument','논지 판단','read','주장과 뒷받침 근거를 연결합니다','☷','독해'],['perspective','사실과 의견','read','관점과 객관적 사실을 나눕니다','◐','독해'],['structure','글의 구조','read','서술의 전개 방식을 알아봅니다','▧','독해'],['vocab','어휘 문맥','read','문맥에서 적절한 어휘를 찾습니다','가','독해'],['categorize','범주화','read','상위 개념과 하위 개념을 분류합니다','▦','독해'],['summary','한 문장 요약','read','불필요한 세부를 제외하고 요약합니다','≡','독해'],['application','사례 적용','read','읽은 원리를 새로운 상황에 적용합니다','↗','독해']
@@ -623,7 +652,25 @@ case 'pattern':{let a=r(2,6),v=r(2,d+3);return qchoice(`다음 숫자 규칙의 
 case 'mission':{x=r(4,12);y=r(3,12);ans=x===y?'같음':x>y?'A':'B';return qchoice(`A=${x}, B=${y}\n더 큰 숫자의 기호를 고르세요.`,ans,['A','B','같음'].filter(s=>s!==ans),{note:'수치를 비교하세요.'})}
 case 'twosum': case 'calc25': case 'calc100':{x=r(2,9*d);y=r(2,9*d);let op=pick(['+','−','×']);if(op==='×'){x=r(2,2+d*2);y=r(2,2+d*3)}let a=op==='+'?x+y:op==='−'?x-y:x*y;return qnum(`${x} ${op} ${y} = ?`,a)}
 case 'targetsum':{x=r(2,8+d*3),y=r(2,10);ans=`${x} + ${y}`;return qchoice(`결과가 ${x+y}인 계산식은?`,ans,[`${x} + ${y+1}`,`${x+1} + ${y+1}`,`${x} + ${Math.max(0,y-1)}`])}
-case 'clock':{x=r(1,12);y=pick([0,15,30,45]);ans=`${String(x).padStart(2,'0')}:${String(y).padStart(2,'0')}`;let opts=shuffle([ans,`${String(x%12+1).padStart(2,'0')}:${String(y).padStart(2,'0')}`,`${String(x).padStart(2,'0')}:${String((y+15)%60).padStart(2,'0')}`,`${String(x).padStart(2,'0')}:${String((y+30)%60).padStart(2,'0')}`]);return {type:'choice',prompt:'시계가 가리키는 시각은?',answer:ans,options:opts,visual:clockSVG(x,y)}}
+case 'clock':{
+  // Adult-level time arithmetic; retain the original game id for saved sessions.
+  const formatTime=(minutes)=>`${String(Math.floor(((minutes%1440)+1440)%1440/60)).padStart(2,'0')}:${String(((minutes%60)+60)%60).padStart(2,'0')}`;
+  const resultLabel=(minutes)=>`${minutes>=1440?'다음 날 ':''}${formatTime(minutes)}`;
+  const task=(prompt,end,detail)=>qchoice(prompt,resultLabel(end),[-30,15,40,60].map(delta=>resultLabel(end+delta)),{note:detail});
+  const start=r(8,19)*60+r(0,59);
+  if(diff===1){
+    const duration=r(38,115);
+    return task(`${formatTime(start)}에 시작했습니다.\n${duration}분 후 종료 시각은?`,start+duration,'빠른 시간 덧셈 · 24시간제');
+  }
+  if(diff===2){
+    const appointment=r(11,20)*60+r(5,55);
+    const travel=r(25,85),prepare=r(15,50);
+    return task(`${formatTime(appointment)}까지 도착해야 합니다.\n이동 ${travel}분, 준비 ${prepare}분이 필요합니다.\n늦지 않으려면 몇 시부터 준비해야 할까요?`,appointment-travel-prepare,'일정 역산 · 두 단계 시간 계산');
+  }
+  const lateStart=r(21,23)*60+r(12,54);
+  const focus=r(65,118),breakTime=r(12,28),finish=r(45,95);
+  return task(`${formatTime(lateStart)} 작업 시작\n집중 ${focus}분 → 휴식 ${breakTime}분 → 정리 ${finish}분\n모두 마친 시각은?`,lateStart+focus+breakTime+finish,'자정 넘김 · 세 단계 시간 추론');
+}
 case 'order':{seq=shuffle(Array.from({length:d+3},()=>r(1,99))).slice(0,d+3);seq=uniq(seq);while(seq.length<d+3)seq.push(r(100,199));return {type:'sequence',prompt:'숫자를 **작은 순서대로** 터치하세요.',answer:seq.slice().sort((a,b)=>a-b).join('|'),keys:seq.map(String),separator:'|'}}
 case 'rotate':{let arr=['↑','→','↓','←'];x=r(0,3);y=r(1,3);return qchoice(`화살표 ${arr[x]}를 시계 방향으로 ${y*90}° 회전하면?`,arr[(x+y)%4],arr.filter(k=>k!==arr[(x+y)%4]))}
 case 'rail':{let dirs=['북','동','남','서'];let at=r(0,3),mv=shuffle(['우회전','좌회전','직진']).slice(0,d===3?3:2);let idx=at;for(let t of mv)idx=(idx+(t==='우회전'?1:t==='좌회전'?3:0))%4;return qchoice(`처음 바라보는 방향: ${dirs[at]}\n${mv.join(' → ')}\n마지막 방향은?`,dirs[idx],dirs.filter(k=>k!==dirs[idx]))}
@@ -789,7 +836,7 @@ function renderCatalog(scope){
  return `<div class="gh-catalog gh-theme-${scope}">
   <div class="gh-crumb"><button type="button" data-go="home">${stIcon('chevron',16)} 홈으로</button><span> / </span><strong>${meta.title}</strong></div>
   <section class="gh-catalog-title"><span class="gh-catalog-icon">${stIcon(meta.icon,51)}</span><h1>${meta.title}</h1><p>${meta.intro}</p><span class="gh-count-badge">${list.length}개 훈련 선택</span></section>
-  <div class="gh-catalog-filter"><span class="gh-catalog-filter-label">${meta.label}</span><div class="gh-search-controls"><input class="search" id="search" placeholder="게임 이름 검색" value="${esc(searchTerm)}" aria-label="게임 이름 검색"><select class="filter" id="source-filter" aria-label="훈련 유형"><option value="all">전체 유형</option>${scope==='reading'?'<option value="독해">독해형</option>':'<option value="말랑">두뇌학원형</option><option value="닌텐도">두뇌 트레이닝형</option>'}</select><button type="button" class="gh-random-btn" id="mixed-btn">랜덤 게임 ${stIcon('chevron',15)}</button></div></div>
+  <div class="gh-catalog-filter"><span class="gh-catalog-filter-label">${meta.label}</span><div class="gh-search-controls"><input class="search" id="search" placeholder="게임 이름 검색" value="${esc(searchTerm)}" aria-label="게임 이름 검색"><select class="filter" id="source-filter" aria-label="훈련 유형"><option value="all">전체 유형</option>${scope==='reading'?'<option value="독해">독해형</option>':'<option value="말랑">두뇌학원형</option><option value="닌텐도">두뇌 트레이닝형</option><option value="창작">자체 훈련</option>'}</select><button type="button" class="gh-random-btn" id="mixed-btn">랜덤 게임 ${stIcon('chevron',15)}</button></div></div>
   <div id="list-root" class="gh-catalog-content">${renderCardList(list,groupsView)}</div>
   <p class="gh-catalog-note">문항은 개인 연습용으로 독립 제작되었습니다.</p>
  </div>`
@@ -805,7 +852,33 @@ function renderCardList(list,groupsView){
 }
 function renderRecord(){let logs=[...data.sessions].reverse(),last7=[...Array(7)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-6+i);let day=dateKey(d);return {day,score:average(data.sessions.filter(s=>s.date===day).map(s=>Math.round(s.correct/s.total*100)))}});return `<div class="twoCols"><section class="panel"><div class="headrow"><h2>최근 7일 정답률</h2><span class="tiny">%</span></div><div class="bargrid">${last7.map(x=>`<div class="barcol"><div class="bar ${x.score?'filled':''}" style="height:${x.score?Math.max(5,x.score):3}%" title="${x.day}: ${x.score}%"></div><label>${Number(x.day.slice(-2))}일</label></div>`).join('')}</div><p class="mutednote">훈련하지 않은 날은 빈 막대로 표시됩니다. 난이도를 통제한 표준 점수는 아닙니다.</p></section><section class="panel"><div class="headrow"><h2>전체 학습 기록</h2><button class="btn sm ghost" id="export">JSON 백업</button></div><div class="results"><div><strong>${logs.length}</strong><span>세션</span></div><div><strong>${logs.reduce((a,s)=>a+s.total,0)}</strong><span>문제</span></div><div><strong>${average(logs.map(s=>Math.round(s.correct/s.total*100)))}%</strong><span>정답률</span></div></div><button class="btn sm danger" id="reset">모든 기록 삭제</button><p class="mutednote">백업을 다운로드할 수 있으며 삭제 시 되돌릴 수 없습니다.</p></section></div><section class="panel section"><div class="headrow"><h2>세션별 기록</h2><span class="tiny">최신순 · 최대 100건</span></div>${logs.length?logs.slice(0,100).map(s=>`<div class="historyrow"><strong>${esc(s.label)}</strong><span>${s.correct}/${s.total} 정답</span><span>${Math.round(s.correct/s.total*100)}%</span><span class="date">${esc(s.date)} · ${s.seconds}초</span></div>`).join(''):'<div class="empty">아직 기록이 없습니다. 첫 훈련을 시작해보세요.</div>'}</section>`}
 function attachCards(){ $$('#content [data-id]').forEach(el=>el.onclick=()=>openStart(el.dataset.id));$$('#content [data-go]').forEach(el=>el.onclick=()=>setPage(el.dataset.go));$('#mixed-btn')?.addEventListener('click',()=>openStart(null,page==='reading'?'literacy':page));$$('#content [data-test]').forEach(el=>el.onclick=()=>openStart(null,el.dataset.test));$('#search')?.addEventListener('input',e=>{searchTerm=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#source-filter')?.addEventListener('change',e=>{kindFilter=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#export')?.addEventListener('click',()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`study-training-records-${today}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)});$('#reset')?.addEventListener('click',()=>{if(confirm('저장된 모든 훈련 기록을 삭제할까요?')){data.sessions=[];save();render()}})}
-function openStart(id=null,test=null){let title=id?byId[id].title:({'daily':'두뇌 게임 랜덤 연습','brain':'두뇌 게임 랜덤 연습','academy':'두뇌 게임 랜덤 연습','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');let content=`<div class="modalback" id="modal"><div class="modal" role="dialog" aria-modal="true" aria-label="훈련 설정"><h2>${esc(title)}</h2><p>난이도와 문제 수를 선택하세요. 시작하면 바로 훈련이 진행됩니다.</p><div class="field"><label for="diff">난이도</label><select id="diff"><option value="1" ${data.settings.difficulty===1?'selected':''}>초급 · 여유롭게</option><option value="2" ${data.settings.difficulty===2?'selected':''}>중급 · 기본</option><option value="3" ${data.settings.difficulty===3?'selected':''}>고급 · 빠르게</option></select></div><div class="field"><label for="count">문제 수</label><select id="count"><option value="5">5문제</option><option value="8" ${!['calc25','calc100'].includes(id)?'selected':''}>8문제</option><option value="12">12문제</option><option value="20">20문제</option>${['calc25','calc100'].includes(id)?`<option value="${id==='calc25'?25:100}" selected>${id==='calc25'?25:100}문제 전체</option>`:''}</select></div><div class="actions"><button class="btn ghost" id="cancel">취소</button><button class="btn" id="begin">훈련 시작 →</button></div></div></div>`;$('#modal-root').innerHTML=content;$('#cancel').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#begin').onclick=()=>{let d=Number($('#diff').value),count=Number($('#count').value);data.settings.difficulty=d;save();closeModal();startSession(id,test,count,d)}}
+function openStart(id=null,test=null){
+ const title=id?byId[id].title:({'daily':'두뇌 게임 랜덤 연습','brain':'두뇌 게임 랜덤 연습','academy':'두뇌 게임 랜덤 연습','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');
+ const group=id?byId[id].group:(test==='literacy'?'read':test==='math'?'math':'brain');
+ const theme=group==='read'?'reading':group==='math'?'math':'brain';
+ const glyph=group==='read'?'book':group==='math'?'calc':'brain';
+ const options=[5,8,12,20,...(id==='calc25'?[25]:id==='calc100'?[100]:[])];
+ let diff=[1,2,3].includes(Number(data.settings.difficulty))?Number(data.settings.difficulty):2;
+ let count=id==='calc25'?25:id==='calc100'?100:8;
+ const desc=id==='clock'?'시간 계산과 일정 역산으로 판단력을 훈련합니다.':'난이도와 문제 수를 선택하고 바로 시작해 보세요.';
+ const content=`<div class="modalback gh-setup-overlay" id="modal"><div class="modal gh-game-modal gh-theme-${theme}" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+ <button type="button" class="gh-setup-close" id="cancel-x" aria-label="닫기">×</button>
+ <div class="gh-setup-symbol">${stIcon(glyph,32)}</div>
+ <span class="gh-setup-eyebrow">STUDY TRAINING · GAME SETUP</span>
+ <h2 id="setup-title">${esc(title)}</h2><p>${desc}</p>
+ <div class="gh-setup-section"><h3>난이도 <small>DIFFICULTY</small></h3><div class="gh-option-grid" id="setup-difficulty" role="group" aria-label="난이도 선택">${[['1','가볍게'],['2','집중'],['3','도전']].map(([n,label])=>`<button type="button" class="gh-option ${diff===Number(n)?'selected':''}" data-diff="${n}" aria-pressed="${diff===Number(n)}">${label}</button>`).join('')}</div></div>
+ <div class="gh-setup-section"><h3>문제 수 <small>QUESTIONS</small></h3><div class="gh-option-grid gh-setup-count" id="setup-count" role="group" aria-label="문제 수 선택">${options.map(n=>`<button type="button" class="gh-option ${count===n?'selected':''}" data-count="${n}" aria-pressed="${count===n}">${n}문제</button>`).join('')}</div></div>
+ <div class="gh-setup-actions"><button type="button" class="gh-setup-cancel" id="cancel">취소</button><button type="button" class="gh-setup-begin" id="begin">훈련 시작 ${stIcon('chevron',18)}</button></div>
+ </div></div>`;
+ $('#modal-root').innerHTML=content;
+ const choose=(attr,value)=>{$$(`#modal [data-${attr}]`).forEach(btn=>{const selected=Number(btn.dataset[attr])===value;btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',String(selected))})};
+ $$('#modal [data-diff]').forEach(btn=>btn.onclick=()=>{diff=Number(btn.dataset.diff);choose('diff',diff)});
+ $$('#modal [data-count]').forEach(btn=>btn.onclick=()=>{count=Number(btn.dataset.count);choose('count',count)});
+ $('#cancel').onclick=$('#cancel-x').onclick=closeModal;
+ $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+ $('#begin').onclick=()=>{data.settings.difficulty=diff;save();closeModal();startSession(id,test,count,diff)};
+ $('#begin').focus({preventScroll:true});
+}
 function closeModal(){$('#modal-root').innerHTML=''}
 function randomGame(test){let list=games;if(test==='literacy')list=games.filter(g=>g.group==='read');else if(test==='math')list=games.filter(g=>g.group==='math');else if(test==='brain'||test==='daily'||test==='academy')list=games.filter(g=>g.group!=='read'&&g.group!=='math');return pick(list)}
 function startSession(id,test,count,diff){clearTimers();let items=[];for(let i=0;i<count;i++){let g=id?byId[id]:randomGame(test);items.push(g)}let label=id?byId[id].title:({'daily':'두뇌 게임 랜덤 연습','brain':'두뇌 게임 랜덤 연습','academy':'두뇌 게임 랜덤 연습','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');session={items,label,diff,current:0,total:count,correct:0,score:0,answers:[],start:Date.now(),elapsed:0,questionStart:0,q:null,input:'',pairState:null,selectedGrid:[],sudokuInput:[],locked:false};renderQuestion();tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000)}
