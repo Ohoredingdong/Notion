@@ -43,6 +43,19 @@ for(const game of games){
    if(q.type==='pairs')assert.equal(q.deck.length,q.answer*2);
    if(q.type==='sudoku'){assert.equal(q.grid?.length,4);assert.equal(sudokuSolutionCount(q.grid,q.fixed),1,'one Sudoku solution');const given=q.fixed.flat().filter(Boolean).length;assert.ok(given>=6&&given<=12,'sudoku clues bounded')}
    if(q.type==='grid')assert.ok(q.selected?.length>=2);
+   if(game.id==='shuffle'){
+    assert.equal(q.type,'choice','shell tracking uses answer selection');
+    assert.ok(q.shellGame,'shell game marker exists');
+    assert.ok(!q.visual,'no symbolic swap notation shown');
+    assert.equal(q.moves.length,diff+2,'shell swap count scales with difficulty');
+    let position=1;
+    for(const [a,b] of q.moves){
+      assert.ok(a>=1&&a<=3&&b>=1&&b<=3&&a!==b,'valid distinct slot swap');
+      position=position===a?b:position===b?a:position;
+    }
+    assert.equal(Number(q.answer),position,'correct tracked ball location');
+    assert.deepEqual([...q.options].sort(),['1','2','3'],'three visual answer positions');
+   }
    if(game.id==='verbal'){
     assert.ok(q.previewHeading&&!q.previewHeading.includes('번째'),'no memory target leak');
     const m=q.prompt.match(/(\d+)번째/);assert.ok(m);seenIndex.add(Number(m[1]));
