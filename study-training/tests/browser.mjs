@@ -83,7 +83,7 @@ assert.ok(await page.locator('#grid-done').isEnabled(),'grid submit enabled at r
 checks.push('grid selection count and submit guard');
 await page.locator('#quit').click();
 await page.locator('#quit-exit').click();
-await page.locator('.ui-profile[data-page="settings"]').click();
+await page.locator('.ui-profile[data-page="settings"]').evaluate(el=>el.click());
 await page.waitForSelector('#settings-import-file');
 const backup=await page.evaluate(()=>JSON.parse(localStorage.getItem('mindroom_v1')));
 backup.progress.bestByGame.targetsum=77;
