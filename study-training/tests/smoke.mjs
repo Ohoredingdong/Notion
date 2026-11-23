@@ -8,11 +8,11 @@ assert.ok(source,'script exists');
 new vm.Script(source,{filename:'study-training.js'});
 const at=source.lastIndexOf("$('#brand-home').onclick");
 assert.ok(at>0,'test runtime boundary');
-const core=source.slice(0,at)+"\nglobalThis.__qa={games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,renderCompositeBreakdown,icons:GAME_ICON_PATHS};\n})();";
+const core=source.slice(0,at)+"\nglobalThis.__qa={games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,renderCompositeBreakdown,uniqueQuestion,scenarioStamp,icons:GAME_ICON_PATHS};\n})();";
 const state={console,localStorage:{getItem:()=>null,setItem:()=>{}},setInterval:()=>0,clearInterval:()=>{},setTimeout:()=>0,clearTimeout:()=>{}};
 vm.createContext(state);
 new vm.Script(core).runInContext(state,{timeout:30000});
-const {games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,renderCompositeBreakdown,icons}=state.__qa;
+const {games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,renderCompositeBreakdown,uniqueQuestion,scenarioStamp,icons}=state.__qa;
 assert.equal(games.length,49,'49 game definitions');
 assert.equal(Object.keys(icons).length,49,'49 game icons');
 assert.ok(passages.length>=18,'reading bank has 18 passages');
@@ -66,6 +66,26 @@ for(const game of games){
  }
 }
 assert.ok(seenIndex.size>=4,'verbal target index randomized');
+// Check repeated answer selection, recent stimulus reuse and rotating option locations.
+data.questionHistory={};
+for(const id of ['rps','nback','rotate','shape','pieces','bird','chunks','verbal','rail']){
+ let previousAnswer=null,previousOption=null,lastStamps=[];
+ for(let i=0;i<26;i++){
+  const q=uniqueQuestion(id,2),stamp=scenarioStamp(id,q);
+  assert.ok(q&&q.answer!==undefined,'fresh '+id);
+  if(previousAnswer!==null)assert.notEqual(String(q.answer),previousAnswer,'consecutive correct answer repeats in '+id);
+  assert.ok(!lastStamps.slice(-2).includes(stamp),'recent stimulus repeats in '+id);
+  if(q.type==='choice'&&q.options?.length>1){
+   const idx=q.options.findIndex(v=>String(v)===String(q.answer));
+   assert.ok(idx>=0,'correct answer in options for '+id);
+   if(previousOption!==null)assert.notEqual(idx,previousOption,'choice index repeats in '+id);
+   previousOption=idx;
+  }
+  previousAnswer=String(q.answer);lastStamps.push(stamp);
+ }
+}
+const expandedChunkAnswers=new Set(Array.from({length:600},()=>makeQ('chunks',2).answer));
+assert.ok(expandedChunkAnswers.size>=11,'expanded intermediate reading bank');
 data.progress.xp=501;assert.equal(levelFromXP(),2);
 data.progress.xp=5001;
 data.sessions=Array.from({length:1600},()=>({date:'2026-11-23',answers:[]}));
