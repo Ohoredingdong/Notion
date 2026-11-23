@@ -1086,7 +1086,15 @@ function balancedTestGames(count){
  for(let i=0;i<count;i++){const group=order[i%3];if(!buckets[group].length)buckets[group]=shuffle(games.filter(g=>group==='math'?g.group==='math':group==='read'?g.group==='read':!['math','read'].includes(g.group)));chosen.push(buckets[group].shift())}
  return shuffle(chosen);
 }
-function save(){try{localStorage.setItem('mindroom_v1',JSON.stringify(data))}catch(e){}}
+let storageWarningShown=false;
+function save(){
+ try{localStorage.setItem('mindroom_v1',JSON.stringify(data));return true}
+ catch(error){
+  console.error('학습 기록 저장 실패',error);
+  if(!storageWarningShown){storageWarningShown=true;alert('저장 공간이 부족해 최신 기록이 저장되지 않았을 수 있습니다. 설정에서 JSON 백업 후 브라우저 공간을 확인해 주세요.')}
+  return false;
+ }
+}
 function streak(){let days=new Set(data.sessions.map(a=>a.date));let st=0,d=new Date();if(!days.has(dateKey(d)))d.setDate(d.getDate()-1);while(days.has(dateKey(d))){st++;d.setDate(d.getDate()-1)}return st}
 const average=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
 
@@ -1220,7 +1228,7 @@ function clearTimers(){clearInterval(tick);clearTimeout(previewTick);clearTimeou
 function setPage(p){$('#ui-menu')?.removeAttribute('open');if(session){if(!confirm('진행 중인 훈련을 종료하고 이동할까요?'))return;session=null;clearTimers()}page=p;searchTerm='';kindFilter='all';render();window.scrollTo({top:0,behavior:'instant'})}
 function gameCard(g){
  const played=data.sessions.filter(s=>s.items.some(x=>x.id===g.id));
- const best=played.length?`${Math.max(...played.map(s=>Math.round(100*s.correct/s.total)))}% 최고 기록`:'첫 도전';
+ const recordBest=Number(data.progress?.bestByGame?.[g.id]);const best=Number.isFinite(recordBest)&&recordBest>=0?`${recordBest}% 최고 기록`:played.length?`${Math.max(...played.map(s=>Math.round(100*s.correct/s.total)))}% 최고 기록`:'첫 도전';
  const group=g.group==='math'?'math':g.group==='read'?'reading':'brain';
  return `<button type="button" class="gh-game-card gh-theme-${group}" data-id="${g.id}" aria-label="${esc(g.title)} 훈련 시작"><span class="gh-game-symbol">${gameIcon(g.id,38)}</span><strong>${esc(g.title)}</strong><span class="gh-game-description">${esc(g.desc)}</span><span class="gh-game-best">${best}</span><span class="gh-game-start">훈련 시작 ${stIcon('chevron',17)}</span></button>`
 }
@@ -1367,6 +1375,10 @@ function finishSession(){let s=session;if(!s)return;clearTimers();let seconds=Ma
 let previousLevel=levelFromXP();
 let record={date:currentDay(),stamp:new Date().toISOString(),label:s.label,items:s.items.map(g=>({id:g.id,group:g.group})),correct:s.correct,total:s.total,seconds,difficulty:s.auto?'auto':s.diff,answers:s.answers,earnedXP,score:s.score};
 data.progress.xp=lifetimeXP()+earnedXP;data.progress.lifetimeCorrect=(Number(data.progress.lifetimeCorrect)||0)+s.correct;data.progress.completed=(Number(data.progress.completed)||0)+1;
+data.progress.bestByGame ||= {};
+const distinctGames=new Set(record.items.map(item=>item.id));
+if(distinctGames.size===1){const id=record.items[0].id,accuracy=Math.round(100*record.correct/record.total);const previous=Number(data.progress.bestByGame[id]??-1);record.isBest=accuracy>previous;data.progress.bestByGame[id]=Math.max(previous,accuracy)}
+
 record.levelUp=levelFromXP()>previousLevel;
 data.sessions.push(record);if(data.sessions.length>1500)data.sessions.splice(0,data.sessions.length-1500);save();session=null;document.body.classList.remove('in-session');updateHeader();let a=Math.round(record.correct/record.total*100);$('#page-title').textContent='훈련 완료';$('#page-desc').textContent='이번 세션의 결과가 브라우저에 저장되었습니다.';let avgResponse=record.answers.length?record.answers.reduce((sum,x)=>sum+(Number(x.seconds)||0),0)/record.answers.length:0;
 let bestRun=0,run=0;for(const answer of record.answers){run=answer.correct?run+1:0;bestRun=Math.max(bestRun,run)}
@@ -1376,7 +1388,7 @@ $('#content').innerHTML=`<div class="gh-inner-root gh-results-shell sd-result-sh
 <div class="sd-result-stats"><div><span>${stIcon('target',24)}</span><small>정답률</small><strong>${a}%</strong></div><div><span>${stIcon('clock',24)}</span><small>평균 반응</small><strong>${avgResponse.toFixed(1)}초</strong></div><div><span>${stIcon('fire',24)}</span><small>연속 정답</small><strong>${bestRun}회</strong></div><div><span>${stIcon('spark',24)}</span><small>획득 포인트</small><strong>+${earned}</strong></div></div>
 <div class="sd-result-chart"><div class="sd-result-chart-title">문제별 정답 기록 <span>${record.correct}/${record.total} 정답</span></div><div class="sd-result-bars">${record.answers.map((answer,i)=>`<div class="sd-result-bar ${answer.correct?'is-correct':'is-wrong'}" title="${i+1}번: ${answer.correct?'정답':'오답'}"><i></i><small>${i+1}</small></div>`).join('')}</div></div>
 <div class="sd-review-box"><details><summary>오답 복습 · ${record.total-record.correct}문제 ${stIcon('chevron',18)}</summary><div class="sd-review-items">${record.answers.filter(x=>!x.correct).slice(0,15).map((x,i)=>`<article><small>${esc(x.id)} · 오답 ${i+1}</small><strong>${esc(x.prompt||'문제') }</strong><p>내 답: ${esc(x.selected||'미입력')}</p><p>정답: ${esc(x.expected||'문제의 정답')}</p><p class="sd-review-help">${esc(x.explanation||'다시 살펴보세요.')}</p></article>`).join('')||'<p class="sd-all-correct">모든 문제를 맞혔습니다!</p>'}</div></details></div>
-<div class="sd-result-note">${record.levelUp?`레벨 업! Lv. ${levelFromXP()} · `:''}${a>=90?'매우 정확하게 해결했어요. 다음 훈련에도 도전해 보세요.':a>=70?'좋은 흐름이에요. 어려웠던 문제를 다시 연습해 보세요.':'속도보다 정확도에 집중해 다시 도전해 보세요.'}</div>
+<div class="sd-result-note">${record.isBest?'새로운 개인 최고 기록! · ':''}${record.levelUp?`레벨 업! Lv. ${levelFromXP()} · `:''}${a>=90?'매우 정확하게 해결했어요. 다음 훈련에도 도전해 보세요.':a>=70?'좋은 흐름이에요. 어려웠던 문제를 다시 연습해 보세요.':'속도보다 정확도에 집중해 다시 도전해 보세요.'}</div>
 <div class="sd-xp-progress"><span>Lv. ${levelFromXP()} · 다음 레벨까지 ${500-lifetimeXP()%500}XP</span><div class="sd-xp-track"><i style="width:${lifetimeXP()%500/5}%"></i></div></div><div class="sd-result-actions"><button class="sd-retry" id="again">${stIcon('target',19)} 다시 도전</button><button class="sd-next" id="back-home">홈으로 ${stIcon('chevron',19)}</button></div></section></div></div>`;attachCards();window.scrollTo(0,0);$('#back-home').onclick=()=>setPage('home');$('#again').onclick=()=>openStart(record.items.every(x=>x.id===record.items[0].id)?record.items[0].id:null,record.label==='국어 독해 랜덤 연습'?'literacy':record.label==='계산 랜덤 연습'?'math':'brain')}
 $('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));setupShellIcons();document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if($('#quit-dialog'))$('#quit-resume')?.click();else if($('#modal'))closeModal();else if(session)showQuitConfirm();return}
