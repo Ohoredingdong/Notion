@@ -8,11 +8,11 @@ assert.ok(source,'script exists');
 new vm.Script(source,{filename:'study-training.js'});
 const at=source.lastIndexOf("$('#brand-home').onclick");
 assert.ok(at>0,'test runtime boundary');
-const core=source.slice(0,at)+"\nglobalThis.__qa={games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,icons:GAME_ICON_PATHS};\n})();";
+const core=source.slice(0,at)+"\nglobalThis.__qa={games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,icons:GAME_ICON_PATHS};\n})();";
 const state={console,localStorage:{getItem:()=>null,setItem:()=>{}},setInterval:()=>0,clearInterval:()=>{},setTimeout:()=>0,clearTimeout:()=>{}};
 vm.createContext(state);
 new vm.Script(core).runInContext(state,{timeout:30000});
-const {games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,icons}=state.__qa;
+const {games,makeQ,passages,data,lifetimeXP,levelFromXP,xpForAnswer,balancedTestGames,getAdaptiveDifficulty,sudokuSolutionCount,icons}=state.__qa;
 assert.equal(games.length,49,'49 game definitions');
 assert.equal(Object.keys(icons).length,49,'49 game icons');
 assert.ok(passages.length>=18,'reading bank has 18 passages');
@@ -41,7 +41,7 @@ for(const game of games){
    }
    if(q.type==='sequence')assert.ok(q.keys.length&&q.answer,game.id+' sequence');
    if(q.type==='pairs')assert.equal(q.deck.length,q.answer*2);
-   if(q.type==='sudoku')assert.equal(q.grid?.length,4);
+   if(q.type==='sudoku'){assert.equal(q.grid?.length,4);assert.equal(sudokuSolutionCount(q.grid,q.fixed),1,'one Sudoku solution');const given=q.fixed.flat().filter(Boolean).length;assert.ok(given>=6&&given<=12,'sudoku clues bounded')}
    if(q.type==='grid')assert.ok(q.selected?.length>=2);
    if(game.id==='verbal'){
     assert.ok(q.previewHeading&&!q.previewHeading.includes('번째'),'no memory target leak');
