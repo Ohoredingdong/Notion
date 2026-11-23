@@ -835,6 +835,7 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 @media(prefers-reduced-motion:reduce){.shell-piece{transition:left .18s linear}.shell-travel-up .shell-case,.shell-travel-down .shell-case{animation:none}}
 
 .st-retain-cue{padding:34px 20px;color:#66836c;text-align:center;font-size:17px;font-weight:750;background:#f2f6ee;border-radius:16px;width:min(440px,100%)}
+.st-flash-count{width:min(490px,100%);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));justify-items:center;align-items:center;gap:6px 8px;margin:4px auto;font-size:clamp(19px,3.4vw,29px);color:#a0afa4}.st-flash-count>span{display:grid;place-items:center;width:100%;aspect-ratio:1.25;opacity:.25}.st-flash-count>span.lit{color:#507e6a;opacity:1;text-shadow:0 2px 3px #acc3b6}
 </style>
 </head>
 <body><div class="app">
@@ -1008,9 +1009,9 @@ let values=mode===0?Array.from({length:size},(_,i)=>glyph[(a+i*step)%n]):mode===
 const answer=values.at(-1);return qchoice('도형의 변화를 관찰하고 마지막 빈칸에 맞는 조각을 선택하세요.',answer,glyph.filter(x=>x!==answer),{visual:'<div class="focuswords">'+values.slice(0,-1).join('　')+'　?</div>',note:'모양의 배열과 반복 간격을 살펴보세요.',signature:'shape-'+mode+'-'+a+'-'+step+'-'+size});
 }
 case 'detective':{let icons=['☀','☂','♣','☘','☕','☎','♫','☾'];seq=shuffle(icons).slice(0,d+2);ans=pick(seq);return qchoice('방금 보인 기호에 포함된 것은?',ans,shuffle(icons.filter(a=>!seq.includes(a))).slice(0,3),{preview:seq.join('  '),previewTime:big?1500:2400})}
-case 'flash':{seq=Array.from({length:d+2},()=>String(r(1,9)));return {type:'number',prompt:'나타난 숫자를 순서대로 입력하세요.',answer:seq.join(''),preview:seq.join(' '),previewTime:big?1900:3100,strict:true,note:'입력할 때 공백을 넣지 않아도 됩니다.'}}
-case 'cards':{let all=['♠','♥','★','◆','☀','☘'];seq=shuffle(all).slice(0,Math.min(d+2,5));let deck=shuffle([...seq,...seq]);return {type:'pairs',prompt:'카드의 짝을 모두 찾아보세요.',answer:seq.length,deck,previewTime:1700, note:'카드를 클릭하면 뒤집힙니다.'}}
-case 'reverse':{seq=Array.from({length:d+2},()=>String(r(1,9)));return {type:'sequence',prompt:'숫자를 **역순**으로 누르세요.',answer:[...seq].reverse().join(''),keys:['1','2','3','4','5','6','7','8','9'],preview:seq.join(' '),previewTime:big?2400:3400}}
+case 'flash':{seq=Array.from({length:d===1?4:d===2?6:8},()=>String(r(0,9)));return {type:'number',prompt:'방금 본 숫자를 순서대로 입력하세요.',answer:seq.join(''),preview:seq.join(' '),previewTime:d===3?2300:d===2?2800:3400,strict:true,note:'공백 없이 그대로 입력하세요.'}}
+case 'cards':{let all=['♠','♥','★','◆','☀','☘'];seq=shuffle(all).slice(0,Math.min(d+2,5));let deck=shuffle([...seq,...seq]);return {type:'pairs',prompt:'카드의 짝을 모두 찾아보세요.',answer:seq.length,deck,previewTime:d===3?1400:d===2?2000:2700, note:'카드를 클릭하면 뒤집힙니다.'}}
+case 'reverse':{seq=Array.from({length:d===1?4:d===2?5:7},()=>String(r(1,9)));return {type:'sequence',prompt:'숫자를 **역순**으로 누르세요.',answer:[...seq].reverse().join(''),keys:['1','2','3','4','5','6','7','8','9'],preview:seq.join(' '),previewTime:d===3?2500:d===2?3000:3700}}
 case 'shuffle':return makeShellQuestion(d);
 case 'blocks':{x=r(2,4+d);y=r(2,4);ans=x*y;return qchoice('각 줄의 네모 개수를 세어 전체 개수를 고르세요.',String(ans),numOpts(ans).filter(a=>a!==ans).map(String),{visual:`<div class="memoryline">${Array.from({length:y},()=>`<div style="display:flex;gap:5px">${'■'.repeat(x).split('').map(()=>'<span style="color:#6d85bf;font-size:25px">■</span>').join('')}</div>`).join('')}</div>`})}
 case 'scale':{
@@ -1078,7 +1079,11 @@ case 'nback':{
  ans=isSame?'같다':'다르다';
  return qchoice(`마지막 기호와 ${n}칸 전 기호는 같을까요?`,ans,['같다','다르다'].filter(k=>k!==ans),{preview:seq.join('  '),previewTime:d===3?2300:d===2?2900:3600,note:`${n}-Back 작업기억 · ${count}개 기호를 기억하세요.`});
 }
-case 'bird':{x=r(5,8+diff*3);return qchoice('방금 나타난 점은 모두 몇 개였나요?',String(x),numOpts(x).filter(k=>k!==x).map(String),{preview:Array.from({length:x},()=>'<span style="font-size:26px;color:#3a5ace">●</span>').join(' '),previewHtml:true,previewTime:diff===3?1200:1900})}
+case 'bird':{
+const min={1:5,2:9,3:13}[diff],max={1:9,2:14,3:19}[diff],count=r(min,max),spots=new Set(shuffle([...Array(30).keys()]).slice(0,count));
+const preview='<div class="st-flash-count" aria-label="잠시 나타나는 점">'+Array.from({length:30},(_,i)=>'<span class="'+(spots.has(i)?'lit':'')+'">'+(spots.has(i)?'●':'·')+'</span>').join('')+'</div>';
+return qchoice('방금 나타난 점은 모두 몇 개였나요?',String(count),numOpts(count).filter(n=>n!==count).map(String),{preview,previewHtml:true,previewTime:diff===3?1300:diff===2?1700:2200});
+}
 case 'entry':{
  let total=r(8,18+d*6),initial=total,events=[];
  for(let i=0;i<(d===1?2:d===2?3:5);i++){const arriving=Math.random()<.53||total<4;const people=arriving?r(2,12+d*4):r(1,Math.min(total,8+d*3));total+=arriving?people:-people;events.push(`${people}명 ${arriving?'입장':'퇴장'}`)}
