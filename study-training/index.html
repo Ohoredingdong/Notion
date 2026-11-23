@@ -1212,7 +1212,7 @@ function onExtraPageEvents(){
   try{
    if(file.size>10_000_000)throw Error('백업 파일은 10MB 이하만 지원합니다.');
    const next=JSON.parse(await file.text());
-   if(!next||!Array.isArray(next.sessions)||next.sessions.some(x=>!x||typeof x.date!=='string'||!Array.isArray(x.items)||!Number.isFinite(Number(x.correct))||!Number.isFinite(Number(x.total))||Number(x.total)<=0||Number(x.correct)<0||Number(x.correct)>Number(x.total))))throw Error('올바른 스터디트레이닝 백업 형식이 아닙니다.');
+   if(!next||!Array.isArray(next.sessions)||next.sessions.some(x=>!x||typeof x.date!=='string'||!Array.isArray(x.items)||!Number.isFinite(Number(x.correct))||!Number.isFinite(Number(x.total))||Number(x.total)<=0||Number(x.correct)<0||Number(x.correct)>Number(x.total)))throw Error('올바른 스터디트레이닝 백업 형식이 아닙니다.');
    if(!confirm('현재 기록을 백업 파일로 교체할까요? 기존 기록은 덮어써집니다.'))return;
    data={sessions:next.sessions.slice(-1500),settings:next.settings||{difficulty:0,questions:8},routineLog:next.routineLog||{},weeklyGoals:next.weeklyGoals||{}};
    data.progress=(next.progress&&Number.isFinite(Number(next.progress.xp)))?{xp:Number(next.progress.xp),lifetimeCorrect:Number(next.progress.lifetimeCorrect)||0,completed:Number(next.progress.completed)||data.sessions.length,badges:(next.progress.badges&&typeof next.progress.badges==='object')?next.progress.badges:{},bestByGame:(next.progress.bestByGame&&typeof next.progress.bestByGame==='object')?next.progress.bestByGame:{}}:{xp:data.sessions.reduce((n,x)=>n+(Number(x.earnedXP)||Number(x.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,x)=>n+Number(x.correct||0),0),completed:data.sessions.length,badges:{},bestByGame:{}};
