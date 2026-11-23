@@ -1,0 +1,28 @@
+name: Study Training QA
+
+on:
+  push:
+    paths:
+      - 'study-training/index.html'
+      - 'study-training/tests/**'
+      - '.github/workflows/study-training-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: study-training-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Node syntax and 49-game question integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node study-training/tests/smoke.mjs
