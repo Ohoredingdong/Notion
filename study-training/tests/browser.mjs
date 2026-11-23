@@ -22,17 +22,13 @@ await page.waitForSelector('#modal');
 await page.locator('#modal [data-count="5"]').click();
 await page.locator('#begin').click();
 for(let i=0;i<5;i++){
- await page.waitForSelector('#challenge [data-answer]');
+ await page.waitForFunction(number=>document.querySelector('.sd-progress-row strong')?.textContent?.includes('문제 '+number),i+1,{timeout:5500});
  await page.locator('#challenge [data-answer]').first().click();
- const next=page.locator('#sd-next-question');
- const finished=page.locator('.sd-results-panel');
- if(i<4){
-  await Promise.race([next.waitFor({state:'visible',timeout:2800}).catch(()=>{}),page.waitForFunction(n=>document.querySelector('.sd-progress-row strong')?.textContent?.includes('문제 '+n),i+2,{timeout:2800}).catch(()=>{})]);
-  if(await next.isVisible())await next.click();
- }else{
-  await Promise.race([next.waitFor({state:'visible',timeout:2800}).catch(()=>{}),finished.waitFor({state:'visible',timeout:2800}).catch(()=>{})]);
-  if(await next.isVisible())await next.click();
- }
+ await page.waitForFunction(number=>{
+  const text=document.querySelector('.sd-progress-row strong')?.textContent||'';
+  return !!document.querySelector('#sd-next-question')||!!document.querySelector('.sd-results-panel')||text.includes('문제 '+number);
+ },i+2,{timeout:4000});
+ if(await page.locator('#sd-next-question').isVisible())await page.locator('#sd-next-question').click();
 }
 await page.waitForSelector('.sd-results-panel',{timeout:6000});
 const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('mindroom_v1')||'{}'));
