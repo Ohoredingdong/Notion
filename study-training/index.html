@@ -1283,8 +1283,8 @@ function evaluate(value,clicked){if(!session||session.locked||previewing)return;
 s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1)),difficulty:selectedDifficulty,
  ...(correct?{}:{prompt:String(q.prompt).slice(0,260),selected:String(value).slice(0,150),expected:String(q.answer).slice(0,200),explanation:String(q.explanation||q.note||'정답과 지문 또는 문제 조건을 다시 비교해 보세요.').slice(0,360)})});if(clicked){clicked.classList.add(correct?'correct':'wrong')}let msg=correct?'✓ 정답입니다.':`정답: ${q.type==='sudoku'?'규칙을 만족하는 격자':q.type==='pairs'?'모든 짝':esc(String(q.answer).slice(0,95))}`;
 $('#feedback').classList.toggle('bad',!correct);
-$('#challenge button').forEach(b=>b.disabled=true);
-if(!correct&&q.type==='choice')$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});
+$$('#challenge button').forEach(b=>b.disabled=true);
+if(!correct&&q.type==='choice')$$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});
 const advance=()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()};
 if(correct){$('#feedback').textContent=msg;nextTick=setTimeout(advance,780)}
 else{$('#feedback').innerHTML=`<div class="sd-explain-answer"><strong>${msg}</strong><p>${esc(String(q.explanation||q.note||'문제의 조건과 정답을 다시 비교해 보세요.'))}</p><button id="sd-next-question" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}}
@@ -1307,7 +1307,7 @@ $('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>
  if(e.key==='Escape'){if($('#quit-dialog'))$('#quit-resume')?.click();else if($('#modal'))closeModal();else if(session)showQuitConfirm();return}
  if(!session||previewing||session.locked||$('#modal-root').children.length)return;
  if(e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
- if(/^[1-4]$/.test(e.key)){const choices=$('#challenge [data-answer]');const idx=Number(e.key)-1;if(choices[idx]){e.preventDefault();choices[idx].click()}}
+ if(/^[1-4]$/.test(e.key)){const choices=$$('#challenge [data-answer]');const idx=Number(e.key)-1;if(choices[idx]){e.preventDefault();choices[idx].click()}}
 });render();
 })();
 </script></body></html>
