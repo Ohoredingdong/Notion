@@ -389,3 +389,18 @@
 @media(min-width:1000px) and (min-height:560px) and (max-height:700px){
  .rc-view .rcm-main:has(>.rcm-top>.rc-region-overview){grid-template-rows:auto minmax(0,1fr) 86px}
 }
+
+/* Existing research stage: verified foreign comparison + scoped issuer picker. */
+.rc-region-econ-rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:6px}
+.rc-region-econ-rows>div{padding:5px 7px;border-radius:7px;background:#edf3ed;display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:12px}
+.rc-region-econ-rows strong{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rc-foreign-move{font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rc-foreign-sector-panel :is(th,td){white-space:nowrap}
+.rc-foreign-sector-panel th:first-child{white-space:normal}
+.rc-foreign-sector-panel .rcm-industry-scroll{overflow:auto}
+.rc-foreign-companies [data-rc-foreign-more]{margin-top:4px}
+.rc-foreign-companies .rcm-card h3 small{display:inline}
+@media(min-width:1000px) and (min-height:560px){
+ .rc-view .rcm-layout.rc-foreign-market .rcm-main:has(>.rcm-top>.rc-region-overview){grid-template-rows:auto minmax(0,1fr) minmax(88px,auto)}
+ .rc-view .rc-foreign-market .rc-region-industry-econ{max-height:125px}
+}

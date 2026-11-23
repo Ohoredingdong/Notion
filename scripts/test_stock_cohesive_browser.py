@@ -133,6 +133,47 @@ with sync_playwright() as pw:
  assert page.locator('[data-rc-country="US"]').get_attribute('aria-pressed')=='true'
  page.locator('[data-rc-country="JP"]').click()
  assert '삼성전자' not in page.locator('.rc-selection').inner_text()
+ # The foreign paths use a distinct issuer scope, not the legacy ticker matcher.
+ for country in ['JP','CN','HK','GB','DE','VN','SG']:
+  page.locator(f'[data-rc-country="{country}"]').click()
+  foreign=page.locator('.rc-foreign-market')
+  expect(foreign.locator('.rc-region-industry-econ')).to_be_visible()
+  assert foreign.locator('.rc-foreign-companies .rcm-companies [data-rc-stock]').count()==6
+  first=foreign.locator('.rc-foreign-sector-panel [data-rc-foreign-sector]:not([data-rc-foreign-sector=""])').first
+  first.click()
+  assert foreign.locator('.rc-foreign-companies .rcm-companies [data-rc-stock]').count()==2
+  if country=='HK': expect(foreign.locator('.rc-region-industry-econ')).to_contain_text('%p')
+ page.locator('[data-rc-country="TW"]').click()
+ foreign=page.locator('.rc-foreign-market')
+ expect(foreign.locator('.rc-foreign-sector-panel')).to_contain_text('공식 산업 지수 등락')
+ expect(foreign.locator('.rc-foreign-sector-panel tbody tr')).to_have_count(32)
+ expect(foreign.locator('.rc-foreign-companies')).to_contain_text('1,088개')
+ expect(foreign.locator('.rc-foreign-companies')).to_contain_text('1,087개')
+ foreign.locator('[data-rc-foreign-sector="반도체"]').click()
+ expect(foreign.locator('.rc-foreign-companies h3').last).to_contain_text('96개')
+ assert foreign.locator('.rc-foreign-companies .rcm-companies [data-rc-stock]').count()==70
+ foreign.locator('[data-rc-foreign-more]').click()
+ assert foreign.locator('.rc-foreign-companies .rcm-companies [data-rc-stock]').count()==96
+ search=foreign.locator('[data-rcm-search="company"]')
+ search.press_sequentially('TSMC')
+ expect(search).to_be_focused()
+ try:
+  expect(foreign.locator('.rc-foreign-companies .rcm-companies [data-rc-stock]')).to_have_count(1)
+  foreign.locator('[data-rc-stock="TW:2330"]').click()
+ except Exception as exc:
+  raise AssertionError('TSMC exact TWSE company search did not work') from exc
+ for tab,notice in [('quality','상장 기업 자료'),('finance','재무제표·비율'),('value','실적 전망·가치 평가'),('filings','공시 수집·분석'),('chart','차트·종가 이력')]:
+  page.locator('[data-rc-tab="'+tab+'"]').last.click()
+  expect(page.locator('.rc-selection')).to_contain_text('台積電')
+  expect(page.locator('main .rc-card')).to_contain_text(notice)
+  assert 'stock=TW%3A2330' in page.url
+ page.locator('.rc-primary [data-rc-tab="market"]').click()
+ page.locator('[data-rc-country="JP"]').click()
+ page.locator('[data-rc-country="TW"]').click()
+ expect(page.locator('[data-rcm-search="company"]')).to_have_value('')
+ expect(page.locator('[data-rc-foreign-sector=""]')).to_have_attribute('aria-pressed','true')
+ expect(page.locator('.rc-selection')).to_contain_text('기업 미선택')
+
  page.locator('[data-rc-country="KR"]').click()
  page.locator('.rc-primary [data-rc-tab="home"]').click()
  assert '삼성전자' in page.locator('.rc-home-side').inner_text()
