@@ -962,7 +962,7 @@ function runShellStep(q){
   const answers=$('#shell-answers');
   answers.hidden=false;
   answers.innerHTML=[1,2,3].map(n=>`<button class="choice shell-choice" type="button" data-answer="${n}">${n}번 위치</button>`).join('');
-  $('[data-answer]',answers).forEach(btn=>btn.onclick=()=>evaluate(btn.dataset.answer,btn));
+  answers.querySelectorAll('[data-answer]').forEach(btn=>btn.onclick=()=>evaluate(btn.dataset.answer,btn));
   session.questionStart=Date.now();
   shellTimer=null;
   return;
@@ -972,7 +972,7 @@ function runShellStep(q){
  if(ia<0||ib<0)throw Error('상자 위치 상태가 올바르지 않습니다.');
  positions[ia]=b-1;positions[ib]=a-1;
  const board=$('#shell-board');
- const pieces=$('[data-shell-piece]',board);
+ const pieces=document.querySelectorAll('[data-shell-piece]');
  const upper=pieces[ia],lower=pieces[ib];
  upper.classList.add('shell-travel-up');
  lower.classList.add('shell-travel-down');
