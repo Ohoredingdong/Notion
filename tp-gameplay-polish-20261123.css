@@ -1,0 +1,28 @@
+/* THE PLAY ARCHIVE · game-room visual consistency / 2026-11-23
+   Shared controls only. The approved cinematic Black & White set is preserved. */
+:root{--tp-brass:#cda77c;--tp-cream:#f0dfc9;--tp-wine:#3a1d28}
+/* Replace the faux digital arena and decoration with a physical game-table finish. */
+.arena-stage.game-skin .match-board{border:1px solid rgba(209,166,118,.6);border-radius:18px;margin:9px clamp(8px,2vw,22px) 5px;background:radial-gradient(ellipse at 50% 95%,rgba(121,66,59,.22),transparent 75%),linear-gradient(135deg,#191218 0%,#281820 48%,#151016 100%);box-shadow:0 12px 30px #0008,inset 0 1px #f4d09b32,inset 0 0 60px #0007}
+.arena-stage.game-skin .match-board::before{inset:8px;border-radius:12px;border:1px solid rgba(219,166,113,.26)}
+.arena-stage.game-skin .match-board::after{display:none!important}
+.arena-stage.game-skin .match-board-pattern{opacity:.024;letter-spacing:12px}
+.arena-stage.game-skin .match-actualplay{padding:clamp(14px,2.8vh,30px) clamp(12px,4vw,56px) clamp(12px,2vh,25px);justify-content:safe center;gap:clamp(7px,1.1vh,14px)}
+.arena-stage.game-skin .match-actualplay>.toolbar:first-child{margin:0 auto 3px}
+.arena-stage.game-skin .match-actualplay .scoreboard{margin:3px auto 11px;max-width:690px}
+.arena-stage.game-skin .match-actualplay .info{width:min(100%,750px);padding:10px 16px;border-color:#a47c6977;background:linear-gradient(120deg,#21121bbf,#281922cc);color:#f1dfd0;font-size:clamp(12px,1.05vw,14px);line-height:1.55}
+.arena-stage.game-skin .counter{background:#2a1923;border:1px solid #a27c65a6;color:#f0d7b6;border-radius:5px}
+.arena-stage.game-skin .match-controls{border-top:1px solid rgba(185,136,101,.36)!important;background:linear-gradient(90deg,rgba(27,17,25,.96),rgba(47,27,36,.88),rgba(27,17,25,.96))!important}
+.arena-stage.game-skin .match-footer{font-size:10px;letter-spacing:1.2px;color:#c2a890}
+.arena-stage.game-skin button:not(:disabled){transition:filter .12s ease,transform .12s ease,border-color .12s ease}
+.arena-stage.game-skin button:not(:disabled):hover{filter:brightness(1.1);border-color:#deb78e}
+.arena-stage.game-skin button:not(:disabled):active{transform:translateY(1px)}
+.arena-stage.game-skin button:focus-visible{outline:2px solid #f2d7a8;outline-offset:3px}
+.arena-stage.game-skin button:disabled{opacity:.46;cursor:not-allowed;filter:saturate(.5)}
+.arena-stage.game-skin .round-frame{border-radius:12px;background:linear-gradient(150deg,#39232b,#130d13);border-color:#b8936b;color:#f5e5d3}
+.arena-stage.game-skin[data-family="board"] .match-board{background:radial-gradient(ellipse at 50% 75%,#42352b8a,transparent 85%),linear-gradient(135deg,#171419,#241d20,#121014)}
+.arena-stage.game-skin[data-family="puzzle"] .match-board{background:radial-gradient(ellipse at 50% 85%,#35363e9c,transparent 85%),linear-gradient(135deg,#14161c,#23202a,#141318)}
+.arena-stage.game-skin[data-family="memory"] .match-board{background:radial-gradient(ellipse at 50% 80%,#253b4080,transparent 80%),linear-gradient(135deg,#10161b,#1a252b,#0f1014)}
+/* Short viewports must keep submission and stage actions reachable. */
+@media(max-height:700px) and (min-width:721px){.arena-stage.game-skin .match-actualplay{padding:7px 18px;gap:5px;justify-content:safe center}.arena-stage.game-skin .match-actualplay .scoreboard{margin:2px auto 4px}.arena-stage.game-skin .match-board{margin:5px 8px 2px}.arena-stage.game-skin .match-footer{flex-basis:31px}}
+@media(max-width:720px){.arena-stage.game-skin .match-board{border-radius:12px;margin:4px 5px 3px}.arena-stage.game-skin .match-board::before{inset:4px;border-radius:8px}.arena-stage.game-skin .match-actualplay{padding:10px 8px 14px;gap:7px;justify-content:flex-start}.arena-stage.game-skin .match-actualplay .info{padding:9px 11px;font-size:12px}.arena-stage.game-skin .match-footer{font-size:9px;letter-spacing:.5px}.arena-stage.game-skin .match-actualplay .scoreboard{max-width:100%;margin:4px auto 9px}}
+@media(prefers-reduced-motion:reduce){.arena-stage.game-skin button{transition:none!important}}
