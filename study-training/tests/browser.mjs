@@ -84,7 +84,7 @@ checks.push('grid selection count and submit guard');
 await page.locator('#quit').click();
 await page.locator('#quit-exit').click();
 await page.locator('.ui-profile[data-page="settings"]').evaluate(el=>el.click());
-await page.waitForSelector('#settings-import-file');
+await page.waitForSelector('#settings-import-file',{state:'attached'});
 const backup=await page.evaluate(()=>JSON.parse(localStorage.getItem('mindroom_v1')));
 backup.progress.bestByGame.targetsum=77;
 page.once('dialog',dialog=>dialog.accept());
