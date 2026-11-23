@@ -1066,8 +1066,8 @@ function makeSudoku(difficulty=2){
  return {type:'sudoku',prompt:'1~4를 각 가로·세로·2×2 영역에 한 번씩 채우세요.',answer:grid.flat().join(''),grid,fixed,
  note:`${difficulty===3?'도전':difficulty===1?'가볍게':'집중'} · ${revealed}개 단서 · 모든 가로·세로·2×2에는 1~4가 한 번씩 들어갑니다.`};
 }
-let data;try{data=JSON.parse(localStorage.getItem('mindroom_v1')||'null')}catch(e){}if(!data||!Array.isArray(data.sessions))data={sessions:[],settings:{difficulty:2,questions:8}};
-data.settings ||= {difficulty:2,questions:8};
+let data;try{data=JSON.parse(localStorage.getItem('mindroom_v1')||'null')}catch(e){}if(!data||!Array.isArray(data.sessions))data={sessions:[],settings:{difficulty:0,questions:8}};
+data.settings ||= {difficulty:0,questions:8};
 data.routineLog ||= {};
 data.progress ||= {xp:data.sessions.reduce((n,record)=>n+(Number(record.earnedXP)||Number(record.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,record)=>n+Number(record.correct||0),0),completed:data.sessions.length};
 function lifetimeXP(){return Math.max(0,Math.round(Number(data.progress?.xp)||0))}
