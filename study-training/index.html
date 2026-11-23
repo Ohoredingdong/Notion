@@ -834,7 +834,7 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 <script>
 (()=>{'use strict';
 const $=(s,root=document)=>root.querySelector(s), $$=(s,root=document)=>[...root.querySelectorAll(s)];
-const shuffle=a=>[...a].sort(()=>Math.random()-.5), r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, pick=a=>a[r(0,a.length-1)], uniq=a=>[...new Set(a)], esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), dateKey=d=>{const v=new Date(d);return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`};
+const shuffle=a=>{const copy=[...a];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}, r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, pick=a=>a[r(0,a.length-1)], uniq=a=>[...new Set(a)], esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), dateKey=d=>{const v=new Date(d);return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`};
 const today=dateKey(new Date());
 const groups={insight:{title:'직감 · 지각',caption:'관찰하고 빠르게 판단하기',icon:'◈'},memory:{title:'기억 · 집중',caption:'순간 기억과 작업 기억',icon:'◉'},logic:{title:'분석 · 추론',caption:'관계와 규칙 찾아내기',icon:'◇'},math:{title:'계산 · 처리 속도',caption:'숫자를 정확하고 빠르게',icon:'∑'},read:{title:'국어 · 독해',caption:'의미 단위부터 논증까지',icon:'▤'}};
 const games=[
@@ -879,7 +879,11 @@ case 'match':{
  while(wrong.size<3){let pos=r(0,code.length-1),replacement=pick([...alphabet].filter(v=>v!==code[pos]));wrong.add(code.slice(0,pos)+replacement+code.slice(pos+1))}
  return qchoice(`목표 코드와 정확히 같은 것을 찾으세요.\n${code}`,code,[...wrong],{note:`${code.length}자리 코드 · 비슷한 글자를 정확히 대조하세요.`});
 }
-case 'shadow':{let items=['▲','■','●','◆','⬟','★'];ans=pick(items);return qchoice('반쯤 가려진 형태의 원래 모양은?',ans,shuffle(items.filter(i=>i!==ans)).slice(0,3),{visual:`<div style="font-size:72px;clip-path:inset(0 45% 0 0);color:#4c65ba;line-height:1.2">${ans}</div>`})}
+case 'shadow':{
+ const symbols=d===1?['●','▲','■','◆']:d===2?['▲','△','◆','◇']:['⬠','⬡','⬢','⬟'];
+ ans=pick(symbols);const hidden={1:28,2:45,3:57}[d];
+ return qchoice('가려진 모양의 원래 형태를 추론하세요.',ans,shuffle(symbols.filter(v=>v!==ans)),{visual:`<div class="sd-partial-shape" style="font-size:92px;clip-path:inset(0 ${hidden}% 0 0);color:#5b7a64;line-height:1.2">${ans}</div>`,note:'난이도에 따라 비슷한 형태와 가려진 비율이 달라집니다.'});
+}
 case 'pieces': case 'shape':{let s=['●','■','▲','◆'];let start=r(0,3);ans=s[(start+3)%4];return qchoice('도형 순서의 마지막 빈칸에 들어갈 것은?',ans,s.filter(x=>x!==ans),{visual:`<div class="focuswords">${[s[start],s[(start+1)%4],s[(start+2)%4],'?'].join('  ')}</div>`,note:'반복되는 4개 도형 규칙을 찾아보세요.'})}
 case 'detective':{let icons=['☀','☂','♣','☘','☕','☎','♫','☾'];seq=shuffle(icons).slice(0,d+2);ans=pick(seq);return qchoice('방금 보인 기호에 포함된 것은?',ans,shuffle(icons.filter(a=>!seq.includes(a))).slice(0,3),{preview:seq.join('  '),previewTime:big?1500:2400})}
 case 'flash':{seq=Array.from({length:d+2},()=>String(r(1,9)));return {type:'number',prompt:'나타난 숫자를 순서대로 입력하세요.',answer:seq.join(''),preview:seq.join(' '),previewTime:big?1900:3100,strict:true,note:'입력할 때 공백을 넣지 않아도 됩니다.'}}
@@ -964,7 +968,36 @@ case 'gridmemory':{let all=shuffle([...Array(25).keys()]),selected=all.slice(0,d
 case 'dual':{x=r(2,10);y=r(2,10);let color=pick(['빨강','파랑']);ans=`${x+y} / ${color==='빨강'?'R':'B'}`;return qchoice(`계산: ${x} + ${y}\n색상: ${color}\n합계와 색상 첫 글자를 동시에 고르세요.`,ans,[`${x+y+1} / ${color==='빨강'?'R':'B'}`,`${x+y} / ${color==='빨강'?'B':'R'}`,`${x+y-1} / ${color==='빨강'?'B':'R'}`])}
 case 'subtract':{x=r(50,95);y=r(4,9);let count=diff+1;return qnum(`${x}에서 ${y}를 ${count}번 연속으로 빼면?`,x-y*count)}
 case 'sudoku':return makeSudoku(diff);
-case 'chunks':{let cases=[['도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.','도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.'],['정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.','정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.'],['분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.','분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.']];let [v,a]=pick(cases);return qchoice('문장을 의미 단위로 자연스럽게 끊은 것은?',a,[v.replaceAll(' / ','').replace(/ /g,' / '),v.replace(' / ','/').replace(/ /g,'  '),v.replaceAll(' / ',' // ')],{note:'읽을 때 서로 밀접한 의미의 단어들을 묶어보세요.'})}
+case 'chunks':{
+ const corpus={
+ 1:[
+ '도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.',
+ '자료의 출처를 확인하면 / 잘못된 주장을 / 구별하기 쉽다.',
+ '짧은 복습을 여러 날에 나누면 / 기억 유지에 / 도움이 된다.'
+ ],
+ 2:[
+ '장치가 동시에 가동되면 / 순간적으로 필요한 전력이 커져 / 공급 설비의 부담이 늘어난다.',
+ '조사 대상이 특정 집단에 집중되면 / 표본 수가 많아도 / 결과가 한쪽으로 치우칠 수 있다.',
+ '배수 시설의 성능을 높이더라도 / 물이 모이는 속도를 줄이는 설계가 / 함께 필요하다.'
+ ],
+ 3:[
+ '통계적으로 유의한 차이가 확인되어도 / 그 차이의 실제 크기와 적용 환경을 검토하지 않으면 / 정책적 의미를 판단하기 어렵다.',
+ '이미 지출한 비용을 회수할 수 없다면 / 과거의 손실만을 근거로 투자를 이어가기보다 / 추가 비용과 예상 편익을 비교해야 한다.',
+ '사료의 작성 목적과 시점을 고려하지 않은 채 / 하나의 기록을 사건 전체의 묘사로 받아들이면 / 해석에 편향이 생길 수 있다.'
+ ]
+ };
+ const correct=pick(corpus[d]);
+ const chunks=correct.split(' / '),words=correct.replaceAll(' / ',' ').split(' ');
+ const correctPoints=[],wrongCandidates=new Set();
+ for(let i=0,offset=0;i<chunks.length-1;i++){offset+=chunks[i].split(' ').length;correctPoints.push(offset)}
+ for(let attempt=0;attempt<120&&wrongCandidates.size<3;attempt++){
+  const marks=shuffle(Array.from({length:words.length-1},(_,i)=>i+1)).slice(0,2).sort((a,b)=>a-b);
+  if(marks.every((x,i)=>x===correctPoints[i]))continue;
+  const formatted=words.map((w,i)=>w+(i===words.length-1?'':marks.includes(i+1)?' / ':' ')).join('');
+  if(formatted!==correct)wrongCandidates.add(formatted);
+ }
+ return qchoice('문장의 의미 단위를 자연스럽게 나눈 것은?',correct,[...wrongCandidates],{note:'서로 밀접한 의미를 이루는 말들을 한 덩어리로 묶어 읽으세요.',explanation:`이 문장은 “${chunks.join(' / ')}”처럼 의미가 연결되는 구간으로 나누는 것이 자연스럽습니다.`});
+}
 case 'verbal':{
  const pool=['나무','비','강','책','연필','노트','하늘','별','구름','바다','파도','모래','기억','서랍','시계','창문','도시','나침반','초록','정원'];
  const wordCount=d===1?4:d===2?5:7;
