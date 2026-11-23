@@ -99,15 +99,16 @@ const researchDate=ctx=>ctx.data.raw?.generated_at?'저장 연구 자료 · '+da
 function drawHeader(ctx){
  const idx=[['코스피','kospi','^KS11'],['코스닥','kosdaq','^KQ11'],['나스닥','nasdaq','^IXIC'],['다우','dow','^DJI']];
  const index=idx.map(([label,key,sym])=>{const x=indexRecord(ctx.data,key,sym);return '<div class="rc-index"><b>'+label+'</b><strong>'+fmt(x?.value)+compare(x?.value,x?.previous,{verified:x?.verified,label:x?.label||'직전 거래일'})+'</strong><small>'+((x&&esc(x.day)+(x.caution?' · 갱신 대기':''))||'미연결')+'</small></div>'}).join('');
- const ctr=Object.entries(countries).map(([k,label])=>'<button type="button" data-rc-country="'+k+'" aria-pressed="'+(k===country)+'" title="'+(['KR','US'].includes(k)?'저장 종목 연결':'현재 종목·시세 미연결')+'">'+label+'</button>').join('');
+ const ctr=Object.entries(countries).map(([k,label])=>'<button type="button" data-rc-country="'+k+'" aria-pressed="'+(k===country)+'" title="'+(['KR','US'].includes(k)?'저장 종목 연결':'국가별 시장 개요 · 공식 원문 보기')+'">'+label+'</button>').join('');
  const active=['finance','value'].includes(p)?'quality':p;
  header.innerHTML='<div class="rc-shell"><div class="rc-indices" aria-label="4대 지수 · 저장값">'+index+'</div><div class="rc-brandline"><a class="rc-brand" href="?tab=home&country='+country+'" data-rc-tab="home"><span class="rc-mark" aria-hidden="true"><i></i><i></i><i></i></span>투자레이더</a><nav class="rc-country" aria-label="국가 선택">'+ctr+'</nav><span class="rc-edition rc-pill rc-tone-neutral">개인 연구용 · 저장 자료</span></div><div class="rc-primaryline"><nav class="rc-primary" aria-label="주 메뉴">'+primary.map(k=>navBtn(k,k===active,k==='quality'?'기업분석':null)).join('')+'</nav>'+(p==='home'?'<small class="rc-nav-date">'+esc(researchDate(ctx))+'</small>':'')+'</div></div>';
 }
 function drawTitle(ctx){
  if(p==='home')return '<h1 class="rc-visually-hidden">홈</h1>';
  const company=ctx.company,label=company?esc(company.name||company.symbol):'기업 미선택';
+ const foreign=window.RadarCohesiveRegions?.has(ctx.country);
  const row='<div class="rc-selection"><div><small>선택 기업</small><strong>'+label+'</strong>'+(company?' <small>'+esc(company.symbol)+'</small>':'')+'</div>'+(p==='market'?'<small>산업·기업을 고르면 분석 탭에 연동됩니다</small>':'<nav class="rc-subnav" aria-label="기업 분석 탭">'+subs.map(k=>navBtn(k,k===p)).join('')+'</nav>')+'</div>';
- return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+pages[p][1]+'</p></div>'+pill(researchDate(ctx),'neutral')+'</div>';
+ return row+'<div class="rc-title"><div><h1>'+pages[p][0]+'</h1><p>'+(p==='market'&&foreign?'선택 국가 지표와 공식 산업·기업 자료를 확인합니다.':pages[p][1])+'</p></div>'+pill(researchDate(ctx),'neutral')+'</div>';
 }
 const macroIcons={
  rates:'<path d="M3 13V9m4 4V6m4 7V3"/>',
@@ -251,7 +252,8 @@ window.RadarCohesive.industryWatch=industryWatch;
 function home(ctx){
  const [count,list]=homeStocks(ctx),stars=new Set(ctx.favorites),starRows=ctx.companies.filter(c=>stars.has(id(c)));
  const titles=industryPanel(ctx),headlines=headlinePanel(ctx);
- return '<div class="rc-home"><div class="rc-home-body"><div class="rc-grid rc-home-top">'+macroPanel(ctx,false)+macroPanel(ctx,true)+'</div><div class="rc-grid rc-home-bottom">'+candidatePanel(ctx)+titles+headlines+'</div></div><aside class="rc-home-side" aria-label="종목 목록">'+card('관심기업','<div class="rc-scrolllist" style="max-height:135px">'+(starRows.length?stockRows(starRows,{showPrice:false,ctx}):empty('목록에서 ☆을 눌러 관심기업으로 추가하세요.'))+'</div><button type="button" data-rc-search-focus style="width:100%;margin-top:8px">＋ 관심기업 추가</button>','yellow','<small>'+starRows.length+'개</small>')+card('전체 주식목록',searchHTML()+'<div class="rc-scrolllist" id="rc-home-rows">'+list+'</div><small class="rc-count" id="rc-home-count">검색 '+fmt(count,0)+'개 중 '+fmt(Math.min(homeLimit,count),0)+'개 표시</small><button type="button" data-rc-more '+(count<=homeLimit?'hidden':'')+'>더 보기</button>','neutral','<small>'+esc(countries[country])+'</small>')+'</aside></div>';
+ const local=window.RadarCohesiveRegions?.render(ctx);
+ return '<div class="rc-home"><div class="rc-home-body"><div class="rc-grid rc-home-top">'+(local||macroPanel(ctx,false)+macroPanel(ctx,true))+'</div><div class="rc-grid rc-home-bottom">'+candidatePanel(ctx)+titles+headlines+'</div></div><aside class="rc-home-side" aria-label="종목 목록">'+card('관심기업','<div class="rc-scrolllist" style="max-height:135px">'+(starRows.length?stockRows(starRows,{showPrice:false,ctx}):empty('목록에서 ☆을 눌러 관심기업으로 추가하세요.'))+'</div><button type="button" data-rc-search-focus style="width:100%;margin-top:8px">＋ 관심기업 추가</button>','yellow','<small>'+starRows.length+'개</small>')+card('전체 주식목록',searchHTML()+'<div class="rc-scrolllist" id="rc-home-rows">'+list+'</div><small class="rc-count" id="rc-home-count">검색 '+fmt(count,0)+'개 중 '+fmt(Math.min(homeLimit,count),0)+'개 표시</small><button type="button" data-rc-more '+(count<=homeLimit?'hidden':'')+'>더 보기</button>','neutral','<small>'+esc(countries[country])+'</small>')+'</aside></div>';
 }
 const pane=(name,c,ctx)=>{
  if(name==='market')return window.RadarCohesiveMarket?.render(c,ctx)||empty('산업 탭 연결을 확인해 주세요.');

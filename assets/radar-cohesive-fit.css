@@ -367,3 +367,25 @@
 .rc-home .rc-candidate-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px;margin-top:3px}
 .rc-home .rc-candidate-footer .rc-toned{padding:3px 6px;font-size:11px;line-height:1.2}
 .rc-home .rc-candidate-footer button{white-space:nowrap;font-size:11px;padding:3px 6px}
+
+/* Non-KR/US snapshots, scoped to existing research Home and Market views. */
+.rc-region-overview{grid-column:1/-1;min-width:0}
+.rc-region-overview>header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.rc-region-overview h2{font-size:18px;line-height:1.25}
+.rc-region-state{background:var(--rc-mint);color:var(--rc-mint-text);border-radius:10px;padding:2px 7px}
+.rc-region-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,188px),1fr));gap:8px}
+.rc-region-details>div{min-width:0;padding:6px 8px;border-radius:8px;background:#f6f8f6}
+.rc-region-details b,.rc-region-details small{display:block}
+.rc-region-details strong{font-size:17px;font-variant-numeric:tabular-nums;line-height:1.35}
+.rc-region-details small,.rc-region-coverage{font-size:11px;line-height:1.4}
+.rc-region-license{margin-top:2px}
+.rc-region-routes>div{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
+.rc-region-routes a{font-size:12px}
+.rc-region-coverage{display:block;margin-top:6px}
+.rc-view .rcm-top:has(>.rc-region-overview){grid-template-columns:minmax(0,1fr)}
+@media(min-width:1000px) and (min-height:560px){
+ .rc-view .rcm-main:has(>.rcm-top>.rc-region-overview){grid-template-rows:auto minmax(0,1fr) 100px}
+}
+@media(min-width:1000px) and (min-height:560px) and (max-height:700px){
+ .rc-view .rcm-main:has(>.rcm-top>.rc-region-overview){grid-template-rows:auto minmax(0,1fr) 86px}
+}
