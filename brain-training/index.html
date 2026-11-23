@@ -789,6 +789,17 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 .collection-icon .game-line-icon{width:24px;height:24px;stroke-width:1.9}
 .sd-identity-icon .game-line-icon{width:35px;height:35px;stroke-width:1.9}
 @media(max-width:750px){.gh-game-symbol{width:57px;min-width:57px;height:55px;border-radius:15px;margin-bottom:8px}.gh-game-symbol .game-line-icon{width:33px;height:33px}}
+
+.sd-xp-progress{max-width:680px;margin:12px auto 4px;padding:0 18px;text-align:center;color:#547565;font-size:13px;font-weight:720}.sd-xp-track{margin:8px 0 0;height:9px;border-radius:99px;background:#e6e9dd;overflow:hidden}.sd-xp-track i{height:100%;display:block;background:#7b9f76;border-radius:99px;transition:width .3s}
+
+.sd-explain-answer{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:830px;margin:4px auto 0}.sd-explain-answer strong{font-size:17px;color:#9b4d38}.sd-explain-answer p{font-size:14px;line-height:1.65;color:#516356;margin:2px 0 8px;white-space:pre-wrap}.sd-explain-answer button{border:1px solid #bfd1bd;border-radius:999px;background:#dfeada;color:#28503b;font-weight:800;padding:13px 30px;box-shadow:0 3px 0 #9eb99b}
+.sd-review-box{max-width:930px;margin:12px auto 5px}.sd-review-box details{border:1px solid #dfe6d9;border-radius:18px;background:#fffcf7;overflow:hidden}.sd-review-box summary{cursor:pointer;list-style:none;padding:14px 22px;display:flex;align-items:center;gap:8px;color:#355943;font-weight:790}.sd-review-box summary::-webkit-details-marker{display:none}.sd-review-box summary svg{margin-left:auto}.sd-review-items{padding:8px 18px 18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.sd-review-items article{border-radius:14px;border:1px solid #e7e5db;background:#faf8f1;padding:13px 15px}.sd-review-items small{display:block;color:#819080;font-size:11px;margin-bottom:6px}.sd-review-items strong{display:block;color:#254735;white-space:pre-wrap;font-size:13px}.sd-review-items p{font-size:12px;color:#526556;margin:7px 0 0}.sd-review-items .sd-review-help{color:#447b55}.sd-all-correct{margin:8px;color:#59745f}
+@media(max-width:650px){.sd-review-items{grid-template-columns:1fr}.sd-explain-answer p{font-size:12px}.sd-review-box summary{font-size:13px}}
+
+.st-progression{margin:0 auto 20px;max-width:1190px;padding:25px 28px!important}.st-progression-head{display:flex;justify-content:space-between;align-items:end;gap:15px}.st-progression-head small{font-size:12px;color:#728875;font-weight:700}.st-progression-head h2{font-size:29px;letter-spacing:-.6px;margin:5px 0;color:#204634}.st-progression-head h2 span{font-size:15px;color:#69806e;font-weight:650}.st-level-caption{font-size:12px;color:#69806e}.st-skill-meter{height:10px;border-radius:99px;background:#e7ece3;overflow:hidden;display:block}.st-skill-meter i{height:100%;border-radius:99px;display:block}.st-level-meter{margin:15px 0 25px}.st-skill-heading{font-size:14px;font-weight:800;color:#2f4e3b;margin-bottom:12px}.st-skill-heading small{font-size:11px;color:#839281;font-weight:500;margin-left:8px}.st-skill-list{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.st-skill-row{display:grid;gap:8px}.st-skill-row b{font-size:14px;color:#2e523e}.st-skill-row small{font-size:11px;color:#748775}.st-earned-badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:23px}.st-earned-badge{display:flex;align-items:center;gap:6px;background:#f0f5ec;color:#365e44;border:1px solid #dbe6d5;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700}
+@media(max-width:680px){.st-progression{padding:18px!important}.st-progression-head{align-items:start;flex-direction:column}.st-skill-list{grid-template-columns:1fr;gap:13px}.st-progression-head h2{font-size:24px}}
+
+#quit-dialog .gh-game-modal{max-width:520px}#quit-dialog .gh-setup-actions{justify-content:center}#quit-dialog .gh-setup-actions>button{min-width:148px}
 </style>
 </head>
 <body><div class="app">
@@ -823,7 +834,7 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 <script>
 (()=>{'use strict';
 const $=(s,root=document)=>root.querySelector(s), $$=(s,root=document)=>[...root.querySelectorAll(s)];
-const shuffle=a=>[...a].sort(()=>Math.random()-.5), r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, pick=a=>a[r(0,a.length-1)], uniq=a=>[...new Set(a)], esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), dateKey=d=>{const v=new Date(d);return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`};
+const shuffle=a=>{const copy=[...a];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}, r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, pick=a=>a[r(0,a.length-1)], uniq=a=>[...new Set(a)], esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), dateKey=d=>{const v=new Date(d);return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`};
 const today=dateKey(new Date());
 const groups={insight:{title:'직감 · 지각',caption:'관찰하고 빠르게 판단하기',icon:'◈'},memory:{title:'기억 · 집중',caption:'순간 기억과 작업 기억',icon:'◉'},logic:{title:'분석 · 추론',caption:'관계와 규칙 찾아내기',icon:'◇'},math:{title:'계산 · 처리 속도',caption:'숫자를 정확하고 빠르게',icon:'∑'},read:{title:'국어 · 독해',caption:'의미 단위부터 논증까지',icon:'▤'}};
 const games=[
@@ -844,13 +855,22 @@ const passages=[
 {topic:'학습과 분산 연습',text:'짧은 시간에 내용을 여러 번 반복하면 바로 뒤의 시험에서는 익숙하게 느껴질 수 있다. 하지만 학습과 회상을 일정 간격으로 나누는 분산 연습은 시간이 지난 뒤의 기억 유지에 유리한 경우가 많다. 학습한 내용을 보지 않고 직접 떠올리는 회상 연습도 기억을 점검하는 데 도움이 된다. 따라서 장기 학습 계획에는 복습 간격과 능동적인 회상을 함께 설계하는 것이 좋다.',main:'장기 기억을 위해 분산 복습과 능동적 회상을 활용해야 한다.',fact:'분산 연습은 복습 시점을 일정 간격으로 나눈다.',cause:'복습과 회상을 한 번에 몰지 않고 시간에 걸쳐 반복하기 때문이다.',effect:'시간이 지난 뒤에도 학습 내용을 기억하는 데 도움이 될 수 있다.',example:'며칠 간격으로 요약을 보지 않고 핵심 내용을 떠올린다.',wrong:'한 번에 몰아서 읽는 것이 모든 상황에서 가장 효과적이다.',category:'학습',keyword:'회상',definition:'이미 학습한 정보를 기억에서 다시 떠올리는 과정'},
 {topic:'과학 실험의 통제',text:'어떤 비료가 식물 성장에 영향을 미치는지 알아보려면 비료를 준 집단과 주지 않은 집단을 비교할 수 있다. 이때 빛과 물의 양까지 서로 다르면 성장 차이의 원인을 비료만으로 설명하기 어렵다. 그래서 실험에서는 관찰하려는 요인 외의 조건을 가능한 한 일정하게 유지한다. 이런 통제는 결과를 해석할 때 불필요한 혼동을 줄이는 데 중요하다.',main:'실험의 원인을 분명히 하려면 다른 조건을 통제해야 한다.',fact:'빛과 물이 다르면 성장 차이의 원인을 분리하기 어렵다.',cause:'여러 조건이 결과에 동시에 영향을 줄 수 있기 때문이다.',effect:'실험 결과의 원인을 보다 타당하게 해석할 수 있다.',example:'비료 유무만 다르게 하고 빛과 물은 같게 유지한다.',wrong:'실험 집단마다 가능한 모든 조건을 다르게 해야 정확하다.',category:'과학',keyword:'통제',definition:'실험에서 비교 대상의 다른 조건을 일정하게 맞추는 것'}
 ];
+
+// Additional original Korean reading passages, graded for adult comprehension.
+passages.push(...[{"level":2,"topic":"전력 사용과 최대 수요","text":"전력 시스템은 소비자가 실제로 사용하는 전기량뿐 아니라 특정 시각에 동시에 필요한 전력도 고려해야 한다. 하루 전체 사용량이 같더라도 많은 설비가 한꺼번에 가동되면 공급 설비에 더 큰 부담이 생긴다. 그래서 전력 수요 관리에서는 전기를 아끼는 것과 사용 시각을 분산하는 일을 구별한다. 두 접근은 서로 보완될 수 있다.","main":"전력 관리에는 총사용량 절감과 최대 수요 분산이 모두 중요하다.","fact":"같은 전력량이라도 사용 시각에 따라 최대 수요가 달라질 수 있다.","cause":"같은 시각에 여러 기기가 가동되면 공급에 필요한 순간 전력이 커지기 때문이다.","effect":"공급 설비에 걸리는 최대 부담을 줄일 수 있다.","example":"고전력 기기의 가동 시간을 서로 다르게 배치한다.","wrong":"전체 사용량이 같다면 동시 가동 여부는 전력망과 무관하다.","category":"과학","keyword":"최대 수요","definition":"특정 기간에 동시에 필요했던 전력의 최대 크기"},{"level":2,"topic":"추천 알고리즘과 정보 다양성","text":"개인화 추천은 이용자가 이전에 좋아했던 콘텐츠를 빠르게 찾도록 돕는다. 그러나 과거 선호도만을 지나치게 반영하면 익숙한 주제의 정보만 반복해서 보게 될 수 있다. 이런 문제를 줄이려면 추천의 적합성을 유지하면서도 새로운 관점과 주제를 일정 비율 포함해야 한다. 이용자가 추천 이유를 이해하도록 하는 설명도 선택의 자율성을 높일 수 있다.","main":"추천 시스템은 편의성과 정보 다양성의 균형을 고려해야 한다.","fact":"개인화 추천은 과거 선호를 바탕으로 정보를 제안한다.","cause":"과거 선호만 반영하면 다른 관점의 노출이 제한될 수 있기 때문이다.","effect":"새로운 정보를 접하고 선택할 가능성을 넓힐 수 있다.","example":"추천 목록에 익숙한 주제와 다른 관점의 콘텐츠를 함께 포함한다.","wrong":"추천 정확도가 높아지면 정보 다양성은 항상 자동으로 확보된다.","category":"정보","keyword":"개인화","definition":"개인의 과거 행동이나 선호를 반영하여 내용을 조정하는 방식"},{"level":2,"topic":"재료의 환경 영향 평가","text":"일회용 포장재를 평가할 때 원료가 자연에서 유래했다는 사실만으로 환경 부담이 낮다고 단정하기는 어렵다. 원료 생산과 가공, 운송, 사용 이후의 수거와 처리 과정에서도 에너지와 자원이 소비된다. 따라서 대체 소재를 비교할 때는 생산부터 폐기까지의 여러 단계를 함께 살피는 것이 바람직하다. 사용 횟수와 지역의 재활용 시설도 결과를 바꿀 수 있다.","main":"포장재의 환경성을 판단할 때는 전체 사용 과정을 평가해야 한다.","fact":"운송과 폐기 단계도 포장재의 환경 부담에 영향을 준다.","cause":"소재별로 생산과 사용 후 처리에서 필요한 자원이 다르기 때문이다.","effect":"단일 특성만을 근거로 잘못 선택하는 일을 줄일 수 있다.","example":"두 포장재를 생산·운송·재활용 조건까지 포함하여 비교한다.","wrong":"자연 유래 원료는 모든 조건에서 가장 낮은 환경 부담을 보장한다.","category":"환경","keyword":"전과정 평가","definition":"제품의 생산부터 사용과 폐기까지 환경 영향을 살피는 방법"},{"level":2,"topic":"원격근무와 협업","text":"원격근무는 이동에 쓰던 시간을 절약하고 업무 공간을 유연하게 활용하도록 해 준다. 반면 서로의 상황을 우연히 파악하거나 짧게 의견을 나누는 기회는 줄어들 수 있다. 따라서 협업을 잘 운영하려면 문서로 공유할 정보를 명확히 정하고, 즉각적인 토론이 필요한 사안에는 별도의 소통 시간을 마련해야 한다. 업무 성과도 단순한 온라인 접속 시간보다 결과와 과정의 질을 함께 고려하는 편이 낫다.","main":"원격근무의 장점을 살리려면 협업 방식도 함께 설계해야 한다.","fact":"원격근무는 출퇴근에 쓰는 시간을 줄일 수 있다.","cause":"비대면 환경에서는 우연한 정보 교환이 줄어들 수 있기 때문이다.","effect":"협업 과정의 혼선을 줄이면서 유연성을 유지할 수 있다.","example":"정기 토론 시간을 정하고 결정 사항을 문서로 남긴다.","wrong":"온라인 접속 시간이 길수록 업무 성과가 반드시 높다.","category":"경제","keyword":"비동기 소통","definition":"참여자가 같은 시각에 접속하지 않아도 정보를 주고받는 방식"},{"level":2,"topic":"도시의 빗물 관리","text":"도시에서는 비가 내릴 때 물이 스며들 수 있는 흙보다 아스팔트와 지붕 면적이 넓은 경우가 많다. 그러면 짧은 시간에 많은 물이 배수 시설로 모여 침수 위험이 커질 수 있다. 빗물정원과 투수성 포장은 물이 한꺼번에 흐르는 속도를 낮추는 방법으로 활용된다. 다만 지역의 토양과 지하수 조건을 검토하지 않으면 효과가 제한될 수 있다.","main":"도시 침수 대응에는 물의 유출 속도를 늦추는 설계가 필요하다.","fact":"불투수 면적이 넓으면 빗물이 빠르게 배수 시설에 모일 수 있다.","cause":"땅속으로 침투하는 물의 양이 줄기 때문이다.","effect":"집중호우 때 배수 시설의 순간 부담을 완화할 수 있다.","example":"도로 일부에 투수성 포장을 적용하고 관리 상태를 점검한다.","wrong":"도시의 지붕과 아스팔트는 모든 빗물을 토양으로 흡수한다.","category":"환경","keyword":"투수성","definition":"물이 재료나 표면을 통과하여 스며들 수 있는 성질"},{"level":2,"topic":"표본과 조사 결과","text":"설문조사는 모든 사람의 의견을 직접 조사하기 어려울 때 일부 대상을 선택해 전체의 경향을 추정한다. 이때 참여자가 많더라도 특정 집단만 과도하게 포함되면 결과가 한쪽으로 치우칠 수 있다. 따라서 조사에서는 표본의 크기뿐 아니라 누구를 어떤 방법으로 뽑았는지도 중요하다. 응답하지 않은 사람의 특성이 결과에 영향을 미치는지도 살펴야 한다.","main":"조사 결과의 신뢰성은 표본 크기와 선정 방식 모두에 달려 있다.","fact":"표본이 커도 집단 구성이 치우치면 결과가 편향될 수 있다.","cause":"조사 참여 집단이 전체 집단을 적절히 대표하지 못할 수 있기 때문이다.","effect":"전체 의견을 잘못 추정할 위험을 줄일 수 있다.","example":"표본을 추출하는 기준과 응답률을 조사 보고서에 공개한다.","wrong":"표본의 수만 많으면 선정 방식과 관계없이 정확한 결과가 나온다.","category":"과학","keyword":"대표성","definition":"선택된 표본이 전체 집단의 특성을 적절히 반영하는 정도"},{"level":3,"topic":"상관관계와 인과관계","text":"어떤 지역에서 운동 시설 수와 건강 지표가 함께 높게 나타났다고 가정해 보자. 그렇다고 운동 시설이 지표 향상의 유일한 원인이라고 곧바로 결론 내릴 수는 없다. 소득, 의료 접근성, 연령 구성 등 다른 요인이 둘 모두에 영향을 주었을 가능성이 있기 때문이다. 인과관계를 검증하려면 대안적 설명을 검토하고 적절한 비교 집단이나 연구 설계를 활용해야 한다.","main":"함께 변하는 두 현상만으로 인과관계를 확정해서는 안 된다.","fact":"운동 시설과 건강 지표가 함께 높다고 해서 유일한 원인이 밝혀지는 것은 아니다.","cause":"두 현상 모두에 작용하는 제3의 요인이 있을 수 있기 때문이다.","effect":"성급한 인과 추론을 방지할 수 있다.","example":"소득과 연령을 고려한 비교 집단 분석을 수행한다.","wrong":"서로 상관된 두 변수는 반드시 직접적인 원인과 결과 관계이다.","category":"과학","keyword":"교란 요인","definition":"관찰된 관계의 해석에 영향을 줄 수 있는 다른 변수"},{"level":3,"topic":"매몰비용과 의사결정","text":"어떤 프로젝트에 이미 큰 비용을 지출했다면 중단 결정을 내리기 어려울 수 있다. 그러나 과거에 지출한 돈을 회수할 수 없다면 그 사실 자체가 미래 투자를 정당화하지는 않는다. 이후 투입할 자원과 앞으로 기대되는 가치, 대안의 가치를 비교해야 한다. 단, 계약 해지 수수료처럼 중단할 때 새롭게 발생하는 비용은 미래의 선택에 실제 영향을 주므로 별도로 계산해야 한다.","main":"되돌릴 수 없는 과거 비용보다 앞으로의 편익과 비용을 비교해야 한다.","fact":"회수할 수 없는 과거 지출만으로 추가 투자를 정당화할 수 없다.","cause":"과거 비용은 현재 선택에 따라 달라지지 않기 때문이다.","effect":"손실이 커지는 결정을 줄일 수 있다.","example":"사업 중단 수수료와 예상 수익을 비교해 지속 여부를 결정한다.","wrong":"이미 쓴 돈이 클수록 어떤 경우에도 추가 투자를 해야 한다.","category":"경제","keyword":"매몰비용","definition":"이미 발생해 현재 결정으로 되돌릴 수 없는 비용"},{"level":3,"topic":"통계적 유의성과 실질적 중요성","text":"대규모 조사에서는 매우 작은 차이도 통계적으로 유의하게 나타날 수 있다. 통계적 유의성은 관찰된 결과를 일정한 가정 아래 우연의 산물로 보기 어려운 정도를 설명하지만, 차이의 실제 크기나 정책적 중요성을 자동으로 알려주지는 않는다. 따라서 연구를 해석할 때는 유의확률과 함께 효과 크기, 불확실성의 범위, 적용 환경을 살펴야 한다. 유의하지 않은 결과 역시 효과가 전혀 없음을 증명하는 것은 아니다.","main":"연구 결과를 판단하려면 유의성뿐 아니라 효과의 크기와 맥락도 고려해야 한다.","fact":"통계적으로 유의하더라도 실질적인 변화 폭은 작을 수 있다.","cause":"표본 규모가 커지면 작은 차이도 통계적으로 탐지될 수 있기 때문이다.","effect":"연구 결과를 실제 의사결정에 더 적절히 적용할 수 있다.","example":"유의확률 외에 효과 크기와 신뢰구간을 함께 보고한다.","wrong":"통계적으로 유의한 모든 차이는 현장에서 반드시 큰 변화를 만든다.","category":"과학","keyword":"효과 크기","definition":"관찰된 차이나 관계가 얼마나 큰지를 나타내는 지표"},{"level":3,"topic":"공동자원과 무임승차","text":"여러 사람이 함께 이용하는 자원은 누군가가 이용하더라도 다른 사람의 접근을 완전히 막기 어려울 수 있다. 각자가 단기 이익만을 고려하면 이용량이 지나치게 늘어나 자원 전체가 훼손될 가능성이 있다. 그러나 이를 개인의 도덕성 문제로만 볼 수는 없다. 사용 규칙, 감시와 협의 절차, 지역별 환경에 맞는 관리 제도가 결과를 바꿀 수 있기 때문이다.","main":"공동자원 관리는 개인 선택뿐 아니라 제도의 설계가 중요하다.","fact":"공동자원은 개별 이용자의 선택이 다른 이용자에게 영향을 줄 수 있다.","cause":"이용에서 발생하는 비용이 사용자 개인에게 전부 반영되지 않을 수 있기 때문이다.","effect":"지나친 이용으로 인한 자원 고갈을 줄일 수 있다.","example":"이용자들이 채취 한도를 합의하고 함께 관리한다.","wrong":"공동자원은 언제나 아무 규칙 없이도 지속적으로 보존된다.","category":"경제","keyword":"공동자원","definition":"여러 사용자가 함께 이용하면서 서로에게 영향을 주는 자원"},{"level":3,"topic":"배터리 사용과 에너지 효율","text":"배터리의 용량이 크다고 해서 모든 장치의 사용 시간이 같은 비율로 늘어나는 것은 아니다. 장치의 전력 소비와 사용 환경, 온도 및 변환 손실에 따라 실제 사용 가능 시간이 달라진다. 또한 고속 충전 과정에서는 온도와 충전 상태에 따라 허용 전력이 조정될 수 있으므로 최대 충전 출력이 전체 충전 시간에 계속 유지된다고 보기 어렵다. 성능을 비교할 때는 정격 수치와 실제 운용 조건을 구분해야 한다.","main":"배터리 성능은 용량뿐 아니라 소비 전력과 운용 조건을 함께 보아야 한다.","fact":"같은 용량이라도 장치의 소비 전력에 따라 사용 시간이 달라진다.","cause":"전력 소비와 손실이 실제로 활용 가능한 에너지에 영향을 주기 때문이다.","effect":"현실적인 사용 시간과 충전 계획을 세울 수 있다.","example":"장치별 소비 전력과 충전 곡선을 함께 비교한다.","wrong":"최대 충전 출력은 충전이 끝날 때까지 항상 동일하게 유지된다.","category":"과학","keyword":"정격","definition":"정해진 조건에서 표시하는 장치의 표준 성능 수치"},{"level":3,"topic":"역사 자료의 해석","text":"과거의 사건을 연구할 때 한 사람이 남긴 기록은 중요한 단서가 되지만 사건 전체를 그대로 대표하지는 않을 수 있다. 기록 작성자의 위치와 목적, 당시의 제도와 언어 표현은 서술 방식에 영향을 미친다. 서로 다른 자료의 일치점과 차이점을 대조하고 자료가 만들어진 시점을 검토하면 해석의 한계를 줄일 수 있다. 자료가 부족한 부분은 가능성과 확정된 사실을 구분하여 서술해야 한다.","main":"역사 자료는 작성 배경과 다른 근거를 함께 검토하며 해석해야 한다.","fact":"한 기록은 작성자의 입장에 따라 사건을 부분적으로 보여줄 수 있다.","cause":"작성 목적과 사회적 위치가 기록 내용의 선택에 영향을 주기 때문이다.","effect":"확정되지 않은 추정을 사실과 구분할 수 있다.","example":"같은 사건을 기록한 여러 자료의 작성 시점과 목적을 비교한다.","wrong":"한 인물의 기록이 존재한다면 다른 자료를 검토할 필요가 없다.","category":"역사","keyword":"사료 비판","definition":"역사 자료의 출처와 작성 배경 및 신뢰도를 검토하는 과정"}]);
 const joinOptions=(right,wrong)=>shuffle([right,...shuffle(uniq(wrong.filter(x=>x!==undefined).filter(x=>String(x)!==String(right)))).slice(0,3)]);
 const qchoice=(prompt,answer,wrong,extra={})=>({type:'choice',prompt,answer,options:joinOptions(answer,wrong),...extra});
 const qnum=(prompt,answer,extra={})=>({type:'number',prompt,answer,...extra});
-const readingDistractors=(p,field='fact')=>shuffle(passages.filter(x=>x.topic!==p.topic).map(x=>x[field]||x.fact)).slice(0,3);
+const readingDistractors=(p,field='fact')=>{
+ const related=shuffle(passages.filter(x=>x.topic!==p.topic&&x.category===p.category).map(x=>x[field]||x.fact));
+ const elsewhere=shuffle(passages.filter(x=>x.topic!==p.topic&&x.category!==p.category).map(x=>x[field]||x.fact));
+ const wrong=(['fact','main','cause','example'].includes(field)?[p.wrong]:[]);
+ return uniq([...wrong,...related,...elsewhere].filter(x=>x&&x!==p[field])).slice(0,3);
+};
+const readingQ=(prompt,answer,wrong,p,reason)=>qchoice(prompt,answer,wrong,{passage:p.text,explanation:reason||`지문의 핵심 근거: ${p.fact}`});
 const qseq=(prompt,seq,extra={})=>({type:'sequence',prompt,answer:seq.join(''),keys:uniq([...seq,...'1234567890'.split('')]).sort(),...extra});
 const numOpts=(a,count=4)=>{let s=new Set([a]);while(s.size<count){let v=a+r(-9,9);if(v>=0)s.add(v)}return shuffle([...s])};
-function makeQ(id,diff=2){const big=diff===3, p=pick(passages), d=diff;let x,y,z,seq,ans,choices;
+function makeQ(id,diff=2){const big=diff===3, p=pick(passages.filter(x=>(x.level||1)===diff)), d=diff;let x,y,z,seq,ans,choices;
 switch(id){
 case 'match':{
  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -859,7 +879,11 @@ case 'match':{
  while(wrong.size<3){let pos=r(0,code.length-1),replacement=pick([...alphabet].filter(v=>v!==code[pos]));wrong.add(code.slice(0,pos)+replacement+code.slice(pos+1))}
  return qchoice(`목표 코드와 정확히 같은 것을 찾으세요.\n${code}`,code,[...wrong],{note:`${code.length}자리 코드 · 비슷한 글자를 정확히 대조하세요.`});
 }
-case 'shadow':{let items=['▲','■','●','◆','⬟','★'];ans=pick(items);return qchoice('반쯤 가려진 형태의 원래 모양은?',ans,shuffle(items.filter(i=>i!==ans)).slice(0,3),{visual:`<div style="font-size:72px;clip-path:inset(0 45% 0 0);color:#4c65ba;line-height:1.2">${ans}</div>`})}
+case 'shadow':{
+ const symbols=d===1?['●','▲','■','◆']:d===2?['▲','△','◆','◇']:['⬠','⬡','⬢','⬟'];
+ ans=pick(symbols);const hidden={1:28,2:45,3:57}[d];
+ return qchoice('가려진 모양의 원래 형태를 추론하세요.',ans,shuffle(symbols.filter(v=>v!==ans)),{visual:`<div class="sd-partial-shape" style="font-size:92px;clip-path:inset(0 ${hidden}% 0 0);color:#5b7a64;line-height:1.2">${ans}</div>`,note:'난이도에 따라 비슷한 형태와 가려진 비율이 달라집니다.'});
+}
 case 'pieces': case 'shape':{let s=['●','■','▲','◆'];let start=r(0,3);ans=s[(start+3)%4];return qchoice('도형 순서의 마지막 빈칸에 들어갈 것은?',ans,s.filter(x=>x!==ans),{visual:`<div class="focuswords">${[s[start],s[(start+1)%4],s[(start+2)%4],'?'].join('  ')}</div>`,note:'반복되는 4개 도형 규칙을 찾아보세요.'})}
 case 'detective':{let icons=['☀','☂','♣','☘','☕','☎','♫','☾'];seq=shuffle(icons).slice(0,d+2);ans=pick(seq);return qchoice('방금 보인 기호에 포함된 것은?',ans,shuffle(icons.filter(a=>!seq.includes(a))).slice(0,3),{preview:seq.join('  '),previewTime:big?1500:2400})}
 case 'flash':{seq=Array.from({length:d+2},()=>String(r(1,9)));return {type:'number',prompt:'나타난 숫자를 순서대로 입력하세요.',answer:seq.join(''),preview:seq.join(' '),previewTime:big?1900:3100,strict:true,note:'입력할 때 공백을 넣지 않아도 됩니다.'}}
@@ -933,14 +957,47 @@ case 'nback':{
  return qchoice(`마지막 기호와 ${n}칸 전 기호는 같을까요?`,ans,['같다','다르다'].filter(k=>k!==ans),{preview:seq.join('  '),previewTime:d===3?2300:d===2?2900:3600,note:`${n}-Back 작업기억 · ${count}개 기호를 기억하세요.`});
 }
 case 'bird':{x=r(5,8+diff*3);return qchoice('방금 나타난 점은 모두 몇 개였나요?',String(x),numOpts(x).filter(k=>k!==x).map(String),{preview:Array.from({length:x},()=>'<span style="font-size:26px;color:#3a5ace">●</span>').join(' '),previewHtml:true,previewTime:diff===3?1200:1900})}
-case 'entry':{x=r(3,11);y=r(1,8);z=r(0,x+y);return qnum(`처음 ${x}명\n${y}명 입장, ${z}명 퇴장\n현재 몇 명인가요?`,x+y-z)}
+case 'entry':{
+ let total=r(8,18+d*6),initial=total,events=[];
+ for(let i=0;i<(d===1?2:d===2?3:5);i++){const arriving=Math.random()<.53||total<4;const people=arriving?r(2,12+d*4):r(1,Math.min(total,8+d*3));total+=arriving?people:-people;events.push(`${people}명 ${arriving?'입장':'퇴장'}`)}
+ return qnum(`처음 ${initial}명으로 시작했습니다.\n${events.join(' → ')}\n마지막 인원은 몇 명일까요?`,total,{note:`${events.length}단계의 인원 변화를 차례대로 계산하세요.`});
+}
 case 'flags':{seq=Array.from({length:d+2},()=>pick(['빨강','파랑','초록','노랑']));return {type:'sequence',prompt:'색의 순서를 **그대로** 눌러 보세요.',answer:seq.join('|'),keys:['빨강','파랑','초록','노랑'],separator:'|',preview:seq.map(v=>({'빨강':'🔴','파랑':'🔵','초록':'🟢','노랑':'🟡'}[v])).join('　'),previewTime:diff===3?2600:4200}}
 case 'alternating':{let max=d+2;seq=Array.from({length:max},(_,i)=>[String.fromCharCode(65+i),String(i+1)]).flat();return {type:'sequence',prompt:'알파벳과 숫자를 번갈아 오름차순으로 누르세요.',answer:seq.join('|'),keys:shuffle(seq),separator:'|',note:'알파벳은 A부터, 숫자는 1부터 시작합니다. 선택한 순서를 확인하세요.'}}
 case 'gridmemory':{let all=shuffle([...Array(25).keys()]),selected=all.slice(0,d+1);return {type:'grid',prompt:'잠깐 표시된 파란 칸의 위치를 기억해 선택하세요.',answer:selected.sort((a,b)=>a-b).join(','),selected,previewTime:diff===3?2200:4000}}
 case 'dual':{x=r(2,10);y=r(2,10);let color=pick(['빨강','파랑']);ans=`${x+y} / ${color==='빨강'?'R':'B'}`;return qchoice(`계산: ${x} + ${y}\n색상: ${color}\n합계와 색상 첫 글자를 동시에 고르세요.`,ans,[`${x+y+1} / ${color==='빨강'?'R':'B'}`,`${x+y} / ${color==='빨강'?'B':'R'}`,`${x+y-1} / ${color==='빨강'?'B':'R'}`])}
 case 'subtract':{x=r(50,95);y=r(4,9);let count=diff+1;return qnum(`${x}에서 ${y}를 ${count}번 연속으로 빼면?`,x-y*count)}
-case 'sudoku':return makeSudoku();
-case 'chunks':{let cases=[['도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.','도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.'],['정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.','정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.'],['분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.','분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.']];let [v,a]=pick(cases);return qchoice('문장을 의미 단위로 자연스럽게 끊은 것은?',a,[v.replaceAll(' / ','').replace(/ /g,' / '),v.replace(' / ','/').replace(/ /g,'  '),v.replaceAll(' / ',' // ')],{note:'읽을 때 서로 밀접한 의미의 단어들을 묶어보세요.'})}
+case 'sudoku':return makeSudoku(diff);
+case 'chunks':{
+ const corpus={
+ 1:[
+ '도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.',
+ '자료의 출처를 확인하면 / 잘못된 주장을 / 구별하기 쉽다.',
+ '짧은 복습을 여러 날에 나누면 / 기억 유지에 / 도움이 된다.'
+ ],
+ 2:[
+ '장치가 동시에 가동되면 / 순간적으로 필요한 전력이 커져 / 공급 설비의 부담이 늘어난다.',
+ '조사 대상이 특정 집단에 집중되면 / 표본 수가 많아도 / 결과가 한쪽으로 치우칠 수 있다.',
+ '배수 시설의 성능을 높이더라도 / 물이 모이는 속도를 줄이는 설계가 / 함께 필요하다.'
+ ],
+ 3:[
+ '통계적으로 유의한 차이가 확인되어도 / 그 차이의 실제 크기와 적용 환경을 검토하지 않으면 / 정책적 의미를 판단하기 어렵다.',
+ '이미 지출한 비용을 회수할 수 없다면 / 과거의 손실만을 근거로 투자를 이어가기보다 / 추가 비용과 예상 편익을 비교해야 한다.',
+ '사료의 작성 목적과 시점을 고려하지 않은 채 / 하나의 기록을 사건 전체의 묘사로 받아들이면 / 해석에 편향이 생길 수 있다.'
+ ]
+ };
+ const correct=pick(corpus[d]);
+ const chunks=correct.split(' / '),words=correct.replaceAll(' / ',' ').split(' ');
+ const correctPoints=[],wrongCandidates=new Set();
+ for(let i=0,offset=0;i<chunks.length-1;i++){offset+=chunks[i].split(' ').length;correctPoints.push(offset)}
+ for(let attempt=0;attempt<120&&wrongCandidates.size<3;attempt++){
+  const marks=shuffle(Array.from({length:words.length-1},(_,i)=>i+1)).slice(0,2).sort((a,b)=>a-b);
+  if(marks.every((x,i)=>x===correctPoints[i]))continue;
+  const formatted=words.map((w,i)=>w+(i===words.length-1?'':marks.includes(i+1)?' / ':' ')).join('');
+  if(formatted!==correct)wrongCandidates.add(formatted);
+ }
+ return qchoice('문장의 의미 단위를 자연스럽게 나눈 것은?',correct,[...wrongCandidates],{note:'서로 밀접한 의미를 이루는 말들을 한 덩어리로 묶어 읽으세요.',explanation:`이 문장은 “${chunks.join(' / ')}”처럼 의미가 연결되는 구간으로 나누는 것이 자연스럽습니다.`});
+}
 case 'verbal':{
  const pool=['나무','비','강','책','연필','노트','하늘','별','구름','바다','파도','모래','기억','서랍','시계','창문','도시','나침반','초록','정원'];
  const wordCount=d===1?4:d===2?5:7;
@@ -952,27 +1009,93 @@ case 'verbal':{
   previewTime:d===3?2000:d===2?2500:3200,note:'제시된 단어의 위치를 기억하고 정답을 선택하세요.'
  });
 }
-case 'semantic':return qchoice('지문에서 확인할 수 있는 사실과 가장 가까운 것은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'connection':return qchoice('글의 문장들이 주로 어떤 관계로 연결되나요?','현상 설명 → 원인·의미 설명 → 대응 또는 결론',['주장 제시 → 무관한 이야기 나열','결과만 나열하며 근거를 생략','처음 주장과 완전히 모순되는 결론'],{passage:p.text});
-case 'proposition':return qchoice('글에 명시적으로 나타난 명제는?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'gist':return qchoice('이 문단의 중심 내용을 고르세요.',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'theme':return qchoice('글의 주제로 가장 적절한 것은?',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'context':return qchoice('글 뒤에 가장 자연스럽게 이어질 내용은?',`${p.topic}에 관한 구체적인 적용 방안과 사례`,readingDistractors(p,'topic').map(topic=>`${topic}에 관한 구체적인 적용 방안과 사례`),{passage:p.text});
-case 'inference':return qchoice('본문을 토대로 논리적으로 추론할 수 있는 것은?',p.example,readingDistractors(p,'example'),{passage:p.text});
-case 'cause':return qchoice('본문에서 설명한 이유로 적절한 것은?',p.cause,readingDistractors(p,'cause'),{passage:p.text});
-case 'argument':return qchoice('글의 결론을 가장 잘 뒷받침하는 내용은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'perspective':return qchoice('본문의 사실을 바탕으로 작성한, 검증 가능한 진술은?',p.fact,readingDistractors(p,'fact'),{passage:p.text});
-case 'structure':return qchoice('본문의 전개 구조는?', '현상·개념 소개 → 이유·작용 설명 → 시사점', ['무관한 사건의 시간순 나열','인물 대화만으로 전개','결론과 상반된 무근거 주장'],{passage:p.text});
-case 'vocab':return qchoice(`본문에서 “${p.keyword}”의 의미는?`,p.definition,['근거 없이 상대방을 설득하는 행위','수량과 무관하게 결과를 단정하는 태도','주제와 상관없는 문장을 반복하는 일'],{passage:p.text});
-case 'categorize':return qchoice(`“${p.topic}”이 주로 속하는 학습 분야는?`,p.category,['역사','환경','정보','경제','생명','학습','과학'].filter(a=>a!==p.category).slice(0,3),{passage:p.text});
-case 'summary':return qchoice('다음 글을 한 문장으로 요약하면?',p.main,readingDistractors(p,'main'),{passage:p.text});
-case 'application':return qchoice('이 글의 원리를 가장 적절하게 적용한 사례는?',p.example,readingDistractors(p,'example'),{passage:p.text});
+case 'semantic':return readingQ('지문에서 직접 확인할 수 있는 사실은?',p.fact,readingDistractors(p,'fact'),p,`글에서 사실로 진술한 내용은 “${p.fact}”입니다.`);
+case 'connection':return readingQ('글의 결론을 뒷받침하는 이유는?',p.cause,readingDistractors(p,'cause'),p,`핵심 이유는 “${p.cause}”입니다. 이 설명이 글의 결론으로 이어집니다.`);
+case 'proposition':return readingQ('글에 명시된 명제로 적절한 것은?',p.fact,readingDistractors(p,'fact'),p,`본문에 명시된 내용: ${p.fact}`);
+case 'gist':return readingQ('이 문단의 중심 내용은?',p.main,readingDistractors(p,'main'),p,`글 전체의 결론과 근거를 함께 담은 문장은 “${p.main}”입니다.`);
+case 'theme':return readingQ('이 글의 핵심 주제는?',p.topic,readingDistractors(p,'topic'),p,`이 글은 “${p.topic}”의 원리와 의미를 설명합니다.`);
+case 'context':return readingQ('이 글 다음에 이어질 구체적인 사례로 가장 적절한 것은?',p.example,readingDistractors(p,'example'),p,`글의 원리를 적용하면 “${p.example}”와 같은 사례가 자연스럽게 이어집니다.`);
+case 'inference':return readingQ('글의 원리를 바탕으로 실행할 수 있는 판단은?',p.example,readingDistractors(p,'example'),p,`적용 사례로는 “${p.example}”가 가장 타당합니다.`);
+case 'cause':return readingQ('글에서 설명한 원인은?',p.cause,readingDistractors(p,'cause'),p,`원인에 해당하는 내용: ${p.cause}`);
+case 'argument':return readingQ('글의 주장을 뒷받침하는 근거로 가장 적절한 것은?',p.fact,readingDistractors(p,'fact'),p,`지문의 결론을 뒷받침하는 명시적 근거는 “${p.fact}”입니다.`);
+case 'perspective':return readingQ('본문의 내용으로 확인할 수 있는 객관적 진술은?',p.fact,readingDistractors(p,'fact'),p,`본문에서 확인 가능한 정보는 “${p.fact}”입니다.`);
+case 'structure':{const answer=p.level===3?'문제 제기 → 관련 요인 검토 → 판단 기준 제시':'현상·개념 소개 → 이유 설명 → 실천 방안 제시';return readingQ('글의 전개 방식을 가장 잘 설명한 것은?',answer,['무관한 사건을 시간순으로 나열','인물 간 대화만 이어서 전개','주장과 무관한 결론으로 마무리'].filter(x=>x!==answer),p,'글의 앞부분에서 현상이나 문제를 제시하고, 이유를 설명한 뒤 판단 기준 또는 대응 방안을 제안합니다.');}
+case 'vocab':return readingQ(`본문에서 “${p.keyword}”의 뜻은?`,p.definition,readingDistractors(p,'definition'),p,`“${p.keyword}”의 뜻은 “${p.definition}”입니다.`);
+case 'categorize':return readingQ(`“${p.topic}”은 주로 어떤 분야와 관련되나요?`,p.category,shuffle(uniq(passages.map(x=>x.category).filter(x=>x!==p.category))).slice(0,3),p,`글에서 다룬 내용은 “${p.category}” 분야의 문제입니다.`);
+case 'summary':return readingQ('글 전체를 가장 정확히 요약한 문장은?',p.main,readingDistractors(p,'main'),p,`핵심 정보를 종합한 요약은 “${p.main}”입니다.`);
+case 'application':return readingQ('본문의 원리를 새로운 상황에 적용한 사례는?',p.example,readingDistractors(p,'example'),p,`지문에서 설명한 원리의 구체적인 적용 사례는 “${p.example}”입니다.`);
 default:return qchoice('다음 중 같은 도형은?','●',['■','▲','◆']);
 }}
 function clockSVG(hour,min){let ha=(hour%12*30+min*.5),ma=min*6;return `<svg class="svgclock" viewBox="0 0 200 200" aria-label="아날로그 시계"><circle cx="100" cy="100" r="88" fill="#f8faff" stroke="#d5ddeb" stroke-width="6"/>${Array.from({length:12},(_,i)=>{let a=(i*30-90)*Math.PI/180;return `<line x1="${100+72*Math.cos(a)}" y1="${100+72*Math.sin(a)}" x2="${100+81*Math.cos(a)}" y2="${100+81*Math.sin(a)}" stroke="#7786a4" stroke-width="3"/>`}).join('')}<line x1="100" y1="100" x2="${100+49*Math.cos((ha-90)*Math.PI/180)}" y2="${100+49*Math.sin((ha-90)*Math.PI/180)}" stroke="#283e70" stroke-width="7" stroke-linecap="round"/><line x1="100" y1="100" x2="${100+69*Math.cos((ma-90)*Math.PI/180)}" y2="${100+69*Math.sin((ma-90)*Math.PI/180)}" stroke="#5776d7" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="100" r="5" fill="#283e70"/></svg>`}
-function makeSudoku(){let grids=[[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],[[3,1,2,4],[2,4,3,1],[1,3,4,2],[4,2,1,3]]];let g=pick(grids).map(a=>[...a]);let fixed=g.map(row=>row.map(()=>Math.random()>.48));for(let i=0;i<4;i++){if(fixed[i].every(Boolean))fixed[i][r(0,3)]=false;}return {type:'sudoku',prompt:'1~4를 각 가로·세로·2×2 영역에 한 번씩 채우세요.',answer:g.flat().join(''),grid:g,fixed, note:'빈칸을 선택한 뒤 아래 숫자를 누르세요. 완성 시 자동 채점합니다.'}}
-let data;try{data=JSON.parse(localStorage.getItem('mindroom_v1')||'null')}catch(e){}if(!data||!Array.isArray(data.sessions))data={sessions:[],settings:{difficulty:2,questions:8}};
-function save(){try{localStorage.setItem('mindroom_v1',JSON.stringify(data))}catch(e){}}
+function sudokuSolutionCount(solution,fixed){
+ const board=solution.map((row,i)=>row.map((v,j)=>fixed[i][j]?v:0));let found=0;
+ const valid=(row,col,value)=>{
+  if(board[row].includes(value)||board.some(r=>r[col]===value))return false;
+  for(let r=2*Math.floor(row/2);r<2*Math.floor(row/2)+2;r++)for(let c=2*Math.floor(col/2);c<2*Math.floor(col/2)+2;c++)if(board[r][c]===value)return false;
+  return true;
+ };
+ function search(){
+  if(found>=2)return;
+  let best=null,options=[];
+  for(let row=0;row<4;row++)for(let col=0;col<4;col++)if(board[row][col]===0){
+    const candidates=[1,2,3,4].filter(v=>valid(row,col,v));
+    if(!candidates.length)return;
+    if(!best||candidates.length<options.length){best=[row,col];options=candidates}
+  }
+  if(!best){found++;return}
+  const [row,col]=best;for(const value of options){board[row][col]=value;search();if(found>=2)break}board[row][col]=0;
+ }
+ search();return found;
+}
+function makeSudoku(difficulty=2){
+ const base=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
+ const rowOrder=shuffle([0,1]).flatMap(b=>shuffle([2*b,2*b+1]));
+ const colOrder=shuffle([0,1]).flatMap(b=>shuffle([2*b,2*b+1]));
+ const digitOrder=shuffle([1,2,3,4]);
+ let grid=Array.from({length:4},(_,i)=>Array.from({length:4},(_,j)=>digitOrder[base[rowOrder[i]][colOrder[j]]-1]));
+ if(Math.random()<.5)grid=grid[0].map((_,j)=>grid.map(row=>row[j]));
+ const requested={1:11,2:9,3:7}[difficulty]||9;
+ let fixed=null;
+ for(let givens=requested;givens<=12&&!fixed;givens++)for(let attempt=0;attempt<70;attempt++){
+  const visible=new Set(shuffle([...Array(16).keys()]).slice(0,givens));
+  const candidate=grid.map((row,i)=>row.map((_,j)=>visible.has(i*4+j)));
+  if(sudokuSolutionCount(grid,candidate)===1){fixed=candidate;break}
+ }
+ if(!fixed)fixed=grid.map((row,i)=>row.map((_,j)=>i===0||j===0||i===j));
+ const revealed=fixed.flat().filter(Boolean).length;
+ return {type:'sudoku',prompt:'1~4를 각 가로·세로·2×2 영역에 한 번씩 채우세요.',answer:grid.flat().join(''),grid,fixed,
+ note:`${difficulty===3?'도전':difficulty===1?'가볍게':'집중'} · ${revealed}개 단서 · 모든 가로·세로·2×2에는 1~4가 한 번씩 들어갑니다.`};
+}
+let data;try{data=JSON.parse(localStorage.getItem('mindroom_v1')||'null')}catch(e){}if(!data||!Array.isArray(data.sessions))data={sessions:[],settings:{difficulty:0,questions:8}};
+data.settings ||= {difficulty:0,questions:8};
+data.routineLog ||= {};
+data.progress ||= {xp:data.sessions.reduce((n,record)=>n+(Number(record.earnedXP)||Number(record.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,record)=>n+Number(record.correct||0),0),completed:data.sessions.length};
+data.progress && (data.progress.badges ||= {});
+function lifetimeXP(){return Math.max(0,Math.round(Number(data.progress?.xp)||0))}
+function levelFromXP(xp=lifetimeXP()){return Math.floor(xp/500)+1}
+function xpForAnswer(correct,diff){return correct?Math.round(10*({1:1,2:1.3,3:1.6}[diff]||1)):0}
+function getAdaptiveDifficulty(id){
+ const history=data.sessions.flatMap(record=>(record.answers||[]).filter(x=>x.id===id)).slice(-18);
+ if(history.length<8)return 2;
+ const recent=history.slice(-12),accuracy=recent.filter(x=>x.correct).length/recent.length;
+ const avg=recent.reduce((n,x)=>n+(Number(x.seconds)||0),0)/recent.length;
+ return accuracy>=.88&&avg<=25?3:accuracy<.58?1:2;
+}
+function balancedTestGames(count){
+ let buckets={math:shuffle(games.filter(g=>g.group==='math')),brain:shuffle(games.filter(g=>!['math','read'].includes(g.group))),read:shuffle(games.filter(g=>g.group==='read'))};
+ const chosen=[],order=shuffle(['math','brain','read']);
+ for(let i=0;i<count;i++){const group=order[i%3];if(!buckets[group].length)buckets[group]=shuffle(games.filter(g=>group==='math'?g.group==='math':group==='read'?g.group==='read':!['math','read'].includes(g.group)));chosen.push(buckets[group].shift())}
+ return shuffle(chosen);
+}
+let storageWarningShown=false;
+function save(){
+ try{localStorage.setItem('mindroom_v1',JSON.stringify(data));return true}
+ catch(error){
+  console.error('학습 기록 저장 실패',error);
+  if(!storageWarningShown){storageWarningShown=true;alert('저장 공간이 부족해 최신 기록이 저장되지 않았을 수 있습니다. 설정에서 JSON 백업 후 브라우저 공간을 확인해 주세요.')}
+  return false;
+ }
+}
 function streak(){let days=new Set(data.sessions.map(a=>a.date));let st=0,d=new Date();if(!days.has(dateKey(d)))d.setDate(d.getDate()-1);while(days.has(dateKey(d))){st++;d.setDate(d.getDate()-1)}return st}
 const average=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
 
@@ -1037,8 +1160,8 @@ function renderMonthStats(){let m=monthRecords(),seconds=sumSecs(m),accuracy=avg
 function renderTrend(){let data14=[...Array(14)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-13+i);return {date:dateKey(d),n:data.sessions.filter(s=>s.date===dateKey(d)).reduce((a,s)=>a+(s.total||0),0)}});if(!data.sessions.length)return `<section class="st-card lower-card trend-panel"><div class="st-card-header"><h2>학습 흐름 요약</h2></div><div class="trend-empty"><span class="trend-empty-icon">${stIcon('chart',30)}</span><div><strong>첫 훈련부터 성장 기록이 시작돼요</strong><p>문제를 풀면 과목별 정답률과 학습 흐름을 확인할 수 있어요.</p></div><button type="button" class="trend-start" data-go="training">첫 훈련 시작 ${stIcon('chevron',15)}</button></div></section>`;return `<section class="st-card lower-card trend-panel"><div class="st-card-header"><h2>학습 흐름 요약</h2><button class="st-inline-button" data-go="analytics">상세 분석 ${stIcon('chevron',14)}</button></div><div class="trend-rows">${[['math','계산 훈련','calc'],['brain','두뇌 트레이닝','brain'],['reading','국어 독해','book']].map(([id,label,icon])=>{let arr=data.sessions.filter(s=>sessionHasGroup(s,id));let all=arr.flatMap(s=>s.answers?.filter(x=>id==='brain'?byId[x.id]?.group!=='read'&&byId[x.id]?.group!=='math':byId[x.id]?.group===courseKind(id))||[]);let a=all.length?Math.round(100*all.filter(x=>x.correct).length/all.length):null;let counts=data14.map(x=>data.sessions.filter(s=>s.date===x.date&&sessionHasGroup(s,id)).length);let m=Math.max(1,...counts);return `<div class="trend-row"><span class="st-${id}">${stIcon(icon,20)}</span><strong>${label}</strong><span>${a===null?'훈련 전':a+'%'}</span><div class="trend-ticks st-${id}">${counts.map(num=>`<i style="height:${Math.max(3,Math.round(num/m*23))}px;opacity:${num?'.72':'.16'}"></i>`).join('')}</div></div>`}).join('')}</div></section>`}
 function sharedGameBar(){
  const totalCorrect=data.sessions.reduce((n,s)=>n+(Number(s.correct)||0),0);
- const points=totalCorrect*10;
- const level=Math.max(1,Math.floor(points/500)+1);
+ const points=lifetimeXP();
+ const level=levelFromXP();
  return `<header class="gh-bar"><div class="gh-brand"><button type="button" class="gh-grid-btn" data-go="training" aria-label="전체 게임 메뉴"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6" height="6" rx="1.4"/><rect x="14.5" y="3.5" width="6" height="6" rx="1.4"/><rect x="3.5" y="14.5" width="6" height="6" rx="1.4"/><rect x="14.5" y="14.5" width="6" height="6" rx="1.4"/></svg></button><span class="gh-separator"></span><span class="gh-mark">${stIcon('brain',29)}</span><strong>스터디트레이닝</strong></div>
   <div class="gh-status"><span class="gh-level">${stIcon('chart',20)} <strong>Lv. ${level}</strong></span><span class="gh-separator"></span><span class="gh-stars"><span aria-hidden="true">☆</span><strong>${points.toLocaleString('ko-KR')}점</strong></span><span class="gh-separator"></span><button type="button" class="gh-profile" data-go="settings" aria-label="설정 및 내 정보">${stIcon('user',25)}</button></div></header>`;
 }
@@ -1046,8 +1169,8 @@ function renderHome(){
  const core=['math','brain','reading'];
  const complete=core.filter(id=>routineIsDone(id)).length;
  const totalCorrect=data.sessions.reduce((n,s)=>n+(Number(s.correct)||0),0);
- const points=totalCorrect*10;
- const level=Math.max(1,Math.floor(points/500)+1);
+ const points=lifetimeXP();
+ const level=levelFromXP();
  const tracks=[
    ['math','계산 훈련','빠르고 정확한 계산력 향상','calc'],
    ['brain','두뇌 게임','기억력 · 추리력 · 분석력 · 인지력','brain'],
@@ -1071,10 +1194,10 @@ function renderTrainingLanding(){
  return `<div class="gh-training-landing"><h1>어떤 게임을 시작할까요?</h1><p>한 가지 훈련을 골라 바로 시작해 보세요.</p><span class="gh-title-rule"></span><div class="gh-training-options">${topics.map(([id,t,icon,desc])=>`<button type="button" data-go="${id}" class="gh-game-category gh-theme-${id}"><span class="gh-game-category-icon">${stIcon(icon,64)}</span><strong>${t}</strong><small>${desc}</small><span class="gh-game-category-btn">게임 선택 ${stIcon('chevron',21)}</span></button>`).join('')}</div></div>`
 }
 function renderPlanner(){return `<div class="inner-page planner-page"><div class="planner-two">${renderCalendar()}${renderRoutine()}</div><section class="st-card inner-card">${renderWeekly()}</section></div>`}
-function renderAnalytics(){let all=data.sessions, accuracy=avgAccuracy(all),weeks=weekRecords(),recent=[...Array(14)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-13+i);return {label:`${d.getMonth()+1}/${d.getDate()}`,minutes:Math.round(sumSecs(all.filter(s=>s.date===dateKey(d)))/60)}}), max=Math.max(1,...recent.map(x=>x.minutes));return `<div class="inner-page"><div class="metric-summary"><div><small>완료한 훈련</small><strong>${all.length}<em>회</em></strong></div><div><small>총 문제</small><strong>${all.reduce((n,s)=>n+s.total,0)}<em>문제</em></strong></div><div><small>평균 정답률</small><strong>${accuracy===null?'—':accuracy+'%'} </strong></div><div><small>이번 주 훈련시간</small><strong>${Math.round(sumSecs(weeks)/60)}<em>분</em></strong></div></div><section class="st-card inner-card"><div class="st-card-header"><h2>최근 14일 학습 시간</h2><span class="muted-small">실제 세션 기록 · 분 단위</span></div><div class="large-chart">${recent.map((x,i)=>`<div class="chart-column"><div class="chart-track"><div style="height:${x.minutes?Math.max(5,x.minutes/max*100):0}%"></div></div><small>${x.label}</small></div>`).join('')}</div></section><div class="planner-two">${renderWeekly()}${renderTrend()}</div></div>`}
+function renderAnalytics(){let all=data.sessions, accuracy=avgAccuracy(all),weeks=weekRecords(),recent=[...Array(14)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-13+i);return {label:`${d.getMonth()+1}/${d.getDate()}`,minutes:Math.round(sumSecs(all.filter(s=>s.date===dateKey(d)))/60)}}), max=Math.max(1,...recent.map(x=>x.minutes));return renderProgressOverview()+`<div class="inner-page"><div class="metric-summary"><div><small>완료한 훈련</small><strong>${all.length}<em>회</em></strong></div><div><small>총 문제</small><strong>${all.reduce((n,s)=>n+s.total,0)}<em>문제</em></strong></div><div><small>평균 정답률</small><strong>${accuracy===null?'—':accuracy+'%'} </strong></div><div><small>이번 주 훈련시간</small><strong>${Math.round(sumSecs(weeks)/60)}<em>분</em></strong></div></div><section class="st-card inner-card"><div class="st-card-header"><h2>최근 14일 학습 시간</h2><span class="muted-small">실제 세션 기록 · 분 단위</span></div><div class="large-chart">${recent.map((x,i)=>`<div class="chart-column"><div class="chart-track"><div style="height:${x.minutes?Math.max(5,x.minutes/max*100):0}%"></div></div><small>${x.label}</small></div>`).join('')}</div></section><div class="planner-two">${renderWeekly()}${renderTrend()}</div></div>`}
 function renderGoals(){return `<div class="inner-page"><section class="st-card inner-card"><div class="st-card-header"><h2>주간 훈련 목표 설정</h2></div><p class="settings-note">각 과목의 목표 시간(분)을 입력해 주세요. 변경한 목표는 홈과 분석 화면에 반영됩니다.</p><form id="goal-form" class="goal-form">${[['math','계산 훈련'],['brain','두뇌 트레이닝'],['reading','국어 독해']].map(([id,label])=>`<label class="goal-input st-${id}"><span>${label}</span><input name="${id}" type="number" min="10" max="2000" step="5" value="${getWeeklyGoal(id)}" required><span>분/주</span></label>`).join('')}<button class="btn" type="submit">목표 저장</button><span id="goals-message" class="tiny-helper" aria-live="polite"></span></form></section>${renderWeekly()}</div>`}
 function renderCollection(){let practiced=new Set(data.sessions.flatMap(s=>s.items.map(x=>x.id)));return `<div class="inner-page"><section class="st-card inner-card"><div class="st-card-header"><h2>나의 훈련 컬렉션</h2><span class="routine-pill">${practiced.size} / ${games.length}종 경험</span></div><p class="settings-note">한 번이라도 완료한 게임에는 완료 표시가 생깁니다. 게임을 누르면 바로 연습할 수 있습니다.</p><div class="collection-grid">${games.map(g=>`<button type="button" class="collection-item ${practiced.has(g.id)?'practiced':''}" data-id="${g.id}"><span class="collection-icon">${gameIcon(g.id,22)}</span><strong>${g.title}</strong>${practiced.has(g.id)?'<span class="collection-done">완료 ✓</span>':''}</button>`).join('')}</div></section></div>`}
-function renderSettings(){return `<div class="inner-page"><section class="st-card inner-card"><div class="st-card-header"><h2>훈련 기본 설정</h2></div><div class="settings-area"><label>기본 난이도<select id="setting-difficulty"><option value="1" ${data.settings.difficulty===1?'selected':''}>초급</option><option value="2" ${data.settings.difficulty===2?'selected':''}>중급</option><option value="3" ${data.settings.difficulty===3?'selected':''}>고급</option></select></label><p class="settings-note">설정은 브라우저에 저장됩니다. 다른 기기로 자동 동기화되지 않습니다.</p><div class="settings-actions"><button type="button" id="settings-export" class="btn outline">${stIcon('download',17)} 기록 백업하기</button><button type="button" id="settings-clear" class="btn ghost danger">기록 초기화</button></div></div></section></div>`}
+function renderSettings(){return `<div class="inner-page"><section class="st-card inner-card"><div class="st-card-header"><h2>훈련 기본 설정</h2></div><div class="settings-area"><label>기본 난이도<select id="setting-difficulty"><option value="0" ${Number(data.settings.difficulty)===0?'selected':''}>자동 추천</option><option value="1" ${data.settings.difficulty===1?'selected':''}>초급</option><option value="2" ${data.settings.difficulty===2?'selected':''}>중급</option><option value="3" ${data.settings.difficulty===3?'selected':''}>고급</option></select></label><p class="settings-note">설정은 브라우저에 저장됩니다. 다른 기기로 자동 동기화되지 않습니다.</p><div class="settings-actions"><button type="button" id="settings-export" class="btn outline">${stIcon('download',17)} 기록 백업하기</button><label class="btn outline" for="settings-import-file">백업 복원하기</label><input type="file" id="settings-import-file" accept=".json,application/json" style="display:none"><button type="button" id="settings-clear" class="btn ghost danger">기록 초기화</button></div></div></section></div>`}
 function renderHelp(){return `<div class="inner-page"><section class="st-card inner-card"><div class="st-card-header"><h2>이용 안내</h2></div><div class="help-copy"><p>계산 훈련 8종, 두뇌 트레이닝 24종, 국어 독해 17종을 별도로 선택할 수 있습니다.</p><p>훈련을 클릭해 난이도·문제 수를 설정하고 정답을 제출하면 다음 문제로 넘어갑니다. 완료한 세션은 학습 기록에 저장됩니다.</p><p>홈 화면의 체크박스는 직접 표시하거나 해제할 수 있습니다. 각 과목의 훈련을 완료하면 해당 과목도 자동으로 완료 처리됩니다.</p><p>주간 목표의 수치는 실제 훈련 시간 기록을 합산합니다. 브라우저 데이터를 삭제하면 기록도 사라질 수 있으므로 설정에서 백업해 주세요.</p><p>닌텐도·스터디포스 공식 제품이 아닌 독립 학습용 콘텐츠입니다.</p></div></section></div>`}
 function onExtraPageEvents(){
  document.querySelectorAll('[data-cal-shift]').forEach(b=>b.onclick=()=>{visibleMonth=new Date(visibleMonth.getFullYear(),visibleMonth.getMonth()+Number(b.dataset.calShift),1);render()});
@@ -1083,18 +1206,30 @@ function onExtraPageEvents(){
  document.querySelector('#goal-form')?.addEventListener('submit',e=>{e.preventDefault();let form=new FormData(e.target);data.weeklyGoals={math:Number(form.get('math')),brain:Number(form.get('brain')),reading:Number(form.get('reading'))};if(Object.values(data.weeklyGoals).some(n=>!Number.isFinite(n)||n<10||n>2000)){showInfoModal('목표 범위 확인','과목별 10분에서 2000분 사이로 설정해 주세요.');return}save();render();showInfoModal('목표 저장 완료','주간 훈련 목표가 저장되었습니다.')});
  document.querySelector('#setting-difficulty')?.addEventListener('change',e=>{data.settings.difficulty=Number(e.target.value);save()});
  document.querySelector('#settings-export')?.addEventListener('click',exportRecords);
- document.querySelector('#settings-clear')?.addEventListener('click',()=>{if(confirm('저장된 훈련 기록과 체크 표시를 모두 삭제할까요?')){data.sessions=[];data.routineLog={};save();render()}});
+ document.querySelector('#settings-import-file')?.addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+   if(file.size>10_000_000)throw Error('백업 파일은 10MB 이하만 지원합니다.');
+   const next=JSON.parse(await file.text());
+   if(!next||!Array.isArray(next.sessions)||next.sessions.some(x=>!x||typeof x.date!=='string'||!Array.isArray(x.items)||!Number.isFinite(Number(x.correct))||!Number.isFinite(Number(x.total))))throw Error('올바른 스터디트레이닝 백업 형식이 아닙니다.');
+   if(!confirm('현재 기록을 백업 파일로 교체할까요? 기존 기록은 덮어써집니다.'))return;
+   data={sessions:next.sessions.slice(-1500),settings:next.settings||{difficulty:0,questions:8},routineLog:next.routineLog||{},weeklyGoals:next.weeklyGoals||{}};
+   data.progress=(next.progress&&Number.isFinite(Number(next.progress.xp)))?{xp:Number(next.progress.xp),lifetimeCorrect:Number(next.progress.lifetimeCorrect)||0,completed:Number(next.progress.completed)||data.sessions.length,badges:(next.progress.badges&&typeof next.progress.badges==='object')?next.progress.badges:{}}:{xp:data.sessions.reduce((n,x)=>n+(Number(x.earnedXP)||Number(x.correct||0)*10),0),lifetimeCorrect:data.sessions.reduce((n,x)=>n+Number(x.correct||0),0),completed:data.sessions.length,badges:{}};
+   save();render();showInfoModal('기록 복원 완료',`${data.sessions.length}개 세션을 복원했습니다.`);
+  }catch(error){showInfoModal('복원 실패',error.message||'백업 파일을 확인해 주세요.')}
+ });
+ document.querySelector('#settings-clear')?.addEventListener('click',()=>{if(confirm('저장된 훈련 기록과 체크 표시를 모두 삭제할까요?')){data.sessions=[];data.routineLog={};data.progress={xp:0,lifetimeCorrect:0,completed:0,badges:{}};save();render()}});
 }
 function showInfoModal(title,message){$('#modal-root').innerHTML=`<div class="modalback" id="info-modal"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2>${esc(title)}</h2><p>${esc(message)}</p><div class="actions"><button type="button" class="btn" id="close-info">확인</button></div></div></div>`;$('#close-info').onclick=()=>$('#modal-root').innerHTML='';$('#info-modal').addEventListener('click',e=>{if(e.target.id==='info-modal')$('#modal-root').innerHTML=''})}
 function exportRecords(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`study-training-records-${currentDay()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 
-function updateHeader(){let day=new Date();$('#today-pill').textContent=`${day.getMonth()+1}월 ${day.getDate()}일`;let totalPoints=data.sessions.reduce((n,s)=>n+(Number(s.correct)||0),0)*10;$('#header-level').textContent=`Lv. ${Math.max(1,Math.floor(totalPoints/500)+1)}`;$('#header-points').textContent=`${totalPoints.toLocaleString('ko-KR')}점`;document.title='스터디트레이닝 | 계산·두뇌·국어 독해'}
+function updateHeader(){let day=new Date();$('#today-pill').textContent=`${day.getMonth()+1}월 ${day.getDate()}일`;let totalPoints=lifetimeXP();$('#header-level').textContent=`Lv. ${levelFromXP()}`;$('#header-points').textContent=`${totalPoints.toLocaleString('ko-KR')}점`;document.title='스터디트레이닝 | 계산·두뇌·국어 독해'}
 let page='home',searchTerm='',kindFilter='all',levelFilter='all';let session=null;let tick=null,previewTick=null,nextTick=null;let ongoingChoice=false,previewing=false;
 function clearTimers(){clearInterval(tick);clearTimeout(previewTick);clearTimeout(nextTick);tick=previewTick=nextTick=null}
 function setPage(p){$('#ui-menu')?.removeAttribute('open');if(session){if(!confirm('진행 중인 훈련을 종료하고 이동할까요?'))return;session=null;clearTimers()}page=p;searchTerm='';kindFilter='all';render();window.scrollTo({top:0,behavior:'instant'})}
 function gameCard(g){
  const played=data.sessions.filter(s=>s.items.some(x=>x.id===g.id));
- const best=played.length?`${Math.max(...played.map(s=>Math.round(100*s.correct/s.total)))}% 최고 기록`:'첫 도전';
+ const recordBest=Number(data.progress?.bestByGame?.[g.id]);const best=Number.isFinite(recordBest)&&recordBest>=0?`${recordBest}% 최고 기록`:played.length?`${Math.max(...played.map(s=>Math.round(100*s.correct/s.total)))}% 최고 기록`:'첫 도전';
  const group=g.group==='math'?'math':g.group==='read'?'reading':'brain';
  return `<button type="button" class="gh-game-card gh-theme-${group}" data-id="${g.id}" aria-label="${esc(g.title)} 훈련 시작"><span class="gh-game-symbol">${gameIcon(g.id,38)}</span><strong>${esc(g.title)}</strong><span class="gh-game-description">${esc(g.desc)}</span><span class="gh-game-best">${best}</span><span class="gh-game-start">훈련 시작 ${stIcon('chevron',17)}</span></button>`
 }
@@ -1120,15 +1255,38 @@ function renderCardList(list,groupsView){
  }
  return h||'<div class="gh-empty">조건에 맞는 게임이 없어요. 다른 키워드로 찾아보세요.</div>';
 }
-function renderRecord(){let logs=[...data.sessions].reverse(),last7=[...Array(7)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-6+i);let day=dateKey(d);return {day,score:average(data.sessions.filter(s=>s.date===day).map(s=>Math.round(s.correct/s.total*100)))}});return `<div class="twoCols"><section class="panel"><div class="headrow"><h2>최근 7일 정답률</h2><span class="tiny">%</span></div><div class="bargrid">${last7.map(x=>`<div class="barcol"><div class="bar ${x.score?'filled':''}" style="height:${x.score?Math.max(5,x.score):3}%" title="${x.day}: ${x.score}%"></div><label>${Number(x.day.slice(-2))}일</label></div>`).join('')}</div><p class="mutednote">훈련하지 않은 날은 빈 막대로 표시됩니다. 난이도를 통제한 표준 점수는 아닙니다.</p></section><section class="panel"><div class="headrow"><h2>전체 학습 기록</h2><button class="btn sm ghost" id="export">JSON 백업</button></div><div class="results"><div><strong>${logs.length}</strong><span>세션</span></div><div><strong>${logs.reduce((a,s)=>a+s.total,0)}</strong><span>문제</span></div><div><strong>${average(logs.map(s=>Math.round(s.correct/s.total*100)))}%</strong><span>정답률</span></div></div><button class="btn sm danger" id="reset">모든 기록 삭제</button><p class="mutednote">백업을 다운로드할 수 있으며 삭제 시 되돌릴 수 없습니다.</p></section></div><section class="panel section"><div class="headrow"><h2>세션별 기록</h2><span class="tiny">최신순 · 최대 100건</span></div>${logs.length?logs.slice(0,100).map(s=>`<div class="historyrow"><strong>${esc(s.label)}</strong><span>${s.correct}/${s.total} 정답</span><span>${Math.round(s.correct/s.total*100)}%</span><span class="date">${esc(s.date)} · ${s.seconds}초</span></div>`).join(''):'<div class="empty">아직 기록이 없습니다. 첫 훈련을 시작해보세요.</div>'}</section>`}
-function attachCards(){ $$('#content [data-id]').forEach(el=>el.onclick=()=>openStart(el.dataset.id));$$('#content [data-go]').forEach(el=>el.onclick=()=>setPage(el.dataset.go));$('#mixed-btn')?.addEventListener('click',()=>openStart(null,page==='reading'?'literacy':page));$$('#content [data-test]').forEach(el=>el.onclick=()=>openStart(null,el.dataset.test));$('#search')?.addEventListener('input',e=>{searchTerm=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#source-filter')?.addEventListener('change',e=>{kindFilter=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#export')?.addEventListener('click',()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`study-training-records-${today}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)});$('#reset')?.addEventListener('click',()=>{if(confirm('저장된 모든 훈련 기록을 삭제할까요?')){data.sessions=[];save();render()}})}
+
+// Level progression and performance are distinct: XP measures practice, bars show recorded correctness.
+function unlockedBadges(){
+ const played=data.sessions;
+ const groupsSeen=new Set(played.flatMap(s=>(s.items||[]).map(g=>g.group==='math'?'math':g.group==='read'?'read':'brain')));
+ const earned=[
+  {label:'첫 도전',icon:'target',ok:played.length>=1},
+  {label:'연속 3일',icon:'fire',ok:streak()>=3},
+  {label:'연속 7일',icon:'calendar',ok:streak()>=7},
+  {label:'누적 정답 100',icon:'check',ok:Number(data.progress?.lifetimeCorrect)>=100},
+  {label:'모든 영역',icon:'brain',ok:groupsSeen.size===3},
+  {label:'고정밀 풀이',icon:'trophy',ok:played.some(s=>(s.total||0)>=10&&(s.correct||0)/(s.total||1)>=.9)}
+ ];
+ return earned.filter(x=>x.ok||Boolean(data.progress?.badges?.[x.label]));
+}
+function renderProgressOverview(){
+ const xp=lifetimeXP(),level=levelFromXP();
+ const cat=[['math','계산','#db9a84'],['brain','두뇌','#88a882'],['read','국어','#ad96c2']];
+ const answers=data.sessions.flatMap(s=>s.answers||[]);
+ const rows=cat.map(([key,name,color])=>{const all=answers.filter(a=>{const game=byId[a.id];return game&&(key==='brain'?!['math','read'].includes(game.group):game.group===key)});const pct=all.length?Math.round(all.filter(x=>x.correct).length/all.length*100):null;return `<div class="st-skill-row"><b>${name}</b><span class="st-skill-meter"><i style="width:${pct??0}%;background:${color}"></i></span><small>${pct===null?'미진행':pct+'%'} · ${all.length}문제</small></div>`}).join('');
+ const badges=unlockedBadges().map(x=>`<span class="st-earned-badge">${stIcon(x.icon,16)} ${x.label}</span>`).join('');
+ return `<section class="st-card st-progression"><div class="st-progression-head"><div><small>나의 성장 기록</small><h2>Lv. ${level} <span>· 누적 ${xp.toLocaleString('ko-KR')} XP</span></h2></div><div class="st-level-caption">다음 레벨까지 ${500-xp%500}XP</div></div><div class="st-skill-meter st-level-meter"><i style="width:${xp%500/5}%;background:#88a882"></i></div><div class="st-skill-heading">영역별 최근 기록 기반 정답률 <small>지능 검사 점수가 아닙니다</small></div><div class="st-skill-list">${rows}</div><div class="st-earned-badges">${badges||'<span class="muted-small">첫 훈련을 완료하면 배지를 받을 수 있어요.</span>'}</div></section>`;
+}
+function renderRecord(){let logs=[...data.sessions].reverse(),last7=[...Array(7)].map((_,i)=>{let d=new Date();d.setDate(d.getDate()-6+i);let day=dateKey(d);return {day,score:average(data.sessions.filter(s=>s.date===day).map(s=>Math.round(s.correct/s.total*100)))}});return renderProgressOverview()+`<div class="twoCols"><section class="panel"><div class="headrow"><h2>최근 7일 정답률</h2><span class="tiny">%</span></div><div class="bargrid">${last7.map(x=>`<div class="barcol"><div class="bar ${x.score?'filled':''}" style="height:${x.score?Math.max(5,x.score):3}%" title="${x.day}: ${x.score}%"></div><label>${Number(x.day.slice(-2))}일</label></div>`).join('')}</div><p class="mutednote">훈련하지 않은 날은 빈 막대로 표시됩니다. 난이도를 통제한 표준 점수는 아닙니다.</p></section><section class="panel"><div class="headrow"><h2>전체 학습 기록</h2><button class="btn sm ghost" id="export">JSON 백업</button></div><div class="results"><div><strong>${logs.length}</strong><span>세션</span></div><div><strong>${logs.reduce((a,s)=>a+s.total,0)}</strong><span>문제</span></div><div><strong>${average(logs.map(s=>Math.round(s.correct/s.total*100)))}%</strong><span>정답률</span></div></div><button class="btn sm danger" id="reset">모든 기록 삭제</button><p class="mutednote">백업을 다운로드할 수 있으며 삭제 시 되돌릴 수 없습니다.</p></section></div><section class="panel section"><div class="headrow"><h2>세션별 기록</h2><span class="tiny">최신순 · 최대 100건</span></div>${logs.length?logs.slice(0,100).map(s=>`<div class="historyrow"><strong>${esc(s.label)}</strong><span>${s.correct}/${s.total} 정답</span><span>${Math.round(s.correct/s.total*100)}%</span><span class="date">${esc(s.date)} · ${s.seconds}초</span></div>`).join(''):'<div class="empty">아직 기록이 없습니다. 첫 훈련을 시작해보세요.</div>'}</section>`}
+function attachCards(){ $$('#content [data-id]').forEach(el=>el.onclick=()=>openStart(el.dataset.id));$$('#content [data-go]').forEach(el=>el.onclick=()=>setPage(el.dataset.go));$('#mixed-btn')?.addEventListener('click',()=>openStart(null,page==='reading'?'literacy':page));$$('#content [data-test]').forEach(el=>el.onclick=()=>openStart(null,el.dataset.test));$('#search')?.addEventListener('input',e=>{searchTerm=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#source-filter')?.addEventListener('change',e=>{kindFilter=e.target.value;let list=games.filter(g=>page==='math'?g.group==='math':page==='brain'?g.group!=='math'&&g.group!=='read':g.group==='read');$('#list-root').innerHTML=renderCardList(list,page==='math'?['math']:page==='brain'?['memory','insight','logic']:['read']);$$('#list-root [data-id]').forEach(b=>b.onclick=()=>openStart(b.dataset.id))});$('#export')?.addEventListener('click',()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`study-training-records-${today}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)});$('#reset')?.addEventListener('click',()=>{if(confirm('저장된 모든 훈련 기록을 삭제할까요?')){data.sessions=[];data.progress={xp:0,lifetimeCorrect:0,completed:0,badges:{}};save();render()}})}
 function openStart(id=null,test=null){
- const title=id?byId[id].title:({'daily':'두뇌 게임 랜덤 연습','brain':'두뇌 게임 랜덤 연습','academy':'두뇌 게임 랜덤 연습','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');
+ const title=id?byId[id].title:({'daily':'오늘의 혼합 훈련','brain':'두뇌 게임 랜덤 연습','academy':'종합 테스트','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');
  const group=id?byId[id].group:(test==='literacy'?'read':test==='math'?'math':'brain');
  const theme=group==='read'?'reading':group==='math'?'math':'brain';
  const glyph=group==='read'?'book':group==='math'?'calc':'brain';
  const options=[5,8,12,20,...(id==='calc25'?[25]:id==='calc100'?[100]:[])];
- let diff=[1,2,3].includes(Number(data.settings.difficulty))?Number(data.settings.difficulty):2;
+ let diff=[0,1,2,3].includes(Number(data.settings.difficulty))?Number(data.settings.difficulty):0;
  let count=id==='calc25'?25:id==='calc100'?100:8;
  const desc=id==='clock'?'시간 계산과 일정 역산으로 판단력을 훈련합니다.':'난이도와 문제 수를 선택하고 바로 시작해 보세요.';
  const content=`<div class="modalback gh-setup-overlay" id="modal"><div class="modal gh-game-modal gh-theme-${theme}" role="dialog" aria-modal="true" aria-labelledby="setup-title">
@@ -1136,7 +1294,7 @@ function openStart(id=null,test=null){
  <div class="gh-setup-symbol">${stIcon(glyph,32)}</div>
  <span class="gh-setup-eyebrow">STUDY TRAINING · GAME SETUP</span>
  <h2 id="setup-title">${esc(title)}</h2><p>${desc}</p>
- <div class="gh-setup-section"><h3>난이도 <small>DIFFICULTY</small></h3><div class="gh-option-grid" id="setup-difficulty" role="group" aria-label="난이도 선택">${[['1','가볍게'],['2','집중'],['3','도전']].map(([n,label])=>`<button type="button" class="gh-option ${diff===Number(n)?'selected':''}" data-diff="${n}" aria-pressed="${diff===Number(n)}">${label}</button>`).join('')}</div></div>
+ <div class="gh-setup-section"><h3>난이도 <small>DIFFICULTY</small></h3><div class="gh-option-grid" id="setup-difficulty" role="group" aria-label="난이도 선택">${[['0','자동 추천'],['1','가볍게'],['2','집중'],['3','도전']].map(([n,label])=>`<button type="button" class="gh-option ${diff===Number(n)?'selected':''}" data-diff="${n}" aria-pressed="${diff===Number(n)}">${label}</button>`).join('')}</div></div>
  <div class="gh-setup-section"><h3>문제 수 <small>QUESTIONS</small></h3><div class="gh-option-grid gh-setup-count" id="setup-count" role="group" aria-label="문제 수 선택">${options.map(n=>`<button type="button" class="gh-option ${count===n?'selected':''}" data-count="${n}" aria-pressed="${count===n}">${n}문제</button>`).join('')}</div></div>
  <div class="gh-setup-actions"><button type="button" class="gh-setup-cancel" id="cancel">취소</button><button type="button" class="gh-setup-begin" id="begin">훈련 시작 ${stIcon('chevron',18)}</button></div>
  </div></div>`;
@@ -1150,10 +1308,28 @@ function openStart(id=null,test=null){
  $('#begin').focus({preventScroll:true});
 }
 function closeModal(){$('#modal-root').innerHTML=''}
-function randomGame(test){let list=games;if(test==='literacy')list=games.filter(g=>g.group==='read');else if(test==='math')list=games.filter(g=>g.group==='math');else if(test==='brain'||test==='daily'||test==='academy')list=games.filter(g=>g.group!=='read'&&g.group!=='math');return pick(list)}
-function startSession(id,test,count,diff){clearTimers();let items=[];for(let i=0;i<count;i++){let g=id?byId[id]:randomGame(test);items.push(g)}let label=id?byId[id].title:({'daily':'두뇌 게임 랜덤 연습','brain':'두뇌 게임 랜덤 연습','academy':'두뇌 게임 랜덤 연습','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');session={items,label,diff,current:0,total:count,correct:0,score:0,answers:[],start:Date.now(),elapsed:0,questionStart:0,q:null,input:'',pairState:null,selectedGrid:[],sudokuInput:[],locked:false};renderQuestion();tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000)}
+function randomGame(test){let list=games;if(test==='literacy')list=games.filter(g=>g.group==='read');else if(test==='math')list=games.filter(g=>g.group==='math');else if(test==='brain')list=games.filter(g=>g.group!=='read'&&g.group!=='math');return pick(list)}
+function startSession(id,test,count,diff){clearTimers();let items=test==='academy'||test==='daily'?balancedTestGames(count):[];if(!items.length){for(let i=0;i<count;i++){let g=id?byId[id]:randomGame(test);items.push(g)}}let label=id?byId[id].title:({'daily':'오늘의 혼합 훈련','brain':'두뇌 게임 랜덤 연습','academy':'종합 테스트','literacy':'국어 독해 랜덤 연습'}[test]||'계산 랜덤 연습');session={items,label,diff:diff===0?2:diff,auto:diff===0,current:0,total:count,correct:0,score:0,answers:[],start:Date.now(),elapsed:0,questionStart:0,q:null,input:'',pairState:null,selectedGrid:[],sudokuInput:[],locked:false};renderQuestion();tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000)}
 function timerText(n){return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`}
-function renderQuestion(){if(!session)return;clearTimeout(previewTick);clearTimeout(nextTick);let s=session,g=s.items[s.current],q=makeQ(g.id,s.diff);document.body.classList.add('in-session');document.body.dataset.track=g.group==='read'?'reading':g.group==='math'?'math':'brain';s.q=q;s.input='';s.locked=false;s.selectedGrid=[];s.sudokuInput=q.type==='sudoku'?q.grid.map((row,i)=>row.map((v,j)=>q.fixed[i][j]?v:0)):[];s.pairState=q.type==='pairs'?{open:[],found:[],tries:0}:null;s.questionStart=Date.now();previewing=Boolean(q.preview||q.type==='grid'||q.type==='pairs');ongoingChoice=false;let theme=g.group==='math'?'math':g.group==='read'?'reading':'brain';
+
+function showQuitConfirm(){
+ if(!session)return;
+ const current=session,previewWasVisible=previewing,lockedWasPending=session.locked,question=session.q;
+ const pausedAt=Date.now();clearTimers();
+ $('#modal-root').innerHTML=`<div class="modalback gh-setup-overlay" id="quit-dialog"><div class="modal gh-game-modal gh-theme-brain" role="dialog" aria-modal="true" aria-labelledby="quit-title"><div class="gh-setup-symbol">${stIcon('clock',32)}</div><h2 id="quit-title">훈련을 잠시 멈췄어요</h2><p>지금 종료하면 이번 훈련 결과는 저장되지 않습니다.</p><div class="gh-setup-actions"><button class="gh-setup-cancel" id="quit-resume" type="button">계속하기</button><button class="gh-setup-begin" id="quit-exit" type="button">훈련 종료</button></div></div></div>`;
+ $('#quit-resume').onclick=()=>{
+  $('#modal-root').innerHTML='';
+  if(session!==current)return;
+  const pauseDuration=Date.now()-pausedAt;session.start+=pauseDuration;session.questionStart+=pauseDuration;
+  tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000);
+  if(previewWasVisible)previewTick=setTimeout(()=>{if(session===current&&session.q===question){previewing=false;showChallenge(question)}},question.previewTime||2500);
+  else if(lockedWasPending&&!$('#sd-next-question'))nextTick=setTimeout(()=>{if(session!==current)return;session.current++;if(session.current>=session.total)finishSession();else renderQuestion()},500);
+ };
+ $('#quit-exit').onclick=()=>{$('#modal-root').innerHTML='';session=null;clearTimers();previewing=false;render()};
+ $('#quit-dialog').onclick=e=>{if(e.target.id==='quit-dialog')$('#quit-resume').click()};
+ $('#quit-resume').focus({preventScroll:true});
+}
+function renderQuestion(){if(!session)return;clearTimeout(previewTick);clearTimeout(nextTick);let s=session,g=s.items[s.current],questionDifficulty=s.auto?getAdaptiveDifficulty(g.id):s.diff,q=makeQ(g.id,questionDifficulty);s.currentDifficulty=questionDifficulty;document.body.classList.add('in-session');document.body.dataset.track=g.group==='read'?'reading':g.group==='math'?'math':'brain';s.q=q;s.input='';s.locked=false;s.selectedGrid=[];s.sudokuInput=q.type==='sudoku'?q.grid.map((row,i)=>row.map((v,j)=>q.fixed[i][j]?v:0)):[];s.pairState=q.type==='pairs'?{open:[],found:[],tries:0}:null;s.questionStart=Date.now();previewing=Boolean(q.preview||q.type==='grid'||q.type==='pairs');ongoingChoice=false;let theme=g.group==='math'?'math':g.group==='read'?'reading':'brain';
 let gameGlyph=theme==='math'?'calc':theme==='reading'?'book':'brain';
 let lastRun=0;for(let i=s.answers.length-1;i>=0&&s.answers[i].correct;i--)lastRun++;
 let phrase=q.passage?'지문을 읽고 알맞은 답을 골라보세요.':q.type==='number'?'정답을 직접 입력하세요.':q.type==='grid'?'기억한 위치를 선택하세요.':q.type==='pairs'?'카드의 위치를 기억해 짝을 맞히세요.':q.type==='sequence'?'올바른 순서대로 선택하세요.':q.type==='sudoku'?'빈칸을 채워 완성하세요.':'정답을 선택하세요.';
@@ -1167,10 +1343,10 @@ let h=`<div class="gamewrap sd-game sd-theme-${theme} sd-kind-${q.type}">
     <div class="sd-task"><div class="sd-task-title"><h2 class="qtitle">${esc(previewing&&q.previewHeading?q.previewHeading:q.prompt).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</h2><p class="qsub">${esc(previewing&&q.previewNote?q.previewNote:(q.note||phrase))}</p></div><div id="challenge" class="sd-interaction"></div><div id="feedback" class="feedback sd-feedback" aria-live="polite"></div></div>
   </div>
 </section>
-<footer class="sd-game-footer"><div class="sd-footer-challenge">${stIcon('target',22)} <strong>오늘의 도전</strong> <span>${['math','brain','reading'].filter(k=>routineIsDone(k)).length}/3 완료</span><span class="sd-three-dots">${['math','brain','reading'].map(k=>`<i class="${routineIsDone(k)?'done':''}"></i>`).join('')}</span></div><div class="sd-footer-difficulty">${stIcon('chart',20)} <span>훈련 난이도</span><strong>${['','가볍게','집중','도전'][s.diff]}</strong></div><button class="sd-quit" type="button" id="quit">${stIcon('play',18)} 훈련 종료</button></footer>
+<footer class="sd-game-footer"><div class="sd-footer-challenge">${stIcon('target',22)} <strong>오늘의 도전</strong> <span>${['math','brain','reading'].filter(k=>routineIsDone(k)).length}/3 완료</span><span class="sd-three-dots">${['math','brain','reading'].map(k=>`<i class="${routineIsDone(k)?'done':''}"></i>`).join('')}</span></div><div class="sd-footer-difficulty">${stIcon('chart',20)} <span>훈련 난이도</span><strong>${s.auto?'자동':(['','가볍게','집중','도전'][s.diff])}</strong></div><button class="sd-quit" type="button" id="quit">${stIcon('play',18)} 훈련 종료</button></footer>
 </div>`;
-$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=()=>{if(confirm('지금 훈련을 종료할까요? 완료한 기록은 저장되지 않습니다.')){session=null;clearTimers();render()}};if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;previewTick=setTimeout(()=>{previewing=false;if(session&&session.q===q)showChallenge(q)},q.previewTime||2500)}else showChallenge(q)}
-function showChallenge(q){if(!session||session.q!==q)return;let el=$('#challenge');if(!el)return;if(q.previewHeading){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
+$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=showQuitConfirm;if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;previewTick=setTimeout(()=>{previewing=false;if(session&&session.q===q)showChallenge(q)},q.previewTime||2500)}else showChallenge(q)}
+function showChallenge(q){if(!session||session.q!==q)return;session.questionStart=Date.now();let el=$('#challenge');if(!el)return;if(q.previewHeading){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
 if(q.type==='choice')h+=`<div class="choices">${q.options.map((v,i)=>`<button class="choice" data-answer="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
 if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn">확인</button></form>`;
 if(q.type==='sequence')h+=`<div class="tiny">나의 입력</div><div id="seq-display" class="memoryline seq-display" style="min-height:54px"></div><div class="tilelist">${shuffle(q.keys).map((n,i)=>`<button class="tile" data-key="${esc(n)}" data-tile="${i}">${esc(n)}</button>`).join('')}</div><button id="undo" class="btn sm ghost" style="margin-top:15px">한 칸 지우기</button>`;
@@ -1187,16 +1363,44 @@ function sudokuCells(){let q=session.q;return session.sudokuInput.map((row,i)=>r
 function gridHtml(selected,show){return `<div class="grid5">${[...Array(25)].map((_,i)=>`<button type="button" class="sq ${show?'': 'clickable'} ${show&&selected.includes(i)?'selected':''}" ${show?'disabled':'data-gridcell="'+i+'"'} aria-label="${i+1}번 칸">${show&&selected.includes(i)?'◆':''}</button>`).join('')}</div>`}
 function flipCard(i){let s=session,ps=s.pairState,q=s.q;if(!s||s.locked||ps.found.includes(i)||ps.open.includes(i)||ps.open.length>=2)return;ps.open.push(i);let b=$(`[data-card="${i}"]`);b.textContent=q.deck[i];b.classList.add('is-revealed');if(ps.open.length===2){ps.tries++;let[a,c]=ps.open;if(q.deck[a]===q.deck[c]){ps.found.push(a,c);ps.open=[];$('#pair-info').textContent=`짝 ${ps.found.length/2} / ${q.answer}`;if(ps.found.length===q.deck.length){evaluate('complete')}}else{setTimeout(()=>{if(!session||session.q!==q)return;[a,c].forEach(z=>{let b=$(`[data-card="${z}"]`);if(b){b.textContent='?';b.classList.remove('is-revealed')}});ps.open=[]},630)}}}
 function validSudoku(grid,q){const valid=(a)=>a.length===4&&new Set(a).size===4&&a.every(n=>n>=1&&n<=4);for(let i=0;i<4;i++){if(!valid(grid[i])||!valid(grid.map(row=>row[i])))return false;for(let j=0;j<4;j++){if(q.fixed[i][j]&&grid[i][j]!==q.grid[i][j])return false}}for(let a=0;a<4;a+=2)for(let b=0;b<4;b+=2){if(!valid([grid[a][b],grid[a][b+1],grid[a+1][b],grid[a+1][b+1]]))return false}return true}
-function evaluate(value,clicked){if(!session||session.locked||previewing)return;let s=session,q=s.q,correct=q.type==='pairs'?'complete'===value:q.type==='sudoku'?validSudoku(s.sudokuInput,q):String(value).replace(/\s/g,'')===String(q.answer).replace(/\s/g,'');s.locked=true;let dt=(Date.now()-s.questionStart)/1000;s.correct+=correct?1:0;s.score+=correct?Math.max(20,Math.round(100-Math.min(70,dt*2))):0;s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1))});if(clicked){clicked.classList.add(correct?'correct':'wrong')}let msg=correct?'✓ 정답입니다.':`정답: ${q.type==='sudoku'?'규칙을 만족하는 격자':q.type==='pairs'?'모든 짝':esc(String(q.answer).slice(0,75))}`;$('#feedback').innerHTML=msg;$('#feedback').classList.toggle('bad',!correct);$$('#challenge button').forEach(b=>b.disabled=true);if(!correct&&q.type==='choice')$$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});nextTick=setTimeout(()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()},correct?750:1250)}
-function finishSession(){let s=session;if(!s)return;clearTimers();let seconds=Math.max(1,Math.round((Date.now()-s.start)/1000));let record={date:today,stamp:new Date().toISOString(),label:s.label,items:s.items.map(g=>({id:g.id,group:g.group})),correct:s.correct,total:s.total,seconds,difficulty:s.diff,answers:s.answers};data.sessions.push(record);if(data.sessions.length>1500)data.sessions.splice(0,data.sessions.length-1500);save();session=null;document.body.classList.remove('in-session');updateHeader();let a=Math.round(record.correct/record.total*100);$('#page-title').textContent='훈련 완료';$('#page-desc').textContent='이번 세션의 결과가 브라우저에 저장되었습니다.';let avgResponse=record.answers.length?record.answers.reduce((sum,x)=>sum+(Number(x.seconds)||0),0)/record.answers.length:0;
+function evaluate(value,clicked){if(!session||session.locked||previewing)return;let s=session,q=s.q,correct=q.type==='pairs'?'complete'===value:q.type==='sudoku'?validSudoku(s.sudokuInput,q):String(value).replace(/\s/g,'')===String(q.answer).replace(/\s/g,'');s.locked=true;let dt=(Date.now()-s.questionStart)/1000;s.correct+=correct?1:0;s.score+=correct?Math.max(20,Math.round(100-Math.min(70,dt*2))):0;const selectedDifficulty=s.currentDifficulty||s.diff;
+s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1)),difficulty:selectedDifficulty,
+ ...(correct?{}:{prompt:String(q.prompt).slice(0,260),selected:String(value).slice(0,150),expected:String(q.answer).slice(0,200),explanation:String(q.explanation||q.note||'정답과 지문 또는 문제 조건을 다시 비교해 보세요.').slice(0,360)})});if(clicked){clicked.classList.add(correct?'correct':'wrong')}let msg=correct?'✓ 정답입니다.':`정답: ${q.type==='sudoku'?'규칙을 만족하는 격자':q.type==='pairs'?'모든 짝':esc(String(q.answer).slice(0,95))}`;
+$('#feedback').classList.toggle('bad',!correct);
+$$('#challenge button').forEach(b=>b.disabled=true);
+if(!correct&&q.type==='choice')$$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});
+const advance=()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()};
+if(correct){$('#feedback').textContent=msg;nextTick=setTimeout(advance,780)}
+else{$('#feedback').innerHTML=`<div class="sd-explain-answer"><strong>${msg}</strong><p>${esc(String(q.explanation||q.note||'문제의 조건과 정답을 다시 비교해 보세요.'))}</p><button id="sd-next-question" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}}
+function finishSession(){let s=session;if(!s)return;clearTimers();let seconds=Math.max(1,Math.round((Date.now()-s.start)/1000));let earnedXP=s.answers.reduce((sum,answer)=>sum+xpForAnswer(answer.correct,answer.difficulty||s.diff),0)+(s.correct/s.total>=.8?20:0);
+let previousLevel=levelFromXP();
+let record={date:currentDay(),stamp:new Date().toISOString(),label:s.label,items:s.items.map(g=>({id:g.id,group:g.group})),correct:s.correct,total:s.total,seconds,difficulty:s.auto?'auto':s.diff,answers:s.answers,earnedXP,score:s.score};
+data.progress.xp=lifetimeXP()+earnedXP;data.progress.lifetimeCorrect=(Number(data.progress.lifetimeCorrect)||0)+s.correct;data.progress.completed=(Number(data.progress.completed)||0)+1;
+data.progress.bestByGame ||= {};
+const distinctGames=new Set(record.items.map(item=>item.id));
+if(distinctGames.size===1){const id=record.items[0].id,accuracy=Math.round(100*record.correct/record.total);const previous=Number(data.progress.bestByGame[id]??-1);record.isBest=accuracy>previous;data.progress.bestByGame[id]=Math.max(previous,accuracy)}
+
+record.levelUp=levelFromXP()>previousLevel;
+data.sessions.push(record);
+const existingBadges=new Set(Object.keys(data.progress.badges||{}));
+const availableBadges=unlockedBadges();
+record.newBadges=availableBadges.filter(x=>!existingBadges.has(x.label)).map(x=>x.label);
+for(const badge of availableBadges)data.progress.badges[badge.label]=true;
+if(data.sessions.length>1500)data.sessions.splice(0,data.sessions.length-1500);save();session=null;document.body.classList.remove('in-session');updateHeader();let a=Math.round(record.correct/record.total*100);$('#page-title').textContent='훈련 완료';$('#page-desc').textContent='이번 세션의 결과가 브라우저에 저장되었습니다.';let avgResponse=record.answers.length?record.answers.reduce((sum,x)=>sum+(Number(x.seconds)||0),0)/record.answers.length:0;
 let bestRun=0,run=0;for(const answer of record.answers){run=answer.correct?run+1:0;bestRun=Math.max(bestRun,run)}
-let earned=record.correct*10;
+let earned=record.earnedXP;
 let theme=record.items.every(x=>x.group==='math')?'math':record.items.every(x=>x.group==='read')?'reading':'brain';
 $('#content').innerHTML=`<div class="gh-inner-root gh-results-shell sd-result-shell">${sharedGameBar()}<div class="gh-inner-content"><section class="sd-results-panel sd-theme-${theme}"><div class="sd-result-icon">${stIcon('trophy',40)}</div><h1>훈련 완료</h1><p class="sd-result-sub">${esc(record.label)} · ${record.total}문제 도전</p><div class="sd-total-score"><b>${a}</b><span>점</span></div>
 <div class="sd-result-stats"><div><span>${stIcon('target',24)}</span><small>정답률</small><strong>${a}%</strong></div><div><span>${stIcon('clock',24)}</span><small>평균 반응</small><strong>${avgResponse.toFixed(1)}초</strong></div><div><span>${stIcon('fire',24)}</span><small>연속 정답</small><strong>${bestRun}회</strong></div><div><span>${stIcon('spark',24)}</span><small>획득 포인트</small><strong>+${earned}</strong></div></div>
 <div class="sd-result-chart"><div class="sd-result-chart-title">문제별 정답 기록 <span>${record.correct}/${record.total} 정답</span></div><div class="sd-result-bars">${record.answers.map((answer,i)=>`<div class="sd-result-bar ${answer.correct?'is-correct':'is-wrong'}" title="${i+1}번: ${answer.correct?'정답':'오답'}"><i></i><small>${i+1}</small></div>`).join('')}</div></div>
-<div class="sd-result-note">${a>=90?'매우 정확하게 해결했어요. 다음 훈련에도 도전해 보세요.':a>=70?'좋은 흐름이에요. 어려웠던 문제를 다시 연습해 보세요.':'속도보다 정확도에 집중해 다시 도전해 보세요.'}</div>
-<div class="sd-result-actions"><button class="sd-retry" id="again">${stIcon('target',19)} 다시 도전</button><button class="sd-next" id="back-home">홈으로 ${stIcon('chevron',19)}</button></div></section></div></div>`;attachCards();window.scrollTo(0,0);$('#back-home').onclick=()=>setPage('home');$('#again').onclick=()=>openStart(record.items.every(x=>x.id===record.items[0].id)?record.items[0].id:null,record.label==='국어 독해 랜덤 연습'?'literacy':record.label==='계산 랜덤 연습'?'math':'brain')}
-$('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));setupShellIcons();document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal'))closeModal()});render();
+<div class="sd-review-box"><details><summary>오답 복습 · ${record.total-record.correct}문제 ${stIcon('chevron',18)}</summary><div class="sd-review-items">${record.answers.filter(x=>!x.correct).slice(0,15).map((x,i)=>`<article><small>${esc(x.id)} · 오답 ${i+1}</small><strong>${esc(x.prompt||'문제') }</strong><p>내 답: ${esc(x.selected||'미입력')}</p><p>정답: ${esc(x.expected||'문제의 정답')}</p><p class="sd-review-help">${esc(x.explanation||'다시 살펴보세요.')}</p></article>`).join('')||'<p class="sd-all-correct">모든 문제를 맞혔습니다!</p>'}</div></details></div>
+<div class="sd-result-note">${record.newBadges?.length?`새 배지: ${esc(record.newBadges.join(', '))} · `:''}${record.isBest?'새로운 개인 최고 기록! · ':''}${record.levelUp?`레벨 업! Lv. ${levelFromXP()} · `:''}${a>=90?'매우 정확하게 해결했어요. 다음 훈련에도 도전해 보세요.':a>=70?'좋은 흐름이에요. 어려웠던 문제를 다시 연습해 보세요.':'속도보다 정확도에 집중해 다시 도전해 보세요.'}</div>
+<div class="sd-xp-progress"><span>Lv. ${levelFromXP()} · 다음 레벨까지 ${500-lifetimeXP()%500}XP</span><div class="sd-xp-track"><i style="width:${lifetimeXP()%500/5}%"></i></div></div><div class="sd-result-actions"><button class="sd-retry" id="again">${stIcon('target',19)} 다시 도전</button><button class="sd-next" id="back-home">홈으로 ${stIcon('chevron',19)}</button></div></section></div></div>`;attachCards();window.scrollTo(0,0);$('#back-home').onclick=()=>setPage('home');$('#again').onclick=()=>openStart(record.items.every(x=>x.id===record.items[0].id)?record.items[0].id:null,record.label==='국어 독해 랜덤 연습'?'literacy':record.label==='계산 랜덤 연습'?'math':'brain')}
+$('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));setupShellIcons();document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){if($('#quit-dialog'))$('#quit-resume')?.click();else if($('#modal'))closeModal();else if(session)showQuitConfirm();return}
+ if(!session||previewing||session.locked||$('#modal-root').children.length)return;
+ if(e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+ if(/^[1-4]$/.test(e.key)){const choices=$$('#challenge [data-answer]');const idx=Number(e.key)-1;if(choices[idx]){e.preventDefault();choices[idx].click()}}
+});render();
 })();
 </script></body></html>
