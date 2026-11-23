@@ -15,7 +15,7 @@ for(const group of ['math','brain','reading']){
  for(const id of ids){
   await page.locator(`.gh-game-card[data-id="${id}"]`).click();
   await page.waitForSelector('#modal');
-  await page.locator('#modal [data-count="5"]').click();
+  if(await page.locator('#modal [data-count="5"]').count())await page.locator('#modal [data-count="5"]').click();
   await page.locator('#begin').click();
   await page.waitForSelector('.sd-task-title .qtitle',{timeout:5500});
   const text=await page.locator('.sd-task-title .qtitle').innerText();
