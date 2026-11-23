@@ -66,7 +66,7 @@ home=function(){clear();return baseHome.apply(this,arguments)};
 start=function(){clear();return baseStart.apply(this,arguments)};
 initBW=function(){
  clear();bwPending=null;bwInfoTab='rules';bwHintText='';
- st={my:[...tiles],ai:[...tiles],round:1,score:[0,0],first:Math.random()<.5?0:1,
+ st={my:[...tiles],ai:[...tiles],round:1,set:1,score:[0,0],first:Math.random()<.5?0:1,
   aiPick:null,phase:'choose',duel:null,winning:null,bwHistory:[],bw:{aiPublic:[],playerPublic:[],lastResult:null}};
  if(st.first===1)st.aiPick=chooseFrom(st.ai,null);
 };
@@ -78,15 +78,22 @@ function settle(){
  if(d.winner!==-1){st.score[d.winner]++;st.first=d.winner}
  st.winning=d.winner;
  st.phase='result';
- st.bwHistory.push({round:st.round,mine:d.mine,aiColor:color(d.ai),winner:d.winner,lead:d.lead,
+ st.bwHistory.push({round:st.round,mine:d.mine,aiColor:color(d.ai),winner:d.winner,lead:d.lead,set:st.set||1,
                      ai:revealNumbers?d.ai:null});
  const knownResult=d.winner===0?'hidden':d.winner===1?'known':'tie';
  const playerResult=d.winner===1?'hidden':d.winner===0?'known':'tie';
  st.bw.aiPublic.push({known:d.ai,hiddenColor:color(d.mine),result:knownResult});
  st.bw.playerPublic.push({known:d.mine,hiddenColor:color(d.ai),result:playerResult});
  logit(`ROUND ${st.round} · 나 ${d.mine} / AI ${color(d.ai)} (비공개) · ${winnerName(d.winner)}`);
- if(st.round===9)finish(st.score[0]===st.score[1]?null:st.score[0]>st.score[1],
-  `최종 점수 ${st.score[0]} : ${st.score[1]}`);
+ if(st.round===9){
+  if(st.score[0]===st.score[1]){
+   st.phase='overtime';
+   logit('9라운드 동점 ('+st.score[0]+':'+st.score[1]+') · 새 숫자타일 9장으로 연장전을 진행합니다.');
+  }else{
+   finish(st.score[0]>st.score[1],
+    (st.set>1?'연장전 '+(st.set-1)+'회 · ':'')+'최종 점수 '+st.score[0]+' : '+st.score[1]);
+  }
+ }
  render();
 }
 bwMove=function(value){
@@ -106,20 +113,29 @@ bwMove=function(value){
 bwPick=function(n){if(current!=='흑과 백'||finishText||st.phase!=='choose'||!st.my.includes(n))return;bwPending=n;render()};
 bwConfirm=function(){if(bwPending===null||finishText||st.phase!=='choose')return;const value=bwPending;bwMove(value)};
 bwNextRound=function(){
- if(current!=='흑과 백'||finishText||st.phase!=='result'||st.round>=9)return;
- st.round++;st.phase='choose';st.duel=null;st.winning=null;bwPending=null;
+ if(current!=='흑과 백'||finishText||!['result','overtime'].includes(st.phase))return;
+ clear();
+ if(st.phase==='overtime'){
+  st.set++;st.round=1;st.score=[0,0];st.my=[...tiles];st.ai=[...tiles];
+  st.bw={aiPublic:[],playerPublic:[],lastResult:null};
+  logit('연장전 '+(st.set-1)+'회 시작 · 0~8 타일 재지급');
+ }else{
+  if(st.round>=9)return;
+  st.round++;
+ }
+ st.phase='choose';st.duel=null;st.winning=null;bwPending=null;bwHintText='';
  st.aiPick=st.first===1?chooseFrom(st.ai,null):null;
  render();
 };
-bwAction=function(){if(st.phase==='choose')return bwConfirm();if(st.phase==='result')return bwNextRound()};
+bwAction=function(){if(st.phase==='choose')return bwConfirm();if(st.phase==='result'||st.phase==='overtime')return bwNextRound()};
 window.bwV2SetDifficulty=function(level){
- if(!['easy','normal','hard'].includes(level)||current!=='흑과 백'||st.round!==1||st.phase!=='choose')return;
+ if(!['easy','normal','hard'].includes(level)||current!=='흑과 백'||(st.set||1)!==1||st.round!==1||st.phase!=='choose')return;
  aiDifficulty=level;
  if(st.first===1)st.aiPick=chooseFrom(st.ai,null);
  render();
 };
 window.bwV2SetMode=function(mode){
- if(!['broadcast','practice'].includes(mode)||current!=='흑과 백'||st.round!==1||st.phase!=='choose')return;
+ if(!['broadcast','practice'].includes(mode)||current!=='흑과 백'||(st.set||1)!==1||st.round!==1||st.phase!=='choose')return;
  revealNumbers=mode==='practice';render();
 };
 window.bwV2ToggleMotion=function(){reduced=!reduced;render()};
@@ -137,7 +153,7 @@ window.bwV2Test={distribution,chooseFrom};
 
 const face=(value,hidden,stage,owner)=>{
  const c=color(value);
- const shown=stage==='flip'||stage==='result';
+ const shown=stage==='flip'||stage==='result'||stage==='overtime';
  const text=hidden?'?':value;
  const symbol=c==='검정'?'◆':'◇';
  const back=shown?'bw2-turned':'';
@@ -152,7 +168,7 @@ function historyHtml(){
 bwDrawCinematic=function(){
  const active=st.phase==='choose',ended=!!finishText,d=st.duel;
  const lead=st.first===0?'내가 먼저 제출':'AI가 먼저 제출';
- const phaseText={choose:st.first===0?'내 타일을 선택하세요':`AI ${color(st.aiPick)} 타일 제출 · 숫자 비공개`,sealed:'두 타일 제출 완료 · 딜러 확인 중',flip:'타일 공개 · 승패 판정 중',result:st.winning===0?'플레이어 승리 · +1':st.winning===1?'AI 승리 · +1':'무승부 · 득점 없음'};
+ const phaseText={choose:st.first===0?'내 타일을 선택하세요':`AI ${color(st.aiPick)} 타일 제출 · 숫자 비공개`,sealed:'두 타일 제출 완료 · 딜러 확인 중',flip:'타일 공개 · 승패 판정 중',result:st.winning===0?'플레이어 승리 · +1':st.winning===1?'AI 승리 · +1':'무승부 · 득점 없음',overtime:'9라운드 동점 · 새 타일로 연장전을 진행합니다'};
  const summary=ended?'9라운드 종료':phaseText[st.phase]||'게임 진행 중';
  const youTile=d?face(d.mine,false,st.phase,'me'):
   (bwPending!==null?face(bwPending,false,'result','me'):'<div class="bw2-tile bw2-unset"><span class="bw2-tile-mark">◇</span><strong>?</strong><small>SELECT</small></div>');
@@ -160,26 +176,26 @@ bwDrawCinematic=function(){
   (st.aiPick!==null?`<div class="bw2-tile bw2-${st.aiPick%2?'white':'black'}"><span class="bw2-tile-mark">${st.aiPick%2?'◇':'◆'}</span><strong>?</strong><small>숫자 비공개</small></div>`:'<div class="bw2-tile bw2-unset"><span class="bw2-tile-mark">◇</span><strong>?</strong><small>WAITING</small></div>');
  const roundPips=Array.from({length:9},(_,i)=>`<i class="${i<st.round-1?'past':i===st.round-1?'now':''}"></i>`).join('');
  const selection=st.my.map(v=>`<button type="button" class="bw2-pick bw2-pick-${v%2?'white':'black'} ${bwPending===v?'selected':''}" onclick="bwPick(${v})" aria-pressed="${bwPending===v}" aria-label="${v}번 ${color(v)} 타일 선택" ${!active||ended?'disabled':''}><span>${v}</span></button>`).join('');
- const actionText=ended?'대결 완료':st.phase==='choose'?(bwPending===null?'타일을 선택하세요':`${bwPending}번 타일 제출`):st.phase==='result'?'다음 라운드 →':'딜러가 확인 중…';
+ const actionText=ended?'대결 완료':st.phase==='choose'?(bwPending===null?'타일을 선택하세요':`${bwPending}번 타일 제출`):st.phase==='overtime'?'연장전 시작 →':st.phase==='result'?'다음 라운드 →':'딜러가 확인 중…';
  const finished=ended?`<div class="bw2-finish" role="status"><div class="bw2-finish-kicker">MATCH COMPLETE</div><strong>${st.score[0]>st.score[1]?'승리':st.score[0]<st.score[1]?'패배':'무승부'}</strong><p>9라운드 최종 결과 · ${st.score[0]} : ${st.score[1]}</p><div><button onclick="start('흑과 백')">다시 대결</button><button onclick="home()">게임 목록</button></div></div>`:'';
- const settingsDisabled=st.round!==1||!active;
+ const settingsDisabled=(st.set||1)!==1||st.round!==1||!active;
  $('#app').innerHTML=header()+`<section class="bw2-shell" aria-label="흑과 백 게임">
  <div class="bw2-menu"><button onclick="home()" class="bw2-back">← 게임 목록</button><span>THE PLAY ARCHIVE <b>/</b> DEATH MATCH</span><button onclick="start('흑과 백')">↻ 새 대결</button></div>
  <div class="bw2-layout"><aside class="bw2-panel ${mobileOptions?'bw2-settings-open':''}">
    <p class="bw2-eyebrow">THE GENIUS · BLACK & WHITE</p><h1>흑과 백</h1><p class="bw2-desc">숫자를 숨기고, 색으로 읽는 심리전.</p>
    <div class="bw2-score"><div><span>PLAYER</span><strong>${st.score[0]}</strong></div><i>:</i><div><span>DEALER AI</span><strong>${st.score[1]}</strong></div></div>
-   <div class="bw2-minor">ROUND <b>${digit(st.round)}</b> / 09 <span>·</span> ${lead}</div>
+   <div class="bw2-minor">${st.set>1?'연장전 '+(st.set-1)+' · ':''}ROUND <b>${digit(st.round)}</b> / 09 <span>·</span> ${lead}</div>
    <div class="bw2-pips">${roundPips}</div><button class="bw2-mobile-open" onclick="bwV2MobileSettings()" aria-expanded="${mobileOptions}">${mobileOptions?'설정 닫기':'규칙 · 난이도 설정'} ↗</button>
-   <div class="bw2-rule"><strong>게임 규칙</strong><p>0~8 타일을 한 번씩 사용합니다. 짝수는 검정, 홀수는 흰색. 높은 숫자가 1점을 얻습니다.</p><p>선공의 <b>색만</b> 보고 후공이 응수합니다. 원작 모드에서 상대 숫자는 끝까지 공개하지 않습니다.</p></div>
+   <div class="bw2-rule"><strong>게임 규칙</strong><p>0~8 타일을 한 번씩 사용합니다. 짝수는 검정, 홀수는 흰색. 높은 숫자가 1점을 얻습니다. 9라운드 승점이 같으면 새 타일로 연장전을 진행합니다.</p><p>선공의 <b>색만</b> 보고 후공이 응수합니다. 원작 모드에서 상대 숫자는 끝까지 공개하지 않습니다.</p></div>
    <div class="bw2-choices"><div class="bw2-section-head"><strong>게임 설정</strong><small>첫 턴에만 변경</small></div>
      <div class="bw2-choice-label">모드</div><div class="bw2-switches"><button class="${!revealNumbers?'on':''}" onclick="bwV2SetMode('broadcast')" ${!settingsDisabled?'disabled':''}>방송 규칙</button><button class="${revealNumbers?'on':''}" onclick="bwV2SetMode('practice')" ${!settingsDisabled?'disabled':''}>숫자 공개 연습</button></div>
      <div class="bw2-choice-label">AI 난이도</div><div class="bw2-switches"><button class="${aiDifficulty==='easy'?'on':''}" onclick="bwV2SetDifficulty('easy')" ${!settingsDisabled?'disabled':''}>초급</button><button class="${aiDifficulty==='normal'?'on':''}" onclick="bwV2SetDifficulty('normal')" ${!settingsDisabled?'disabled':''}>보통</button><button class="${aiDifficulty==='hard'?'on':''}" onclick="bwV2SetDifficulty('hard')" ${!settingsDisabled?'disabled':''}>상급</button></div>
    </div>
  </aside>
  <main class="bw2-stage"><div class="bw2-table">
-   <div class="bw2-tablebar"><span>TABLE 01 <i></i> PLAYER vs AI</span><span>ROUND ${digit(st.round)} / 09</span></div>
+   <div class="bw2-tablebar"><span>TABLE 01 <i></i> PLAYER vs AI</span><span>${st.set>1?'연장전 '+(st.set-1)+' · ':''}ROUND ${digit(st.round)} / 09</span></div>
    <div class="bw2-dealer"><span class="bw2-seal">✦</span><span>THE DEALER</span></div>
-   <div class="bw2-duel"><div class="bw2-contender"><span>01 &nbsp; PLAYER</span>${youTile}</div><div class="bw2-versus"><span>VS</span><em>${st.phase==='choose'?'CHOOSE':st.phase==='sealed'?'SEALED':st.phase==='flip'?'REVEAL':'RESULT'}</em></div><div class="bw2-contender"><span>02 &nbsp; ARTIFICIAL INTELLIGENCE</span>${aiTile}</div></div>
+   <div class="bw2-duel"><div class="bw2-contender"><span>01 &nbsp; PLAYER</span>${youTile}</div><div class="bw2-versus"><span>VS</span><em>${st.phase==='choose'?'CHOOSE':st.phase==='sealed'?'SEALED':st.phase==='flip'?'REVEAL':st.phase==='overtime'?'OVERTIME':'RESULT'}</em></div><div class="bw2-contender"><span>02 &nbsp; ARTIFICIAL INTELLIGENCE</span>${aiTile}</div></div>
    <div class="bw2-status" aria-live="polite"><strong>${summary}</strong>${st.phase==='choose'?`<small>${st.first===1?'AI 타일의 색만 보고 판단하세요.':'AI는 내 타일의 색을 보고 고릅니다.'}</small>`:''}</div>
    <div class="bw2-deck"><div class="bw2-deck-title"><strong>MY TILES</strong><span>${st.my.length} / 9 REMAINING</span></div><div class="bw2-hand">${selection||'<span class="bw2-deck-empty">모든 타일을 사용했습니다.</span>'}</div></div>
    <div class="bw2-controls"><button type="button" class="bw2-hint" onclick="bwV2Hint()" ${!active?'disabled':''}>전략 힌트</button><button type="button" class="bw2-submit" onclick="bwAction()" ${ended||st.phase==='sealed'||st.phase==='flip'||active&&bwPending===null?'disabled':''}>${actionText}</button></div>
