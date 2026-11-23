@@ -93,7 +93,7 @@ await page.waitForSelector('#info-modal');
 assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('mindroom_v1')))).progress.bestByGame.targetsum,77,'import preserves personal best');
 await page.locator('#close-info').click();
 checks.push('backup restore keeps personal best');
-await page.locator('.gh-crumb [data-go="home"]').click();
+await page.locator('#brand-home').evaluate(el=>el.click());
 await page.waitForSelector('.gh-card[data-go="brain"]');
 await page.locator('.gh-card[data-go="brain"]').click();
 await page.locator('.gh-game-card[data-id="shuffle"]').click();
