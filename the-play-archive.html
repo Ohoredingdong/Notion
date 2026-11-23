@@ -1196,6 +1196,32 @@ body:has(.cin-home) .archive-sitebar{height:45px;min-height:45px;flex-basis:45px
 .cin-spotlight button{min-height:42px}
 @media(max-width:740px){.live-instruction{padding:7px 10px;gap:8px;font-size:11px}.live-instruction-key{padding-right:7px;font-size:9px}}
 
+
+/* Revised home layout: cinematic room with compact horizontal game selection */
+@media(min-width:801px){
+.cin-layout{padding-top:clamp(12px,1.8vh,18px);padding-bottom:clamp(8px,1vh,12px)}
+.cin-brand{padding-top:0;padding-bottom:2px}
+.cin-brand h1{font-size:clamp(30px,3vw,43px);margin:4px 0 3px;letter-spacing:1.6px}
+.cin-brand-sub{font-size:10px;letter-spacing:2px}
+.cin-collection{justify-content:center;gap:clamp(6px,1.1vh,12px)}
+.cin-collection-bar{width:min(100%,1030px);max-height:30px}
+.cin-cards{grid-template-columns:repeat(4,minmax(0,1fr));width:min(100%,1030px);gap:clamp(12px,1.3vw,20px);padding:5px 4px 10px}
+.cin-card{height:clamp(205px,30dvh,263px);width:100%;max-width:none;aspect-ratio:auto;border-radius:10px}
+.cin-card-premium .cin-card-image{background-size:cover;background-position:center 36%;filter:saturate(.8) contrast(1.05)}
+.cin-card-premium .cin-card-bottom{display:flex;flex-direction:column;align-items:start;justify-content:end;position:absolute;inset:auto 0 0 0;padding:26px 15px 12px;background:linear-gradient(0deg,#0c070df8,#0c070ddf 40%,transparent);min-height:68px;z-index:2;border:0;text-align:left}
+.cin-card-premium .cin-card-bottom strong{font-size:clamp(16px,1.4vw,21px);color:#f2debf;text-shadow:0 2px 3px #000;line-height:1.2}
+.cin-card-premium .cin-card-bottom small{font-size:10px;color:#beae9c;margin-top:4px}
+.cin-card-premium .cin-card-top{display:block;position:absolute;top:11px;left:13px;font:600 11px Georgia,serif;letter-spacing:1.4px;color:#f1d6ae;z-index:2;text-shadow:0 2px 8px #000}
+.cin-card-premium[aria-pressed='true']{transform:translateY(-4px);outline:2px solid #dfbd88;outline-offset:2px}
+.cin-spotlight{min-height:70px;max-width:1038px;padding:10px 16px;background:linear-gradient(90deg,#190f15ef,#1a0e15ef)}
+.cin-spotlight-number{font-size:26px}
+.cin-spotlight-copy h2{font-size:23px}
+}
+@media(max-height:730px) and (min-width:801px){
+.cin-card{height:clamp(165px,27dvh,200px)}
+.cin-brand h1{font-size:clamp(27px,2.7vw,36px)}
+.cin-spotlight{min-height:60px}
+}
 </style></head><body><div id="app" class="shell"></div><script>
 'use strict';
 // New playable modes. No borrowed third-party source code or game assets.
