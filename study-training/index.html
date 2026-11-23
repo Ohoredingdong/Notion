@@ -1000,7 +1000,11 @@ case 'shadow':{
  ans=pick(symbols);const hidden={1:28,2:45,3:57}[d];
  return qchoice('가려진 모양의 원래 형태를 추론하세요.',ans,shuffle(symbols.filter(v=>v!==ans)),{visual:`<div class="sd-partial-shape" style="font-size:92px;clip-path:inset(0 ${hidden}% 0 0);color:#5b7a64;line-height:1.2">${ans}</div>`,note:'난이도에 따라 비슷한 형태와 가려진 비율이 달라집니다.'});
 }
-case 'pieces': case 'shape':{let s=['●','■','▲','◆'];let start=r(0,3);ans=s[(start+3)%4];return qchoice('도형 순서의 마지막 빈칸에 들어갈 것은?',ans,s.filter(x=>x!==ans),{visual:`<div class="focuswords">${[s[start],s[(start+1)%4],s[(start+2)%4],'?'].join('  ')}</div>`,note:'반복되는 4개 도형 규칙을 찾아보세요.'})}
+case 'pieces': case 'shape':{
+const glyph=['●','■','▲','◆','★','⬢'],n=glyph.length,mode=r(0,2),a=r(0,n-1),step=r(1,3),size=d+3;
+let values=mode===0?Array.from({length:size},(_,i)=>glyph[(a+i*step)%n]):mode===1?(()=>{let b=(a+r(1,n-1))%n;return Array.from({length:size},(_,i)=>glyph[i%2?b:a])})():Array.from({length:size},(_,i)=>glyph[(a+Math.floor(i/2)*step)%n]);
+const answer=values.at(-1);return qchoice('도형의 변화를 관찰하고 마지막 빈칸에 맞는 조각을 선택하세요.',answer,glyph.filter(x=>x!==answer),{visual:'<div class="focuswords">'+values.slice(0,-1).join('　')+'　?</div>',note:'모양의 배열과 반복 간격을 살펴보세요.',signature:'shape-'+mode+'-'+a+'-'+step+'-'+size});
+}
 case 'detective':{let icons=['☀','☂','♣','☘','☕','☎','♫','☾'];seq=shuffle(icons).slice(0,d+2);ans=pick(seq);return qchoice('방금 보인 기호에 포함된 것은?',ans,shuffle(icons.filter(a=>!seq.includes(a))).slice(0,3),{preview:seq.join('  '),previewTime:big?1500:2400})}
 case 'flash':{seq=Array.from({length:d+2},()=>String(r(1,9)));return {type:'number',prompt:'나타난 숫자를 순서대로 입력하세요.',answer:seq.join(''),preview:seq.join(' '),previewTime:big?1900:3100,strict:true,note:'입력할 때 공백을 넣지 않아도 됩니다.'}}
 case 'cards':{let all=['♠','♥','★','◆','☀','☘'];seq=shuffle(all).slice(0,Math.min(d+2,5));let deck=shuffle([...seq,...seq]);return {type:'pairs',prompt:'카드의 짝을 모두 찾아보세요.',answer:seq.length,deck,previewTime:1700, note:'카드를 클릭하면 뒤집힙니다.'}}
@@ -1013,7 +1017,7 @@ case 'scale':{
  const light=r(0,1)===0, ans=light?objects.at(-1):objects[0];
  return qchoice(`${shuffle(relations).join('\n')}\n가장 ${light?'가벼운':'무거운'} 상자는?`,ans,objects.filter(x=>x!==ans),{note:'조건을 무게 순서로 정리한 뒤 판단하세요.'});
 }
-case 'pattern':{let a=r(2,6),v=r(2,d+3);return qchoice(`다음 숫자 규칙의 빈칸은?\n${a} → ${a+v} → ${a+2*v} → ?`,String(a+3*v),numOpts(a+3*v).filter(x=>x!==a+3*v).map(String))}
+case 'pattern':{const a=r(2,12),gap=r(2,d+5),mode=r(0,d===1?1:2),seq=mode===0?[a,a+gap,a+2*gap,a+3*gap]:mode===1?[a,a+gap,a+3*gap,a+6*gap]:[a,a*2,a*4,a*8];const value=seq[3];return qchoice('다음 숫자 배열의 규칙을 찾아보세요.\n'+seq.slice(0,3).join(' → ')+' → ?',String(value),numOpts(value).filter(n=>n!==value).map(String),{note:'숫자의 증가 폭과 관계를 비교해 보세요.'})}
 case 'mission':{
  const symbols=['A','B','C','D','E'].slice(0,d+2), vals=[];
  while(vals.length<symbols.length){let v=r(12,96);if(!vals.includes(v))vals.push(v)}
@@ -1052,8 +1056,8 @@ case 'clock':{
   return task(`${formatTime(lateStart)} 작업 시작\n집중 ${focus}분 → 휴식 ${breakTime}분 → 정리 ${finish}분\n모두 마친 시각은?`,lateStart+focus+breakTime+finish,'자정 넘김 · 세 단계 시간 추론');
 }
 case 'order':{seq=shuffle(Array.from({length:d+3},()=>r(1,99))).slice(0,d+3);seq=uniq(seq);while(seq.length<d+3)seq.push(r(100,199));return {type:'sequence',prompt:'숫자를 **작은 순서대로** 터치하세요.',answer:seq.slice().sort((a,b)=>a-b).join('|'),keys:seq.map(String),separator:'|'}}
-case 'rotate':{let arr=['↑','→','↓','←'];x=r(0,3);y=r(1,3);return qchoice(`화살표 ${arr[x]}를 시계 방향으로 ${y*90}° 회전하면?`,arr[(x+y)%4],arr.filter(k=>k!==arr[(x+y)%4]))}
-case 'rail':{let dirs=['북','동','남','서'];let at=r(0,3),mv=shuffle(['우회전','좌회전','직진']).slice(0,d===3?3:2);let idx=at;for(let t of mv)idx=(idx+(t==='우회전'?1:t==='좌회전'?3:0))%4;return qchoice(`처음 바라보는 방향: ${dirs[at]}\n${mv.join(' → ')}\n마지막 방향은?`,dirs[idx],dirs.filter(k=>k!==dirs[idx]))}
+case 'rotate':{const dirs=['↑','→','↓','←'],idx=r(0,3),quarter=r(1,3),clockwise=Math.random()<.5,answer=dirs[(idx+(clockwise?quarter:-quarter)+8)%4];return qchoice('화살표 '+dirs[idx]+'를 '+(clockwise?'시계':'반시계')+' 방향으로 '+(quarter*90)+'° 회전하면?',answer,dirs.filter(k=>k!==answer))}
+case 'rail':{const dirs=['북','동','남','서'],at=r(0,3),mv=Array.from({length:d+2},()=>pick(['우회전','좌회전','직진']));let idx=at;for(const turn of mv)idx=(idx+(turn==='우회전'?1:turn==='좌회전'?3:0))%4;return qchoice('처음 바라보는 방향: '+dirs[at]+'\n'+mv.join(' → ')+'\n마지막 방향은?',dirs[idx],dirs.filter(k=>k!==dirs[idx]))}
 case 'view':{
  const letters=shuffle(['A','B','C','D','E','F']).slice(0,d+3);
  const reverse=shuffle(letters),answer=[...reverse];
