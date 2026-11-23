@@ -1,6 +1,6 @@
 # 기업 가치 레이더 · 자동 후보 조사 보고서
 
-- 계산일: 2026-11-23T05:19:34.605933+09:00
+- 계산일: 2026-11-23T21:29:37.374240+09:00
 - 수집 규모: 10개 고정 관심종목 (전체 시장 스크리닝 아님)
 - 건강 상태: warning / 이상치 0개 / 품질 경고 10개
 - 주의: 현재 기업 재무자료에 비공식 Yahoo Finance 보조자료가 포함됩니다.
@@ -34,10 +34,10 @@
 - TSLA: 비공식 보조 재무자료 — 공시와 교차검증 필요
 
 ## 자동 수집 뉴스 제목 (원문 확인 필요)
-- ['블랙 먼데이' 공포…韓 금리·美 물가가 증시 향방 가른다 - 머니투데이 - 머니투데이](https://news.google.com/rss/articles/CBMibkFVX3lxTFB5bmpfS0hKbno2MDZzRTEwMUxVRHExZmtib2Y1Y0c5dElfZ3QzdWotZF9Hd2pNOUUzOXM2dnlQeG9kYVNqbWdvY0tmeG1wLW1xc2ZvVHJaSEQzSXcxbEp6MjZuYmZzUmZ5NTIwNnZ30gFuQVVfeXFMUHlual9LSEpuejYwNnNFMTAxTFVEcTFma2JvZjVjRzl0SV9ndDN1ai1kX0d3ak05RTM5czZ2eVB4b2RhU2ptZ29jS2Z4bXAtbXFzZm9UclpIRDNJdzFsSnoyNm5iZnNSZnk1MjA2dnc?oc=5)
-- [(채권-주간) 기술주 투매가 밀어붙인 강세…금통위가 브레이크 걸까 / - 연합인포맥스](https://news.google.com/rss/articles/CBMidEFVX3lxTE5Qc0N6WHF0UFRKa1FLdExuX3MwRkJKbU1fYTFNd2lxQ2FHM3E0dm9tcUtDUEJDb2I3RnpzMDNWdnVIRDRZZlFOYnRfemdITU90WUE1b04xLUlNcVBYYzRWQWNpVjMyeVFmVEE5SnY4MzA1NFBX?oc=5)
-- [“호황 끝” 공포에 주가 반토막…삼전닉스 3대 불안의 진실 - 중앙일보](https://news.google.com/rss/articles/CBMiVkFVX3lxTFBRZ3VnSnBrM3ZrN3RRS2xVR3hUTzcySmJYZDdEVHdlTklkaF9WejRGZ0VFMDYyLUk3ZS1ZR20ySnRKbXdoVXdyYW9fLUpFeF9xVFh1ZlRB?oc=5)
-- [(韓 블랙 먼데이 전운) 순환금융 멈춘 엔비디아…삼성·하이닉스 슈퍼사이클 꺾이나 - 아주경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTE13Wm83M2pkN2c4c3JiYnk4OExNSER0LXlHUXJ5MFJzZHFVOEhDamNISzdiUXZwR1VEQV9wOHhfY2ZQandreWVrR0FEc1ZSMFFxekE2aDVoMjZIZ9IBWEFVX3lxTE0za0piMEJFVGw5amVBUlVIUTNXaW9vYkVvRVk1ekVkTzVJQVZGZzVES0VrbW1zY1lNaGstM25KQ0gtZ3BxQ2VwMHpvSFNJZ0ZXTlJSWV9wZl8?oc=5)
+- [코스피 급락에 국고채 가격 상승세…3년물 연 3.621% - 한국경제](https://news.google.com/rss/articles/CBMiWkFVX3lxTFBqZTQtRGhOM3EwNmlPRjkzNDdNQ0N6WTd1ak13UUZ3YUF4N1ZqZG5STGxtMnlZdXE5Smgwbi1xdDFTb2FlUFYzVnJfanUtdnlTZG1yczZVNUVxdw?oc=5)
+- [미국발 '블랙먼데이' 충격'… 18년 만에 '증시안정펀드' 급가동 - 오늘의한국](https://news.google.com/rss/articles/CBMiaEFVX3lxTE9fMEJfWEpFWjFjRTNCQlpyVzJZbm9KQU1aLUExTnlUZ1hDSmNJcUprUF9hbEN2U3VreXZ0Ykg2Y25PX0VoT1VyUTNNN3ZheFRDV3VZc2NXNWg4amQ2NFdGOS1EYUxEYnpm?oc=5)
+- [엔비디아 이어 AMD까지 AI 투심 급랭…삼전닉스 '위기이자 기회' - 뉴스1](https://news.google.com/rss/articles/CBMiZEFVX3lxTE0xYmNUZ1poS0lvcXVzR0VkTzBKcnpxeEkwM3U1VklKcGFhWnB4T0xHUmRIZzQ1QVpFVzZPS0xKQlFEWEVBdGV6TkFZVEJtdXZUVXFFNTFkRXF1UXNLNGdpUWtYMTA?oc=5)
+- [AI 병목 풀 '빛의 반도체'…삼성·SK하이닉스, CPO 선점 경쟁 - 데일리한국](https://news.google.com/rss/articles/CBMib0FVX3lxTE9sZHBVNGZ5VzEwWjZFaHlORkhSQUZfRTdUdEh1TEVSVm1uYzQ3eDZGV2k4d3FTM01nTWxRd0dFZVpuNFJFZXNBSFNRSkJPQ3RmV0I0UmxFczI3YmtqaFZMTGp2T2I5RnN2LWM4eV9ySdIBc0FVX3lxTE8tZjJVMkxPMUZMTmIyblBpLW5pN3dtcnJpNU45eDdTblFRUEtEdVNhbTRVcml2RGplUUtqODAwbFd6S2tkTzRfQTJRZkFLbkNiaDNNSjNoc0puY0NLbU92NVhoOFlsb2RjMWZKSnZFZ1FJaTQ?oc=5)
 
 ## 계산과 검증 한계
 - 소스 주가 데이터는 거래소 상황에 따라 지연됩니다.
