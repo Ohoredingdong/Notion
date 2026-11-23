@@ -943,7 +943,7 @@ case 'sudoku':return makeSudoku();
 case 'chunks':{let cases=[['도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.','도시의 녹지는 / 그늘을 만들고 / 열을 줄인다.'],['정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.','정확한 독해를 위해서는 / 문장 간의 논리 관계를 / 살펴야 한다.'],['분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.','분산 복습은 / 장기 기억의 유지에 / 도움이 될 수 있다.']];let [v,a]=pick(cases);return qchoice('문장을 의미 단위로 자연스럽게 끊은 것은?',a,[v.replaceAll(' / ','').replace(/ /g,' / '),v.replace(' / ','/').replace(/ /g,'  '),v.replaceAll(' / ',' // ')],{note:'읽을 때 서로 밀접한 의미의 단어들을 묶어보세요.'})}
 case 'verbal':{
  const pool=['나무','비','강','책','연필','노트','하늘','별','구름','바다','파도','모래','기억','서랍','시계','창문','도시','나침반','초록','정원'];
- const wordCount=d===1?5:d===2?6:7;
+ const wordCount=d===1?4:d===2?5:7;
  seq=shuffle(pool).slice(0,wordCount);
  const position=r(0,seq.length-1);ans=seq[position];
  const wrong=shuffle(seq.filter(w=>w!==ans)).slice(0,3);
