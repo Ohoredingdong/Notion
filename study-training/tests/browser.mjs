@@ -29,6 +29,9 @@ for(let i=0;i<5;i++){
  if(i<4){
   await Promise.race([next.waitFor({state:'visible',timeout:2800}).catch(()=>{}),page.waitForFunction(n=>document.querySelector('.sd-progress-row strong')?.textContent?.includes('문제 '+n),i+2,{timeout:2800}).catch(()=>{})]);
   if(await next.isVisible())await next.click();
+ }else{
+  await Promise.race([next.waitFor({state:'visible',timeout:2800}).catch(()=>{}),finished.waitFor({state:'visible',timeout:2800}).catch(()=>{})]);
+  if(await next.isVisible())await next.click();
  }
 }
 await page.waitForSelector('.sd-results-panel',{timeout:6000});
