@@ -89,7 +89,7 @@ Targets are Nov 23 KR 00:00–06:30 UTC and US 14:30–21:00 UTC; market/mode ke
 | balanced_linear | 5 | 3 | 8 | 1/5; 1/3 | 1/7; 1/4 | 0.6910081250 |
 | balanced_nonlinear | 3 | 5 | 8 | 0/4; 0/3 | 1/9; 1/4 | 0.6658600480 |
 
-The incumbent missed all two KR down targets and had no KR up examples; in US it missed one of three up and one of two down. The apparent 11/20 baseline/cascade advantage is not bidirectional improvement: cascade makes no down calls, baseline misses two of three rises. The prior intraday failure is different mode, not pooled to justify promotion. Individual wrong signals preserved below (all six methods use original probabilities; rounded numbers are display only).
+The incumbent missed all two KR down targets and had no KR up examples; in US it missed one of three up and one of two down. The apparent 11/20 baseline/cascade advantage is not bidirectional improvement: cascade makes one false down call and one false up call, capturing neither direction; baseline misses two of three rises. The prior intraday failure is different mode, not pooled to justify promotion. Individual wrong signals preserved below (all six methods use original probabilities; rounded numbers are display only).
 
 | Market | Symbol | Actual | Return % | Frozen band % | incumbent | baseline | adaptive | movement_then_direction | balanced_linear | balanced_nonlinear |
 |---|---|---|---:|---:|---|---|---|---|---|---|
