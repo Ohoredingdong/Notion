@@ -836,6 +836,54 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 
 .st-retain-cue{padding:34px 20px;color:#66836c;text-align:center;font-size:17px;font-weight:750;background:#f2f6ee;border-radius:16px;width:min(440px,100%)}
 .st-flash-count{width:min(490px,100%);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));justify-items:center;align-items:center;gap:6px 8px;margin:4px auto;font-size:clamp(19px,3.4vw,29px);color:#a0afa4}.st-flash-count>span{display:grid;place-items:center;width:100%;aspect-ratio:1.25;opacity:.25}.st-flash-count>span.lit{color:#507e6a;opacity:1;text-shadow:0 2px 3px #acc3b6}
+
+/* Reactive game controls: subtle, immediate, reversible state changes */
+.sd-play-shell .game-action-hint{font-size:13px;color:#6b7b6f;font-weight:750;min-height:20px;text-align:center;margin:0 auto 7px}
+.sd-play-shell .game-action-hint.is-error{color:#b3544e}
+.sd-play-shell .game-inline-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:10px}
+.sd-play-shell .game-inline-actions .btn{min-height:43px;border-radius:12px;font-size:13px}
+.sd-play-shell .game-inline-actions .btn:not(.ghost){background:var(--sd-accent-dark);border-color:var(--sd-accent-dark)}
+.sd-play-shell .seq-drop{width:min(850px,100%);min-height:74px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;padding:12px 14px;border:1px dashed #adc4ae;background:#f7faf4;border-radius:17px;transition:border-color .16s,background .16s}
+.sd-play-shell .seq-empty{color:#8da18c;font-size:13px}
+.sd-play-shell .seq-token{display:flex;align-items:center;gap:7px;min-height:42px;background:#fff;border:1px solid #9db5a1;border-radius:11px;padding:5px 10px;color:#254e39;box-shadow:0 2px 0 #d1dfd2;animation:st-enter .18s ease-out}
+.sd-play-shell .seq-token small{font-size:10px;color:#8fa596}.sd-play-shell .seq-token b{font-size:17px}.sd-play-shell .seq-token span{color:#a77c77}
+.sd-play-shell .seq-token:hover{background:#edf5ec;border-color:#6a9d7a}
+.sd-play-shell .seq-source{width:min(850px,100%)}.sd-play-shell .seq-source .seq-tile{touch-action:manipulation;transition:transform .14s,opacity .14s,border-color .14s;background:#fffefa}
+.sd-play-shell .seq-source .seq-tile:active{transform:scale(.93)}
+.sd-play-shell .seq-source .seq-tile.is-used{opacity:.24;transform:scale(.95)}
+.sd-play-shell .reactive-pairboard{perspective:1000px;gap:11px!important}
+.sd-play-shell #pairboard .pair-card{min-height:94px;height:clamp(82px,12vh,118px);min-width:0;border:0;padding:0;background:transparent;perspective:950px;cursor:pointer;outline-offset:3px;touch-action:manipulation}
+.sd-play-shell .pair-card-inner{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.2,.7,.25,1);border-radius:15px}
+.sd-play-shell .pair-card .pair-card-back,.sd-play-shell .pair-card .pair-card-front{position:absolute;inset:0;display:grid;place-items:center;border-radius:15px;backface-visibility:hidden;box-shadow:0 4px 0 #c2d3c1,0 11px 20px #203d2919;border:1px solid #bed5bd;font-size:clamp(24px,3vw,38px)}
+.sd-play-shell .pair-card-back{background:linear-gradient(145deg,#86aa86,#648d72);color:#fff9e5;font-size:29px}
+.sd-play-shell .pair-card-front{background:#fffefa;color:#355a43;transform:rotateY(180deg)}
+.sd-play-shell .pair-card.is-revealed .pair-card-inner,.sd-play-shell .pair-card.is-matched .pair-card-inner{transform:rotateY(180deg)}
+.sd-play-shell .pair-card.is-matched .pair-card-front{background:#e4f2df;border:2px solid #7ca880;box-shadow:0 2px 0 #a1c1a0}
+.sd-play-shell .pair-card.is-matched{cursor:default;filter:saturate(.85)}
+.sd-play-shell .pair-card.is-mismatch .pair-card-front{background:#fff0ed;border-color:#cb9182}
+.sd-play-shell .pair-card:focus-visible{outline:3px solid var(--sd-accent-dark)}
+.sd-play-shell .grid5{touch-action:none;user-select:none}
+.sd-play-shell .grid5 .sq{transition:background .13s,transform .12s,border-color .12s;touch-action:none}
+.sd-play-shell .grid5 .sq.selected{background:#a1c7a6;border-color:#638a6d;transform:scale(.965);box-shadow:inset 0 0 0 2px #fff8}
+.sd-play-shell .grid5 .sq.is-target:not(.selected){background:#e5f1e4;border:2px dashed #629168}
+.sd-play-shell .grid5 .sq.is-extra{background:#f9ded8;border-color:#c57e71}
+.sd-play-shell .grid5 .sq.is-missed{background:#e6f3d8;border-color:#60955e}
+.sd-play-shell .reactive-sudoku button:focus-visible{outline:3px solid #729e76;outline-offset:-3px}
+.sd-play-shell .reactive-sudoku button.is-peer:not(.active):not(.fixed){background:#f2f8eb}
+.sd-play-shell .reactive-sudoku button.active{background:#d5e9c9!important;box-shadow:inset 0 0 0 2px #4d8967;color:#18452d}
+.sd-play-shell .reactive-sudoku button.is-conflict{background:#f8d8cf!important;color:#9b3833!important;box-shadow:inset 0 0 0 2px #d68172}
+.sd-play-shell .reactive-sudoku.is-complete{border-color:#6ba179;box-shadow:0 0 0 5px #e8f5e3}
+.sd-play-shell .reactive-sudoku-nums [data-num]:active{transform:translateY(2px);background:#e3eedb}
+.sd-play-shell .reactive-result{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;border:1px solid #d3e1ce;background:#f3f9f0;border-radius:16px;padding:10px 14px;color:#315d40;font-size:13px;line-height:1.5}
+.sd-play-shell .reactive-result .reactive-result-sign{width:25px;height:25px;display:grid;place-items:center;background:#80a98a;color:white;border-radius:50%;font-size:15px;font-weight:800}
+.sd-play-shell .reactive-result.is-error{background:#fff5f0;border-color:#ecc8bd;color:#a34d46}
+.sd-play-shell .reactive-result.is-error .reactive-result-sign{background:#c47e70}
+.sd-play-shell .reactive-next{background:#517e61;color:#fff;border:1px solid #517e61;min-height:34px;border-radius:9px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:760}
+.sd-play-shell .reactive-result p{margin:0;color:#906860;font-size:12px}
+.sd-play-shell .reactive-next:hover{filter:brightness(.94)}
+@keyframes st-enter{from{opacity:.35;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.sd-play-shell #pairboard .pair-card{min-height:69px;height:72px}.sd-play-shell .game-inline-actions{gap:7px}.sd-play-shell .seq-token{padding:5px 7px;min-height:39px}.sd-play-shell .seq-drop{min-height:65px}.sd-play-shell .reactive-result{gap:7px}.sd-play-shell .reactive-next{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.sd-play-shell .pair-card-inner,.sd-play-shell .seq-token{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body><div class="app">
@@ -1515,6 +1563,7 @@ function showQuitConfirm(){
   if(session!==current)return;
   const pauseDuration=Date.now()-pausedAt;session.start+=pauseDuration;session.questionStart+=pauseDuration;
   tick=setInterval(()=>{if(!session)return;session.elapsed=Math.max(0,Math.floor((Date.now()-session.start)/1000));if($('#time-value'))$('#time-value').textContent=timerText(session.elapsed)},1000);
+   if(session.pairState?.resolving){const ps=session.pairState;ps.open.forEach(i=>{const b=$('[data-card="'+i+'"]');if(b){b.classList.remove('is-revealed','is-mismatch');b.setAttribute('aria-pressed','false')}});ps.open=[];ps.resolving=false;$('#pair-info').textContent='같은 카드를 다시 찾아보세요';}
   if(previewWasVisible){if(question.shellGame){startShellRound(question)}else{session.previewDue=Date.now()+previewRemaining;previewTick=setTimeout(()=>{if(session===current&&session.q===question){$('#challenge').innerHTML='<div class="st-retain-cue">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session===current&&session.q===question){previewing=false;showChallenge(question)}},400)}},previewRemaining);}}
   else if(lockedWasPending&&!$('#sd-next-question'))nextTick=setTimeout(()=>{if(session!==current)return;session.current++;if(session.current>=session.total)finishSession();else renderQuestion()},500);
  };
@@ -1538,7 +1587,7 @@ let h=`<div class="gamewrap sd-game sd-theme-${theme} sd-kind-${q.type}">
 </section>
 <footer class="sd-game-footer"><div class="sd-footer-challenge">${stIcon('target',22)} <strong>오늘의 도전</strong> <span>${['math','brain','reading'].filter(k=>routineIsDone(k)).length}/3 완료</span><span class="sd-three-dots">${['math','brain','reading'].map(k=>`<i class="${routineIsDone(k)?'done':''}"></i>`).join('')}</span></div><div class="sd-footer-difficulty">${stIcon('chart',20)} <span>훈련 난이도</span><strong>${s.auto?'자동':(['','가볍게','집중','도전'][s.diff])}</strong></div><button class="sd-quit" type="button" id="quit">${stIcon('play',18)} 훈련 종료</button></footer>
 </div>`;
-$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='문제를 풀면 자동으로 다음 문제로 이동합니다.';$('#quit').onclick=showQuitConfirm;if(q.shellGame){startShellRound(q);return}if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;s.previewDue=Date.now()+(q.previewTime||2500);previewTick=setTimeout(()=>{if(session&&session.q===q){$('#challenge').innerHTML='<div class="st-retain-cue" aria-live="polite">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session&&session.q===q){previewing=false;showChallenge(q)}},400)}},q.previewTime||2500)}else showChallenge(q)}
+$('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='답을 확인한 다음 다음 문제로 이동할 수 있습니다.';$('#quit').onclick=showQuitConfirm;if(q.shellGame){startShellRound(q);return}if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;s.previewDue=Date.now()+(q.previewTime||2500);previewTick=setTimeout(()=>{if(session&&session.q===q){$('#challenge').innerHTML='<div class="st-retain-cue" aria-live="polite">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session&&session.q===q){previewing=false;showChallenge(q)}},400)}},q.previewTime||2500)}else showChallenge(q)}
 function showChallenge(q){if(!session||session.q!==q)return;session.previewDue=0;session.questionStart=Date.now();let el=$('#challenge');if(!el)return;if(q.preview||q.type==='grid'||q.type==='pairs'){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
 if(q.type==='choice')h+=`<div class="choices">${q.options.map((v,i)=>`<button class="choice" data-answer="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
 if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn">확인</button></form>`;
@@ -1628,6 +1677,7 @@ function bindSudokuInteraction(q){
    btn.classList.toggle('is-conflict',invalid.has(btn.dataset.cell));
   });
   info.textContent=invalid.size?filled+' / 16칸 · 같은 숫자가 겹친 칸 '+invalid.size+'개':filled+' / 16칸 · '+(focus?'숫자를 입력하거나 지울 수 있어요':'빈칸을 선택하세요');
+  if(focus&&document.activeElement?.closest?.('#sudoku-board'))board.querySelector('[data-cell="'+s.sudokuFocused+'"]')?.focus({preventScroll:true});
   info.classList.toggle('is-error',invalid.size>0);
   $('#sudoku-done').disabled=filled!==16||invalid.size>0||s.locked;
   $('#sudoku-reset').disabled=filled===q.fixed.flat().filter(Boolean).length||s.locked;
@@ -1686,9 +1736,12 @@ s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1)),d
 $('#feedback').classList.toggle('bad',!correct);
 $$('#challenge button').forEach(b=>b.disabled=true);
 if(!correct&&q.type==='choice')$$('[data-answer]').forEach(b=>{if(b.dataset.answer===String(q.answer))b.classList.add('correct')});
+if(q.type==='grid')$$('#challenge [data-gridcell]').forEach(b=>{const id=Number(b.dataset.gridcell);b.classList.toggle('is-target',q.selected.includes(id));b.classList.toggle('is-missed',q.selected.includes(id)&&!s.selectedGrid.includes(id));b.classList.toggle('is-extra',!q.selected.includes(id)&&s.selectedGrid.includes(id))});
+if(q.type==='sudoku')$('#sudoku-board')?.classList.add(correct?'is-complete':'is-incorrect');
+$('#challenge')?.classList.add('is-evaluated');
 const advance=()=>{if(!session)return;s.current++;if(s.current>=s.total)finishSession();else renderQuestion()};
-if(correct){$('#feedback').textContent=msg;nextTick=setTimeout(advance,780)}
-else{$('#feedback').innerHTML=`<div class="sd-explain-answer"><strong>${msg}</strong><p>${esc(String(q.explanation||q.note||'문제의 조건과 정답을 다시 비교해 보세요.'))}</p><button id="sd-next-question" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}}
+if(correct){$('#feedback').innerHTML=`<div class="reactive-result is-success"><span class="reactive-result-sign" aria-hidden="true">✓</span><strong>정답입니다!</strong><span>선택한 답이 정확해요.</span><button id="sd-next-question" class="reactive-next" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}
+else{$('#feedback').innerHTML=`<div class="sd-explain-answer reactive-result is-error"><span class="reactive-result-sign" aria-hidden="true">!</span><strong>${msg}</strong><p>${esc(String(q.explanation||q.note||'문제의 조건과 정답을 다시 비교해 보세요.'))}</p><button id="sd-next-question" class="reactive-next" type="button">다음 문제 ${stIcon('chevron',17)}</button></div>`;$('#sd-next-question').onclick=advance;}}
 function renderCompositeBreakdown(record){if(new Set(record.items.map(x=>x.group==='math'?'math':x.group==='read'?'read':'brain')).size<2)return '';return `<div class="sd-composite-breakdown" aria-label="영역별 테스트 결과">${[['math','계산'],['brain','두뇌'],['read','국어']].map(([key,label])=>{const subset=record.answers.filter(x=>{const group=byId[x.id]?.group;return key==='brain'?group&&!['math','read'].includes(group):group===key});return subset.length?`<div><small>${label}</small><strong>${subset.filter(x=>x.correct).length} / ${subset.length}</strong><span>${Math.round(100*subset.filter(x=>x.correct).length/subset.length)}% 정답</span></div>`:''}).join('')}</div>`;}
 function finishSession(){let s=session;if(!s)return;clearTimers();let seconds=Math.max(1,Math.round((Date.now()-s.start)/1000));let earnedXP=s.answers.reduce((sum,answer)=>sum+xpForAnswer(answer.correct,answer.difficulty||s.diff),0)+(s.correct/s.total>=.8?20:0);
 let previousLevel=levelFromXP();
@@ -1716,6 +1769,7 @@ ${renderCompositeBreakdown(record)}<div class="sd-result-chart"><div class="sd-r
 <div class="sd-xp-progress"><span>Lv. ${levelFromXP()} · 다음 레벨까지 ${500-lifetimeXP()%500}XP</span><div class="sd-xp-track"><i style="width:${lifetimeXP()%500/5}%"></i></div></div><div class="sd-result-actions"><button class="sd-retry" id="again">${stIcon('target',19)} 다시 도전</button><button class="sd-next" id="back-home">홈으로 ${stIcon('chevron',19)}</button></div></section></div></div>`;attachCards();window.scrollTo(0,0);$('#back-home').onclick=()=>setPage('home');$('#again').onclick=()=>openStart(record.sourceId||(record.items.every(x=>x.id===record.items[0].id)?record.items[0].id:null),record.mode||(record.label==='종합 테스트'?'academy':record.label==='오늘의 혼합 훈련'?'daily':record.label==='국어 독해 랜덤 연습'?'literacy':record.label==='계산 랜덤 연습'?'math':'brain'))}
 $('#brand-home').onclick=()=>setPage('home');$$('button[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));setupShellIcons();document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if($('#quit-dialog'))$('#quit-resume')?.click();else if($('#modal'))closeModal();else if(session)showQuitConfirm();return}
+ if(e.key==='Enter'&&session?.locked&&$('#sd-next-question')){e.preventDefault();$('#sd-next-question').click();return}
  if(!session||previewing||session.locked||$('#modal-root').children.length)return;
  if(e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
  if(/^[1-4]$/.test(e.key)){const choices=$$('#challenge [data-answer]');const idx=Number(e.key)-1;if(choices[idx]){e.preventDefault();choices[idx].click()}}
