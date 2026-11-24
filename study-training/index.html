@@ -1677,7 +1677,7 @@ function bindSudokuInteraction(q){
    btn.classList.toggle('is-conflict',invalid.has(btn.dataset.cell));
   });
   info.textContent=invalid.size?filled+' / 16칸 · 같은 숫자가 겹친 칸 '+invalid.size+'개':filled+' / 16칸 · '+(focus?'숫자를 입력하거나 지울 수 있어요':'빈칸을 선택하세요');
-  if(focus&&document.activeElement?.closest?.('#sudoku-board'))board.querySelector('[data-cell="'+s.sudokuFocused+'"]')?.focus({preventScroll:true});
+  if(focus)board.querySelector('[data-cell="'+s.sudokuFocused+'"]')?.focus({preventScroll:true});
   info.classList.toggle('is-error',invalid.size>0);
   $('#sudoku-done').disabled=filled!==16||invalid.size>0||s.locked;
   $('#sudoku-reset').disabled=filled===q.fixed.flat().filter(Boolean).length||s.locked;
