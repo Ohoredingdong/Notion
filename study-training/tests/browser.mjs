@@ -190,6 +190,35 @@ assert.equal(await page.locator('#sudoku-board [data-cell="'+coord+'"]').innerTe
 assert.ok(await page.locator('#sudoku-done').isDisabled(),'incomplete Sudoku cannot submit');
 checks.push('Sudoku focus, number entry, reset and submit guard');
 await page.locator('#quit').click();await page.locator('#quit-exit').click();
+// Deliberate decision modes should preview selection and permit changing it.
+await page.locator('.gh-game-card[data-id="scale"]').click();
+await page.locator('#begin').click();
+await page.waitForSelector('#choice-submit');
+assert.ok(await page.locator('#choice-submit').isDisabled(),'reasoning choice begins uncommitted');
+const choices=page.locator('#challenge [data-answer]');
+await choices.first().click();
+assert.ok(await choices.first().evaluate(el=>el.classList.contains('is-pending')),'selected option highlights instantly');
+await choices.nth(1).click();
+assert.ok(await choices.nth(1).evaluate(el=>el.classList.contains('is-pending')),'selected option can be changed');
+assert.ok(!await choices.first().evaluate(el=>el.classList.contains('is-pending')),'old option is deselected');
+await page.locator('#choice-submit').click();await page.waitForSelector('#sd-next-question');
+checks.push('reversible option selection and manual confirmation');
+await page.locator('#quit').click();await page.locator('#quit-exit').click();
+// Numeric input provides readiness without exposing the correct answer.
+await page.locator('.gh-crumb [data-go="home"]').click();
+await page.waitForSelector('.gh-card[data-go="math"]');
+await page.locator('.gh-card[data-go="math"]').click();
+await page.locator('.gh-game-card[data-id="twosum"]').click();await page.locator('#begin').click();
+await page.waitForSelector('#numeric-submit');
+assert.ok(await page.locator('#numeric-submit').isDisabled(),'empty numeric input is not submittable');
+await page.locator('#numeric').fill('abc');
+assert.ok(await page.locator('#numeric-submit').isDisabled(),'invalid numeric input remains blocked');
+await page.locator('#numeric').fill('3');
+assert.ok(await page.locator('#numeric-submit').isEnabled(),'valid numeric entry becomes confirmable');
+await page.locator('#numeric-submit').click();
+await page.waitForSelector('#sd-next-question');
+checks.push('numeric input readiness and explicit answer results');
+await page.locator('#quit').click();await page.locator('#quit-exit').click();
 for(const width of [390,1111]){
  const mobile=await browser.newPage({viewport:{width,height:844}});
  mobile.on('pageerror',err=>errors.push(width+': '+err.message));
