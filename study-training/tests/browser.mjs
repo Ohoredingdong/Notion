@@ -140,6 +140,56 @@ await page.waitForFunction(()=>document.querySelector('#feedback')?.textContent?
 checks.push('animated 3-box tracking, pause replay and answer');
 await page.locator('#quit').click();
 await page.locator('#quit-exit').click();
+// Stateful sequence cards: choose, remove, undo, clear and explicit submit.
+await page.locator('.gh-game-card[data-id="reverse"]').click();
+await page.locator('#begin').click();
+await page.waitForSelector('#seq-submit',{timeout:9000});
+assert.ok(await page.locator('#seq-submit').isDisabled(),'sequence cannot submit before entering all tiles');
+const required=Number((await page.locator('#seq-hint').innerText()).match(/\/ (\d+)개/)?.[1]);
+assert.ok(required>=4&&required<=8,'sequence expected token count');
+await page.locator('.seq-source [data-tile]').first().click();
+await page.locator('.seq-source [data-tile]').nth(1).click();
+assert.equal(await page.locator('.seq-token').count(),2,'sequence tray responds to tap');
+await page.locator('.seq-token').first().click();
+assert.equal(await page.locator('.seq-token').count(),1,'selected sequence tile can be removed');
+await page.locator('#undo').click();
+assert.equal(await page.locator('.seq-token').count(),0,'undo updates selected tray');
+for(let i=0;i<required;i++)await page.locator('.seq-source [data-tile]').first().click();
+assert.ok(await page.locator('#seq-submit').isEnabled(),'sequence ready to confirm');
+assert.equal(await page.locator('#sd-next-question').count(),0,'sequence never auto-submits at full count');
+await page.locator('#seq-submit').click();
+await page.waitForSelector('#sd-next-question');
+checks.push('sequence tray, remove, undo and confirm');
+await page.locator('#quit').click();await page.locator('#quit-exit').click();
+// Card memory: flipping an individual card should change its board state immediately.
+await page.locator('.gh-game-card[data-id="cards"]').click();
+await page.locator('#begin').click();
+await page.waitForSelector('#pairboard .pair-card',{timeout:8500});
+const cardCount=await page.locator('#pairboard .pair-card').count();
+assert.ok(cardCount>=6,'card deck is interactive');
+await page.locator('#pairboard .pair-card').first().click();
+assert.ok(await page.locator('#pairboard .pair-card').first().evaluate(el=>el.classList.contains('is-revealed')),'first card flips on interaction');
+assert.match(await page.locator('#pair-info').innerText(),/한 장 더 선택하세요/,'card feedback follows first flip');
+await page.locator('#pairboard .pair-card').nth(1).click();
+await page.waitForTimeout(130);
+assert.match(await page.locator('#pair-info').innerText(),/짝|다른 카드/,'card feedback after second flip');
+checks.push('reactive card flips and pairing');
+await page.locator('#quit').click();await page.locator('#quit-exit').click();
+// Sudoku: cell focus, entry, conflict status and reset are actual game-state changes.
+await page.locator('.gh-game-card[data-id="sudoku"]').click();
+await page.locator('#begin').click();
+await page.waitForSelector('#sudoku-board [data-cell]');
+const firstEditable=page.locator('#sudoku-board [data-cell]:not(.fixed)').first();
+const coord=await firstEditable.getAttribute('data-cell');
+await firstEditable.click();
+assert.ok(await page.locator('#sudoku-board [data-cell="'+coord+'"]').evaluate(el=>el.classList.contains('active')),'Sudoku cell selected');
+await page.locator('.sudoku-nums [data-num="1"]').click();
+assert.equal(await page.locator('#sudoku-board [data-cell="'+coord+'"]').innerText(),'1','selected cell updates visually');
+await page.locator('#sudoku-reset').click();
+assert.equal(await page.locator('#sudoku-board [data-cell="'+coord+'"]').innerText(),'','reset restores original blanks');
+assert.ok(await page.locator('#sudoku-done').isDisabled(),'incomplete Sudoku cannot submit');
+checks.push('Sudoku focus, number entry, reset and submit guard');
+await page.locator('#quit').click();await page.locator('#quit-exit').click();
 for(const width of [390,1111]){
  const mobile=await browser.newPage({viewport:{width,height:844}});
  mobile.on('pageerror',err=>errors.push(width+': '+err.message));
