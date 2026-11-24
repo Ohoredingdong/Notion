@@ -1417,8 +1417,8 @@ function showInfoModal(title,message){$('#modal-root').innerHTML=`<div class="mo
 function exportRecords(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`study-training-records-${currentDay()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 
 function updateHeader(){let day=new Date();$('#today-pill').textContent=`${day.getMonth()+1}월 ${day.getDate()}일`;let totalPoints=lifetimeXP();$('#header-level').textContent=`Lv. ${levelFromXP()}`;$('#header-points').textContent=`${totalPoints.toLocaleString('ko-KR')}점`;document.title='스터디트레이닝 | 계산·두뇌·국어 독해'}
-let page='home',searchTerm='',kindFilter='all',levelFilter='all';let session=null;let tick=null,previewTick=null,nextTick=null,shellTimer=null;let ongoingChoice=false,previewing=false;
-function clearTimers(){clearInterval(tick);clearTimeout(previewTick);clearTimeout(nextTick);clearTimeout(shellTimer);tick=previewTick=nextTick=shellTimer=null}
+let page='home',searchTerm='',kindFilter='all',levelFilter='all';let session=null;let tick=null,previewTick=null,nextTick=null,shellTimer=null,pairTick=null;let ongoingChoice=false,previewing=false;
+function clearTimers(){clearInterval(tick);clearTimeout(previewTick);clearTimeout(nextTick);clearTimeout(shellTimer);clearTimeout(pairTick);tick=previewTick=nextTick=shellTimer=pairTick=null}
 function setPage(p){$('#ui-menu')?.removeAttribute('open');if(session){if(!confirm('진행 중인 훈련을 종료하고 이동할까요?'))return;session=null;clearTimers()}page=p;searchTerm='';kindFilter='all';render();window.scrollTo({top:0,behavior:'instant'})}
 function gameCard(g){
  const played=data.sessions.filter(s=>s.items.some(x=>x.id===g.id));
@@ -1547,14 +1547,138 @@ if(q.type==='pairs')h+=`<div class="choices reactive-pairboard" id="pairboard" r
 if(q.type==='grid')h+=`${gridHtml([],false)}<p class="game-action-hint" id="grid-selection-status" aria-live="polite">0 / ${q.selected.length}칸 선택 · 클릭하거나 드래그하세요</p><div class="game-inline-actions"><button type="button" class="btn sm ghost" id="grid-reset" disabled>선택 초기화</button><button type="button" class="btn sm" id="grid-done" disabled>선택 확정</button></div>`;
 if(q.type==='sudoku')h+=`<p class="game-action-hint" id="sudoku-info" aria-live="polite">빈칸을 선택하고 숫자를 입력하세요</p><div class="sudoku reactive-sudoku" id="sudoku-board" role="grid" aria-label="4×4 숫자 퍼즐">${sudokuCells()}</div><div class="sudoku-nums reactive-sudoku-nums" aria-label="숫자 선택">${[1,2,3,4].map(v=>`<button type="button" data-num="${v}" aria-label="${v} 입력">${v}</button>`).join('')}<button type="button" data-num="0" aria-label="숫자 지우기">지우기</button></div><div class="game-inline-actions"><button type="button" class="btn sm ghost" id="sudoku-reset">초기화</button><button type="button" class="btn sm" id="sudoku-done" disabled>완성 확인</button></div>`;
 el.innerHTML=h;$$('[data-answer]',el).forEach(b=>b.onclick=()=>evaluate(b.dataset.answer,b));$('#numberform')?.addEventListener('submit',e=>{e.preventDefault();evaluate($('#numeric').value.trim())});$('#numeric')?.focus();
-if(q.type==='sequence'){let chosen=[];let update=()=>{$('#seq-display').innerHTML=chosen.map(x=>`<div class="memorycell" style="height:42px;width:46px;font-size:17px">${esc(x.v)}</div>`).join('');$$('[data-tile]').forEach(b=>b.disabled=!['reverse','flags'].includes(session.items[session.current].id)&&chosen.some(x=>x.i===b.dataset.tile))};$$('[data-tile]').forEach(b=>b.onclick=()=>{if(session.locked)return;chosen.push({v:b.dataset.key,i:b.dataset.tile});update();if(chosen.length===(q.answer.split(q.separator||'').length))evaluate(chosen.map(x=>x.v).join(q.separator||''))});$('#undo').onclick=()=>{if(chosen.length)chosen.pop();update()}}
-if(q.type==='pairs'){$$('[data-card]').forEach(b=>b.onclick=()=>flipCard(Number(b.dataset.card)))}
-if(q.type==='grid'){document.querySelectorAll('[data-gridcell]').forEach(b=>b.onclick=()=>{if(session.locked)return;let index=Number(b.dataset.gridcell),sel=session.selectedGrid;session.selectedGrid=sel.includes(index)?sel.filter(a=>a!==index):sel.length<q.selected.length?[...sel,index]:sel;b.classList.toggle('selected',session.selectedGrid.includes(index));$('#grid-selection-status').textContent=`${session.selectedGrid.length} / ${q.selected.length}칸 선택`;$('#grid-done').disabled=session.selectedGrid.length!==q.selected.length});$('#grid-done').onclick=()=>{if(session.selectedGrid.length===q.selected.length)evaluate(session.selectedGrid.slice().sort((a,b)=>a-b).join(','))}}
-if(q.type==='sudoku'){session.sudokuFocused=null;$$('[data-cell]').forEach(b=>b.onclick=()=>{if(b.classList.contains('fixed'))return;session.sudokuFocused=b.dataset.cell;$$('[data-cell]').forEach(k=>k.classList.toggle('active',k===b))});$$('[data-num]').forEach(b=>b.onclick=()=>{if(!session.sudokuFocused)return;let [i,j]=session.sudokuFocused.split(',').map(Number);session.sudokuInput[i][j]=Number(b.dataset.num);$('#sudoku-board').innerHTML=sudokuCells();$$('[data-cell]').forEach(k=>k.onclick=()=>{if(k.classList.contains('fixed'))return;session.sudokuFocused=k.dataset.cell;$$('[data-cell]').forEach(z=>z.classList.toggle('active',z===k))});});$('#sudoku-done').onclick=()=>{let filled=session.sudokuInput.flat();if(filled.some(n=>!n)){$('#feedback').textContent='모든 칸을 채운 뒤 채점하세요.';return}evaluate(filled.join(''))}}
+if(q.type==='sequence')bindSequenceInteraction(q);
+if(q.type==='pairs')$$('[data-card]').forEach(b=>b.onclick=()=>flipCard(Number(b.dataset.card)));
+if(q.type==='grid')bindGridInteraction(q);
+if(q.type==='sudoku')bindSudokuInteraction(q);
 }
-function sudokuCells(){let q=session.q;return session.sudokuInput.map((row,i)=>row.map((v,j)=>`<button class="${q.fixed[i][j]?'fixed':''} ${session.sudokuFocused===`${i},${j}`?'active':''}" data-cell="${i},${j}">${v||''}</button>`).join('')).join('')}
-function gridHtml(selected,show){return `<div class="grid5">${[...Array(25)].map((_,i)=>`<button type="button" class="sq ${show?'': 'clickable'} ${show&&selected.includes(i)?'selected':''}" ${show?'disabled':'data-gridcell="'+i+'"'} aria-label="${i+1}번 칸">${show&&selected.includes(i)?'◆':''}</button>`).join('')}</div>`}
-function flipCard(i){let s=session,ps=s.pairState,q=s.q;if(!s||s.locked||ps.found.includes(i)||ps.open.includes(i)||ps.open.length>=2)return;ps.open.push(i);let b=$(`[data-card="${i}"]`);b.textContent=q.deck[i];b.classList.add('is-revealed');if(ps.open.length===2){ps.tries++;let[a,c]=ps.open;if(q.deck[a]===q.deck[c]){ps.found.push(a,c);ps.open=[];$('#pair-info').textContent=`짝 ${ps.found.length/2} / ${q.answer}`;if(ps.found.length===q.deck.length){evaluate('complete')}}else{setTimeout(()=>{if(!session||session.q!==q)return;[a,c].forEach(z=>{let b=$(`[data-card="${z}"]`);if(b){b.textContent='?';b.classList.remove('is-revealed')}});ps.open=[]},630)}}}
+function bindSequenceInteraction(q){
+ const s=session,required=q.answer.split(q.separator||'').length,repeatAllowed=['reverse','flags'].includes(s.items[s.current].id);
+ const chosen=[],source=$('#challenge .seq-source'),display=$('#seq-display');
+ function repaint(){
+  if(session!==s||s.q!==q)return;
+  display.innerHTML=chosen.map((x,i)=>`<button type="button" class="seq-token" data-seq-remove="${i}" aria-label="${i+1}번째 ${esc(x.value)} 제거"><small>${i+1}</small><b>${esc(x.value)}</b><span aria-hidden="true">×</span></button>`).join('')||'<span class="seq-empty">카드를 눌러 여기로 옮기세요</span>';
+  $$('[data-seq-remove]',display).forEach(b=>b.onclick=()=>{if(s.locked)return;chosen.splice(Number(b.dataset.seqRemove),1);repaint()});
+  $$('[data-tile]',source).forEach(b=>{const used=!repeatAllowed&&chosen.some(x=>x.tile===b.dataset.tile);b.disabled=used||chosen.length>=required||s.locked;b.classList.toggle('is-used',used);b.setAttribute('aria-pressed',String(used))});
+  $('#seq-hint').textContent=chosen.length+' / '+required+'개 선택 · 순서를 바꾸려면 위 카드를 누르세요';
+  $('#undo').disabled=!chosen.length||s.locked;
+  $('#seq-clear').disabled=!chosen.length||s.locked;
+  $('#seq-submit').disabled=chosen.length!==required||s.locked;
+ }
+ $$('[data-tile]',source).forEach(b=>b.onclick=()=>{if(s.locked||chosen.length>=required)return;chosen.push({value:b.dataset.key,tile:b.dataset.tile});repaint()});
+ $('#undo').onclick=()=>{if(s.locked)return;chosen.pop();repaint()};
+ $('#seq-clear').onclick=()=>{if(s.locked)return;chosen.length=0;repaint()};
+ $('#seq-submit').onclick=()=>{if(s.locked||chosen.length!==required)return;evaluate(chosen.map(x=>x.value).join(q.separator||''))};
+ repaint();
+}
+function bindGridInteraction(q){
+ const s=session,board=$('#challenge .grid5'),limit=q.selected.length;
+ let painting=false,paintValue=true;
+ function refresh(){
+  if(session!==s||s.q!==q)return;
+  $$('[data-gridcell]',board).forEach(b=>{const yes=s.selectedGrid.includes(Number(b.dataset.gridcell));b.classList.toggle('selected',yes);b.setAttribute('aria-pressed',String(yes));b.setAttribute('aria-label',Number(b.dataset.gridcell)+1+'번 칸 '+(yes?'선택됨':'선택 안 됨'))});
+  $('#grid-selection-status').textContent=s.selectedGrid.length+' / '+limit+'칸 선택 · 클릭하거나 드래그하세요';
+  $('#grid-reset').disabled=!s.selectedGrid.length||s.locked;
+  $('#grid-done').disabled=s.selectedGrid.length!==limit||s.locked;
+ }
+ function paint(btn,on){
+  if(!btn||s.locked||session!==s||s.q!==q)return;
+  const idx=Number(btn.dataset.gridcell),yes=s.selectedGrid.includes(idx);
+  if(yes===on)return;
+  if(on&&s.selectedGrid.length>=limit)return;
+  s.selectedGrid=on?[...s.selectedGrid,idx]:s.selectedGrid.filter(n=>n!==idx);
+  refresh();
+ }
+ board.addEventListener('pointerdown',e=>{const btn=e.target.closest('[data-gridcell]');if(!btn||s.locked)return;painting=true;paintValue=!s.selectedGrid.includes(Number(btn.dataset.gridcell));paint(btn,paintValue)});
+ board.addEventListener('pointerover',e=>{if(painting)paint(e.target.closest('[data-gridcell]'),paintValue)});
+ board.addEventListener('pointermove',e=>{if(!painting)return;const hit=document.elementFromPoint(e.clientX,e.clientY);if(hit&&board.contains(hit))paint(hit.closest('[data-gridcell]'),paintValue)});
+ board.addEventListener('pointerup',()=>painting=false);
+ board.addEventListener('pointercancel',()=>painting=false);
+ board.addEventListener('pointerleave',()=>painting=false);
+ board.addEventListener('click',e=>{if(e.detail===0){const b=e.target.closest('[data-gridcell]');if(b)paint(b,!s.selectedGrid.includes(Number(b.dataset.gridcell)))}});
+ $('#grid-reset').onclick=()=>{if(s.locked)return;s.selectedGrid=[];refresh()};
+ $('#grid-done').onclick=()=>{if(s.locked||s.selectedGrid.length!==limit)return;evaluate(s.selectedGrid.slice().sort((a,b)=>a-b).join(','))};
+ refresh();
+}
+function sudokuConflicts(grid){
+ const invalid=new Set();
+ function check(cells){
+  const numbers=new Map();
+  cells.forEach(([r,c])=>{const n=grid[r][c];if(!n)return;if(!numbers.has(n))numbers.set(n,[]);numbers.get(n).push(r+','+c)});
+  numbers.forEach(group=>{if(group.length>1)group.forEach(key=>invalid.add(key))});
+ }
+ for(let n=0;n<4;n++){check(Array.from({length:4},(_,c)=>[n,c]));check(Array.from({length:4},(_,r)=>[r,n]))}
+ for(let r=0;r<4;r+=2)for(let c=0;c<4;c+=2)check([[r,c],[r,c+1],[r+1,c],[r+1,c+1]]);
+ return invalid;
+}
+function bindSudokuInteraction(q){
+ const s=session,board=$('#sudoku-board'),info=$('#sudoku-info');
+ s.sudokuFocused=null;
+ function repaint(){
+  if(session!==s||s.q!==q)return;
+  const invalid=sudokuConflicts(s.sudokuInput),filled=s.sudokuInput.flat().filter(Boolean).length;
+  board.innerHTML=sudokuCells();
+  const focus=s.sudokuFocused?.split(',').map(Number);
+  $$('[data-cell]',board).forEach(btn=>{
+   const [r,c]=btn.dataset.cell.split(',').map(Number),active=btn.dataset.cell===s.sudokuFocused;
+   btn.setAttribute('aria-label',(r+1)+'행 '+(c+1)+'열 '+(s.sudokuInput[r][c]||'빈칸')+(q.fixed[r][c]?' 고정':''));
+   btn.setAttribute('aria-selected',String(active));
+   btn.classList.toggle('active',active);
+   btn.classList.toggle('is-peer',!!focus&&(focus[0]===r||focus[1]===c||(Math.floor(focus[0]/2)===Math.floor(r/2)&&Math.floor(focus[1]/2)===Math.floor(c/2))));
+   btn.classList.toggle('is-conflict',invalid.has(btn.dataset.cell));
+  });
+  info.textContent=invalid.size?filled+' / 16칸 · 같은 숫자가 겹친 칸 '+invalid.size+'개':filled+' / 16칸 · '+(focus?'숫자를 입력하거나 지울 수 있어요':'빈칸을 선택하세요');
+  info.classList.toggle('is-error',invalid.size>0);
+  $('#sudoku-done').disabled=filled!==16||invalid.size>0||s.locked;
+  $('#sudoku-reset').disabled=filled===q.fixed.flat().filter(Boolean).length||s.locked;
+ }
+ function select(r,c){if(q.fixed[r][c]||s.locked)return;s.sudokuFocused=r+','+c;repaint()}
+ function put(n){if(!s.sudokuFocused||s.locked)return;const [r,c]=s.sudokuFocused.split(',').map(Number);if(q.fixed[r][c])return;s.sudokuInput[r][c]=n;repaint()}
+ board.addEventListener('click',e=>{const cell=e.target.closest('[data-cell]');if(!cell||!board.contains(cell))return;const [r,c]=cell.dataset.cell.split(',').map(Number);select(r,c)});
+ board.addEventListener('keydown',e=>{
+  if(!s.sudokuFocused||s.locked)return;
+  const [r,c]=s.sudokuFocused.split(',').map(Number);
+  if(/^[1-4]$/.test(e.key)){e.preventDefault();put(Number(e.key))}
+  else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){e.preventDefault();put(0)}
+  else if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+   e.preventDefault();let nr=r,nc=c;
+   for(let i=0;i<16;i++){if(e.key==='ArrowUp')nr=(nr+3)%4;else if(e.key==='ArrowDown')nr=(nr+1)%4;else if(e.key==='ArrowLeft')nc=(nc+3)%4;else nc=(nc+1)%4;if(!q.fixed[nr][nc])break}
+   select(nr,nc);board.querySelector('[data-cell="'+nr+','+nc+'"]')?.focus();
+  }
+ });
+ $$('[data-num]').forEach(b=>b.onclick=()=>put(Number(b.dataset.num)));
+ $('#sudoku-reset').onclick=()=>{if(s.locked)return;s.sudokuInput=q.grid.map((row,r)=>row.map((v,c)=>q.fixed[r][c]?v:0));s.sudokuFocused=null;repaint()};
+ $('#sudoku-done').onclick=()=>{if(s.locked||$('#sudoku-done').disabled)return;evaluate(s.sudokuInput.flat().join(''))};
+ repaint();
+}
+function sudokuCells(){let q=session.q;return session.sudokuInput.map((row,i)=>row.map((v,j)=>`<button type="button" class="${q.fixed[i][j]?'fixed':''}" ${q.fixed[i][j]?'disabled':''} data-cell="${i},${j}" role="gridcell">${v||''}</button>`).join('')).join('')}
+function gridHtml(selected,show){return `<div class="grid5" role="group" aria-label="위치 기억 격자">${[...Array(25)].map((_,i)=>`<button type="button" class="sq ${show?'': 'clickable'} ${show&&selected.includes(i)?'selected':''}" ${show?'disabled':'data-gridcell="'+i+'"'} aria-label="${i+1}번 칸" aria-pressed="${show&&selected.includes(i)}">${show&&selected.includes(i)?'◆':''}</button>`).join('')}</div>`}
+function flipCard(i){
+ const s=session,ps=s?.pairState,q=s?.q;
+ if(!s||s.locked||previewing||!ps||ps.resolving||ps.found.includes(i)||ps.open.includes(i)||ps.open.length>=2)return;
+ const button=$('[data-card="'+i+'"]');if(!button)return;
+ ps.open.push(i);button.classList.add('is-revealed');button.setAttribute('aria-pressed','true');button.setAttribute('aria-label',i+1+'번 카드 '+q.deck[i]);
+ $('#pair-info').textContent='짝 '+ps.found.length/2+' / '+q.answer+' · '+(ps.open.length===1?'한 장 더 선택하세요':'비교하는 중...');
+ if(ps.open.length!==2)return;
+ ps.tries++;const [a,b]=ps.open,matched=q.deck[a]===q.deck[b];
+ if(matched){
+  ps.found.push(a,b);ps.open=[];
+  [a,b].forEach(n=>$('[data-card="'+n+'"]')?.classList.add('is-matched'));
+  $('#pair-info').textContent='짝 '+ps.found.length/2+' / '+q.answer+' · 잘 찾았어요!';
+  if(ps.found.length===q.deck.length)evaluate('complete');
+ }else{
+  ps.resolving=true;
+  [a,b].forEach(n=>$('[data-card="'+n+'"]')?.classList.add('is-mismatch'));
+  $('#pair-info').textContent='다른 카드예요 · 위치를 기억하세요';
+  pairTick=setTimeout(()=>{
+   if(session!==s||s.q!==q||!s.pairState)return;
+   [a,b].forEach(n=>{const button=$('[data-card="'+n+'"]');if(button){button.classList.remove('is-revealed','is-mismatch');button.setAttribute('aria-pressed','false');button.setAttribute('aria-label',n+1+'번 뒤집힌 카드')}});
+   ps.open=[];ps.resolving=false;
+   $('#pair-info').textContent='짝 '+ps.found.length/2+' / '+q.answer+' · 다시 두 장을 선택하세요';
+   pairTick=null;
+  },900);
+ }
+}
 function validSudoku(grid,q){const valid=(a)=>a.length===4&&new Set(a).size===4&&a.every(n=>n>=1&&n<=4);for(let i=0;i<4;i++){if(!valid(grid[i])||!valid(grid.map(row=>row[i])))return false;for(let j=0;j<4;j++){if(q.fixed[i][j]&&grid[i][j]!==q.grid[i][j])return false}}for(let a=0;a<4;a+=2)for(let b=0;b<4;b+=2){if(!valid([grid[a][b],grid[a][b+1],grid[a+1][b],grid[a+1][b+1]]))return false}return true}
 function evaluate(value,clicked){if(!session||session.locked||previewing)return;let s=session,q=s.q,correct=q.type==='pairs'?'complete'===value:q.type==='sudoku'?validSudoku(s.sudokuInput,q):String(value).replace(/\s/g,'')===String(q.answer).replace(/\s/g,'');s.locked=true;let dt=(Date.now()-s.questionStart)/1000;s.correct+=correct?1:0;s.score+=correct?Math.max(20,Math.round(100-Math.min(70,dt*2))):0;const selectedDifficulty=s.currentDifficulty||s.diff;
 s.answers.push({id:s.items[s.current].id,correct,seconds:Number(dt.toFixed(1)),difficulty:selectedDifficulty,
