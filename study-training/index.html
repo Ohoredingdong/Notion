@@ -884,6 +884,13 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 @keyframes st-enter{from{opacity:.35;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:760px){.sd-play-shell #pairboard .pair-card{min-height:69px;height:72px}.sd-play-shell .game-inline-actions{gap:7px}.sd-play-shell .seq-token{padding:5px 7px;min-height:39px}.sd-play-shell .seq-drop{min-height:65px}.sd-play-shell .reactive-result{gap:7px}.sd-play-shell .reactive-next{width:100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){.sd-play-shell .pair-card-inner,.sd-play-shell .seq-token{transition:none!important;animation:none!important}}
+
+.sd-play-shell .choice-confirm-wrap{width:min(1050px,100%);justify-content:space-between;background:#f6f8f3;border:1px solid #dfe7da;border-radius:15px;padding:10px 14px;margin-top:12px}
+.sd-play-shell .choice-confirm-wrap #choice-hint{margin:0;text-align:left}
+.sd-play-shell .choices .choice.is-pending{border:2px solid var(--sd-accent-dark);background:var(--sd-panel);transform:translateY(-2px);box-shadow:0 7px 0 #ccd9c5,0 12px 20px #2b3a2e16}
+.sd-play-shell #numeric-status{text-align:center}
+@media(max-width:760px){.sd-play-shell .choice-confirm-wrap{flex-direction:column;align-items:stretch}.sd-play-shell .choice-confirm-wrap #choice-hint{text-align:center}}
+
 </style>
 </head>
 <body><div class="app">
@@ -1589,13 +1596,27 @@ let h=`<div class="gamewrap sd-game sd-theme-${theme} sd-kind-${q.type}">
 </div>`;
 $('#content').innerHTML=`<div class="gh-inner-root gh-play-shell sd-play-shell">${sharedGameBar()}<div class="gh-inner-content">${h}</div></div>`;attachCards();window.scrollTo(0,0);$('#page-title').textContent='훈련 진행 중';$('#page-desc').textContent='답을 확인한 다음 다음 문제로 이동할 수 있습니다.';$('#quit').onclick=showQuitConfirm;if(q.shellGame){startShellRound(q);return}if(previewing){let temp=q.preview||'격자 위치를 기억하세요';$('#challenge').innerHTML=q.type==='grid'?gridHtml(q.selected,true):q.type==='pairs'?`<div class="choices" >${q.deck.map(v=>`<div class="choice" style="display:grid;place-items:center;min-height:65px;font-size:26px">${esc(v)}</div>`).join('')}</div><div class="tiny" style="margin-top:15px">짝이 있는 카드 위치를 기억하세요</div>`:`<div class="memoryline"><div class="focuswords">${q.previewHtml?temp:esc(temp)}</div></div><div class="tiny">잠시 후 문제 풀이가 시작됩니다…</div>`;s.previewDue=Date.now()+(q.previewTime||2500);previewTick=setTimeout(()=>{if(session&&session.q===q){$('#challenge').innerHTML='<div class="st-retain-cue" aria-live="polite">기억한 내용을 떠올려 보세요</div>';previewTick=setTimeout(()=>{if(session&&session.q===q){previewing=false;showChallenge(q)}},400)}},q.previewTime||2500)}else showChallenge(q)}
 function showChallenge(q){if(!session||session.q!==q)return;session.previewDue=0;session.questionStart=Date.now();let el=$('#challenge');if(!el)return;if(q.preview||q.type==='grid'||q.type==='pairs'){const heading=document.querySelector('.sd-task-title .qtitle');const subtitle=document.querySelector('.sd-task-title .qsub');if(heading)heading.textContent=q.prompt;if(subtitle)subtitle.textContent=q.note||'아래에서 정답을 선택해 주세요.';}let h='';if(q.passage&&!document.querySelector('.sd-passage'))h+=`<div class="readingbox"><div class="tiny">독해 지문</div>${esc(q.passage)}</div>`;if(q.visual)h+=q.visual;
-if(q.type==='choice')h+=`<div class="choices">${q.options.map((v,i)=>`<button class="choice" data-answer="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
-if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn">확인</button></form>`;
+ const slowChoice=q.type==='choice'&&(Boolean(q.passage)||['scale','mission','pattern','view','rail','rotate','pieces','shape','chunks'].includes(session.items[session.current].id));
+if(q.type==='choice')h+=`<div class="choices" role="group" aria-label="선택지">${q.options.map((v,i)=>`<button type="button" class="choice" data-answer="${esc(v)}" aria-pressed="false">${esc(v)}</button>`).join('')}</div>${slowChoice?'<div class="game-inline-actions choice-confirm-wrap"><span id="choice-hint" class="game-action-hint" aria-live="polite">답을 고른 다음 확정하세요</span><button type="button" id="choice-submit" class="btn sm" disabled>선택 확정</button></div>':''}`;
+if(q.type==='number')h+=`<form class="numberform" id="numberform"><input id="numeric" aria-label="숫자 정답" type="text" inputmode="numeric" autocomplete="off" placeholder="정답 입력" required><button type="submit" class="btn" id="numeric-submit" disabled>확인</button></form><p class="game-action-hint" id="numeric-status" aria-live="polite">숫자를 입력하면 제출할 수 있습니다</p>`;
 if(q.type==='sequence')h+=`<p class="game-action-hint" id="seq-hint" aria-live="polite">순서대로 선택하세요 · 0 / ${q.answer.split(q.separator||'').length}</p><div id="seq-display" class="seq-drop" aria-label="선택한 순서"></div><div class="tilelist seq-source" aria-label="선택 가능한 카드">${shuffle(q.keys).map((n,i)=>`<button type="button" class="tile seq-tile" data-key="${esc(n)}" data-tile="${i}" aria-label="${esc(n)} 선택">${esc(n)}</button>`).join('')}</div><div class="game-inline-actions"><button type="button" id="undo" class="btn sm ghost" disabled>하나 되돌리기</button><button type="button" id="seq-clear" class="btn sm ghost" disabled>모두 지우기</button><button type="button" id="seq-submit" class="btn sm" disabled>선택 확정</button></div>`;
 if(q.type==='pairs')h+=`<div class="choices reactive-pairboard" id="pairboard" role="group" aria-label="짝 맞히기 카드">${q.deck.map((v,i)=>`<button type="button" class="pair-card" data-card="${i}" data-face="${esc(v)}" aria-label="${i+1}번 뒤집힌 카드" aria-pressed="false"><span class="pair-card-inner"><span class="pair-card-back" aria-hidden="true">✦</span><span class="pair-card-front" aria-hidden="true">${esc(v)}</span></span></button>`).join('')}</div><p class="game-action-hint" id="pair-info" aria-live="polite">짝 0 / ${q.answer} · 카드 두 장을 선택하세요</p>`;
 if(q.type==='grid')h+=`${gridHtml([],false)}<p class="game-action-hint" id="grid-selection-status" aria-live="polite">0 / ${q.selected.length}칸 선택 · 클릭하거나 드래그하세요</p><div class="game-inline-actions"><button type="button" class="btn sm ghost" id="grid-reset" disabled>선택 초기화</button><button type="button" class="btn sm" id="grid-done" disabled>선택 확정</button></div>`;
 if(q.type==='sudoku')h+=`<p class="game-action-hint" id="sudoku-info" aria-live="polite">빈칸을 선택하고 숫자를 입력하세요</p><div class="sudoku reactive-sudoku" id="sudoku-board" role="grid" aria-label="4×4 숫자 퍼즐">${sudokuCells()}</div><div class="sudoku-nums reactive-sudoku-nums" aria-label="숫자 선택">${[1,2,3,4].map(v=>`<button type="button" data-num="${v}" aria-label="${v} 입력">${v}</button>`).join('')}<button type="button" data-num="0" aria-label="숫자 지우기">지우기</button></div><div class="game-inline-actions"><button type="button" class="btn sm ghost" id="sudoku-reset">초기화</button><button type="button" class="btn sm" id="sudoku-done" disabled>완성 확인</button></div>`;
-el.innerHTML=h;$$('[data-answer]',el).forEach(b=>b.onclick=()=>evaluate(b.dataset.answer,b));$('#numberform')?.addEventListener('submit',e=>{e.preventDefault();evaluate($('#numeric').value.trim())});$('#numeric')?.focus();
+el.innerHTML=h;
+if(slowChoice){
+ let active=null;
+ $$('[data-answer]',el).forEach(b=>b.onclick=()=>{
+  if(session.locked)return;
+  active=b;$$('[data-answer]',el).forEach(x=>{const on=x===b;x.classList.toggle('is-pending',on);x.setAttribute('aria-pressed',String(on))});
+  $('#choice-hint').textContent='선택 완료 · 다른 답을 누르면 변경됩니다';
+  $('#choice-submit').disabled=false;
+ });
+ $('#choice-submit').onclick=()=>{if(active&&!session.locked)evaluate(active.dataset.answer,active)};
+}else $$('[data-answer]',el).forEach(b=>b.onclick=()=>evaluate(b.dataset.answer,b));
+$('#numberform')?.addEventListener('submit',e=>{e.preventDefault();if($('#numeric-submit').disabled)return;evaluate($('#numeric').value.trim())});
+$('#numeric')?.addEventListener('input',e=>{const valid=/^[+-]?\d+$/.test(e.target.value.trim());$('#numeric-submit').disabled=!valid;$('#numeric-status').textContent=valid?'입력되었습니다 · 확인 버튼을 눌러 제출하세요':'숫자를 입력하면 제출할 수 있습니다'});
+$('#numeric')?.focus();
 if(q.type==='sequence')bindSequenceInteraction(q);
 if(q.type==='pairs')$$('[data-card]').forEach(b=>b.onclick=()=>flipCard(Number(b.dataset.card)));
 if(q.type==='grid')bindGridInteraction(q);
