@@ -1,0 +1,26 @@
+/* Gyul Hap: Rule Breaker S2 E3, 1v1. Source: https://geniusrepository.org/repository/match/500 */
+(()=>{
+'use strict';
+let clock=null, deadline=0;
+const active=()=>current==='결! 합!'&&!finishText&&st.ghTimed===true;
+function stop(){clearInterval(clock);clock=null;deadline=0;}
+function arm(ms,callback){stop();const state=st;deadline=Date.now()+ms;clock=setInterval(()=>{if(!active()||st!==state){stop();return;}const left=Math.max(0,deadline-Date.now());const el=document.getElementById('gh-time');if(el)el.textContent=(left/1000).toFixed(1)+'초';if(left===0){stop();callback();}},100);}
+function turn(player){st.turn=player;st.phase=player===0?'choose':'ai';st.selected=[];if(player===0){arm(10000,()=>pass(0));}else{const duration=2500+Math.floor(Math.random()*4500);arm(duration,aiMove);}render();}
+function nextBoard(){if(st.round>=10&&st.score[0]!==st.score[1]){stop();st.phase='done';finish(st.score[0]>st.score[1],`나 ${st.score[0]} : AI ${st.score[1]}`);render();return;}st.round++;ghNew();turn((st.first+st.round-1)%2);}
+function result(player,delta,message,newBoard=false){stop();st.score[player]+=delta;st.message=message;logit(message);st.phase='review';st.selected=[];arm(1100,()=>newBoard?nextBoard():turn(1-player));render();}
+function pass(player){if(!active())return;st.pass++;result(player,0,`${player===0?'나':'AI'}: 패스 (연속 ${st.pass}/6)`,st.pass>=6);}
+function claim(player,kind,ids=[]){if(!active())return;st.pass=0;const who=player===0?'나':'AI';if(kind==='결'){const good=ghTriples().length===0;result(player,good?3:-1,`${who}: 결 ${good?'성공 +3':'실패 -1'}`,good);return;}const sorted=[...ids].sort((a,b)=>a-b),key=sorted.map(i=>i+1).join('-');const good=sorted.length===3&&new Set(sorted).size===3&&sorted.every(i=>Number.isInteger(i)&&i>=0&&i<9)&&ghValid(...sorted.map(i=>st.cards[i]))&&!st.found.includes(key);if(good)st.found.push(key);result(player,good?1:-1,`${who}: 합 ${key||'시간 초과'} · ${good?'성공 +1':'실패 -1'}`);}
+function aiMove(){const options=ghTriples();const r=Math.random();if(options.length===0){if(r<0.85)claim(1,'결');else pass(1);}else if(r<0.72){claim(1,'합',pick(options).a);}else if(r<0.76){claim(1,'결');}else{pass(1);}}
+const baseStart=start,baseHome=home,basePrompt=activePrompt;
+activePrompt=function(){if(!active())return basePrompt();return st.phase==='answer'?'5초 안에 번호 3개를 선택하고 합 제출을 누르세요.':st.phase==='ai'?'AI가 같은 카드판을 탐색하는 중입니다.':st.phase==='review'?st.message:'10초 안에 합 또는 결을 선언하세요.';};
+start=function(...args){stop();return baseStart.apply(this,args);};
+home=function(...args){stop();return baseHome.apply(this,args);};
+initGH=function(){stop();st={round:1,score:[0,0],cards:[],found:[],selected:[],pass:0,ghTimed:true,first:Math.random()<.5?0:1,message:''};ghNew();turn(st.first);};
+function can(phase){return active()&&st.turn===0&&st.phase===phase&&Date.now()<deadline;}
+window.ghTimedCall=function(){if(!can('choose'))return;st.phase='answer';st.pass=0;st.selected=[];arm(5000,()=>claim(0,'합',[]));render();};
+ghSelect=function(i){if(!can('answer')||!Number.isInteger(i)||i<0||i>8)return;const p=st.selected.indexOf(i);if(p>=0)st.selected.splice(p,1);else if(st.selected.length<3)st.selected.push(i);render();};
+ghSubmit=function(){if(can('answer')&&st.selected.length===3)claim(0,'합',st.selected);};
+ghEnd=function(){if(can('choose'))claim(0,'결');};
+ghPass=function(){if(can('choose'))pass(0);};
+drawGH=function(){const choose=can('choose'),answer=can('answer');const title=finishText?'최종 결과':st.phase==='review'?'판정 완료':st.turn===1?'AI 탐색 중':answer?'합! 번호 3개 선택':'내 차례 · 합 또는 결 선언';const cols=['#c52e37','#d7b22b','#285bb7'],backs=['#151515','#858585','#f2f0e9'];const cardNames=['원','삼각형','사각형'],colorNames=['빨강','노랑','파랑'],backNames=['검정','회색','흰색'];const cards=st.cards.map((n,i)=>{const [a,b,c]=tripleAttrs(n);return `<button type="button" class="shape ${st.selected.includes(i)?'selected':''}" style="background:${backs[c]};color:${cols[b]};opacity:1" aria-label="${i+1}번 ${colorNames[b]} ${cardNames[a]} ${backNames[c]} 배경" aria-pressed="${st.selected.includes(i)}" onclick="ghSelect(${i})" ${answer?'':'disabled'}><i style="color:${c===0?'#fff':'#111'}!important;opacity:1!important">${i+1}</i><span class="sym">${shapes[a]}</span></button>`;}).join('');stage(`<div class="toolbar"><span class="counter">${st.round>10?`연장 ${st.round-10}라운드`:`${st.round} / 10 라운드`}</span><span class="counter" id="gh-time" style="font-variant-numeric:tabular-nums">${finishText?'—':(Math.max(0,deadline-Date.now())/1000).toFixed(1)+'초'}</span><span class="counter">${title}</span></div>${scores(['나','AI'],st.score)}<div class="grid9" style="margin:10px auto">${cards}</div><div class="toolbar">${action(answer?'합 제출':'합! 선언',answer?'ghSubmit()':'ghTimedCall()',answer?st.selected.length!==3:!choose)}${action('결!','ghEnd()',!choose,'blue')}${action('패스','ghPass()',!choose,'alt')}</div><div class="info" role="status">${st.message||'세 가지 속성을 비교하세요.'} · 인정된 합 ${st.found.length}개 · 연속 패스 ${st.pass}/6</div><div class="small" style="overflow-wrap:anywhere">인정된 조합: ${st.found.join(' / ')||'없음'}</div>`,`<p class="muted">룰 브레이커 3회 데스매치 기준. 27장 중 9장, 두 명이 번갈아 10초씩 탐색. 합 선언 후 5초 안에 번호 3개를 제출하세요. 합 +1/-1 (선언 뒤 미제출 포함), 결 +3/-1. 연속 6회 무선언 또는 결 성공 시 다음 라운드. 10라운드 합산.</p><p class="small">AI 탐색 시간·오답은 난이도를 위해 모사했습니다. 첫 순서는 무작위, 이후 라운드는 교대로 시작합니다. 10라운드 이후 동점이면 연장전을 진행합니다.</p>`);};
+})();
