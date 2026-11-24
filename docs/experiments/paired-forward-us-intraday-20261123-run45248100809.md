@@ -64,3 +64,62 @@ Pinned main `fdcc609274d964f2f9d04acd4aab9e69b90a1ea1`. Compared with `ef5a6eb63
 New operational evidence: [health run 45311601154](https://github.com/Ohoredingdong/Notion/actions/runs/45311601154), job 138168411232, actually published error state at 02:20:35 UTC: forecast stale 5.9h (2h limit), finance stale 70.4h (48h limit), opportunity 104/104, charts 108/108 and market 4/4 stale source-session checks. Latest visible repository Actions listing through 02:20 UTC includes no subsequent Stock Prospective Forecasts run after 45258747542 (20:22 UTC prior date); current workflow config has 7,17,27,37,47,57 minutes in UTC hours 0–7 weekdays and explicitly describes cron delay/drop. This shows an observed scheduling/collection gap during the configured KR window, not a proven scheduler root cause or exchange data failure. No assumption that cron ran, no fabricated predictions at missed starts. [Decision UI run 45304356545](https://github.com/Ohoredingdong/Notion/actions/runs/45304356545) rejected stale strict-review evidence, not grounds to loosen freshness gates. Existing monitor owns these warnings.
 
 Fetched original prospective job 137987450429 log: public verification failed with public_deployment_unverified: ValueError. Independent audit job 137989767742 explicitly reports 705 eligible rows, 0 groups meeting sample gate, no integrity errors, and required receipt/quote/cost/untouched follow-up missing. Recovery job 137989790345 explicitly says retry=false, reason=published_bundle_requires_public_only_recovery; no automatic re-execution. Existing #149 diagnostics and #150 missing-window research remain applicable. #172 remains draft. No new reproducible model defect or independent future outcome, no evidence of a newly failed source request, no new hypothesis or tuning, no production modification or unsafe replay. Original policies and all previous cohorts preserved; timing_utility=not_proven. The last visible Actions listing is not proof of absence after its own newest timestamp.
+
+
+## New daily cohort — cutoff 2026-11-24 05:27 UTC (14:27 KST)
+
+Pinned main `e20aa853d3402cf51d490aaefc3c72d0155420ec`; prior `fdcc609274d964f2f9d04acd4aab9e69b90a1ea1`. 23 intervening commits; forecast changes consist of data publication/learning evidence, no model or controller source code change. PR #146's actual patch binds input row fingerprints and prevents derived-output aliases/overwrites. PR #147 remains held; both preregistration/results and prior shadow replay were read again. Artifact 13750188846 is not expired (expires 2026-12-10 09:25:39 UTC; digest matches prior record), but its 20 predictions were already evaluated in the prior replay, not new independent evidence. Historical 2,520 targets remain used. No repeated model selection on either cohort.
+
+Direct Git blob retrieval independently compared exact old prefixes in all five original streams (all true). Counts ledger 856→884, outcomes 822→842, learning 705→725, attempts 4864→4944, deliveries 126→128. New blob SHAs in that order: `c4d1bef316fba10b907493f48497624e6372f45e`, `1fca7de7e3971106086ea1b5ecdad262ec559a5d`, `2a076ed7242c0db255a4c2ab3898ac4e713f55c5`, `1140f0fa1d83c5281a2e23a5ad437e2beee3c53b`, `f927d899e0a869ff361aa052331369fafa5e8cdc`. Separate JS recalculation of original probabilities/argmax, original band, actual stored return, Brier, receipt/issue/target/evaluation/learning chronology, duplicate IDs, pre-target public proof, and within-group eligible overlap yielded no detected errors; not independent exchange authentication. No true human receipt flag. The twenty newly learned original daily rows are exactly the previously pending KR 8 and US 12, with outcomes available at 04:21:15 UTC. All original labels and errors preserved.
+
+### Actual observed operational recovery, not scheduler repair
+
+[Run 45325614694](https://github.com/Ohoredingdong/Notion/actions/runs/45325614694), job 138214380512, actually collected 40 groups, froze 20 predictions and learned 20 new eligible outcomes; public verification and 16 timely paper plan proofs passed. [Run 45329920400](https://github.com/Ohoredingdong/Notion/actions/runs/45329920400), job 138228392421, collected 40 groups, froze 8 predictions, learned zero, public verification and 6 additional timely paper-plan checks passed. The preceding collection gap ended in observed successful runs; no scheduler root cause established, no backfilled issuance. [Independent audit 45330370248](https://github.com/Ohoredingdong/Notion/actions/runs/45330370248), job 138229859991, independently recomputed 725 scored/288 correct, 0/40 minimum sample gates, no integrity errors; attempt coverage consistent. [Bounded recovery 45330370137](https://github.com/Ohoredingdong/Notion/actions/runs/45330370137) skipped its recovery job, as expected after success (no replay; skipped job log unavailable). [Health 45330451536](https://github.com/Ohoredingdong/Notion/actions/runs/45330451536) published failure for financial age 73.1h versus 48h and stale completed source sessions opportunity 104/104, charts 108/108, market 4/4. Forecast freshness at that check was restored; broader readiness not restored. Existing diagnostics #149/#150/#172 not duplicated.
+
+### New failure reproduction: 20 originally frozen daily forecasts, no fitting
+
+Targets are Nov 23 KR 00:00–06:30 UTC and US 14:30–21:00 UTC; market/mode kept separate. Actual down 4, flat 13, up 3, only two market-session clusters. Compare only original frozen vectors on exactly these twenty outcomes, no candidate fitting, no adjusted band, no new candidate selection. A 0 denominator means undefined, not 0% or 100%.
+
+| Method | KR correct / 8 | US correct / 12 | Pooled correct / 20 | Up precision; recall | Down precision; recall | Brier ↓ |
+|---|---:|---:|---:|---|---|---:|
+| incumbent | 5 | 4 | 9 | 2/6; 2/3 | 1/7; 1/4 | 0.6916516826 |
+| baseline | 6 | 5 | 11 | 1/5; 1/3 | 2/4; 2/4 | 0.6282879529 |
+| adaptive | 5 | 3 | 8 | 1/1; 1/3 | 2/11; 2/4 | 0.7426227909 |
+| movement_then_direction | 6 | 5 | 11 | 0/1; 0/3 | 0/1; 0/4 | 0.6301162401 |
+| balanced_linear | 5 | 3 | 8 | 1/5; 1/3 | 1/7; 1/4 | 0.6910081250 |
+| balanced_nonlinear | 3 | 5 | 8 | 0/4; 0/3 | 1/9; 1/4 | 0.6658600480 |
+
+The incumbent missed all two KR down targets and had no KR up examples; in US it missed one of three up and one of two down. The apparent 11/20 baseline/cascade advantage is not bidirectional improvement: cascade makes no down calls, baseline misses two of three rises. The prior intraday failure is different mode, not pooled to justify promotion. Individual wrong signals preserved below (all six methods use original probabilities; rounded numbers are display only).
+
+| Market | Symbol | Actual | Return % | Frozen band % | incumbent | baseline | adaptive | movement_then_direction | balanced_linear | balanced_nonlinear |
+|---|---|---|---:|---:|---|---|---|---|---|---|
+| KR | ^KS11 | flat | -0.556714 | 1.174866 | flat | flat | flat | flat | flat | flat |
+| KR | ^KQ11 | flat | 0.081902 | 1.219369 | flat | flat | flat | flat | flat | down |
+| KR | 005930.KS | flat | -0.056306 | 1.482193 | flat | flat | flat | flat | flat | down |
+| KR | 000660.KS | flat | 0.556070 | 1.997773 | flat | flat | flat | flat | flat | flat |
+| KR | 035420.KS | down | -4.153355 | 1.114445 | up | flat | flat | flat | up | up |
+| KR | 403870.KQ | flat | 0.949796 | 2.270269 | flat | down | flat | flat | flat | flat |
+| KR | 207940.KS | down | -3.012048 | 1.048951 | flat | down | flat | flat | flat | up |
+| KR | 005380.KS | flat | 0.609756 | 0.876970 | down | flat | down | flat | down | up |
+| US | ^GSPC | flat | 0.135038 | 0.563976 | down | flat | down | down | down | down |
+| US | ^IXIC | flat | -0.742437 | 0.744511 | down | up | down | flat | down | flat |
+| US | AAPL | flat | 0.347829 | 0.608549 | down | up | down | flat | down | down |
+| US | MSFT | down | -2.679524 | 0.827577 | up | flat | down | flat | up | up |
+| US | NVDA | flat | -1.191326 | 1.413157 | up | up | down | up | up | flat |
+| US | ON | flat | 0.375827 | 1.643205 | up | up | down | flat | up | down |
+| US | FN | flat | -0.399349 | 2.665983 | flat | flat | down | flat | flat | flat |
+| US | DOCS | flat | 0.303843 | 0.907471 | down | flat | down | flat | down | flat |
+| US | EXLS | up | 3.657364 | 0.533989 | down | up | down | flat | down | down |
+| US | AMZN | down | -1.871210 | 0.946599 | down | down | down | flat | down | down |
+| US | TSLA | up | 2.860650 | 1.375665 | up | down | flat | flat | flat | down |
+| US | META | up | 0.993714 | 0.870411 | up | flat | up | flat | up | down |
+
+### Original operating history and remaining evidence
+
+Cumulative original eligible confusion rows actual down/flat/up vs predicted down/flat/up = [[36,181,53],[35,229,37],[16,115,23]]. 288/725 = 39.7241%, wrong 437, Brier 0.6585073896719839. Up 23/113 precision, 23/154 recall, false 90, missed 131; down 36/87 precision, 36/270 recall, false 51, missed 234; flat correct 229/301 actual, 525 calls. Version 1.0 69/208, version 1.1 219/517. Provided 1935 / 4944 attempts (39.1383%), held 3009; actual market opportunity coverage unverified. Same frozen baseline cohort 713: operating 284, baseline 293, no asserted edge from this comparison. Independent audit census at 05:01 UTC: 725 scored, 21 later reissues, 22 overlaps excluded, 12 outcome missing at snapshot, 76 untimely public, 28 future target at that snapshot; raw unmatched 42 IDs at 05:27 UTC, split {"KR intraday ended":22,"US daily future":12,"KR intraday future":8}. Newly matured intraday targets without a later source collection are awaiting evidence, not new errors. New issuance windows and actual first verification:
+
+- 45325614694 / US / daily / 2026-11-24T14:30:00+00:00 / 2026-11-24T21:00:00+00:00: {"n":12,"timely":12,"earliest":"2026-11-24T04:21:16.079011+00:00","latest":"2026-11-24T04:21:16.087910+00:00","firstPublic":"2026-11-24T04:22:23.232753+00:00"}
+- 45325614694 / KR / intraday / 2026-11-24T04:35:00+00:00 / 2026-11-24T05:05:00+00:00: {"n":8,"timely":8,"earliest":"2026-11-24T04:21:16.077731+00:00","latest":"2026-11-24T04:21:16.089094+00:00","firstPublic":"2026-11-24T04:22:23.232753+00:00"}
+- 45329920400 / KR / intraday / 2026-11-24T05:10:00+00:00 / 2026-11-24T05:40:00+00:00: {"n":8,"timely":8,"earliest":"2026-11-24T04:59:22.326566+00:00","latest":"2026-11-24T04:59:22.334061+00:00","firstPublic":"2026-11-24T05:00:24.225864+00:00"}
+
+No human receipt or executable quote, paper cost schedule or independent untouched follow-up. The independently audited paper evidence still has no after-cost validated edge. No new hypothesis trial, no refit by this assistant (existing adaptive update 20 is not a new experiment), no operational code change, no promotion. This cohort is now used as a diagnostic, not an untouched confirmation. Preserve all source/policy/strict-green/monitoring/order protections. No completion criteria met; timing_utility=not_proven.
