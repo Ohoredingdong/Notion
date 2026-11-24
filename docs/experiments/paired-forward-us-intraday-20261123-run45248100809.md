@@ -123,3 +123,48 @@ Cumulative original eligible confusion rows actual down/flat/up vs predicted dow
 - 45329920400 / KR / intraday / 2026-11-24T05:10:00+00:00 / 2026-11-24T05:40:00+00:00: {"n":8,"timely":8,"earliest":"2026-11-24T04:59:22.326566+00:00","latest":"2026-11-24T04:59:22.334061+00:00","firstPublic":"2026-11-24T05:00:24.225864+00:00"}
 
 No human receipt or executable quote, paper cost schedule or independent untouched follow-up. The independently audited paper evidence still has no after-cost validated edge. No new hypothesis trial, no refit by this assistant (existing adaptive update 20 is not a new experiment), no operational code change, no promotion. This cohort is now used as a diagnostic, not an untouched confirmation. Preserve all source/policy/strict-green/monitoring/order protections. No completion criteria met; timing_utility=not_proven.
+
+
+## New Korean intraday cohort — run 45345340838 (2026-11-24 07:11:59 UTC / 16:11:59 KST cutoff)
+
+Pinned main `16a968e9fb55738fa2351730255bc8e227f483bd`; comparison to `e20aa853d3402cf51d490aaefc3c72d0155420ec` shows 34 commits, no model/controller code change. Reviewed actual acceptance/specialist/bounded policies, PR #146 source-binding and protection patch, PR #147 and its original preregistration/results/20-shadow replay, #149/#150/#172 existing diagnostics. The 2,520 historical targets and prior 20 shadow targets are already used, not a new confirmation. No new candidate fit or model recipe this run.
+
+Git blob read and independent JavaScript recalculation (separate from production scorer): ledger 884→892, outcomes 842→858, learning events 725→741, attempts 4944→4984, deliveries 128→129. Exact previous bytes are prefixes in all five streams. New original blob SHAs respectively: `e8440bb49cfcabfe08b25ee46ad6ca4cd2380e9d`, `895c55729177a727a2ff066966251d0fc302b057`, `6d871ca30a327764091567c001eb39aba89f46e9`, `7ecc25dac77714a666636427021d1d7e0bcc5063`, `6a680a916955c077cc00e2178a351416cf3776d7`. Recomputed all 858 observed returns from stored open/close and frozen band; checked frozen vectors/argmax, Brier, observed/received/issued/target/evaluated/learned chronology, duplicate IDs, pre-target public proof for 741 learning events and within-symbol/mode overlaps among learned rows. Zero detected inconsistencies in these checks. No externally authenticated raw exchange prices, venue-level KRX/NXT confirmation or human receipt.
+
+[Actual prospective run 45345340838](https://github.com/Ohoredingdong/Notion/actions/runs/45345340838), job 138278416192: 40 groups collected, 8 newly frozen daily KR predictions and 16 new learning updates, 0 promotions/rollbacks. The independent audit [45345803709](https://github.com/Ohoredingdong/Notion/actions/runs/45345803709), job 138279933621, completed actual arithmetic, census, learning and attempt reconciliation: 741/296 scored/correct (i.e. 296 correct out of 741), 0/40 sample-gate groups, no integrity errors. Bounded recovery [45345803673](https://github.com/Ohoredingdong/Notion/actions/runs/45345803673) job skipped, as expected after success; no rerun or recovery success claim. The actual public forecast/code check succeeded 07:08:32.748565 UTC, six paper plan proofs observed before target at 07:09:09 UTC; zero human receipts. Eight new KR daily rows target Nov 25 00:00–06:30 UTC, issued 07:07:17 UTC Nov 24; all have pre-target public proof and none have matured. No source cooldowns in latest state. Paper status: 497 registered plans, 487 missing execution evidence, 10 awaiting, no external quote/human receipt adapters.
+
+### New result diagnostic — two distinct 30-minute target windows, same eight Korean symbols
+
+Nov 24 04:35–05:05 and 05:10–05:40 UTC; all 16 were previously frozen with timely public proof. Actual down 2, flat 9, up 5; both windows share the same market/day, not 16 independent market regimes. No changes to frozen probabilities, target definitions or bands. No new parameters fit. All six methods compared from originally saved vectors, including the baseline and cascade; denominators of zero are undefined.
+
+| Method | First window correct/8 | Second window correct/8 | Total correct/16 | Up precision; recall | Down precision; recall | Brier ↓ |
+|---|---:|---:|---:|---|---|---:|
+| incumbent | 6 | 2 | 8 | 0/0; 0/5 | 0/1; 0/2 | 0.6436531222 |
+| baseline | 6 | 3 | 9 | 0/0; 0/5 | 0/0; 0/2 | 0.6452768849 |
+| adaptive | 6 | 2 | 8 | 0/0; 0/5 | 0/1; 0/2 | 0.6478750645 |
+| movement_then_direction | 5 | 4 | 9 | 1/2; 1/5 | 0/0; 0/2 | 0.6466015312 |
+| balanced_linear | 3 | 2 | 5 | 2/5; 2/5 | 0/8; 0/2 | 0.6644667605 |
+| balanced_nonlinear | 1 | 2 | 3 | 1/5; 1/5 | 2/11; 2/2 | 0.6921067660 |
+
+Failure reproduced: incumbent 15 flat calls, one false down, zero up; misses all seven material moves; adaptive exactly matches the incumbent's class decisions. Cascade captures one rise but no falls; nonlinear catches both falls but issues nine false falls, four false rises, and no flat calls, worsening Brier and overall results. This is an observable class-decision imbalance, not proof of the underlying causal feature defect. No direction thresholds changed. The two narrow flat results (first-window ^KQ11 +0.147063% vs band 0.15%, second-window 005930.KS +0.208442% vs band 0.209567%) retain their original classifications; neither is relabelled. No candidate passes the bilateral gates. The new observed cohort is now used as a diagnostic, not untouched follow-up.
+
+| UTC start | Symbol | Return % | Band % | Actual | incumbent | baseline | adaptive | cascade | linear | nonlinear |
+|---|---|---:|---:|---|---|---|---|---|---|---|
+|04:35|^KQ11|0.147063|0.150000|flat|flat|flat|flat|flat|down|up|
+|04:35|^KS11|0.026769|0.201743|flat|flat|flat|flat|flat|flat|down|
+|04:35|005930.KS|-0.104112|0.284881|flat|flat|flat|flat|flat|flat|up|
+|04:35|000660.KS|-0.169062|0.336216|flat|flat|flat|flat|flat|flat|down|
+|04:35|035420.KS|0.255428|0.150000|up|flat|flat|flat|flat|down|down|
+|04:35|403870.KQ|0.000000|0.348376|flat|flat|flat|flat|flat|down|down|
+|04:35|207940.KS|-0.614439|0.150000|down|flat|flat|flat|flat|up|down|
+|04:35|005380.KS|0.000000|0.333276|flat|flat|flat|flat|up|up|up|
+|05:10|^KS11|0.180109|0.174149|up|flat|flat|flat|flat|down|down|
+|05:10|^KQ11|0.204930|0.150000|up|flat|flat|flat|flat|up|down|
+|05:10|005930.KS|0.208442|0.209567|flat|flat|flat|flat|flat|down|up|
+|05:10|000660.KS|-0.084746|0.264660|flat|down|flat|down|flat|down|down|
+|05:10|035420.KS|-0.063613|0.150000|flat|flat|flat|flat|flat|down|down|
+|05:10|403870.KQ|0.480192|0.319311|up|flat|flat|flat|flat|down|up|
+|05:10|207940.KS|-0.616333|0.159658|down|flat|flat|flat|flat|up|down|
+|05:10|005380.KS|0.723327|0.345677|up|flat|flat|flat|up|up|down|
+
+Cumulative eligible history 296/741 (39.9460%), 445 wrong, Brier 0.658186649754159; confusion (actual down/flat/up vs predicted down/flat/up) [[36,183,53],[36,237,37],[16,120,23]]. Up precision 23/113 (20.35%), recall 23/159 (14.47%), false 90, missed 136. Down precision 36/88 (40.91%), recall 36/272 (13.24%), false 52, missed 236. Flat 237/310 actual captured, 540 calls. Version 1.0 69/208, 1.1 227/533. Baseline paired cohort 729: incumbent 292, baseline 302. Raw attempt provision 1955/4984 = 39.2255%, held 3029; coverage is not full market-opportunity coverage. Census: 21 reissues, 22 overlaps excluded, 12 missing despite later source, 76 untimely public, 20 pending. Raw unmatched IDs 34 = 14 matured KR intraday, 12 future US daily, 8 future KR daily; not interchangeable with deduplicated census counts. No newly established source/validation bug separate from existing diagnostics. No new hypothesis experiment, refit by assistant, production code changes, promotion or policy change. Existing actual bounded update 16 is not a new model experiment. Prior research and failure records preserved; no independent quote/cost/risk/receipt evidence or untouched follow-up, no completion claim. timing_utility=not_proven.
