@@ -296,3 +296,38 @@ Main remains `7f3697e75fb0107caa90d2eb3d7b04babc19dda9` (same as previous 14:54 
 Independent JavaScript rejoined the exact pinned ledger blob 17be463e29b6fb47e57b7a5d4617da90c4111aad (936 rows), outcomes (894), learning events (777), deliveries (134), attempts (5184). Large ledger/attempt file content was recovered using exact Git blob IDs rather than the empty contents response. Zero duplicate forecast/outcome/learned prediction IDs; zero checked return/band/actual/first prediction/Brier/issue-receipt-target-public-evaluation-learning chronology inconsistencies; zero invalid probability vectors or within-group eligible target overlap. Actual/predicted order down,flat,up: [[36,187,53],[40,249,42],[16,127,27]]. Correct 312, wrong 465; up precision 27/122, recall 27/170, false 95, missed 143; down precision 36/92, recall 36/276, false 56, missed 240; flat correct 249; Brier 0.6572849653217147. Version 1.0 69/208, 1.1 243/569. Attempt calls 2029, no-calls 3155, coverage 39.13966%; no human receipt records. This is a recheck of existing scores, not a new performance sample. Independent audit guard 0/40 groups at minimum sample gate. Raw market and actual receipt/executable quote/cost/untouched confirmation still not established.
 
 Re-read policy docs and PRs #146/#147 and both fixed experiment docs on the research branch; #172 remains open, no new defect established for duplicate patching. Artifact 13750188846 still unexpired with recorded SHA256 metadata unchanged; previously used shadow 20 and historical 2520 not re-evaluated, no new unused confirmation. New hypothesis trials 0; no retuning, model/weight changes, promotions, backfill, orders or safety/monitor changes. No change to operational files. timing_utility=not_proven.
+
+
+## 2026-11-25 18:27 KST — eight newly scored KR daily targets (45574531681)
+
+Pinned main f2a54016f6460a9b8d5765a830077c87c5839c3e, 7 commits after dc96df846ef102ee01653401045939908ae24ed7. Actual [Stock Prospective Forecasts 45574531681](https://github.com/Ohoredingdong/Notion/actions/runs/45574531681), job 139069063071, completed successfully: 40 history collections, 8 newly frozen daily calls, 8 newly eligible learning updates, zero promotions/rollbacks; log confirms missed_up_moves and missed_down_moves. Exact public forecast/code verification 08:16:43.177891 UTC. Six paper publication proofs recorded at 08:17:36 UTC, zero human receipts. This run is not new model hypothesis research or proof of utility.
+
+New results (KR daily 2026-11-25 regular-session target 00:00–06:30 UTC; first issued 2026-11-24 07:07:17 UTC, public verified 07:08:32.748565 UTC; observed outcome evaluation 2026-11-25 08:15:43.472519 UTC). Stored provider prices are not independently exchange-authenticated:
+
+| Symbol | Frozen band % | Return % | Actual | Original prediction |
+|---|---:|---:|---|---|
+| ^KS11 | 1.276775 | -2.318366 | down | up |
+| ^KQ11 | 1.255396 | -0.545697 | flat | flat |
+| 005930.KS | 1.554644 | -4.369748 | down | flat |
+| 000660.KS | 2.034085 | -5.850091 | down | flat |
+| 035420.KS | 1.281065 | 4.812129 | up | flat |
+| 403870.KQ | 2.391482 | -3.000000 | down | flat |
+| 207940.KS | 1.036198 | 5.413766 | up | flat |
+| 005380.KS | 1.260640 | 1.315789 | up | down |
+
+Observed failure reproduced: 7 misses out of 7 material direction events; both up and down precision 0/1, recall up 0/3 and down 0/4. Six flat calls (one right), including five missed directional targets; two opposite-direction calls. This is an observed failure mode, not proof of its causal feature deficiency. One correlated trading day cannot justify model selection.
+
+Frozen same-event probabilities, independent JS; confusion matrix order down,flat,up (actual rows). No retrospective candidate probabilities:
+
+| Method | Correct/8 | Matrix | Brier | Log loss |
+|---|---:|---|---:|---:|
+| incumbent | 1 | [[0,3,1],[0,1,0],[1,2,0]] | .773605 | 1.253924 |
+| frequency baseline | 2 | [[1,3,0],[0,1,0],[1,2,0]] | .678029 | 1.112832 |
+| adaptive | 0 | [[0,3,1],[0,0,1],[1,2,0]] | .862901 | 1.402538 |
+| movement_then_direction | 2 | [[0,4,0],[0,1,0],[0,2,1]] | .765128 | 1.247931 |
+| balanced_linear | 2 | [[0,3,1],[0,0,1],[0,1,2]] | .728053 | 1.212318 |
+| balanced_nonlinear | 2 | [[0,3,1],[0,1,0],[1,1,1]] | .693424 | 1.137803 |
+
+All specialist candidates still miss all four actual falls; frequency baseline misses all three actual rises. None demonstrates simultaneous improvement. No new hypothesis trial, extra model tuning or retrospective replay; these outcomes are now used diagnostic material, not a future untouched validation set. Existing policy did perform eight new learning updates. Prior PR146 source binding merged, PR147 recent-daily protocol/results reviewed on research branch; artifact 13750188846 metadata unexpired with same SHA256, previously evaluated 20 shadows and 2520 historical targets not reused. No new untouched validation available. No confirmed new engineering defect to patch in this run.
+
+Independent exact ledger blob c80f3f2d3c4cf84ead96de14b4e51e20e16c5f8a: 944 rows, 902 outcomes, 785 learned events, 135 delivery records, 5224 attempts. Prior ledger/outcomes/learning/delivery prefixes preserved; compare shows +8/+8/+8/+1 rows, attempts +40, no deletions. JS recomputed all 902 outcome returns, fixed-band labels, Brier, probability sums and observation/receipt/issue chronology, no discrepancies; all 785 learned IDs have pre-target public proof, no within-learning-group target overlaps, no duplicate ledger/outcome/learned IDs. Confusion [[36,190,54],[40,250,42],[17,129,27]], 313/785 correct (39.8726%), 472 wrong, up precision 27/123 and recall 27/173, false 96 missed 146; down precision 36/93 and recall 36/280, false 57 missed 244; flat correct 250. Brier .6584703964; model 1.0 69/208, 1.1 244/577. Coverage 2049/5224 (39.2228%), 3175 held. Raw unmatched 22 mature, 20 future at cutoff 09:27:21 UTC. New eight KR daily targets Nov 26 (six flat, one up, one down) publicly verified before target; no results yet. Stored evaluation categories 785 eligible, 21 duplicate issuances, 22 overlaps, 20 missing, 76 not timely public, 20 pending; no human receipt. No group near minimum 120 targets; 0/40 acceptance gate. Paper summary 539 plans at controller snapshot, 529 missing evidence, 10 awaiting; receipt/quote adapters not connected. Actual independent audit/recovery latest job logs not obtained in this pass; controller's embedded arithmetic audit is not external verification. Existing health/monitor and strict-green unchanged. No orders, no model promotion. timing_utility=not_proven.
