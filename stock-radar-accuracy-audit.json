@@ -3,12 +3,12 @@
   "source": {
     "learning_generated_at": "2026-11-25T08:15:43.799938+00:00",
     "forecasts_generated_at": "2026-11-25T08:15:43.799938+00:00",
-    "opportunity_generated_at": "2026-11-25T04:56:05.006475+00:00",
-    "market_generated_at": "2026-11-25T05:02:58.824236+00:00",
-    "chart_generated_at": "2026-11-25T04:56:20.072323+00:00",
-    "chart_source_generated_at": "2026-11-25T04:56:05.006475+00:00",
-    "cases_generated_at": "2026-11-25T05:02:49.911318+00:00",
-    "entry_generated_at": "2026-11-25T05:40:11.890288+00:00"
+    "opportunity_generated_at": "2026-11-25T13:39:55.951517+00:00",
+    "market_generated_at": "2026-11-25T18:12:17.758670+00:00",
+    "chart_generated_at": "2026-11-25T13:40:09.317698+00:00",
+    "chart_source_generated_at": "2026-11-25T13:39:55.951517+00:00",
+    "cases_generated_at": "2026-11-25T18:12:10.435225+00:00",
+    "entry_generated_at": "2026-11-25T18:19:21.135708+00:00"
   },
   "evaluation": {
     "status": "forward_validation_in_progress",
@@ -105,13 +105,27 @@
     "date_order_and_price_values_valid": true,
     "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote."
   },
-  "index_date_mismatch": [],
+  "index_date_mismatch": [
+    {
+      "market": "KOSPI",
+      "index_snapshot": "2026-11-24",
+      "chart_history_through": "2026-11-25",
+      "policy": "display dates separately; do not claim history chart is current"
+    },
+    {
+      "market": "KOSDAQ",
+      "index_snapshot": "2026-11-24",
+      "chart_history_through": "2026-11-25",
+      "policy": "display dates separately; do not claim history chart is current"
+    }
+  ],
   "data_integrity": {
     "check_passed": true,
     "errors": [],
     "warnings": [
       "Paired Brier gain below configured policy threshold",
-      "No independently proven live trading profitability"
+      "No independently proven live trading profitability",
+      "Market index snapshots have dates different from sparkline histories"
     ],
     "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
   }
