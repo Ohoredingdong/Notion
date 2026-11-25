@@ -211,3 +211,64 @@ New operational evidence: [health 45473395987](https://github.com/Ohoredingdong/
 New [accuracy audit 45473195612](https://github.com/Ohoredingdong/Notion/actions/runs/45473195612), job 138726634979, actually recomputed source-aligned consistency, published and verified public snapshot. Current audit data_integrity.check_passed=true, errors=[]; prior catalog mismatch is absent at this snapshot, not proof of permanent upstream repair. Performance_approved=false, live_trading_proven=false; health remains error. [Independent audit 45433336005](https://github.com/Ohoredingdong/Notion/actions/runs/45433336005) actually recomputed unchanged evidence; bounded recovery 45430008870 skipped after forecast success.
 
 Separate JavaScript recalculation using exact five Git blobs: ledger 916, outcomes 858, learning 741, deliveries 131, attempts 5,064. No duplicate ledger/outcome/learning IDs; no discrepancies detected in probability simplex/argmax, stored price and frozen-band labels, outcome and Brier arithmetic, training/observation/receipt/issue/target/evaluation/learning chronology, learned pre-target public proof and within-learning-group overlaps. Matrix down/flat/up [[36,183,53],[36,237,37],[16,120,23]], Brier 0.658186649754159, 296/741 correct and 445 wrong; up precision 23/113 recall 23/159, down precision 36/88 recall 36/272; versions 69/208 and 227/533. Paired 292/729 incumbent vs 302/729 baseline; provided 1,979 held 3,085. Unmatched raw IDs remain 38 mature (14 KR intraday, 24 US intraday), 20 pending daily (12 US, 8 KR). No new actual result or new learning. Independent acceptance remains 0/40 groups; human receipt, executable quotes, after-cost advantage and untouched follow-up not verified. New hypothesis trials=0, no refit/promotion/backfill or policy/production/monitor change. timing_utility=not_proven.
+
+
+## US 36-target cohort catch-up and unchanged-source revalidation — 2026-11-25 01:47:15 UTC
+
+Pinned main `51ce65cd68408f9ef3f3575fde1c3331d01ee8e5`; compared to prior 09:29 KST pin `0eb06d4eb151bddc66ed02207f3352269cbca884`: 8 commits, no change to any forecast ledger, outcome, attempt, learning, delivery, model or source-state file. The 36 outcomes first available in run 45513245914 were already inspected in the previous assistant run but that run did not finish saving the analysis. This section records that cohort once, **not 36 new results in this run**. Latest actual forecast [45516055135](https://github.com/Ohoredingdong/Notion/actions/runs/45516055135), job 138875629442, verified 40 collected groups, zero new frozen predictions and zero learning updates; public verification passed. [Independent audit 45522134120](https://github.com/Ohoredingdong/Notion/actions/runs/45522134120), job 138896364154, independently scored 312/777, 0/40 minimum gates, integrity errors empty; bounded recovery 45516410750 skipped after success. Newer health [45522937704](https://github.com/Ohoredingdong/Notion/actions/runs/45522937704), job 138899071913, reported stale-source-session pricing for opportunity 53/104, charts 55/108, market 4/4. This is a previously observed class of freshness failure, not a newly established causal defect; do not claim repair from the successful audit. At pinned cutoff forecast age was about 1.58h, not yet the two-hour gate. No new candidate or refit justified.
+
+Independent JavaScript recalculation on exact blobs: ledger 928, outcomes 894, learning events 777, deliveries 133, attempts 5144; no duplicate original/outcome/learned prediction IDs, no detected frozen simplex/argmax, band/return/Brier, observed/received/issued/trained/calibrated/target/evaluated/learned ordering, pre-target public-proof or within-group overlap discrepancies. Overall confusion matrix (actual rows and predicted columns down/flat/up): [[36,187,53],[40,249,42],[16,127,27]]; 312 correct / 777, 465 wrong, Brier 0.6572849653217147. Up precision 27/122, recall 27/170, false 95, missed 143; down precision 36/92, recall 36/276, false 56, missed 240; flat hits 249. Version 1.0 69/208, version 1.1 243/569. Same-event frozen baseline 320/765 vs incumbent 308/765, Brier 0.6464548514533401 vs 0.6573371986588489. Provided 2009, held 3135, 39.06%; unmatched 14 mature KR intraday, 8 pending KR daily, 12 pending US daily; not retrospectively scored. No actual human receipt in 133 public records. This is an internal arithmetic check, not a raw exchange price verification.
+
+The 36-event cohort (US intraday 24, daily 12) has actual down 4, flat 21, up 11. The incumbent missed all 4 downs and 7 ups; all 4 down calls were false. Fixed same-event candidates (rows/columns down,flat,up; Brier lower better):
+
+| Method | N | Correct | Confusion matrix | Brier |
+|---|---:|---:|---|---:|
+| incumbent | 36 | 16 | [[0,4,0],[4,12,5],[0,7,4]] | 0.638725294 |
+| baseline | 36 | 18 | [[0,3,1],[2,17,2],[0,10,1]] | 0.573913327 |
+| adaptive | 36 | 13 | [[0,3,1],[4,11,6],[0,9,2]] | 0.652569454 |
+| movement_then_direction | 36 | 18 | [[0,4,0],[1,16,4],[0,9,2]] | 0.627950856 |
+| balanced_linear | 36 | 10 | [[0,4,0],[8,7,6],[2,6,3]] | 0.666605432 |
+| balanced_nonlinear | 36 | 14 | [[2,2,0],[7,9,5],[3,5,3]] | 0.663629283 |
+
+No candidate meets bilateral nonregression: movement_then_direction has no down hits and lower up recall than incumbent; balanced nonlinear gains two down hits but misses eight rises and has ten down false calls. No pooled improvement is approved. Full event IDs retained, with frozen candidate directions (D/F/U), actual labels and no probability backfill:
+
+| Original ID | Symbol | Mode | Actual | Incumbent | Baseline | Adaptive | Movement | Linear | Nonlinear |
+|---|---|---|---|---|---|---|---|---|---|
+| 42fa9e457f831e7e8420ed5edf08d4bb627fa235c334983bc1e3f493d4696a31 | ^GSPC | intraday | flat | up | flat | up | up | up | down |
+| e6dd889de2299aff4d89f61fe64ee7d0074dbffd4fd5946374f05f8b52abf7f8 | ^IXIC | intraday | flat | up | flat | up | up | up | up |
+| f8637a9f6810f15a384d842e1f3f7bf6251467a67363110bdd50b5e03d22aded | AAPL | intraday | flat | flat | flat | flat | flat | down | down |
+| 7233df418789c10e5fe29060458946f72fa7e4e9771320bad6cd059e41d14d08 | MSFT | intraday | flat | flat | flat | flat | flat | down | down |
+| 689a8577ce12a78e899493e1281011bd42f3725cd7b1c2d369350c443c733b65 | NVDA | intraday | flat | flat | flat | flat | flat | flat | flat |
+| 947211b428f9b0e5eb963452ccd13a02ae13a1ae5c89f7c8242688beca40b793 | ON | intraday | down | flat | flat | flat | flat | flat | flat |
+| de660f929c5a1a3c7e713090b02e6562af544585d26bf3822ddbdb04ed293baf | FN | intraday | flat | flat | flat | flat | flat | up | flat |
+| 8895465c0a579b126a4e31b1334474ea3332a2348a0d7380ae22d81ebec32779 | DOCS | intraday | up | flat | flat | flat | flat | flat | flat |
+| cb55d5df22447a954674ba7c779f922f7a5e92918bef5752afe22997ade29de6 | EXLS | intraday | flat | flat | flat | flat | flat | down | up |
+| 83119ef7e730f456ecb713457e4a0c023d898856879f65e9ef39cf4b5ca3b101 | AMZN | intraday | flat | flat | flat | flat | flat | flat | flat |
+| 091499f1e2ab1d51ca55ccc33eb3766bbfa0560d32408f2825b033b16a940ca1 | TSLA | intraday | up | flat | flat | flat | flat | down | down |
+| 65c5d9817d939875a65d5e4e1c999fb0c650c5dc713ecbd31f28cf1934412674 | META | intraday | down | flat | flat | flat | flat | flat | down |
+| 250ea71fe635c80828ca28c6a658c78b3acd0dab4a09a976efdffd5a1c19ec55 | ^GSPC | intraday | flat | up | flat | up | up | up | up |
+| 559a770551ed4860c15f2c7a11389d11e696054547b8ed990e357d8a0f689469 | ^IXIC | intraday | up | up | flat | up | up | up | up |
+| 1dfd79c629628c1b8ef34b89a1b5eb11263ef3a4b2cc4aaef92c7979c7afeefe | AAPL | intraday | flat | flat | flat | flat | flat | down | down |
+| c63d42a9847076b36d07cf21050cd9485aed77542331ebc26f5e21eb95442357 | MSFT | intraday | up | flat | flat | flat | flat | down | flat |
+| f687bc861052ba3c1ba79d40af18916e27cd6920427e53d604b5e6141345d272 | NVDA | intraday | flat | down | flat | down | flat | flat | flat |
+| 4999fcfd12c56f42afc177367eaaf9053b5ea8d229dd105276001128d077fea5 | ON | intraday | flat | flat | flat | flat | flat | flat | flat |
+| d8420a2b369c304f015b553301452d772e804a2bb77ed26bb7cb554585837d5e | FN | intraday | flat | flat | flat | flat | flat | flat | flat |
+| 82cfbbd84b5b8fa5b52e8e5720ec24c53b13da720df7e6158428fd5b2f3b9b0e | DOCS | intraday | up | flat | flat | flat | flat | flat | flat |
+| 99f8afb95e34ff1d24fd564e4d70ac8a03b17685e622088778cf1d663f2a23fd | EXLS | intraday | flat | flat | flat | flat | flat | flat | up |
+| 6ee54b56bfd340db8fcca6ba5417450ac87d10d884a0b1ce7d81eeba7f944a65 | AMZN | intraday | up | flat | flat | flat | flat | up | flat |
+| 62d58f8cbcd10da24da7aa2f228745f2545e5cdb7caedc1eebc01909eba09c75 | TSLA | intraday | flat | flat | flat | flat | flat | down | flat |
+| 43cea2a9212ec91c168e9ae83338d29a5e7da6158a874c43e9db45b5ff0da4ee | META | intraday | up | flat | flat | flat | flat | flat | flat |
+| aa96a2c259fee424e9586e32f920e3b3cbe788706d37481e21445eb6e36f5e73 | ^GSPC | daily | flat | up | flat | up | up | up | up |
+| 3700e381900623382427a513e084284490721e12917513d09db80bff963309ef | ^IXIC | daily | flat | up | up | up | flat | up | down |
+| 65aa3903c0167d7112ecbd67b1ea94c4f08a4ea9c3977d715fb2bb5eb71dc42a | AAPL | daily | up | flat | up | flat | flat | flat | down |
+| 8ad2d4d78bfb776ac01832b4630c223086ddae12509d6aa88be27ca67125fb1c | MSFT | daily | up | up | flat | up | up | up | up |
+| 1d997fda86752dd297781253cbfa8b5f330439f8989e65dec0338f87eb23633a | NVDA | daily | flat | down | up | down | down | down | down |
+| ea61b436b0e8aa3d9a10eab2a1412fddd49e7964b13919cb9e517d3c56a3efac | ON | daily | down | flat | up | up | flat | flat | down |
+| 32cc33dfdc234225690d5a98b90172bb03a18395debb725a96b9c1ad94bd90d2 | FN | daily | down | flat | flat | flat | flat | flat | flat |
+| f4321652103c39f3879f623d93896636dc010b7f7fa746e86df83570e086bc69 | DOCS | daily | up | up | flat | flat | flat | flat | up |
+| 05e158d46067af6a44b9d013b80fe30329135db9d5f801f590be6c1f8efbe790 | EXLS | daily | up | up | flat | flat | flat | flat | down |
+| a2406ae7a664894949db4c75f43737c02f3a044f4888a3150ffa3f83e17de6c5 | AMZN | daily | flat | flat | down | down | flat | flat | flat |
+| 727614301caa12a741bb679b1fa7b5d7edd25c429ae4e99d411aefb82170f3fb | TSLA | daily | flat | down | down | up | flat | down | down |
+| 91445f94fb275f659b9d45740f03a689f5b10aae3240572d3c8cc26f47e29ec6 | META | daily | flat | down | flat | down | flat | down | flat |
+
+Re-read #146 merged, #147 draft hold and experiment docs on their original branch, #149/#150/#172 hold. Artifact 13750188846 metadata still reports unexpired and original SHA256 f8f4592b3437a368377418d926797b519cc6bf943c238dd2ffdf6e13ff176077; not re-evaluated, prior 20 shadow and 2520 historical targets remain used, no new holdout. No new experiment hypothesis or hyperparameter search (0). Paper plans 533, missing execution evidence 517, awaiting 16 as of stored run; no external executable quote or receipt adapter, after-cost edge or independent untouched confirmation. No model/weight/data/safety/monitor changes, no orders, no backfill, no user notification claim. timing_utility=not_proven.
