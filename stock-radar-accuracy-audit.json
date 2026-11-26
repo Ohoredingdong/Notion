@@ -4,11 +4,11 @@
     "learning_generated_at": "2026-11-26T13:55:34.262172+00:00",
     "forecasts_generated_at": "2026-11-26T13:55:34.262172+00:00",
     "opportunity_generated_at": "2026-11-26T13:17:32.117122+00:00",
-    "market_generated_at": "2026-11-26T13:20:55.607941+00:00",
+    "market_generated_at": "2026-11-26T17:54:14.704086+00:00",
     "chart_generated_at": "2026-11-26T13:17:45.751032+00:00",
     "chart_source_generated_at": "2026-11-26T13:17:32.117122+00:00",
-    "cases_generated_at": "2026-11-26T13:20:47.053019+00:00",
-    "entry_generated_at": "2026-11-26T13:28:48.957630+00:00"
+    "cases_generated_at": "2026-11-26T17:54:05.989848+00:00",
+    "entry_generated_at": "2026-11-26T17:59:13.890091+00:00"
   },
   "evaluation": {
     "status": "forward_validation_in_progress",
@@ -105,13 +105,27 @@
     "date_order_and_price_values_valid": true,
     "note": "Consistent provider daily bars do not independently verify the exchange feed or current quote."
   },
-  "index_date_mismatch": [],
+  "index_date_mismatch": [
+    {
+      "market": "KOSPI",
+      "index_snapshot": "2026-11-25",
+      "chart_history_through": "2026-11-26",
+      "policy": "display dates separately; do not claim history chart is current"
+    },
+    {
+      "market": "KOSDAQ",
+      "index_snapshot": "2026-11-25",
+      "chart_history_through": "2026-11-26",
+      "policy": "display dates separately; do not claim history chart is current"
+    }
+  ],
   "data_integrity": {
     "check_passed": true,
     "errors": [],
     "warnings": [
       "Paired Brier gain below configured policy threshold",
-      "No independently proven live trading profitability"
+      "No independently proven live trading profitability",
+      "Market index snapshots have dates different from sparkline histories"
     ],
     "note": "Passing data consistency checks never establishes predictive accuracy or investment suitability."
   }
