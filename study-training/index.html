@@ -669,7 +669,7 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 .gh-root,.gh-inner-root {background:#faf8f4}
 .gh-bar {background:#fffdf9; border-bottom:1px solid #e6e4da;box-shadow:0 3px 13px rgba(44,58,44,.035)}
 .gh-brand>strong {font-weight:800;letter-spacing:-.6px}
-.gh-heading h1 {font-weight:600;letter-spacing:-1.7px}
+.gh-heading h1 {font-weight:500;letter-spacing:-1.7px}
 .gh-heading p {color:#526e60;font-size:clamp(14px,1.25vw,18px)}
 .gh-title-rule {height:3px;width:60px;border-radius:10px;background:#85a17d}
 .gh-card {
@@ -891,6 +891,8 @@ body[data-track="reading"] .gh-play-shell .qtitle{font-size:clamp(24px,2vw,33px)
 .sd-play-shell #numeric-status{text-align:center}
 @media(max-width:760px){.sd-play-shell .choice-confirm-wrap{flex-direction:column;align-items:stretch}.sd-play-shell .choice-confirm-wrap #choice-hint{text-align:center}}
 
+/* Home headline: explicit override for the single requested title, all viewports. */
+.gh-root .gh-heading .gh-home-headline{font-weight:500!important;font-synthesis:none}
 </style>
 </head>
 <body><div class="app">
@@ -1429,7 +1431,7 @@ function renderHome(){
  const skillTiles=skills.map(([label,icon,target,tone])=>`<button type="button" class="gh-skill" data-go="${target}" aria-label="${label} 훈련 보기"><span class="gh-skill-glyph gh-skill-${tone}">${stIcon(icon,24)}</span><span>${label}</span></button>`).join('');
  return `<div class="gh-root">
   ${sharedGameBar()}
-  <main class="gh-body"><div class="gh-center-group"><div class="gh-heading"><h1>오늘은 어떤 훈련을 할까요?</h1><p>게임처럼 즐기면서 두뇌와 독해력을 키워보세요.</p><span class="gh-title-rule"></span></div>
+  <main class="gh-body"><div class="gh-center-group"><div class="gh-heading"><h1 class="gh-home-headline" style="font-weight:500">오늘은 어떤 훈련을 할까요?</h1><p>게임처럼 즐기면서 두뇌와 독해력을 키워보세요.</p><span class="gh-title-rule"></span></div>
    <section class="gh-cards" aria-label="훈련 선택">${cards}</section>
    <nav class="gh-rail" aria-label="도전 및 기록"><button type="button" class="gh-rail-item gh-challenge" data-go="planner"><span class="gh-rail-icon">${stIcon('target',31)}</span><span class="gh-rail-title">오늘의 도전</span><span class="gh-completion">${complete} / 3 완료</span><span class="gh-steps">${core.map(id=>`<i class="${routineIsDone(id)?'is-done':''}"></i>`).join('')}</span></button>
    <button class="gh-rail-item gh-navbutton" type="button" data-test="academy"><span class="gh-rail-icon trophy-icon" aria-hidden="true">${stIcon('trophy',28)}</span><strong>종합 테스트</strong>${stIcon('chevron',21)}</button>
