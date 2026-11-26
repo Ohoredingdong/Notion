@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="./assets/radar-cohesive-evidence.css?v=20261119-1">
 <link rel="stylesheet" href="./assets/radar-cohesive-chart.css?v=20261119-1">
 <link rel="stylesheet" href="./assets/radar-cohesive-fit.css?v=20261123-foreign1">
-<style id="rc-home-reference-palette" data-palette-version="3">
+<style id="rc-home-reference-palette" data-palette-version="4">
 /* Research home only: neutral surfaces, with color limited to small accents. */
 html:has([data-rc-page="home"]) {
   --rc-bg: #f4f4f5;
@@ -21,12 +21,12 @@ html:has([data-rc-page="home"]) {
   --rc-border: #dedfe2;
   --rc-mint: #f0f1f2;
   --rc-mint-text: #3f4750;
-  --rc-yellow: #fff2d9;
-  --rc-yellow-text: #77530c;
-  --rc-lilac: #f1edf7;
-  --rc-lilac-text: #624d82;
-  --rc-sky: #eef1f6;
-  --rc-sky-text: #394b6b;
+  --rc-yellow: #f0f1f2;
+  --rc-yellow-text: #3f4750;
+  --rc-lilac: #f0f1f2;
+  --rc-lilac-text: #3f4750;
+  --rc-sky: #f0f1f2;
+  --rc-sky-text: #3f4750;
   --rc-neutral: #f0f1f2;
   --rc-neutral-text: #515963;
 }
@@ -61,7 +61,7 @@ html:has([data-rc-page="home"]) .rc-country button[aria-pressed="true"] {
   background: #ebecef;
   color: #232a32;
 }
-html:has([data-rc-page="home"]) :focus-visible { outline-color: #645283; }
+html:has([data-rc-page="home"]) :focus-visible { outline-color: #495463; }
 
 .rc-home .rc-card {
   background: #fff;
@@ -76,15 +76,9 @@ html:has([data-rc-page="home"]) :focus-visible { outline-color: #645283; }
   vertical-align: 1px;
   box-shadow: 0 0 0 2px #eff0f2;
 }
-.rc-home .rc-candidate .rc-card-head .rc-bar,
-.rc-home-side > .rc-card:first-child .rc-card-head .rc-bar {
-  background: #946514;
-  box-shadow: 0 0 0 2px #fff3de;
-}
-.rc-home-bottom > .rc-card:has(.rc-headline-list) .rc-card-head .rc-bar {
-  background: #765a9c;
-  box-shadow: 0 0 0 2px #f1edf7;
-}
+/* Keep watch markers visible by shape, without a gold tint. */
+.rc-home .rc-stockrow .rc-star { color: #515963; }
+.rc-home .rc-stockrow .rc-star[aria-pressed="true"] { color: #1c2025; }
 .rc-home .rc-table thead th,
 .rc-home .rc-macro-card .rc-macro-table thead th {
   background: #f0f1f3;
