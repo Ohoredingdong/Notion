@@ -5,6 +5,19 @@ from pathlib import Path
 from stock_forecast_paper import digest
 import stock_forecast_paper as paper
 BASE='https://ohoredingdong.github.io/Notion/'
+# Only these fixed local asset identifiers may appear in a failed public probe.
+# Never relay arbitrary HTTP exception text, URLs, credentials or response bodies.
+PUBLIC_DATA_NAMES=('stock-direction-forecast.json','stock-forecast-learning.json','stock-forecast-autopilot.json')
+PUBLIC_SCRIPT_NAMES=('assets/stock-forecast.js','assets/stock-forecast-learning.js',
+                     'assets/stock-forecast-directions.js','assets/stock-forecast-autopilot.js')
+SAFE_PUBLIC_FAILURES=(
+    {'main_radar_not_integrated'}
+    | {'public_snapshot_not_equal:'+name for name in PUBLIC_DATA_NAMES}
+    | {'public_code_not_equal:'+name for name in PUBLIC_SCRIPT_NAMES}
+)
+def public_failure_label(exc):
+    label=str(exc)
+    return label if isinstance(exc,ValueError) and label in SAFE_PUBLIC_FAILURES else type(exc).__name__
 
 def get_public(name):
     request=urllib.request.Request(BASE+name+'?check='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
@@ -78,9 +91,9 @@ def main(paper_only=False):
     for attempt in range(16):
         try:
             for name in names:
-                if digest(json.loads(get_public(name)))!=digest(expected[name]):raise ValueError('public_snapshot_not_equal')
+                if digest(json.loads(get_public(name)))!=digest(expected[name]):raise ValueError('public_snapshot_not_equal:'+name)
             for name in scripts:
-                if hashlib.sha256(get_public(name)).hexdigest()!=hashes[name]:raise ValueError('public_code_not_equal')
+                if hashlib.sha256(get_public(name)).hexdigest()!=hashes[name]:raise ValueError('public_code_not_equal:'+name)
             html=get_public('stock-value-radar.html').decode()
             if any(name not in html for name in scripts):raise ValueError('main_radar_not_integrated')
             # The public JSON/JS/HTML bytes can be genuine when the regular
@@ -101,7 +114,7 @@ def main(paper_only=False):
             with Path('stock-forecast-deliveries.jsonl').open('a') as f:f.write(json.dumps(record,ensure_ascii=False)+'\n')
             print('EXACT_PUBLIC_AUTOPILOT_FORECAST_AND_CODE_VERIFIED',record['verified_at']);return
         except Exception as exc:
-            if attempt==15:raise RuntimeError('public_deployment_unverified: '+type(exc).__name__) from None
+            if attempt==15:raise RuntimeError('public_deployment_unverified: '+public_failure_label(exc)) from None
             time.sleep(8)
 
 if __name__=='__main__':
