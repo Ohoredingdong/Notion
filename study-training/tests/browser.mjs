@@ -11,6 +11,7 @@ const checks=[];const errors=[];
 const page=await browser.newPage({viewport:{width:1440,height:900}});
 page.on('pageerror',err=>errors.push('desktop: '+err.message));
 await page.goto(url,{waitUntil:'load'});await page.waitForSelector('.gh-card[data-go="math"]');
+assert.equal(await page.locator('.gh-home-headline').evaluate(el=>getComputedStyle(el).fontWeight),'500','home headline uses actual medium weight on desktop');
 checks.push('home');
 assert.ok(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),'desktop no horizontal overflow');
 await page.locator('.gh-card[data-go="math"]').click();
@@ -224,6 +225,7 @@ for(const width of [390,1111]){
  mobile.on('pageerror',err=>errors.push(width+': '+err.message));
  await mobile.goto(url);await mobile.waitForSelector('.gh-card');
  assert.ok(!await mobile.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),width+' home overflow');
+ assert.equal(await mobile.locator('.gh-home-headline').evaluate(el=>getComputedStyle(el).fontWeight),'500',width+' home headline uses medium font weight');
  await mobile.locator('.gh-card[data-go="reading"]').click();await mobile.waitForSelector('.gh-game-card');
  assert.ok(!await mobile.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),width+' reading catalog overflow');
  await mobile.close();
