@@ -1,84 +1,86 @@
 {
   "version": "canonical-radar-health-v2",
-  "checked_at": "2026-11-27T14:19:06.975781+00:00",
+  "checked_at": "2026-11-27T17:30:40.840671+00:00",
   "status": "error",
-  "consecutive_failures": 13,
+  "consecutive_failures": 14,
   "notification_required": true,
   "data_ages": {
     "opportunity": {
       "file": "stock-opportunity-data.json",
       "generated_at": "2026-11-27T13:15:06.570842+00:00",
-      "age_hours": 1.07
+      "age_hours": 4.26
     },
     "cases": {
       "file": "stock-investment-cases-summary.json",
       "generated_at": "2026-11-27T13:22:10.904532+00:00",
-      "age_hours": 0.95
+      "age_hours": 4.14
     },
     "entry": {
       "file": "stock-entry-plan-summary.json",
       "generated_at": "2026-11-27T13:27:17.676952+00:00",
-      "age_hours": 0.86
+      "age_hours": 4.06
     },
     "charts": {
       "file": "stock-radar-chart-data.json",
       "generated_at": "2026-11-27T13:15:18.987836+00:00",
-      "age_hours": 1.06
+      "age_hours": 4.26
     },
     "forecast": {
       "file": "stock-direction-forecast.json",
       "generated_at": "2026-11-27T14:15:20.956587+00:00",
-      "age_hours": 0.06
+      "age_hours": 3.26,
+      "max_hours": 2
     },
     "learning": {
       "file": "stock-forecast-learning.json",
       "generated_at": "2026-11-27T14:15:20.956587+00:00",
-      "age_hours": 0.06
+      "age_hours": 3.26
     },
     "accuracy": {
       "file": "stock-radar-accuracy-audit.json",
       "generated_at": "2026-11-27T14:15:20.956587+00:00",
-      "age_hours": 0.06
+      "age_hours": 3.26
     },
     "market": {
       "file": "stock-market-context.json",
       "generated_at": "2026-11-27T13:22:19.257541+00:00",
-      "age_hours": 0.95
+      "age_hours": 4.14
     },
     "news": {
       "file": "news-link-data.json",
       "generated_at": "2026-11-27T02:58:26.231515+00:00",
-      "age_hours": 11.34,
+      "age_hours": 14.54,
       "max_hours": 6
     },
     "calendar": {
       "file": "market-events-data.json",
       "generated_at": "2026-11-27T13:53:07.815940+00:00",
-      "age_hours": 0.43,
+      "age_hours": 3.63,
       "max_hours": 18
     },
     "events": {
       "file": "stock-event-outlook.json",
       "generated_at": "2026-11-27T13:53:13.672172+00:00",
-      "age_hours": 0.43,
+      "age_hours": 3.62,
       "max_hours": 18
     },
     "catalog": {
       "file": "stock-universe-catalog.json",
       "generated_at": "2026-11-27T04:58:36.770204+00:00",
-      "age_hours": 9.34,
+      "age_hours": 12.53,
       "max_hours": 168
     },
     "financial": {
       "file": "stock-financial-coverage.json",
       "generated_at": "2026-11-27T04:58:40.267639+00:00",
-      "age_hours": 9.34,
+      "age_hours": 12.53,
       "max_hours": 48
     },
     "extended_forecast": {
       "file": "stock-extended-direction-forecast.json",
       "generated_at": "2026-11-26T18:01:38.354757+00:00",
-      "age_hours": 20.29
+      "age_hours": 23.48,
+      "max_hours": 2
     }
   },
   "session_clocks": {
@@ -107,7 +109,7 @@
       "next_session": "2026-11-27",
       "next_open": "2026-11-27T14:30:00+00:00",
       "next_close": "2026-11-27T18:00:00+00:00",
-      "market_open": false,
+      "market_open": true,
       "calendar_note": "거래소 일정 라이브러리 기준; 임시휴장은 거래소 원문 확인 필요"
     }
   },
@@ -1481,7 +1483,9 @@
   },
   "issues": [
     "extended_forecast: 전체 명부 일간 계약 확인 실패 (full_universe_catalog_record_count_mismatch)",
-    "news: 11.3시간 동안 갱신되지 않았습니다. (허용 6시간)",
+    "forecast: 3.3시간 동안 갱신되지 않았습니다. (허용 2시간)",
+    "news: 14.5시간 동안 갱신되지 않았습니다. (허용 6시간)",
+    "extended_forecast: 23.5시간 동안 갱신되지 않았습니다. (허용 2시간)",
     "news: 제공처 수집 실패 또는 부분 실패 자료입니다. 새 생성시각만으로 정상 처리하지 않습니다."
   ],
   "warnings": [
@@ -1493,7 +1497,7 @@
   "repair_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/update-stock-opportunities.yml",
   "verification_url": "https://github.com/Ohoredingdong/Notion/actions/workflows/monitor-stock-value-radar.yml",
   "source_snapshot": {
-    "commit": "4909406f2c38d41fe648a987a364431762a50a80",
+    "commit": "61337f13cf3fe004c411ffa7c216202c8178df76",
     "inputs": {
       "market-events-data.json": {
         "exists": true,
@@ -1572,6 +1576,6 @@
         "sha256": "07a7e0590da3546ca64bb5cdcdc2209728e66daa5ea6d8bac533c1c875e3358c"
       }
     },
-    "previous_health_sha256": "ce2cdd1f77010f88e54eb74c2f1ed49a747e110a8d3cb74ccc3da723a1e09086"
+    "previous_health_sha256": "1997bfae52e3b3c5f793845d4a7e169d2e443de48952454834920adbea6e2f0d"
   }
 }
