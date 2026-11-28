@@ -96,6 +96,8 @@ jobs:
           python scripts/build_stock_financial_coverage.py "${args[@]}"
       - name: Validate aligned catalogue and every displayable issuer identity
         run: python -m scripts.validate_stock_financial_coverage
+      - name: Reject failed current refresh before any publication
+        run: python scripts/check_stock_financial_publication.py
       - name: Publish a coherent snapshot only if its source was not superseded
         id: publish
         run: |
@@ -134,16 +136,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
-      - name: Report this run honestly even when prior verified accounts survived
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          d=json.loads(Path('stock-financial-coverage.json').read_text())
-          print('CURRENT_REFRESH',d['refresh_status'],d['run'],'provider_readiness',d['provider_readiness'])
-          if d['current_run_failed']:
-              raise SystemExit('Current provider/identity verification failed; preserved historical counts are not a successful refresh')
-          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
